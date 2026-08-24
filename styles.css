@@ -108,11 +108,13 @@ button{cursor:pointer}
 .andon-caption .dot.g{background:#367249}.andon-caption .dot.a{background:#b6790c}.andon-caption .dot.r{background:#a83a2d}
 
 /* ---------------- KPI row ---------------- */
-.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px}
 .kpi{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:15px 16px;box-shadow:var(--shadow);border-left:3px solid var(--steel-500)}
 .kpi:nth-child(2){border-left-color:var(--green)}
 .kpi:nth-child(3){border-left-color:var(--amber)}
 .kpi:nth-child(4){border-left-color:var(--navy-accent)}
+.kpi.kpi-repeat{border-left-color:var(--red)}
+.kpi.kpi-repeat .kpi-value{color:var(--red)}
 .kpi-label{display:block;font-size:11px;font-weight:700;color:var(--muted)}
 .kpi-value{display:block;font-size:28px;margin:8px 0 4px;letter-spacing:-.5px;color:var(--ink)}
 .kpi-unit{font-size:10.5px;color:var(--muted)}
@@ -162,6 +164,7 @@ button{cursor:pointer}
 .rate-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%}
 .rate-val{font-size:11.5px;font-weight:800;margin-bottom:5px;color:var(--steel-700)}
 .rate-bar{width:32px;max-width:60%;background:var(--steel-500);border-radius:4px 4px 0 0}
+.rate-bar.repeat{background:var(--amber)}
 .rate-name{font-size:10.5px;font-weight:700;margin-top:8px;white-space:nowrap}
 .type-chart{height:210px;display:flex;align-items:flex-end;gap:16px;overflow-x:auto;padding-top:6px}
 .team-bar-group{flex:1;min-width:100px;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center}
@@ -170,6 +173,20 @@ button{cursor:pointer}
 .mini-value{font-size:9px;font-weight:700;color:var(--muted)}
 .mini-bar{width:100%;border-radius:3px 3px 0 0}
 .team-name{margin-top:8px;font-size:10.5px;font-weight:700;white-space:nowrap}
+
+/* 단일 팀 월별 활동추이 (누적 스택 바) */
+.monthly-stack-chart{height:230px;padding:22px 10px 6px;display:flex;align-items:flex-end;gap:14px}
+.month-stack-group{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center}
+.month-total{font-size:10.5px;font-weight:800;color:var(--steel-700);margin-bottom:5px}
+.month-stack{width:56%;min-width:22px;max-width:44px;display:flex;flex-direction:column-reverse;overflow:hidden;border-radius:4px 4px 0 0}
+.month-seg{display:block;width:100%;min-height:1px}
+.month-seg.s1{background:#1a4262}
+.month-seg.s2{background:#3d6c8f}
+.month-seg.s3{background:#6f95ac}
+.month-seg.s4{background:#c9922f}
+.month-seg.s5{background:#8faf7a}
+.month-seg.s6{background:#8a6a9e}
+.month-label{font-size:10px;color:var(--muted);margin-top:8px;white-space:nowrap}
 
 /* ---------------- Completion rows ---------------- */
 .completion-row{display:grid;grid-template-columns:150px 1fr 44px;align-items:center;gap:10px;margin:11px 0}
@@ -218,6 +235,9 @@ button{cursor:pointer}
 .checkline{flex-direction:row !important;align-items:center;gap:7px !important;font-weight:700;color:var(--ink) !important;font-size:12px !important}
 .checkline input{width:15px;height:15px}
 .std-flag{display:inline-block;margin-left:7px;font-size:9px;font-weight:800;background:var(--steel-100);color:var(--steel-700);padding:2px 6px;border-radius:5px;vertical-align:middle}
+.cat-tag{display:inline-block;margin:0 3px 3px 0;font-size:9.5px;font-weight:800;background:var(--amber-bg);color:var(--amber);padding:2px 7px;border-radius:5px}
+.rank-badge{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:5px;background:var(--line);color:var(--muted);font-size:10.5px;font-weight:800}
+.rank-badge.top{background:var(--red-bg);color:var(--red)}
 .rc-title{font-size:12.5px;font-weight:700;margin:0 0 4px}
 .attach-list{margin-top:6px;font-size:9.5px;color:var(--muted);display:flex;justify-content:space-between}
 .attach-list .empty{color:#b7c0ca}

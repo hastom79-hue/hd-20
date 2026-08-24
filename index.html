@@ -80,6 +80,11 @@
           <strong class="kpi-value mono" id="kpiTotalReq">–</strong>
           <span class="kpi-unit">최근 3개월</span>
         </div>
+        <div class="kpi kpi-repeat">
+          <span class="kpi-label">반복지적률</span>
+          <strong class="kpi-value mono" id="kpiRepeatRate">–</strong>
+          <span class="kpi-unit" id="kpiRepeatRateSub">전월 대비</span>
+        </div>
       </div>
 
       <div class="grid-2">
@@ -115,6 +120,28 @@
         <div class="panel-body">
           <div class="type-legend" id="typeLegend"></div>
           <div class="type-chart" id="teamTypeChart"></div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-head">
+            <div><h2>월별 반복지적률 추이</h2><p>동일 팀×유형이 2개월 이상 연속 지적되는 비율 · 최근 5개월(전월 비교 필요)</p></div>
+          </div>
+          <div class="panel-body">
+            <div class="rate-chart" id="repeatTrendChart"></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head">
+            <div><h2>반복지적 집중 작업장 TOP5</h2><p>반복지적률 = 2개월 연속 지적건수 ÷ 당월 전체 지적건수</p></div>
+          </div>
+          <div class="panel-body table-wrap">
+            <table class="datatable">
+              <thead><tr><th>순위</th><th>작업장</th><th>반복지적률</th><th>반복/전체</th><th>주요 반복유형</th></tr></thead>
+              <tbody id="repeatTop5Body"></tbody>
+            </table>
+          </div>
         </div>
       </div>
 
