@@ -546,6 +546,73 @@ function renderRawTable(){
   }).join('');
 }
 
+// 개선요청 조치 현황 도넛
+function renderCompletionDonut(){
+  const total = REQUESTS.filter(r=>r.status!=='draft').length;
+  const done = REQUESTS.filter(r=>['done','verify','close'].includes(r.status)).length;
+  const rate = total ? done/total*100 : 0;
+  upsertChart('completionDonut', {
+    type: 'doughnut',
+    data: {
+      labels: ['완료','미결'],
+      datasets: [{ data: [done, total-done], backgroundColor: ['#367249','#e3e9ee'], borderWidth: 0 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, cutout: '74%',
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => `${c.label} ${c.raw}건` } } }
+    }
+  });
+  document.getElementById('donutCenterLabel').innerHTML = `<strong class="mono">${rate.toFixed(1)}%</strong><span>완료 ${done} / 전체 ${total}건</span>`;
+}
+
+// 최근 개선 사례 캐러셀 (Before/After 등록된 완료건)
+function renderRecentCaseCarousel(){
+  const items = REQUESTS.filter(r=>r.before && r.after && ['done','verify','close'].includes(r.status))
+    .sort((a,b)=> a.date<b.date?1:-1).slice(0,8);
+  document.getElementById('recentCaseCarousel').innerHTML = items.map(r=>{
+    const team = teamById(r.team);
+    return `<div class="case-card">
+      <div class="cc-photos">
+        <div class="cc-photo before">Before</div>
+        <div class="cc-photo after">After</div>
+      </div>
+      <div class="cc-body">
+        <span class="cc-team">${team.name} · ${r.category}</span>
+        <span class="cc-title">${r.title||r.issue}</span>
+        <div class="cc-meta"><span class="cat-tag">${r.category}</span><span class="mono muted">${r.date}</span></div>
+      </div>
+    </div>`;
+  }).join('') || `<p class="empty-note">Before/After가 모두 등록된 완료 사례가 없습니다.</p>`;
+}
+
+// 한눈에 보는 인사이트 — 현재 데이터에서 자동 생성
+function renderInsightBar(month){
+  const { monthlyRates, teamStats } = computeRepeatStats();
+  const valid = monthlyRates.filter(v=>v!==null);
+  const cur = valid[valid.length-1], prev = valid[valid.length-2];
+  const repeatLine = (cur!==undefined && prev!==undefined)
+    ? `${MONTH_LABEL[month]} 반복지적률은 <b>${cur.toFixed(1)}%</b>로 전월 대비 ${cur<=prev?'▼':'▲'}${Math.abs(cur-prev).toFixed(1)}%p ${cur<=prev?'개선':'악화'}되었습니다.`
+    : `반복지적률 추이를 산정하려면 비교할 전월 데이터가 더 필요합니다.`;
+
+  const cats = categoryStats(month).slice().sort((a,b)=>b.total-a.total);
+  const activeLine = `<b>${cats[0].category}, ${cats[1].category}</b> 활동이 활발하며, <b>${cats[cats.length-1].category}</b> 활동 확대가 필요합니다.`;
+
+  const topTeams = teamStats.slice(0,2).map(s=>teamById(s.team).name);
+  const teamLine = topTeams.length
+    ? `<b>${topTeams.join(', ')}</b>의 반복지적 집중 개선이 필요합니다.`
+    : '';
+
+  const items = [
+    {icon:'●', text: repeatLine},
+    {icon:'▲', text: activeLine},
+  ];
+  if(teamLine) items.push({icon:'■', text: teamLine});
+
+  document.getElementById('insightBar').innerHTML = `
+    <div style="font-size:11.5px;font-weight:800;color:var(--steel-700);margin-bottom:2px">한눈에 보는 인사이트</div>
+    ${items.map(it=>`<div class="insight-item"><i>${it.icon}</i><span>${it.text}</span></div>`).join('')}`;
+}
+
 function renderDashboard(){
   const month = document.getElementById('scopePeriod').value;
   renderAndon();
@@ -553,7 +620,7 @@ function renderDashboard(){
   renderStdTrendChart();
   renderAuditTrendChart();
   renderTeamTypeChart();
-  renderWeakestByCategory(month);
+  renderPillarCards(month);
   renderProblemChart(month);
   renderRateChart(month);
   renderRepeatTrend();
@@ -561,6 +628,9 @@ function renderDashboard(){
   renderRawTable();
   renderDeptRegisterTable();
   renderDetailTable();
+  renderCompletionDonut();
+  renderRecentCaseCarousel();
+  renderInsightBar(month);
 }
 
 /* =========================================================
@@ -609,7 +679,7 @@ function auditDetailFor(team, month){
   });
 }
 
-// 5S 유형별 최취약 작업장 — 유형(카테고리)마다 점수가 가장 낮은 팀을 찾음
+// 5S 6대 활동 현황 — 유형(카테고리)별 당월 활동건수·문제점·완료율·최취약팀을 하나의 카드로 통합
 function computeWeakestByCategory(month){
   return CATEGORIES.map(cat=>{
     let worst = null;
@@ -620,16 +690,49 @@ function computeWeakestByCategory(month){
     return {category:cat, team:worst.team, score:worst.score};
   });
 }
-function renderWeakestByCategory(month){
-  const rows = computeWeakestByCategory(month);
-  document.getElementById('weakestByCategory').innerHTML = rows.map(r=>{
-    const s = andonState(r.score);
-    return `<div class="andon-cell ${s}">
-      <span class="andon-team">${r.category}</span>
-      <strong class="andon-score mono">${r.score}</strong>
-      <span class="andon-tag">${r.team.name} · ${r.team.site}</span>
-    </div>`;
-  }).join('');
+function categoryStats(month){
+  const pm = prevMonth(month);
+  const totalHC = TEAMS.reduce((s,t)=>s+t.headcount,0);
+  const weakest = computeWeakestByCategory(month);
+  return CATEGORIES.map((cat,ci)=>{
+    const total = TEAMS.reduce((s,t)=>s+MONTHLY[t.id][month][ci],0);
+    const prevTotal = TEAMS.reduce((s,t)=>s+MONTHLY[t.id][pm][ci],0);
+    const delta = prevTotal ? (total-prevTotal)/prevTotal*100 : 0;
+    const problems = TEAMS.reduce((s,t)=> s + (1 + (hash(t.id+cat+month+'p') % 6)), 0);
+    const solved = TEAMS.reduce((s,t)=>{
+      const seed = hash(t.id+cat+month);
+      return s + ((seed % 3) !== 0 ? 1 : 0);
+    }, 0);
+    const rate = TEAMS.length ? Math.round(solved/TEAMS.length*100) : 0;
+    return { category:cat, color: CAT_COLORS[ci], total, perCapita: total/totalHC, delta, problems, rate, weakest: weakest[ci] };
+  });
+}
+let pillarActiveCategory = 'all';
+function renderPillarCards(month){
+  const stats = categoryStats(month);
+  document.getElementById('pillarGrid').innerHTML = stats.map(s=>`
+    <div class="pillar-card ${pillarActiveCategory===s.category?'active':''}" style="border-top-color:${s.color}" data-cat="${s.category}">
+      <span class="pillar-name">${s.category}</span>
+      <strong class="pillar-value mono">${s.total}<small>건</small></strong>
+      <span class="pillar-delta ${s.delta>=0?'up':'down'}">${s.delta>=0?'▲':'▼'}${Math.abs(s.delta).toFixed(0)}% 전월비 · 인당 ${s.perCapita.toFixed(2)}건</span>
+      <div class="pillar-divider"></div>
+      <div class="pillar-row"><span>문제점</span><b>${s.problems}건</b></div>
+      <div class="pillar-row"><span>조치율</span><b>${s.rate}%</b></div>
+      <div class="pillar-row"><span>최취약</span><b>${s.weakest.team.name}</b></div>
+    </div>`).join('');
+  document.querySelectorAll('#pillarGrid .pillar-card').forEach(card=>{
+    card.addEventListener('click', ()=>{
+      const cat = card.dataset.cat;
+      pillarActiveCategory = pillarActiveCategory===cat ? 'all' : cat;
+      document.getElementById('chartMode').value = 'type';
+      document.getElementById('chartCategory').value = pillarActiveCategory;
+      document.getElementById('chartCategory').disabled = false;
+      document.getElementById('chartTeam').disabled = true;
+      renderTeamTypeByCategory(document.getElementById('scopePeriod').value, pillarActiveCategory);
+      renderPillarCards(document.getElementById('scopePeriod').value);
+      document.getElementById('teamTypePanel').scrollIntoView({behavior:'smooth', block:'center'});
+    });
+  });
 }
 function renderAuditMonthOptions(){
   document.getElementById('auditFilterMonth').innerHTML = MONTHS.map(m=>`<option value="${m}" ${m===MONTHS[MONTHS.length-1]?'selected':''}>${m.slice(0,4)}년 ${MONTH_LABEL[m]}</option>`).join('');
@@ -893,12 +996,19 @@ document.getElementById('rail').addEventListener('click', e=>{
   const b = e.target.closest('[data-view]'); if(!b) return;
   switchView(b.dataset.view);
 });
+document.querySelectorAll('.donut-link[data-view]').forEach(btn=>{
+  btn.addEventListener('click', ()=> switchView(btn.dataset.view));
+});
 document.getElementById('scopePeriod').addEventListener('change', ()=>{ renderDashboard(); renderDeptAuditSummary(); });
 document.getElementById('scopeSite').addEventListener('change', ()=> toast('현재 프로토타입 데이터는 [CE01] 울산공장 기준입니다.'));
 document.getElementById('dashExport').addEventListener('click', ()=> toast('CSV 내보내기는 실연동 시 서버 API와 연결됩니다.'));
 
 document.getElementById('chartMode').addEventListener('change', renderTeamTypeChart);
-document.getElementById('chartCategory').addEventListener('change', renderTeamTypeChart);
+document.getElementById('chartCategory').addEventListener('change', e=>{
+  pillarActiveCategory = e.target.value;
+  renderPillarCards(document.getElementById('scopePeriod').value);
+  renderTeamTypeChart();
+});
 document.getElementById('chartTeam').addEventListener('change', renderTeamTypeChart);
 
 document.getElementById('rawFilter').addEventListener('click', e=>{
