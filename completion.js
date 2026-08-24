@@ -111,10 +111,38 @@ function renderMergedProductivityChart(){
   grid.innerHTML=`<article class="panel merged-productivity-panel"><div class="panel-head merged-productivity-head"><div><h2>팀별 인당 5S 개선성과</h2><p>${formatKoreanDate(r.start)} ~ ${formatKoreanDate(r.end)} 누계 · 팀 인원 기준 환산</p></div><div class="merged-legend"><span><i class="legend-improve"></i>인당 5S 개선건수</span><span><i class="legend-standard"></i>인당 5S 표준화 개선건수</span><b>단위: 건/인</b></div></div><div class="merged-productivity-chart">${rows.map(([team,improve,standard])=>`<div class="merged-team-group"><div class="merged-bars"><div class="merged-bar-wrap"><span>${improve.toFixed(1)}</span><div class="merged-bar improve" style="height:${Math.max(14,improve/max*205)}px" title="${team} · 인당 5S 개선건수 ${improve.toFixed(1)}건/인"></div></div><div class="merged-bar-wrap"><span>${standard.toFixed(1)}</span><div class="merged-bar standard" style="height:${Math.max(14,standard/max*205)}px" title="${team} · 인당 5S 표준화 개선건수 ${standard.toFixed(1)}건/인"></div></div></div><strong>${team}</strong></div>`).join('')}</div></article>`;
 }
 
+/* Audit average score is deliberately removed from headline decision-making because self-scoring can compress results near 100. */
+const recurrenceTrend=[['03월',21.4],['04월',19.8],['05월',18.1],['06월',16.7],['07월',14.9],['08월',12.5]];
+function applyObjectiveAuditView(){
+  const kpis=document.querySelectorAll('.focus-kpis .kpi');
+  if(kpis[2]){
+    const label=kpis[2].querySelector('span');
+    const value=kpis[2].querySelector('strong');
+    const meta=kpis[2].querySelector('em');
+    const badge=kpis[2].querySelector('.kpi-badge');
+    if(label)label.textContent='반복지적률';
+    if(value)value.textContent='12.5%';
+    if(meta)meta.textContent='동일·유사 항목 재지적 ÷ 전체 지적';
+    if(badge)badge.textContent='객관';
+  }
+  const auditPanel=document.querySelector('.secondary-grid > article:first-child');
+  if(!auditPanel)return;
+  const h2=auditPanel.querySelector('.panel-head h2');
+  const p=auditPanel.querySelector('.panel-head p');
+  if(h2)h2.textContent='월별 반복지적률 추이';
+  if(p)p.textContent='주관적 Audit 점수 대신 동일·유사 문제의 재발 여부를 객관지표로 관리';
+  const chart=auditPanel.querySelector('#auditChart');
+  if(chart){
+    const max=Math.max(...recurrenceTrend.map(v=>v[1]),1);
+    chart.className='recurrence-chart';
+    chart.innerHTML=recurrenceTrend.map(([m,v])=>`<div class="recurrence-col"><span class="recurrence-val">${v.toFixed(1)}%</span><div class="recurrence-bar-wrap"><div class="recurrence-bar" style="height:${Math.max(18,v/max*180)}px" title="${m} 반복지적률 ${v.toFixed(1)}%"></div></div><span>${m}</span></div>`).join('');
+  }
+}
+
 (function injectDashboardScopeStyles(){
   if(document.getElementById('dashboardScopeStyle'))return;
   const style=document.createElement('style');style.id='dashboardScopeStyle';style.textContent=`
-  .dashboard-filter label:has(#monthFilter){position:relative}.period-filter-hint{font-size:9px;color:#98a2b3;font-weight:600;margin-top:2px}.dashboard-scope-badge{margin:-7px 0 16px;padding:9px 14px;border:1px solid #d9e5ec;border-left:4px solid #087fb1;border-radius:8px;background:#f8fbfd;display:flex;align-items:center;gap:10px;font-size:11px;color:#667085}.dashboard-scope-badge span{font-weight:800;color:#087fb1}.dashboard-scope-badge strong{font-size:12px;color:#1d2939}.dashboard-scope-badge em{font-style:normal;margin-left:auto;color:#475467}.metric-grid-merged{display:block!important;margin-bottom:18px}.merged-productivity-panel{width:100%}.merged-productivity-head{align-items:flex-end}.merged-legend{display:flex;align-items:center;gap:14px;flex-wrap:wrap;font-size:11px;color:#667085}.merged-legend span{display:flex;align-items:center;gap:6px}.merged-legend b{font-size:10px;border:1px solid #e1e7ee;border-radius:99px;padding:4px 8px;background:#f8fafc}.legend-improve,.legend-standard{display:inline-block;width:11px;height:11px;border-radius:3px}.legend-improve{background:#48779a}.legend-standard{background:#6f9d71}.merged-productivity-chart{height:300px;padding:26px 38px 20px;display:flex;align-items:flex-end;gap:34px;background:linear-gradient(to top,#fafbfd,#fff)}.merged-team-group{flex:1;min-width:115px;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center}.merged-bars{height:230px;width:100%;display:flex;align-items:flex-end;justify-content:center;gap:10px;border-bottom:1px solid #d5dde6;background:repeating-linear-gradient(to top,transparent 0,transparent 49px,#edf1f5 50px)}.merged-bar-wrap{height:100%;width:42px;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:5px}.merged-bar-wrap>span{font-size:11px;font-weight:800;color:#344054}.merged-bar{width:34px;border-radius:5px 5px 0 0}.merged-bar.improve{background:#48779a}.merged-bar.standard{background:#6f9d71}.merged-team-group>strong{margin-top:10px;font-size:11px;color:#475467;white-space:nowrap}@media(max-width:900px){.dashboard-scope-badge{align-items:flex-start;flex-direction:column}.dashboard-scope-badge em{margin-left:0}.merged-productivity-chart{overflow-x:auto;gap:20px;padding-left:20px;padding-right:20px}.merged-team-group{min-width:110px}.merged-productivity-head{align-items:flex-start;flex-direction:column}}`;
+  .dashboard-filter label:has(#monthFilter){position:relative}.period-filter-hint{font-size:9px;color:#98a2b3;font-weight:600;margin-top:2px}.dashboard-scope-badge{margin:-7px 0 16px;padding:9px 14px;border:1px solid #d9e5ec;border-left:4px solid #087fb1;border-radius:8px;background:#f8fbfd;display:flex;align-items:center;gap:10px;font-size:11px;color:#667085}.dashboard-scope-badge span{font-weight:800;color:#087fb1}.dashboard-scope-badge strong{font-size:12px;color:#1d2939}.dashboard-scope-badge em{font-style:normal;margin-left:auto;color:#475467}.metric-grid-merged{display:block!important;margin-bottom:18px}.merged-productivity-panel{width:100%}.merged-productivity-head{align-items:flex-end}.merged-legend{display:flex;align-items:center;gap:14px;flex-wrap:wrap;font-size:11px;color:#667085}.merged-legend span{display:flex;align-items:center;gap:6px}.merged-legend b{font-size:10px;border:1px solid #e1e7ee;border-radius:99px;padding:4px 8px;background:#f8fafc}.legend-improve,.legend-standard{display:inline-block;width:11px;height:11px;border-radius:3px}.legend-improve{background:#48779a}.legend-standard{background:#6f9d71}.merged-productivity-chart{height:300px;padding:26px 38px 20px;display:flex;align-items:flex-end;gap:34px;background:linear-gradient(to top,#fafbfd,#fff)}.merged-team-group{flex:1;min-width:115px;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center}.merged-bars{height:230px;width:100%;display:flex;align-items:flex-end;justify-content:center;gap:10px;border-bottom:1px solid #d5dde6;background:repeating-linear-gradient(to top,transparent 0,transparent 49px,#edf1f5 50px)}.merged-bar-wrap{height:100%;width:42px;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:5px}.merged-bar-wrap>span{font-size:11px;font-weight:800;color:#344054}.merged-bar{width:34px;border-radius:5px 5px 0 0}.merged-bar.improve{background:#48779a}.merged-bar.standard{background:#6f9d71}.merged-team-group>strong{margin-top:10px;font-size:11px;color:#475467;white-space:nowrap}.recurrence-chart{height:270px;padding:26px 24px 18px;display:flex;align-items:flex-end;gap:18px;background:linear-gradient(to top,#fafbfd,#fff)}.recurrence-col{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:6px;font-size:10px;color:#667085}.recurrence-val{font-size:11px;font-weight:800;color:#344054}.recurrence-bar-wrap{height:190px;width:100%;display:flex;align-items:flex-end;justify-content:center;border-bottom:1px solid #d5dde6;background:repeating-linear-gradient(to top,transparent 0,transparent 44px,#edf1f5 45px)}.recurrence-bar{width:34px;max-width:55%;background:#d58b3d;border-radius:5px 5px 0 0;transition:transform .18s ease}.recurrence-bar:hover{transform:translateY(-2px)}@media(max-width:900px){.dashboard-scope-badge{align-items:flex-start;flex-direction:column}.dashboard-scope-badge em{margin-left:0}.merged-productivity-chart{overflow-x:auto;gap:20px;padding-left:20px;padding-right:20px}.merged-team-group{min-width:110px}.merged-productivity-head{align-items:flex-start;flex-direction:column}}`;
   document.head.appendChild(style);
 })();
 
@@ -126,7 +154,8 @@ startMonthInput?.addEventListener('input',()=>{
   if(startMonthInput.value!==''&&Number(startMonthInput.value)<1)startMonthInput.value='1';
   updateDashboardScopeText();
 });
-startMonthInput?.addEventListener('change',()=>{renderCompletion();renderMergedProductivityChart()});
-document.getElementById('searchBtn')?.addEventListener('click',()=>{renderCompletion();renderMergedProductivityChart()});
+startMonthInput?.addEventListener('change',()=>{renderCompletion();renderMergedProductivityChart();applyObjectiveAuditView()});
+document.getElementById('searchBtn')?.addEventListener('click',()=>{renderCompletion();renderMergedProductivityChart();applyObjectiveAuditView()});
 renderCompletion();
 renderMergedProductivityChart();
+applyObjectiveAuditView();
