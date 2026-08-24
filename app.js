@@ -201,13 +201,23 @@ function computeRepeatStats(){
 /* =========================================================
    HDPS42 — 통합 대시보드
    ========================================================= */
+function repeatState(rate, hasData){
+  if(!hasData) return 'g';
+  if(rate>=30) return 'r';
+  if(rate>=15) return 'a';
+  return 'g';
+}
 function renderAndon(){
+  const { teamStats } = computeRepeatStats();
+  const byTeam = {};
+  teamStats.forEach(s=>{ byTeam[s.team] = s; });
   document.getElementById('andonStrip').innerHTML = TEAMS.map(t=>{
-    const s = andonState(t.auditScore);
-    return `<div class="andon-cell ${s}">
+    const s = byTeam[t.id] || {rate:0, total:0};
+    const state = repeatState(s.rate, s.total>0);
+    return `<div class="andon-cell ${state}">
       <span class="andon-team">${t.name}</span>
-      <strong class="andon-score mono">${t.auditScore.toFixed(1)}</strong>
-      <span class="andon-tag">${grade(t.auditScore)}등급 · ${s==='g'?'정상':s==='a'?'주의':'즉시조치'}</span>
+      <strong class="andon-score mono">${s.total ? s.rate.toFixed(1)+'%' : '–'}</strong>
+      <span class="andon-tag">${state==='g'?'정상':state==='a'?'주의':'즉시조치'}</span>
     </div>`;
   }).join('');
 }
