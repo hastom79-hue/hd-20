@@ -5,132 +5,33 @@ const rawData=[
 {no:4,type:'시각화',item:'표준·정상·이상 상태가 즉시 구분되는가?',issue:'공구 위치표시 불명확',action:'쉐도우보드 및 위치 라벨 적용',status:'완료'},
 {no:5,type:'위험구역관리',item:'위험구역 경계·표지·출입기준이 명확한가?',issue:'위험구역 경계 표시 보완 필요',action:'경계선 및 위험표지 정비',status:'미결'},
 {no:6,type:'5S고도화',item:'우수 5S 활동이 표준화·수평전개되는가?',issue:'우수사례 표준 전개 미흡',action:'표준화 및 타 팀 수평전개',status:'완료'}];
-
-const standards=[
-['1','정리','1','미사용 자재 적치로 공간 낭비요소는 없는가?','조립부','사용','SYSTEM','2026-01-19'],
-['2','정돈','1','가용품 보관구역·수량·방법이 결정되어 있는가?','조립부','사용','SYSTEM','2026-01-19'],
-['3','청소','1','바닥에 먼지·기름·쓰레기 없이 깨끗한가?','','사용','SYSTEM','2026-01-19'],
-['4','시각화','1','표준/정상/이상 상태가 시각적으로 구분되는가?','','사용','SYSTEM','2026-01-19'],
-['5','위험구역관리','1','위험구역 경계·표지·출입기준이 관리되는가?','','사용','SYSTEM','2026-01-19'],
-['6','5S고도화','1','우수사례가 표준화되어 유지·수평전개되는가?','','사용','SYSTEM','2026-01-19']];
-
-const audits=[
-['1','정리','불필요한 것을 필요한 것과 구분','불필요한 치공구·대차가 없는가?','4 / 5','로케이터 적치 문제','전용 보관대 설치','완료'],
-['2','정돈','필요한 것을 쉽게 꺼내고 누구나 알 수 있게','최대·최소량과 품명이 표시되어 있는가?','3 / 5','최대최소량 미표기','라벨링 표준 적용','미결'],
-['3','청소','항상 깨끗하게 유지','기계 청소와 점검이 주기적인가?','4 / 5','청소주기 미흡','체크리스트 개정','완료'],
-['4','시각화','표준·정상·이상을 즉시 구분','표준과 이상을 즉시 구분할 수 있는가?','5 / 5','공구 위치 표시 불량','쉐도우보드 적용','완료']];
-
+const standards=[['1','정리','1','미사용 자재 적치로 공간 낭비요소는 없는가?','조립부','사용','SYSTEM','2026-01-19'],['2','정돈','1','가용품 보관구역·수량·방법이 결정되어 있는가?','조립부','사용','SYSTEM','2026-01-19'],['3','청소','1','바닥에 먼지·기름·쓰레기 없이 깨끗한가?','','사용','SYSTEM','2026-01-19'],['4','시각화','1','표준/정상/이상 상태가 시각적으로 구분되는가?','','사용','SYSTEM','2026-01-19'],['5','위험구역관리','1','위험구역 경계·표지·출입기준이 관리되는가?','','사용','SYSTEM','2026-01-19'],['6','5S고도화','1','우수사례가 표준화되어 유지·수평전개되는가?','','사용','SYSTEM','2026-01-19']];
+const audits=[['1','정리','불필요한 것을 필요한 것과 구분','불필요한 치공구·대차가 없는가?','4 / 5','로케이터 적치 문제','전용 보관대 설치','완료'],['2','정돈','필요한 것을 쉽게 꺼내고 누구나 알 수 있게','최대·최소량과 품명이 표시되어 있는가?','3 / 5','최대최소량 미표기','라벨링 표준 적용','미결'],['3','청소','항상 깨끗하게 유지','기계 청소와 점검이 주기적인가?','4 / 5','청소주기 미흡','체크리스트 개정','완료'],['4','시각화','표준·정상·이상을 즉시 구분','표준과 이상을 즉시 구분할 수 있는가?','5 / 5','공구 위치 표시 불량','쉐도우보드 적용','완료']];
 const activityCategories=['정리','정돈','청소','시각화','위험구역관리','5S고도화'];
-const activityTeamSnapshot={
-'조립1팀':[5,4,3,2,1,2],
-'Rear조립팀':[4,2,2,3,1,1],
-'가공1팀':[2,3,4,1,2,2],
-'자재운영팀':[1,2,1,2,1,3],
-'생산관리팀':[2,1,2,3,2,2]};
-
-// Prototype headcount master. In production this must be replaced by the actual monthly team headcount from GMES/HR master.
-const teamHeadcount={
-'조립1팀':42,
-'Rear조립팀':36,
-'가공1팀':31,
-'자재운영팀':27,
-'생산관리팀':24
-};
-
-// Monthly values below are total activity counts by 5S category. The trend chart converts them to per-capita values at render time.
-const activityMonthly={
-'조립1팀':[['04월',12,10,8,6,3,5],['05월',15,12,10,7,4,6],['06월',18,14,11,8,5,7],['07월',20,16,12,9,5,8],['08월',22,18,13,10,6,9],['09월',24,18,15,11,6,10],['10월',25,20,15,12,7,11],['11월',27,21,16,13,7,12],['12월',26,20,17,12,7,11],['01월',23,19,15,11,6,10],['02월',24,20,15,12,7,11],['03월',25,20,16,12,7,12]],
-'Rear조립팀':[['04월',10,8,7,5,3,4],['05월',12,9,8,6,3,5],['06월',14,10,9,6,4,5],['07월',15,11,9,7,4,6],['08월',16,12,10,8,4,6],['09월',17,12,10,9,5,6],['10월',18,13,11,9,5,7],['11월',19,14,11,10,5,7],['12월',18,13,12,9,5,7],['01월',17,12,10,9,4,6],['02월',17,12,11,9,5,7],['03월',18,13,11,10,5,7]],
-'가공1팀':[['04월',8,9,10,4,4,4],['05월',9,10,11,5,4,5],['06월',10,10,12,5,5,5],['07월',10,11,13,5,5,6],['08월',11,12,14,5,6,6],['09월',11,12,14,6,6,6],['10월',12,13,15,6,7,7],['11월',13,14,15,7,7,8],['12월',12,13,15,7,7,8],['01월',11,12,13,6,6,7],['02월',12,13,14,6,7,8],['03월',12,13,15,6,7,8]],
-'자재운영팀':[['04월',6,7,6,4,3,4],['05월',7,7,6,5,3,4],['06월',7,8,7,5,4,5],['07월',8,9,7,6,4,5],['08월',8,9,7,6,4,6],['09월',8,10,8,6,4,6],['10월',9,10,8,7,5,7],['11월',10,11,8,7,5,8],['12월',9,10,9,7,5,8],['01월',8,9,8,6,4,7],['02월',8,10,8,7,5,8],['03월',9,10,8,7,5,8]],
-'생산관리팀':[['04월',6,6,6,5,3,4],['05월',6,7,7,5,3,4],['06월',7,7,8,6,4,5],['07월',7,8,8,6,4,5],['08월',8,8,9,7,4,6],['09월',8,9,9,7,5,6],['10월',9,9,10,8,5,7],['11월',10,10,10,8,5,7],['12월',9,9,11,8,5,7],['01월',8,8,9,7,4,6],['02월',8,9,9,7,5,7],['03월',9,9,10,8,5,7]]};
-
+const activityTeamSnapshot={'조립1팀':[5,4,3,2,1,2],'Rear조립팀':[4,2,2,3,1,1],'가공1팀':[2,3,4,1,2,2],'자재운영팀':[1,2,1,2,1,3],'생산관리팀':[2,1,2,3,2,2]};
+const teamHeadcount={'조립1팀':42,'Rear조립팀':36,'가공1팀':31,'자재운영팀':27,'생산관리팀':24};
+const activityMonthly={'조립1팀':[['04월',12,10,8,6,3,5],['05월',15,12,10,7,4,6],['06월',18,14,11,8,5,7],['07월',20,16,12,9,5,8],['08월',22,18,13,10,6,9],['09월',24,18,15,11,6,10],['10월',25,20,15,12,7,11],['11월',27,21,16,13,7,12],['12월',26,20,17,12,7,11],['01월',23,19,15,11,6,10],['02월',24,20,15,12,7,11],['03월',25,20,16,12,7,12]],'Rear조립팀':[['04월',10,8,7,5,3,4],['05월',12,9,8,6,3,5],['06월',14,10,9,6,4,5],['07월',15,11,9,7,4,6],['08월',16,12,10,8,4,6],['09월',17,12,10,9,5,6],['10월',18,13,11,9,5,7],['11월',19,14,11,10,5,7],['12월',18,13,12,9,5,7],['01월',17,12,10,9,4,6],['02월',17,12,11,9,5,7],['03월',18,13,11,10,5,7]],'가공1팀':[['04월',8,9,10,4,4,4],['05월',9,10,11,5,4,5],['06월',10,10,12,5,5,5],['07월',10,11,13,5,5,6],['08월',11,12,14,5,6,6],['09월',11,12,14,6,6,6],['10월',12,13,15,6,7,7],['11월',13,14,15,7,7,8],['12월',12,13,15,7,7,8],['01월',11,12,13,6,6,7],['02월',12,13,14,6,7,8],['03월',12,13,15,6,7,8]],'자재운영팀':[['04월',6,7,6,4,3,4],['05월',7,7,6,5,3,4],['06월',7,8,7,5,4,5],['07월',8,9,7,6,4,5],['08월',8,9,7,6,4,6],['09월',8,10,8,6,4,6],['10월',9,10,8,7,5,7],['11월',10,11,8,7,5,8],['12월',9,10,9,7,5,8],['01월',8,9,8,6,4,7],['02월',8,10,8,7,5,8],['03월',9,10,8,7,5,8]],'생산관리팀':[['04월',6,6,6,5,3,4],['05월',6,7,7,5,3,4],['06월',7,7,8,6,4,5],['07월',7,8,8,6,4,5],['08월',8,8,9,7,4,6],['09월',8,9,9,7,5,6],['10월',9,9,10,8,5,7],['11월',10,10,10,8,5,7],['12월',9,9,11,8,5,7],['01월',8,8,9,7,4,6],['02월',8,9,9,7,5,7],['03월',9,9,10,8,5,7]]};
 const perCapita=[['조립1팀',3.2],['Rear조립팀',2.7],['가공1팀',2.5],['자재운영팀',2.1],['생산관리팀',1.9]];
 const standardPerCapita=[['조립1팀',1.8],['Rear조립팀',1.5],['가공1팀',1.4],['자재운영팀',1.1],['생산관리팀',0.9]];
-
-function renderBars(id,vals,cls=''){
- const el=document.getElementById(id);if(!el)return;el.innerHTML='';
- vals.forEach(v=>{const c=document.createElement('div');c.className='bar-col';c.innerHTML=`<span class="bar-val">${v.v}</span><div class="bar ${cls}" style="height:${v.h}%"></div><span class="bar-label">${v.m}</span>`;el.appendChild(c)})
-}
-
-function renderActivityLegend(){
- const el=document.getElementById('activityLegend');
- if(el)el.innerHTML=activityCategories.map((c,i)=>`<span><i class="legend-dot s${i+1}"></i>${c}</span>`).join('')
-}
-
-function renderActivityByType(){
- const el=document.getElementById('issueChart');if(!el)return;
- el.className='grouped-vertical-chart';el.innerHTML='';
- const max=Math.max(...Object.values(activityTeamSnapshot).flat());
- Object.entries(activityTeamSnapshot).forEach(([team,values])=>{
-   const g=document.createElement('div');g.className='team-bar-group';
-   g.innerHTML=`<div class="team-bars">${values.map((v,i)=>`<div class="mini-bar-wrap"><span class="mini-value">${v}</span><div class="mini-bar s${i+1}" style="height:${Math.max(10,v/max*225)}px" title="${team} · ${activityCategories[i]} ${v}건"></div></div>`).join('')}</div><strong class="team-name">${team}</strong>`;
-   el.appendChild(g)
- })
-}
-
-function renderActivityTrend(team){
- const rows=activityMonthly[team]||activityMonthly['조립1팀'];
- const headcount=teamHeadcount[team]||1;
- const perCapitaRows=rows.map(r=>[r[0],...r.slice(1).map(v=>v/headcount)]);
- const totals=perCapitaRows.map(r=>r.slice(1).reduce((a,b)=>a+b,0));
- const max=Math.max(...totals,0.1);
- const el=document.getElementById('issueChart');if(!el)return;
- el.className='monthly-stack-chart';el.innerHTML='';
- perCapitaRows.forEach((r,idx)=>{
-   const vals=r.slice(1),total=totals[idx];
-   const g=document.createElement('div');g.className='month-stack-group';
-   g.innerHTML=`<span class="month-total">${total.toFixed(2)}</span><div class="month-stack" style="height:${Math.max(30,total/max*225)}px">${vals.map((v,i)=>`<span class="month-seg s${i+1}" style="height:${total?v/total*100:0}%" title="${activityCategories[i]} ${v.toFixed(2)}건/인"></span>`).join('')}</div><span class="month-label">${r[0]}</span>`;
-   el.appendChild(g)
- })
-}
-
-function renderActivityChart(){
- const mode=document.getElementById('activityViewMode')?.value||'type';
- const teamSel=document.getElementById('activityTeamSelect');
- const title=document.getElementById('activityChartTitle');
- const sub=document.getElementById('activityChartSub');
- if(mode==='trend'){
-   teamSel.disabled=false;
-   const team=teamSel.value;
-   const headcount=teamHeadcount[team]||0;
-   title.textContent=`${team} 월별 인당 5S 활동추이`;
-   sub.textContent=`월별 5S 유형별 개선건수 ÷ ${team} 총원 ${headcount}명 · 단위: 건/인`;
-   renderActivityTrend(team)
- }else{
-   teamSel.disabled=true;
-   title.textContent='생산현장 팀별 5S 유형별 활동 현황';
-   sub.textContent='팀별 6개 활동유형을 독립 세로막대로 비교';
-   renderActivityByType()
- }
-}
-
-function renderMetricChart(id,data,standard=false){
- const el=document.getElementById(id);if(!el)return;
- const max=Math.max(...data.map(d=>d[1]));
- el.innerHTML=data.map(([name,val])=>`<div class="metric-bar-group"><div class="metric-bar-area"><div class="metric-bar ${standard?'standard':''}" style="height:${Math.max(12,val/max*185)}px" title="${name} ${val.toFixed(1)}건/인"></div></div><span class="metric-value">${val.toFixed(1)}</span><span class="metric-label">${name}</span></div>`).join('')
-}
-
-function renderProgress(){
- const d=[['조립1팀',88],['Rear조립팀',84],['가공1팀',91],['자재운영팀',76],['생산관리팀',72]];
- document.getElementById('progressList').innerHTML=d.map(x=>`<div class="prog"><b>${x[0]}</b><div class="prog-track"><div class="prog-fill" style="width:${x[1]}%"></div></div><strong>${x[1]}%</strong></div>`).join('')
-}
+const headcountMaster=[{site:'조립',dept:'조립부',group:'조립1팀',headcount:42,use:true},{site:'조립',dept:'조립부',group:'Rear조립팀',headcount:36,use:true},{site:'가공',dept:'가공부',group:'가공1팀',headcount:31,use:true},{site:'물류',dept:'자재운영부',group:'자재운영팀',headcount:27,use:true},{site:'공통',dept:'생산관리부',group:'생산관리팀',headcount:24,use:true}];
+const mailMaster=[{type:'TO',role:'담당 생산팀',recipient:'팀장 / 반장',rule:'개선요청 등록',use:true},{type:'TO',role:'5S 모듈리더',recipient:'모듈 담당자',rule:'개선완료 회신',use:true},{type:'CC',role:'생산부서 책임자',recipient:'부서 책임자',rule:'월말 미결',use:true},{type:'CC',role:'HDPS 운영',recipient:'운영 담당자',rule:'월간 실적',use:true},{type:'TO',role:'개선 담당자',recipient:'Action Owner',rule:'기한 초과',use:true}];
+function renderBars(id,vals,cls=''){const el=document.getElementById(id);if(!el)return;el.innerHTML='';vals.forEach(v=>{const c=document.createElement('div');c.className='bar-col';c.innerHTML=`<span class="bar-val">${v.v}</span><div class="bar ${cls}" style="height:${v.h}%"></div><span class="bar-label">${v.m}</span>`;el.appendChild(c)})}
+function renderActivityLegend(){const el=document.getElementById('activityLegend');if(el)el.innerHTML=activityCategories.map((c,i)=>`<span><i class="legend-dot s${i+1}"></i>${c}</span>`).join('')}
+function renderActivityByType(){const el=document.getElementById('issueChart');if(!el)return;el.className='grouped-vertical-chart';el.innerHTML='';const max=Math.max(...Object.values(activityTeamSnapshot).flat());Object.entries(activityTeamSnapshot).forEach(([team,values])=>{const g=document.createElement('div');g.className='team-bar-group';g.innerHTML=`<div class="team-bars">${values.map((v,i)=>`<div class="mini-bar-wrap"><span class="mini-value">${v}</span><div class="mini-bar s${i+1}" style="height:${Math.max(10,v/max*225)}px" title="${team} · ${activityCategories[i]} ${v}건"></div></div>`).join('')}</div><strong class="team-name">${team}</strong>`;el.appendChild(g)})}
+function renderActivityTrend(team){const rows=activityMonthly[team]||activityMonthly['조립1팀'];const headcount=teamHeadcount[team]||1;const perCapitaRows=rows.map(r=>[r[0],...r.slice(1).map(v=>v/headcount)]);const totals=perCapitaRows.map(r=>r.slice(1).reduce((a,b)=>a+b,0));const max=Math.max(...totals,0.1);const el=document.getElementById('issueChart');if(!el)return;el.className='monthly-stack-chart';el.innerHTML='';perCapitaRows.forEach((r,idx)=>{const vals=r.slice(1),total=totals[idx];const g=document.createElement('div');g.className='month-stack-group';g.innerHTML=`<span class="month-total">${total.toFixed(2)}</span><div class="month-stack" style="height:${Math.max(30,total/max*225)}px">${vals.map((v,i)=>`<span class="month-seg s${i+1}" style="height:${total?v/total*100:0}%" title="${activityCategories[i]} ${v.toFixed(2)}건/인"></span>`).join('')}</div><span class="month-label">${r[0]}</span>`;el.appendChild(g)})}
+function renderActivityChart(){const mode=document.getElementById('activityViewMode')?.value||'type';const teamSel=document.getElementById('activityTeamSelect');const title=document.getElementById('activityChartTitle');const sub=document.getElementById('activityChartSub');if(mode==='trend'){teamSel.disabled=false;const team=teamSel.value;const headcount=teamHeadcount[team]||0;title.textContent=`${team} 월별 인당 5S 활동추이`;sub.textContent=`월별 5S 유형별 개선건수 ÷ ${team} 총원 ${headcount}명 · 단위: 건/인`;renderActivityTrend(team)}else{teamSel.disabled=true;title.textContent='생산현장 팀별 5S 유형별 활동 현황';sub.textContent='팀별 6개 활동유형을 독립 세로막대로 비교';renderActivityByType()}}
+function renderMetricChart(id,data,standard=false){const el=document.getElementById(id);if(!el)return;const max=Math.max(...data.map(d=>d[1]));el.innerHTML=data.map(([name,val])=>`<div class="metric-bar-group"><div class="metric-bar-area"><div class="metric-bar ${standard?'standard':''}" style="height:${Math.max(12,val/max*185)}px" title="${name} ${val.toFixed(1)}건/인"></div></div><span class="metric-value">${val.toFixed(1)}</span><span class="metric-label">${name}</span></div>`).join('')}
+function renderProgress(){const d=[['조립1팀',88],['Rear조립팀',84],['가공1팀',91],['자재운영팀',76],['생산관리팀',72]];document.getElementById('progressList').innerHTML=d.map(x=>`<div class="prog"><b>${x[0]}</b><div class="prog-track"><div class="prog-fill" style="width:${x[1]}%"></div></div><strong>${x[1]}%</strong></div>`).join('')}
 function renderRaw(filter='all'){const rows=rawData.filter(r=>filter==='all'||r.status===filter);document.getElementById('rawTable').innerHTML=rows.map(r=>`<tr><td>${r.no}</td><td>${r.type}</td><td>${r.item}</td><td>${r.issue}</td><td>${r.action}</td><td><span class="status ${r.status==='완료'?'done':'open'}">${r.status}</span></td></tr>`).join('')}
 function renderStandards(){document.getElementById('standardTable').innerHTML=standards.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}
 function renderAudits(){document.getElementById('auditTable').innerHTML=audits.map(r=>`<tr>${r.map((c,i)=>`<td>${i===7?`<span class="status ${c==='완료'?'done':'open'}">${c}</span>`:c}</td>`).join('')}</tr>`).join('')}
-function switchView(id){document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id===id));document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.view===id));window.scrollTo({top:0,behavior:'smooth'})}
+function renderHeadcountMaster(){const el=document.getElementById('headcountTable');if(!el)return;el.innerHTML=headcountMaster.map((r,i)=>`<tr><td>${r.site}</td><td>${r.dept}</td><td><b>${r.group}</b></td><td><input class="master-number" type="number" min="0" value="${r.headcount}" data-headcount-index="${i}"></td><td><input type="checkbox" ${r.use?'checked':''}></td></tr>`).join('');document.getElementById('masterHeadcountTotal').textContent=headcountMaster.reduce((s,r)=>s+(r.use?r.headcount:0),0)}
+function renderMailMaster(){const el=document.getElementById('mailTable');if(!el)return;el.innerHTML=mailMaster.map((r,i)=>`<tr><td><span class="mail-type ${r.type.toLowerCase()}">${r.type}</span></td><td>${r.role}</td><td>${r.recipient}</td><td>${r.rule}</td><td><input type="checkbox" ${r.use?'checked':''}></td></tr>`).join('');document.getElementById('mailRecipientTotal').textContent=mailMaster.filter(r=>r.use).length}
+function switchView(id){document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id===id));document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.view===id));if(id==='master'){renderHeadcountMaster();renderMailMaster()}window.scrollTo({top:0,behavior:'smooth'})}
 document.querySelectorAll('[data-view],[data-view-target]').forEach(b=>b.addEventListener('click',()=>switchView(b.dataset.view||b.dataset.viewTarget)));
 document.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>{document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));c.classList.add('active');renderRaw(c.dataset.status)}));
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1600)}
-document.getElementById('searchBtn')?.addEventListener('click',()=>{renderActivityChart();toast('조회 조건을 반영했습니다.')});
-document.getElementById('exportBtn')?.addEventListener('click',()=>window.print());
-document.getElementById('saveBtn')?.addEventListener('click',()=>toast('5S 개선요청이 저장되었습니다.'));
-document.getElementById('activityViewMode')?.addEventListener('change',renderActivityChart);
-document.getElementById('activityTeamSelect')?.addEventListener('change',renderActivityChart);
-
-renderActivityLegend();
-renderActivityChart();
-renderMetricChart('perCapitaChart',perCapita);
-renderMetricChart('standardPerCapitaChart',standardPerCapita,true);
-renderBars('auditChart',[{m:'10월',v:'96',h:82},{m:'11월',v:'96',h:82},{m:'12월',v:'95',h:77},{m:'01월',v:'95',h:77},{m:'02월',v:'94',h:72},{m:'03월',v:'94.6',h:75}],'audit');
-renderProgress();renderRaw();renderStandards();renderAudits();
+document.getElementById('searchBtn')?.addEventListener('click',()=>{renderActivityChart();document.querySelectorAll('.kpi').forEach((k,i)=>{k.classList.remove('kpi-updated');setTimeout(()=>k.classList.add('kpi-updated'),i*70)});toast('조회 조건을 반영했습니다.')});
+document.getElementById('exportBtn')?.addEventListener('click',()=>window.print());document.getElementById('saveBtn')?.addEventListener('click',()=>toast('5S 개선요청이 저장되었습니다.'));document.getElementById('activityViewMode')?.addEventListener('change',renderActivityChart);document.getElementById('activityTeamSelect')?.addEventListener('change',renderActivityChart);document.getElementById('masterSaveBtn')?.addEventListener('click',()=>toast('통합기준정보 변경사항을 저장했습니다.'));document.getElementById('masterExportBtn')?.addEventListener('click',()=>window.print());document.getElementById('addGroupBtn')?.addEventListener('click',()=>toast('집계그룹 신규등록 기능 연결 대상입니다.'));document.getElementById('addMailBtn')?.addEventListener('click',()=>toast('자동 메일링 대상 신규등록 기능 연결 대상입니다.'));
+document.querySelectorAll('.kpi').forEach((k,i)=>setTimeout(()=>k.classList.add('kpi-enter'),i*80));
+renderActivityLegend();renderActivityChart();renderMetricChart('perCapitaChart',perCapita);renderMetricChart('standardPerCapitaChart',standardPerCapita,true);renderBars('auditChart',[{m:'10월',v:'96',h:82},{m:'11월',v:'96',h:82},{m:'12월',v:'95',h:77},{m:'01월',v:'95',h:77},{m:'02월',v:'94',h:72},{m:'03월',v:'94.6',h:75}],'audit');renderProgress();renderRaw();renderStandards();renderAudits();renderHeadcountMaster();renderMailMaster();
