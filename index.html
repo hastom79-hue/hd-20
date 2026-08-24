@@ -1,26 +1,367 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>GMES | 5S 관리시스템</title><style>
-*{box-sizing:border-box}body{margin:0;font-family:Arial,'Noto Sans KR',sans-serif;background:#f4f7fa;color:#14263c}button,input,select,textarea{font:inherit}.top{height:58px;background:#071d35;color:#fff;display:flex;align-items:center;padding:0 20px;gap:18px;position:sticky;top:0;z-index:50}.brand{font-size:19px;font-weight:800;white-space:nowrap}.brand b{color:#42a8dc}.nav{display:flex;gap:3px;overflow:auto}.nav button{border:0;background:transparent;color:#c9d5e0;padding:10px 12px;border-radius:7px;font-weight:700;white-space:nowrap;cursor:pointer}.nav button.active{background:#174c7f;color:#fff}.wrap{max-width:1860px;margin:auto;padding:16px 20px}.view,.dashpane,.masterpane{display:none}.view.active,.dashpane.active,.masterpane.active{display:block}.pagehead{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;margin-bottom:12px}.pagehead h1{font-size:22px;margin:0 0 4px}.muted{font-size:11px;color:#718096}.actions,.toolbar{display:flex;gap:7px;flex-wrap:wrap}.chip,select,input,textarea{border:1px solid #d5dfe8;background:#fff;border-radius:7px;padding:8px 10px}.btn{border:1px solid #cbd7e2;background:#fff;border-radius:7px;padding:8px 11px;cursor:pointer}.primary{background:#126f9a;color:#fff;border-color:#126f9a}.subnav,.mastertabs{display:flex;background:#eaf0f5;border:1px solid #dae3eb;border-radius:9px;padding:5px;gap:4px;margin-bottom:12px;overflow:auto}.subnav button,.mastertabs button{border:0;background:transparent;color:#617489;padding:9px 13px;border-radius:7px;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap}.subnav button.active,.mastertabs button.active{background:#fff;color:#0b6f98;box-shadow:0 1px 5px #173c5a20}.card{background:#fff;border:1px solid #dfe6ee;border-radius:10px;box-shadow:0 2px 8px #20384e0d}.head{padding:13px 15px;border-bottom:1px solid #e8edf2;display:flex;justify-content:space-between;align-items:center;gap:10px}.head h3{margin:0;font-size:14px}.body{padding:14px 15px}.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:10px}.kpi{padding:14px}.kpi span{font-size:10px;color:#6c7c8d}.kpi strong{display:block;font-size:25px;color:#174f78;margin:6px 0}.kpi small{color:#8a98a7}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.scope{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}.scope div{border:1px solid #e0e7ed;border-radius:8px;padding:10px}.scope strong{display:block;font-size:18px;margin-top:4px}.table{width:100%;border-collapse:collapse;font-size:11px}.table th,.table td{padding:9px;border-bottom:1px solid #e7edf2;text-align:left;vertical-align:middle}.table th{background:#f7f9fb;color:#607286}.scroll{overflow:auto;max-height:500px}.pill{display:inline-block;padding:3px 7px;border-radius:99px;background:#eef5fb;font-size:10px;font-weight:700}.green{background:#e8f6ea;color:#237a3f}.orange{background:#fff1df;color:#b66b00}.red{background:#ffe8e8;color:#b53232}.good{color:#24884f}.warn{color:#d97900}.bad{color:#d84040}.notice{background:#fff7e6;border:1px solid #f1dda9;padding:10px;border-radius:7px;font-size:11px}.insight{border-left:4px solid #2f86c7;background:#f4f9fd;padding:10px 12px;font-size:11px}.bars{height:210px;display:flex;align-items:flex-end;justify-content:space-around;border-bottom:1px solid #d9e1e8}.baritem{text-align:center;width:14%}.bar{width:30px;background:#4d91d9;margin:auto;border-radius:5px 5px 0 0;position:relative}.bar b{position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:10px}.baritem span{display:block;font-size:10px;margin-top:7px}.linechart{height:215px;display:flex;align-items:flex-end;justify-content:space-around;border-bottom:1px solid #d9e1e8}.linecol{text-align:center;flex:1}.linecol b{display:block;font-size:10px;margin-bottom:4px}.linecol i{display:block;width:24px;margin:auto;background:#4d91d9;border-radius:5px 5px 0 0}.linecol span{display:block;font-size:10px;margin-top:6px}.track{height:8px;background:#e9eef2;border-radius:8px;overflow:hidden}.track i{display:block;height:100%;background:#5a96b9}.auditrow{display:grid;grid-template-columns:155px 1fr 45px 75px;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid #edf1f4;font-size:10px}.statusbox{display:flex;gap:8px}.statusbox div{flex:1;border:1px solid #e0e7ed;background:#f7f9fb;border-radius:7px;padding:11px}.statusbox strong{display:block;font-size:19px;margin-top:4px}.photos{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}.case{border:1px solid #e0e7ed;border-radius:8px;padding:9px;cursor:pointer}.fakephoto{height:80px;background:linear-gradient(135deg,#657983,#d2d8db);border-radius:5px;margin:6px 0;position:relative}.fakephoto:after{content:'Before → After';position:absolute;bottom:5px;left:7px;color:#fff;font-size:9px;font-weight:700}.case b{font-size:10px}.case small{display:block;color:#7b8997;margin-top:4px}.modal{display:none;position:fixed;inset:0;background:#0008;align-items:center;justify-content:center;z-index:100}.modal.show{display:flex}.modalbox{width:min(1050px,95vw);background:#fff;border-radius:12px;max-height:92vh;overflow:auto}.modalhead{padding:16px 20px;border-bottom:1px solid #e5ebf0;display:flex;justify-content:space-between}.modalbody{padding:18px}.modalfoot{padding:14px 18px;border-top:1px solid #e5ebf0;text-align:right;position:sticky;bottom:0;background:#fff}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field label{display:block;font-size:10px;color:#68798a;margin-bottom:5px}.field input,.field select,.field textarea{width:100%}.field textarea{min-height:78px}.mastercards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.mastercards .card{padding:14px}.rulegrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.rule{border:1px solid #dfe7ed;border-radius:8px;padding:11px}.rule input{width:70px;margin-top:7px}.export-note{font-size:10px;color:#77889a}.print-title{display:none}
-@media(max-width:1100px){.kpis,.grid3,.scope,.mastercards{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}.photos{grid-template-columns:1fr 1fr}}@media(max-width:650px){.kpis,.grid3,.scope,.mastercards,.formgrid{grid-template-columns:1fr}.statusbox{display:grid}.photos{grid-template-columns:1fr}.pagehead{display:block}.actions{margin-top:8px}}
-@media print{.top,.subnav,.mastertabs,.actions,.toolbar,.btn{display:none!important}.wrap{max-width:none;padding:0}.view{display:none!important}.view.active{display:block!important}.card{box-shadow:none;break-inside:avoid}.print-title{display:block;font-size:18px;font-weight:800;margin-bottom:12px}body{background:#fff}}
-</style></head><body><header class="top"><div class="brand"><b>HDPS</b> 5S 관리시스템</div><nav class="nav" id="mainnav"><button class="active" data-view="dash">통합 대시보드</button><button data-view="activity">5S 활동관리</button><button data-view="request">개선요청 접수</button><button data-view="action">개선조치 관리</button><button data-view="audit">Audit / 현장진단</button><button data-view="repeat">반복지적 / 재발관리</button><button data-view="cases">개선사례</button><button data-view="master">통합기준정보</button><button data-view="analytics">통계 / 분석</button></nav></header><div class="wrap"><div class="print-title">GMES 5S 관리시스템</div>
-<section id="dash" class="view active"><div class="pagehead"><div><h1>5S 통합 대시보드</h1><div class="muted">핵심성과 → 현장진단 → 실행관리</div></div><div class="actions"><span class="chip" id="scopeText">2026.01.01 ~ 2026.08.24 누계</span><input id="startMonth" type="number" min="1" max="8" placeholder="시작월" style="width:86px"><select><option>전체 작업장</option><option>조립 작업장</option><option>제작 작업장</option><option>생산지원 작업장</option></select><button class="btn" onclick="exportView('dash')">CSV 추출</button><button class="btn" onclick="printView('dash')">출력</button></div></div><div class="subnav" id="dashnav"><button class="active" data-dash="summary">종합현황</button><button data-dash="performance">활동·성과</button><button data-dash="diagnosis">Audit·재발</button><button data-dash="execution">개선조치·실행</button></div><div id="summary" class="dashpane active"><div class="kpis"><div class="card kpi"><span>인당 5S 개선건수</span><strong>2.42</strong><small>건/인</small></div><div class="card kpi"><span>인당 표준화 개선건수</span><strong>1.31</strong><small>건/인</small></div><div class="card kpi"><span>반복지적률</span><strong>12.5%</strong><small>64 / 512건</small></div><div class="card kpi"><span>개선요청 완료율</span><strong>85.5%</strong><small>431 / 504건</small></div></div><div class="grid3"><div class="card"><div class="head"><h3>5S 활동유형 수행건수</h3></div><div class="body"><div class="bars" id="typeBars"></div></div></div><div class="card"><div class="head"><h3>월별 반복지적률</h3></div><div class="body"><div class="linechart" id="repeatTrend"></div></div></div><div class="card"><div class="head"><h3>집중관리 작업장 TOP 5</h3></div><div class="body" id="hotDash"></div></div></div><div class="grid2" style="margin-top:10px"><div class="card"><div class="head"><h3>개선요청 실행상태</h3></div><div class="body"><div class="statusbox"><div><span class="muted">완료</span><strong class="good">431</strong></div><div><span class="muted">미결</span><strong class="warn">73</strong></div><div><span class="muted">기한임박</span><strong>18</strong></div><div><span class="muted">지연</span><strong class="bad">9</strong></div></div></div></div><div class="card"><div class="head"><h3>관리 인사이트</h3></div><div class="body"><div class="insight">출하 작업장과 중형조립 Main Line은 반복지적과 저점 Audit이 동시에 나타납니다. 5S 고도화는 적용 작업장·라인·팀 및 수평전개 범위를 별도 추적합니다.</div></div></div></div></div><div id="performance" class="dashpane"><div class="grid2"><div class="card"><div class="head"><h3>팀별 5S 활동성과</h3></div><div class="body"><div class="bars" id="teamBars"></div></div></div><div class="card"><div class="head"><h3>팀별 인당 성과</h3></div><div class="body"><table class="table"><tr><th>팀</th><th>인당 개선</th><th>인당 표준화</th><th>고도화</th></tr><tr><td>조립1팀</td><td>3.2</td><td>1.8</td><td>9</td></tr><tr><td>Rear조립팀</td><td>2.7</td><td>1.5</td><td>8</td></tr><tr><td>가공1팀</td><td>2.5</td><td>1.4</td><td>7</td></tr><tr><td>자재운영팀</td><td>2.1</td><td>1.1</td><td>6</td></tr></table></div></div></div></div><div id="diagnosis" class="dashpane"><div class="grid2"><div class="card"><div class="head"><h3>8월 Audit 결과</h3></div><div class="body" id="auditDash"></div></div><div class="card"><div class="head"><h3>반복지적 집중 작업장</h3></div><div class="body" id="repeatDash"></div></div></div></div><div id="execution" class="dashpane"><div class="grid2"><div class="card"><div class="head"><h3>기한 중심 실행관리</h3></div><div class="body"><table class="table"><tr><th>구분</th><th>건수</th><th>관리</th></tr><tr><td>정상</td><td>46</td><td>기한 내 완료</td></tr><tr><td>기한임박</td><td>18</td><td>D-3 / D-1 알림</td></tr><tr><td>지연</td><td class="bad">9</td><td>D+1 / D+3 / D+7 Escalation</td></tr></table></div></div><div class="card"><div class="head"><h3>미결 요청</h3></div><div class="body"><table class="table"><tr><th>요청번호</th><th>팀</th><th>상태</th><th>관리</th></tr><tr><td>5S-20260821-007</td><td>프레임제작팀</td><td class="bad">D+1</td><td><button class="btn primary" onclick="openAction('5S-20260821-007')">조치</button></td></tr></table></div></div></div></div></section>
-<section id="activity" class="view"><div class="pagehead"><div><h1>5S 활동관리</h1><div class="muted">일상활동·표준화·고도화·수평전개를 작업장/라인/팀 기준으로 관리</div></div><div class="actions"><button class="btn primary" onclick="openActivityRegister()">+ 활동 등록</button><button class="btn" onclick="exportView('activity')">CSV 추출</button><button class="btn" onclick="printView('activity')">출력</button></div></div><div class="grid2"><div class="card"><div class="head"><h3>유형별 활동현황</h3></div><div class="body"><div class="toolbar"><select><option>전체 작업장</option></select><select><option>전체 라인</option></select><select><option>전체 팀</option></select><select><option>전체 유형</option></select></div><div class="bars" id="activityBars"></div></div></div><div class="card"><div class="head"><h3>5S 고도화 활동 추이</h3><select id="advMode"><option value="month">당월</option><option value="cum">누적</option></select></div><div class="body"><div class="scope"><div><span class="muted">당월</span><strong>12건</strong></div><div><span class="muted">YTD 누적</span><strong>64건</strong></div><div><span class="muted">작업장</span><strong>14</strong></div><div><span class="muted">라인</span><strong>21</strong></div><div><span class="muted">적용팀</span><strong>18</strong></div></div><div class="linechart" id="advancedTrend"></div></div></div></div><div class="card" style="margin-top:10px"><div class="head"><div><h3>고도화 적용 작업장·라인·팀 현황</h3><div class="muted">어디에 무엇이 적용됐는지와 수평전개 범위를 확인</div></div><button class="btn" onclick="openAdvancedMap()">적용범위 상세</button></div><div class="body scroll"><table class="table"><thead><tr><th>적용일</th><th>작업장</th><th>라인</th><th>생산팀</th><th>세부유형</th><th>사례명</th><th>표준화</th><th>수평전개</th><th>상태</th><th>상세</th></tr></thead><tbody id="advancedRows"></tbody></table></div></div></section>
-<section id="request" class="view"><div class="pagehead"><div><h1>개선요청 접수</h1><div class="muted">작업장/라인 → 담당팀 자동매핑 → 조치기한 → 자동메일</div></div><div class="actions"><button class="btn primary" onclick="openRequest()">+ 신규 개선요청</button><button class="btn" onclick="exportView('request')">CSV 추출</button><button class="btn" onclick="printView('request')">출력</button></div></div><div class="kpis"><div class="card kpi"><span>오늘 접수</span><strong>8</strong></div><div class="card kpi"><span>금주 접수</span><strong>27</strong></div><div class="card kpi"><span>긴급</span><strong class="bad">4</strong></div><div class="card kpi"><span>메일 성공</span><strong class="good">100%</strong></div></div><div class="card body"><div class="toolbar"><select><option>전체 작업장</option></select><select><option>전체 라인</option></select><select><option>전체 유형</option></select><select><option>전체 상태</option></select><input placeholder="요청번호/내용 검색"><button class="btn">조회</button></div><div class="scroll"><table class="table"><thead><tr><th>요청번호</th><th>요청일</th><th>작업장/라인</th><th>유형</th><th>내용</th><th>생산팀</th><th>우선순위</th><th>자동기한</th><th>메일</th><th>상태</th><th>관리</th></tr></thead><tbody id="requestRows"></tbody></table></div></div></section>
-<section id="action" class="view"><div class="pagehead"><div><h1>개선조치 관리</h1><div class="muted">조치계획·Before/After·완료·검증·기한변경 이력관리</div></div><div class="actions"><button class="btn" onclick="exportView('action')">CSV 추출</button><button class="btn" onclick="printView('action')">출력</button></div></div><div class="kpis"><div class="card kpi"><span>조치중</span><strong>46</strong></div><div class="card kpi"><span>기한임박</span><strong class="warn">18</strong></div><div class="card kpi"><span>지연</span><strong class="bad">9</strong></div><div class="card kpi"><span>검증대기</span><strong>11</strong></div></div><div class="card body"><div class="scroll"><table class="table"><thead><tr><th>요청번호</th><th>작업장/라인</th><th>팀</th><th>담당자</th><th>기한</th><th>잔여</th><th>Before</th><th>After</th><th>상태</th><th>검증</th><th>관리</th></tr></thead><tbody id="actionRows"></tbody></table></div></div></section>
-<section id="audit" class="view"><div class="pagehead"><div><h1>Audit / 현장진단</h1><div class="muted">저점작업장·미흡사항·반복지적·개선요청 연계 중심</div></div><div class="actions"><button class="btn primary" onclick="openAuditRegister()">+ Audit 등록</button><button class="btn" onclick="exportView('audit')">CSV 추출</button><button class="btn" onclick="printView('audit')">출력</button></div></div><div class="kpis"><div class="card kpi"><span>평가대상</span><strong>20팀</strong></div><div class="card kpi"><span>평균</span><strong>84.7</strong></div><div class="card kpi"><span>집중개선</span><strong class="bad">5팀</strong></div><div class="card kpi"><span>미흡사항</span><strong>64건</strong></div></div><div class="grid2"><div class="card"><div class="head"><h3>팀별 평가결과</h3></div><div class="body" id="auditPage"></div></div><div class="card"><div class="head"><h3>미흡사항 유형분포</h3></div><div class="body"><div class="bars" id="auditIssueBars"></div><div class="notice">상세에서 개선요청 생성 가능</div></div></div></div></section>
-<section id="repeat" class="view"><div class="pagehead"><div><h1>반복지적 / 재발관리</h1><div class="muted">반복률·건수·원인·조치효과를 함께 분석</div></div><div class="actions"><button class="btn" onclick="exportView('repeat')">CSV 추출</button><button class="btn" onclick="printView('repeat')">출력</button></div></div><div class="grid2"><div class="card"><div class="head"><h3>월별 반복지적률</h3></div><div class="body"><div class="linechart" id="repeatPageTrend"></div></div></div><div class="card"><div class="head"><h3>재발 위험 TOP 5</h3></div><div class="body" id="repeatHot"></div></div></div><div class="card" style="margin-top:10px"><div class="body scroll"><table class="table"><thead><tr><th>작업장</th><th>라인</th><th>팀</th><th>유형</th><th>전체</th><th>반복</th><th>반복률</th><th>최근발생</th><th>원인</th><th>상태</th><th>상세</th></tr></thead><tbody id="repeatRows"></tbody></table></div></div></section>
-<section id="cases" class="view"><div class="pagehead"><div><h1>5S 개선사례</h1><div class="muted">Before/After + 표준화 + 수평전개 + 고도화 효과</div></div><div class="actions"><button class="btn primary" onclick="openCaseRegister()">+ 사례 등록</button><button class="btn" onclick="exportView('cases')">CSV 추출</button><button class="btn" onclick="printView('cases')">출력</button></div></div><div class="scope" style="margin-bottom:10px"><div><span class="muted">전체</span><strong>128</strong></div><div><span class="muted">표준화</span><strong>74</strong></div><div><span class="muted">수평전개</span><strong>46</strong></div><div><span class="muted">고도화</span><strong>64</strong></div><div><span class="muted">우수사례</span><strong>18</strong></div></div><div class="card body"><div class="photos" id="caseGrid"></div></div></section>
-<section id="master" class="view"><div class="pagehead"><div><h1>통합기준정보</h1><div class="muted">조직·작업장·라인·인원·유형·메일·Workflow·기한·권한·산식·이력</div></div><div class="actions"><button class="btn primary">변경사항 저장</button><button class="btn" onclick="exportView('master')">CSV 추출</button><button class="btn" onclick="printView('master')">출력</button></div></div><div class="mastertabs" id="mastertabs"><button class="active" data-master="org">조직·작업장·라인</button><button data-master="class">5S 유형·고도화</button><button data-master="mail">팀장·메일링</button><button data-master="workflow">Workflow·조치기한</button><button data-master="kpi">KPI·집계기준</button><button data-master="auth">권한·이력</button></div><div id="org" class="masterpane active"><div class="card"><div class="head"><h3>작업장 / 라인 Master</h3><button class="btn primary" onclick="openLineMaster()">+ 추가</button></div><div class="body scroll"><table class="table"><thead><tr><th>공장</th><th>부서/과</th><th>작업장</th><th>라인코드</th><th>라인명</th><th>생산팀</th><th>집계인원</th><th>팀장</th><th>사용</th></tr></thead><tbody id="lineRows"></tbody></table></div></div></div><div id="class" class="masterpane"><div class="grid2"><div class="card"><div class="head"><h3>5S 활동유형</h3></div><div class="body"><table class="table"><tr><th>유형</th><th>정의</th><th>연계</th></tr><tr><td>정리</td><td>불필요 제거</td><td>표준화</td></tr><tr><td>정돈</td><td>정위치·정량·정품</td><td>시각관리</td></tr><tr><td>청소</td><td>오염원 제거</td><td>발생원 개선</td></tr><tr><td>시각화</td><td>정상/이상 식별</td><td>눈으로 보는 관리</td></tr><tr><td>위험구역관리</td><td>위험경계·동선</td><td>EHS</td></tr><tr><td>5S고도화</td><td>표준화·유지·수평전개</td><td>성과관리</td></tr></table></div></div><div class="card"><div class="head"><h3>고도화 세부유형</h3></div><div class="body"><div class="mastercards"><div class="card">표준화 완료</div><div class="card">수평전개</div><div class="card">유지관리 개선</div><div class="card">작업방법 고도화</div><div class="card">시각관리 고도화</div><div class="card">우수사례 적용</div></div></div></div></div></div><div id="mail" class="masterpane"><div class="grid2"><div class="card"><div class="head"><h3>수신자 자동매핑</h3></div><div class="body"><table class="table"><tr><th>작업장/라인</th><th>팀</th><th>역할</th><th>발송조건</th></tr><tr><td>Front/Main</td><td>Front조립팀</td><td>생산팀장</td><td>접수</td></tr><tr><td>Shipping</td><td>출하팀</td><td>생산팀장</td><td>접수/지연</td></tr></table></div></div><div class="card"><div class="head"><h3>메일 발송이력</h3></div><div class="body"><table class="table"><tr><th>일시</th><th>이벤트</th><th>결과</th></tr><tr><td>08.24 10:21</td><td>요청 접수</td><td class="good">성공</td></tr><tr><td>08.24 09:00</td><td>D-1</td><td class="good">성공</td></tr></table></div></div></div></div><div id="workflow" class="masterpane"><div class="grid2"><div class="card"><div class="head"><h3>유형별 조치기한</h3></div><div class="body rulegrid" id="typeRules"></div></div><div class="card"><div class="head"><h3>우선순위별 조치기한</h3></div><div class="body rulegrid" id="priorityRules"></div></div></div></div><div id="kpi" class="masterpane"><div class="mastercards"><div class="card">인당 개선건수<br><span class="muted">완료 ÷ 집계인원</span></div><div class="card">인당 표준화건수<br><span class="muted">표준화 완료 ÷ 인원</span></div><div class="card">반복지적률<br><span class="muted">반복 ÷ 전체지적 ×100</span></div><div class="card">개선완료율<br><span class="muted">완료 ÷ 요청 ×100</span></div><div class="card">고도화 누적<br><span class="muted">고도화 완료 누계</span></div><div class="card">조회기간<br><span class="muted">기본 YTD</span></div></div></div><div id="auth" class="masterpane"><div class="card body"><table class="table"><tr><th>역할</th><th>조회</th><th>등록</th><th>수정</th><th>출력</th></tr><tr><td>5S 운영자</td><td>전체</td><td>전체</td><td>전체</td><td>전체</td></tr><tr><td>생산팀장</td><td>소속</td><td>조치</td><td>소속</td><td>소속</td></tr><tr><td>일반사용자</td><td>공개범위</td><td>요청</td><td>본인</td><td>제한</td></tr></table></div></div></section>
-<section id="analytics" class="view"><div class="pagehead"><div><h1>통계 / 분석</h1><div class="muted">기간·작업장·라인·팀·유형별 데이터 조합분석</div></div><div class="actions"><button class="btn" onclick="exportView('analytics')">CSV 추출</button><button class="btn" onclick="printView('analytics')">출력</button></div></div><div class="card body"><div class="toolbar"><select><option>YTD 누계</option><option>당월</option></select><select><option>전체 작업장</option></select><select><option>전체 라인</option></select><select><option>전체 팀</option></select><select><option>지표 선택</option><option>활동건수</option><option>반복지적률</option><option>완료율</option></select><button class="btn primary">분석 실행</button></div></div><div class="grid2" style="margin-top:10px"><div class="card"><div class="head"><h3>월별 추이</h3></div><div class="body"><div class="linechart" id="analyticsTrend"></div></div></div><div class="card"><div class="head"><h3>팀 비교</h3></div><div class="body"><div class="bars" id="analyticsBars"></div></div></div></div></section>
-</div><div id="modal" class="modal"><div class="modalbox"><div class="modalhead"><div><b id="modalTitle"></b><div class="muted" id="modalSub"></div></div><button class="btn" onclick="closeModal()">×</button></div><div class="modalbody" id="modalBody"></div><div class="modalfoot"><button class="btn" onclick="closeModal()">닫기</button><button class="btn primary" onclick="closeModal();alert('저장되었습니다.')">저장</button></div></div></div>
-<script>
-const types=[['정리',156],['정돈',142],['청소',128],['시각화',114],['위험구역관리',96],['5S고도화',64]],repeat=[['03월',21.4],['04월',19.8],['05월',18.1],['06월',16.7],['07월',14.9],['08월',12.5]],advMonth=[['1주',2],['2주',3],['3주',4],['4주',3]],advCum=[['01월',5],['02월',11],['03월',18],['04월',27],['05월',37],['06월',47],['07월',52],['08월',64]],hot=[['출하팀','출하 작업장','Shipping Line',18,5,'정리·정돈'],['메인조립팀','중형조립','Main Line',22,5,'정돈·시각화'],['자재물류팀','물류','Logistics Line',17,3,'정리·정돈'],['성능팀','성능','Performance Line',15,2,'청소·위험구역'],['상부조립2팀','중형조립','Upper Line',16,2,'정돈']],aud=[['Front조립팀','조립2팀',94.3],['Rear조립팀','조립2팀',91.3],['프레임제작팀','제작과',87.7],['출하팀','생산지원',63.0],['자재물류팀','생산지원',78.0],['성능팀','성능과',78.7],['상부조립2팀','중형조립과',80.7]],advanced=[['08.24','Front 작업장','Front Main Line','Front조립팀','표준화 완료','공구 쉐도우보드 표준화','완료','Rear·Upper Line','완료'],['08.23','Rear 작업장','Rear Main Line','Rear조립팀','수평전개','공구함 위치표준 수평전개','완료','3개 라인','진행'],['08.22','Frame 작업장','Frame Line','프레임제작팀','유지관리 개선','용접소모품 정위치 관리','완료','Boom Line','완료'],['08.21','출하 작업장','Shipping Line','출하팀','시각관리 고도화','출하대기 구역 시각관리','진행','Logistics Line','진행'],['08.20','성능 작업장','Performance Line','성능팀','작업방법 고도화','시험공구 정위치·체크표준','완료','T/S Line','완료'],['08.19','자재물류 작업장','Logistics Line','자재물류팀','우수사례 적용','빈 팔레트 정량관리','완료','입고·검사 Line','진행']];
-function bars(id,data){const el=document.getElementById(id);if(!el)return;const m=Math.max(...data.map(x=>x[1]));el.innerHTML=data.map(x=>`<div class=baritem><div class=bar style="height:${Math.max(24,x[1]/m*170)}px"><b>${x[1]}</b></div><span>${x[0]}</span></div>`).join('')}function line(id,data,s=''){const el=document.getElementById(id);if(!el)return;const m=Math.max(...data.map(x=>x[1]));el.innerHTML=data.map(x=>`<div class=linecol><b>${x[1]}${s}</b><i style="height:${Math.max(18,x[1]/m*160)}px"></i><span>${x[0]}</span></div>`).join('')}function renderHot(id){const el=document.getElementById(id);if(!el)return;el.innerHTML=`<table class=table><tr><th>작업장</th><th>팀</th><th>반복</th><th>반복률</th><th>유형</th></tr>${hot.map(x=>`<tr><td>${x[1]}</td><td>${x[0]}</td><td>${x[4]}/${x[3]}</td><td>${(x[4]/x[3]*100).toFixed(1)}%</td><td>${x[5]}</td></tr>`).join('')}</table>`}function renderAudit(id){const el=document.getElementById(id);if(!el)return;el.innerHTML=aud.map(x=>`<div class=auditrow><span><b>${x[0]}</b><br><small>${x[1]}</small></span><div class=track><i style="width:${x[2]}%"></i></div><b class="${x[2]<75?'bad':x[2]<85?'warn':''}">${x[2]}</b><button class=btn onclick="openAuditDetail('${x[0]}')">상세</button></div>`).join('')}function showModal(t,s,h){modalTitle.textContent=t;modalSub.textContent=s||'';modalBody.innerHTML=h;modal.classList.add('show')}function closeModal(){modal.classList.remove('show')}
-function openAdvancedMap(){showModal('5S 고도화 적용범위 상세','작업장 → 라인 → 생산팀 → 적용사례 → 수평전개 범위를 추적합니다.',`<div class=scope style="margin-bottom:12px"><div><span class=muted>적용 작업장</span><strong>14</strong></div><div><span class=muted>적용 라인</span><strong>21</strong></div><div><span class=muted>적용 팀</span><strong>18</strong></div><div><span class=muted>수평전개</span><strong>23건</strong></div><div><span class=muted>표준화</span><strong>31건</strong></div></div><table class=table><tr><th>작업장</th><th>라인</th><th>팀</th><th>사례</th><th>수평전개 대상</th><th>상태</th></tr>${advanced.map(x=>`<tr><td>${x[1]}</td><td>${x[2]}</td><td>${x[3]}</td><td>${x[5]}</td><td>${x[7]}</td><td>${x[8]}</td></tr>`).join('')}</table>`)}
-function openAdvancedDetail(i){const x=advanced[i];showModal('고도화 사례 상세',x[5],`<table class=table><tr><th>작업장</th><td>${x[1]}</td><th>라인</th><td>${x[2]}</td></tr><tr><th>생산팀</th><td>${x[3]}</td><th>세부유형</th><td>${x[4]}</td></tr><tr><th>표준화</th><td>${x[6]}</td><th>수평전개</th><td>${x[7]}</td></tr></table><div class=notice style="margin-top:10px">적용효과, 표준서 링크, 전개 대상 라인과 유지점검 결과까지 연결하도록 설계되었습니다.</div>`)}
-function openActivityRegister(){showModal('5S 활동 등록','활동 및 고도화 사례 등록',`<div class=formgrid><div class=field><label>작업장</label><select><option>Front 작업장</option><option>Rear 작업장</option></select></div><div class=field><label>라인</label><select><option>Front Main Line</option></select></div><div class=field><label>생산팀</label><input value="Front조립팀"></div><div class=field><label>5S 유형</label><select><option>정리</option><option>정돈</option><option>청소</option><option>시각화</option><option>위험구역관리</option><option>5S고도화</option></select></div><div class=field style="grid-column:1/-1"><label>활동내용</label><textarea></textarea></div></div>`)}function openRequest(){showModal('신규 개선요청','등록 즉시 생산팀장에게 자동메일 발송',`<div class=formgrid><div class=field><label>작업장</label><select><option>Front 작업장</option></select></div><div class=field><label>라인</label><select><option>Front Main Line</option></select></div><div class=field><label>생산팀/팀장</label><input value="Front조립팀 / 자동매핑" readonly></div><div class=field><label>유형</label><select><option>정돈</option></select></div><div class=field><label>우선순위</label><select><option>보통</option><option>높음</option><option>긴급</option></select></div><div class=field><label>자동기한</label><input value="기준정보 자동산출" readonly></div><div class=field style="grid-column:1/-1"><label>요청내용</label><textarea></textarea></div></div>`)}function openAction(id){showModal('개선조치 등록',id,`<div class=formgrid><div class=field><label>요청번호</label><input value="${id}" readonly></div><div class=field><label>담당자</label><input value="김성훈 반장"></div><div class=field><label>실행예정일</label><input type=date value="2026-08-27"></div><div class=field><label>상태</label><select><option>조치중</option><option>완료</option></select></div><div class=field style="grid-column:1/-1"><label>조치내용</label><textarea>공구 보관함 라벨 및 지정위치 적용</textarea></div></div>`)}function openAuditRegister(){showModal('Audit 등록','미흡사항은 개선요청으로 전환됩니다.',`<div class=formgrid><div class=field><label>작업장</label><input></div><div class=field><label>라인</label><input></div><div class=field><label>평가일</label><input type=date value="2026-08-24"></div><div class=field><label>평가자</label><input value="5S 모듈리더/활동멤버"></div><div class=field style="grid-column:1/-1"><label>미흡사항</label><textarea></textarea></div></div>`)}function openAuditDetail(t){showModal('Audit 상세',t,`<div class=notice>점수보다 미흡사항·반복지적·개선요청 연계가 핵심입니다.</div><table class=table style="margin-top:10px"><tr><th>미흡사항</th><th>유형</th><th>상태</th></tr><tr><td>공구 정위치 관리 미흡</td><td>정돈</td><td>개선요청 생성</td></tr></table>`)}function openCaseRegister(){showModal('개선사례 등록','표준화 및 수평전개까지 등록',`<div class=formgrid><div class=field><label>작업장/라인</label><input></div><div class=field><label>생산팀</label><input></div><div class=field><label>유형</label><select><option>5S고도화</option><option>표준화</option><option>수평전개</option></select></div><div class=field><label>사례명</label><input></div></div>`)}function openCaseDetail(i){showModal('개선사례 상세','DEMO/SAMPLE',`<div class=notice>Before/After, 표준화 여부, 수평전개 대상, 정량효과를 함께 관리합니다.</div>`)}function openLineMaster(){showModal('작업장 / 라인 기준정보','공통 기준정보',`<div class=formgrid><div class=field><label>공장</label><input value="울산공장"></div><div class=field><label>부서/과</label><input></div><div class=field><label>작업장</label><input></div><div class=field><label>라인코드</label><input></div><div class=field><label>라인명</label><input></div><div class=field><label>생산팀</label><input></div><div class=field><label>집계인원</label><input type=number></div><div class=field><label>팀장</label><input></div></div>`)}
-function exportView(id){const root=document.getElementById(id);if(!root)return;let rows=[];root.querySelectorAll('table').forEach(t=>{t.querySelectorAll('tr').forEach(tr=>{rows.push([...tr.querySelectorAll('th,td')].map(c=>'"'+c.innerText.replace(/"/g,'""').replace(/\n/g,' ')+'"').join(','))})});if(!rows.length){root.querySelectorAll('.kpi').forEach(k=>rows.push('"'+k.innerText.replace(/\n/g,'","')+'"'))}const blob=new Blob(['\ufeff'+rows.join('\n')],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='GMES_5S_'+id+'_'+new Date().toISOString().slice(0,10)+'.csv';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url)}function printView(id){document.querySelectorAll('.view').forEach(v=>v.dataset.printActive=v.classList.contains('active')?'1':'0');document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id===id));setTimeout(()=>{window.print();setTimeout(()=>{document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.dataset.printActive==='1'))},100)},50)}
-function render(){bars('typeBars',types);bars('activityBars',types);bars('teamBars',[['조립1팀',156],['Rear조립팀',142],['가공1팀',128],['자재운영팀',114],['생산관리팀',96]]);bars('auditIssueBars',[['정리',18],['정돈',22],['청소',9],['시각화',8],['위험',7]]);bars('analyticsBars',[['조립1팀',88],['Rear',84],['가공1팀',79],['자재',72]]);line('repeatTrend',repeat,'%');line('repeatPageTrend',repeat,'%');line('analyticsTrend',[['03월',72],['04월',76],['05월',81],['06월',84],['07월',87],['08월',91]],'%');renderHot('hotDash');renderHot('repeatDash');renderHot('repeatHot');renderAudit('auditDash');renderAudit('auditPage');document.getElementById('advancedRows').innerHTML=advanced.map((x,i)=>`<tr>${x.map(v=>`<td>${v}</td>`).join('')}<td><button class=btn onclick="openAdvancedDetail(${i})">상세</button></td></tr>`).join('');document.getElementById('requestRows').innerHTML=[['5S-20260824-001','08.24','가공/Machining','정돈','공구 라벨 위치지정','가공1팀','높음','08.27','성공','접수'],['5S-20260822-005','08.22','성능/T-S','위험구역','경고표지 부족','T/S팀','긴급','08.22','성공','지연']].map(x=>`<tr>${x.map(v=>`<td>${v}</td>`).join('')}<td><button class=btn onclick="openAction('${x[0]}')">조치</button></td></tr>`).join('');document.getElementById('actionRows').innerHTML=[['5S-20260824-001','가공/Machining','가공1팀','김성훈','08.27','D-3','등록','미등록','조치중','대기'],['5S-20260821-007','제작/Frame','프레임제작팀','이창식','08.23','D+1','등록','등록','지연','대기']].map(x=>`<tr>${x.map(v=>`<td>${v}</td>`).join('')}<td><button class=btn onclick="openAction('${x[0]}')">관리</button></td></tr>`).join('');document.getElementById('repeatRows').innerHTML=hot.map(x=>`<tr><td>${x[1]}</td><td>${x[2]}</td><td>${x[0]}</td><td>${x[5]}</td><td>${x[3]}</td><td>${x[4]}</td><td>${(x[4]/x[3]*100).toFixed(1)}%</td><td>08.24</td><td>표준 미준수</td><td>조치중</td><td><button class=btn onclick="openAuditDetail('${x[0]}')">상세</button></td></tr>`).join('');document.getElementById('caseGrid').innerHTML=Array.from({length:12},(_,i)=>`<div class=case onclick="openCaseDetail(${i})"><b>${['Front조립팀','Rear조립팀','출하팀','자재물류팀'][i%4]} · ${['정돈','청소','시각화','5S고도화'][i%4]} 개선</b><div class=fakephoto></div><small>DEMO/SAMPLE · 2026.08.${24-i}</small></div>`).join('');document.getElementById('lineRows').innerHTML=[['울산공장','조립2팀','Front 작업장','ASM-F01','Front Main','Front조립팀',44,'팀장','사용'],['울산공장','조립2팀','Rear 작업장','ASM-R01','Rear Main','Rear조립팀',39,'팀장','사용'],['울산공장','제작과','Frame 작업장','FAB-F01','Frame Line','프레임제작팀',41,'팀장','사용'],['울산공장','생산지원','출하 작업장','SUP-S01','Shipping Line','출하팀',23,'팀장','사용']].map(x=>`<tr>${x.map(v=>`<td>${v}</td>`).join('')}</tr>`).join('');document.getElementById('typeRules').innerHTML=[['정리',7],['정돈',7],['청소',3],['시각화',7],['위험구역관리',1],['5S고도화',14]].map(x=>`<div class=rule><b>${x[0]}</b><br><input type=number value=${x[1]}> 일</div>`).join('');document.getElementById('priorityRules').innerHTML=[['긴급',0],['높음',3],['보통',7],['낮음',14]].map(x=>`<div class=rule><b>${x[0]}</b><br><input type=number value=${x[1]}> 일</div>`).join('');renderAdv()}
-function renderAdv(){line('advancedTrend',document.getElementById('advMode').value==='month'?advMonth:advCum,'')}
-document.getElementById('mainnav').addEventListener('click',e=>{const b=e.target.closest('[data-view]');if(!b)return;document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id===b.dataset.view));document.querySelectorAll('#mainnav button').forEach(x=>x.classList.toggle('active',x===b))});document.getElementById('dashnav').addEventListener('click',e=>{const b=e.target.closest('[data-dash]');if(!b)return;document.querySelectorAll('.dashpane').forEach(v=>v.classList.toggle('active',v.id===b.dataset.dash));document.querySelectorAll('#dashnav button').forEach(x=>x.classList.toggle('active',x===b))});document.getElementById('mastertabs').addEventListener('click',e=>{const b=e.target.closest('[data-master]');if(!b)return;document.querySelectorAll('.masterpane').forEach(v=>v.classList.toggle('active',v.id===b.dataset.master));document.querySelectorAll('#mastertabs button').forEach(x=>x.classList.toggle('active',x===b))});document.getElementById('advMode').addEventListener('change',renderAdv);document.getElementById('startMonth').addEventListener('input',e=>{let m=Math.min(8,Math.max(1,+e.target.value||1));scopeText.textContent=`2026.${String(m).padStart(2,'0')}.01 ~ 2026.08.24 누계`});render();
-</script></body></html>
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GMES · HDPS 5S 활동관리</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="instrument-bar">
+  <div class="ib-brand">
+    <span class="ib-mark">GMES</span>
+    <span class="ib-div"></span>
+    <span class="ib-sub">HDPS · 5S 활동관리</span>
+  </div>
+  <div class="ib-scope">
+    <label>공장<select id="scopeSite"><option value="CE01">[CE01] 울산공장</option><option value="CE02">[CE02] 창원공장</option></select></label>
+    <label>당월<select id="scopePeriod">
+      <option value="2026-03">2026년 03월</option>
+      <option value="2026-02">2026년 02월</option>
+      <option value="2026-01">2026년 01월</option>
+    </select></label>
+  </div>
+  <div class="ib-user"><span class="ib-role">5S 모듈리더</span><span class="ib-name">운영자</span><i class="ib-avatar">운</i></div>
+</header>
+
+<div class="shell">
+  <nav class="rail" id="rail">
+    <button class="rail-btn active" data-view="dash">
+      <i class="rail-ico">▣</i><span>HDPS42<br>5S 종합 대시보드</span>
+    </button>
+    <button class="rail-btn" data-view="standard">
+      <i class="rail-ico">≡</i><span>HDPS32<br>팀별 점검항목관리</span>
+    </button>
+    <button class="rail-btn" data-view="audit">
+      <i class="rail-ico">◎</i><span>HDPS33<br>팀별 Audit 실적</span>
+    </button>
+    <button class="rail-btn" data-view="request">
+      <i class="rail-ico">✎</i><span>HDPS34·21<br>개선요청 등록·조회</span>
+    </button>
+  </nav>
+
+  <main class="stage">
+
+    <!-- ============ HDPS42 5S 활동 종합 대시보드 ============ -->
+    <section class="view active" id="view-dash">
+      <div class="page-head">
+        <div>
+          <p class="eyebrow">HDPS42</p>
+          <h1>5S 활동 종합 대시보드</h1>
+          <p class="lede">"건수"가 아니라 "인당 개선건수" 기준으로 조회합니다 · HDPS21·HDPS33과 연계</p>
+        </div>
+        <div class="head-actions">
+          <button class="btn btn-ghost" id="dashExport">출력 / 내보내기</button>
+        </div>
+      </div>
+
+      <div class="andon" id="andonStrip"></div>
+      <p class="andon-caption"><i class="dot g"></i>정상(90점↑) &nbsp; <i class="dot a"></i>주의(75–89점) &nbsp; <i class="dot r"></i>즉시조치(75점 미만) — Audit 총점 기준 팀별 현재 상태</p>
+
+      <div class="kpi-row">
+        <div class="kpi">
+          <span class="kpi-label">인당 5S 표준화 개선건수</span>
+          <strong class="kpi-value mono" id="kpiPerCapita">–</strong>
+          <span class="kpi-unit">건 / 인 · 당월</span>
+        </div>
+        <div class="kpi">
+          <span class="kpi-label">5S Audit 평균 점수</span>
+          <strong class="kpi-value mono" id="kpiAuditAvg">–</strong>
+          <span class="kpi-unit">100점 만점 · 당월</span>
+        </div>
+        <div class="kpi">
+          <span class="kpi-label">개선조치완료율</span>
+          <strong class="kpi-value mono" id="kpiActionRate">–</strong>
+          <span class="kpi-unit" id="kpiActionRateSub">전월 지적 대비 완료</span>
+        </div>
+        <div class="kpi">
+          <span class="kpi-label">누적 개선 등록건</span>
+          <strong class="kpi-value mono" id="kpiTotalReq">–</strong>
+          <span class="kpi-unit">최근 3개월</span>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-head">
+            <div><h2>월별·부서별 5S 표준화(수평전개) 인당 개선건수</h2><p>HDPS21 연계 · 막대 + 추이선 · 04월~03월</p></div>
+          </div>
+          <div class="panel-body">
+            <div class="dept-legend" id="stdLegend"></div>
+            <div class="linebar-wrap" id="stdChartWrap"></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head">
+            <div><h2>월별·부서별 5S Audit 평가 현황</h2><p>HDPS33 연계 · 부서 평균점수 · 04월~03월</p></div>
+          </div>
+          <div class="panel-body">
+            <div class="dept-legend" id="auditLegend"></div>
+            <div class="linebar-wrap" id="auditChartWrap"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-bottom:14px">
+        <div class="panel-head">
+          <div><h2>팀별 5S 유형별 활동 현황</h2><p>정리·정돈·청소·시각화관리·습관화·자주보전</p></div>
+          <div class="activity-controls">
+            <label>차트 구분<select id="chartMode"><option value="type">활동유형별 당월 현황</option><option value="trend">단일 팀 월별 추이</option></select></label>
+            <label>5S 유형<select id="chartCategory"></select></label>
+            <label>팀 선택<select id="chartTeam"></select></label>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="type-legend" id="typeLegend"></div>
+          <div class="type-chart" id="teamTypeChart"></div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-head">
+            <div><h2>팀별 문제점 현황</h2><p>HDPS33 전월 개선내역 중 문제점 입력건 · 팀 × 5S유형</p></div>
+          </div>
+          <div class="panel-body">
+            <div class="type-legend" id="problemLegend"></div>
+            <div class="type-chart" id="problemChart"></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head">
+            <div><h2>팀별 문제점 개선조치율</h2><p>HDPS33 완료 체크 기준 · 팀별 %</p></div>
+          </div>
+          <div class="panel-body">
+            <div class="rate-chart" id="rateChart"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-bottom:14px">
+        <div class="panel-head">
+          <div><h2>최근 3개월 개선내역 Raw Data</h2><p>HDPS33 전월 점검시 문제점 → 개선내역 → 조치여부</p></div>
+          <div class="chip-row" id="rawFilter">
+            <button class="chip active" data-status="all">전체</button>
+            <button class="chip" data-status="완료">완료</button>
+            <button class="chip" data-status="미결">미결</button>
+          </div>
+        </div>
+        <div class="panel-body table-wrap">
+          <table class="datatable">
+            <thead><tr><th>No</th><th>5S구분</th><th>담당팀</th><th>전월 점검시 문제점</th><th>개선내역</th><th>조치여부</th></tr></thead>
+            <tbody id="rawTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-bottom:14px">
+        <div class="panel-head">
+          <div><h2>5S 부서별 등록현황</h2><p>조회기간 <span class="mono" id="regRangeLabel">2026-01 ~ 2026-03</span> 누계</p></div>
+        </div>
+        <div class="panel-body table-wrap">
+          <table class="datatable">
+            <thead><tr><th>5S 개선진행팀</th><th>5S 개선표준건</th><th>합계</th><th>정리</th><th>정돈</th><th>청소</th><th>시각화관리</th><th>습관화</th><th>자주보전</th></tr></thead>
+            <tbody id="deptRegisterBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <div><h2>5S 상세내역</h2><p>개선번호별 원시 데이터 · HDPS21 등록 이력</p></div>
+        </div>
+        <div class="panel-body table-wrap">
+          <table class="datatable">
+            <thead><tr><th>개선번호</th><th>연도</th><th>표준화</th><th>월</th><th>테마</th><th>부서</th><th>그룹</th><th>상세위치</th><th>개선 전</th><th>개선 후</th><th>등록일</th></tr></thead>
+            <tbody id="detailTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ HDPS32 팀별 5S 점검항목관리 ============ -->
+    <section class="view" id="view-standard">
+      <div class="page-head">
+        <div>
+          <p class="eyebrow">HDPS32</p>
+          <h1>팀별 5S 점검항목관리</h1>
+          <p class="lede">작업장 특성에 최적화된 점검항목을 기준정보로 관리합니다. 글로벌 표준 체크리스트는 작업장별 적용이 어려워 HCE 자체 체크리스트를 사용합니다.</p>
+        </div>
+        <div class="head-actions">
+          <button class="btn btn-primary" id="standardAddBtn">+ 점검항목 등록</button>
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <label>5S 구분<select id="stdFilterCategory"><option value="all">전체</option></select></label>
+        <button class="btn btn-ghost" id="stdFilterApply">조회</button>
+      </div>
+
+      <div class="panel">
+        <div class="panel-body table-wrap">
+          <table class="datatable">
+            <thead><tr>
+              <th>No</th><th>5S구분</th><th>순서</th><th>점검항목명</th><th>비고</th>
+              <th>사용여부</th><th>등록자</th><th>등록일</th><th>수정자</th><th>수정일</th>
+            </tr></thead>
+            <tbody id="standardTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="notice-strip">
+        <b>HR 연동 안내</b> — 인사정보(HR) 연동으로 신규 팀 생성 시 "기준정보를 등록해 주시기 바랍니다" 팝업이 노출됩니다. 기존 MES는 마스터 권한 보유자만 등록할 수 있었던 부분을 개선한 것입니다.<br>
+        <b>개정관리</b> — 현장조직단위(팀) 세분화·작업장 변경 발생 시, 신규 등록 및 개정 알림이 필요한지 검토 대상입니다.
+      </div>
+    </section>
+
+    <!-- ============ HDPS33 팀별 5S Audit 실적 ============ -->
+    <section class="view" id="view-audit">
+      <div class="page-head">
+        <div>
+          <p class="eyebrow">HDPS33</p>
+          <h1>팀별 5S Audit 실적</h1>
+          <p class="lede">전월 점검결과는 고정하고, 개선내역·조치여부를 당월 조회 시점에 함께 확인·입력합니다.</p>
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <label>월<select id="auditFilterMonth"></select></label>
+        <label>팀<select id="auditFilterTeam"></select></label>
+        <button class="btn btn-ghost" id="auditFilterApply">조회</button>
+      </div>
+
+      <div class="audit-header-card" id="auditHeaderCard"></div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <div><h2>점검항목별 상세</h2><p>전월 점검결과(고정) → 개선내역 → 조치완료 → 당월 점검결과</p></div>
+        </div>
+        <div class="panel-body table-wrap">
+          <table class="datatable audit-detail-table">
+            <thead><tr>
+              <th style="width:20%">점검항목명</th>
+              <th style="width:7%">점수</th>
+              <th style="width:19%" class="col-prev">전월 점검결과</th>
+              <th style="width:18%" class="col-note">개선내역</th>
+              <th style="width:8%">조치완료</th>
+              <th style="width:19%" class="col-cur">당월 점검결과</th>
+            </tr></thead>
+            <tbody id="auditDetailBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ HDPS34+21 개선요청 등록/조회 ============ -->
+    <section class="view" id="view-request">
+      <div class="page-head">
+        <div>
+          <p class="eyebrow">HDPS34 · HDPS21 연계</p>
+          <h1>5S 개선요청 등록 / 조회</h1>
+          <p class="lede">HDPS21 단건 등록화면 방식 — 문제점 등록 시 생산팀 팀장/반장에게, 개선완료 시 5S 모듈리더에게 자동 메일링됩니다.</p>
+        </div>
+        <div class="head-actions">
+          <button class="btn btn-primary" id="requestAddBtn">+ 신규 개선요청</button>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-bottom:14px">
+        <div class="panel-head">
+          <div><h2>5S Audit결과 개선 현황</h2><p>부서별 누적/당월 지적·조치 건수 · [단위: 건수]</p></div>
+        </div>
+        <div class="panel-body table-wrap">
+          <table class="datatable">
+            <thead><tr><th>구분</th><th>개선조치완료율(c=b/a)</th><th>누적 지적건수(a)</th><th>누적 조치건수(b)</th><th>당월 지적건수</th><th>당월 조치건수</th></tr></thead>
+            <tbody id="deptAuditSummaryBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="status-flow">
+        <span data-s="draft">Draft</span><i>→</i>
+        <span data-s="registered">요청등록</span><i>→</i>
+        <span data-s="inprogress">생산팀 조치중</span><i>→</i>
+        <span data-s="done">조치완료</span><i>→</i>
+        <span data-s="verify">5S모듈 검증</span><i>→</i>
+        <span data-s="close">Close</span>
+      </div>
+
+      <div class="filter-bar">
+        <label>팀<select id="reqFilterTeam"><option value="all">전체 팀</option></select></label>
+        <label>상태<select id="reqFilterStatus">
+          <option value="all">전체</option>
+          <option value="registered">요청등록</option>
+          <option value="inprogress">생산팀 조치중</option>
+          <option value="done">조치완료</option>
+          <option value="verify">5S모듈 검증</option>
+          <option value="close">Close</option>
+        </select></label>
+        <button class="btn btn-ghost" id="reqFilterApply">조회</button>
+      </div>
+
+      <div class="request-grid" id="requestGrid"></div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ============ 개선요청 상세/등록 모달 (HDPS21 단건 등록 방식) ============ -->
+<div class="modal-backdrop" id="reqModalBackdrop">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div><h2 id="reqModalTitle">신규 개선요청</h2><p class="mono" id="reqModalId">—</p></div>
+      <button class="modal-close" id="reqModalClose">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <label>등록월<input type="month" id="fMonth" value="2026-03"></label>
+        <label>공장<input value="[CE01] 울산공장" disabled></label>
+        <label>대상팀<select id="fTeam"></select></label>
+        <label>5S 구분<select id="fCategory"></select></label>
+        <label>대개선위치<input id="fLocation" placeholder="예: RGV 레일 주변"></label>
+        <label>제목(테마)<input id="fTitle" placeholder="예: RGV 레일 이물질 정리"></label>
+        <label>상태<select id="fStatus">
+          <option value="draft">Draft</option>
+          <option value="registered">요청등록</option>
+          <option value="inprogress">생산팀 조치중</option>
+          <option value="done">조치완료</option>
+          <option value="verify">5S모듈 검증</option>
+          <option value="close">Close</option>
+        </select></label>
+        <label class="checkline"><input type="checkbox" id="fStandardized"> 표준화(수평전개) 대상</label>
+      </div>
+      <label class="field-block">지적사항 (Before)<textarea id="fIssue" rows="3"></textarea></label>
+      <label class="field-block">개선내용 (After)<textarea id="fAction" rows="3"></textarea></label>
+
+      <div class="ba-grid">
+        <div class="ba-cell">
+          <span class="ba-tag before">Before</span>
+          <div class="ba-photo" id="beforePhoto">사진 없음</div>
+          <div class="attach-list">No · 날짜 · 파일명<span class="empty">첨부파일 없음</span></div>
+        </div>
+        <div class="ba-cell">
+          <span class="ba-tag after">After</span>
+          <div class="ba-photo after" id="afterPhoto">사진 없음</div>
+          <div class="attach-list">No · 날짜 · 파일명<span class="empty">첨부파일 없음</span></div>
+        </div>
+      </div>
+
+      <div class="mail-preview" id="mailPreview"></div>
+    </div>
+    <div class="modal-foot">
+      <span class="muted" id="reqOwnerLine"></span>
+      <div>
+        <button class="btn btn-ghost" id="reqModalCancel">닫기</button>
+        <button class="btn btn-primary" id="reqModalSave">저장</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

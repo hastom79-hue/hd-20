@@ -1,37 +1,609 @@
-const rawData=[
-{no:1,type:'정리',item:'불필요한 치공구·대차 등 작업 방해요소가 없는가?',issue:'RGV 레일 주변 이물질 및 불필요 자재 적치',action:'분진 제거 및 불필요 자재 폐기',status:'완료'},
-{no:2,type:'정돈',item:'최대·최소량과 품명이 명확히 표시되어 있는가?',issue:'최대·최소 수량 미표기',action:'라벨 및 위치표준 적용',status:'미결'},
-{no:3,type:'청소',item:'기계 청소와 점검이 주기적으로 되고 있는가?',issue:'청소주기 및 담당 불명확',action:'주간 체크리스트 재정의',status:'완료'},
-{no:4,type:'시각화',item:'표준·정상·이상 상태가 즉시 구분되는가?',issue:'공구 위치표시 불명확',action:'쉐도우보드 및 위치 라벨 적용',status:'완료'},
-{no:5,type:'위험구역관리',item:'위험구역 경계·표지·출입기준이 명확한가?',issue:'위험구역 경계 표시 보완 필요',action:'경계선 및 위험표지 정비',status:'미결'},
-{no:6,type:'5S고도화',item:'우수 5S 활동이 표준화·수평전개되는가?',issue:'우수사례 표준 전개 미흡',action:'표준화 및 타 팀 수평전개',status:'완료'}];
-const standards=[['1','정리','1','미사용 자재 적치로 공간 낭비요소는 없는가?','조립부','사용','SYSTEM','2026-01-19'],['2','정돈','1','가용품 보관구역·수량·방법이 결정되어 있는가?','조립부','사용','SYSTEM','2026-01-19'],['3','청소','1','바닥에 먼지·기름·쓰레기 없이 깨끗한가?','','사용','SYSTEM','2026-01-19'],['4','시각화','1','표준/정상/이상 상태가 시각적으로 구분되는가?','','사용','SYSTEM','2026-01-19'],['5','위험구역관리','1','위험구역 경계·표지·출입기준이 관리되는가?','','사용','SYSTEM','2026-01-19'],['6','5S고도화','1','우수사례가 표준화되어 유지·수평전개되는가?','','사용','SYSTEM','2026-01-19']];
-const audits=[['1','정리','불필요한 것을 필요한 것과 구분','불필요한 치공구·대차가 없는가?','4 / 5','로케이터 적치 문제','전용 보관대 설치','완료'],['2','정돈','필요한 것을 쉽게 꺼내고 누구나 알 수 있게','최대·최소량과 품명이 표시되어 있는가?','3 / 5','최대최소량 미표기','라벨링 표준 적용','미결'],['3','청소','항상 깨끗하게 유지','기계 청소와 점검이 주기적인가?','4 / 5','청소주기 미흡','체크리스트 개정','완료'],['4','시각화','표준·정상·이상을 즉시 구분','표준과 이상을 즉시 구분할 수 있는가?','5 / 5','공구 위치 표시 불량','쉐도우보드 적용','완료']];
-const activityCategories=['정리','정돈','청소','시각화','위험구역관리','5S고도화'];
-const activityTeamSnapshot={'조립1팀':[5,4,3,2,1,2],'Rear조립팀':[4,2,2,3,1,1],'가공1팀':[2,3,4,1,2,2],'자재운영팀':[1,2,1,2,1,3],'생산관리팀':[2,1,2,3,2,2]};
-const teamHeadcount={'조립1팀':42,'Rear조립팀':36,'가공1팀':31,'자재운영팀':27,'생산관리팀':24};
-const activityMonthly={'조립1팀':[['04월',12,10,8,6,3,5],['05월',15,12,10,7,4,6],['06월',18,14,11,8,5,7],['07월',20,16,12,9,5,8],['08월',22,18,13,10,6,9],['09월',24,18,15,11,6,10],['10월',25,20,15,12,7,11],['11월',27,21,16,13,7,12],['12월',26,20,17,12,7,11],['01월',23,19,15,11,6,10],['02월',24,20,15,12,7,11],['03월',25,20,16,12,7,12]],'Rear조립팀':[['04월',10,8,7,5,3,4],['05월',12,9,8,6,3,5],['06월',14,10,9,6,4,5],['07월',15,11,9,7,4,6],['08월',16,12,10,8,4,6],['09월',17,12,10,9,5,6],['10월',18,13,11,9,5,7],['11월',19,14,11,10,5,7],['12월',18,13,12,9,5,7],['01월',17,12,10,9,4,6],['02월',17,12,11,9,5,7],['03월',18,13,11,10,5,7]],'가공1팀':[['04월',8,9,10,4,4,4],['05월',9,10,11,5,4,5],['06월',10,10,12,5,5,5],['07월',10,11,13,5,5,6],['08월',11,12,14,5,6,6],['09월',11,12,14,6,6,6],['10월',12,13,15,6,7,7],['11월',13,14,15,7,7,8],['12월',12,13,15,7,7,8],['01월',11,12,13,6,6,7],['02월',12,13,14,6,7,8],['03월',12,13,15,6,7,8]],'자재운영팀':[['04월',6,7,6,4,3,4],['05월',7,7,6,5,3,4],['06월',7,8,7,5,4,5],['07월',8,9,7,6,4,5],['08월',8,9,7,6,4,6],['09월',8,10,8,6,4,6],['10월',9,10,8,7,5,7],['11월',10,11,8,7,5,8],['12월',9,10,9,7,5,8],['01월',8,9,8,6,4,7],['02월',8,10,8,7,5,8],['03월',9,10,8,7,5,8]],'생산관리팀':[['04월',6,6,6,5,3,4],['05월',6,7,7,5,3,4],['06월',7,7,8,6,4,5],['07월',7,8,8,6,4,5],['08월',8,8,9,7,4,6],['09월',8,9,9,7,5,6],['10월',9,9,10,8,5,7],['11월',10,10,10,8,5,7],['12월',9,9,11,8,5,7],['01월',8,8,9,7,4,6],['02월',8,9,9,7,5,7],['03월',9,9,10,8,5,7]]};
-const perCapita=[['조립1팀',3.2],['Rear조립팀',2.7],['가공1팀',2.5],['자재운영팀',2.1],['생산관리팀',1.9]];
-const standardPerCapita=[['조립1팀',1.8],['Rear조립팀',1.5],['가공1팀',1.4],['자재운영팀',1.1],['생산관리팀',0.9]];
-const headcountMaster=[{site:'조립',dept:'조립부',group:'조립1팀',headcount:42,use:true},{site:'조립',dept:'조립부',group:'Rear조립팀',headcount:36,use:true},{site:'가공',dept:'가공부',group:'가공1팀',headcount:31,use:true},{site:'물류',dept:'자재운영부',group:'자재운영팀',headcount:27,use:true},{site:'공통',dept:'생산관리부',group:'생산관리팀',headcount:24,use:true}];
-const mailMaster=[{type:'TO',role:'담당 생산팀',recipient:'팀장 / 반장',rule:'개선요청 등록',use:true},{type:'TO',role:'5S 모듈리더',recipient:'모듈 담당자',rule:'개선완료 회신',use:true},{type:'CC',role:'생산부서 책임자',recipient:'부서 책임자',rule:'월말 미결',use:true},{type:'CC',role:'HDPS 운영',recipient:'운영 담당자',rule:'월간 실적',use:true},{type:'TO',role:'개선 담당자',recipient:'Action Owner',rule:'기한 초과',use:true}];
-function renderBars(id,vals,cls=''){const el=document.getElementById(id);if(!el)return;el.innerHTML='';vals.forEach(v=>{const c=document.createElement('div');c.className='bar-col';c.innerHTML=`<span class="bar-val">${v.v}</span><div class="bar ${cls}" style="height:${v.h}%"></div><span class="bar-label">${v.m}</span>`;el.appendChild(c)})}
-function renderActivityLegend(){const el=document.getElementById('activityLegend');if(el)el.innerHTML=activityCategories.map((c,i)=>`<span><i class="legend-dot s${i+1}"></i>${c}</span>`).join('')}
-function renderActivityByType(){const el=document.getElementById('issueChart');if(!el)return;el.className='grouped-vertical-chart';el.innerHTML='';const max=Math.max(...Object.values(activityTeamSnapshot).flat());Object.entries(activityTeamSnapshot).forEach(([team,values])=>{const g=document.createElement('div');g.className='team-bar-group';g.innerHTML=`<div class="team-bars">${values.map((v,i)=>`<div class="mini-bar-wrap"><span class="mini-value">${v}</span><div class="mini-bar s${i+1}" style="height:${Math.max(10,v/max*225)}px" title="${team} · ${activityCategories[i]} ${v}건"></div></div>`).join('')}</div><strong class="team-name">${team}</strong>`;el.appendChild(g)})}
-function renderActivityTrend(team){const rows=activityMonthly[team]||activityMonthly['조립1팀'];const headcount=teamHeadcount[team]||1;const perCapitaRows=rows.map(r=>[r[0],...r.slice(1).map(v=>v/headcount)]);const totals=perCapitaRows.map(r=>r.slice(1).reduce((a,b)=>a+b,0));const max=Math.max(...totals,0.1);const el=document.getElementById('issueChart');if(!el)return;el.className='monthly-stack-chart';el.innerHTML='';perCapitaRows.forEach((r,idx)=>{const vals=r.slice(1),total=totals[idx];const g=document.createElement('div');g.className='month-stack-group';g.innerHTML=`<span class="month-total">${total.toFixed(2)}</span><div class="month-stack" style="height:${Math.max(30,total/max*225)}px">${vals.map((v,i)=>`<span class="month-seg s${i+1}" style="height:${total?v/total*100:0}%" title="${activityCategories[i]} ${v.toFixed(2)}건/인"></span>`).join('')}</div><span class="month-label">${r[0]}</span>`;el.appendChild(g)})}
-function renderActivityChart(){const mode=document.getElementById('activityViewMode')?.value||'type';const teamSel=document.getElementById('activityTeamSelect');const title=document.getElementById('activityChartTitle');const sub=document.getElementById('activityChartSub');if(mode==='trend'){teamSel.disabled=false;const team=teamSel.value;const headcount=teamHeadcount[team]||0;title.textContent=`${team} 월별 인당 5S 활동추이`;sub.textContent=`월별 5S 유형별 개선건수 ÷ ${team} 총원 ${headcount}명 · 단위: 건/인`;renderActivityTrend(team)}else{teamSel.disabled=true;title.textContent='생산현장 팀별 5S 유형별 활동 현황';sub.textContent='팀별 6개 활동유형을 독립 세로막대로 비교';renderActivityByType()}}
-function renderMetricChart(id,data,standard=false){const el=document.getElementById(id);if(!el)return;const max=Math.max(...data.map(d=>d[1]));el.innerHTML=data.map(([name,val])=>`<div class="metric-bar-group"><div class="metric-bar-area"><div class="metric-bar ${standard?'standard':''}" style="height:${Math.max(12,val/max*185)}px" title="${name} ${val.toFixed(1)}건/인"></div></div><span class="metric-value">${val.toFixed(1)}</span><span class="metric-label">${name}</span></div>`).join('')}
-function renderProgress(){const d=[['조립1팀',88],['Rear조립팀',84],['가공1팀',91],['자재운영팀',76],['생산관리팀',72]];document.getElementById('progressList').innerHTML=d.map(x=>`<div class="prog"><b>${x[0]}</b><div class="prog-track"><div class="prog-fill" style="width:${x[1]}%"></div></div><strong>${x[1]}%</strong></div>`).join('')}
-function renderRaw(filter='all'){const rows=rawData.filter(r=>filter==='all'||r.status===filter);document.getElementById('rawTable').innerHTML=rows.map(r=>`<tr><td>${r.no}</td><td>${r.type}</td><td>${r.item}</td><td>${r.issue}</td><td>${r.action}</td><td><span class="status ${r.status==='완료'?'done':'open'}">${r.status}</span></td></tr>`).join('')}
-function renderStandards(){document.getElementById('standardTable').innerHTML=standards.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}
-function renderAudits(){document.getElementById('auditTable').innerHTML=audits.map(r=>`<tr>${r.map((c,i)=>`<td>${i===7?`<span class="status ${c==='완료'?'done':'open'}">${c}</span>`:c}</td>`).join('')}</tr>`).join('')}
-function renderHeadcountMaster(){const el=document.getElementById('headcountTable');if(!el)return;el.innerHTML=headcountMaster.map((r,i)=>`<tr><td>${r.site}</td><td>${r.dept}</td><td><b>${r.group}</b></td><td><input class="master-number" type="number" min="0" value="${r.headcount}" data-headcount-index="${i}"></td><td><input type="checkbox" ${r.use?'checked':''}></td></tr>`).join('');document.getElementById('masterHeadcountTotal').textContent=headcountMaster.reduce((s,r)=>s+(r.use?r.headcount:0),0)}
-function renderMailMaster(){const el=document.getElementById('mailTable');if(!el)return;el.innerHTML=mailMaster.map((r,i)=>`<tr><td><span class="mail-type ${r.type.toLowerCase()}">${r.type}</span></td><td>${r.role}</td><td>${r.recipient}</td><td>${r.rule}</td><td><input type="checkbox" ${r.use?'checked':''}></td></tr>`).join('');document.getElementById('mailRecipientTotal').textContent=mailMaster.filter(r=>r.use).length}
-function switchView(id){document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id===id));document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.view===id));if(id==='master'){renderHeadcountMaster();renderMailMaster()}window.scrollTo({top:0,behavior:'smooth'})}
-document.querySelectorAll('[data-view],[data-view-target]').forEach(b=>b.addEventListener('click',()=>switchView(b.dataset.view||b.dataset.viewTarget)));
-document.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>{document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));c.classList.add('active');renderRaw(c.dataset.status)}));
-function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1600)}
-document.getElementById('searchBtn')?.addEventListener('click',()=>{renderActivityChart();document.querySelectorAll('.kpi').forEach((k,i)=>{k.classList.remove('kpi-updated');setTimeout(()=>k.classList.add('kpi-updated'),i*70)});toast('조회 조건을 반영했습니다.')});
-document.getElementById('exportBtn')?.addEventListener('click',()=>window.print());document.getElementById('saveBtn')?.addEventListener('click',()=>toast('5S 개선요청이 저장되었습니다.'));document.getElementById('activityViewMode')?.addEventListener('change',renderActivityChart);document.getElementById('activityTeamSelect')?.addEventListener('change',renderActivityChart);document.getElementById('masterSaveBtn')?.addEventListener('click',()=>toast('통합기준정보 변경사항을 저장했습니다.'));document.getElementById('masterExportBtn')?.addEventListener('click',()=>window.print());document.getElementById('addGroupBtn')?.addEventListener('click',()=>toast('집계그룹 신규등록 기능 연결 대상입니다.'));document.getElementById('addMailBtn')?.addEventListener('click',()=>toast('자동 메일링 대상 신규등록 기능 연결 대상입니다.'));
-document.querySelectorAll('.kpi').forEach((k,i)=>setTimeout(()=>k.classList.add('kpi-enter'),i*80));
-renderActivityLegend();renderActivityChart();renderMetricChart('perCapitaChart',perCapita);renderMetricChart('standardPerCapitaChart',standardPerCapita,true);renderBars('auditChart',[{m:'10월',v:'96',h:82},{m:'11월',v:'96',h:82},{m:'12월',v:'95',h:77},{m:'01월',v:'95',h:77},{m:'02월',v:'94',h:72},{m:'03월',v:'94.6',h:75}],'audit');renderProgress();renderRaw();renderStandards();renderAudits();renderHeadcountMaster();renderMailMaster();
+/* =========================================================
+   GMES HDPS 5S 활동관리 — Data Model & Rendering
+   원본 화면설계요청서(APRISO_GMES_HDPS_5S_화면설계_요청서) 기준
+   ========================================================= */
+
+// 요청서 "5S 부서별 등록현황" 표 컬럼 기준 6개 유형 (정리·정돈·청소·시각화관리·습관화·자주보전)
+const CATEGORIES = ['정리','정돈','청소','시각화관리','습관화','자주보전'];
+const DEPARTMENTS = ['조립부','가공부','자재운영부','생산관리부'];
+
+const TEAMS = [
+  {id:'T1', name:'조립1팀',   dept:'조립부',     group:'A그룹', headcount:42},
+  {id:'T2', name:'Rear조립팀', dept:'조립부',     group:'B그룹', headcount:36},
+  {id:'T3', name:'가공1팀',   dept:'가공부',     group:'A그룹', headcount:31},
+  {id:'T4', name:'자재운영팀', dept:'자재운영부', group:'A그룹', headcount:27},
+  {id:'T5', name:'생산관리팀', dept:'생산관리부', group:'A그룹', headcount:24},
+];
+
+// 요청서 차트가 "04월~03월" 12개월 범위를 보여주므로 동일하게 구성
+const MONTHS = ['2025-04','2025-05','2025-06','2025-07','2025-08','2025-09','2025-10','2025-11','2025-12','2026-01','2026-02','2026-03'];
+function monthLabel(m){ return m.slice(5,7)+'월' }
+const monthIndex = m => MONTHS.indexOf(m);
+const prevMonth = m => MONTHS[Math.max(0, monthIndex(m)-1)];
+const RECENT3 = MONTHS.slice(-3); // 2026-01,02,03 — 요청서 필터 기본값(등록월 2026-01~2026-03)과 동일
+
+/* ---------- 유틸 ---------- */
+const teamById = id => TEAMS.find(t=>t.id===id);
+const teamsInDept = dept => TEAMS.filter(t=>t.dept===dept);
+const deptHeadcount = dept => teamsInDept(dept).reduce((a,t)=>a+t.headcount,0);
+function hash(str){let h=0;for(let i=0;i<str.length;i++){h=(h*31+str.charCodeAt(i))>>>0}return h}
+// 2차 해시 — 1차 해시가 특정 modulus에서 값이 뭉치는 것을 방지하기 위한 재혼합
+function hash2(str){ const h = hash(str); return ((h ^ (h>>>13)) * 2654435761) >>> 0; }
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(()=>t.classList.remove('show'), 1800);
+}
+
+/* =========================================================
+   데이터 생성 (결정론적 mock — 서버 연동 전 목업)
+   ========================================================= */
+
+// 팀별 x 월별 x 6유형 "전체 활동건수" — HDPS42 차트3(팀별 유형별 활동현황)의 기초 데이터
+const MONTHLY = {};
+TEAMS.forEach((t,ti)=>{
+  MONTHLY[t.id] = {};
+  MONTHS.forEach((m,mi)=>{
+    MONTHLY[t.id][m] = CATEGORIES.map((c,ci)=>{
+      const seed = hash(t.id+c+m);
+      const base = 5 + (ti%3)*2 + (5-ci)*0.6;
+      const growth = mi*0.35;
+      const noise = seed%4;
+      return Math.max(1, Math.round(base+growth+noise));
+    });
+  });
+});
+
+// 부서별 x 월별 "5S 표준화(수평전개) 개선건수" — HDPS42 차트1(요청서 기능요구사항 1번)의 기초 데이터
+const STD_MONTHLY = {};
+DEPARTMENTS.forEach((d,di)=>{
+  STD_MONTHLY[d] = {};
+  MONTHS.forEach((m,mi)=>{
+    const seed = hash(d+m+'std');
+    STD_MONTHLY[d][m] = Math.max(1, Math.round(3+di*1.4 + mi*0.32 + seed%3));
+  });
+});
+
+// 팀별 x 월별 Audit 총점 — HDPS42 차트2 및 안돈보드 기초 데이터
+const AUDIT_BASE = {T1:88, T2:83, T3:76, T4:69, T5:80};
+function auditScore(team, month){
+  const mi = monthIndex(month);
+  const seed = hash(team.id+month+'aud');
+  const v = AUDIT_BASE[team.id] + mi*0.55 + (seed%7-3);
+  return Math.max(55, Math.min(99, Math.round(v*10)/10));
+}
+function deptAuditScore(dept, month){
+  const ts = teamsInDept(dept);
+  return ts.reduce((a,t)=>a+auditScore(t,month),0)/ts.length;
+}
+
+// 5s_standard_item — HDPS32 점검항목 기준정보
+const STANDARDS = [
+  {id:'STD-001', category:'정리',       seq:1, q:'불필요한 부품, 재료, 기계등으로 공간의 낭비요소는 없는가?', note:'',                     use:true,  editor:'SYSTEM', date:'2026-01-19', modBy:'SYSTEM', modDate:'2026-01-19'},
+  {id:'STD-002', category:'정리',       seq:2, q:'불필요한 치공구, 대차등으로 작업의 방해요소는 없는가?',      note:'',                     use:true,  editor:'SYSTEM', date:'2026-01-19', modBy:'김도현', modDate:'2026-02-10'},
+  {id:'STD-003', category:'정리',       seq:3, q:'여분의 재고로 관리·품질·정리물류이동의 낭비 요소는 없는가?', note:'',                     use:true,  editor:'SYSTEM', date:'2026-01-19', modBy:'SYSTEM', modDate:'2026-01-19'},
+  {id:'STD-004', category:'정돈',       seq:1, q:'필요한 것과 불필요한 것이 구분되지 않고 혼재되어 있지 않은가?', note:'',                   use:true,  editor:'SYSTEM', date:'2026-01-19', modBy:'SYSTEM', modDate:'2026-01-19'},
+  {id:'STD-005', category:'정돈',       seq:2, q:'가용재, 불용재 기준이 정해져 있는가?',                       note:'',                     use:true,  editor:'SYSTEM', date:'2026-01-19', modBy:'박지연', modDate:'2026-02-15'},
+  {id:'STD-006', category:'정돈',       seq:3, q:'최대·최소량과 품명이 명확히 표시되어 있는가?',               note:'라벨 표준 부착',        use:true,  editor:'SYSTEM', date:'2026-01-19', modBy:'SYSTEM', modDate:'2026-01-19'},
+  {id:'STD-007', category:'청소',       seq:1, q:'바닥에 먼지·기름·쓰레기 없이 깨끗한가?',                     note:'',                     use:true,  editor:'SYSTEM', date:'2026-01-19', modBy:'SYSTEM', modDate:'2026-01-19'},
+  {id:'STD-008', category:'청소',       seq:2, q:'기계 청소와 점검이 주기적으로 되고 있는가?',                 note:'주간 체크리스트 기준',   use:true,  editor:'SYSTEM', date:'2026-01-19', modBy:'SYSTEM', modDate:'2026-01-19'},
+  {id:'STD-009', category:'시각화관리', seq:1, q:'표준·정상·이상 상태가 즉시 구분되는가?',                     note:'쉐도우보드 적용 여부',   use:true,  editor:'SYSTEM', date:'2026-02-02', modBy:'이수현', modDate:'2026-02-02'},
+  {id:'STD-010', category:'시각화관리', seq:2, q:'각종 게시물이 최신본으로 빠짐없이 매하게 관리되고 있는가?',   note:'',                     use:true,  editor:'SYSTEM', date:'2026-01-19', modBy:'SYSTEM', modDate:'2026-01-19'},
+  {id:'STD-011', category:'습관화',     seq:1, q:'정리·정돈·청소를 유지 개선하는 활동이 습관화되어 있는가?',    note:'',                     use:true,  editor:'SYSTEM', date:'2026-01-19', modBy:'SYSTEM', modDate:'2026-01-19'},
+  {id:'STD-012', category:'자주보전',   seq:1, q:'설비 자주보전(일상점검) 항목이 정해진 주기로 실시되는가?',    note:'',                     use:true,  editor:'SYSTEM', date:'2026-01-19', modBy:'SYSTEM', modDate:'2026-01-19'},
+  {id:'STD-013', category:'자주보전',   seq:2, q:'RGV 이동경로 내 협착 위험요소가 없는가?',                    note:'가공부 특화항목',       use:false, editor:'이수현', date:'2025-12-04', modBy:'이수현', modDate:'2025-12-04'},
+];
+
+// 5s_improvement — HDPS34 등록 + HDPS21 단건조회 + HDPS42 "5S 상세내역" 원천 데이터 (최근 3개월)
+let REQUESTS = [
+  {id:'IMP-2026-0301', date:'2026-03-24', team:'T1', category:'정리',       title:'RGV 레일 이물질 정리',       location:'RGV 레일 주변', issue:'RGV 레일 주변 이물질 및 불필요 자재 적치',    action:'분진 제거 및 불필요 자재 폐기',      status:'close',      standardized:true,  before:true, after:true},
+  {id:'IMP-2026-0298', date:'2026-03-22', team:'T2', category:'정돈',       title:'부품 라벨 표준화',           location:'부품 보관대',   issue:'최대·최소 수량 미표기로 재고 과부족 반복',    action:'라벨 및 위치표준 적용',              status:'verify',     standardized:true,  before:true, after:true},
+  {id:'IMP-2026-0294', date:'2026-03-20', team:'T3', category:'청소',       title:'절삭유 비산구역 청소주기 재정의', location:'가공 2라인',  issue:'절삭유 비산구역 청소주기·담당 불명확',       action:'주간 체크리스트 재정의',             status:'done',       standardized:false, before:true, after:false},
+  {id:'IMP-2026-0289', date:'2026-03-18', team:'T1', category:'시각화관리', title:'공구 쉐도우보드 적용',       location:'조립1라인 공구대', issue:'공구 위치표시 불명확으로 반납 지연 발생',   action:'쉐도우보드 및 위치 라벨 적용',        status:'inprogress', standardized:true,  before:true, after:false},
+  {id:'IMP-2026-0281', date:'2026-03-11', team:'T4', category:'자주보전',   title:'입고구역 경계표지 재도색',   location:'입고 대기구역', issue:'위험구역 경계 표시 퇴색으로 식별 곤란',      action:'경계선 및 위험표지 재도색',           status:'registered', standardized:false, before:true, after:false},
+  {id:'IMP-2026-0276', date:'2026-03-05', team:'T5', category:'습관화',     title:'우수사례 게시판 연동',       location:'생산관리 게시판', issue:'우수 5S 활동이 타 팀에 공유되지 않음',      action:'표준화 자료 작성 후 수평전개 예정',    status:'draft',      standardized:true,  before:false,after:false},
+  {id:'IMP-2026-0212', date:'2026-02-26', team:'T3', category:'정돈',       title:'가공유 보관대 표준화',       location:'가공유 보관소', issue:'가공유 보관 위치 미표준',                   action:'전용 보관대 및 라벨 적용',           status:'close',      standardized:true,  before:true, after:true},
+  {id:'IMP-2026-0205', date:'2026-02-19', team:'T4', category:'정리',       title:'입고 대기구역 라인마킹',     location:'입고 통로',     issue:'입고 대기 파렛트가 통로를 침범',            action:'대기구역 라인마킹 재정비',           status:'close',      standardized:false, before:true, after:true},
+  {id:'IMP-2026-0198', date:'2026-02-14', team:'T2', category:'청소',       title:'컨베이어 하부 청소주기 단축', location:'조립2라인 하부', issue:'컨베이어 하부 분진 누적',                  action:'하부 청소 주기 단축(월1→주1)',       status:'close',      standardized:true,  before:true, after:true},
+  {id:'IMP-2026-0161', date:'2026-01-28', team:'T5', category:'시각화관리', title:'게시판 자동 연동',           location:'생산관리 게시판', issue:'게시판 최신 데이터 미반영',                action:'게시판 자동 연동 스크립트 적용',      status:'verify',     standardized:false, before:false,after:false},
+  {id:'IMP-2026-0154', date:'2026-01-20', team:'T1', category:'자주보전',   title:'지게차 이동경로 표지 보수',  location:'조립1라인 통로', issue:'지게차 이동경로 표지 훼손',                action:'경계선 재도색 및 반사테이프 부착',    status:'close',      standardized:false, before:true, after:true},
+  {id:'IMP-2026-0140', date:'2026-01-09', team:'T3', category:'습관화',     title:'표준 재교육 및 현장 게시',   location:'가공1라인',     issue:'표준 미준수 재발(2회차)',                  action:'표준서 재교육 및 현장 게시',          status:'inprogress', standardized:true,  before:true, after:false},
+  {id:'IMP-2026-0231', date:'2026-02-08', team:'T1', category:'정돈',       title:'공구 반납위치 재공지',       location:'조립1라인 공구대', issue:'도구 반납위치 미준수 반복',                action:'반납위치 표준 재공지 및 순회점검',    status:'registered', standardized:false, before:false,after:false},
+  {id:'IMP-2026-0225', date:'2026-02-03', team:'T5', category:'청소',       title:'사무구역 청소당번 재배치',   location:'생산관리 사무실', issue:'사무구역 청소상태 저하',                   action:'청소당번표 재배치',                  status:'inprogress', standardized:false, before:true, after:false},
+];
+
+const STATUS_LABEL = {draft:'Draft', registered:'요청등록', inprogress:'생산팀 조치중', done:'조치완료', verify:'5S모듈 검증', close:'Close'};
+
+function andonState(score){
+  if(score>=90) return 'g';
+  if(score>=75) return 'a';
+  return 'r';
+}
+
+/* =========================================================
+   업무 로직
+   ========================================================= */
+// 인당 표준화 개선건수 = 부서 표준화 개선건수 ÷ 부서 인원 (요청서 기능요구사항 1번)
+function deptStdPerCapita(dept, month){ return STD_MONTHLY[dept][month] / deptHeadcount(dept); }
+function orgStdPerCapita(month){
+  const totalStd = DEPARTMENTS.reduce((a,d)=>a+STD_MONTHLY[d][month],0);
+  const totalHc = DEPARTMENTS.reduce((a,d)=>a+deptHeadcount(d),0);
+  return totalStd/totalHc;
+}
+function orgAuditAvg(month){
+  return TEAMS.reduce((a,t)=>a+auditScore(t,month),0)/TEAMS.length;
+}
+// 개선조치율 = 전월 지적건수(요청등록 이상) 중 완료 비율 — HDPS33 완료체크 기준
+function actionRate(month){
+  const pm = prevMonth(month);
+  const items = REQUESTS.filter(r => r.date.slice(0,7)===pm && r.status!=='draft');
+  if(!items.length) return null;
+  const doneCnt = items.filter(r=>['done','verify','close'].includes(r.status)).length;
+  return {rate: doneCnt/items.length*100, done:doneCnt, total:items.length, month:pm};
+}
+
+// HDPS33 감사 상세: 전월 점검결과(고정)/개선내역/조치완료/당월 점검결과
+const AUDIT_TEMPLATES = {
+  '정리':      {prevIssue:'통로 및 작업구역 내 불필요 자재 적치', note:'주간 정리 담당자 지정 및 순회점검', curIssue:'전월 대비 개선 확인, 재발 없음'},
+  '정돈':      {prevIssue:'최대·최소량 표시 누락 구간 잔존',      note:'표시 라벨 전수 재부착',              curIssue:'일부 구간 라벨 탈락 재발'},
+  '청소':      {prevIssue:'설비 하부 분진 누적',                 note:'청소 체크리스트 주기 단축',          curIssue:'청소주기 준수 확인'},
+  '시각화관리': {prevIssue:'공구 위치표시 일부 훼손',              note:'쉐도우보드 재제작',                  curIssue:'쉐도우보드 정상 적용 확인'},
+  '습관화':    {prevIssue:'점검·정리 활동이 담당자별로 편차 큼',   note:'주간 점검표 게시 및 상호 점검',       curIssue:'점검표 게시 확인, 습관화 진행중'},
+  '자주보전':  {prevIssue:'설비 일상점검 누락 구간 존재',          note:'점검주기 알림 및 체크시트 개정',      curIssue:'점검주기 준수, 누락 없음'},
+};
+const auditState = {}; // key: teamId+month -> array of {done:boolean} overrides
+function auditDetailFor(team, month){
+  const base = auditScore(team, month);
+  const key = team.id+month;
+  if(!auditState[key]) auditState[key] = CATEGORIES.map(()=>null);
+  return CATEGORIES.map((c,i)=>{
+    const seed = hash(team.id+c+month);
+    const seed2 = hash2(team.id+c+month);
+    const quality = (base-70)/30; // 팀 Audit 총점 기준 -0.5 ~ 0.97
+    const score = Math.max(0, Math.min(4, Math.round(2 + quality*2 + (seed%3-1))));
+    const doneProb = 45 + quality*35; // 총점이 높은 팀일수록 조치완료 확률↑
+    const defaultDone = (seed2 % 100) < doneProb;
+    const done = auditState[key][i]===null ? defaultDone : auditState[key][i];
+    const tpl = AUDIT_TEMPLATES[c];
+    const standard = STANDARDS.find(s=>s.category===c) || {q:`${c} 점검항목`};
+    return {category:c, catIndex:i, standard:standard.q, score, prevIssue:tpl.prevIssue, note:tpl.note, curIssue:tpl.curIssue, done};
+  });
+}
+function toggleAuditDone(teamId, month, catIndex){
+  const key = teamId+month;
+  if(!auditState[key]) auditState[key] = CATEGORIES.map(()=>null);
+  const current = auditDetailFor(teamById(teamId), month)[catIndex].done;
+  auditState[key][catIndex] = !current;
+}
+
+// 팀별 문제점 현황 (HDPS42 하단 패널) — 최근 3개월 중 점수 낮은(문제) 건 카운트
+function problemCount(team, category){
+  let cnt=0;
+  RECENT3.forEach(m=>{
+    const d = auditDetailFor(team, m).find(x=>x.category===category);
+    if(d.score<=2) cnt++;
+  });
+  return cnt;
+}
+// 팀별 개선조치율(%) — 최근 3개월 x 6유형 조치완료 비율
+function teamActionRate(team){
+  let done=0, total=0;
+  RECENT3.forEach(m=>{
+    auditDetailFor(team, m).forEach(d=>{ total++; if(d.done) done++; });
+  });
+  return total ? Math.round(done/total*100) : 0;
+}
+
+/* =========================================================
+   HDPS42 — 5S 활동 종합 대시보드
+   ========================================================= */
+function renderAndon(){
+  const el = document.getElementById('andonStrip');
+  const month = document.getElementById('scopePeriod').value;
+  el.innerHTML = TEAMS.map(t=>{
+    const score = auditScore(t, month);
+    const s = andonState(score);
+    return `<div class="andon-cell ${s}">
+      <span class="andon-team">${t.name}</span>
+      <strong class="andon-score mono">${score.toFixed(1)}</strong>
+      <span class="andon-tag">${s==='g'?'정상':s==='a'?'주의':'즉시조치'}</span>
+    </div>`;
+  }).join('');
+}
+
+function renderDashKPIs(month){
+  document.getElementById('kpiPerCapita').textContent = orgStdPerCapita(month).toFixed(2);
+  document.getElementById('kpiAuditAvg').textContent = orgAuditAvg(month).toFixed(1);
+  const ar = actionRate(month);
+  document.getElementById('kpiActionRate').textContent = ar ? ar.rate.toFixed(1)+'%' : '–';
+  document.getElementById('kpiActionRateSub').textContent = ar ? `${monthLabel(ar.month)} 지적 ${ar.total}건 중 ${ar.done}건 완료` : '전월 데이터 없음';
+  document.getElementById('kpiTotalReq').textContent = REQUESTS.length;
+}
+
+const DEPT_COLORS = ['s1','s2','s3','s4'];
+function renderLegend(elId){
+  document.getElementById(elId).innerHTML = DEPARTMENTS.map((d,i)=>`<span><i class="ddot ${DEPT_COLORS[i]}"></i>${d}</span>`).join('');
+}
+
+// 막대 + 추이선(SVG overlay) 콤보차트 — 요청서 "추이선 추가요청" 반영
+function renderLineBarChart(wrapId, valueFn){
+  const el = document.getElementById(wrapId);
+  const H = 190;
+  let max = 0;
+  DEPARTMENTS.forEach(d=> MONTHS.forEach(m=> { max = Math.max(max, valueFn(d,m)); }));
+  max = max || 1;
+
+  const bars = MONTHS.map(m=>{
+    const cells = DEPARTMENTS.map((d,di)=>{
+      const v = valueFn(d,m);
+      const h = Math.max(3, v/max*H);
+      return `<div class="lb-bar ${DEPT_COLORS[di]}" style="height:${h}px" title="${d} · ${monthLabel(m)} · ${v.toFixed ? v.toFixed(2) : v}"></div>`;
+    }).join('');
+    return `<div class="lb-month"><div class="lb-bars">${cells}</div><span class="lb-mlabel">${monthLabel(m)}</span></div>`;
+  }).join('');
+
+  const slot = 100/MONTHS.length;
+  const lineColors = ['#1a4262','#3d6c8f','#c9922f','#8a6a9e'];
+  const polylines = DEPARTMENTS.map((d,di)=>{
+    const pts = MONTHS.map((m,mi)=>{
+      const v = valueFn(d,m);
+      const x = (mi+0.5)*slot;
+      const y = 100 - (v/max*92);
+      return `${x.toFixed(2)},${y.toFixed(2)}`;
+    }).join(' ');
+    return `<polyline points="${pts}" fill="none" stroke="${lineColors[di]}" stroke-width="0.6" vector-effect="non-scaling-stroke" opacity="0.85"/>`;
+  }).join('');
+
+  el.innerHTML = `<div class="lb-bars-row" style="height:${H}px">${bars}</div>
+    <svg class="lb-svg" viewBox="0 0 100 100" preserveAspectRatio="none">${polylines}</svg>`;
+}
+
+function renderTypeLegend(){
+  document.getElementById('typeLegend').innerHTML = CATEGORIES.map((c,i)=>`<span><i class="tdot s${i+1}"></i>${c}</span>`).join('');
+  document.getElementById('problemLegend').innerHTML = CATEGORIES.map((c,i)=>`<span><i class="tdot s${i+1}"></i>${c}</span>`).join('');
+}
+
+function renderChartControls(){
+  document.getElementById('chartCategory').innerHTML = CATEGORIES.map(c=>`<option>${c}</option>`).join('');
+  document.getElementById('chartTeam').innerHTML = TEAMS.map(t=>`<option value="${t.id}">${t.name}</option>`).join('');
+}
+function renderTeamTypeChart(){
+  const mode = document.getElementById('chartMode').value;
+  const el = document.getElementById('teamTypeChart');
+  document.getElementById('chartCategory').style.display = mode==='type' ? '' : 'none';
+  document.getElementById('chartTeam').style.display = mode==='trend' ? '' : 'none';
+
+  if(mode==='trend'){
+    const teamId = document.getElementById('chartTeam').value || TEAMS[0].id;
+    const team = teamById(teamId);
+    const max = Math.max(...MONTHS.map(m=>Math.max(...MONTHLY[team.id][m])));
+    el.className = 'type-chart trend-mode';
+    el.innerHTML = MONTHS.map(m=>{
+      const vals = MONTHLY[team.id][m];
+      return `<div class="team-bar-group">
+        <div class="team-bars">${vals.map((v,i)=>`<div class="mini-bar-wrap"><span class="mini-value">${v}</span><div class="mini-bar s${i+1}" style="height:${Math.max(6,v/max*150)}px" title="${team.name} · ${CATEGORIES[i]} · ${monthLabel(m)} · ${v}건"></div></div>`).join('')}</div>
+        <strong class="team-name">${monthLabel(m)}</strong>
+      </div>`;
+    }).join('');
+  } else {
+    const cat = document.getElementById('chartCategory').value || CATEGORIES[0];
+    const ci = CATEGORIES.indexOf(cat);
+    const month = document.getElementById('scopePeriod').value;
+    const max = Math.max(...TEAMS.map(t=>MONTHLY[t.id][month][ci]));
+    el.className = 'type-chart';
+    el.innerHTML = TEAMS.map(t=>{
+      const v = MONTHLY[t.id][month][ci];
+      return `<div class="team-bar-group">
+        <div class="team-bars"><div class="mini-bar-wrap"><span class="mini-value">${v}</span><div class="mini-bar s${ci+1}" style="height:${Math.max(8,v/max*150)}px"></div></div></div>
+        <strong class="team-name">${t.name}</strong>
+      </div>`;
+    }).join('');
+  }
+}
+
+function renderProblemChart(){
+  const el = document.getElementById('problemChart');
+  const data = TEAMS.map(t=> CATEGORIES.map(c=>problemCount(t,c)));
+  const max = Math.max(1, ...data.flat());
+  el.innerHTML = TEAMS.map((t,ti)=>{
+    const vals = data[ti];
+    return `<div class="team-bar-group">
+      <div class="team-bars">${vals.map((v,i)=>`<div class="mini-bar-wrap"><span class="mini-value">${v}</span><div class="mini-bar s${i+1}" style="height:${Math.max(6,v/max*150)}px" title="${t.name} · ${CATEGORIES[i]} · 문제 ${v}건(최근3개월)"></div></div>`).join('')}</div>
+      <strong class="team-name">${t.name}</strong>
+    </div>`;
+  }).join('');
+}
+function renderRateChart(){
+  const el = document.getElementById('rateChart');
+  el.innerHTML = TEAMS.map(t=>{
+    const r = teamActionRate(t);
+    return `<div class="rate-col">
+      <span class="rate-val mono">${r}%</span>
+      <div class="rate-bar" style="height:${Math.max(6,r/100*150)}px"></div>
+      <span class="rate-name">${t.name}</span>
+    </div>`;
+  }).join('');
+}
+
+let rawStatusFilter = 'all';
+function renderRawTable(){
+  const rows = REQUESTS.filter(r=>{
+    if(rawStatusFilter==='완료') return ['done','verify','close'].includes(r.status);
+    if(rawStatusFilter==='미결') return ['draft','registered','inprogress'].includes(r.status);
+    return true;
+  });
+  document.getElementById('rawTableBody').innerHTML = rows.map((r,i)=>{
+    const done = ['done','verify','close'].includes(r.status);
+    return `<tr>
+      <td>${i+1}</td><td>${r.category}</td><td>${teamById(r.team).name}</td>
+      <td>${r.issue}</td><td>${r.action||'—'}</td>
+      <td><span class="status ${done?'done':'open'}">${done?'완료':'미결'}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderDeptRegisterTable(){
+  document.getElementById('regRangeLabel').textContent = `${RECENT3[0]} ~ ${RECENT3[2]}`;
+  document.getElementById('deptRegisterBody').innerHTML = TEAMS.map(t=>{
+    const sums = [0,0,0,0,0,0];
+    RECENT3.forEach(m=> MONTHLY[t.id][m].forEach((v,i)=> sums[i]+=v));
+    const total = sums.reduce((a,b)=>a+b,0);
+    const stdCnt = RECENT3.reduce((a,m)=> a + Math.round(STD_MONTHLY[t.dept][m]/teamsInDept(t.dept).length), 0);
+    return `<tr><td><b>${t.name}</b></td><td class="mono">${stdCnt}</td><td class="mono">${total}</td>${sums.map(v=>`<td class="mono">${v}</td>`).join('')}</tr>`;
+  }).join('');
+}
+
+function renderDetailTable(){
+  document.getElementById('detailTableBody').innerHTML = REQUESTS.map(r=>{
+    const t = teamById(r.team);
+    return `<tr>
+      <td class="mono">${r.id}</td><td class="mono">${r.date.slice(0,4)}</td>
+      <td><span class="status ${r.standardized?'done':'open'}">${r.standardized?'Y':'N'}</span></td>
+      <td class="mono">${monthLabel(r.date.slice(0,7))}</td>
+      <td>${r.title}</td><td>${t.dept}</td><td>${t.group}</td><td>${r.location}</td>
+      <td>${r.issue}</td><td>${r.action||'—'}</td><td class="mono">${r.date}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderDashboard(){
+  const month = document.getElementById('scopePeriod').value;
+  renderAndon();
+  renderDashKPIs(month);
+  renderLegend('stdLegend');
+  renderLegend('auditLegend');
+  renderLineBarChart('stdChartWrap', (d,m)=>deptStdPerCapita(d,m));
+  renderLineBarChart('auditChartWrap', (d,m)=>deptAuditScore(d,m));
+  renderTeamTypeChart();
+  renderProblemChart();
+  renderRateChart();
+  renderRawTable();
+  renderDeptRegisterTable();
+  renderDetailTable();
+}
+
+/* =========================================================
+   HDPS32 — 팀별 5S 점검항목관리
+   ========================================================= */
+function renderStandardFilters(){
+  document.getElementById('stdFilterCategory').innerHTML = '<option value="all">전체</option>' + CATEGORIES.map(c=>`<option>${c}</option>`).join('');
+}
+function renderStandardTable(){
+  const cat = document.getElementById('stdFilterCategory').value;
+  const rows = STANDARDS.filter(s=> cat==='all' || s.category===cat);
+  document.getElementById('standardTableBody').innerHTML = rows.map((s,i)=>`<tr>
+    <td>${i+1}</td><td>${s.category}</td><td class="mono">${s.seq}</td>
+    <td>${s.q}</td><td class="muted">${s.note||'—'}</td>
+    <td><select class="inline-select" data-std="${s.id}"><option value="y" ${s.use?'selected':''}>사용</option><option value="n" ${!s.use?'selected':''}>미사용</option></select></td>
+    <td>${s.editor}</td><td class="mono">${s.date}</td><td>${s.modBy}</td><td class="mono">${s.modDate}</td>
+  </tr>`).join('');
+  document.querySelectorAll('[data-std]').forEach(sel=>{
+    sel.addEventListener('change', e=>{
+      const std = STANDARDS.find(x=>x.id===e.target.dataset.std);
+      std.use = e.target.value==='y';
+      toast(`${std.id} 사용여부가 '${std.use?'사용':'미사용'}'으로 변경되었습니다.`);
+    });
+  });
+}
+
+/* =========================================================
+   HDPS33 — 팀별 5S Audit 실적
+   ========================================================= */
+function renderAuditFilters(){
+  document.getElementById('auditFilterMonth').innerHTML = MONTHS.slice().reverse().map(m=>`<option value="${m}">${m}</option>`).join('');
+  document.getElementById('auditFilterTeam').innerHTML = TEAMS.map(t=>`<option value="${t.id}">${t.name}</option>`).join('');
+}
+function renderAuditView(){
+  const month = document.getElementById('auditFilterMonth').value;
+  const teamId = document.getElementById('auditFilterTeam').value || TEAMS[0].id;
+  const team = teamById(teamId);
+  const details = auditDetailFor(team, month);
+  const avgScore = Math.round(details.reduce((a,d)=>a+d.score,0)/details.length*25);
+
+  document.getElementById('auditHeaderCard').innerHTML = `
+    <div class="ah-cell"><span>대상팀</span><strong>${team.name}</strong></div>
+    <div class="ah-cell"><span>평가월</span><strong class="mono">${month}</strong></div>
+    <div class="ah-cell"><span>평가자</span><strong>5S 모듈리더</strong></div>
+    <div class="ah-cell"><span>총점(환산)</span><strong class="mono ${andonState(avgScore)==='r'?'bad':andonState(avgScore)==='a'?'warn':'good'}">${avgScore}</strong></div>`;
+
+  document.getElementById('auditDetailBody').innerHTML = details.map(d=>`<tr>
+    <td>${d.standard}</td>
+    <td class="mono">${d.score} / 4</td>
+    <td class="col-prev">${d.prevIssue}</td>
+    <td class="col-note">${d.note}</td>
+    <td><button class="btn-check ${d.done?'on':''}" data-team="${team.id}" data-month="${month}" data-cat="${d.catIndex}">${d.done?'완료':'미결'}</button></td>
+    <td class="col-cur">${d.curIssue}</td>
+  </tr>`).join('');
+
+  document.querySelectorAll('.btn-check').forEach(btn=>{
+    btn.addEventListener('click', e=>{
+      const b = e.currentTarget;
+      toggleAuditDone(b.dataset.team, b.dataset.month, +b.dataset.cat);
+      renderAuditView();
+    });
+  });
+}
+
+/* =========================================================
+   HDPS34+21 — 개선요청 등록/조회
+   ========================================================= */
+function renderRequestTeamOptions(){
+  document.getElementById('reqFilterTeam').innerHTML = '<option value="all">전체 팀</option>' + TEAMS.map(t=>`<option value="${t.id}">${t.name}</option>`).join('');
+}
+function renderDeptAuditSummary(){
+  const month = document.getElementById('scopePeriod').value;
+  document.getElementById('deptAuditSummaryBody').innerHTML = DEPARTMENTS.map(d=>{
+    const all = REQUESTS.filter(r=> teamById(r.team).dept===d && r.status!=='draft');
+    const cur = all.filter(r=> r.date.slice(0,7)===month);
+    const doneAll = all.filter(r=>['done','verify','close'].includes(r.status)).length;
+    const doneCur = cur.filter(r=>['done','verify','close'].includes(r.status)).length;
+    const rate = all.length ? (doneAll/all.length*100).toFixed(1) : '0.0';
+    return `<tr><td><b>${d}</b></td><td class="mono">${rate}%</td><td class="mono">${all.length}</td><td class="mono">${doneAll}</td><td class="mono">${cur.length}</td><td class="mono">${doneCur}</td></tr>`;
+  }).join('');
+}
+function renderRequestGrid(){
+  const teamFilter = document.getElementById('reqFilterTeam').value;
+  const statusFilter = document.getElementById('reqFilterStatus').value;
+  const rows = REQUESTS.filter(r=>{
+    if(teamFilter!=='all' && r.team!==teamFilter) return false;
+    if(statusFilter!=='all' && r.status!==statusFilter) return false;
+    return true;
+  });
+  document.getElementById('requestGrid').innerHTML = rows.map(r=>`
+    <div class="request-card" data-id="${r.id}">
+      <div class="rc-top">
+        <span class="rc-id mono">${r.id}</span>
+        <span class="pill st-${r.status}">${STATUS_LABEL[r.status]}</span>
+      </div>
+      <p class="rc-title">${r.title}${r.standardized?'<span class="std-flag">표준화</span>':''}</p>
+      <p class="rc-issue">${r.issue}</p>
+      <div class="rc-meta">
+        <span>${teamById(r.team).name}</span><span>·</span><span>${r.category}</span><span>·</span><span class="mono">${r.date}</span>
+      </div>
+      <div class="rc-ba">
+        <span class="ba-flag ${r.before?'on':''}">Before</span>
+        <span class="ba-flag ${r.after?'on':''}">After</span>
+      </div>
+    </div>`).join('') || `<p class="empty-note">조건에 해당하는 개선요청이 없습니다.</p>`;
+
+  document.querySelectorAll('.request-card').forEach(card=>{
+    card.addEventListener('click', ()=> openRequestModal(card.dataset.id));
+  });
+}
+
+let editingId = null;
+function fillSelectOptions(){
+  document.getElementById('fTeam').innerHTML = TEAMS.map(t=>`<option value="${t.id}">${t.name} (${t.dept})</option>`).join('');
+  document.getElementById('fCategory').innerHTML = CATEGORIES.map(c=>`<option>${c}</option>`).join('');
+}
+function mailNote(status){
+  if(status==='draft') return '메일링 대상 아님 (Draft 상태에서는 발송되지 않습니다)';
+  if(['registered','inprogress'].includes(status)) return 'TO 담당 생산팀 팀장/반장 — 문제점 등록 알림이 자동 발송되었습니다.';
+  return 'TO 5S 모듈리더 — 개선완료 회신 알림이 자동 발송되었습니다.';
+}
+function openRequestModal(id){
+  editingId = id || null;
+  const r = id ? REQUESTS.find(x=>x.id===id) : null;
+  document.getElementById('reqModalTitle').textContent = r ? '개선요청 상세' : '신규 개선요청';
+  document.getElementById('reqModalId').textContent = r ? r.id : '등록 시 자동 채번';
+  document.getElementById('fMonth').value = r ? r.date.slice(0,7) : '2026-03';
+  document.getElementById('fTeam').value = r ? r.team : TEAMS[0].id;
+  document.getElementById('fCategory').value = r ? r.category : CATEGORIES[0];
+  document.getElementById('fLocation').value = r ? r.location : '';
+  document.getElementById('fTitle').value = r ? r.title : '';
+  document.getElementById('fStatus').value = r ? r.status : 'draft';
+  document.getElementById('fStandardized').checked = r ? !!r.standardized : false;
+  document.getElementById('fIssue').value = r ? r.issue : '';
+  document.getElementById('fAction').value = r ? r.action : '';
+  document.getElementById('beforePhoto').textContent = r && r.before ? 'Before 사진 첨부됨' : '사진 없음';
+  document.getElementById('beforePhoto').classList.toggle('filled', !!(r&&r.before));
+  document.getElementById('afterPhoto').textContent = r && r.after ? 'After 사진 첨부됨' : '사진 없음';
+  document.getElementById('afterPhoto').classList.toggle('filled', !!(r&&r.after));
+  document.getElementById('mailPreview').textContent = mailNote(r?r.status:'draft');
+  document.getElementById('reqOwnerLine').textContent = r ? `담당팀: ${teamById(r.team).name}` : '';
+  document.getElementById('fStatus').onchange = e=> document.getElementById('mailPreview').textContent = mailNote(e.target.value);
+  document.getElementById('reqModalBackdrop').classList.add('show');
+}
+function closeRequestModal(){ document.getElementById('reqModalBackdrop').classList.remove('show'); }
+function saveRequest(){
+  const month = document.getElementById('fMonth').value || '2026-03';
+  const team = document.getElementById('fTeam').value;
+  const category = document.getElementById('fCategory').value;
+  const location = document.getElementById('fLocation').value.trim();
+  const title = document.getElementById('fTitle').value.trim();
+  const status = document.getElementById('fStatus').value;
+  const standardized = document.getElementById('fStandardized').checked;
+  const issue = document.getElementById('fIssue').value.trim();
+  const action = document.getElementById('fAction').value.trim();
+  if(!issue){ toast('지적사항을 입력해 주세요.'); return; }
+  if(editingId){
+    const r = REQUESTS.find(x=>x.id===editingId);
+    Object.assign(r, {team, category, location, title: title||r.title, status, standardized, issue, action});
+    toast(`${r.id} 변경사항이 저장되었습니다.`);
+  } else {
+    const newId = 'IMP-2026-' + String(1000 + REQUESTS.length).slice(-4);
+    REQUESTS.unshift({id:newId, date: month+'-'+String(new Date().getDate()).padStart(2,'0'), team, category, title: title||'(제목 미입력)', location: location||'—', issue, action, status, standardized, before:false, after:false});
+    toast(`${newId} 개선요청이 등록되었습니다.`);
+  }
+  closeRequestModal();
+  renderRequestGrid();
+  renderDeptAuditSummary();
+  renderDashboard();
+}
+
+/* =========================================================
+   네비게이션 / 초기화
+   ========================================================= */
+function switchView(id){
+  document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active', v.id==='view-'+id));
+  document.querySelectorAll('.rail-btn').forEach(b=>b.classList.toggle('active', b.dataset.view===id));
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+document.getElementById('rail').addEventListener('click', e=>{
+  const b = e.target.closest('[data-view]'); if(!b) return;
+  switchView(b.dataset.view);
+});
+document.getElementById('scopePeriod').addEventListener('change', ()=>{ renderDashboard(); renderDeptAuditSummary(); });
+document.getElementById('dashExport').addEventListener('click', ()=> toast('출력/CSV 내보내기는 실연동 시 서버 API와 연결됩니다.'));
+
+document.getElementById('rawFilter').addEventListener('click', e=>{
+  const b = e.target.closest('.chip'); if(!b) return;
+  document.querySelectorAll('#rawFilter .chip').forEach(c=>c.classList.remove('active'));
+  b.classList.add('active');
+  rawStatusFilter = b.dataset.status;
+  renderRawTable();
+});
+document.getElementById('chartMode').addEventListener('change', renderTeamTypeChart);
+document.getElementById('chartCategory').addEventListener('change', renderTeamTypeChart);
+document.getElementById('chartTeam').addEventListener('change', renderTeamTypeChart);
+
+document.getElementById('standardAddBtn').addEventListener('click', ()=> toast('점검항목 신규등록 폼은 HDPS32 상세 설계 시 연결됩니다.'));
+document.getElementById('stdFilterApply').addEventListener('click', renderStandardTable);
+
+document.getElementById('auditFilterApply').addEventListener('click', renderAuditView);
+document.getElementById('auditFilterMonth').addEventListener('change', renderAuditView);
+document.getElementById('auditFilterTeam').addEventListener('change', renderAuditView);
+
+document.getElementById('requestAddBtn').addEventListener('click', ()=> openRequestModal(null));
+document.getElementById('reqFilterApply').addEventListener('click', renderRequestGrid);
+document.getElementById('reqModalClose').addEventListener('click', closeRequestModal);
+document.getElementById('reqModalCancel').addEventListener('click', closeRequestModal);
+document.getElementById('reqModalSave').addEventListener('click', saveRequest);
+document.getElementById('reqModalBackdrop').addEventListener('click', e=>{ if(e.target.id==='reqModalBackdrop') closeRequestModal(); });
+
+function init(){
+  renderChartControls();
+  renderTypeLegend();
+  renderDashboard();
+  renderStandardFilters();
+  renderStandardTable();
+  renderAuditFilters();
+  renderAuditView();
+  fillSelectOptions();
+  renderRequestTeamOptions();
+  renderDeptAuditSummary();
+  renderRequestGrid();
+}
+init();
