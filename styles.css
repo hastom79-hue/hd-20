@@ -135,7 +135,10 @@ button{cursor:pointer}
 .panel-head p{margin:3px 0 0;font-size:11px;color:var(--muted)}
 .panel-body{padding:14px 16px}
 
-/* ---------------- Trend (sparkline rows) ---------------- */
+/* ---------------- Chart.js containers ---------------- */
+.chart-box{position:relative;height:260px}
+.chart-box.tall{height:320px}
+@media(max-width:640px){.chart-box{height:220px}.chart-box.tall{height:280px}}
 .trend-row{display:grid;grid-template-columns:84px 1fr 46px;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f0f3f6}
 .trend-row:last-child{border-bottom:0}
 .trend-name{font-size:11.5px;font-weight:700}

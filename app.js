@@ -7,6 +7,30 @@
 const CATEGORIES = ['정리','정돈','청소','시각화관리','습관화','자주보전'];
 // 그룹(부서) 결합 추이차트용 8색 팔레트
 const DEPT_COLORS = ['#1a4262','#3d6c8f','#6f95ac','#c9922f','#8a6a9e','#5c8a5a','#b5563f','#5a6b7c'];
+const CAT_COLORS = ['#1a4262','#3d6c8f','#6f95ac','#c9922f','#8faf7a','#8a6a9e'];
+
+/* ---------------- Chart.js 공통 설정 ---------------- */
+const CHARTS = {};
+if (typeof Chart !== 'undefined') {
+  Chart.defaults.font.family = "'Pretendard Variable', Pretendard, -apple-system, sans-serif";
+  Chart.defaults.font.size = 11;
+  Chart.defaults.color = '#66768a';
+  Chart.defaults.plugins.legend.labels.usePointStyle = true;
+  Chart.defaults.plugins.legend.labels.boxWidth = 8;
+  Chart.defaults.plugins.legend.labels.padding = 12;
+  Chart.defaults.plugins.tooltip.backgroundColor = '#0c2032';
+  Chart.defaults.plugins.tooltip.padding = 10;
+  Chart.defaults.plugins.tooltip.cornerRadius = 6;
+  Chart.defaults.plugins.tooltip.titleFont = { weight: 700 };
+}
+function upsertChart(id, config){
+  const el = document.getElementById(id);
+  if(!el) return null;
+  if(CHARTS[id]) CHARTS[id].destroy();
+  CHARTS[id] = new Chart(el.getContext('2d'), config);
+  return CHARTS[id];
+}
+const GRID_COLOR = '#eef1f5';
 
 // 실데이터 출처: 울산캠퍼스_26년_2분기_소그룹활동_과제_평가(배포용).xlsx — 등장하는 생산현장팀 16개 전원 반영
 // auditScore는 해당 xlsx의 "평가결과"(S/A/B/C) 등급을 S=97/A=92/B=85/C=76로 환산한 팀별 평균값(실데이터 기반)
@@ -243,15 +267,28 @@ function renderDashKPIs(month){
 function renderRepeatTrend(){
   const { monthlyRates } = computeRepeatStats();
   const valid = monthlyRates.map((v,i)=>({v,i})).filter(x=>x.v!==null);
-  const max = Math.max(...valid.map(x=>x.v)) * 1.15 || 10;
-  document.getElementById('repeatTrendChart').innerHTML = valid.map(({v,i})=>{
-    const m = MONTHS[i];
-    return `<div class="rate-col">
-      <span class="rate-val mono">${v.toFixed(1)}%</span>
-      <div class="rate-bar repeat" style="height:${Math.max(6, v/max*150)}px" title="${MONTH_LABEL[m]} 반복지적률 ${v.toFixed(1)}%"></div>
-      <span class="rate-name">${MONTH_LABEL[m]}</span>
-    </div>`;
-  }).join('');
+  upsertChart('repeatTrendChart', {
+    type: 'bar',
+    data: {
+      labels: valid.map(x=>MONTH_LABEL[MONTHS[x.i]]),
+      datasets: [{
+        label: '반복지적률',
+        data: valid.map(x=>x.v),
+        backgroundColor: '#b6790c',
+        borderRadius: 4,
+        maxBarThickness: 46
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false },
+        tooltip: { callbacks: { label: c => `반복지적률 ${c.parsed.y.toFixed(1)}%` } } },
+      scales: {
+        y: { beginAtZero: true, grid: { color: GRID_COLOR }, ticks: { callback: v=>v+'%' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
 }
 
 // 반복지적 집중 작업장 TOP5 (2개월 이상 연속 지적 기준)
@@ -269,24 +306,8 @@ function renderRepeatTop5(){
   }).join('');
 }
 
-/* ---- 부서별 추이: 스파크라인 행 (8개 부서 × 6개월) ---- */
+/* ---- 부서별 추이: Chart.js 라인 차트 (8개 부서 × 6개월) ---- */
 function deptTeams(dept){ return TEAMS.filter(t=>t.site===dept); }
-function renderDeptTrendRows(wrapId, valueFn, unitFmt){
-  document.getElementById(wrapId).innerHTML = DEPTS.map(d=>{
-    const vals = MONTHS.map(m=>valueFn(d,m));
-    const max = Math.max(...vals, 0.001);
-    const bars = vals.map((v,i)=>{
-      const h = Math.max(6, v/max*54);
-      const cur = i===MONTHS.length-1 ? ' cur' : '';
-      return `<div class="spark-bar${cur}" style="height:${h}px" title="${d} · ${MONTH_LABEL[MONTHS[i]]} · ${unitFmt(v)}"></div>`;
-    }).join('');
-    return `<div class="trend-row">
-      <span class="trend-name">${d}</span>
-      <div class="trend-spark">${bars}</div>
-      <span class="trend-cur mono">${unitFmt(vals[vals.length-1])}</span>
-    </div>`;
-  }).join('');
-}
 function deptStdPerCapita(dept, m){
   const members = deptTeams(dept);
   const sum = members.reduce((a,t)=>a+stdPerCapita(t,m)*t.headcount,0);
@@ -299,57 +320,108 @@ function deptAuditAvg(dept, m){
   const sum = members.reduce((a,t)=>a+AUDIT_MONTHLY[t.id][mi],0);
   return members.length? sum/members.length : 0;
 }
+function renderDeptLineChart(canvasId, valueFn, unitLabel, decimals){
+  upsertChart(canvasId, {
+    type: 'line',
+    data: {
+      labels: MONTHS.map(m=>MONTH_LABEL[m]),
+      datasets: DEPTS.map((d,i)=>({
+        label: d,
+        data: MONTHS.map(m=>valueFn(d,m)),
+        borderColor: DEPT_COLORS[i%8],
+        backgroundColor: DEPT_COLORS[i%8],
+        pointRadius: 2.5, pointHoverRadius: 5,
+        borderWidth: 2, tension: 0.35, fill: false
+      }))
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'nearest', intersect: false },
+      plugins: {
+        legend: { position: 'top', align: 'start' },
+        tooltip: { callbacks: { label: c => `${c.dataset.label} ${c.parsed.y.toFixed(decimals)}${unitLabel}` } }
+      },
+      scales: {
+        y: { grid: { color: GRID_COLOR }, ticks: { callback: v=>v.toFixed(decimals===0?0:1) } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+}
 function renderStdTrendChart(){
-  renderDeptTrendRows('stdChartWrap', deptStdPerCapita, v=>v.toFixed(2));
+  renderDeptLineChart('stdChart', deptStdPerCapita, '건/인', 2);
 }
 function renderAuditTrendChart(){
-  renderDeptTrendRows('auditChartWrap', deptAuditAvg, v=>v.toFixed(1));
+  renderDeptLineChart('auditChart', deptAuditAvg, '점', 1);
 }
 
 /* ---- 팀별 5S 유형별 활동 현황: 차트구분/5S유형/팀선택 동적 전환 (기존 MES 차트 재현) ---- */
-function renderTypeLegend(){
-  document.getElementById('typeLegend').innerHTML = CATEGORIES.map((c,i)=>`<span><i class="tdot s${i+1}"></i>${c}</span>`).join('');
-}
 function renderTeamTypeByCategory(month, catFilter){
-  const el = document.getElementById('teamTypeChart');
-  el.className = 'type-chart';
   if(catFilter==='all'){
-    const max = Math.max(...TEAMS.flatMap(t=>MONTHLY[t.id][month]));
-    el.innerHTML = TEAMS.map(t=>{
-      const vals = MONTHLY[t.id][month];
-      return `<div class="team-bar-group">
-        <div class="team-bars">${vals.map((v,i)=>`<div class="mini-bar-wrap"><span class="mini-value">${v}</span><div class="mini-bar s${i+1}" style="height:${Math.max(8,v/max*150)}px" title="${t.name} · ${CATEGORIES[i]} · ${v}건"></div></div>`).join('')}</div>
-        <strong class="team-name">${t.name}</strong>
-      </div>`;
-    }).join('');
+    upsertChart('teamTypeChart', {
+      type: 'bar',
+      data: {
+        labels: TEAMS.map(t=>t.name),
+        datasets: CATEGORIES.map((c,i)=>({
+          label: c,
+          data: TEAMS.map(t=>MONTHLY[t.id][month][i]),
+          backgroundColor: CAT_COLORS[i],
+          stack: 'cat'
+        }))
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'top', align: 'start' } },
+        scales: {
+          y: { stacked: true, grid: { color: GRID_COLOR }, title: { display: true, text: '건' } },
+          x: { stacked: true, grid: { display: false }, ticks: { autoSkip: false, maxRotation: 60, minRotation: 40 } }
+        }
+      }
+    });
   } else {
     const ci = CATEGORIES.indexOf(catFilter);
-    const vals = TEAMS.map(t=>MONTHLY[t.id][month][ci]);
-    const max = Math.max(...vals);
-    el.innerHTML = TEAMS.map((t,i)=>{
-      const v = vals[i];
-      return `<div class="team-bar-group">
-        <div class="team-bars"><div class="mini-bar-wrap" style="max-width:44px"><span class="mini-value">${v}</span><div class="mini-bar s${(ci%6)+1}" style="height:${Math.max(8,v/max*150)}px" title="${t.name} · ${catFilter} · ${v}건"></div></div></div>
-        <strong class="team-name">${t.name}</strong>
-      </div>`;
-    }).join('');
+    upsertChart('teamTypeChart', {
+      type: 'bar',
+      data: {
+        labels: TEAMS.map(t=>t.name),
+        datasets: [{ label: catFilter, data: TEAMS.map(t=>MONTHLY[t.id][month][ci]), backgroundColor: CAT_COLORS[ci], borderRadius: 4, maxBarThickness: 34 }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { grid: { color: GRID_COLOR }, title: { display: true, text: '건' } },
+          x: { grid: { display: false }, ticks: { autoSkip: false, maxRotation: 60, minRotation: 40 } }
+        }
+      }
+    });
   }
 }
 function renderTeamTypeTrend(teamId){
   const team = teamById(teamId);
-  const el = document.getElementById('teamTypeChart');
-  el.className = 'monthly-stack-chart';
-  const perCapRows = MONTHS.map(m=>MONTHLY[team.id][m].map(v=>v/team.headcount));
-  const totals = perCapRows.map(r=>r.reduce((a,b)=>a+b,0));
-  const max = Math.max(...totals, 0.1);
-  el.innerHTML = MONTHS.map((m,idx)=>{
-    const vals = perCapRows[idx], total = totals[idx];
-    return `<div class="month-stack-group">
-      <span class="month-total mono">${total.toFixed(2)}</span>
-      <div class="month-stack" style="height:${Math.max(30,total/max*200)}px">${vals.map((v,i)=>`<span class="month-seg s${i+1}" style="height:${total?v/total*100:0}%" title="${CATEGORIES[i]} ${v.toFixed(2)}건/인"></span>`).join('')}</div>
-      <span class="month-label">${MONTH_LABEL[m]}</span>
-    </div>`;
-  }).join('');
+  upsertChart('teamTypeChart', {
+    type: 'bar',
+    data: {
+      labels: MONTHS.map(m=>MONTH_LABEL[m]),
+      datasets: CATEGORIES.map((c,i)=>({
+        label: c,
+        data: MONTHS.map(m=>MONTHLY[team.id][m][i]/team.headcount),
+        backgroundColor: CAT_COLORS[i],
+        stack: 'cat'
+      }))
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'top', align: 'start' },
+        tooltip: { callbacks: { label: c => `${c.dataset.label} ${c.parsed.y.toFixed(2)}건/인` } }
+      },
+      scales: {
+        y: { stacked: true, grid: { color: GRID_COLOR }, title: { display: true, text: '건/인' } },
+        x: { stacked: true, grid: { display: false } }
+      }
+    }
+  });
 }
 function renderTeamTypeChart(){
   const mode = document.getElementById('chartMode').value; // 'type' | 'trend'
@@ -369,31 +441,56 @@ function renderTeamTypeChart(){
 
 // 팀별 문제점 현황 (HDPS33 전월 문제점 입력건 · 팀×유형)
 function renderProblemChart(month){
-  document.getElementById('problemLegend').innerHTML = CATEGORIES.map((c,i)=>`<span><i class="tdot s${i+1}"></i>${c}</span>`).join('');
-  const el = document.getElementById('problemChart');
   const data = TEAMS.map(t=> CATEGORIES.map(c=> 1 + (hash(t.id+c+month+'p') % 6)));
-  const max = Math.max(...data.flat());
-  el.innerHTML = TEAMS.map((t,ti)=>{
-    const vals = data[ti];
-    return `<div class="team-bar-group">
-      <div class="team-bars">${vals.map((v,i)=>`<div class="mini-bar-wrap"><span class="mini-value">${v}</span><div class="mini-bar s${i+1}" style="height:${Math.max(8,v/max*150)}px" title="${t.name} · ${CATEGORIES[i]} · ${v}건"></div></div>`).join('')}</div>
-      <strong class="team-name">${t.name}</strong>
-    </div>`;
-  }).join('');
+  upsertChart('problemChart', {
+    type: 'bar',
+    data: {
+      labels: TEAMS.map(t=>t.name),
+      datasets: CATEGORIES.map((c,i)=>({
+        label: c,
+        data: data.map(row=>row[i]),
+        backgroundColor: CAT_COLORS[i],
+        stack: 'cat'
+      }))
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'top', align: 'start' } },
+      scales: {
+        y: { stacked: true, grid: { color: GRID_COLOR }, title: { display: true, text: '건' } },
+        x: { stacked: true, grid: { display: false }, ticks: { autoSkip: false, maxRotation: 60, minRotation: 40 } }
+      }
+    }
+  });
 }
 
 // 팀별 문제점 개선조치율
 function renderRateChart(month){
-  const el = document.getElementById('rateChart');
-  el.innerHTML = TEAMS.map(t=>{
+  const rates = TEAMS.map(t=>{
     const ar = actionRateFor(month, t.id);
-    const rate = ar ? Math.round(ar.rate) : 0;
-    return `<div class="rate-col">
-      <span class="rate-val mono">${ar?rate+'%':'–'}</span>
-      <div class="rate-bar" style="height:${Math.max(6, rate/100*150)}px"></div>
-      <span class="rate-name">${t.name}</span>
-    </div>`;
-  }).join('');
+    return ar ? Math.round(ar.rate) : null;
+  });
+  upsertChart('rateChart', {
+    type: 'bar',
+    data: {
+      labels: TEAMS.map(t=>t.name),
+      datasets: [{
+        label: '개선조치완료율',
+        data: rates,
+        backgroundColor: rates.map(r=> r===null ? '#dbe6ee' : (r>=80?'#367249':r>=50?'#b6790c':'#a83a2d')),
+        borderRadius: 4, maxBarThickness: 34
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false },
+        tooltip: { callbacks: { label: c => c.raw===null ? '데이터 없음' : `완료율 ${c.raw}%` } } },
+      scales: {
+        y: { beginAtZero: true, max: 100, grid: { color: GRID_COLOR }, ticks: { callback: v=>v+'%' } },
+        x: { grid: { display: false }, ticks: { autoSkip: false, maxRotation: 60, minRotation: 40 } }
+      }
+    }
+  });
 }
 
 // 5S 부서별 등록현황 (누적)
@@ -455,7 +552,6 @@ function renderDashboard(){
   renderDashKPIs(month);
   renderStdTrendChart();
   renderAuditTrendChart();
-  renderTypeLegend();
   renderTeamTypeChart();
   renderWeakestByCategory(month);
   renderProblemChart(month);
@@ -723,13 +819,24 @@ function renderCaseTrendChart(){
   const monthCounts = MONTHS.map(m=>cases.filter(c=>c.date.slice(0,7)===m).length);
   let running = 0;
   const cum = monthCounts.map(v=>{ running+=v; return running; });
-  const max = Math.max(...monthCounts, 1) * 1.3;
-  document.getElementById('caseTrendChart').innerHTML = MONTHS.map((m,i)=>`
-    <div class="rate-col">
-      <span class="rate-val mono">${monthCounts[i]}</span>
-      <div class="rate-bar case" style="height:${Math.max(6, monthCounts[i]/max*150)}px" title="${MONTH_LABEL[m]} 신규 ${monthCounts[i]}건 · 누적 ${cum[i]}건"></div>
-      <span class="rate-name">${MONTH_LABEL[m]}<br><span class="case-cum-label mono">누적 ${cum[i]}</span></span>
-    </div>`).join('');
+  upsertChart('caseTrendChart', {
+    data: {
+      labels: MONTHS.map(m=>MONTH_LABEL[m]),
+      datasets: [
+        { type: 'bar', label: '당월 신규', data: monthCounts, backgroundColor: '#367249', borderRadius: 4, maxBarThickness: 40, yAxisID: 'y' },
+        { type: 'line', label: '누적', data: cum, borderColor: '#b6790c', backgroundColor: '#b6790c', borderWidth: 2, pointRadius: 3, tension: 0.3, yAxisID: 'y1' }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'top', align: 'start' } },
+      scales: {
+        y: { beginAtZero: true, position: 'left', grid: { color: GRID_COLOR }, title: { display: true, text: '당월 신규(건)' }, ticks: { precision: 0 } },
+        y1: { beginAtZero: true, position: 'right', grid: { display: false }, title: { display: true, text: '누적(건)' }, ticks: { precision: 0 } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
 }
 function renderCaseTeamTable(month, siteFilter){
   const cases = securedCases();

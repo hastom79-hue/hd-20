@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>GMES · HDPS 5S 활동관리</title>
 <link rel="stylesheet" href="styles.css">
+<script src="chart.umd.min.js"></script>
 </head>
 <body>
 
@@ -99,7 +100,7 @@
               <div><h2>월별·부서별 5S 표준화(수평전개) 인당 개선건수</h2><p>HDPS21 연계 · 01월~06월 · 8개 부서 집계</p></div>
             </div>
             <div class="panel-body">
-              <div id="stdChartWrap"></div>
+              <div class="chart-box"><canvas id="stdChart"></canvas></div>
             </div>
           </div>
           <div class="panel">
@@ -107,7 +108,7 @@
               <div><h2>월별·부서별 5S Audit 평가 현황</h2><p>HDPS33 연계 · 부서 평균점수 · 01월~06월</p></div>
             </div>
             <div class="panel-body">
-              <div id="auditChartWrap"></div>
+              <div class="chart-box"><canvas id="auditChart"></canvas></div>
             </div>
           </div>
         </div>
@@ -122,8 +123,7 @@
             </div>
           </div>
           <div class="panel-body">
-            <div class="type-legend" id="typeLegend"></div>
-            <div class="type-chart" id="teamTypeChart"></div>
+            <div class="chart-box tall"><canvas id="teamTypeChart"></canvas></div>
           </div>
         </div>
 
@@ -142,8 +142,7 @@
               <div><h2>팀별 문제점 현황</h2><p>HDPS33 전월 개선내역 중 문제점 입력건 · 팀 × 5S유형</p></div>
             </div>
             <div class="panel-body">
-              <div class="type-legend" id="problemLegend"></div>
-              <div class="type-chart" id="problemChart"></div>
+              <div class="chart-box"><canvas id="problemChart"></canvas></div>
             </div>
           </div>
           <div class="panel">
@@ -151,7 +150,7 @@
               <div><h2>팀별 문제점 개선조치율</h2><p>HDPS33 완료 체크 기준 · 팀별 %</p></div>
             </div>
             <div class="panel-body">
-              <div class="rate-chart" id="rateChart"></div>
+              <div class="chart-box"><canvas id="rateChart"></canvas></div>
             </div>
           </div>
         </div>
@@ -162,7 +161,7 @@
               <div><h2>월별 반복지적률 추이</h2><p>2개월 이상 연속 지적 · 최근 5개월</p></div>
             </div>
             <div class="panel-body">
-              <div class="rate-chart" id="repeatTrendChart"></div>
+              <div class="chart-box"><canvas id="repeatTrendChart"></canvas></div>
             </div>
           </div>
           <div class="panel">
@@ -391,7 +390,7 @@
           <div><h2>월별 사례 확보 추이</h2><p>막대 = 당월 신규 확보 건수 · 막대 위 숫자 = 해당월까지 누적 건수</p></div>
         </div>
         <div class="panel-body">
-          <div class="rate-chart" id="caseTrendChart"></div>
+          <div class="chart-box"><canvas id="caseTrendChart"></canvas></div>
         </div>
       </div>
 
