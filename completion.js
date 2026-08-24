@@ -57,9 +57,58 @@ function renderCompletion(){
     }).join('');
   }
 }
+
 document.getElementById('completionMode')?.addEventListener('change',renderCompletion);
 document.getElementById('completionFrom')?.addEventListener('change',renderCompletion);
 document.getElementById('completionTo')?.addEventListener('change',renderCompletion);
 document.getElementById('monthFilter')?.addEventListener('change',renderCompletion);
 document.getElementById('searchBtn')?.addEventListener('click',renderCompletion);
 renderCompletion();
+
+/* Merge the two per-capita charts into one compact comparison chart. */
+function renderMergedProductivityChart(){
+  const grid=document.querySelector('.metric-grid');
+  if(!grid || typeof perCapita==='undefined' || typeof standardPerCapita==='undefined') return;
+  const standardMap=Object.fromEntries(standardPerCapita);
+  const rows=perCapita.map(([team,improve])=>[team,improve,standardMap[team]||0]);
+  const max=Math.max(...rows.flatMap(r=>[r[1],r[2]]),1);
+  grid.classList.add('metric-grid-merged');
+  grid.innerHTML=`<article class="panel merged-productivity-panel">
+    <div class="panel-head merged-productivity-head">
+      <div><h2>팀별 인당 5S 개선성과</h2><p>인당 전체 5S 개선건수와 인당 표준화 개선건수를 동일 축에서 비교</p></div>
+      <div class="merged-legend"><span><i class="legend-improve"></i>인당 5S 개선건수</span><span><i class="legend-standard"></i>인당 5S 표준화 개선건수</span><b>단위: 건/인</b></div>
+    </div>
+    <div class="merged-productivity-chart">
+      ${rows.map(([team,improve,standard])=>`<div class="merged-team-group">
+        <div class="merged-bars">
+          <div class="merged-bar-wrap"><span>${improve.toFixed(1)}</span><div class="merged-bar improve" style="height:${Math.max(14,improve/max*205)}px" title="${team} · 인당 5S 개선건수 ${improve.toFixed(1)}건/인"></div></div>
+          <div class="merged-bar-wrap"><span>${standard.toFixed(1)}</span><div class="merged-bar standard" style="height:${Math.max(14,standard/max*205)}px" title="${team} · 인당 5S 표준화 개선건수 ${standard.toFixed(1)}건/인"></div></div>
+        </div>
+        <strong>${team}</strong>
+      </div>`).join('')}
+    </div>
+  </article>`;
+}
+
+(function injectMergedProductivityStyle(){
+  if(document.getElementById('mergedProductivityStyle')) return;
+  const style=document.createElement('style');
+  style.id='mergedProductivityStyle';
+  style.textContent=`
+    .metric-grid-merged{display:block!important;margin-bottom:18px}
+    .merged-productivity-panel{width:100%}
+    .merged-productivity-head{align-items:flex-end}
+    .merged-legend{display:flex;align-items:center;gap:14px;flex-wrap:wrap;font-size:11px;color:#667085}
+    .merged-legend span{display:flex;align-items:center;gap:6px}.merged-legend b{font-size:10px;border:1px solid #e1e7ee;border-radius:99px;padding:4px 8px;background:#f8fafc}
+    .legend-improve,.legend-standard{display:inline-block;width:11px;height:11px;border-radius:3px}.legend-improve{background:#48779a}.legend-standard{background:#6f9d71}
+    .merged-productivity-chart{height:300px;padding:26px 38px 20px;display:flex;align-items:flex-end;gap:34px;background:linear-gradient(to top,#fafbfd,#fff)}
+    .merged-team-group{flex:1;min-width:115px;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center}
+    .merged-bars{height:230px;width:100%;display:flex;align-items:flex-end;justify-content:center;gap:10px;border-bottom:1px solid #d5dde6;background:repeating-linear-gradient(to top,transparent 0,transparent 49px,#edf1f5 50px)}
+    .merged-bar-wrap{height:100%;width:42px;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:5px}.merged-bar-wrap>span{font-size:11px;font-weight:800;color:#344054}
+    .merged-bar{width:34px;border-radius:5px 5px 0 0;transition:transform .18s ease,filter .18s ease}.merged-bar:hover{transform:translateY(-2px);filter:brightness(.94)}.merged-bar.improve{background:#48779a}.merged-bar.standard{background:#6f9d71}
+    .merged-team-group>strong{margin-top:10px;font-size:11px;color:#475467;white-space:nowrap}
+    @media(max-width:900px){.merged-productivity-chart{overflow-x:auto;gap:20px;padding-left:20px;padding-right:20px}.merged-team-group{min-width:110px}.merged-productivity-head{align-items:flex-start;flex-direction:column}}
+  `;
+  document.head.appendChild(style);
+})();
+renderMergedProductivityChart();
