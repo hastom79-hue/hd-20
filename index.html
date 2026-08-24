@@ -34,7 +34,7 @@
         <div>
           <p class="eyebrow">9.6.3 5S활동</p>
           <h1>5S 활동 통합 대시보드</h1>
-          <p class="sub">월별 표준화 · Audit 평가 · 팀별 문제점 · 개선조치율을 한 화면에서 관리</p>
+          <p class="sub">월별 표준화 · Audit 평가 · 생산현장 팀별 5S 유형별 활동 · 개선조치율을 한 화면에서 관리</p>
         </div>
         <div class="head-actions">
           <button class="secondary" id="exportBtn">출력</button>
@@ -84,7 +84,8 @@
 
       <div class="grid two">
         <article class="panel">
-          <div class="panel-head"><div><h2>팀별 문제점 현황</h2><p>5S 활동유형별 지적건수</p></div></div>
+          <div class="panel-head"><div><h2>생산현장 팀별 5S 유형별 활동 현황</h2><p>정리 · 정돈 · 청소 · 시각화 · 위험구역관리 · 5S고도화 활동건수</p></div><div class="activity-total">팀별 활동 구성</div></div>
+          <div class="activity-legend" id="activityLegend"></div>
           <div class="stack-chart" id="issueChart"></div>
         </article>
         <article class="panel">
@@ -116,7 +117,7 @@
         <div><p class="eyebrow">HDPS32</p><h1>5S Audit 점검항목 기준정보</h1><p class="sub">작업장 특성을 반영한 기준정보 관리</p></div>
         <button class="primary">신규 점검항목</button>
       </div>
-      <div class="filters compact"><label>5S 구분<select><option>전체</option><option>정리</option><option>정돈</option><option>청소</option><option>시각화관리</option><option>자주보전</option></select></label><button class="primary">조회</button></div>
+      <div class="filters compact"><label>5S 구분<select><option>전체</option><option>정리</option><option>정돈</option><option>청소</option><option>시각화</option><option>위험구역관리</option><option>5S고도화</option></select></label><button class="primary">조회</button></div>
       <article class="panel">
         <div class="notice">작업장별 특성을 고려한 5S Audit 점검항목 기준정보를 유지하며, 현장 조직 단위 변경 시 신규 등록/개정 알림 기능을 고려합니다.</div>
         <div class="table-wrap">
@@ -155,7 +156,7 @@
           <label>작업장<select><option>조립</option><option>가공</option></select></label>
           <label>부서<select><option>조립부</option></select></label>
           <label>팀<select><option>Rear조립팀</option></select></label>
-          <label>5S 구분<select><option>정리</option><option>정돈</option><option>청소</option><option>시각화관리</option><option>자주보전</option></select></label>
+          <label>5S 구분<select><option>정리</option><option>정돈</option><option>청소</option><option>시각화</option><option>위험구역관리</option><option>5S고도화</option></select></label>
           <label>개선요청명<input value="현장 자재 정리 개선"/></label>
           <label>조치여부<select><option>미결</option><option>완료</option></select></label>
         </aside>
