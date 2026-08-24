@@ -24,20 +24,74 @@ const audits = [
  ["6","5S고도화","5S 표준화·유지·수평전개","우수 5S 활동이 표준화되어 확산되는가?","4 / 5","우수사례 전개 미흡","표준화 및 수평전개","완료"]
 ];
 
+const activityCategories=["정리","정돈","청소","시각화","위험구역관리","5S고도화"];
+const activityTeamSnapshot={
+ "조립1팀":[5,4,3,2,1,2],
+ "Rear조립팀":[4,2,2,3,1,1],
+ "가공1팀":[2,3,4,1,2,2],
+ "자재운영팀":[1,2,1,2,1,3],
+ "생산관리팀":[2,1,2,3,2,2]
+};
+const activityMonthly={
+ "조립1팀":[["04월",2,2,1,1,0,1],["05월",3,2,2,1,1,1],["06월",3,3,2,1,1,1],["07월",4,3,2,2,1,1],["08월",4,4,2,2,1,1],["09월",5,3,3,2,1,1],["10월",5,4,3,2,1,2],["11월",6,4,3,3,1,2],["12월",5,4,4,2,1,2],["01월",4,4,3,2,1,2],["02월",5,4,3,2,1,2],["03월",5,4,3,2,1,2]],
+ "Rear조립팀":[["04월",2,1,1,1,0,1],["05월",2,2,1,1,1,1],["06월",3,2,2,1,1,1],["07월",3,2,2,2,1,1],["08월",4,2,2,2,1,1],["09월",4,2,2,3,1,1],["10월",4,3,2,3,1,1],["11월",5,3,2,3,1,2],["12월",4,3,3,3,1,1],["01월",4,2,2,3,1,1],["02월",4,2,2,3,1,1],["03월",4,2,2,3,1,1]],
+ "가공1팀":[["04월",1,2,2,1,1,1],["05월",2,2,2,1,1,1],["06월",2,2,3,1,1,1],["07월",2,3,3,1,1,1],["08월",2,3,4,1,1,1],["09월",2,3,4,1,2,1],["10월",3,3,4,1,2,1],["11월",3,4,4,1,2,2],["12월",2,3,4,2,2,2],["01월",2,3,3,1,2,2],["02월",2,3,4,1,2,2],["03월",2,3,4,1,2,2]],
+ "자재운영팀":[["04월",1,1,1,1,0,1],["05월",1,1,1,1,1,1],["06월",1,2,1,1,1,1],["07월",1,2,1,2,1,1],["08월",1,2,1,2,1,2],["09월",1,2,1,2,1,2],["10월",2,2,1,2,1,2],["11월",2,3,1,2,1,3],["12월",1,2,2,2,1,3],["01월",1,2,1,2,1,2],["02월",1,2,1,2,1,3],["03월",1,2,1,2,1,3]],
+ "생산관리팀":[["04월",1,1,1,1,1,1],["05월",1,1,1,2,1,1],["06월",1,1,2,2,1,1],["07월",2,1,2,2,1,1],["08월",2,1,2,2,1,2],["09월",2,1,2,3,1,2],["10월",2,2,2,3,1,2],["11월",3,2,2,3,2,2],["12월",2,2,3,3,2,2],["01월",2,1,2,3,2,2],["02월",2,1,2,3,2,2],["03월",2,1,2,3,2,2]]
+};
+
 function renderBars(id, vals, cls=""){
  const el=document.getElementById(id); el.innerHTML="";
  vals.forEach(v=>{const c=document.createElement("div");c.className="bar-col";c.innerHTML=`<span class="bar-val">${v.v}</span><div class="bar ${cls}" style="height:${v.h}%"></div><span class="bar-label">${v.m}</span>`;el.appendChild(c)})
 }
-function renderStacks(){
- const categories=["정리","정돈","청소","시각화","위험구역관리","5S고도화"];
- const teams=[["조립1팀",[5,4,3,2,1,2]],["Rear조립팀",[4,2,2,3,1,1]],["가공1팀",[2,3,4,1,2,2]],["자재운영팀",[1,2,1,2,1,3]],["생산관리팀",[2,1,2,3,2,2]]];
+function renderActivityLegend(){
  const legend=document.getElementById("activityLegend");
- if(legend) legend.innerHTML=categories.map((c,i)=>`<span><i class="legend-dot s${i+1}"></i>${c}</span>`).join("");
- const el=document.getElementById("issueChart");el.innerHTML="";
- teams.forEach(([name,arr])=>{
-   const sum=arr.reduce((a,b)=>a+b,0);
-   el.innerHTML+=`<div class="stack-row"><b>${name}</b><div class="stack-track" aria-label="${name} 총 ${sum}건">${arr.map((x,i)=>`<span class="seg s${i+1}" style="width:${x/sum*100}%" title="${categories[i]} ${x}건"><em>${x}</em></span>`).join("")}</div><strong>${sum}건</strong></div>`
- })
+ if(legend) legend.innerHTML=activityCategories.map((c,i)=>`<span><i class="legend-dot s${i+1}"></i>${c}</span>`).join("");
+}
+function renderActivityByType(){
+ const el=document.getElementById("issueChart");
+ el.className="grouped-vertical-chart";
+ el.innerHTML="";
+ const max=Math.max(...Object.values(activityTeamSnapshot).flat(),1);
+ Object.entries(activityTeamSnapshot).forEach(([team,values])=>{
+   const group=document.createElement("div");
+   group.className="team-bar-group";
+   group.innerHTML=`<div class="team-bars">${values.map((v,i)=>`<div class="mini-bar-wrap"><span class="mini-value">${v}</span><div class="mini-bar s${i+1}" style="height:${Math.max(8,v/max*180)}px" title="${team} · ${activityCategories[i]} ${v}건"></div></div>`).join("")}</div><strong class="team-name">${team}</strong>`;
+   el.appendChild(group);
+ });
+}
+function renderActivityTrend(team){
+ const rows=activityMonthly[team] || activityMonthly["조립1팀"];
+ const totals=rows.map(r=>r.slice(1).reduce((a,b)=>a+b,0));
+ const max=Math.max(...totals,1);
+ const el=document.getElementById("issueChart");
+ el.className="monthly-stack-chart";
+ el.innerHTML="";
+ rows.forEach((r,idx)=>{
+   const values=r.slice(1), total=totals[idx];
+   const bar=document.createElement("div");
+   bar.className="month-stack-group";
+   bar.innerHTML=`<span class="month-total">${total}</span><div class="month-stack" style="height:${Math.max(28,total/max*190)}px" aria-label="${team} ${r[0]} 총 ${total}건">${values.map((v,i)=>`<span class="month-seg s${i+1}" style="height:${total ? v/total*100 : 0}%" title="${activityCategories[i]} ${v}건"></span>`).join("")}</div><span class="month-label">${r[0]}</span>`;
+   el.appendChild(bar);
+ });
+}
+function renderActivityChart(){
+ const mode=document.getElementById("activityViewMode")?.value || "type";
+ const teamSelect=document.getElementById("activityTeamSelect");
+ const title=document.getElementById("activityChartTitle");
+ const sub=document.getElementById("activityChartSub");
+ if(mode==="trend"){
+   teamSelect.disabled=false;
+   const team=teamSelect.value;
+   title.textContent=`${team} 월별 5S 활동추이`;
+   sub.textContent="최근 12개월 · 6개 5S 활동유형 누적 활동건수";
+   renderActivityTrend(team);
+ }else{
+   teamSelect.disabled=true;
+   title.textContent="생산현장 팀별 5S 유형별 활동 현황";
+   sub.textContent="팀별 6개 활동유형을 세로막대로 비교 · 정리 · 정돈 · 청소 · 시각화 · 위험구역관리 · 5S고도화";
+   renderActivityByType();
+ }
 }
 function renderProgress(){
  const d=[["조립부",70],["가공부",91.4],["자재운영부",60],["생산관리부",25]];
@@ -49,7 +103,6 @@ function renderRaw(filter="all"){
 }
 function renderStandards(){document.getElementById("standardTable").innerHTML=standards.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join("")}</tr>`).join("")}
 function renderAudits(){document.getElementById("auditTable").innerHTML=audits.map(r=>`<tr>${r.map((c,i)=>`<td>${i===7?`<span class="status ${c==="완료"?"done":"open"}">${c}</span>`:c}</td>`).join("")}</tr>`).join("")}
-
 function switchView(id){
  document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id===id));
  document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.view===id));
@@ -58,10 +111,12 @@ function switchView(id){
 document.querySelectorAll("[data-view], [data-view-target]").forEach(b=>b.addEventListener("click",()=>switchView(b.dataset.view||b.dataset.viewTarget)));
 document.querySelectorAll(".chip").forEach(c=>c.addEventListener("click",()=>{document.querySelectorAll(".chip").forEach(x=>x.classList.remove("active"));c.classList.add("active");renderRaw(c.dataset.status)}));
 function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1800)}
-document.getElementById("searchBtn").addEventListener("click",()=>toast("조회 조건을 반영했습니다."));
+document.getElementById("searchBtn").addEventListener("click",()=>{renderActivityChart();toast("조회 조건을 반영했습니다.")});
 document.getElementById("exportBtn").addEventListener("click",()=>window.print());
 document.getElementById("saveBtn").addEventListener("click",()=>toast("5S 개선요청이 저장되었습니다. 생산팀 알림 대상입니다."));
+document.getElementById("activityViewMode")?.addEventListener("change",renderActivityChart);
+document.getElementById("activityTeamSelect")?.addEventListener("change",renderActivityChart);
 
 renderBars("standardChart",[{m:"04월",v:"1.2",h:35},{m:"05월",v:"1.5",h:42},{m:"06월",v:"1.7",h:50},{m:"07월",v:"2.3",h:68},{m:"08월",v:"2.5",h:72},{m:"09월",v:"2.4",h:69},{m:"10월",v:"2.8",h:82},{m:"11월",v:"3.0",h:88},{m:"12월",v:"2.9",h:85},{m:"01월",v:"2.6",h:76},{m:"02월",v:"2.7",h:79},{m:"03월",v:"2.8",h:82}]);
 renderBars("auditChart",[{m:"07월",v:"97",h:97},{m:"08월",v:"97",h:97},{m:"09월",v:"97",h:97},{m:"10월",v:"96",h:96},{m:"11월",v:"96",h:96},{m:"12월",v:"96",h:96},{m:"01월",v:"95",h:95},{m:"02월",v:"94",h:94},{m:"03월",v:"95",h:95}],"audit");
-renderStacks(); renderProgress(); renderRaw(); renderStandards(); renderAudits();
+renderActivityLegend(); renderActivityChart(); renderProgress(); renderRaw(); renderStandards(); renderAudits();
