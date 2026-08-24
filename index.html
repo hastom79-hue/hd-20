@@ -83,8 +83,30 @@
       </div>
 
       <div class="grid two">
-        <article class="panel">
-          <div class="panel-head"><div><h2>생산현장 팀별 5S 유형별 활동 현황</h2><p>정리 · 정돈 · 청소 · 시각화 · 위험구역관리 · 5S고도화 활동건수</p></div><div class="activity-total">팀별 활동 구성</div></div>
+        <article class="panel activity-panel">
+          <div class="panel-head activity-head">
+            <div>
+              <h2 id="activityChartTitle">생산현장 팀별 5S 유형별 활동 현황</h2>
+              <p id="activityChartSub">정리 · 정돈 · 청소 · 시각화 · 위험구역관리 · 5S고도화 활동건수</p>
+            </div>
+            <div class="activity-controls">
+              <label>조회방식
+                <select id="activityViewMode">
+                  <option value="type">5S 유형별 활동현황</option>
+                  <option value="trend">단일 생산팀 월별 활동추이</option>
+                </select>
+              </label>
+              <label>생산팀
+                <select id="activityTeamSelect" disabled>
+                  <option>조립1팀</option>
+                  <option>Rear조립팀</option>
+                  <option>가공1팀</option>
+                  <option>자재운영팀</option>
+                  <option>생산관리팀</option>
+                </select>
+              </label>
+            </div>
+          </div>
           <div class="activity-legend" id="activityLegend"></div>
           <div class="stack-chart" id="issueChart"></div>
         </article>
