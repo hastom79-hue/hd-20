@@ -5,36 +5,74 @@
    ========================================================= */
 
 const CATEGORIES = ['정리','정돈','청소','시각화관리','습관화','자주보전'];
-const TEAM_COLORS = ['#1a4262','#3d6c8f','#6f95ac','#c9922f','#8a6a9e'];
+// 그룹(부서) 결합 추이차트용 8색 팔레트
+const DEPT_COLORS = ['#1a4262','#3d6c8f','#6f95ac','#c9922f','#8a6a9e','#5c8a5a','#b5563f','#5a6b7c'];
 
-const TEAMS = [
-  {id:'T1', name:'조립1팀',   site:'조립부',     headcount:42, auditScore:92.4, stdRatio:0.43},
-  {id:'T2', name:'Rear조립팀', site:'조립부',     headcount:36, auditScore:88.1, stdRatio:0.29},
-  {id:'T3', name:'가공1팀',   site:'가공부',     headcount:31, auditScore:79.3, stdRatio:0.35},
-  {id:'T4', name:'자재운영팀', site:'자재운영부', headcount:27, auditScore:71.8, stdRatio:0.30},
-  {id:'T5', name:'생산관리팀', site:'생산관리부', headcount:24, auditScore:84.6, stdRatio:0.32},
+// 실데이터 출처: 울산캠퍼스_26년_2분기_소그룹활동_과제_평가(배포용).xlsx — 등장하는 생산현장팀 16개 전원 반영
+// auditScore는 해당 xlsx의 "평가결과"(S/A/B/C) 등급을 S=97/A=92/B=85/C=76로 환산한 팀별 평균값(실데이터 기반)
+// headcount는 원본 파일에 없어 부여한 가정치입니다 — 실제 인원 마스터 연동 시 교체 필요
+function hash(str){let h=0;for(let i=0;i<str.length;i++){h=(h*31+str.charCodeAt(i))>>>0}return h}
+function stdRatioFor(auditScore){
+  const v = 0.20 + Math.max(0, Math.min(1, (auditScore-76)/21)) * 0.35;
+  return Math.round(v*100)/100;
+}
+const TEAM_DEFS = [
+  {id:'T1',  name:'대형Att.팀',    site:'대형조립부',    headcount:28, auditScore:76.0},
+  {id:'T2',  name:'대형메인팀',    site:'대형조립부',    headcount:34, auditScore:76.0},
+  {id:'T3',  name:'대형상부팀',    site:'대형조립부',    headcount:31, auditScore:80.5},
+  {id:'T4',  name:'프레임제작팀',  site:'프레임제작부',  headcount:26, auditScore:88.5},
+  {id:'T5',  name:'Boom제작팀',    site:'Boom제작부',    headcount:22, auditScore:97.0},
+  {id:'T6',  name:'중형상부1팀',   site:'중형조립부',    headcount:24, auditScore:85.0},
+  {id:'T7',  name:'중형상부2팀',   site:'중형조립부',    headcount:27, auditScore:85.0},
+  {id:'T8',  name:'중형하부팀',    site:'중형조립부',    headcount:30, auditScore:79.0},
+  {id:'T9',  name:'중형Att팀',     site:'중형조립부',    headcount:25, auditScore:82.0},
+  {id:'T10', name:'중형메인팀',    site:'중형조립부',    headcount:29, auditScore:82.0},
+  {id:'T11', name:'휠로더Front팀', site:'휠로더조립부',  headcount:23, auditScore:85.0},
+  {id:'T12', name:'휠로더리어팀',  site:'휠로더조립부',  headcount:21, auditScore:97.0},
+  {id:'T13', name:'휠로더메인팀',  site:'휠로더조립부',  headcount:26, auditScore:85.0},
+  {id:'T14', name:'초대형조립팀',  site:'초대형조립부',  headcount:19, auditScore:80.5},
+  {id:'T15', name:'성능팀',       site:'성능시험부',    headcount:16, auditScore:85.0},
+  {id:'T16', name:'트러블슈팅팀',  site:'트러블슈팅부',  headcount:14, auditScore:76.0},
 ];
+const TEAMS = TEAM_DEFS.map(t=>({...t, stdRatio: stdRatioFor(t.auditScore)}));
+const DEPTS = [...new Set(TEAMS.map(t=>t.site))];
 
-const MONTHS = ['2025-10','2025-11','2025-12','2026-01','2026-02','2026-03'];
-const MONTH_LABEL = {'2025-10':'10월','2025-11':'11월','2025-12':'12월','2026-01':'01월','2026-02':'02월','2026-03':'03월'};
+const MONTHS = ['2026-01','2026-02','2026-03','2026-04','2026-05','2026-06'];
+const MONTH_LABEL = {'2026-01':'01월','2026-02':'02월','2026-03':'03월','2026-04':'04월','2026-05':'05월','2026-06':'06월'};
 
-// 월별 x 팀별 x 6개 유형 개선건수 (정리,정돈,청소,시각화관리,습관화,자주보전 순)
-const MONTHLY = {
-  T1: {'2025-10':[24,18,13,10,6,9], '2025-11':[25,20,15,12,7,11], '2025-12':[26,20,17,12,7,11], '2026-01':[23,19,15,11,6,10], '2026-02':[24,20,15,12,7,11], '2026-03':[25,20,16,12,7,12]},
-  T2: {'2025-10':[16,12,10,8,4,6], '2025-11':[17,13,11,9,5,7],  '2025-12':[18,13,12,9,5,7],  '2026-01':[17,12,10,9,4,6],  '2026-02':[17,12,11,9,5,7],  '2026-03':[18,13,11,10,5,7]},
-  T3: {'2025-10':[11,12,14,5,6,6], '2025-11':[12,13,15,6,7,7],  '2025-12':[12,13,15,7,7,8],  '2026-01':[11,12,13,6,6,7],  '2026-02':[12,13,14,6,7,8],  '2026-03':[12,13,15,6,7,8]},
-  T4: {'2025-10':[8,9,7,6,4,6],   '2025-11':[9,10,8,7,5,7],    '2025-12':[9,10,9,7,5,8],    '2026-01':[8,9,8,6,4,7],    '2026-02':[8,10,8,7,5,8],    '2026-03':[9,10,8,7,5,8]},
-  T5: {'2025-10':[8,8,9,7,4,6],   '2025-11':[9,9,10,8,5,7],    '2025-12':[9,9,11,8,5,7],    '2026-01':[8,8,9,7,4,6],    '2026-02':[8,9,9,7,5,7],    '2026-03':[9,9,10,8,5,7]},
-};
-
-// 팀별 월별 Audit 총점 이력
-const AUDIT_MONTHLY = {
-  T1: [88.1,89.0,90.2,91.0,91.8,92.4],
-  T2: [85.0,85.9,86.7,87.2,87.6,88.1],
-  T3: [76.0,76.8,77.5,78.0,78.7,79.3],
-  T4: [74.5,73.9,73.0,72.5,72.0,71.8],
-  T5: [81.0,81.8,82.6,83.3,84.0,84.6],
-};
+// 월별 x 팀별 x 6개 유형 개선건수 — 팀 규모(headcount)와 Audit 점수에 연동한 결정적 생성 (수동 하드코딩 대신 규칙 기반 산출)
+function buildMonthly(team){
+  const weights = CATEGORIES.map(c => 0.6 + (hash(team.id+c+'w')%1000)/1000*1.4);
+  const wsum = weights.reduce((a,b)=>a+b,0);
+  const norm = weights.map(w=>w/wsum);
+  const baseTotal = team.headcount * 2.0;
+  const out = {};
+  MONTHS.forEach((m,mi)=>{
+    const growth = 1 + (mi-2.5)*0.015;
+    const monthNoise = 0.9 + (hash(team.id+m+'n')%1000)/1000*0.2;
+    const total = baseTotal*growth*monthNoise;
+    out[m] = norm.map((w,i)=>{
+      const catNoise = 0.85 + (hash(team.id+CATEGORIES[i]+m+'c')%1000)/1000*0.3;
+      return Math.max(1, Math.round(total*w*catNoise));
+    });
+  });
+  return out;
+}
+// 팀별 월별 Audit 총점 이력 — 최종월 값은 xlsx 평가결과 환산 점수와 일치, 이전 달은 등급 추세를 반영한 결정적 보간
+function buildAuditMonthly(team){
+  const trendDir = team.auditScore>=85 ? 1 : (team.auditScore<80 ? -1 : 0.3);
+  const arr = MONTHS.map((m,i)=>{
+    const stepsFromEnd = MONTHS.length-1-i;
+    const drift = -trendDir*stepsFromEnd*0.9;
+    const noise = ((hash(team.id+m+'audit')%1000)/1000 - 0.5)*2.4;
+    return Math.max(55, Math.min(99, team.auditScore + drift + noise));
+  });
+  arr[arr.length-1] = team.auditScore;
+  return arr.map(v=>Math.round(v*10)/10);
+}
+const MONTHLY = {};
+const AUDIT_MONTHLY = {};
+TEAMS.forEach(t=>{ MONTHLY[t.id] = buildMonthly(t); AUDIT_MONTHLY[t.id] = buildAuditMonthly(t); });
 
 // 월별 전체 반복지적률(%) / TOP5는 실데이터 기반 계산 — computeRepeatStats() 참고 (2개월 이상 연속 지적 기준)
 
@@ -46,28 +84,32 @@ const STANDARDS = [
   {no:4, category:'시각화관리', seq:1, q:'표준·정상·이상 상태가 즉시 구분되는가?',           note:'쉐도우보드 적용 여부',   use:true,  reg:'SYSTEM', regDate:'2026-01-19', mod:'김도현', modDate:'2026-02-02'},
   {no:5, category:'습관화',     seq:1, q:'정리·정돈·청소 활동이 자율적으로 유지되는가?',     note:'',                       use:true,  reg:'SYSTEM', regDate:'2026-01-19', mod:'SYSTEM', modDate:'2026-01-19'},
   {no:6, category:'자주보전',   seq:1, q:'설비 누유·누수·이상소음 점검이 정례화되어 있는가?', note:'일일점검 기준',          use:true,  reg:'SYSTEM', regDate:'2026-01-19', mod:'SYSTEM', modDate:'2026-01-19'},
-  {no:7, category:'정리',       seq:2, q:'절삭유·칩 비산구역 정리상태가 양호한가?',         note:'가공부 특화항목',        use:true,  reg:'김도현', regDate:'2026-02-10', mod:'김도현', modDate:'2026-02-10'},
-  {no:8, category:'정돈',       seq:2, q:'입고자재 로케이션 표시가 실물과 일치하는가?',      note:'자재운영부 특화항목',    use:true,  reg:'박지연', regDate:'2026-02-15', mod:'박지연', modDate:'2026-02-15'},
-  {no:9, category:'자주보전',   seq:2, q:'RGV 설비 정기점검 항목이 누락 없이 수행되는가?',   note:'',                       use:false, reg:'이수현', regDate:'2025-12-04', mod:'이수현', modDate:'2025-12-04'},
+  {no:7, category:'정리',       seq:2, q:'로봇 용접 주변 스패터·이물질 정리상태가 양호한가?', note:'중형조립부 특화항목',    use:true,  reg:'김도현', regDate:'2026-02-10', mod:'김도현', modDate:'2026-02-10'},
+  {no:8, category:'정돈',       seq:2, q:'AGV/RGV 이동경로 자재 적치가 없는가?',            note:'휠로더조립부 특화항목',  use:true,  reg:'박지연', regDate:'2026-02-15', mod:'박지연', modDate:'2026-02-15'},
+  {no:9, category:'자주보전',   seq:2, q:'권상 지그·전용 치공구 정기점검이 수행되는가?',     note:'',                       use:false, reg:'이수현', regDate:'2025-12-04', mod:'이수현', modDate:'2025-12-04'},
   {no:10,category:'습관화',     seq:2, q:'우수사례 게시판이 최신화되어 있는가?',            note:'',                       use:true,  reg:'SYSTEM', regDate:'2026-01-19', mod:'SYSTEM', modDate:'2026-01-19'},
 ];
 
 // 5s_improvement — std:true 는 "5S 개선표준화(수평전개)" 플래그
+// (참고: 이 목업 항목들은 별도의 예시 데이터이며, 업로드된 소그룹활동 과제평가 xlsx의 과제 내용을 그대로 옮긴 것은 아닙니다.
+//  xlsx는 팀 목록·Audit 점수 산정에만 반영했습니다.)
 let REQUESTS = [
-  {id:'IMP-2026-0301', date:'2026-03-24', team:'T1', category:'정리',       location:'RGV 레일 주변', title:'RGV 레일 이물질 정리', issue:'RGV 레일 주변 이물질 및 불필요 자재 적치',        action:'분진 제거 및 불필요 자재 폐기',      status:'close',      before:true, after:true,  std:true},
-  {id:'IMP-2026-0298', date:'2026-03-22', team:'T2', category:'정돈',       location:'부품 보관대', title:'최대·최소량 라벨 정비', issue:'최대·최소 수량 미표기로 재고 과부족 반복',        action:'라벨 및 위치표준 적용',              status:'verify',     before:true, after:true,  std:false},
-  {id:'IMP-2026-0294', date:'2026-03-20', team:'T3', category:'청소',       location:'절삭유 비산구역', title:'청소주기 재정의', issue:'절삭유 비산구역 청소주기·담당 불명확',           action:'주간 체크리스트 재정의',             status:'done',       before:true, after:false, std:false},
-  {id:'IMP-2026-0289', date:'2026-03-18', team:'T1', category:'시각화관리', location:'공구 보관함', title:'쉐도우보드 적용', issue:'공구 위치표시 불명확으로 반납 지연 발생',        action:'쉐도우보드 및 위치 라벨 적용',        status:'inprogress', before:true, after:false, std:true},
-  {id:'IMP-2026-0281', date:'2026-03-11', team:'T4', category:'자주보전',   location:'지게차 점검구역', title:'누유 점검주기 준수', issue:'설비 누유 점검주기 미준수',                     action:'일일점검표 재배포 및 서명관리',       status:'registered', before:true, after:false, std:false},
-  {id:'IMP-2026-0276', date:'2026-03-05', team:'T5', category:'습관화',     location:'사무구역 게시판', title:'우수사례 수평전개', issue:'우수 5S 활동이 타 팀에 공유되지 않음',           action:'표준화 자료 작성 후 수평전개 예정',    status:'draft',      before:false,after:false, std:true},
-  {id:'IMP-2026-0212', date:'2026-02-26', team:'T3', category:'정돈',       location:'가공유 보관대', title:'가공유 보관 표준화', issue:'가공유 보관 위치 미표준',                       action:'전용 보관대 및 라벨 적용',            status:'close',      before:true, after:true,  std:true},
-  {id:'IMP-2026-0205', date:'2026-02-19', team:'T4', category:'정리',       location:'입고 대기구역', title:'통로 침범 파렛트 정리', issue:'입고 대기 파렛트가 통로를 침범',                action:'대기구역 라인마킹 재정비',            status:'close',      before:true, after:true,  std:false},
-  {id:'IMP-2026-0198', date:'2026-02-14', team:'T2', category:'청소',       location:'컨베이어 하부', title:'분진 청소주기 단축', issue:'컨베이어 하부 분진 누적',                       action:'하부 청소 주기 단축(월1→주1)',        status:'close',      before:true, after:true,  std:false},
-  {id:'IMP-2026-0161', date:'2026-01-28', team:'T5', category:'시각화관리', location:'현황 게시판', title:'게시판 자동연동', issue:'게시판 최신 데이터 미반영',                     action:'게시판 자동 연동 스크립트 적용',      status:'verify',     before:false,after:false, std:false},
-  {id:'IMP-2026-0154', date:'2026-01-20', team:'T1', category:'자주보전',   location:'지게차 점검대', title:'점검표 서명관리', issue:'지게차 점검표 미작성 누락 발생',                action:'점검표 서명관리 및 게시',            status:'close',      before:true, after:true,  std:true},
-  {id:'IMP-2026-0140', date:'2026-01-09', team:'T3', category:'습관화',     location:'현장 게시판', title:'표준 재교육', issue:'표준 미준수 재발(2회차)',                       action:'표준서 재교육 및 현장 게시',          status:'inprogress', before:true, after:false, std:false},
-  {id:'IMP-2026-0231', date:'2026-02-08', team:'T1', category:'정돈',       location:'공구 반납대', title:'반납위치 재공지', issue:'도구 반납위치 미준수 반복',                     action:'반납위치 표준 재공지 및 순회점검',    status:'registered', before:false,after:false, std:false},
-  {id:'IMP-2026-0225', date:'2026-02-03', team:'T5', category:'청소',       location:'사무구역', title:'청소당번표 재배치', issue:'사무구역 청소상태 저하',                        action:'청소당번표 재배치',                  status:'inprogress', before:true, after:false, std:false},
+  {id:'IMP-2026-0301', date:'2026-06-24', team:'T1',  category:'정리',       location:'작업표준서 게시대', title:'작업표준서 정리 표준화', issue:'대형Att.팀 작업표준서가 공정별로 정리되지 않음', action:'표준서 공정별 분류 및 QR 코드 부착', status:'close',      before:true, after:true,  std:true},
+  {id:'IMP-2026-0298', date:'2026-06-20', team:'T2',  category:'정돈',       location:'스윙베어링 권상구역', title:'권상 지그 정돈', issue:'권상 지그·가이드핀 보관위치 미표준', action:'전용 거치대 및 라벨 적용', status:'verify',     before:true, after:true,  std:false},
+  {id:'IMP-2026-0294', date:'2026-06-15', team:'T3',  category:'청소',       location:'엔진 석션 파이프 공정', title:'조립부 이물질 청소', issue:'석션 파이프 조립부 절삭분 누적', action:'공정 종료 후 청소 체크리스트 추가', status:'done',       before:true, after:false, std:false},
+  {id:'IMP-2026-0289', date:'2026-06-08', team:'T4',  category:'시각화관리', location:'상부가접 검사대',   title:'평면도 기준 시각화', issue:'상부가접 평면도 수치 기준 미게시', action:'기준 수치 스티커 부착 및 게시', status:'inprogress', before:true, after:false, std:true},
+  {id:'IMP-2026-0281', date:'2026-05-30', team:'T5',  category:'자주보전',   location:'로봇 용접 라인',    title:'용접로봇 자주보전', issue:'로봇 용접조건 점검주기 미준수', action:'일일점검표 서명관리 도입', status:'close',      before:true, after:true,  std:true},
+  {id:'IMP-2026-0276', date:'2026-05-24', team:'T6',  category:'습관화',     location:'AGV 콜버튼 구역',   title:'대기시간 개선 수평전개', issue:'AGV CALL BUTTON 활용 미흡 팀 존재', action:'우수사례 표준화 자료 작성 및 수평전개', status:'draft',      before:false,after:false, std:true},
+  {id:'IMP-2026-0212', date:'2026-05-19', team:'T7',  category:'정돈',       location:'엔진후드 권상구역', title:'권상지그 보관 표준화', issue:'엔진후드 권상 지그 보관위치 미표준', action:'전용 보관대 및 라벨 적용', status:'close',      before:true, after:true,  std:true},
+  {id:'IMP-2026-0205', date:'2026-05-12', team:'T8',  category:'정리',       location:'중형 하부 라인',    title:'재공 라인 정리', issue:'중형 하부 라인 재공 과다로 통로 침범', action:'재공 축소 및 라인마킹 재정비', status:'close',      before:true, after:true,  std:false},
+  {id:'IMP-2026-0198', date:'2026-05-06', team:'T9',  category:'청소',       location:'ARM SUB1 공정',    title:'품질 이물질 청소', issue:'ARM SUB1 공정 이물질 혼입 우려', action:'공정 청소주기 단축 및 표준화', status:'close',      before:true, after:true,  std:false},
+  {id:'IMP-2026-0161', date:'2026-04-28', team:'T10', category:'시각화관리', location:'MCV 조립 라인',    title:'이동동선 표시', issue:'MCV 고압호스 조립 이동동선 표시 미흡', action:'바닥 동선 라인마킹 적용', status:'verify',     before:false,after:false, std:false},
+  {id:'IMP-2026-0154', date:'2026-04-20', team:'T11', category:'자주보전',   location:'드라이브샤프트 권상구역', title:'권상지그 점검관리', issue:'대형모델 권상지그 점검표 미작성', action:'점검표 서명관리 및 게시', status:'close',      before:true, after:true,  std:true},
+  {id:'IMP-2026-0140', date:'2026-04-13', team:'T12', category:'습관화',     location:'엑슬 보호커버 회수구역', title:'AGV 활동 표준화', issue:'엑슬 보호커버 수동 회수로 반복 재발생', action:'전용 소형 AGV 표준화 및 타 팀 전개', status:'inprogress', before:true, after:false, std:true},
+  {id:'IMP-2026-0231', date:'2026-06-02', team:'T13', category:'정돈',       location:'CWT 램프 조정구역', title:'조정지그 정돈', issue:'CWT 램프 갭 조정지그 보관 미표준', action:'조정지그 전용 거치대 도입', status:'registered', before:false,after:false, std:false},
+  {id:'IMP-2026-0225', date:'2026-06-11', team:'T14', category:'청소',       location:'병행생산 CWT 구역', title:'데미지 저감 청소관리', issue:'병행생산 CWT 작업 시 데미지 발생', action:'작업 전후 점검·청소 체크리스트 도입', status:'inprogress', before:true, after:false, std:false},
+  {id:'IMP-2026-0219', date:'2026-06-17', team:'T15', category:'자주보전',   location:'주행 측정설비',    title:'설비 우천 대응 보전', issue:'주행 측정설비 우천시 작동불량 반복', action:'설비 방수 커버 및 점검주기 재설정', status:'done',       before:true, after:false, std:false},
+  {id:'IMP-2026-0210', date:'2026-04-06', team:'T16', category:'정리',       location:'작동유 드레인 구역', title:'드레인 지그 정리', issue:'작동유 드레인 지그 주변 유출물 정리 미흡', action:'드레인 지그 개선 및 받이 정비', status:'registered', before:true, after:false, std:false},
 ];
 
 const STATUS_LABEL = {draft:'Draft', registered:'요청등록', inprogress:'생산팀 조치중', done:'조치완료', verify:'5S모듈 검증', close:'Close'};
@@ -76,7 +118,6 @@ const STATUS_LABEL = {draft:'Draft', registered:'요청등록', inprogress:'생�
 const teamById = id => TEAMS.find(t=>t.id===id);
 const monthIndex = m => MONTHS.indexOf(m);
 const prevMonth = m => MONTHS[Math.max(0, monthIndex(m)-1)];
-function hash(str){let h=0;for(let i=0;i<str.length;i++){h=(h*31+str.charCodeAt(i))>>>0}return h}
 function toast(msg){
   const t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('show');
@@ -106,16 +147,13 @@ function grade(score){ if(score>=93) return 'S'; if(score>=90) return 'A'; if(sc
 
 // 팀×유형별 "지적 발생" 시계열 — 2상태(정상/지적) 전이 모델
 // newProb: 정상 상태에서 새로 지적이 발생할 확률, persist: 지적 상태가 다음달까지 이어질(=반복) 확률
-// 팀 등급이 낮을수록(Audit 점수가 낮을수록) 두 확률 모두 높게 설정 — Audit 결과와 반복지적 경향을 연결
-const TEAM_REPEAT_PARAMS = {
-  T1: {newProb:0.20, persist:0.25},
-  T2: {newProb:0.28, persist:0.30},
-  T3: {newProb:0.40, persist:0.38},
-  T4: {newProb:0.48, persist:0.45},
-  T5: {newProb:0.32, persist:0.32},
-};
+// 팀 Audit 점수가 낮을수록 두 확률 모두 높게 산출 — Audit 결과와 반복지적 경향을 연결 (팀 수와 무관하게 동작)
+function repeatParamsFor(team){
+  const t = Math.max(0, Math.min(1, (97 - team.auditScore) / 21));
+  return { newProb: 0.15 + t*0.35, persist: 0.18 + t*0.32 };
+}
 function issueSeries(teamId, cat){
-  const params = TEAM_REPEAT_PARAMS[teamId];
+  const params = repeatParamsFor(teamById(teamId));
   let state = false;
   return MONTHS.map(m=>{
     const r = (hash(teamId+cat+m+'salt1310') % 1000)/1000;
@@ -209,7 +247,7 @@ function renderRepeatTrend(){
 // 반복지적 집중 작업장 TOP5 (2개월 이상 연속 지적 기준)
 function renderRepeatTop5(){
   const { teamStats } = computeRepeatStats();
-  document.getElementById('repeatTop5Body').innerHTML = teamStats.map((r,i)=>{
+  document.getElementById('repeatTop5Body').innerHTML = teamStats.slice(0,5).map((r,i)=>{
     const team = teamById(r.team);
     return `<tr>
       <td><span class="rank-badge ${i<3?'top':''}">${i+1}</span></td>
@@ -221,35 +259,48 @@ function renderRepeatTop5(){
   }).join('');
 }
 
-/* ---- 선+막대 결합 추이 차트 (부서별 5개 시리즈 × 6개월) ---- */
+/* ---- 선+막대 결합 추이 차트 (부서 8개 그룹 × 6개월) — 16개 팀은 부서 단위로 집계해 표시 ---- */
+function deptTeams(dept){ return TEAMS.filter(t=>t.site===dept); }
 function renderLineBar(wrapId, legendId, valueFn, maxVal, unitFmt){
-  document.getElementById(legendId).innerHTML = TEAMS.map((t,i)=>`<span><i class="ddot s${i+1}"></i>${t.name}</span>`).join('');
+  document.getElementById(legendId).innerHTML = DEPTS.map((d,i)=>`<span><i class="ddot s${(i%8)+1}"></i>${d}</span>`).join('');
   const barsHtml = MONTHS.map(m=>{
-    const bars = TEAMS.map((t,i)=>{
-      const v = valueFn(t,m);
+    const bars = DEPTS.map((d,i)=>{
+      const v = valueFn(d,m);
       const h = Math.max(4, v/maxVal*150);
-      return `<div class="lb-bar s${i+1}" style="height:${h}px" title="${t.name} · ${MONTH_LABEL[m]} · ${unitFmt(v)}"></div>`;
+      return `<div class="lb-bar s${(i%8)+1}" style="height:${h}px" title="${d} · ${MONTH_LABEL[m]} · ${unitFmt(v)}"></div>`;
     }).join('');
     return `<div class="lb-month"><div class="lb-bars">${bars}</div><span class="lb-mlabel">${MONTH_LABEL[m]}</span></div>`;
   }).join('');
-  const polylines = TEAMS.map((t,i)=>{
+  const polylines = DEPTS.map((d,i)=>{
     const pts = MONTHS.map((m,mi)=>{
       const x = (mi+0.5)/MONTHS.length*100;
-      const y = 100 - Math.min(100, valueFn(t,m)/maxVal*100);
+      const y = 100 - Math.min(100, valueFn(d,m)/maxVal*100);
       return `${x.toFixed(1)},${y.toFixed(1)}`;
     }).join(' ');
-    return `<polyline points="${pts}" fill="none" stroke="${TEAM_COLORS[i]}" stroke-width="1.6" vector-effect="non-scaling-stroke" opacity="0.85"/>`;
+    return `<polyline points="${pts}" fill="none" stroke="${DEPT_COLORS[i%8]}" stroke-width="1.6" vector-effect="non-scaling-stroke" opacity="0.85"/>`;
   }).join('');
   document.getElementById(wrapId).innerHTML = `
     <div class="lb-bars-row" style="height:170px">${barsHtml}</div>
     <svg class="lb-svg" viewBox="0 0 100 100" preserveAspectRatio="none" style="height:150px;top:6px">${polylines}</svg>`;
 }
+function deptStdPerCapita(dept, m){
+  const members = deptTeams(dept);
+  const sum = members.reduce((a,t)=>a+stdPerCapita(t,m)*t.headcount,0);
+  const hc = members.reduce((a,t)=>a+t.headcount,0);
+  return hc? sum/hc : 0;
+}
+function deptAuditAvg(dept, m){
+  const members = deptTeams(dept);
+  const mi = monthIndex(m);
+  const sum = members.reduce((a,t)=>a+AUDIT_MONTHLY[t.id][mi],0);
+  return members.length? sum/members.length : 0;
+}
 function renderStdTrendChart(){
-  const max = Math.max(...TEAMS.map(t=>Math.max(...MONTHS.map(m=>stdPerCapita(t,m)))));
-  renderLineBar('stdChartWrap','stdLegend', stdPerCapita, max, v=>v.toFixed(2)+'건/인');
+  const max = Math.max(...DEPTS.map(d=>Math.max(...MONTHS.map(m=>deptStdPerCapita(d,m)))));
+  renderLineBar('stdChartWrap','stdLegend', deptStdPerCapita, max, v=>v.toFixed(2)+'건/인');
 }
 function renderAuditTrendChart(){
-  renderLineBar('auditChartWrap','auditLegend', (t,m)=>AUDIT_MONTHLY[t.id][monthIndex(m)], 100, v=>v.toFixed(1)+'점');
+  renderLineBar('auditChartWrap','auditLegend', deptAuditAvg, 100, v=>v.toFixed(1)+'점');
 }
 
 /* ---- 팀별 5S 유형별 활동 현황: 차트구분/5S유형/팀선택 동적 전환 (기존 MES 차트 재현) ---- */
@@ -360,7 +411,7 @@ function renderDeptRegisterTable(){
 
 // 5S 상세내역 (요청서 1p 하단 표 재현)
 function renderDetailTable(){
-  document.getElementById('detailTableBody').innerHTML = REQUESTS.slice(0,14).map(r=>{
+  document.getElementById('detailTableBody').innerHTML = REQUESTS.slice(0,20).map(r=>{
     const team = teamById(r.team);
     return `<tr>
       <td class="mono">${r.id}</td>
@@ -384,7 +435,7 @@ function renderRawTable(){
     if(rawStatusFilter==='완료') return ['done','verify','close'].includes(r.status);
     if(rawStatusFilter==='미결') return ['draft','registered','inprogress'].includes(r.status);
     return true;
-  }).slice(0,12);
+  }).slice(0,20);
   document.getElementById('rawTableBody').innerHTML = rows.map((r,i)=>{
     const done = ['done','verify','close'].includes(r.status);
     return `<tr>
@@ -611,6 +662,89 @@ function saveRequest(){
 }
 
 /* =========================================================
+   신규 확장화면 — 5S 고도화 활동사례 현황 (당월/누적)
+   "5S 개선표준화(수평전개)" 플래그(std)가 켜져 있고, 조치완료 이상(done/verify/close)으로
+   확정된 개선요청을 "확보된 5S 고도화 사례"로 정의합니다.
+   ========================================================= */
+function securedCases(){
+  return REQUESTS.filter(r => r.std && ['done','verify','close'].includes(r.status));
+}
+function renderCaseFilters(){
+  document.getElementById('caseFilterMonth').innerHTML = MONTHS.map(m=>`<option value="${m}" ${m===MONTHS[MONTHS.length-1]?'selected':''}>${m.slice(0,4)}년 ${MONTH_LABEL[m]}</option>`).join('');
+  document.getElementById('caseFilterSite').innerHTML = '<option value="all">전체</option>' + DEPTS.map(d=>`<option>${d}</option>`).join('');
+}
+function renderCaseKPIs(month){
+  const cases = securedCases();
+  const mi = monthIndex(month);
+  const monthCases = cases.filter(c=>c.date.slice(0,7)===month);
+  const cumCases = cases.filter(c=>monthIndex(c.date.slice(0,7))<=mi);
+  const monthTeams = new Set(monthCases.map(c=>c.team));
+  const cumTeams = new Set(cumCases.map(c=>c.team));
+  document.getElementById('kpiCaseMonthCnt').textContent = monthCases.length;
+  document.getElementById('kpiCaseCumCnt').textContent = cumCases.length;
+  document.getElementById('kpiCaseCumCnt').nextElementSibling.textContent = `건 · 01월~${MONTH_LABEL[month]}`;
+  document.getElementById('kpiCaseMonthRate').textContent = `${(monthTeams.size/TEAMS.length*100).toFixed(1)}%`;
+  document.getElementById('kpiCaseMonthRateSub').textContent = `전체 ${TEAMS.length}개 팀 중 ${monthTeams.size}개 팀`;
+  document.getElementById('kpiCaseCumRate').textContent = `${(cumTeams.size/TEAMS.length*100).toFixed(1)}%`;
+  document.getElementById('kpiCaseCumRateSub').textContent = `전체 ${TEAMS.length}개 팀 중 ${cumTeams.size}개 팀`;
+}
+function renderCaseTrendChart(){
+  const cases = securedCases();
+  const monthCounts = MONTHS.map(m=>cases.filter(c=>c.date.slice(0,7)===m).length);
+  let running = 0;
+  const cum = monthCounts.map(v=>{ running+=v; return running; });
+  const max = Math.max(...monthCounts, 1) * 1.3;
+  document.getElementById('caseTrendChart').innerHTML = MONTHS.map((m,i)=>`
+    <div class="rate-col">
+      <span class="rate-val mono">${monthCounts[i]}</span>
+      <div class="rate-bar case" style="height:${Math.max(6, monthCounts[i]/max*150)}px" title="${MONTH_LABEL[m]} 신규 ${monthCounts[i]}건 · 누적 ${cum[i]}건"></div>
+      <span class="rate-name">${MONTH_LABEL[m]}<br><span class="case-cum-label mono">누적 ${cum[i]}</span></span>
+    </div>`).join('');
+}
+function renderCaseTeamTable(month, siteFilter){
+  const cases = securedCases();
+  const mi = monthIndex(month);
+  const rows = TEAMS.filter(t=>siteFilter==='all' || t.site===siteFilter).map(t=>{
+    const teamCumCases = cases.filter(c=>c.team===t.id && monthIndex(c.date.slice(0,7))<=mi).sort((a,b)=>a.date<b.date?1:-1);
+    const hasMonth = teamCumCases.some(c=>c.date.slice(0,7)===month);
+    const latest = teamCumCases[0];
+    return `<tr>
+      <td>${t.site}</td>
+      <td><b>${t.name}</b></td>
+      <td><span class="status ${hasMonth?'done':'open'}">${hasMonth?'확보':'미확보'}</span></td>
+      <td class="mono">${teamCumCases.length}</td>
+      <td>${latest ? (latest.title||latest.category) : '—'}</td>
+      <td class="mono">${latest ? latest.date : '—'}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('caseTeamBody').innerHTML = rows || `<tr><td colspan="6" class="muted">해당 작업장에 확보된 사례가 없습니다.</td></tr>`;
+}
+function renderCaseList(siteFilter){
+  const cases = securedCases()
+    .filter(c=>siteFilter==='all' || teamById(c.team).site===siteFilter)
+    .sort((a,b)=> a.date<b.date?1:-1);
+  document.getElementById('caseListBody').innerHTML = cases.map(c=>{
+    const team = teamById(c.team);
+    return `<tr>
+      <td class="mono">${c.id}</td>
+      <td>${team.site}</td>
+      <td>${team.name}</td>
+      <td>${c.title||c.category}</td>
+      <td class="mono">${c.date.slice(5,7)}월</td>
+      <td class="mono">${c.date}</td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="6" class="muted">조건에 해당하는 확보 사례가 없습니다.</td></tr>`;
+}
+function renderCaseView(){
+  const month = document.getElementById('caseFilterMonth').value || MONTHS[MONTHS.length-1];
+  const site = document.getElementById('caseFilterSite').value || 'all';
+  renderCaseKPIs(month);
+  renderCaseTrendChart();
+  renderCaseTeamTable(month, site);
+  renderCaseList(site);
+}
+
+/* =========================================================
    네비게이션 / 초기화
    ========================================================= */
 function switchView(id){
@@ -652,7 +786,12 @@ document.getElementById('reqModalCancel').addEventListener('click', closeRequest
 document.getElementById('reqModalSave').addEventListener('click', saveRequest);
 document.getElementById('reqModalBackdrop').addEventListener('click', e=>{ if(e.target.id==='reqModalBackdrop') closeRequestModal(); });
 
+document.getElementById('caseFilterApply').addEventListener('click', renderCaseView);
+document.getElementById('caseFilterMonth').addEventListener('change', renderCaseView);
+document.getElementById('caseFilterSite').addEventListener('change', renderCaseView);
+
 function init(){
+  document.getElementById('scopePeriod').innerHTML = MONTHS.map(m=>`<option value="${m}" ${m===MONTHS[MONTHS.length-1]?'selected':''}>${m.slice(0,4)}년 ${MONTH_LABEL[m]}</option>`).join('');
   document.getElementById('chartCategory').innerHTML = '<option value="all">전체 유형</option>' + CATEGORIES.map(c=>`<option>${c}</option>`).join('');
   document.getElementById('chartTeam').innerHTML = TEAMS.map(t=>`<option value="${t.id}">${t.name}</option>`).join('');
   renderAuditMonthOptions();
@@ -665,5 +804,7 @@ function init(){
   renderRequestTeamOptions();
   renderRequestGrid();
   renderDeptAuditSummary();
+  renderCaseFilters();
+  renderCaseView();
 }
 init();

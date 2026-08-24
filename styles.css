@@ -89,7 +89,7 @@ button{cursor:pointer}
 .btn-ghost:hover{background:#f4f7fa}
 
 /* ---------------- Andon strip (signature) ---------------- */
-.andon{display:grid;grid-template-columns:repeat(5,1fr);gap:2px;background:var(--steel-900);border-radius:10px;padding:2px;margin-bottom:8px;box-shadow:var(--shadow)}
+.andon{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;background:var(--steel-900);border-radius:10px;padding:8px;margin-bottom:8px;box-shadow:var(--shadow)}
 .andon-cell{padding:14px 12px;border-radius:8px;display:flex;flex-direction:column;gap:5px;position:relative;background:#132a3f}
 .andon-cell.g{background:#12331f}
 .andon-cell.a{background:#3a2c0b}
@@ -146,6 +146,10 @@ button{cursor:pointer}
 .tdot.s4,.mini-bar.s4,.ddot.s4,.lb-bar.s4{background:#c9922f}
 .tdot.s5,.mini-bar.s5{background:#8faf7a}
 .tdot.s6,.mini-bar.s6{background:#8a6a9e}
+.ddot.s5,.lb-bar.s5{background:#8a6a9e}
+.ddot.s6,.lb-bar.s6{background:#5c8a5a}
+.ddot.s7,.lb-bar.s7{background:#b5563f}
+.ddot.s8,.lb-bar.s8{background:#5a6b7c}
 .ddot{width:8px;height:8px;border-radius:2px;display:inline-block}
 .dept-legend{display:flex;flex-wrap:wrap;gap:11px;margin-bottom:10px;font-size:10.5px;color:var(--muted)}
 .dept-legend span{display:flex;align-items:center;gap:5px}
@@ -165,7 +169,9 @@ button{cursor:pointer}
 .rate-val{font-size:11.5px;font-weight:800;margin-bottom:5px;color:var(--steel-700)}
 .rate-bar{width:32px;max-width:60%;background:var(--steel-500);border-radius:4px 4px 0 0}
 .rate-bar.repeat{background:var(--amber)}
-.rate-name{font-size:10.5px;font-weight:700;margin-top:8px;white-space:nowrap}
+.rate-bar.case{background:var(--green)}
+.rate-name{font-size:10.5px;font-weight:700;margin-top:8px;white-space:nowrap;text-align:center}
+.case-cum-label{display:block;font-weight:700;color:var(--muted);font-size:9.5px;margin-top:2px}
 .type-chart{height:210px;display:flex;align-items:flex-end;gap:16px;overflow-x:auto;padding-top:6px}
 .team-bar-group{flex:1;min-width:100px;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center}
 .team-bars{height:172px;width:100%;display:flex;align-items:flex-end;justify-content:center;gap:4px;border-bottom:1px solid var(--line-strong)}
