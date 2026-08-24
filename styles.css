@@ -77,6 +77,14 @@ button{cursor:pointer}
 
 /* ---------------- Page head ---------------- */
 .page-head{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;margin-bottom:16px}
+
+/* ---------------- Story sections (dashboard structure) ---------------- */
+.story-block{margin-bottom:28px}
+.story-block:last-child{margin-bottom:0}
+.story-label{display:flex;align-items:center;gap:12px;margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid var(--steel-900)}
+.story-label .num{flex:0 0 28px;width:28px;height:28px;border-radius:7px;background:var(--steel-900);color:#fff;display:grid;place-items:center;font-weight:800;font-size:13px}
+.story-label h2{margin:0;font-size:16px;letter-spacing:-.2px}
+.story-label p{margin:2px 0 0;font-size:11.5px;color:var(--muted)}
 .eyebrow{margin:0 0 4px;font-family:var(--mono);font-size:11px;font-weight:700;color:var(--steel-500);letter-spacing:.4px}
 .page-head h1{margin:0;font-size:24px;letter-spacing:-.4px}
 .lede{margin:6px 0 0;font-size:13px;color:var(--muted)}

@@ -259,29 +259,23 @@ function renderRepeatTop5(){
   }).join('');
 }
 
-/* ---- 선+막대 결합 추이 차트 (부서 8개 그룹 × 6개월) — 16개 팀은 부서 단위로 집계해 표시 ---- */
+/* ---- 부서별 추이: 스파크라인 행 (8개 부서 × 6개월) ---- */
 function deptTeams(dept){ return TEAMS.filter(t=>t.site===dept); }
-function renderLineBar(wrapId, legendId, valueFn, maxVal, unitFmt){
-  document.getElementById(legendId).innerHTML = DEPTS.map((d,i)=>`<span><i class="ddot s${(i%8)+1}"></i>${d}</span>`).join('');
-  const barsHtml = MONTHS.map(m=>{
-    const bars = DEPTS.map((d,i)=>{
-      const v = valueFn(d,m);
-      const h = Math.max(4, v/maxVal*150);
-      return `<div class="lb-bar s${(i%8)+1}" style="height:${h}px" title="${d} · ${MONTH_LABEL[m]} · ${unitFmt(v)}"></div>`;
+function renderDeptTrendRows(wrapId, valueFn, unitFmt){
+  document.getElementById(wrapId).innerHTML = DEPTS.map(d=>{
+    const vals = MONTHS.map(m=>valueFn(d,m));
+    const max = Math.max(...vals, 0.001);
+    const bars = vals.map((v,i)=>{
+      const h = Math.max(6, v/max*54);
+      const cur = i===MONTHS.length-1 ? ' cur' : '';
+      return `<div class="spark-bar${cur}" style="height:${h}px" title="${d} · ${MONTH_LABEL[MONTHS[i]]} · ${unitFmt(v)}"></div>`;
     }).join('');
-    return `<div class="lb-month"><div class="lb-bars">${bars}</div><span class="lb-mlabel">${MONTH_LABEL[m]}</span></div>`;
+    return `<div class="trend-row">
+      <span class="trend-name">${d}</span>
+      <div class="trend-spark">${bars}</div>
+      <span class="trend-cur mono">${unitFmt(vals[vals.length-1])}</span>
+    </div>`;
   }).join('');
-  const polylines = DEPTS.map((d,i)=>{
-    const pts = MONTHS.map((m,mi)=>{
-      const x = (mi+0.5)/MONTHS.length*100;
-      const y = 100 - Math.min(100, valueFn(d,m)/maxVal*100);
-      return `${x.toFixed(1)},${y.toFixed(1)}`;
-    }).join(' ');
-    return `<polyline points="${pts}" fill="none" stroke="${DEPT_COLORS[i%8]}" stroke-width="1.6" vector-effect="non-scaling-stroke" opacity="0.85"/>`;
-  }).join('');
-  document.getElementById(wrapId).innerHTML = `
-    <div class="lb-bars-row" style="height:170px">${barsHtml}</div>
-    <svg class="lb-svg" viewBox="0 0 100 100" preserveAspectRatio="none" style="height:150px;top:6px">${polylines}</svg>`;
 }
 function deptStdPerCapita(dept, m){
   const members = deptTeams(dept);
@@ -296,11 +290,10 @@ function deptAuditAvg(dept, m){
   return members.length? sum/members.length : 0;
 }
 function renderStdTrendChart(){
-  const max = Math.max(...DEPTS.map(d=>Math.max(...MONTHS.map(m=>deptStdPerCapita(d,m)))));
-  renderLineBar('stdChartWrap','stdLegend', deptStdPerCapita, max, v=>v.toFixed(2)+'건/인');
+  renderDeptTrendRows('stdChartWrap', deptStdPerCapita, v=>v.toFixed(2));
 }
 function renderAuditTrendChart(){
-  renderLineBar('auditChartWrap','auditLegend', deptAuditAvg, 100, v=>v.toFixed(1)+'점');
+  renderDeptTrendRows('auditChartWrap', deptAuditAvg, v=>v.toFixed(1));
 }
 
 /* ---- 팀별 5S 유형별 활동 현황: 차트구분/5S유형/팀선택 동적 전환 (기존 MES 차트 재현) ---- */
@@ -454,6 +447,7 @@ function renderDashboard(){
   renderAuditTrendChart();
   renderTypeLegend();
   renderTeamTypeChart();
+  renderWeakestByCategory(month);
   renderProblemChart(month);
   renderRateChart(month);
   renderRepeatTrend();
@@ -492,18 +486,44 @@ const AUDIT_TEMPLATES = {
   '자주보전':  {prev:'점검주기 미준수로 전월 지적', note:'점검표 서명관리 개시', issue:'설비 이상소음 점검 누락'},
 };
 let AUDIT_CHECK = {};
+function auditCategoryScore(team, cat, month){
+  const seed = hash(team.id+cat+month);
+  const delta = (seed % 9) - 4;
+  return Math.max(60, Math.min(100, Math.round(team.auditScore + delta)));
+}
 function auditDetailFor(team, month){
-  const base = team.auditScore;
   return CATEGORIES.map((c)=>{
     const seed = hash(team.id+c+month);
-    const delta = (seed % 9) - 4;
-    const score = Math.max(60, Math.min(100, Math.round(base + delta)));
+    const score = auditCategoryScore(team, c, month);
     const key = team.id+'_'+month+'_'+c;
     if(!(key in AUDIT_CHECK)) AUDIT_CHECK[key] = (seed % 3) !== 0;
     const tpl = AUDIT_TEMPLATES[c];
     const std = STANDARDS.find(s=>s.category===c);
     return {key, category:c, standard: std ? std.q : `${c} 점검항목`, score, prev:tpl.prev, note:tpl.note, issue:tpl.issue};
   });
+}
+
+// 5S 유형별 최취약 작업장 — 유형(카테고리)마다 점수가 가장 낮은 팀을 찾음
+function computeWeakestByCategory(month){
+  return CATEGORIES.map(cat=>{
+    let worst = null;
+    TEAMS.forEach(t=>{
+      const score = auditCategoryScore(t, cat, month);
+      if(!worst || score < worst.score) worst = {team:t, score};
+    });
+    return {category:cat, team:worst.team, score:worst.score};
+  });
+}
+function renderWeakestByCategory(month){
+  const rows = computeWeakestByCategory(month);
+  document.getElementById('weakestByCategory').innerHTML = rows.map(r=>{
+    const s = andonState(r.score);
+    return `<div class="andon-cell ${s}">
+      <span class="andon-team">${r.category}</span>
+      <strong class="andon-score mono">${r.score}</strong>
+      <span class="andon-tag">${r.team.name} · ${r.team.site}</span>
+    </div>`;
+  }).join('');
 }
 function renderAuditMonthOptions(){
   document.getElementById('auditFilterMonth').innerHTML = MONTHS.map(m=>`<option value="${m}" ${m===MONTHS[MONTHS.length-1]?'selected':''}>${m.slice(0,4)}년 ${MONTH_LABEL[m]}</option>`).join('');
@@ -770,6 +790,19 @@ document.getElementById('rawFilter').addEventListener('click', e=>{
   b.classList.add('active');
   rawStatusFilter = b.dataset.status;
   renderRawTable();
+});
+
+document.getElementById('execDetailToggle').addEventListener('click', e=>{
+  const b = e.target.closest('.chip'); if(!b) return;
+  document.querySelectorAll('#execDetailToggle .chip').forEach(c=>c.classList.remove('active'));
+  b.classList.add('active');
+  const showRegister = b.dataset.tab==='register';
+  document.getElementById('execRegisterWrap').style.display = showRegister ? '' : 'none';
+  document.getElementById('execDetailWrap').style.display = showRegister ? 'none' : '';
+  document.getElementById('execDetailTitle').textContent = showRegister ? '5S 부서별 등록현황' : '5S 상세내역';
+  document.getElementById('execDetailSub').innerHTML = showRegister
+    ? `조회기간 <span class="mono" id="regRangeLabel">${MONTHS[0]} ~ ${MONTHS[MONTHS.length-1]}</span> 누계`
+    : '개선번호별 원시 데이터 · HDPS21 등록 이력';
 });
 
 document.getElementById('standardAddBtn').addEventListener('click', ()=> toast('점검항목 신규등록 폼은 HDPS32 상세 설계 시 연결됩니다.'));

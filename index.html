@@ -55,153 +55,170 @@
         </div>
       </div>
 
-      <div class="andon" id="andonStrip"></div>
-      <p class="andon-caption"><i class="dot g"></i>정상(90점↑) &nbsp; <i class="dot a"></i>주의(75–89점) &nbsp; <i class="dot r"></i>즉시조치(75점 미만) — Audit 총점 기준 팀별 현재 상태</p>
+      <div class="story-block">
+        <div class="story-label"><span class="num">1</span><div><h2>활동 수준</h2><p>팀별 Audit 상태와 핵심 KPI를 한눈에 확인합니다</p></div></div>
 
-      <div class="kpi-row">
-        <div class="kpi">
-          <span class="kpi-label">인당 5S 표준화 개선건수</span>
-          <strong class="kpi-value mono" id="kpiPerCapita">–</strong>
-          <span class="kpi-unit">건 / 인 · 당월</span>
-        </div>
-        <div class="kpi">
-          <span class="kpi-label">5S Audit 평균 점수</span>
-          <strong class="kpi-value mono" id="kpiAuditAvg">–</strong>
-          <span class="kpi-unit">100점 만점 · 당월</span>
-        </div>
-        <div class="kpi">
-          <span class="kpi-label">개선조치완료율</span>
-          <strong class="kpi-value mono" id="kpiActionRate">–</strong>
-          <span class="kpi-unit" id="kpiActionRateSub">전월 지적 대비 완료</span>
-        </div>
-        <div class="kpi">
-          <span class="kpi-label">누적 개선 등록건</span>
-          <strong class="kpi-value mono" id="kpiTotalReq">–</strong>
-          <span class="kpi-unit">최근 3개월</span>
-        </div>
-        <div class="kpi kpi-repeat">
-          <span class="kpi-label">반복지적률</span>
-          <strong class="kpi-value mono" id="kpiRepeatRate">–</strong>
-          <span class="kpi-unit" id="kpiRepeatRateSub">전월 대비</span>
-        </div>
-      </div>
+        <div class="andon" id="andonStrip"></div>
+        <p class="andon-caption"><i class="dot g"></i>정상(90점↑) &nbsp; <i class="dot a"></i>주의(75–89점) &nbsp; <i class="dot r"></i>즉시조치(75점 미만) — Audit 총점 기준 팀별 현재 상태</p>
 
-      <div class="grid-2">
-        <div class="panel">
-          <div class="panel-head">
-            <div><h2>월별·부서별 5S 표준화(수평전개) 인당 개선건수</h2><p>HDPS21 연계 · 막대 + 추이선 · 01월~06월 · 8개 부서 집계</p></div>
+        <div class="kpi-row">
+          <div class="kpi">
+            <span class="kpi-label">인당 5S 표준화 개선건수</span>
+            <strong class="kpi-value mono" id="kpiPerCapita">–</strong>
+            <span class="kpi-unit">건 / 인 · 당월</span>
           </div>
-          <div class="panel-body">
-            <div class="dept-legend" id="stdLegend"></div>
-            <div class="linebar-wrap" id="stdChartWrap"></div>
+          <div class="kpi">
+            <span class="kpi-label">5S Audit 평균 점수</span>
+            <strong class="kpi-value mono" id="kpiAuditAvg">–</strong>
+            <span class="kpi-unit">100점 만점 · 당월</span>
           </div>
-        </div>
-        <div class="panel">
-          <div class="panel-head">
-            <div><h2>월별·부서별 5S Audit 평가 현황</h2><p>HDPS33 연계 · 부서 평균점수 · 01월~06월 · 8개 부서 집계</p></div>
+          <div class="kpi">
+            <span class="kpi-label">개선조치완료율</span>
+            <strong class="kpi-value mono" id="kpiActionRate">–</strong>
+            <span class="kpi-unit" id="kpiActionRateSub">전월 지적 대비 완료</span>
           </div>
-          <div class="panel-body">
-            <div class="dept-legend" id="auditLegend"></div>
-            <div class="linebar-wrap" id="auditChartWrap"></div>
+          <div class="kpi">
+            <span class="kpi-label">누적 개선 등록건</span>
+            <strong class="kpi-value mono" id="kpiTotalReq">–</strong>
+            <span class="kpi-unit">최근 3개월</span>
+          </div>
+          <div class="kpi kpi-repeat">
+            <span class="kpi-label">반복지적률</span>
+            <strong class="kpi-value mono" id="kpiRepeatRate">–</strong>
+            <span class="kpi-unit" id="kpiRepeatRateSub">전월 대비</span>
           </div>
         </div>
       </div>
 
-      <div class="panel" style="margin-bottom:14px">
-        <div class="panel-head">
-          <div><h2>팀별 5S 유형별 활동 현황</h2><p>정리·정돈·청소·시각화관리·습관화·자주보전</p></div>
-          <div class="activity-controls">
-            <label>차트 구분<select id="chartMode"><option value="type">활동유형별 당월 현황</option><option value="trend">단일 팀 월별 추이</option></select></label>
-            <label>5S 유형<select id="chartCategory"></select></label>
-            <label>팀 선택<select id="chartTeam"></select></label>
+      <div class="story-block">
+        <div class="story-label"><span class="num">2</span><div><h2>현장 진단</h2><p>부서·팀 단위로 활동량과 문제점을 비교합니다</p></div></div>
+
+        <div class="grid-2">
+          <div class="panel">
+            <div class="panel-head">
+              <div><h2>월별·부서별 5S 표준화(수평전개) 인당 개선건수</h2><p>HDPS21 연계 · 01월~06월 · 8개 부서 집계</p></div>
+            </div>
+            <div class="panel-body">
+              <div id="stdChartWrap"></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head">
+              <div><h2>월별·부서별 5S Audit 평가 현황</h2><p>HDPS33 연계 · 부서 평균점수 · 01월~06월</p></div>
+            </div>
+            <div class="panel-body">
+              <div id="auditChartWrap"></div>
+            </div>
           </div>
         </div>
-        <div class="panel-body">
-          <div class="type-legend" id="typeLegend"></div>
-          <div class="type-chart" id="teamTypeChart"></div>
+
+        <div class="panel" style="margin-bottom:14px">
+          <div class="panel-head">
+            <div><h2>팀별 5S 유형별 활동 현황</h2><p>정리·정돈·청소·시각화관리·습관화·자주보전</p></div>
+            <div class="activity-controls">
+              <label>차트 구분<select id="chartMode"><option value="type">활동유형별 당월 현황</option><option value="trend">단일 팀 월별 추이</option></select></label>
+              <label>5S 유형<select id="chartCategory"></select></label>
+              <label>팀 선택<select id="chartTeam"></select></label>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="type-legend" id="typeLegend"></div>
+            <div class="type-chart" id="teamTypeChart"></div>
+          </div>
+        </div>
+
+        <div class="panel" style="margin-bottom:14px">
+          <div class="panel-head">
+            <div><h2>5S 유형별 최취약 작업장</h2><p>유형별로 당월 점수가 가장 낮은 팀 · 우선 개입이 필요한 지점</p></div>
+          </div>
+          <div class="panel-body">
+            <div class="andon" id="weakestByCategory"></div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="panel">
+            <div class="panel-head">
+              <div><h2>팀별 문제점 현황</h2><p>HDPS33 전월 개선내역 중 문제점 입력건 · 팀 × 5S유형</p></div>
+            </div>
+            <div class="panel-body">
+              <div class="type-legend" id="problemLegend"></div>
+              <div class="type-chart" id="problemChart"></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head">
+              <div><h2>팀별 문제점 개선조치율</h2><p>HDPS33 완료 체크 기준 · 팀별 %</p></div>
+            </div>
+            <div class="panel-body">
+              <div class="rate-chart" id="rateChart"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="panel">
+            <div class="panel-head">
+              <div><h2>월별 반복지적률 추이</h2><p>2개월 이상 연속 지적 · 최근 5개월</p></div>
+            </div>
+            <div class="panel-body">
+              <div class="rate-chart" id="repeatTrendChart"></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head">
+              <div><h2>반복지적 집중 작업장 TOP5</h2><p>반복지적률 = 2개월 연속 지적건수 ÷ 당월 전체 지적건수</p></div>
+            </div>
+            <div class="panel-body table-wrap">
+              <table class="datatable">
+                <thead><tr><th>순위</th><th>작업장</th><th>반복지적률</th><th>반복/전체</th><th>주요 반복유형</th></tr></thead>
+                <tbody id="repeatTop5Body"></tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="grid-2">
-        <div class="panel">
+      <div class="story-block">
+        <div class="story-label"><span class="num">3</span><div><h2>개선 실행</h2><p>실제 개선 등록 내역과 누적 실적을 확인합니다</p></div></div>
+
+        <div class="panel" style="margin-bottom:14px">
           <div class="panel-head">
-            <div><h2>월별 반복지적률 추이</h2><p>동일 팀×유형이 2개월 이상 연속 지적되는 비율 · 최근 5개월(전월 비교 필요)</p></div>
-          </div>
-          <div class="panel-body">
-            <div class="rate-chart" id="repeatTrendChart"></div>
-          </div>
-        </div>
-        <div class="panel">
-          <div class="panel-head">
-            <div><h2>반복지적 집중 작업장 TOP5</h2><p>반복지적률 = 2개월 연속 지적건수 ÷ 당월 전체 지적건수</p></div>
+            <div><h2>최근 3개월 개선내역 Raw Data</h2><p>HDPS33 전월 점검시 문제점 → 개선내역 → 조치여부</p></div>
+            <div class="chip-row" id="rawFilter">
+              <button class="chip active" data-status="all">전체</button>
+              <button class="chip" data-status="완료">완료</button>
+              <button class="chip" data-status="미결">미결</button>
+            </div>
           </div>
           <div class="panel-body table-wrap">
             <table class="datatable">
-              <thead><tr><th>순위</th><th>작업장</th><th>반복지적률</th><th>반복/전체</th><th>주요 반복유형</th></tr></thead>
-              <tbody id="repeatTop5Body"></tbody>
+              <thead><tr><th>No</th><th>5S구분</th><th>담당팀</th><th>전월 점검시 문제점</th><th>개선내역</th><th>조치여부</th></tr></thead>
+              <tbody id="rawTableBody"></tbody>
             </table>
           </div>
         </div>
-      </div>
 
-      <div class="grid-2">
         <div class="panel">
           <div class="panel-head">
-            <div><h2>팀별 문제점 현황</h2><p>HDPS33 전월 개선내역 중 문제점 입력건 · 팀 × 5S유형</p></div>
+            <div><h2 id="execDetailTitle">5S 부서별 등록현황</h2><p id="execDetailSub">조회기간 <span class="mono" id="regRangeLabel">2026-01 ~ 2026-06</span> 누계</p></div>
+            <div class="chip-row" id="execDetailToggle">
+              <button class="chip active" data-tab="register">부서별 등록현황</button>
+              <button class="chip" data-tab="detail">5S 상세내역</button>
+            </div>
           </div>
-          <div class="panel-body">
-            <div class="type-legend" id="problemLegend"></div>
-            <div class="type-chart" id="problemChart"></div>
+          <div class="panel-body table-wrap" id="execRegisterWrap">
+            <table class="datatable">
+              <thead><tr><th>5S 개선진행팀</th><th>5S 개선표준건</th><th>합계</th><th>정리</th><th>정돈</th><th>청소</th><th>시각화관리</th><th>습관화</th><th>자주보전</th></tr></thead>
+              <tbody id="deptRegisterBody"></tbody>
+            </table>
           </div>
-        </div>
-        <div class="panel">
-          <div class="panel-head">
-            <div><h2>팀별 문제점 개선조치율</h2><p>HDPS33 완료 체크 기준 · 팀별 %</p></div>
+          <div class="panel-body table-wrap" id="execDetailWrap" style="display:none">
+            <table class="datatable">
+              <thead><tr><th>개선번호</th><th>연도</th><th>표준화</th><th>월</th><th>테마</th><th>부서</th><th>그룹</th><th>상세위치</th><th>개선 전</th><th>개선 후</th><th>등록일</th></tr></thead>
+              <tbody id="detailTableBody"></tbody>
+            </table>
           </div>
-          <div class="panel-body">
-            <div class="rate-chart" id="rateChart"></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="panel" style="margin-bottom:14px">
-        <div class="panel-head">
-          <div><h2>최근 3개월 개선내역 Raw Data</h2><p>HDPS33 전월 점검시 문제점 → 개선내역 → 조치여부</p></div>
-          <div class="chip-row" id="rawFilter">
-            <button class="chip active" data-status="all">전체</button>
-            <button class="chip" data-status="완료">완료</button>
-            <button class="chip" data-status="미결">미결</button>
-          </div>
-        </div>
-        <div class="panel-body table-wrap">
-          <table class="datatable">
-            <thead><tr><th>No</th><th>5S구분</th><th>담당팀</th><th>전월 점검시 문제점</th><th>개선내역</th><th>조치여부</th></tr></thead>
-            <tbody id="rawTableBody"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="panel" style="margin-bottom:14px">
-        <div class="panel-head">
-          <div><h2>5S 부서별 등록현황</h2><p>조회기간 <span class="mono" id="regRangeLabel">2026-01 ~ 2026-03</span> 누계</p></div>
-        </div>
-        <div class="panel-body table-wrap">
-          <table class="datatable">
-            <thead><tr><th>5S 개선진행팀</th><th>5S 개선표준건</th><th>합계</th><th>정리</th><th>정돈</th><th>청소</th><th>시각화관리</th><th>습관화</th><th>자주보전</th></tr></thead>
-            <tbody id="deptRegisterBody"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="panel">
-        <div class="panel-head">
-          <div><h2>5S 상세내역</h2><p>개선번호별 원시 데이터 · HDPS21 등록 이력</p></div>
-        </div>
-        <div class="panel-body table-wrap">
-          <table class="datatable">
-            <thead><tr><th>개선번호</th><th>연도</th><th>표준화</th><th>월</th><th>테마</th><th>부서</th><th>그룹</th><th>상세위치</th><th>개선 전</th><th>개선 후</th><th>등록일</th></tr></thead>
-            <tbody id="detailTableBody"></tbody>
-          </table>
         </div>
       </div>
     </section>
