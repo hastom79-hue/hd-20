@@ -1,10 +1,180 @@
 <!doctype html>
 <html lang="ko">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>GMES 5S V2 Preview</title><style>body{margin:0;font-family:Arial,'Malgun Gothic',sans-serif;background:#f3f6f9;color:#17283a}.top{background:#0b2034;color:white;padding:15px 20px;font-weight:800}.wrap{max-width:1500px;margin:auto;padding:18px}.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}.tabs button{border:1px solid #dbe3ea;background:white;padding:10px 14px;border-radius:8px;font-weight:700}.tabs .on{background:#155f93;color:white}.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.filters select{padding:9px;border:1px solid #ccd7e1;border-radius:7px}.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}.card{background:white;border:1px solid #dfe6ee;border-radius:10px;padding:14px}.card h3{margin:0 0 4px;font-size:14px}.card p{font-size:10px;color:#6b7d8f}.kpi b{font-size:25px;display:block;margin:5px 0}.barrow{display:grid;grid-template-columns:120px 1fr 70px;gap:8px;align-items:center;font-size:10px;margin:9px 0}.track{height:12px;background:#edf1f4;border-radius:99px;overflow:hidden}.fill{height:100%;background:#4a83aa}.tag{display:inline-block;padding:3px 7px;border-radius:99px;background:#edf4fb;color:#2d6d9d;font-size:9px;font-weight:700}.warn{background:#fff2df;color:#a96500}.bad{background:#ffe7e4;color:#b83f35}table{width:100%;border-collapse:collapse;font-size:10px}th,td{padding:8px;border-bottom:1px solid #edf1f4;text-align:left}th{background:#f7f9fb}.note{margin-top:10px;padding:10px;border-left:4px solid #2c7eb4;background:#eaf4fb;font-size:10px}.teams{columns:2;font-size:10px;line-height:1.8}@media(max-width:900px){.grid4,.grid2{grid-template-columns:1fr 1fr}}@media(max-width:600px){.grid4,.grid2{grid-template-columns:1fr}.teams{columns:1}}</style></head>
-<body><div class="top">GMES · HDPS 5S 활동관리 V2 — 검증용 Preview</div><div class="wrap"><div class="tabs"><button class="on">종합현황</button><button>활동·성과</button><button>현장진단·재발</button><button>개선실행</button><button>고도화·수평전개</button></div><div class="filters"><select><option>2026년 8월</option></select><select id="team"><option>전체 팀</option><option>대형Att.팀</option><option>대형메인팀</option><option>대형상부팀</option><option>프레임제작팀</option><option>Boom제작팀</option><option>중형상부1팀</option><option>중형상부2팀</option><option>중형하부팀</option><option>중형Att팀</option><option>중형메인팀</option><option>휠로더Front팀</option><option>휠로더리어팀</option><option>휠로더메인팀</option><option>초대형조립팀</option><option>성능팀</option><option>트러블슈팅팀</option></select></div>
-<div class="grid4"><div class="card kpi"><span>활동성과</span><b>2.4건/인</b><small>DEMO · 인당 개선</small></div><div class="card kpi"><span>반복·재발</span><b>12.5%</b><small>DEMO · 반복지적률</small></div><div class="card kpi"><span>개선실행</span><b>9건</b><small>DEMO · 기한초과</small></div><div class="card kpi"><span>고도화·확산</span><b>10개</b><small>DEMO · 현재 유지 작업장</small></div></div>
-<div class="grid2"><div class="card"><h3>활동성과 — 팀별 인당 개선/표준화</h3><p>2분기 소그룹 과제현황 자료의 생산현장팀 Master를 적용</p><div class="barrow"><b>대형메인팀</b><div class="track"><div class="fill" style="width:82%"></div></div><b>3.2 / 1.8</b></div><div class="barrow"><b>휠로더리어팀</b><div class="track"><div class="fill" style="width:70%"></div></div><b>2.7 / 1.5</b></div><div class="barrow"><b>중형메인팀</b><div class="track"><div class="fill" style="width:65%"></div></div><b>2.5 / 1.4</b></div><div class="barrow"><b>중형하부팀</b><div class="track"><div class="fill" style="width:55%"></div></div><b>2.1 / 1.1</b></div><div class="barrow"><b>초대형조립팀</b><div class="track"><div class="fill" style="width:48%"></div></div><b>1.9 / 0.9</b></div></div>
-<div class="card"><h3>현장문제 — 반복지적 집중 작업장</h3><p>반복률 자체보다 작업장·라인·팀을 함께 관리</p><table><tr><th>작업장</th><th>생산팀</th><th>반복률</th></tr><tr><td>Frame 제작</td><td>프레임제작팀</td><td>23.1%</td></tr><tr><td>Wheel Loader Rear</td><td>휠로더리어팀</td><td>19.4%</td></tr><tr><td>중형 Main</td><td>중형메인팀</td><td>16.8%</td></tr></table></div></div>
-<div class="grid2"><div class="card"><h3>개선실행 — 기한관리</h3><p>완료율보다 미결·기한임박·기한초과 중심</p><table><tr><th>구분</th><th>DEMO</th></tr><tr><td>전체 요청</td><td>504</td></tr><tr><td>완료</td><td>431</td></tr><tr><td>미결</td><td>73</td></tr><tr><td>기한임박</td><td><span class="tag warn">18</span></td></tr><tr><td>기한초과</td><td><span class="tag bad">9</span></td></tr></table></div>
-<div class="card"><h3>5S 고도화 — 작업장 확보·유지 중심</h3><p>일반 개선건수가 아닌 고도화 인정 작업장의 지속성 관리</p><table><tr><th>작업장</th><th>라인</th><th>팀</th><th>고도화 유형</th><th>상태</th></tr><tr><td>휠로더 Front 작업장</td><td>Wheel Loader Front</td><td>휠로더Front팀</td><td>Green Zone</td><td><span class="tag">유지</span></td></tr><tr><td>대형 Att. 작업장</td><td>Att. Line</td><td>대형Att.팀</td><td>형적관리</td><td><span class="tag">유지</span></td></tr><tr><td>프레임제작 작업장</td><td>Frame 제작</td><td>프레임제작팀</td><td>정량축소·공간확장</td><td><span class="tag warn">점검예정</span></td></tr></table><div class="note"><b>고도화 정의:</b> ① 시각화/형적관리로 찾는 낭비 제거 ② 인간공학 Green Zone으로 안전·동선 최소화 ③ 정량축소/정위치 변경으로 공간 활용 확장. 후보 발굴 → 효과검증 → 인정 → 1/3/6개월 유지 → 수평전개로 관리.</div></div></div>
-<div class="card" style="margin-top:10px"><h3>생산현장팀 Master — 2분기 소그룹 과제현황 기준</h3><div class="teams">대형Att.팀<br>대형메인팀<br>대형상부팀<br>프레임제작팀<br>Boom제작팀<br>중형상부1팀<br>중형상부2팀<br>중형하부팀<br>중형Att팀<br>중형메인팀<br>휠로더Front팀<br>휠로더리어팀<br>휠로더메인팀<br>초대형조립팀<br>성능팀<br>트러블슈팅팀</div></div></div></body></html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GMES 5S 메인 대시보드 - 캡처 기준 재현</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="title">
+      <h1>팀별 5S 활동성과 · 고도화 현황</h1>
+      <p>5S 개선활동이 고도화 작업장 확보 및 유지로 연결되고 있는지 팀별로 비교합니다.</p>
+    </div>
+    <div class="controls">
+      <select><option>2026년 01월 ~ 현재 누계</option></select>
+      <select><option>전체 공장</option></select>
+      <button class="apply">적용</button>
+      <button id="openMaster">⚙ 통합기준정보</button><button>⇩ 다운로드</button>
+    </div>
+  </div>
+
+  <div class="cards">
+    <div class="kpi">
+      <div class="row"><div class="ico">▣</div><div><small>인당 5S 개선활동</small><b style="color:#2f80d0">2.36<span class="unit">건/인</span></b><div class="delta">전월대비 ▲ 0.18</div></div></div>
+    </div>
+    <div class="kpi">
+      <div class="row"><div class="ico orange">◉</div><div><small>고도화 후보 발굴</small><b style="color:#ea9a00">98<span class="unit">건</span></b><div class="delta">전월대비 ▲ 12</div></div></div>
+      <div class="footline"><span>후보율</span><b style="font-size:12px;margin:0;color:#2e79ca">4.2%</b></div>
+    </div>
+    <div class="kpi">
+      <div class="row"><div class="ico green">◆</div><div><small>고도화 작업장 신규 확보</small><b style="color:#43a156">32<span class="unit">곳</span></b><div class="delta">전월대비 ▲ 6</div></div></div>
+      <div class="footline"><span>전환율(후보→확보)</span><b style="font-size:12px;margin:0;color:#2e79ca">32.7%</b></div>
+    </div>
+    <div class="kpi">
+      <div class="row"><div class="ico">▦</div><div><small>누적 고도화 작업장 확보</small><b>156<span class="unit">곳</span></b><div class="delta">전월대비 ▲ 9</div></div></div>
+    </div>
+    <div class="kpi">
+      <div class="row"><div class="ico purple">◆</div><div><small>현재 유지 작업장</small><b style="color:#6d52d9">138<span class="unit">곳</span></b><div class="delta">유지율 <b style="font-size:13px;display:inline;margin:0;color:#6d52d9">88.5%</b></div></div></div>
+      <div class="footline"><span>6개월 유지 75</span><span>3개월 유지 63</span><span>1개월 유지 12</span><span>점검중 6</span></div>
+    </div>
+  </div>
+
+  <div class="mainGrid">
+    <div class="card">
+      <div class="cardHead">
+        <h2>팀별 5S 활동 → 고도화 작업장 확보 현황</h2>
+        <div class="tools"><span>정렬 기준</span><select><option>고도화 작업장 확보 순</option></select><button>상세보기</button></div>
+      </div>
+      <div class="cardBody">
+        <div class="legend"><span><i style="background:#3d8ee8"></i>5S 개선활동 (건)</span><span><i style="background:#f0a321"></i>고도화 후보 (건)</span><span><i style="background:#63ae70"></i>고도화 작업장 확보 (곳)</span></div>
+        <div class="chart"><div class="targetLine" id="targetLine"><span class="targetLabel" id="targetLabel">Q3 목표 55건</span></div>
+          <div class="ylabels"><span style="top:0">80</span><span style="top:25%">60</span><span style="top:50%">40</span><span style="top:75%">20</span><span style="bottom:0">0</span></div>
+          <div class="cols" id="cols"></div>
+        </div>
+        <div class="info">ⓘ 막대를 클릭하면 해당 팀의 고도화 작업장 목록 및 유지 현황을 확인할 수 있습니다.</div>
+      </div>
+    </div>
+
+    <div class="sideStack">
+      <div class="card">
+        <div class="cardHead"><h2>고도화 작업장 유지 현황 <small style="font-weight:400;color:#7b8a99">(전체 156곳)</small></h2></div>
+        <div class="cardBody donutWrap">
+          <div class="donut"></div>
+          <div class="dlist">
+            <div class="drow"><span class="bullet" style="background:#8fbd82"></span><span>6개월 유지<br><b>75곳 (48.1%)</b></span></div>
+            <div class="drow"><span class="bullet" style="background:#f1ad29"></span><span>3개월 유지<br><b>63곳 (40.4%)</b></span></div>
+            <div class="drow"><span class="bullet" style="background:#ef7d66"></span><span>1개월 유지<br><b>12곳 (7.7%)</b></span></div>
+            <div class="drow"><span class="bullet" style="background:#d6dde3"></span><span>유지점검<br><b>6곳 (3.8%)</b></span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="cardHead"><h2>Action Summary <small style="font-weight:400;color:#7b8a99">(관리 포인트)</small></h2></div>
+        <div class="cardBody">
+          <div class="actionList">
+            <div class="actionRow a1"><span>⌛</span><span>신규 인정 대기 (후보 → 인정)</span><b>14건</b></div>
+            <div class="actionRow a2"><span>▣</span><span>1개월 유지 점검 대상</span><b>12곳</b></div>
+            <div class="actionRow a3"><span>▣</span><span>3개월 유지 점검 대상</span><b>15곳</b></div>
+            <div class="actionRow a4"><span>◆</span><span>6개월 유지 점검 대상</span><b>18곳</b></div>
+            <div class="actionRow a5"><span>→</span><span>수평전개 후보 (6개월 유지 완료)</span><b>9곳</b></div>
+          </div>
+          <button class="actionBtn">전체 작업장 관리로 이동 →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottomGrid">
+    <div class="card">
+      <div class="cardHead"><h2>5S 고도화 인정 기준 <small style="font-weight:400;color:#7b8a99">(3가지)</small></h2></div>
+      <div class="cardBody criteria" style="padding-top:8px;padding-bottom:8px">
+        <div class="crit"><div class="ci">◉</div><div><b>1. 시각화·형적관리를 통한 찾는 낭비 제거</b><p>눈에 보이게, 제자리에 보관하여 찾는 시간과 낭비를 제거</p></div></div>
+        <div class="crit"><div class="ci">◯</div><div><b>2. 인간공학적 Green Zone을 통한 안전·동선 최소화</b><p>작업자 중심의 배치, 동선 최적화로 안전사고와 불필요한 이동 최소화</p></div></div>
+        <div class="crit"><div class="ci">◇</div><div><b>3. 정량축소·정위치 변경을 통한 공간 활용 확장</b><p>불필요한 재고·물품 축소 및 정위치 관리로 작업공간을 확보</p></div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="cardHead"><h2>고도화 작업장 추이</h2><div class="tools"><span>■ 신규 확보 (월)</span><span>● 누적 유지 작업장</span><button>월별 상세보기 →</button></div></div>
+      <div class="cardBody">
+        <div class="trendBox">
+          <div class="trendLegend">월 신규 / 누적 유지</div>
+          <div class="line"><svg viewBox="0 0 700 90" preserveAspectRatio="none"><polyline points="20,68 125,59 230,50 335,41 440,32 545,27 650,22" fill="none" stroke="#3179d6" stroke-width="3"/><g fill="#3179d6"><circle cx="20" cy="68" r="3"/><circle cx="125" cy="59" r="3"/><circle cx="230" cy="50" r="3"/><circle cx="335" cy="41" r="3"/><circle cx="440" cy="32" r="3"/><circle cx="545" cy="27" r="3"/><circle cx="650" cy="22" r="3"/></g><g font-size="9" fill="#3179d6" font-weight="700"><text x="10" y="59">78</text><text x="115" y="50">93</text><text x="220" y="41">106</text><text x="325" y="32">118</text><text x="430" y="23">129</text><text x="535" y="18">134</text><text x="640" y="13">138</text></g></svg></div>
+          <div class="trendBars"><div class="tb"><i style="height:28px"></i><span>'25.07</span></div><div class="tb"><i style="height:31px"></i><span>'25.08</span></div><div class="tb"><i style="height:34px"></i><span>'25.09</span></div><div class="tb"><i style="height:39px"></i><span>'25.10</span></div><div class="tb"><i style="height:45px"></i><span>'25.11</span></div><div class="tb"><i style="height:48px"></i><span>'25.12</span></div><div class="tb"><i style="height:70px"></i><span>'26.01</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+
+<div class="modal" id="masterModal">
+  <div class="modalBox">
+    <div class="modalHead">
+      <div>
+        <h3>통합기준정보 관리</h3>
+        <div class="sub" style="margin-top:3px">생산팀 Master의 표시순서를 설정하면 대시보드 가로축 정렬에 즉시 반영됩니다.</div>
+      </div>
+      <button id="closeMaster">✕</button>
+    </div>
+    <div class="modalBody">
+      <div class="masterTabs">
+        <button class="on" data-master-tab="order">팀 표시순서</button><button data-master-tab="target">분기별 목표값</button>
+        <button data-master-tab="other">작업장·라인</button>
+        <button data-master-tab="other">인원·집계그룹</button>
+        <button data-master-tab="other">메일링·조치기한</button>
+      </div>
+      <div id="masterOrderPanel">
+        <div class="orderHelp">
+          <b>정렬 기준</b>은 통합기준정보의 생산팀 Master에 저장합니다. 
+          ▲▼ 버튼으로 순서를 변경한 뒤 저장하면 메인 대시보드와 모든 서브 대시보드의 팀 축/팀 목록이 동일 순서로 표시됩니다.
+        </div>
+        <div class="orderGrid">
+          <div class="orderList" id="orderList"></div>
+          <div>
+            <div class="previewOrder">
+              <h4>현재 대시보드 표시순서</h4>
+              <div class="previewChips" id="orderPreview"></div>
+            </div>
+            <div class="note" style="margin-top:10px">
+              권장 저장필드: <b>TEAM_MASTER.DISPLAY_ORDER</b><br>
+              공장/사업장별 순서가 다르면 <b>SITE_CODE + TEAM_CODE + DISPLAY_ORDER</b> 조합으로 관리합니다.
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="masterTargetPanel" style="display:none">
+        <div class="orderHelp">
+          <b>분기별 연간 목표</b>를 통합기준정보에 등록하면 조회기간의 해당 분기 목표가 메인 차트에 <b>점선 가로축</b>으로 표시됩니다.
+          목표는 공장별/연도별로 관리할 수 있으며, 분기가 바뀌면 목표선도 자동으로 이동합니다.
+        </div>
+        <div class="quarterEditor">
+          <div class="qRow"><label>1분기 목표</label><input id="q1Target" type="number" min="0" max="80" value="45"><span>1~3월 적용</span></div>
+          <div class="qRow"><label>2분기 목표</label><input id="q2Target" type="number" min="0" max="80" value="50"><span>4~6월 적용</span></div>
+          <div class="qRow"><label>3분기 목표</label><input id="q3Target" type="number" min="0" max="80" value="55"><span>7~9월 적용</span></div>
+          <div class="qRow"><label>4분기 목표</label><input id="q4Target" type="number" min="0" max="80" value="60"><span>10~12월 적용</span></div>
+        </div>
+        <div class="targetPreview">
+          <b>대시보드 목표선 미리보기</b>
+          <div class="qChips" id="targetPreviewChips"></div>
+        </div>
+        <div class="note" style="margin-top:10px">
+          권장 저장필드: <b>5S_TARGET_MASTER</b> — SITE_CODE / TARGET_YEAR / QUARTER / TARGET_VALUE / USE_YN / UPDATED_AT<br>
+          예: 울산공장 · 2026 · Q3 · 55건/인 또는 목표지표별 별도 TARGET_METRIC_CODE 관리
+        </div>
+      </div>
+    </div>
+    <div class="modalFoot">
+      <button id="resetOrder">기본값 복원</button>
+      <button id="cancelOrder">취소</button>
+      <button class="apply" id="saveOrder">저장 및 대시보드 반영</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
