@@ -1,0 +1,30 @@
+name: Package HD20 source
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Create deployment package
+        run: |
+          rm -f HD20_GitHub_Final_Upload.zip
+          zip -r HD20_GitHub_Final_Upload.zip . \
+            -x '.git/*' \
+               '.github/workflows/package-source.yml' \
+               'HD20_GitHub_Final_Upload.zip'
+      - name: Upload package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: HD20_GitHub_Final_Upload
+          path: HD20_GitHub_Final_Upload.zip
+          if-no-files-found: error
+          retention-days: 7
