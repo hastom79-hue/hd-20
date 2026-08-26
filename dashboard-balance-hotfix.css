@@ -1,0 +1,41 @@
+/* HD-20 balance hotfix: compact criteria banner + two-color SEQ gantt */
+.approvedFramework .afCriteria>.afRule{
+  margin-top:5px!important;
+  padding:3px 7px!important;
+  min-height:0!important;
+  height:auto!important;
+  border-radius:6px!important;
+  font-size:9.5px!important;
+  line-height:1.2!important;
+}
+.approvedFramework .afCriteria,
+.approvedFramework .afProcess{
+  padding-bottom:6px!important;
+}
+.approvedFramework .seqTrackWrap{
+  margin-bottom:0!important;
+  padding-bottom:6px!important;
+}
+.approvedFramework{
+  margin-bottom:8px!important;
+}
+
+/* Two-color discipline only: odd SEQ = light blue, even SEQ = light green */
+.seqGantt>.seqRow:nth-child(odd) .seqBar{
+  background:linear-gradient(90deg,#e8f3fc,#d7eaf8)!important;
+  border-color:#b9d4e8!important;
+}
+.seqGantt>.seqRow:nth-child(even) .seqBar{
+  background:linear-gradient(90deg,#edf8f1,#dff1e6)!important;
+  border-color:#b9ddc5!important;
+}
+.seqGantt>.seqRow:nth-child(odd) .seqNum{
+  background:#eaf4fb!important;
+  color:#1767ba!important;
+  box-shadow:0 0 0 1px #a8c9df!important;
+}
+.seqGantt>.seqRow:nth-child(even) .seqNum{
+  background:#eaf7ee!important;
+  color:#218849!important;
+  box-shadow:0 0 0 1px #a9d3b6!important;
+}
