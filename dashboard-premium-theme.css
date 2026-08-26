@@ -1,0 +1,43 @@
+/* 2026-08-26: Visual-only enhancement for the approved first dashboard. No KPI/data/text/layout source changes. */
+body:not(.navModeActivity){background:radial-gradient(circle at 18% 0%,#f0f7ff 0,#f6f9fc 34%,#f7f9fb 72%)!important}
+body:not(.navModeActivity) .approvedFramework,body:not(.navModeActivity) .approvedAnalysis>.card,body:not(.navModeActivity) .approvedRaw{box-shadow:0 10px 30px rgba(15,57,106,.075);border-color:#cfdeea!important}
+body:not(.navModeActivity) .approvedFramework{position:relative;background:linear-gradient(145deg,#fff 0%,#fbfdff 58%,#f5f9fd 100%)!important}
+body:not(.navModeActivity) .approvedFramework:before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:linear-gradient(90deg,#2f80d0,#5da9f2 34%,#55aa69 61%,#7b5ce0);opacity:.9}
+body:not(.navModeActivity) .afTitle{letter-spacing:-.4px;text-shadow:0 1px 0 #fff}
+body:not(.navModeActivity) .afCard{position:relative;overflow:hidden;background:linear-gradient(145deg,#fff,#f8fbfe)!important;box-shadow:inset 0 1px 0 #fff,0 4px 12px rgba(20,63,96,.04)}
+body:not(.navModeActivity) .afCard:after{content:"";position:absolute;inset:-80% -40%;background:linear-gradient(115deg,transparent 42%,rgba(255,255,255,.85) 50%,transparent 58%);transform:translateX(-55%);transition:transform .65s ease;pointer-events:none}
+body:not(.navModeActivity) .afCard:hover:after{transform:translateX(55%)}
+body:not(.navModeActivity) .afCard:hover{border-color:#9fc7e6!important;box-shadow:0 12px 26px rgba(20,74,112,.13)!important}
+body:not(.navModeActivity) .afIcon{box-shadow:inset 0 0 0 1px rgba(47,128,208,.06),0 6px 14px rgba(47,128,208,.08)}
+body:not(.navModeActivity) .afNum{box-shadow:0 5px 13px rgba(23,103,186,.08);transition:.2s ease}
+body:not(.navModeActivity) .afStep:hover .afNum{transform:translateY(-2px) scale(1.05);box-shadow:0 8px 18px rgba(23,103,186,.15)}
+body:not(.navModeActivity) .cards .kpi{background:linear-gradient(145deg,#fff,#f8fbfe)!important;border-color:#d2e0ea!important;box-shadow:0 5px 18px rgba(15,57,106,.055)!important}
+body:not(.navModeActivity) .cards .kpi:hover{transform:translateY(-3px)!important;border-color:#a9c9e1!important;box-shadow:0 13px 30px rgba(15,57,106,.12)!important}
+body:not(.navModeActivity) .cards .kpi b{letter-spacing:-1px;text-shadow:0 1px 0 #fff}
+body:not(.navModeActivity) .cards .kpi .ico{box-shadow:inset 0 0 0 1px rgba(255,255,255,.6),0 6px 14px rgba(35,100,155,.09)}
+body:not(.navModeActivity) .approvedSummary{perspective:900px}
+body:not(.navModeActivity) .approvedSummary .asCard{position:relative;overflow:hidden;cursor:pointer;min-height:106px;padding:15px 16px!important;background:linear-gradient(150deg,#fff 0%,#f8fbfe 100%)!important;border-color:#d2e0ea!important;box-shadow:0 5px 16px rgba(15,57,106,.055)!important;transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease}
+body:not(.navModeActivity) .approvedSummary .asCard:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(#3d8ee8,#75b8f3);opacity:.75}
+body:not(.navModeActivity) .approvedSummary .asCard:nth-child(2):before{background:linear-gradient(#43a156,#79c488)}
+body:not(.navModeActivity) .approvedSummary .asCard:nth-child(3):before{background:linear-gradient(#6d52d9,#9b83ee)}
+body:not(.navModeActivity) .approvedSummary .asCard:nth-child(4):before{background:linear-gradient(#2f80d0,#64b0ee)}
+body:not(.navModeActivity) .approvedSummary .asCard:nth-child(5):before{background:linear-gradient(#55aa69,#86ca92)}
+body:not(.navModeActivity) .approvedSummary .asCard:nth-child(6):before{background:linear-gradient(#f0a321,#f5c267)}
+body:not(.navModeActivity) .approvedSummary .asCard:hover{transform:translateY(-4px);border-color:#9fc4df!important;box-shadow:0 14px 30px rgba(15,57,106,.13)!important}
+body:not(.navModeActivity) .approvedSummary .asCard small{letter-spacing:.15px}
+body:not(.navModeActivity) .approvedSummary .asCard b{font-size:27px!important;letter-spacing:-.8px;margin-top:8px!important}
+body:not(.navModeActivity) .approvedSummary .asCard span{display:block;margin-top:9px!important;padding-top:7px;border-top:1px dashed #dce7ef}
+body:not(.navModeActivity) .approvedSummary .asCard:after{content:"상세 Grid  →";position:absolute;right:13px;bottom:12px;font-size:8.5px;font-weight:900;color:#2876b4;opacity:.78}
+body:not(.navModeActivity) .approvedAnalysis>.card{background:linear-gradient(160deg,#fff,#f8fbfe)!important}
+body:not(.navModeActivity) .approvedAnalysis .cardHead{background:linear-gradient(90deg,#fbfdff,#f4f9fd);border-bottom-color:#dce8f0!important}
+body:not(.navModeActivity) .approvedAnalysis .ipMap{background:radial-gradient(circle at 75% 18%,rgba(84,174,112,.075),transparent 28%),radial-gradient(circle at 22% 78%,rgba(61,142,232,.07),transparent 30%),linear-gradient(#fbfdff,#f7fafc)!important}
+body:not(.navModeActivity) .approvedAnalysis .ipDot{filter:drop-shadow(0 5px 6px rgba(18,60,91,.12));transition:transform .18s ease,filter .18s ease}
+body:not(.navModeActivity) .approvedAnalysis .ipDot:hover{transform:translateY(-3px) scale(1.06);filter:drop-shadow(0 8px 9px rgba(18,60,91,.18))}
+body:not(.navModeActivity) .approvedAnalysis .trendBox{background:linear-gradient(180deg,#fbfdff,#f7fafc);border-radius:10px}
+body:not(.navModeActivity) .approvedRaw{background:linear-gradient(180deg,#fff,#f9fbfd)!important}
+body:not(.navModeActivity) .approvedRaw .ipRow{transition:background .15s ease,transform .15s ease}
+body:not(.navModeActivity) .approvedRaw .ipRow:hover{background:#eef7ff!important;transform:translateX(2px)}
+body:not(.navModeActivity) .approvedFramework,body:not(.navModeActivity) .cards,body:not(.navModeActivity) .approvedSummary,body:not(.navModeActivity) .approvedAnalysis,body:not(.navModeActivity) .approvedRaw{animation:premiumReveal .42s ease both}
+body:not(.navModeActivity) .cards{animation-delay:.03s}body:not(.navModeActivity) .approvedFramework{animation-delay:.06s}body:not(.navModeActivity) .approvedSummary{animation-delay:.09s}body:not(.navModeActivity) .approvedAnalysis{animation-delay:.12s}body:not(.navModeActivity) .approvedRaw{animation-delay:.15s}
+@keyframes premiumReveal{from{opacity:.25;transform:translateY(7px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){body:not(.navModeActivity) .approvedFramework,body:not(.navModeActivity) .cards,body:not(.navModeActivity) .approvedSummary,body:not(.navModeActivity) .approvedAnalysis,body:not(.navModeActivity) .approvedRaw{animation:none!important}}
