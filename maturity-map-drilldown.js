@@ -7,6 +7,7 @@ const HISTORY=[
  ['시각화·형적관리','Boom 용접 A구역','2026-02-14','2026-03-05','생산혁신팀 · 5S 모듈','확정','형적관리 기준과 현장 유지수준 충족'],
  ['Green Zone','중형 Main 조립 1라인','2026-03-03','2026-03-25','생산혁신팀 · 5S 모듈','확정','반복동작 및 불필요 이동 감소 효과 확인']
 ];
+function ensureImporter(){if(window.HD20GMES5S||document.querySelector('script[data-gmes5s-import]'))return;const s=document.createElement('script');s.src='gmes-5s-case-import.js?v=20260827-gmesraw-1';s.dataset.gmes5sImport='1';document.head.appendChild(s)}
 function style(){
  if(document.getElementById(STYLE_ID))return;
  const s=document.createElement('style');s.id=STYLE_ID;s.textContent=`
@@ -34,14 +35,14 @@ function historyBlock(){
  return sec;
 }
 function openMap(){
- const srcMap=document.querySelector('.ipMap');if(!srcMap)return;
+ ensureImporter();const srcMap=document.querySelector('.ipMap');if(!srcMap)return;
  const m=modal(),body=m.querySelector('.maturityMapBody');body.innerHTML='';
  const judge=document.createElement('div');judge.className='maturityJudgeBar';judge.innerHTML='<span class="maturityJudgeBadge">공식 판정</span><b>판정주체: 생산혁신팀 · 5S 모듈</b><span class="maturityJudgeNote">현장 등록 여부와 별개로, 요구조건 충족 여부를 공식 판정한 결과만 고도화 수준에 반영합니다.</span>';body.appendChild(judge);
  const srcHead=document.querySelector('.ipFinalHead');if(srcHead)body.appendChild(srcHead.cloneNode(true));
- const map=srcMap.cloneNode(true);map.querySelectorAll('.ipDot').forEach(dot=>{dot.addEventListener('click',()=>dot.classList.toggle('on'))});body.appendChild(map);body.appendChild(historyBlock());m.classList.add('on');window.dispatchEvent(new CustomEvent('hd20-maturity-map-opened'));
+ const map=srcMap.cloneNode(true);map.querySelectorAll('.ipDot').forEach(dot=>{dot.addEventListener('click',()=>dot.classList.toggle('on'))});body.appendChild(map);body.appendChild(historyBlock());m.classList.add('on');window.dispatchEvent(new CustomEvent('hd20-maturity-map-opened'));setTimeout(()=>window.HD20GMES5S?.mount(),50);
 }
 function wire(){
- style();const cards=[...document.querySelectorAll('.approvedSummary .asCard')];const srcMap=document.querySelector('.ipMap');if(cards.length<3||!srcMap)return false;
+ style();ensureImporter();const cards=[...document.querySelectorAll('.approvedSummary .asCard')];const srcMap=document.querySelector('.ipMap');if(cards.length<3||!srcMap)return false;
  let card=cards[2];if(card.dataset.maturityMap==='1'){const sub=card.querySelector('span');if(sub)sub.textContent='공식 판정 결과 기반';return true}
  const fresh=card.cloneNode(true);card.replaceWith(fresh);card=fresh;
  const label=card.querySelector('small'),value=card.querySelector('b'),sub=card.querySelector('span');if(label)label.textContent='고도화 수준';if(value)value.textContent='수준 맵';if(sub)sub.textContent='공식 판정 결과 기반';
