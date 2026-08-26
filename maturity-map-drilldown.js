@@ -38,7 +38,7 @@ function openMap(){
  const m=modal(),body=m.querySelector('.maturityMapBody');body.innerHTML='';
  const judge=document.createElement('div');judge.className='maturityJudgeBar';judge.innerHTML='<span class="maturityJudgeBadge">공식 판정</span><b>판정주체: 생산혁신팀 · 5S 모듈</b><span class="maturityJudgeNote">현장 등록 여부와 별개로, 요구조건 충족 여부를 공식 판정한 결과만 고도화 수준에 반영합니다.</span>';body.appendChild(judge);
  const srcHead=document.querySelector('.ipFinalHead');if(srcHead)body.appendChild(srcHead.cloneNode(true));
- const map=srcMap.cloneNode(true);map.querySelectorAll('.ipDot').forEach(dot=>{dot.addEventListener('click',()=>dot.classList.toggle('on'))});body.appendChild(map);body.appendChild(historyBlock());m.classList.add('on');
+ const map=srcMap.cloneNode(true);map.querySelectorAll('.ipDot').forEach(dot=>{dot.addEventListener('click',()=>dot.classList.toggle('on'))});body.appendChild(map);body.appendChild(historyBlock());m.classList.add('on');window.dispatchEvent(new CustomEvent('hd20-maturity-map-opened'));
 }
 function wire(){
  style();const cards=[...document.querySelectorAll('.approvedSummary .asCard')];const srcMap=document.querySelector('.ipMap');if(cards.length<3||!srcMap)return false;
