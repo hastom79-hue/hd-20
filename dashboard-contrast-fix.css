@@ -1,16 +1,37 @@
-/* FINAL contrast lock for dashboard-generated sections */
-body:not(.navModeActivity) .approvedFramework,
-body:not(.navModeActivity) .approvedFramework *{color:#eaf4ff!important}
+/* FINAL contrast lock: dark KPI zone + light analysis/management zone */
+/* KPI summary stays dark */
+body:not(.navModeActivity) .approvedSummary .asCard,
+body:not(.navModeActivity) .approvedSummary .asCard *{color:#f6fbff!important}
+body:not(.navModeActivity) .approvedSummary .asCard small,
+body:not(.navModeActivity) .approvedSummary .asCard span{color:#aebfd0!important}
+
+/* Framework / criteria section becomes light */
+body:not(.navModeActivity) .approvedFramework{background:#f8fbfe!important;border:1px solid #cfdde8!important;color:#18364f!important;box-shadow:0 8px 22px rgba(8,37,61,.10)!important}
+body:not(.navModeActivity) .approvedFramework:before{background:linear-gradient(90deg,#5aa9ef,#60c580,#8b73e8,#efb04d)!important;opacity:.9!important}
+body:not(.navModeActivity) .approvedFramework .afTitle,
+body:not(.navModeActivity) .approvedFramework .afSub,
+body:not(.navModeActivity) .approvedFramework .afCard b,
+body:not(.navModeActivity) .approvedFramework .afStep b{color:#173a57!important}
+body:not(.navModeActivity) .approvedFramework .afCriteria{border-color:#d8e3eb!important}
+body:not(.navModeActivity) .approvedFramework .afCard{background:#fff!important;border-color:#d7e3ec!important;box-shadow:0 2px 8px rgba(18,42,60,.05)!important}
+body:not(.navModeActivity) .approvedFramework .afCard:nth-child(2){background:#f7fcf8!important;border-color:#cfe5d5!important}
+body:not(.navModeActivity) .approvedFramework .afCard:nth-child(3){background:#faf8ff!important;border-color:#ddd3f0!important}
 body:not(.navModeActivity) .approvedFramework .afCard p,
-body:not(.navModeActivity) .approvedFramework .afStep small{color:#c1cfdb!important}
-body:not(.navModeActivity) .approvedFramework .afRule{color:#9fd0f4!important}
-body:not(.navModeActivity) .approvedFramework .afNum{color:#8ecaf7!important}
-body:not(.navModeActivity) .approvedFramework .afStep:nth-child(2) .afNum{color:#86dfa0!important}
-body:not(.navModeActivity) .approvedFramework .afStep:nth-child(4) .afNum{color:#c6a9f1!important}
-body:not(.navModeActivity) .approvedFramework .afStep:nth-child(5) .afNum{color:#ffc36d!important}
+body:not(.navModeActivity) .approvedFramework .afStep small{color:#5a7285!important}
+body:not(.navModeActivity) .approvedFramework .afRule{background:#eef6fb!important;color:#27658f!important;border:1px solid #cfe0eb!important}
+body:not(.navModeActivity) .approvedFramework .afProcess{background:#fbfdff!important}
+body:not(.navModeActivity) .approvedFramework .afStep:not(:last-child):after{color:#7b91a3!important}
+body:not(.navModeActivity) .approvedFramework .afNum{background:#eef6ff!important;border-color:#b9d5eb!important;color:#1767ba!important}
+body:not(.navModeActivity) .approvedFramework .afStep:nth-child(2) .afNum{background:#eff9f2!important;border-color:#b8dfc2!important;color:#218849!important}
+body:not(.navModeActivity) .approvedFramework .afStep:nth-child(4) .afNum{background:#f4efff!important;border-color:#d7c8f2!important;color:#7140c2!important}
+body:not(.navModeActivity) .approvedFramework .afStep:nth-child(5) .afNum{background:#fff7e9!important;border-color:#ead0a2!important;color:#c97400!important}
+
+/* Analysis and raw-data cards also use light panels */
 body:not(.navModeActivity) .approvedAnalysis,
 body:not(.navModeActivity) .approvedAnalysis>.card,
-body:not(.navModeActivity) .approvedRaw{background:linear-gradient(145deg,#0b213d,#081b33)!important;border-color:#274c6c!important;color:#eef6ff!important}
+body:not(.navModeActivity) .approvedRaw{background:#f8fbfe!important;border-color:#cfdde8!important;color:#17364f!important;box-shadow:0 8px 22px rgba(8,37,61,.09)!important}
+body:not(.navModeActivity) .approvedAnalysis .cardHead,
+body:not(.navModeActivity) .approvedRaw .cardHead{background:#f4f8fb!important;border-color:#d7e2ea!important}
 body:not(.navModeActivity) .approvedAnalysis h1,
 body:not(.navModeActivity) .approvedAnalysis h2,
 body:not(.navModeActivity) .approvedAnalysis h3,
@@ -20,7 +41,7 @@ body:not(.navModeActivity) .approvedRaw h1,
 body:not(.navModeActivity) .approvedRaw h2,
 body:not(.navModeActivity) .approvedRaw h3,
 body:not(.navModeActivity) .approvedRaw h4,
-body:not(.navModeActivity) .approvedRaw b{color:#f4f8ff!important}
+body:not(.navModeActivity) .approvedRaw b{color:#173a57!important}
 body:not(.navModeActivity) .approvedAnalysis p,
 body:not(.navModeActivity) .approvedAnalysis span,
 body:not(.navModeActivity) .approvedAnalysis small,
@@ -31,20 +52,16 @@ body:not(.navModeActivity) .approvedAnalysis .ipAxisY,
 body:not(.navModeActivity) .approvedRaw p,
 body:not(.navModeActivity) .approvedRaw span,
 body:not(.navModeActivity) .approvedRaw small,
-body:not(.navModeActivity) .approvedRaw label{color:#b9cddd!important}
-body:not(.navModeActivity) .approvedRaw .ipRailHead{background:#102b47!important;color:#dcecff!important;border-color:#31536f!important}
-body:not(.navModeActivity) .approvedRaw .ipRow{background:#0d243d!important;color:#dbe8f4!important;border-color:#28465f!important}
-body:not(.navModeActivity) .approvedRaw .ipRow:nth-child(even){background:#102941!important}
-body:not(.navModeActivity) .approvedRaw .ipRow:hover{background:#153753!important}
+body:not(.navModeActivity) .approvedRaw label{color:#567085!important}
+body:not(.navModeActivity) .approvedRaw .ipRailHead{background:#eaf2f7!important;color:#294a61!important;border-color:#cbd9e3!important}
+body:not(.navModeActivity) .approvedRaw .ipRow{background:#fff!important;color:#31495d!important;border-color:#e1e9ef!important}
+body:not(.navModeActivity) .approvedRaw .ipRow:nth-child(even){background:#f6f9fb!important}
+body:not(.navModeActivity) .approvedRaw .ipRow:hover{background:#eef6fb!important}
 body:not(.navModeActivity) .approvedRaw table th,
-body:not(.navModeActivity) .approvedAnalysis table th{background:#102b47!important;color:#dcecff!important;border-color:#31536f!important}
+body:not(.navModeActivity) .approvedAnalysis table th{background:#eaf2f7!important;color:#294a61!important;border-color:#cbd9e3!important}
 body:not(.navModeActivity) .approvedRaw table td,
-body:not(.navModeActivity) .approvedAnalysis table td{color:#dbe8f4!important;border-color:#28465f!important}
+body:not(.navModeActivity) .approvedAnalysis table td{color:#31495d!important;border-color:#e1e9ef!important}
 body:not(.navModeActivity) .approvedAnalysis select,
 body:not(.navModeActivity) .approvedAnalysis button,
 body:not(.navModeActivity) .approvedRaw select,
-body:not(.navModeActivity) .approvedRaw button{background:#102b47!important;color:#eef7ff!important;border-color:#31536f!important}
-body:not(.navModeActivity) .approvedSummary .asCard,
-body:not(.navModeActivity) .approvedSummary .asCard *{color:#f6fbff!important}
-body:not(.navModeActivity) .approvedSummary .asCard small,
-body:not(.navModeActivity) .approvedSummary .asCard span{color:#aebfd0!important}
+body:not(.navModeActivity) .approvedRaw button{background:#fff!important;color:#245d84!important;border-color:#b9cedd!important}
