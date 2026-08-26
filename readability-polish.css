@@ -1,52 +1,37 @@
-/* Dashboard readability pass: larger type, stronger chart/grid hierarchy */
-:root{--text-strong:#071d35;--text-body:#243f56;--text-muted:#536b7f}
-body{font-size:15px;line-height:1.48;color:var(--text-body)}
-.title h1{font-size:29px!important;font-weight:950!important;letter-spacing:-.55px;color:var(--text-strong)}
-.title p{font-size:14px!important;font-weight:600;color:#526b80!important}
-.gmesNav button{font-size:12.5px!important;font-weight:900!important}
-.controls select,.controls button{font-size:13.5px!important;font-weight:800!important}
-.kpi small{font-size:13px!important;font-weight:800!important;color:#496277!important}
-.kpi b{font-size:32px!important;font-weight:950!important}
-.unit{font-size:14px!important;font-weight:800!important}
-.delta,.footline{font-size:11.5px!important;font-weight:700}
-.cardHead h2{font-size:21px!important;font-weight:950!important;letter-spacing:-.25px;color:var(--text-strong)!important}
-.cardHead h2 small{font-size:14px!important;font-weight:800!important}
-.cardHead .tools,.cardHead select,.cardHead button{font-size:12px!important;font-weight:850!important}
-.cardBody{font-size:13px}
-.legend,.convLegend{font-size:11.5px!important;font-weight:850!important;color:#38536a!important}
-.ylabels,.grp label,.tb span{font-size:11px!important;font-weight:850!important;color:#29465e!important}
-.bar em{font-size:11px!important;font-weight:950!important;color:#0b2943!important}
-.targetLabel{font-size:11px!important;font-weight:950!important}
-.info,.convFoot,.ipGuide{font-size:11.5px!important;font-weight:700!important}
-.dlist,.actionList{font-size:13px!important;font-weight:700}
-.drow b,.actionRow b{font-weight:950}
-.crit b{font-size:14px!important;font-weight:950!important;color:#0c2942!important;line-height:1.35}
-.crit p{font-size:12.5px!important;font-weight:650!important;line-height:1.48;color:#4e667a!important}
-.workplaceSummary span{font-size:12px!important;font-weight:850!important}
-.workplaceSummary b{font-size:22px!important;font-weight:950!important}
-.workplaceTable{font-size:13px!important}
-.workplaceTable th{font-size:12.5px!important;font-weight:950!important;color:#18364f!important;letter-spacing:-.1px}
-.workplaceTable td{font-size:12.5px!important;font-weight:650!important;color:#29465c!important}
-.status{font-size:11px!important;font-weight:950!important}
+/* Dashboard readability pass v2: larger type, stronger hierarchy, higher contrast */
+:root{--text-strong:#061d34;--text-body:#203e56;--text-muted:#4d677b}
+html{font-size:16px}
+body{font-size:16px!important;line-height:1.55!important;color:var(--text-body);font-family:Arial,"Noto Sans KR","Malgun Gothic",sans-serif!important;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+.title h1{font-size:32px!important;font-weight:950!important;letter-spacing:-.7px!important;color:var(--text-strong)!important;line-height:1.2!important}
+.title p{font-size:15px!important;font-weight:700!important;color:#455f74!important;line-height:1.5!important}
+.controls select,.controls button{font-size:14px!important;font-weight:850!important}
+.kpi small{font-size:14px!important;font-weight:850!important;color:#405c72!important}
+.kpi b{font-size:34px!important;font-weight:950!important;line-height:1.05!important}
+.unit{font-size:15px!important;font-weight:850!important}
+.delta,.footline{font-size:12.5px!important;font-weight:750!important}
+.cardHead h2{font-size:22px!important;font-weight:950!important;letter-spacing:-.3px!important;color:var(--text-strong)!important;line-height:1.3!important}
+.cardHead h2 small{font-size:15px!important;font-weight:850!important}
+.cardHead .tools,.cardHead select,.cardHead button{font-size:13px!important;font-weight:900!important}
+.cardBody{font-size:14px!important}
+.legend,.convLegend{font-size:12.5px!important;font-weight:900!important;color:#304f67!important}
+.ylabels,.grp label,.tb span{font-size:12px!important;font-weight:900!important;color:#23435c!important}
+.bar em{font-size:12px!important;font-weight:950!important;color:#082a44!important}
+.targetLabel{font-size:12px!important;font-weight:950!important}
+.info,.convFoot,.ipGuide{font-size:12.5px!important;font-weight:750!important}
+.dlist,.actionList{font-size:14px!important;font-weight:750!important}.drow b,.actionRow b{font-weight:950!important}
+.crit b{font-size:15px!important;font-weight:950!important;color:#092942!important;line-height:1.4!important}.crit p{font-size:13.5px!important;font-weight:700!important;line-height:1.55!important;color:#435f74!important}
+.workplaceSummary span{font-size:13px!important;font-weight:900!important}.workplaceSummary b{font-size:24px!important;font-weight:950!important}
+.workplaceTable{font-size:14px!important}.workplaceTable th{font-size:13.5px!important;font-weight:950!important;color:#123750!important}.workplaceTable td{font-size:13.5px!important;font-weight:700!important;color:#23465f!important}.status{font-size:12px!important;font-weight:950!important}
+/* Unified beginner navigation */
+.beginnerNav{gap:10px!important;padding:10px!important}.beginnerNav button{min-height:70px!important;padding:12px 14px!important}.beginnerNav .navTop{font-size:14px!important;font-weight:950!important;gap:9px!important}.beginnerNav .navIcon{width:28px!important;height:28px!important;font-size:13px!important}.beginnerNav small{font-size:11.5px!important;font-weight:750!important;line-height:1.4!important;margin-top:6px!important}.beginnerNav .badge{font-size:10.5px!important;min-width:22px!important;height:22px!important}.beginnerHint{font-size:12px!important;font-weight:750!important;padding:10px 12px!important}
 /* Conversion / integrated analysis */
-.conversionSummary span{font-size:10.5px!important;font-weight:850!important;color:#526b7e!important}
-.conversionSummary b{font-size:20px!important;font-weight:950!important}
-.conversionSummary small{font-size:10.5px!important;font-weight:700!important}
-.convHead{font-size:10.5px!important;font-weight:950!important;color:#29485f!important}
-.convTeam{font-size:11.5px!important;font-weight:950!important;color:#0c2b44!important}
-.convNum{font-size:12px!important;font-weight:950!important}
-.convRate{font-size:10.5px!important;font-weight:950!important}
-.convVal{font-size:10.5px!important;font-weight:950!important}
-/* Integrated quadrant */
-.ipRailHead{font-size:10.5px!important;font-weight:950!important;color:#29475e!important}
-.ipTeam{font-size:11px!important;font-weight:950!important;color:#0d2d46!important}
-.ipAct{font-size:11px!important;font-weight:950!important}.ipAct b{font-size:14px!important}
-.ipFlow,.ipRate{font-size:10.5px!important;font-weight:950!important}
-.ipQT{font-size:11px!important;font-weight:950!important}.ipQT small{font-size:9px!important;font-weight:750!important}
-.ipAxisY,.ipAxisX{font-size:10px!important;font-weight:950!important}
-.ipBubble .v{font-size:11px!important;font-weight:950!important}.ipBubble .nm{font-size:8.5px!important;font-weight:950!important}.ipTip{font-size:9.5px!important;font-weight:850!important}
-.ipChip{font-size:9.5px!important;font-weight:750!important}.ipChip b{font-size:14px!important;font-weight:950!important}
-/* Generic table/grid subtitles created by auxiliary modules */
-table th,[class*="Head"] th,[class*="head"] th,.gridTitle,.sectionSubTitle,.chartSubTitle{font-weight:950!important;color:#102f49!important}
-table td{font-weight:650}
-@media(max-width:1100px){body{font-size:14px}.title h1{font-size:26px!important}.cardHead h2{font-size:19px!important}.kpi b{font-size:29px!important}}
+.conversionSummary span{font-size:12px!important;font-weight:900!important;color:#465f73!important}.conversionSummary b{font-size:22px!important;font-weight:950!important}.conversionSummary small{font-size:11.5px!important;font-weight:750!important}.convHead{font-size:12px!important;font-weight:950!important;color:#23475f!important}.convTeam{font-size:12.5px!important;font-weight:950!important;color:#092b45!important}.convNum{font-size:13px!important;font-weight:950!important}.convRate,.convVal{font-size:11.5px!important;font-weight:950!important}
+/* Executive strategy map */
+.ipFinalHead h3{font-size:18px!important;font-weight:950!important}.ipRailHead{font-size:11.5px!important;font-weight:950!important;color:#20465f!important}.ipTeam{font-size:12px!important;font-weight:950!important;color:#092c46!important}.ipAct{font-size:11.5px!important;font-weight:950!important}.ipAct b{font-size:15px!important}.ipFlow,.ipRate{font-size:11px!important;font-weight:950!important}.ipQT{font-size:12.5px!important;font-weight:950!important}.ipQT small{font-size:10.5px!important;font-weight:800!important}.ipAxisY,.ipAxisX{font-size:11.5px!important;font-weight:950!important}.ipBubble .v{font-size:15px!important;font-weight:950!important}.ipBubble .meta{font-size:9.5px!important;font-weight:900!important}.ipBubble .nm{font-size:9.5px!important;font-weight:950!important}.ipTip{font-size:10.5px!important;font-weight:900!important}.ipChip{font-size:11px!important;font-weight:800!important}.ipChip b{font-size:16px!important;font-weight:950!important}.ipDetail b{font-size:14px!important}.ipDetail span{font-size:11px!important}
+/* Workplace detail / criteria */
+.wdrHead h2{font-size:22px!important;font-weight:950!important}.wdrHead p{font-size:13px!important;font-weight:750!important}.wdrBadge{font-size:12px!important}.wdrStep b{font-size:13px!important}.wdrStep small{font-size:11px!important;line-height:1.45!important}.wdrCard h3{font-size:15px!important;font-weight:950!important}.wdrCard li{font-size:12.5px!important;line-height:1.6!important}.wdrNote{font-size:12.5px!important;line-height:1.55!important}
+/* Popup readability */
+.ccH h3{font-size:19px!important}.ccBox h4{font-size:15px!important;font-weight:950!important}.ccBox ul{font-size:13px!important;line-height:1.75!important}.ccEff,.ccPoint{font-size:13px!important;line-height:1.55!important}.ccCap{font-size:12px!important}.ccMeta{font-size:12px!important;grid-template-columns:100px 1fr!important}
+/* Generic table/grid subtitles */
+table th,[class*="Head"] th,[class*="head"] th,.gridTitle,.sectionSubTitle,.chartSubTitle{font-size:13px!important;font-weight:950!important;color:#0d3049!important}table td{font-size:13px!important;font-weight:700!important}
+@media(max-width:1100px){body{font-size:15px!important}.title h1{font-size:28px!important}.cardHead h2{font-size:20px!important}.kpi b{font-size:31px!important}.beginnerNav .navTop{font-size:13px!important}.beginnerNav small{font-size:11px!important}}
