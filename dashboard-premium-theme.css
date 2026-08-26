@@ -1,3 +1,5 @@
+html:not(.hd20-ready) body{visibility:hidden!important}
+html.hd20-ready body{visibility:visible!important}
 /* 2026-08-27 FINAL-9: stable dark dashboard visual lock */
 body:not(.navModeActivity){background:linear-gradient(180deg,#06162b 0,#081a31 34%,#0b203a 100%)!important;color:#eaf4ff!important}
 body:not(.navModeActivity) .app{max-width:1680px!important;padding:18px 22px 28px!important}
