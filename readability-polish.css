@@ -1,0 +1,52 @@
+/* Dashboard readability pass: larger type, stronger chart/grid hierarchy */
+:root{--text-strong:#071d35;--text-body:#243f56;--text-muted:#536b7f}
+body{font-size:15px;line-height:1.48;color:var(--text-body)}
+.title h1{font-size:29px!important;font-weight:950!important;letter-spacing:-.55px;color:var(--text-strong)}
+.title p{font-size:14px!important;font-weight:600;color:#526b80!important}
+.gmesNav button{font-size:12.5px!important;font-weight:900!important}
+.controls select,.controls button{font-size:13.5px!important;font-weight:800!important}
+.kpi small{font-size:13px!important;font-weight:800!important;color:#496277!important}
+.kpi b{font-size:32px!important;font-weight:950!important}
+.unit{font-size:14px!important;font-weight:800!important}
+.delta,.footline{font-size:11.5px!important;font-weight:700}
+.cardHead h2{font-size:21px!important;font-weight:950!important;letter-spacing:-.25px;color:var(--text-strong)!important}
+.cardHead h2 small{font-size:14px!important;font-weight:800!important}
+.cardHead .tools,.cardHead select,.cardHead button{font-size:12px!important;font-weight:850!important}
+.cardBody{font-size:13px}
+.legend,.convLegend{font-size:11.5px!important;font-weight:850!important;color:#38536a!important}
+.ylabels,.grp label,.tb span{font-size:11px!important;font-weight:850!important;color:#29465e!important}
+.bar em{font-size:11px!important;font-weight:950!important;color:#0b2943!important}
+.targetLabel{font-size:11px!important;font-weight:950!important}
+.info,.convFoot,.ipGuide{font-size:11.5px!important;font-weight:700!important}
+.dlist,.actionList{font-size:13px!important;font-weight:700}
+.drow b,.actionRow b{font-weight:950}
+.crit b{font-size:14px!important;font-weight:950!important;color:#0c2942!important;line-height:1.35}
+.crit p{font-size:12.5px!important;font-weight:650!important;line-height:1.48;color:#4e667a!important}
+.workplaceSummary span{font-size:12px!important;font-weight:850!important}
+.workplaceSummary b{font-size:22px!important;font-weight:950!important}
+.workplaceTable{font-size:13px!important}
+.workplaceTable th{font-size:12.5px!important;font-weight:950!important;color:#18364f!important;letter-spacing:-.1px}
+.workplaceTable td{font-size:12.5px!important;font-weight:650!important;color:#29465c!important}
+.status{font-size:11px!important;font-weight:950!important}
+/* Conversion / integrated analysis */
+.conversionSummary span{font-size:10.5px!important;font-weight:850!important;color:#526b7e!important}
+.conversionSummary b{font-size:20px!important;font-weight:950!important}
+.conversionSummary small{font-size:10.5px!important;font-weight:700!important}
+.convHead{font-size:10.5px!important;font-weight:950!important;color:#29485f!important}
+.convTeam{font-size:11.5px!important;font-weight:950!important;color:#0c2b44!important}
+.convNum{font-size:12px!important;font-weight:950!important}
+.convRate{font-size:10.5px!important;font-weight:950!important}
+.convVal{font-size:10.5px!important;font-weight:950!important}
+/* Integrated quadrant */
+.ipRailHead{font-size:10.5px!important;font-weight:950!important;color:#29475e!important}
+.ipTeam{font-size:11px!important;font-weight:950!important;color:#0d2d46!important}
+.ipAct{font-size:11px!important;font-weight:950!important}.ipAct b{font-size:14px!important}
+.ipFlow,.ipRate{font-size:10.5px!important;font-weight:950!important}
+.ipQT{font-size:11px!important;font-weight:950!important}.ipQT small{font-size:9px!important;font-weight:750!important}
+.ipAxisY,.ipAxisX{font-size:10px!important;font-weight:950!important}
+.ipBubble .v{font-size:11px!important;font-weight:950!important}.ipBubble .nm{font-size:8.5px!important;font-weight:950!important}.ipTip{font-size:9.5px!important;font-weight:850!important}
+.ipChip{font-size:9.5px!important;font-weight:750!important}.ipChip b{font-size:14px!important;font-weight:950!important}
+/* Generic table/grid subtitles created by auxiliary modules */
+table th,[class*="Head"] th,[class*="head"] th,.gridTitle,.sectionSubTitle,.chartSubTitle{font-weight:950!important;color:#102f49!important}
+table td{font-weight:650}
+@media(max-width:1100px){body{font-size:14px}.title h1{font-size:26px!important}.cardHead h2{font-size:19px!important}.kpi b{font-size:29px!important}}
