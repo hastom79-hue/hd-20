@@ -8,8 +8,7 @@ body:not(.navModeActivity) .approvedSummary .asCard span{color:#aebfd0!important
 /* Framework / criteria section - bright, filled, differentiated */
 body:not(.navModeActivity) .approvedFramework{background:linear-gradient(180deg,#fbfdff 0%,#f4f9fd 100%)!important;border:1px solid #cddde9!important;border-radius:16px!important;color:#18364f!important;box-shadow:0 10px 28px rgba(8,37,61,.09)!important;overflow:hidden!important}
 body:not(.navModeActivity) .approvedFramework:before{height:4px!important;background:linear-gradient(90deg,#5aa9ef,#60c580,#8b73e8,#efb04d)!important;opacity:.95!important}
-body:not(.navModeActivity) .approvedFramework .afTitle{position:relative!important;padding:18px 20px 12px!important;font-size:22px!important;font-weight:950!important;letter-spacing:-.35px!important;color:#123c60!important;background:linear-gradient(90deg,#f7fbff 0%,#ffffff 62%,#f8fbfd 100%)!important;border-bottom:1px solid #e4edf3!important}
-body:not(.navModeActivity) .approvedFramework .afTitle:after{content:'기준 · 인정 · 유지관리'!important;display:inline-flex!important;align-items:center!important;margin-left:10px!important;padding:4px 9px!important;border-radius:999px!important;background:#eaf4fb!important;border:1px solid #cfe1ee!important;color:#4e748f!important;font-size:10px!important;font-weight:900!important;vertical-align:3px!important;letter-spacing:0!important}
+body:not(.navModeActivity) .approvedFramework .afTitle{display:none!important}
 body:not(.navModeActivity) .approvedFramework .afGrid{gap:0!important;background:#fff!important}
 body:not(.navModeActivity) .approvedFramework .afCriteria,
 body:not(.navModeActivity) .approvedFramework .afProcess{padding:16px 18px 18px!important;background:linear-gradient(180deg,#ffffff 0%,#fbfdff 100%)!important}
