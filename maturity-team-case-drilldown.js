@@ -14,3 +14,4 @@ function wire(){css();const rows=[...document.querySelectorAll('.ipRow')],dots=[
 function boot(){let n=0;const run=()=>{if(wire())return;if(++n<40)setTimeout(run,120)};run()}
 window.addEventListener('hd20-gmes-5s-judged',()=>setTimeout(()=>{wire();const p=document.querySelector('.maturityTeamPanel');const t=p?.querySelector('.maturityTeamPanelHead b')?.textContent?.split(' · ')[0];if(t&&t!=='팀별 확정 고도화 사례')show(t)},80));window.addEventListener('hd20-maturity-map-opened',()=>setTimeout(boot,120));document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot,{once:true}):boot();
 })();
+(()=>{if(document.querySelector('script[data-hd20-emergency-stable]'))return;const s=document.createElement('script');s.src='emergency-ui-stabilizer.js?v=20260827-emergency-1';s.dataset.hd20EmergencyStable='1';document.head.appendChild(s)})();
