@@ -73,3 +73,26 @@ jobs:
           grep -q 'data-key="action"' beginner-navigation.js
           grep -q 'data-key="master"' beginner-navigation.js
           echo 'OK: 7-item navigation contract is present'
+
+      - name: Verify canonical KPI wiring
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s dashboard-kpi-source.js
+          grep -q 'window.HD20KPIData' dashboard-kpi-source.js
+          grep -q 'HD20KPIData' top-kpi-drilldown.js
+          grep -q 'HD20KPIData' performance-conversion-analysis.js
+          if grep -q 'const ACT=' top-kpi-drilldown.js || grep -q 'const WP=' top-kpi-drilldown.js; then
+            echo '::error file=top-kpi-drilldown.js::Hardcoded KPI sample arrays detected'
+            exit 1
+          fi
+          echo 'OK: top KPI and drilldown use canonical source'
+
+      - name: Verify lifecycle API for approved dashboard
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'window.HD20MaturityFollowup' maturity-seq-action-link.js
+          grep -q 'HD20MaturityFollowup' approved-landing-v2.js
+          grep -q 'hd20-followup-updated' maturity-seq-action-link.js
+          echo 'OK: approved dashboard lifecycle API is wired'
