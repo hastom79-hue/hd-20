@@ -1,6 +1,6 @@
 (()=>{
 const STYLE_ID='maturityMapDrillStyle',STORE_KEY='hd20GMES5SAutoImproveRawV1';
-function ensureImporter(){if(!window.HD20GMES5S&&!document.querySelector('script[data-gmes5s-import]')){const s=document.createElement('script');s.src='gmes-5s-case-import.js?v=20260827-gmesraw-3';s.dataset.gmes5sImport='1';document.head.appendChild(s)}if(!document.querySelector('script[data-gmes5s-judge]')){const j=document.createElement('script');j.src='gmes-5s-judge-ui.js?v=20260827-judge-2';j.dataset.gmes5sJudge='1';document.head.appendChild(j)}}
+function ensureImporter(){if(!window.HD20GMES5S&&!document.querySelector('script[data-gmes5s-import]')){const s=document.createElement('script');s.src='gmes-5s-case-import.js?v=20260827-gmesraw-3';s.dataset.gmes5sImport='1';document.head.appendChild(s)}if(!document.querySelector('script[data-gmes5s-judge]')){const j=document.createElement('script');j.src='gmes-5s-judge-ui.js?v=20260827-judge-3';j.dataset.gmes5sJudge='1';document.head.appendChild(j)}}
 function loadConfirmed(){try{return JSON.parse(localStorage.getItem(STORE_KEY)||'[]').filter(x=>x.confirmed===true&&x.judgeState==='확정').sort((a,b)=>String(b.judgedAt||'').localeCompare(String(a.judgedAt||'')))}catch{return[]}}
 function dateOnly(v){if(!v)return'-';const s=String(v);return s.includes('T')?s.slice(0,10):s}
 function esc(v){return String(v??'-').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
