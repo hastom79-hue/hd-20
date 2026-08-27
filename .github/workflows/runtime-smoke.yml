@@ -49,30 +49,31 @@ jobs:
           print(f'OK: {len(refs)} index script references resolved')
           PY
 
-      - name: Verify approved reference 2 boot path
+      - name: Verify approved reference 2 static boot path
         shell: bash
         run: |
           set -euo pipefail
           test -s approved-landing-v2.css
           test -s approved-landing-v2.js
-          grep -q 'approved-landing-v2.css' beginner-navigation.js
-          grep -q 'approved-landing-v2.js' beginner-navigation.js
+          grep -q 'approved-landing-v2.css' index.html
+          grep -q 'approved-landing-v2.js' index.html
           grep -q 'hd20ApprovedLanding' approved-landing-v2.js
           grep -q 'visual reference #2' approved-landing-v2.css
-          echo 'OK: approved reference 2 boot path is present'
+          echo 'OK: approved reference 2 is loaded directly by index.html'
 
       - name: Verify dashboard navigation contract
         shell: bash
         run: |
           set -euo pipefail
-          grep -q 'data-key="dashboard"' beginner-navigation.js
-          grep -q 'data-key="conversion"' beginner-navigation.js
-          grep -q 'data-key="activity"' beginner-navigation.js
-          grep -q 'data-key="workplace"' beginner-navigation.js
-          grep -q 'data-key="audit"' beginner-navigation.js
-          grep -q 'data-key="action"' beginner-navigation.js
-          grep -q 'data-key="master"' beginner-navigation.js
-          echo 'OK: 7-item navigation contract is present'
+          for key in dashboard conversion activity workplace audit action master; do
+            grep -q "data-key=\"$key\"" index.html
+            grep -q "data-key=\\\"$key\\\"\|data-key=\"$key\"" beginner-navigation.js
+          done
+          if grep -q "innerHTML=.*5S 고도화 성과\|data-nav=\"performance\"" nav-polish.js; then
+            echo '::error file=nav-polish.js::Legacy 5-menu recreation detected'
+            exit 1
+          fi
+          echo 'OK: static 7-item navigation shell and canonical controller are present'
 
       - name: Verify workflow screen contract
         shell: bash
