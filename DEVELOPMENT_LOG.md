@@ -236,3 +236,21 @@ Trend Chart 역시 디자인 미리보기에서 예시 Trend를 사용할 수 �
 - 운영파일과 과거 Preview/Legacy 파일 혼재 확인
 - 운영 의존 파일은 유지
 - 미사용 구형 파일은 삭제보다 `/archive/legacy/` 이동 우선
+
+### 2026-08-27 18:43 KST / 긴급 구동 복원 및 승인 시안 2 첫 화면 재적용
+- 요구사항: HD-20이 구동되지 않는 상태를 즉시 복원하고, 이전에 승인된 2번 시안을 첫 페이지 대시보드에 다시 정확히 반영한다.
+- 안전조치: 장애 상태 전체를 `backup-broken-runtime-20260827-1843` 브랜치에 보존하여 당일 작업 데이터/코드를 유실하지 않도록 함.
+- 복원 기준: 검증된 Design 2 안정화 체크포인트 `f41629693d67d01a3742aa29b5a4043e62fa5119`로 `main`을 우선 복원.
+- 변경 파일: `approved-landing-v2.css`, `approved-landing-v2.js`, `beginner-navigation.js`.
+- 구현 내용:
+  - `approved-landing-v2.css`의 명시된 `visual reference #2` 스타일을 stable main에 재생성.
+  - 승인 첫 화면 Renderer `approved-landing-v2.js`를 stable main에 재생성.
+  - 첫 Dashboard 진입 시 승인 화면 CSS/JS를 강제로 로드하도록 `beginner-navigation.js` 연결.
+  - Dashboard 메뉴 복귀 대상도 `.hd20ApprovedLanding`을 최우선으로 지정.
+  - 승인 화면의 실제 Lifecycle Source 연결 로직(`hd20GMES5SAutoImproveRawV1`, `HD20MaturityFollowup`)은 보존.
+- 실행/검증:
+  - `approved-landing-v2.css` 생성 Commit `bfc4d7f5ce0a0e34bf07bce8c527e442fa1ed061`.
+  - `approved-landing-v2.js` 생성 Commit `58cefc1368376bea6126909ccd08f05358c27e0f`.
+  - 첫 화면 로더/Navigation 연결 Commit `b8b4ab11ce4c900acffa2014367c402f2a09259e`.
+  - 해당 HEAD 기준 Package workflow 성공 및 GitHub Pages build/deployment 성공 확인.
+- 잔여사항: 실제 브라우저 화면에서 승인 시안 2 시각 일치 여부 재확인 후, 백업 브랜치에 보존한 KPI/Lead Time/데이터 정합성 개선분을 기능별로 하나씩 재적용하고 매 단계 회귀검증한다.
