@@ -1,0 +1,21 @@
+(()=>{
+const ID='hd20GMESJudgeFlowPolish';
+function style(){if(document.getElementById(ID))return;const s=document.createElement('style');s.id=ID;s.textContent=`
+.maturityMapBody{background:#f8fbfd!important}
+.gmesImport,.maturityHistory{border:1px solid #d9e5ed!important;border-radius:12px!important;box-shadow:0 3px 10px rgba(25,61,88,.04)!important;background:#fff!important}
+.gmesImport{margin-top:12px!important}.maturityHistory{margin-top:12px!important}
+.gmesImportHead,.maturityHistoryHead{padding:11px 13px!important;background:#f6fafc!important;border-bottom:1px solid #e2eaf0!important}
+.gmesImportHead b,.maturityHistoryHead b{font-size:13px!important;color:#173a57!important}.gmesImportHead span,.maturityHistoryHead span{font-size:9.5px!important;color:#6f8595!important}
+.gmesImportBody{padding:10px 12px!important}.gmesImportSummary{margin-bottom:8px!important;gap:6px!important}.gmesImportChip{padding:4px 7px!important;font-size:8.8px!important}
+.gmesImportActions{align-items:center!important}.gmesImportBtn{padding:7px 10px!important;border-radius:8px!important}.gmesImportBtn.primary{box-shadow:0 2px 5px rgba(29,115,170,.14)!important}
+.gmesJudgeToolbar{position:sticky!important;top:0!important;z-index:4!important;margin:0 0 8px!important;padding:8px 9px!important;background:#f8fbfd!important;border:1px solid #dce7ee!important;box-shadow:0 2px 5px rgba(25,61,88,.03)!important}.gmesJudgeToolbar b{font-size:10.2px!important}.gmesJudgeCount{margin-right:auto!important}.gmesJudgeBtn{min-height:28px!important;padding:6px 9px!important}
+.gmesImportTableWrap{max-height:290px!important;border-radius:9px!important}.gmesImport table{font-size:9.7px!important}.gmesImport th{padding:7px 8px!important;background:#f3f7fa!important;color:#496a80!important}.gmesImport td{padding:7px 8px!important;color:#35566d!important}.gmesImport tbody tr:hover{background:#f8fbfd!important}
+.gmesJudgeState.wait,.gmesImportState{background:#fff5e5!important;color:#8e641c!important}.gmesJudgeState.ok{background:#eaf6ef!important;color:#2f7650!important}.gmesJudgeState.fix{background:#fff1db!important;color:#966314!important}.gmesJudgeState.no{background:#fff0ef!important;color:#964b44!important}
+.maturityHistoryTableWrap{max-height:230px!important;overflow:auto!important}.maturityHistory table{font-size:9.7px!important}.maturityHistory th{position:sticky!important;top:0!important;z-index:1!important;padding:7px 8px!important;background:#f3f7fa!important;color:#496a80!important}.maturityHistory td{padding:7px 8px!important}
+.hd20FlowSteps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:10px 0 4px}.hd20FlowStep{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid #dce7ee;border-radius:9px;background:#fff;color:#5b7283;font-size:9.5px}.hd20FlowStep b{display:block;color:#173a57;font-size:10.5px}.hd20FlowNum{width:22px;height:22px;flex:0 0 22px;border-radius:50%;display:grid;place-items:center;background:#eaf3fa;color:#2d6d98;font-size:9px;font-weight:950}.hd20FlowStep:nth-child(2) .hd20FlowNum{background:#fff4df;color:#94631a}.hd20FlowStep:nth-child(3) .hd20FlowNum{background:#eaf6ef;color:#2f7650}
+@media(max-width:800px){.hd20FlowSteps{grid-template-columns:1fr}.gmesImportHead{flex-direction:column}.gmesJudgeToolbar{position:static!important}}
+`;document.head.appendChild(s)}
+function addFlow(){const body=document.querySelector('.maturityMapBody');if(!body||body.querySelector('.hd20FlowSteps'))return;const judge=body.querySelector('.maturityJudgeBar');const flow=document.createElement('div');flow.className='hd20FlowSteps';flow.innerHTML='<div class="hd20FlowStep"><span class="hd20FlowNum">1</span><div><b>GMES 원천데이터 유입</b>5S 자율개선 추출파일 그대로 업로드</div></div><div class="hd20FlowStep"><span class="hd20FlowNum">2</span><div><b>생산혁신팀 판정</b>확정·보완요청·미확정 처리</div></div><div class="hd20FlowStep"><span class="hd20FlowNum">3</span><div><b>확정 사례 반영</b>확정이력 및 고도화 수준 맵에 반영</div></div>';(judge||body.firstChild)?.insertAdjacentElement('afterend',flow)}
+function boot(){style();addFlow();window.addEventListener('hd20-maturity-map-opened',()=>setTimeout(addFlow,0));new MutationObserver(()=>addFlow()).observe(document.body,{childList:true,subtree:true})}
+document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot,{once:true}):boot();
+})();
