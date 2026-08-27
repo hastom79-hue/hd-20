@@ -1,19 +1,5 @@
-(()=>{
-const TRENDS=[
- {delta:'↑ 0.18',labels:['25Q1','25Q2','25Q3','25Q4','26Q1','26Q2'],values:[1.74,2.10,1.82,2.31,2.18,2.36],type:'rate'},
- {delta:'↑ 3건',labels:['25Q1','25Q2','25Q3','25Q4','26Q1','26Q2'],values:[7,12,9,16,11,14],type:'count'},
- {delta:'↑ 2곳',labels:['25Q1','25Q2','25Q3','25Q4','26Q1','26Q2'],values:[1,4,2,6,3,5],type:'count'},
- {delta:'↑ 4곳',labels:['25Q1','25Q2','25Q3','25Q4','26Q1','26Q2'],values:[10,16,14,21,20,24],type:'count'},
- {delta:'↑ 2곳',labels:['25Q1','25Q2','25Q3','25Q4','26Q1','26Q2'],values:[12,18,15,21,18,20],type:'count'}
-];
-const fmt=(v,type)=>type==='rate'?Number(v).toFixed(2):String(Math.round(Number(v)));
-function ensureMainHeader(){let s=document.getElementById('hd20EmergencyHeaderFix');if(!s){s=document.createElement('style');s.id='hd20EmergencyHeaderFix';s.textContent=`.top{padding:14px 16px!important;border:1px solid #1f415f!important;border-radius:14px!important;background:linear-gradient(135deg,#071b33 0%,#0b2948 58%,#103758 100%)!important;box-shadow:0 10px 28px rgba(0,0,0,.16)!important}.top .title h1{color:#fff!important;text-shadow:0 1px 14px rgba(91,171,255,.20)!important}.top .title p{color:#d8e7f5!important}.top .controls select,.top .controls button{background:#0c223b!important;color:#f7fbff!important;border-color:#31516e!important}.top .controls .apply{background:#1677c8!important;border-color:#248ee5!important;color:#fff!important}`;document.head.appendChild(s)}const h=document.querySelector('.top .title h1'),p=document.querySelector('.top .title p');if(h)h.style.setProperty('color','#fff','important');if(p)p.style.setProperty('color','#d8e7f5','important')}
-function coords(values){const min=Math.min(...values),max=Math.max(...values),span=max-min||1;return values.map((v,i)=>({x:4+(i/(values.length-1))*92,y:25-((v-min)/span)*18,v}))}
-function trendMarkup(d){const pts=coords(d.values);const title=d.labels.map((q,j)=>`${q}: ${fmt(d.values[j],d.type)}`).join(' / ');return `<div class="kpiTrendTop"><strong>${d.delta}</strong><span>전분기 대비</span></div><svg class="kpiSpark" viewBox="0 0 100 32" preserveAspectRatio="none" role="img" aria-label="최근 6개 분기 추이"><title>${title}</title><polyline points="${pts.map(p=>`${p.x},${p.y}`).join(' ')}"></polyline>${pts.map(p=>`<circle cx="${p.x}" cy="${p.y}" r="1.8"></circle>`).join('')}</svg>`}
-function trends(){document.querySelectorAll('.cards .kpi').forEach((el,i)=>{const d=TRENDS[i]||TRENDS[0];let t=el.querySelector('.kpiTrend');if(!t){t=document.createElement('div');t.className='kpiTrend';el.appendChild(t)}if(t.dataset.finalTrend==='2')return;t.innerHTML=trendMarkup(d);t.dataset.finalTrend='2'})}
-function pulse(){document.querySelectorAll('.cards .kpi,.approvedSummary .asCard,.afCard').forEach(el=>{if(el.dataset.pfx==='2')return;el.dataset.pfx='2';el.addEventListener('pointerdown',e=>{const r=el.getBoundingClientRect(),p=document.createElement('i');p.className='premiumPulse';p.style.left=(e.clientX-r.left)+'px';p.style.top=(e.clientY-r.top)+'px';el.appendChild(p);setTimeout(()=>p.remove(),450)})})}
-function reveal(){document.documentElement.classList.add('hd20-ready')}
-function wire(){ensureMainHeader();trends();pulse();reveal()}
-function boot(){wire();setTimeout(wire,300);setTimeout(wire,800)}
-document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot,{once:true}):boot();
-})();
+/* HD-20 Design 2: effects layer intentionally reduced to boot visibility only.
+ * Removed hard-coded KPI trend data, dark-header override, and pointer pulse DOM
+ * injection so the approved layout/color system cannot drift after load.
+ */
+(()=>{'use strict';function reveal(){document.documentElement.classList.add('hd20-ready');document.documentElement.style.visibility='visible';if(document.body){document.body.style.visibility='visible';document.body.style.opacity='1'}}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',reveal,{once:true});else reveal();})();
