@@ -15,3 +15,4 @@ function boot(){css();sync();setTimeout(markActionRows,300);new MutationObserver
 ['hd20-gmes-5s-judged','hd20-gmes-5s-imported'].forEach(ev=>window.addEventListener(ev,()=>setTimeout(sync,80)));
 document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot,{once:true}):boot();
 })();
+(()=>{const mods=[['activity-dynamic-chart.js?v=20260827-residual-1','hd20ActivityDynamic'],['audit-taxonomy-guard.js?v=20260827-residual-1','hd20AuditTaxonomy'],['expert-chatbot-final.js?v=20260827-residual-1','hd20ExpertBot']];for(const [src,key] of mods){if(document.querySelector(`script[data-${key}]`))continue;const s=document.createElement('script');s.src=src;s.setAttribute(`data-${key}`,'1');document.head.appendChild(s)}})();
