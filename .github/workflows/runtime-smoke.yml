@@ -74,19 +74,45 @@ jobs:
           grep -q 'data-key="master"' beginner-navigation.js
           echo 'OK: 7-item navigation contract is present'
 
-      - name: Verify canonical KPI wiring
+      - name: Verify workflow screen contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q "id='awActivity'\|id=\"awActivity\"\|'awActivity'" activity-workflow.js
+          grep -q "awWorkplace" activity-workflow.js
+          grep -q "awAudit" activity-workflow.js
+          grep -q "awAction" activity-workflow.js
+          grep -q "awRegister" activity-workflow.js
+          grep -q "hd20GMES5SAutoImproveRawV1" activity-workflow.js
+          echo 'OK: activity/workplace/audit/action/master screen shells are present'
+
+      - name: Verify canonical KPI wiring and parity audit
         shell: bash
         run: |
           set -euo pipefail
           test -s dashboard-kpi-source.js
           grep -q 'window.HD20KPIData' dashboard-kpi-source.js
           grep -q 'HD20KPIData' top-kpi-drilldown.js
+          grep -q 'HD20_TOP_KPI_AUDIT' top-kpi-drilldown.js
+          grep -q 'gridRows' top-kpi-drilldown.js
+          grep -q 'displayParity' top-kpi-drilldown.js
           grep -q 'HD20KPIData' performance-conversion-analysis.js
           if grep -q 'const ACT=' top-kpi-drilldown.js || grep -q 'const WP=' top-kpi-drilldown.js; then
             echo '::error file=top-kpi-drilldown.js::Hardcoded KPI sample arrays detected'
             exit 1
           fi
-          echo 'OK: top KPI and drilldown use canonical source'
+          echo 'OK: top KPI, approved cards and popup Grid share canonical source contract'
+
+      - name: Verify split CRUD store is retired
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'splitStoreDisabled:true' workflow-crud.js
+          if grep -q "hd20WorkflowDataV1" workflow-crud.js; then
+            echo '::error file=workflow-crud.js::Deprecated split workflow store is still active'
+            exit 1
+          fi
+          echo 'OK: generic workflow CRUD no longer writes a split operational store'
 
       - name: Verify lifecycle API for approved dashboard
         shell: bash
@@ -95,4 +121,20 @@ jobs:
           grep -q 'window.HD20MaturityFollowup' maturity-seq-action-link.js
           grep -q 'HD20MaturityFollowup' approved-landing-v2.js
           grep -q 'hd20-followup-updated' maturity-seq-action-link.js
-          echo 'OK: approved dashboard lifecycle API is wired'
+          grep -q "1개월 점검" maturity-seq-action-link.js
+          grep -q "3개월 AUDIT" maturity-seq-action-link.js
+          grep -q "6개월 AUDIT" maturity-seq-action-link.js
+          echo 'OK: approved dashboard 1M/3M/6M lifecycle API is wired'
+
+      - name: Verify demo pollution guards
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'HD20_ACTION_DEMO_SEED_DISABLED' action-demo-seed.js
+          if grep -q 'commons.wikimedia.org' action-field-photo-gallery.js; then
+            echo '::error file=action-field-photo-gallery.js::External demo field photo mapping detected'
+            exit 1
+          fi
+          grep -q 'score:0' audit-global-seed.js
+          grep -q "result:'N/A'" audit-global-seed.js
+          echo 'OK: action/audit demo pollution guards are present'
