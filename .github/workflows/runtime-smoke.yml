@@ -1,0 +1,75 @@
+name: HD20 runtime smoke
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify JavaScript syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          failed=0
+          while IFS= read -r -d '' file; do
+            if ! node --check "$file" >/dev/null; then
+              echo "::error file=$file::JavaScript syntax check failed"
+              failed=1
+            fi
+          done < <(find . -maxdepth 2 -type f -name '*.js' -print0)
+          test "$failed" -eq 0
+
+      - name: Verify index script references exist
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib, re, sys
+          html = pathlib.Path('index.html').read_text(encoding='utf-8')
+          refs = re.findall(r'<script[^>]+src=["\']([^"\']+)', html)
+          missing = []
+          for ref in refs:
+              path = ref.split('?', 1)[0]
+              if path.startswith(('http://','https://','//')):
+                  continue
+              if not pathlib.Path(path).is_file():
+                  missing.append(path)
+          if missing:
+              print('Missing script files:', ', '.join(missing), file=sys.stderr)
+              sys.exit(1)
+          print(f'OK: {len(refs)} index script references resolved')
+          PY
+
+      - name: Verify approved reference 2 boot path
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s approved-landing-v2.css
+          test -s approved-landing-v2.js
+          grep -q 'approved-landing-v2.css' beginner-navigation.js
+          grep -q 'approved-landing-v2.js' beginner-navigation.js
+          grep -q 'hd20ApprovedLanding' approved-landing-v2.js
+          grep -q 'visual reference #2' approved-landing-v2.css
+          echo 'OK: approved reference 2 boot path is present'
+
+      - name: Verify dashboard navigation contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'data-key="dashboard"' beginner-navigation.js
+          grep -q 'data-key="conversion"' beginner-navigation.js
+          grep -q 'data-key="activity"' beginner-navigation.js
+          grep -q 'data-key="workplace"' beginner-navigation.js
+          grep -q 'data-key="audit"' beginner-navigation.js
+          grep -q 'data-key="action"' beginner-navigation.js
+          grep -q 'data-key="master"' beginner-navigation.js
+          echo 'OK: 7-item navigation contract is present'
