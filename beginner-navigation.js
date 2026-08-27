@@ -1,22 +1,6 @@
 (()=>{'use strict';
-const APPROVED_VERSION='20260827-reference2-canonical-4';
-if(!document.querySelector('link[data-hd20-approved-landing]')){
-  const l=document.createElement('link');
-  l.rel='stylesheet';
-  l.href=`approved-landing-v2.css?v=${APPROVED_VERSION}`;
-  l.dataset.hd20ApprovedLanding='1';
-  document.head.appendChild(l);
-}
-if(!document.querySelector('script[data-hd20-approved-landing]')){
-  const s=document.createElement('script');
-  s.src=`approved-landing-v2.js?v=${APPROVED_VERSION}`;
-  s.dataset.hd20ApprovedLanding='1';
-  document.head.appendChild(s);
-}
-})();
-
-(()=>{'use strict';
 const STYLE_ID='beginnerNavStyle';
+const FALLBACK_HTML=`<button class="active" data-key="dashboard"><span class="navTop"><span class="navIcon">▦</span>① 대시보드</span><small>전체 현황·성과 한눈에 보기</small></button><button data-key="conversion"><span class="navTop"><span class="navIcon">↗</span>② 성과전환 분석</span><small>활동→후보→확정→유지 분석</small></button><button data-key="activity"><span class="navTop"><span class="navIcon">✓</span>③ 5S 활동관리</span><small>6개 유형 활동·월별 추이</small></button><button data-key="workplace"><span class="navTop"><span class="navIcon">◆</span>④ 고도화 작업장</span><small>후보·판정·확정·유지 관리</small><span class="badge zero">0</span></button><button data-key="audit"><span class="navTop"><span class="navIcon">◎</span>⑤ Audit 관리</span><small>1·3·6개월 점검·유지 확인</small><span class="badge zero">0</span></button><button data-key="action"><span class="navTop"><span class="navIcon">!</span>⑥ 문제점·개선조치</span><small>부적합·기한경과·후속조치</small></button><button data-key="master"><span class="navTop"><span class="navIcon">⚙</span>⑦ 기준정보</span><small>팀·목표·유형·판정기준</small></button>`;
 function css(){
   document.getElementById(STYLE_ID)?.remove();
   const s=document.createElement('style');
@@ -66,6 +50,31 @@ function go(key){
     document.getElementById('openMaster')?.click();
   }
 }
+function ensureNav(){
+  let nav=document.querySelector('.beginnerNav');
+  if(!nav){
+    nav=document.createElement('nav');
+    nav.className='beginnerNav';
+    nav.setAttribute('aria-label','5S 통합관리 메뉴');
+    nav.innerHTML=FALLBACK_HTML;
+    document.querySelector('.top')?.insertAdjacentElement('afterend',nav);
+  }
+  const wp=nav.querySelector('[data-key="workplace"]');
+  const au=nav.querySelector('[data-key="audit"]');
+  if(wp&&!wp.querySelector('.badge'))wp.insertAdjacentHTML('beforeend','<span class="badge zero">0</span>');
+  if(au&&!au.querySelector('.badge'))au.insertAdjacentHTML('beforeend','<span class="badge zero">0</span>');
+  nav.dataset.controller='canonical-static-v1';
+  return nav;
+}
+function ensureHint(nav){
+  let hint=document.querySelector('.beginnerHint');
+  if(!hint){
+    hint=document.createElement('div');
+    hint.className='beginnerHint';
+    hint.innerHTML='<b>통합 업무 메뉴</b> · 최초 접속은 종합 대시보드이며 성과전환 분석은 별도 화면으로 운영합니다.';
+    nav.insertAdjacentElement('afterend',hint);
+  }
+}
 function updateBadges(){
   const nav=document.querySelector('.beginnerNav');
   if(!nav)return;
@@ -81,27 +90,20 @@ function updateBadges(){
   set('workplace',snap?.candidates?.length||0);
   set('audit',follow?.due?.length||0);
 }
+function bind(nav){
+  nav.querySelectorAll('button[data-key]').forEach(btn=>{
+    btn.onclick=()=>{
+      nav.querySelectorAll('button[data-key]').forEach(b=>b.classList.toggle('active',b===btn));
+      go(btn.dataset.key);
+    };
+  });
+}
 function init(){
   css();
   hideDuplicates();
-  document.querySelector('.beginnerNav')?.remove();
-  document.querySelector('.beginnerHint')?.remove();
-
-  const nav=document.createElement('nav');
-  nav.className='beginnerNav';
-  nav.setAttribute('aria-label','5S 통합관리 메뉴');
-  nav.innerHTML=`<button class="active" data-key="dashboard"><span class="navTop"><span class="navIcon">▦</span>① 대시보드</span><small>전체 현황·성과 한눈에 보기</small></button><button data-key="conversion"><span class="navTop"><span class="navIcon">↗</span>② 성과전환 분석</span><small>활동→후보→확정→유지 분석</small></button><button data-key="activity"><span class="navTop"><span class="navIcon">✓</span>③ 5S 활동관리</span><small>6개 유형 활동·월별 추이</small></button><button data-key="workplace"><span class="navTop"><span class="navIcon">◆</span>④ 고도화 작업장</span><small>후보·판정·확정·유지 관리</small><span class="badge zero">0</span></button><button data-key="audit"><span class="navTop"><span class="navIcon">◎</span>⑤ Audit 관리</span><small>1·3·6개월 점검·유지 확인</small><span class="badge zero">0</span></button><button data-key="action"><span class="navTop"><span class="navIcon">!</span>⑥ 문제점·개선조치</span><small>부적합·기한경과·후속조치</small></button><button data-key="master"><span class="navTop"><span class="navIcon">⚙</span>⑦ 기준정보</span><small>팀·목표·유형·판정기준</small></button>`;
-  document.querySelector('.top')?.insertAdjacentElement('afterend',nav);
-
-  const hint=document.createElement('div');
-  hint.className='beginnerHint';
-  hint.innerHTML='<b>통합 업무 메뉴</b> · 최초 접속은 종합 대시보드이며 성과전환 분석은 별도 화면으로 운영합니다.';
-  nav.insertAdjacentElement('afterend',hint);
-
-  nav.querySelectorAll('button').forEach(btn=>btn.onclick=()=>{
-    nav.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b===btn));
-    go(btn.dataset.key);
-  });
+  const nav=ensureNav();
+  ensureHint(nav);
+  bind(nav);
   updateBadges();
   hideDuplicates();
 }
