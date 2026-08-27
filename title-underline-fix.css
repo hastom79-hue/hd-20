@@ -1,3 +1,11 @@
+/* Emergency render fallback: never hide the whole application while JS initializes */
+html body,
+html:not(.hd20-ready) body,
+html.hd20-ready body{
+  visibility:visible!important;
+  opacity:1!important;
+}
+
 /* Remove accidental underline/accent artifacts from the main title */
 body:not(.navModeActivity) .top .title,
 body:not(.navModeActivity) .top .title h1{
