@@ -1,13 +1,8 @@
-(()=>{const KEY='hd20ActionCasesV2';const demo=[
-{id:'IMP-20260826-001',date:'2026-08-26',team:'대형메인팀',workplace:'대형 Main 조립 2라인',leader:'팀장G',email:'teamlead7@example.com',problem:'부품 적치구역의 정위치 표시가 불명확하고 차종별 자재가 혼재되어 작업자가 부품을 찾는 시간이 반복 발생함.',due:'2026-08-29',status:'조치대기',created:'2026-08-26T08:15:00+09:00'},
-{id:'IMP-20260826-002',date:'2026-08-26',team:'Boom제작팀',workplace:'Boom 용접 작업장 A구역',leader:'팀장N',email:'teamlead14@example.com',problem:'용접 치구 주변 케이블 및 공구의 정리·정돈 상태가 미흡하여 이동동선 간섭과 안전 위험이 확인됨.',due:'2026-08-28',status:'진행',created:'2026-08-26T08:32:00+09:00'},
-{id:'IMP-20260825-003',date:'2026-08-25',team:'프레임제작팀',workplace:'Frame 제작 자재대기구역',leader:'팀장M',email:'teamlead13@example.com',problem:'자재 대기구역 최대·최소 수량 기준과 품목 식별표가 일부 누락되어 과다재고 및 오투입 위험이 있음.',due:'2026-08-27',status:'조치대기',created:'2026-08-25T14:10:00+09:00'},
-{id:'IMP-20260825-004',date:'2026-08-25',team:'휠로더Front팀',workplace:'Wheel Loader Front 조립라인',leader:'팀장I',email:'teamlead9@example.com',problem:'작업대 상부 공구 형적관리와 사용 후 복귀 기준이 불명확하여 공구 탐색 및 분실 가능성이 확인됨.',due:'2026-08-27',status:'완료',action:'공구별 형적판과 라벨을 적용하고 작업 종료 시 체크리스트 확인 절차를 표준화함.',doneDate:'2026-08-26',created:'2026-08-25T10:20:00+09:00'},
-{id:'IMP-20260824-005',date:'2026-08-24',team:'중형Att팀',workplace:'중형 Attachment 조립구역',leader:'팀장E',email:'teamlead5@example.com',problem:'완성품 및 빈 대차의 통로 침범으로 물류 이동동선이 좁아지고 작업자 보행구역과 간섭이 발생함.',due:'2026-08-30',status:'진행',created:'2026-08-24T16:05:00+09:00'},
-{id:'IMP-20260824-006',date:'2026-08-24',team:'중형상부1팀',workplace:'중형 상부조립 체결공정',leader:'팀장A',email:'teamlead1@example.com',problem:'체결부품 보관함의 품번·정량 표시가 작업자 시선 위치와 맞지 않아 확인 동작과 이동이 반복됨.',due:'2026-08-31',status:'조치대기',created:'2026-08-24T09:45:00+09:00'},
-{id:'IMP-20260823-007',date:'2026-08-23',team:'대형상부팀',workplace:'대형 상부조립 Sub Line',leader:'팀장F',email:'teamlead6@example.com',problem:'공용 소모품의 정량 기준이 없고 보충 시점이 작업자 경험에 의존하여 결품 가능성이 있음.',due:'2026-08-28',status:'완료',action:'2-bin 방식과 최소재고 표시선을 적용하고 물류 보충주기를 재설정함.',doneDate:'2026-08-25',created:'2026-08-23T11:30:00+09:00'},
-{id:'IMP-20260822-008',date:'2026-08-22',team:'휠로더리어팀',workplace:'Wheel Loader Rear 조립구역',leader:'팀장K',email:'teamlead11@example.com',problem:'청소도구 보관 위치가 공정별로 분산되어 있으며 담당구역 표시가 없어 청소 표준 준수 여부 확인이 어려움.',due:'2026-08-26',status:'기한임박',created:'2026-08-22T13:15:00+09:00'}];
-function seed(){try{const cur=JSON.parse(localStorage.getItem(KEY)||'[]');if(!Array.isArray(cur)||cur.length===0){localStorage.setItem(KEY,JSON.stringify(demo));return true}}catch(e){localStorage.setItem(KEY,JSON.stringify(demo));return true}return false}
-const changed=seed();if(changed){setTimeout(()=>{const b=document.querySelector('[data-nav="action"]');if(b&&b.classList.contains('active')) b.click();},350)}
-window.HD20_DEMO_ACTIONS=demo;
+(()=>{'use strict';
+/* Production guard: demo action rows must never be injected into the canonical
+ * hd20ActionCasesV2 store. Existing user/operational rows are preserved.
+ * Demo fixtures remain intentionally unavailable to KPI, lead-time and Grid totals.
+ */
+window.HD20_DEMO_ACTIONS=[];
+window.HD20_ACTION_DEMO_SEED_DISABLED=true;
 })();
