@@ -1,0 +1,45 @@
+/* HD-20 mobile/runtime recovery layer — 2026-08-28 */
+.gmesNav{display:none!important}
+@media(max-width:700px){
+  html,body{max-width:100%;overflow-x:hidden}
+  .app{width:100%;padding:10px 10px 22px!important}
+  .top{display:block!important;margin:0 0 10px!important;padding:15px 14px!important;border-radius:14px!important}
+  .title h1{font-size:24px!important;line-height:1.18!important;letter-spacing:-.7px!important;margin:0 0 14px!important;word-break:keep-all!important}
+  .controls{display:grid!important;grid-template-columns:1.35fr .85fr!important;gap:7px!important;width:100%!important}
+  .controls select,.controls button{width:100%!important;min-width:0!important;height:42px!important;padding:0 9px!important;font-size:12px!important;white-space:nowrap!important}
+  .controls .apply{grid-column:auto!important}
+  .beginnerNav{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important;padding:6px!important;margin:8px 0 9px!important;border-radius:12px!important}
+  .beginnerNav button{min-height:52px!important;padding:8px 7px!important;overflow:hidden!important}
+  .beginnerNav .navTop{font-size:10.5px!important;white-space:normal!important;line-height:1.15!important}
+  .beginnerNav small{font-size:8px!important;line-height:1.2!important}
+  .beginnerHint{font-size:9px!important;padding:7px 8px!important}
+  .hd20ALKpis{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important}
+  .hd20ALKpi{min-height:108px!important;padding:11px 11px!important}
+  .hd20ALKpi .kIcon{width:29px!important;height:29px!important;margin-bottom:6px!important}
+  .hd20ALKpi small{font-size:10px!important;line-height:1.25!important}
+  .hd20ALKpi strong{font-size:22px!important}
+  .hd20ALKpi .spark{left:11px!important;right:11px!important;bottom:9px!important}
+  .hd20ALMetrics{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important}
+  .hd20ALMetric{padding:10px!important}
+  .hd20ALMetric b{font-size:9.5px!important}
+  .hd20ALMetric strong{font-size:19px!important}
+  .hd20ALGrid,.hd20ALBottom{grid-template-columns:1fr!important;gap:8px!important}
+  .hd20Criterion{grid-template-columns:34px 1fr!important}
+  .hd20Criterion button{grid-column:2!important;justify-self:start!important}
+  .hd20RecentRow,.hd20DueRow{grid-template-columns:1fr 1fr!important;gap:5px!important}
+  .hd20LevelMap{min-width:560px!important}
+  .hd20ALPanel:has(.hd20LevelMap){overflow-x:auto!important}
+  .awHero{padding:13px!important}
+  .awHero h2{font-size:18px!important}
+  .awFlow,.awKpis,.awAuditLane{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .awGrid,.awSplit,.awCriteria{grid-template-columns:1fr!important}
+  .awBody{overflow-x:auto!important;padding:10px!important}
+  .awTable{min-width:680px!important}
+  .modalBox{width:94vw!important;max-height:88vh!important;overflow:auto!important}
+}
+@media(max-width:390px){
+  .title h1{font-size:22px!important}
+  .controls{grid-template-columns:1fr 1fr!important}
+  .controls select:first-child{grid-column:1/-1!important}
+  .hd20ALKpis,.hd20ALMetrics{grid-template-columns:1fr 1fr!important}
+}
