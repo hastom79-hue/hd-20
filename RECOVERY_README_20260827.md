@@ -1,0 +1,1 @@
+Temporary checkpoint before restoring the accumulated HD-20 implementation and the approved dashboard landing structure. This file marks the pre-recovery main state only.
