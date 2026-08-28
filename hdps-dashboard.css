@@ -147,6 +147,24 @@ body{margin:0;background:var(--hp-bg);color:var(--hp-ink);font-family:Arial,"Not
 
 .hpEmpty{color:var(--hp-muted);font-size:11px;text-align:center;padding:14px}
 
+/* Raw-data grid popup (mirrors index.html's rgModal pattern) */
+.hpGridModal{position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(12,34,51,.4);backdrop-filter:blur(2px)}
+.hpGridModal.on{display:flex}
+.hpGridBox{width:min(1100px,96vw);max-height:88vh;display:flex;flex-direction:column;overflow:hidden;border-radius:16px;background:#fff;box-shadow:0 30px 80px rgba(8,30,49,.3)}
+.hpGridHead{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:16px 20px;background:linear-gradient(90deg,#12324d,#1a4d78);color:#fff}
+.hpGridHead b{font-size:16px}
+.hpGridHead button{border:0;background:#ffffff26;color:#fff;border-radius:8px;width:32px;height:32px;font-size:18px;cursor:pointer}
+.hpGridBody{overflow:auto;padding:16px 20px}
+.hpGridNote{margin:0 0 10px;padding:8px 10px;border:1px solid var(--hp-line);border-radius:8px;background:#f7fbfd;color:var(--hp-muted);font-size:10.5px}
+.hpGridTools{display:flex;align-items:center;margin-bottom:10px}
+.hpGridTools span{margin-right:auto;font-size:11px;color:var(--hp-muted)}
+.hpGridTools button{border:1px solid var(--hp-line);border-radius:8px;background:#fff;padding:7px 11px;font-size:11px;font-weight:900;color:var(--hp-blue);cursor:pointer}
+.hpGridTable{width:100%;border-collapse:collapse;font-size:12px}
+.hpGridTable th{text-align:left;padding:9px;background:#f4f7fb;color:var(--hp-muted);font-weight:900}
+.hpGridTable td{padding:9px;border-top:1px solid var(--hp-line)}
+.hpGridEmpty{padding:24px;text-align:center;color:var(--hp-muted)}
+[data-hp-grid]{cursor:pointer}
+
 /* Footer */
 .hpFooter{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:14px;padding:12px 15px;color:var(--hp-muted);font-size:10.5px}
 

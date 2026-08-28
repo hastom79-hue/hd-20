@@ -17,6 +17,7 @@ const ACTION_KEY='hd20ActionCasesV2';
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
 const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const pick=(x,keys)=>{for(const k of keys){if(x?.[k]!==undefined&&x[k]!==null&&x[k]!=='')return x[k]}return null};
+const dateOnly=(x,keys)=>{const v=pick(x,keys);return v?String(v).slice(0,10):null};
 const asDate=v=>{if(!v)return null;const d=new Date(v);return Number.isNaN(d.getTime())?null:d};
 const daysBetween=(a,b)=>{a=asDate(a);b=asDate(b);return a&&b?Math.max(0,Math.round((b-a)/86400000)):null};
 const levelOf=x=>{const v=String(x?.level||x?.maturityLevel||x?.lv||'').match(/[1-5]/);return v?+v[0]:null};
@@ -57,6 +58,23 @@ function operational(s){
 
 function fmt(v,unit){return v===null||v===undefined?'—':`${v}${unit||''}`}
 
+/* ---- Raw-data grid popup: every clickable card/row on this dashboard
+ * opens this with the underlying rows, per explicit instruction that
+ * everything selectable should reveal raw data, not just a number. */
+function gridOpen(title,headers,rows2d,note){
+  const m=$('#hpGridModal');if(!m)return;
+  $('#hpGridTitle').textContent=title+' · 상세 Grid';
+  $('#hpGridBody').innerHTML=`<div class="hpGridNote">${esc(note||'')} · GMES 업로드/판정 원천이력 기준</div><div class="hpGridTools"><span>총 ${rows2d.length}건</span><button type="button" id="hpGridExport">⇩ Raw Data 추출</button></div>${rows2d.length?`<table class="hpGridTable"><thead><tr>${headers.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${rows2d.map(r=>`<tr>${r.map((v,i)=>`<td>${i===0?'<b>'+esc(v)+'</b>':esc(v)}</td>`).join('')}</tr>`).join('')}</tbody></table>`:'<div class="hpGridEmpty">현재 원천데이터에 해당 실적이 없습니다.</div>'}`;
+  $('#hpGridExport')?.addEventListener('click',()=>csvDownload(title.replace(/[^0-9A-Za-z가-힣]/g,'_')+'.csv',[headers,...rows2d]));
+  m.classList.add('on');
+}
+function gridClose(){$('#hpGridModal')?.classList.remove('on')}
+function wireGridModal(){
+  $('#hpGridClose')?.addEventListener('click',gridClose);
+  $('#hpGridModal')?.addEventListener('click',e=>{if(e.target.id==='hpGridModal')gridClose()});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')gridClose()});
+}
+
 function renderKpis(s){
   const m=operational(s);
   const cards=[
@@ -67,17 +85,34 @@ function renderKpis(s){
     {label:'Audit 부적합 재발률',val:fmt(m.recurrence,'%'),color:'#ff8a80'},
     {label:'기한 내 개선조치 완료율',val:fmt(m.actionOnTime,'%'),color:'#6bb0ff'}
   ];
-  $('#hpKpis').innerHTML=cards.map(c=>`<div class="hpKpi"><small>${c.label}</small><b style="color:${c.color}">${c.val}</b><span class="hpSub">실데이터 미연결 시 — 표시 · 전월대비 비교는 이력 축적 후 제공</span></div>`).join('');
+  $('#hpKpis').innerHTML=cards.map(c=>`<div class="hpKpi" data-hp-grid="kpi" tabindex="0" role="button"><small>${c.label}</small><b style="color:${c.color}">${c.val}</b><span class="hpSub">실데이터 미연결 시 — 표시 · 전월대비 비교는 이력 축적 후 제공</span></div>`).join('');
+  const act=actions();
+  const kpiHandlers=[
+    ()=>{const scope=(s.rows||[]).filter(x=>x.candidate===true||x.isCandidate===true||String(x.judgeState||'').trim());gridOpen('공식 판정 완료율',['생산팀','작업장/사례','현장 등록일','판정상태','판정일','판정자'],scope.map(x=>[x.team||'-',x.workplace||x.title||'-',dateOnly(x,['date','regDate','createdAt'])||'-',x.judgeState||'판정대기',dateOnly(x,['judgedAt','judgeDate','confirmedAt'])||'-',x.judgeOwner||'-']),'판정대상 전체 원천 기준')},
+    ()=>{const judged=(s.rows||[]).filter(x=>['확정','보완요청','미확정'].includes(String(x.judgeState||'').trim())&&pick(x,['judgedAt','judgeDate','confirmedAt']));gridOpen('평균 판정 Lead Time',['생산팀','작업장/사례','등록일','판정일','Lead Time(일)'],judged.map(x=>{const regd=dateOnly(x,['createdAt','regDate','date','importedAt']),jd=dateOnly(x,['judgedAt','judgeDate','confirmedAt']);return[x.team||'-',x.workplace||x.title||'-',regd||'-',jd||'-',regd&&jd?daysBetween(regd,jd):'—']}),'등록일→판정완료일 소요일 개별 사례')},
+    ()=>{const confirmed=(s.confirmed||[]).filter(x=>levelOf(x));gridOpen('고도화 수준',['생산팀','작업장/사례','고도화 Level','판정일'],confirmed.map(x=>[x.team||'-',x.workplace||x.title||'-','Lv.'+levelOf(x),dateOnly(x,['judgedAt','judgeDate','confirmedAt'])||'-']),'공식확정 사례 중 Level 부여 건')},
+    ()=>{const six=(s.confirmed||[]).filter(x=>pick(x,['audit6Result','audit6mResult','sixMonthAuditResult','audit6State','sixMonthState']));gridOpen('6개월 유지율',['생산팀','작업장/사례','판정일','6개월 Audit 결과'],six.map(x=>[x.team||'-',x.workplace||x.title||'-',dateOnly(x,['judgedAt','judgeDate','confirmedAt'])||'-',pick(x,['audit6Result','audit6mResult','sixMonthAuditResult','audit6State','sixMonthState'])||'-']),'6개월 Audit 결과가 있는 확정 사례')},
+    ()=>{const rec=act.filter(x=>pick(x,['recurrence','recurrent','recurrenceState','재발여부'])!==null);gridOpen('Audit 부적합 재발률',['생산팀','작업장','재발여부','등록일'],rec.map(x=>[x.team||'-',x.workplace||'-',pick(x,['recurrence','recurrent','recurrenceState','재발여부'])||'-',x.date||x.startDate||'-']),'재발여부가 기록된 개선조치 건')},
+    ()=>{const done=act.filter(x=>pick(x,['doneDate','completedDate','finishDate'])&&pick(x,['targetDate','due','dueDate']));gridOpen('기한 내 개선조치 완료율',['생산팀','작업장','목표기한','완료일','기한준수'],done.map(x=>{const d=pick(x,['doneDate','completedDate','finishDate']),due=pick(x,['targetDate','due','dueDate']);return[x.team||'-',x.workplace||'-',due||'-',d||'-',(d&&due&&new Date(d)<=new Date(due))?'준수':'지연']}),'목표기한·완료일이 모두 있는 개선조치 건')}
+  ];
+  $$('#hpKpis .hpKpi').forEach((c,i)=>{c.addEventListener('click',()=>kpiHandlers[i]());c.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();kpiHandlers[i]()}})});
 }
 
 function renderTypes(s){
   const rows=s.activities&&s.activities.length?s.activities:s.rows||[];
   const byType=new Map(CATS.map(c=>[c.key,0]));
-  rows.forEach(x=>{const k=catOf(x);byType.set(k,(byType.get(k)||0)+1)});
+  const rowsByType=new Map(CATS.map(c=>[c.key,[]]));
+  rows.forEach(x=>{const k=catOf(x);byType.set(k,(byType.get(k)||0)+1);rowsByType.get(k).push(x)});
   $('#hpTypes').innerHTML=CATS.map(c=>{
     const n=byType.get(c.key)||0;
-    return `<div class="hpType ${c.cls}"><div class="hpTypeIco">${c.ico}</div><b>${esc(c.key)}</b><span class="hpTypeVal">${n}건</span><span class="hpTypeGoal">목표 미설정</span><div class="hpTypeTrack"><i style="width:0%"></i></div><span class="hpTypeRate">달성률 —</span></div>`;
+    return `<div class="hpType ${c.cls}" data-hp-grid="type" tabindex="0" role="button"><div class="hpTypeIco">${c.ico}</div><b>${esc(c.key)}</b><span class="hpTypeVal">${n}건</span><span class="hpTypeGoal">목표 미설정</span><div class="hpTypeTrack"><i style="width:0%"></i></div><span class="hpTypeRate">달성률 —</span></div>`;
   }).join('');
+  const HEAD=['생산팀','작업장/공정','등록일','판정상태'];
+  $$('#hpTypes .hpType').forEach((c,i)=>{
+    const key=CATS[i].key;
+    const run=()=>{const list=rowsByType.get(key)||[];gridOpen(`5S 활동유형 · ${key}`,HEAD,list.map(x=>[x.team||'-',x.workplace||x.title||'-',dateOnly(x,['date','regDate','createdAt'])||'-',x.judgeState||x.status||'-']),`${key} 유형 활동 전체`)};
+    c.addEventListener('click',run);c.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();run()}})
+  });
 }
 
 function renderMap(s){
@@ -92,15 +127,11 @@ function renderMap(s){
   }
   map.querySelector('.hpMapEmpty')?.remove();
   const byTeamLevel=new Map();
-  confirmed.forEach(x=>{const team=String(x.team||'').trim();const lv=levelOf(x);if(!team||!lv)return;const k=team+'|'+lv;byTeamLevel.set(k,(byTeamLevel.get(k)||0)+1)});
-  const groups=[...byTeamLevel.entries()].map(([k,count])=>{const[team,lv]=k.split('|');return{team,lv:+lv,count}});
+  confirmed.forEach(x=>{const team=String(x.team||'').trim();const lv=levelOf(x);if(!team||!lv)return;const k=team+'|'+lv;if(!byTeamLevel.has(k))byTeamLevel.set(k,{team,lv,count:0,rows:[]});const e=byTeamLevel.get(k);e.count++;e.rows.push(x)});
+  const groups=[...byTeamLevel.values()];
   const maxCount=Math.max(1,...groups.map(g=>g.count));
-  /* Collision avoidance: several teams often land on the same
-   * (count, level) cell, which would stack their labels on top of each
-   * other. Nudge x within the same level row until it clears prior dots
-   * placed at that level, matching the pattern used by
-   * integrated-performance-map.js's ipDot placement. */
   const placedByLevel=new Map();
+  const HEAD=['생산팀','작업장/사례','판정일','판정자'];
   groups.sort((a,b)=>b.count-a.count).forEach(g=>{
     let x=6+Math.min(92,(g.count/maxCount)*86);
     const y=6+((g.lv-1)/4)*88;
@@ -112,42 +143,68 @@ function renderMap(s){
     dot.className='hpMapDot';
     dot.style.left=x+'%';dot.style.bottom=y+'%';
     dot.title=`${g.team} · Lv.${g.lv} · 확정 ${g.count}건`;
+    dot.tabIndex=0;dot.setAttribute('role','button');
     dot.innerHTML=`<span>${esc(g.team)}</span>`;
+    dot.addEventListener('click',()=>gridOpen(`${g.team} · Lv.${g.lv}`,HEAD,g.rows.map(x=>[x.team||'-',x.workplace||x.title||'-',dateOnly(x,['judgedAt','judgeDate','confirmedAt'])||'-',x.judgeOwner||'-']),`${g.team} · Level ${g.lv} 공식확정 사례`));
     map.appendChild(dot);
   });
 }
 
 function renderDist(s){
   const confirmed=s.confirmed||[];
-  const byLevel=new Map([5,4,3,2,1].map(n=>[n,{teams:new Set(),count:0}]));
-  confirmed.forEach(x=>{const lv=levelOf(x);if(!lv||!byLevel.has(lv))return;const e=byLevel.get(lv);e.count++;if(x.team)e.teams.add(x.team)});
+  const byLevel=new Map([5,4,3,2,1].map(n=>[n,{teams:new Set(),count:0,rows:[]}]));
+  confirmed.forEach(x=>{const lv=levelOf(x);if(!lv||!byLevel.has(lv))return;const e=byLevel.get(lv);e.count++;e.rows.push(x);if(x.team)e.teams.add(x.team)});
   const total=confirmed.length;
-  const rows=[5,4,3,2,1].map(lv=>{const e=byLevel.get(lv);return{lv,teams:e.teams.size,count:e.count,pct:total?Math.round(e.count/total*1000)/10:0}});
+  const rows=[5,4,3,2,1].map(lv=>{const e=byLevel.get(lv);return{lv,teams:e.teams.size,count:e.count,pct:total?Math.round(e.count/total*1000)/10:0,rows:e.rows}});
   const allTeams=new Set(confirmed.map(x=>x.team).filter(Boolean));
   $('#hpDistBody').innerHTML=[
-    ...rows.map(r=>`<tr><td>Lv.${r.lv}</td><td>${r.teams||'—'}</td><td>${r.count||'—'}</td><td>${total?r.pct+'%':'—'}</td></tr>`),
+    ...rows.map(r=>`<tr data-hp-grid="dist" data-lv="${r.lv}"><td>Lv.${r.lv}</td><td>${r.teams||'—'}</td><td>${r.count||'—'}</td><td>${total?r.pct+'%':'—'}</td></tr>`),
     `<tr class="hpDistSum"><td>합계</td><td>${allTeams.size||'—'}</td><td>${total||'—'}</td><td>${total?'100%':'—'}</td></tr>`
   ].join('');
+  const HEAD=['생산팀','작업장/사례','판정일','판정자'];
+  $$('#hpDistBody tr[data-hp-grid]').forEach((tr,i)=>{
+    tr.style.cursor='pointer';
+    const r=rows[i];
+    tr.addEventListener('click',()=>gridOpen(`5S 고도화 수준 Lv.${r.lv}`,HEAD,r.rows.map(x=>[x.team||'-',x.workplace||x.title||'-',dateOnly(x,['judgedAt','judgeDate','confirmedAt'])||'-',x.judgeOwner||'-']),`Level ${r.lv} 공식확정 사례`));
+  });
 }
 
 function renderActionSummary(){
   const f=window.HD20MaturityFollowup?.summary?.();
   const act=actions();
-  const notDone=act.filter(x=>String(x.status||'')!=='완료').length;
+  const notDoneList=act.filter(x=>String(x.status||'')!=='완료');
   $('#hpActionAsOf').textContent=`기준일 : ${new Date().toISOString().slice(0,10)}`;
   const rows=[
-    {label:'1개월 점검 대상',n:f?.one?.length,due:f?.one?.filter(x=>x.state==='기한임박').length,over:f?.one?.filter(x=>x.state==='경과').length},
-    {label:'3개월 Audit 대상',n:f?.three?.length,due:f?.three?.filter(x=>x.state==='기한임박').length,over:f?.three?.filter(x=>x.state==='경과').length},
-    {label:'6개월 Audit 대상',n:f?.six?.length,due:f?.six?.filter(x=>x.state==='기한임박').length,over:f?.six?.filter(x=>x.state==='경과').length},
-    {label:'개선조치 미완료',n:notDone,due:null,over:null}
+    {label:'1개월 점검 대상',n:f?.one?.length,due:f?.one?.filter(x=>x.state==='기한임박').length,over:f?.one?.filter(x=>x.state==='경과').length,list:f?.one},
+    {label:'3개월 Audit 대상',n:f?.three?.length,due:f?.three?.filter(x=>x.state==='기한임박').length,over:f?.three?.filter(x=>x.state==='경과').length,list:f?.three},
+    {label:'6개월 Audit 대상',n:f?.six?.length,due:f?.six?.filter(x=>x.state==='기한임박').length,over:f?.six?.filter(x=>x.state==='경과').length,list:f?.six},
+    {label:'개선조치 미완료',n:notDoneList.length,due:null,over:null,list:null}
   ];
-  $('#hpActionRows').innerHTML=rows.map(r=>`<div class="hpActionRow"><span>${esc(r.label)}</span><span><b>${r.n==null?'—':r.n+'건'}</b>${r.due?`<span class="hpBadge due">기한임박 ${r.due}</span>`:''}${r.over?`<span class="hpBadge over">경과 ${r.over}</span>`:''}</span></div>`).join('');
+  $('#hpActionRows').innerHTML=rows.map((r,i)=>`<div class="hpActionRow" data-hp-grid="action" data-i="${i}"><span>${esc(r.label)}</span><span><b>${r.n==null?'—':r.n+'건'}</b>${r.due?`<span class="hpBadge due">기한임박 ${r.due}</span>`:''}${r.over?`<span class="hpBadge over">경과 ${r.over}</span>`:''}</span></div>`).join('');
+  $$('#hpActionRows .hpActionRow').forEach((el,i)=>{
+    el.style.cursor='pointer';
+    el.addEventListener('click',()=>{
+      const r=rows[i];
+      if(r.list){gridOpen(r.label,['생산팀','작업장/사례','후속단계','기준일','D-day','상태'],r.list.map(x=>[x.team||'-',x.workplace||x.title||'-',x.label||'-',x.date instanceof Date?x.date.toISOString().slice(0,10):(x.date||'-'),x.diff>=0?'D-'+x.diff:'D+'+Math.abs(x.diff),x.state||'-']),`${r.label} Lifecycle 원천`)}
+      else{gridOpen(r.label,['생산팀','작업장','문제점','기한','상태'],notDoneList.map(x=>[x.team||'-',x.workplace||'-',x.problem||'-',x.due||x.targetDate||'-',x.status||'-']),'완료 상태가 아닌 개선조치 전체')}
+    });
+  });
 }
 
 function renderSideStats(s){
   const rawTotal=(s.candidates?.length||0)+(s.confirmed?.length||0)+(s.maintained?.length||0);
   $('#hpRawTotal').textContent=rawTotal?`전체 ${rawTotal}건`:'—';
   $('#hpGmesTotal').textContent=s.confirmed?.length?`전체 ${s.confirmed.length}건`:'—';
+  const HEAD=['구분','생산팀','작업장/사례','유형','판정상태'];
+  $('#hpRawTotal').closest('.hpSideCard').style.cursor='pointer';
+  $('#hpRawTotal').closest('.hpSideCard').addEventListener('click',()=>{
+    const rows=[...(s.candidates||[]).map(x=>['후보',x]),...(s.confirmed||[]).map(x=>['확정',x]),...(s.maintained||[]).map(x=>['유지',x])];
+    gridOpen('Portfolio Raw Data (후보+확정+유지 전체)',HEAD,rows.map(([label,x])=>[label,x.team||'-',x.workplace||x.title||'-',catOf(x),x.judgeState||'-']),'후보·확정·유지 전체 원천 합산');
+  });
+  $('#hpGmesTotal').closest('.hpSideCard').style.cursor='pointer';
+  $('#hpGmesTotal').closest('.hpSideCard').addEventListener('click',()=>{
+    gridOpen('공식 확정 GMES 사례',['생산팀','작업장/사례','유형','판정일','판정자'],(s.confirmed||[]).map(x=>[x.team||'-',x.workplace||x.title||'-',catOf(x),dateOnly(x,['judgedAt','judgeDate','confirmedAt'])||'-',x.judgeOwner||'-']),'공식확정 전체');
+  });
 }
 
 function renderNotice(){
@@ -204,7 +261,24 @@ function wireNavGuard(){
     if(key==='dashboard'){$$('.hpNav button').forEach(b=>b.classList.toggle('on',b===btn));return}
     if(ROUTES[key]){location.href='index.html?tab='+ROUTES[key];return}
   });
-  $$('[data-hp-detail]').forEach(el=>el.addEventListener('click',e=>{e.preventDefault();alert('상세 Grid는 검토 단계에서 기존 대시보드의 Grid 팝업과 통합 예정입니다.')}));
+  $$('[data-hp-detail]').forEach(el=>el.addEventListener('click',e=>{
+    e.preventDefault();
+    const kind=el.dataset.hpDetail;
+    const s=snap();
+    if(kind==='kpi'){
+      const m=operational(s);
+      gridOpen('HDPS 5S 고도화 운영지표 (KPI) 요약',['지표','값'],[['공식 판정 완료율',fmt(m.judgmentRate,'%')],['평균 판정 Lead Time',fmt(m.avgLead,'일')],['고도화 수준',m.maturity==null?'—':'Lv.'+m.maturity],['6개월 유지율',fmt(m.sixRetention,'%')],['Audit 부적합 재발률',fmt(m.recurrence,'%')],['기한 내 개선조치 완료율',fmt(m.actionOnTime,'%')]],'6개 운영지표 요약');
+      return;
+    }
+    if(kind==='action'){
+      const f=window.HD20MaturityFollowup?.summary?.();
+      const flat=[...(f?.one||[]),...(f?.three||[]),...(f?.six||[])].sort((a,b)=>a.diff-b.diff);
+      gridOpen('Action Summary 전체 (추적점검/개선)',['생산팀','작업장/사례','후속단계','기준일','D-day','상태'],flat.map(x=>[x.team||'-',x.workplace||x.title||'-',x.label||'-',x.date instanceof Date?x.date.toISOString().slice(0,10):(x.date||'-'),x.diff>=0?'D-'+x.diff:'D+'+Math.abs(x.diff),x.state||'-']),'1·3·6개월 Lifecycle 전체');
+      return;
+    }
+    if(kind==='raw'||kind==='gmes')return; // handled by the parent card's own click
+    alert('상세 Grid는 검토 단계에서 기존 대시보드의 Grid 팝업과 통합 예정입니다.');
+  }));
   $('#hpRefresh').onclick=()=>location.reload();
   $('#hpFullscreen').onclick=()=>{if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen?.()};
   $('#hpLogout').onclick=()=>alert('Prototype 단계에서는 별도 로그인/로그아웃 세션이 연결되어 있지 않습니다.');
@@ -226,6 +300,7 @@ function render(){
 }
 
 function boot(){
+  wireGridModal();
   render();
   wireNavGuard();
   wireAi();
