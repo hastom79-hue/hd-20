@@ -137,14 +137,14 @@ function renderMap(s){
     const y=6+((g.lv-1)/4)*88;
     const taken=placedByLevel.get(g.lv)||[];
     let guard=0;
-    while(taken.some(px=>Math.abs(px-x)<9)&&guard<20){x=Math.max(4,Math.min(96,x+ (guard%2?1:-1)*(5+guard)));guard++}
+    while(taken.some(px=>Math.abs(px-x)<7)&&guard<20){x=Math.max(4,Math.min(96,x+ (guard%2?1:-1)*(4+guard)));guard++}
     taken.push(x);placedByLevel.set(g.lv,taken);
     const dot=document.createElement('div');
-    dot.className='hpMapDot';
+    dot.className=`hpMapDot hpMapDot-lv${g.lv}`;
     dot.style.left=x+'%';dot.style.bottom=y+'%';
     dot.title=`${g.team} · Lv.${g.lv} · 확정 ${g.count}건`;
     dot.tabIndex=0;dot.setAttribute('role','button');
-    dot.innerHTML=`<span>${esc(g.team)}</span>`;
+    dot.innerHTML=`<span class="hpMapTip">${esc(g.team)} · Lv.${g.lv} · ${g.count}건</span>`;
     dot.addEventListener('click',()=>gridOpen(`${g.team} · Lv.${g.lv}`,HEAD,g.rows.map(x=>[x.team||'-',x.workplace||x.title||'-',dateOnly(x,['judgedAt','judgeDate','confirmedAt'])||'-',x.judgeOwner||'-']),`${g.team} · Level ${g.lv} 공식확정 사례`));
     map.appendChild(dot);
   });

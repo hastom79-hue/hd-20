@@ -27,8 +27,8 @@
   .hd20Criterion{grid-template-columns:34px 1fr!important}
   .hd20Criterion button{grid-column:2!important;justify-self:start!important}
   .hd20RecentRow,.hd20DueRow{grid-template-columns:1fr 1fr!important;gap:5px!important}
-  .hd20LevelMap{min-width:560px!important}
-  .hd20ALPanel:has(.hd20LevelMap){overflow-x:auto!important}
+  .hd20LevelMap{min-width:0!important;padding:12px!important}
+  .hd20Level{grid-template-columns:44px 1fr 50px!important;gap:7px!important}
   .awHero{padding:13px!important}
   .awHero h2{font-size:18px!important}
   .awFlow,.awKpis,.awAuditLane{grid-template-columns:repeat(2,minmax(0,1fr))!important}

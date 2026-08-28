@@ -103,8 +103,18 @@ body{margin:0;background:var(--hp-bg);color:var(--hp-ink);font-family:Arial,"Not
 .hpMapCol{padding:14px 15px;border-right:1px solid var(--hp-line)}
 .hpDistCol{padding:14px 15px}
 .hpMap{position:relative;height:230px;margin:6px 0 0 34px;border-left:1px solid var(--hp-line);border-bottom:1px solid var(--hp-line)}
-.hpMap .hpMapDot{position:absolute;width:9px;height:9px;border-radius:50%;background:var(--hp-blue);transform:translate(-50%,50%);box-shadow:0 0 0 3px rgba(47,128,237,.15)}
-.hpMap .hpMapDot span{position:absolute;left:50%;bottom:calc(100% + 4px);transform:translateX(-50%);white-space:nowrap;font-size:9px;font-weight:800;color:var(--hp-ink)}
+.hpMap .hpMapDot{position:absolute;width:13px;height:13px;border-radius:50%;transform:translate(-50%,50%);cursor:pointer;z-index:2;border:2px solid #fff;box-shadow:0 1px 4px rgba(20,52,76,.35)}
+.hpMap .hpMapDot:hover,.hpMap .hpMapDot:focus{z-index:5;transform:translate(-50%,50%) scale(1.25)}
+.hpMap .hpMapDot-lv1{background:#aeb8c3}
+.hpMap .hpMapDot-lv2{background:#6d9fe1}
+.hpMap .hpMapDot-lv3{background:#42b3a3}
+.hpMap .hpMapDot-lv4{background:#62bd68}
+.hpMap .hpMapDot-lv5{background:#214d91}
+.hpMap .hpMapTip{position:absolute;left:50%;bottom:calc(100% + 8px);transform:translateX(-50%);white-space:nowrap;background:#12324d;color:#fff;padding:5px 9px;border-radius:7px;font-size:10px;font-weight:800;opacity:0;pointer-events:none;transition:opacity .12s ease;box-shadow:0 6px 16px rgba(8,30,49,.25)}
+.hpMap .hpMapDot:hover .hpMapTip,.hpMap .hpMapDot:focus .hpMapTip{opacity:1}
+.hpMapLegend{display:flex;gap:12px;justify-content:center;margin-top:6px;font-size:9.5px;color:var(--hp-muted);font-weight:800}
+.hpMapLegend span{display:flex;align-items:center;gap:4px}
+.hpMapLegend i{width:9px;height:9px;border-radius:50%;display:inline-block}
 .hpMapYLabels{position:absolute;left:-34px;width:28px;top:0;bottom:0;display:flex;flex-direction:column;justify-content:space-between;font-size:10px;font-weight:900;color:var(--hp-muted);text-align:right}
 .hpMapAxisX{margin-top:6px;text-align:center;font-size:10px;font-weight:900;color:var(--hp-muted)}
 .hpMapEmpty{position:absolute;inset:0;display:grid;place-items:center;color:var(--hp-muted);font-size:11px;text-align:center;padding:20px}

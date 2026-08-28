@@ -60,8 +60,8 @@ function renderLive(host){
  const s=snap(),rows=s.confirmed||[];renderKpis(host);
  const recent=[...rows].sort((a,b)=>new Date(b.judgedAt||0)-new Date(a.judgedAt||0)).slice(0,5),recentBox=$('.hd20Recent',host);
  if(recentBox)recentBox.innerHTML=recent.length?recent.map(x=>`<div class="hd20RecentRow"><span class="badge">${levelOf(x)?'Lv.'+levelOf(x):'확정'}</span><b>${esc(x.workplace||x.title||'미지정')}</b><span>${esc(x.team||'미지정')}</span><span>${dateOnly(x.judgedAt)}</span></div>`).join(''):'<div class="hd20RecentRow"><span>공식확정 데이터 없음</span></div>';
- const levels=[1,2,3,4,5].map(n=>rows.filter(x=>levelOf(x)===n).length),known=levels.reduce((a,b)=>a+b,0);
- $$('.hd20Level',host).forEach((el,i)=>{const strong=$('strong',el),small=$('small',el);if(strong)strong.textContent=known?`${levels[i]}곳`:'—';if(small)small.textContent=known?`${Math.round(levels[i]/known*100)}%`:'—'});
+ const levels=[1,2,3,4,5].map(n=>rows.filter(x=>levelOf(x)===n).length),known=levels.reduce((a,b)=>a+b,0),maxLv=Math.max(1,...levels);
+ $$('.hd20Level',host).forEach((el,i)=>{const strong=$('strong',el),small=$('small',el),fill=$('.hd20LevelFill',el);if(strong)strong.textContent=known?`${levels[i]}곳`:'—';if(small)small.textContent=known?`${Math.round(levels[i]/known*100)}%`:'—';if(fill)fill.style.width=known?`${Math.max(4,Math.round(levels[i]/maxLv*100))}%`:'2%'});
  const sum=window.HD20MaturityFollowup?.summary?.(),due=(sum?.three||[]).filter(x=>x.state==='기한임박').sort((a,b)=>a.diff-b.diff),dueBox=$('.hd20Due',host);
  if(dueBox)dueBox.innerHTML=due.length?due.slice(0,5).map(x=>`<div class="hd20DueRow"><strong>${Math.max(0,x.diff)}일 남음</strong><b>${esc(x.workplace||x.title||'미지정')}</b><span>${esc(x.team||'미지정')}</span><span>${dateOnly(x.date)}</span></div>`).join(''):`<div class="hd20DueRow"><span>${sum?'기한임박 3개월 AUDIT 대상 없음':'Lifecycle 산식 초기화 중'}</span></div>`;
  host.dataset.liveSource=GMES_KEY;host.dataset.liveRows=String(rows.length)
@@ -87,7 +87,7 @@ function build(){
   <div class="hd20Criterion"><div class="ci">♙</div><div><b>인간공학적 Green Zone</b><p>작업자 안전·편의·효율을 고려한 인간공학적 작업공간 구현</p></div><button data-criterion="1">상세 설명</button></div>
   <div class="hd20Criterion"><div class="ci">↗</div><div><b>정량축소·정위치 변경을 통한 공간 활용</b><p>정량 축소 및 정위치 변경을 통해 작업공간을 효율적으로 활용</p></div><button data-criterion="2">상세 설명</button></div>
  </div></article>
- <article class="hd20ALPanel"><h3>5S 고도화 수준 Map <small>(기존 판정 Level 기준)</small></h3><div class="hd20LevelMap">${[['Lv.1','기본'],['Lv.2','관리'],['Lv.3','체계'],['Lv.4','최적'],['Lv.5','선도']].map(x=>`<div class="hd20Level"><div class="lv">${x[0]}</div><div class="name">${x[1]}</div><div class="bar">${x[1]}</div><strong>—</strong><small>—</small></div>`).join('')}</div></article>
+ <article class="hd20ALPanel"><h3>5S 고도화 수준 Map <small>(기존 판정 Level 기준)</small></h3><div class="hd20LevelMap">${[['Lv.1','기본'],['Lv.2','관리'],['Lv.3','체계'],['Lv.4','최적'],['Lv.5','선도']].map(x=>`<div class="hd20Level"><div class="hd20LevelLabel"><b>${x[0]}</b><span>${x[1]}</span></div><div class="hd20LevelTrack"><div class="hd20LevelFill"></div></div><div class="hd20LevelStat"><strong>—</strong><small>—</small></div></div>`).join('')}</div></article>
  <article class="hd20ALPanel"><h3>최근 고도화 작업장 <small>(공식확정)</small></h3><div class="hd20Recent"></div></article></div>
  <div class="hd20ALBottom"><article class="hd20ALPanel"><h3>월별 추이</h3><div class="hd20Trends">${[['orange','고도화 후보 발굴'],['green','고도화 작업장 신규 확보'],['blue','누적 고도화 작업장 확보'],['purple','현재 유지 작업장'],['navy','AUDIT 6개월 유지율']].map(x=>`<div class="hd20Trend ${x[0]}"><b>${x[1]}</b><div class="hd20TrendChart no-data"><span>실제 시계열 데이터 없음</span></div></div>`).join('')}</div></article><article class="hd20ALPanel"><h3>기한임박 점검 대상 <small>(3개월 AUDIT)</small></h3><div class="hd20Due"></div></article></div>
  <div class="hd20ALFooter"><span>※ 데이터 기준 : 시스템 현재 데이터</span><span>울산캠퍼스 5S 활동관리 시스템</span><span>문의 : 생산혁신팀(5S 모듈)</span></div>`;
