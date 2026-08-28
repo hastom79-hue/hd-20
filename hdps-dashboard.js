@@ -78,12 +78,12 @@ function wireGridModal(){
 function renderKpis(s){
   const m=operational(s);
   const cards=[
-    {label:'공식 판정 완료율',val:fmt(m.judgmentRate,'%'),color:'#6bb0ff'},
-    {label:'평균 판정 Lead Time',val:fmt(m.avgLead,'일'),color:'#f2c14e'},
-    {label:'고도화 수준 (클릭)',val:m.maturity==null?'—':`Lv.${m.maturity}`,color:'#4fd07c'},
-    {label:'6개월 유지율',val:fmt(m.sixRetention,'%'),color:'#c79bff'},
-    {label:'Audit 부적합 재발률',val:fmt(m.recurrence,'%'),color:'#ff8a80'},
-    {label:'기한 내 개선조치 완료율',val:fmt(m.actionOnTime,'%'),color:'#6bb0ff'}
+    {label:'공식 판정 완료율',val:fmt(m.judgmentRate,'%'),color:'#2f80ed'},
+    {label:'평균 판정 Lead Time',val:fmt(m.avgLead,'일'),color:'#cf8618'},
+    {label:'고도화 수준 (클릭)',val:m.maturity==null?'—':`Lv.${m.maturity}`,color:'#27ae60'},
+    {label:'6개월 유지율',val:fmt(m.sixRetention,'%'),color:'#7a5af8'},
+    {label:'Audit 부적합 재발률',val:fmt(m.recurrence,'%'),color:'#e45757'},
+    {label:'기한 내 개선조치 완료율',val:fmt(m.actionOnTime,'%'),color:'#2f80ed'}
   ];
   $('#hpKpis').innerHTML=cards.map(c=>`<div class="hpKpi" data-hp-grid="kpi" tabindex="0" role="button"><small>${c.label}</small><b style="color:${c.color}">${c.val}</b><span class="hpSub">실데이터 미연결 시 — 표시 · 전월대비 비교는 이력 축적 후 제공</span></div>`).join('');
   const act=actions();
