@@ -29,6 +29,11 @@
   .hd20RecentRow,.hd20DueRow{grid-template-columns:1fr 1fr!important;gap:5px!important}
   .hd20LevelMap{min-width:0!important;padding:12px!important}
   .hd20Level{grid-template-columns:44px 1fr 50px!important;gap:7px!important}
+  /* The AI chat FAB sits fixed bottom-right at all scroll positions, which
+   * collides with the notice bar's right-aligned '더보기' button on first
+   * mobile load. Move it to the opposite corner on narrow viewports only. */
+  .hd20AiFab{left:12px!important;right:auto!important}
+  .hd20AiPanel{left:10px!important;right:auto!important}
   .awHero{padding:13px!important}
   .awHero h2{font-size:18px!important}
   .awFlow,.awKpis,.awAuditLane{grid-template-columns:repeat(2,minmax(0,1fr))!important}
