@@ -190,4 +190,12 @@ body{margin:0;background:var(--hp-bg);color:var(--hp-ink);font-family:Arial,"Not
 @media(max-width:640px){
   .hpKpis,.hpTypes{grid-template-columns:repeat(2,1fr)}
   .hpNav{grid-template-columns:repeat(2,1fr)}
+  .hpHeader{flex-direction:column;align-items:flex-start;gap:10px}
+  .hpUser{flex-wrap:wrap;width:100%;gap:8px 10px}
+  .hpUser .hpDivider{display:none}
+  .hpUser #hpTeamLabel,.hpUser #hpCampus{display:none}
+  .hpBrand span{font-size:14px}
+  .hpSectionHead{flex-direction:column;align-items:flex-start;gap:8px}
+  .hpSectionTools{flex-wrap:wrap;width:100%}
+  .hpSectionTools .hpMore{white-space:nowrap}
 }
