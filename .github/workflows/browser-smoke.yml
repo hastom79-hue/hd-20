@@ -1,0 +1,86 @@
+name: HD20 browser smoke
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  chromium-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Playwright Chromium
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Start local web server
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 > /tmp/hd20-http.log 2>&1 &
+          echo $! > /tmp/hd20-http.pid
+          for i in {1..30}; do
+            curl -fsS http://127.0.0.1:4173/index.html >/dev/null && exit 0
+            sleep 1
+          done
+          cat /tmp/hd20-http.log
+          exit 1
+
+      - name: Execute real-browser contract
+        run: |
+          cat > /tmp/hd20-browser-smoke.cjs <<'NODE'
+          const { chromium } = require('playwright');
+          (async()=>{
+            const browser = await chromium.launch({headless:true});
+            const page = await browser.newPage({viewport:{width:1440,height:1000}});
+            const errors=[];
+            page.on('pageerror', e=>errors.push(String(e)));
+            page.on('console', msg=>{ if(msg.type()==='error') errors.push('console: '+msg.text()); });
+            await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'networkidle'});
+            await page.waitForSelector('.beginnerNav');
+            await page.waitForSelector('.hd20ApprovedLanding');
+            const navCount=await page.locator('.beginnerNav button[data-key]').count();
+            if(navCount!==7) throw new Error(`Expected 7 nav buttons, got ${navCount}`);
+            if(!(await page.locator('.hd20ApprovedLanding').isVisible())) throw new Error('Approved dashboard is not visible');
+            const kpiCount=await page.locator('.hd20ALKpi').count();
+            if(kpiCount!==5) throw new Error(`Expected 5 KPI cards, got ${kpiCount}`);
+            const metricCount=await page.locator('.hd20ALMetric').count();
+            if(metricCount!==6) throw new Error(`Expected 6 operating metrics, got ${metricCount}`);
+            const heading=await page.locator('.hd20ALPanel h3').first().innerText();
+            if(!heading.includes('판정기준') || heading.includes('인정기준')) throw new Error(`Terminology mismatch: ${heading}`);
+
+            const targets={conversion:'performanceConversionAnalysis',activity:'awActivity',workplace:'awWorkplace',audit:'awAudit',action:'awAction',master:'awRegister'};
+            for(const [key,id] of Object.entries(targets)){
+              await page.locator(`.beginnerNav button[data-key="${key}"]`).click();
+              await page.waitForTimeout(100);
+              const el=page.locator('#'+id);
+              if(await el.count()!==1) throw new Error(`${key}: missing #${id}`);
+              if(!(await el.isVisible())) throw new Error(`${key}: #${id} not visible after click`);
+              if(!(await page.locator('.app').evaluate(el=>el.classList.contains('awFocused')))) throw new Error(`${key}: app missing awFocused`);
+            }
+
+            await page.locator('.beginnerNav button[data-key="dashboard"]').click();
+            await page.waitForTimeout(100);
+            if(!(await page.locator('.hd20ApprovedLanding').isVisible())) throw new Error('Dashboard did not return to approved landing');
+            if(await page.locator('.app').evaluate(el=>el.classList.contains('awFocused'))) throw new Error('Dashboard left app in awFocused state');
+
+            const audit=await page.evaluate(()=>window.HD20_APPROVED_LANDING_AUDIT||null);
+            if(!audit || audit.valid!==true) throw new Error('Approved landing self-audit failed: '+JSON.stringify(audit));
+            if(errors.length) throw new Error('Browser errors: '+errors.join(' | '));
+            console.log('HD20 browser smoke OK', {navCount,kpiCount,metricCount,audit});
+            await browser.close();
+          })().catch(err=>{console.error(err);process.exit(1)});
+          NODE
+          node /tmp/hd20-browser-smoke.cjs
