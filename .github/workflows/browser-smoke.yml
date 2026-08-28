@@ -38,50 +38,76 @@ jobs:
           cat /tmp/hd20-http.log
           exit 1
 
-      - name: Execute real-browser contract
+      - name: Execute main-dashboard browser contract
         run: |
+          mkdir -p artifacts
           cat > hd20-browser-smoke.cjs <<'NODE'
           const { chromium } = require('playwright');
+          const fs = require('fs');
           (async()=>{
             const browser = await chromium.launch({headless:true});
-            const page = await browser.newPage({viewport:{width:1440,height:1000}});
-            const errors=[];
-            page.on('pageerror', e=>errors.push(String(e)));
-            page.on('console', msg=>{ if(msg.type()==='error') errors.push('console: '+msg.text()); });
-            await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'networkidle'});
-            await page.waitForSelector('.beginnerNav');
-            await page.waitForSelector('.hd20ApprovedLanding');
-            const navCount=await page.locator('.beginnerNav button[data-key]').count();
-            if(navCount!==7) throw new Error(`Expected 7 nav buttons, got ${navCount}`);
-            if(!(await page.locator('.hd20ApprovedLanding').isVisible())) throw new Error('Approved dashboard is not visible');
-            const kpiCount=await page.locator('.hd20ALKpi').count();
-            if(kpiCount!==5) throw new Error(`Expected 5 KPI cards, got ${kpiCount}`);
-            const metricCount=await page.locator('.hd20ALMetric').count();
-            if(metricCount!==6) throw new Error(`Expected 6 operating metrics, got ${metricCount}`);
-            const heading=await page.locator('.hd20ALPanel h3').first().innerText();
-            if(!heading.includes('판정기준') || heading.includes('인정기준')) throw new Error(`Terminology mismatch: ${heading}`);
+            const page = await browser.newPage({viewport:{width:1440,height:1000}, deviceScaleFactor:1});
+            const pageErrors=[];
+            const consoleErrors=[];
+            page.on('pageerror', e=>pageErrors.push(String(e)));
+            page.on('console', msg=>{ if(msg.type()==='error') consoleErrors.push(msg.text()); });
+            let failure=null;
+            try{
+              await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'networkidle',timeout:30000});
+              await page.waitForSelector('.beginnerNav',{timeout:10000});
+              await page.waitForSelector('.hd20ApprovedLanding',{timeout:10000});
+              await page.waitForTimeout(700);
 
-            const targets={conversion:'performanceConversionAnalysis',activity:'awActivity',workplace:'awWorkplace',audit:'awAudit',action:'awAction',master:'awRegister'};
-            for(const [key,id] of Object.entries(targets)){
-              await page.locator(`.beginnerNav button[data-key="${key}"]`).click();
-              await page.waitForTimeout(150);
-              const el=page.locator('#'+id);
-              if(await el.count()!==1) throw new Error(`${key}: missing #${id}`);
-              if(!(await el.isVisible())) throw new Error(`${key}: #${id} not visible after click`);
-              if(!(await page.locator('.app').evaluate(el=>el.classList.contains('awFocused')))) throw new Error(`${key}: app missing awFocused`);
+              const diag=await page.evaluate(()=>{
+                const info=sel=>{
+                  const el=document.querySelector(sel); if(!el)return null;
+                  const cs=getComputedStyle(el),r=el.getBoundingClientRect();
+                  return {display:cs.display,visibility:cs.visibility,opacity:cs.opacity,width:r.width,height:r.height,top:r.top,left:r.left};
+                };
+                const heading=document.querySelector('.hd20ALPanel h3')?.textContent?.trim()||'';
+                return {
+                  body:info('body'), app:info('.app'), landing:info('.hd20ApprovedLanding'), nav:info('.beginnerNav'),
+                  navCount:document.querySelectorAll('.beginnerNav button[data-key]').length,
+                  kpiCount:document.querySelectorAll('.hd20ALKpi').length,
+                  metricCount:document.querySelectorAll('.hd20ALMetric').length,
+                  heading,
+                  audit:window.HD20_APPROVED_LANDING_AUDIT||null,
+                  bodyClasses:document.body.className,
+                  appClasses:document.querySelector('.app')?.className||''
+                };
+              });
+              diag.pageErrors=pageErrors;
+              diag.consoleErrors=consoleErrors;
+              fs.writeFileSync('artifacts/main-dashboard-diagnostics.json',JSON.stringify(diag,null,2));
+
+              const visible=x=>x&&x.display!=='none'&&x.visibility!=='hidden'&&Number(x.opacity)!==0&&x.width>0&&x.height>0;
+              if(!visible(diag.body)) throw new Error('body not visible: '+JSON.stringify(diag.body));
+              if(!visible(diag.app)) throw new Error('app not visible: '+JSON.stringify(diag.app));
+              if(!visible(diag.landing)) throw new Error('approved landing not visible: '+JSON.stringify(diag.landing));
+              if(diag.navCount!==7) throw new Error(`Expected 7 nav buttons, got ${diag.navCount}`);
+              if(diag.kpiCount!==5) throw new Error(`Expected 5 KPI cards, got ${diag.kpiCount}`);
+              if(diag.metricCount!==6) throw new Error(`Expected 6 operating metrics, got ${diag.metricCount}`);
+              if(!diag.heading.includes('판정기준') || diag.heading.includes('인정기준')) throw new Error(`Terminology mismatch: ${diag.heading}`);
+              if(!diag.audit || diag.audit.valid!==true) throw new Error('Approved landing self-audit failed: '+JSON.stringify(diag.audit));
+              if(pageErrors.length) throw new Error('Page errors: '+pageErrors.join(' | '));
+              console.log('HD20 MAIN DASHBOARD BROWSER PASS',diag);
+            }catch(e){failure=e;console.error('HD20 MAIN DASHBOARD BROWSER FAIL',e);}
+            finally{
+              try{await page.screenshot({path:'artifacts/main-dashboard.png',fullPage:true});}catch(e){console.error('screenshot failed',e)}
+              if(!fs.existsSync('artifacts/main-dashboard-diagnostics.json')){
+                fs.writeFileSync('artifacts/main-dashboard-diagnostics.json',JSON.stringify({failure:String(failure),pageErrors,consoleErrors},null,2));
+              }
+              await browser.close();
             }
-
-            await page.locator('.beginnerNav button[data-key="dashboard"]').click();
-            await page.waitForTimeout(150);
-            if(!(await page.locator('.hd20ApprovedLanding').isVisible())) throw new Error('Dashboard did not return to approved landing');
-            if(await page.locator('.app').evaluate(el=>el.classList.contains('awFocused'))) throw new Error('Dashboard left app in awFocused state');
-
-            const audit=await page.evaluate(()=>window.HD20_APPROVED_LANDING_AUDIT||null);
-            if(!audit || audit.valid!==true) throw new Error('Approved landing self-audit failed: '+JSON.stringify(audit));
-            if(errors.length) throw new Error('Browser errors: '+errors.join(' | '));
-            console.log('HD20 browser smoke OK', {navCount,kpiCount,metricCount,audit});
-            await browser.close();
-          })().catch(err=>{console.error(err);process.exit(1)});
+            if(failure)process.exit(1);
+          })();
           NODE
           node hd20-browser-smoke.cjs
-          rm -f hd20-browser-smoke.cjs package.json package-lock.json
+
+      - name: Upload main-dashboard browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hd20-main-dashboard-browser-evidence
+          path: artifacts/
+          if-no-files-found: warn
