@@ -40,7 +40,7 @@ jobs:
 
       - name: Execute real-browser contract
         run: |
-          cat > /tmp/hd20-browser-smoke.cjs <<'NODE'
+          cat > hd20-browser-smoke.cjs <<'NODE'
           const { chromium } = require('playwright');
           (async()=>{
             const browser = await chromium.launch({headless:true});
@@ -64,7 +64,7 @@ jobs:
             const targets={conversion:'performanceConversionAnalysis',activity:'awActivity',workplace:'awWorkplace',audit:'awAudit',action:'awAction',master:'awRegister'};
             for(const [key,id] of Object.entries(targets)){
               await page.locator(`.beginnerNav button[data-key="${key}"]`).click();
-              await page.waitForTimeout(100);
+              await page.waitForTimeout(150);
               const el=page.locator('#'+id);
               if(await el.count()!==1) throw new Error(`${key}: missing #${id}`);
               if(!(await el.isVisible())) throw new Error(`${key}: #${id} not visible after click`);
@@ -72,7 +72,7 @@ jobs:
             }
 
             await page.locator('.beginnerNav button[data-key="dashboard"]').click();
-            await page.waitForTimeout(100);
+            await page.waitForTimeout(150);
             if(!(await page.locator('.hd20ApprovedLanding').isVisible())) throw new Error('Dashboard did not return to approved landing');
             if(await page.locator('.app').evaluate(el=>el.classList.contains('awFocused'))) throw new Error('Dashboard left app in awFocused state');
 
@@ -83,4 +83,5 @@ jobs:
             await browser.close();
           })().catch(err=>{console.error(err);process.exit(1)});
           NODE
-          node /tmp/hd20-browser-smoke.cjs
+          node hd20-browser-smoke.cjs
+          rm -f hd20-browser-smoke.cjs package.json package-lock.json
