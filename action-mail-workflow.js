@@ -1,6 +1,6 @@
 (()=>{'use strict';
 const STYLE='actionMailWorkflowStyle',CASE_KEY='hd20ActionCasesV2',TEAM_KEY='hd20TeamLeaderMasterV1';
-const TEAMS=['중형상부1팀','중형상부2팀','중형하부팀','중형메인팀','중형Att팀','대형상부팀','대형메인팀','대형Att.팀','휠로더Front팀','휠로더메인팀','휠로더리어팀','초대형조립팀','프레임제작팀','Boom제작팀','성능팀','트리블슈팅팀'];
+const TEAMS=['중형상부1팀','중형상부2팀','중형하부팀','중형메인팀','중형Att팀','대형상부팀','대형메인팀','대형Att.팀','휠로더Front팀','휠로더메인팀','휠로더리어팀','초대형조립팀','프레임제작팀','Boom제작팀','성능팀','트러블슈팅팀'];
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
 const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 function teams(){try{const v=JSON.parse(localStorage.getItem(TEAM_KEY)||'[]');return Array.isArray(v)&&v.length?v:TEAMS.map(team=>({team,leader:'미지정',email:''}))}catch{return TEAMS.map(team=>({team,leader:'미지정',email:''}))}}

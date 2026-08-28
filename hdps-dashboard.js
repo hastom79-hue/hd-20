@@ -198,14 +198,17 @@ function wireAi(){
 }
 
 function wireNavGuard(){
+  const ROUTES={activity:'activity',workplace:'workplace',audit:'audit',action:'action',master:'master'};
   $$('.hpNav button[data-hp-nav]').forEach(btn=>btn.onclick=()=>{
-    if(btn.dataset.hpNav==='dashboard'){$$('.hpNav button').forEach(b=>b.classList.toggle('on',b===btn));return}
-    alert('이 메뉴는 아직 HDPS 대시보드에 연결되지 않았습니다. 기존 대시보드(index.html)의 해당 메뉴를 이용해 주세요.');
+    const key=btn.dataset.hpNav;
+    if(key==='dashboard'){$$('.hpNav button').forEach(b=>b.classList.toggle('on',b===btn));return}
+    if(ROUTES[key]){location.href='index.html?tab='+ROUTES[key];return}
   });
   $$('[data-hp-detail]').forEach(el=>el.addEventListener('click',e=>{e.preventDefault();alert('상세 Grid는 검토 단계에서 기존 대시보드의 Grid 팝업과 통합 예정입니다.')}));
   $('#hpRefresh').onclick=()=>location.reload();
   $('#hpFullscreen').onclick=()=>{if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen?.()};
   $('#hpLogout').onclick=()=>alert('Prototype 단계에서는 별도 로그인/로그아웃 세션이 연결되어 있지 않습니다.');
+  $('#hpPrint')?.addEventListener('click',()=>window.print());
   $$('.hpToggle button').forEach(b=>b.onclick=()=>{$$('.hpToggle button').forEach(x=>x.classList.toggle('on',x===b))});
 }
 

@@ -98,6 +98,14 @@ function bind(nav){
     };
   });
 }
+function applyDeepLink(nav){
+  const key=new URL(location.href).searchParams.get('tab');
+  if(!key)return;
+  const btn=nav.querySelector(`[data-key="${key}"]`);
+  if(!btn)return;
+  nav.querySelectorAll('button[data-key]').forEach(b=>b.classList.toggle('active',b===btn));
+  setTimeout(()=>go(key),30);
+}
 function init(){
   css();
   hideDuplicates();
@@ -106,6 +114,7 @@ function init(){
   bind(nav);
   updateBadges();
   hideDuplicates();
+  applyDeepLink(nav);
 }
 ['hd20-kpi-source-updated','hd20-followup-updated','hd20-gmes-5s-imported','hd20-gmes-5s-judged'].forEach(ev=>window.addEventListener(ev,()=>setTimeout(updateBadges,0)));
 document.readyState==='loading'?document.addEventListener('DOMContentLoaded',init,{once:true}):init();
