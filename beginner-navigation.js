@@ -61,8 +61,8 @@ function ensureNav(){
   }
   const wp=nav.querySelector('[data-key="workplace"]');
   const au=nav.querySelector('[data-key="audit"]');
-  if(wp&&!wp.querySelector('.badge'))wp.insertAdjacentHTML('beforeend','<span class="badge zero">0</span>');
-  if(au&&!au.querySelector('.badge'))au.insertAdjacentHTML('beforeend','<span class="badge zero">0</span>');
+  wp?.querySelector('.badge')?.remove();
+  au?.querySelector('.badge')?.remove();
   nav.dataset.controller='canonical-static-v1';
   return nav;
 }
@@ -75,21 +75,14 @@ function ensureHint(nav){
     nav.insertAdjacentElement('afterend',hint);
   }
 }
+/* Per explicit request, the nav no longer shows numeric badges (후보/기한임박
+ * counts on 고도화 작업장·Audit 관리, 미완료 개선조치 count on 문제점·개선조치).
+ * The underlying counts are still visible inside each tab itself -- this
+ * only removes the always-on clutter in the menu bar. */
 function updateBadges(){
-  const nav=document.querySelector('.beginnerNav');
-  if(!nav)return;
-  const snap=window.HD20KPIData?.snapshot?.();
-  const follow=window.HD20MaturityFollowup?.summary?.();
-  const set=(key,value)=>{
-    const badge=nav.querySelector(`[data-key="${key}"] .badge`);
-    if(!badge)return;
-    const v=Number.isFinite(Number(value))?Number(value):0;
-    badge.textContent=String(v);
-    badge.classList.toggle('zero',v===0);
-  };
-  set('workplace',snap?.candidates?.length||0);
-  set('audit',follow?.due?.length||0);
+  document.querySelectorAll('.beginnerNav .badge, .beginnerNav .hd20AutoActionBadge').forEach(b=>b.remove());
 }
+
 function bind(nav){
   nav.querySelectorAll('button[data-key]').forEach(btn=>{
     btn.onclick=()=>{
