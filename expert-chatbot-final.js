@@ -28,6 +28,8 @@ const FAQ=[
 ];
 
 function active(){const b=document.querySelector('.beginnerNav button.active');return b?.dataset.key||'dashboard'}
+const NAV_LABEL={dashboard:'① 대시보드',conversion:'② 성과전환 분석',activity:'③ 5S 활동관리',workplace:'④ 고도화 작업장',audit:'⑤ Audit 관리',action:'⑥ 문제점·개선조치',master:'⑦ 기준정보'};
+function activeLabel(){return NAV_LABEL[active()]||NAV_LABEL.dashboard}
 function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function loadErr(){try{return JSON.parse(localStorage.getItem(ERR)||'[]')}catch{return[]}}
 function saveErr(v){localStorage.setItem(ERR,JSON.stringify(v))}
@@ -117,7 +119,7 @@ function build(){
       </div>
       <div class="hd20AiPane" data-pane="report">
         <h4>오류 접수</h4>
-        <div class="hint">현재 화면(${esc(active())})에서 발생한 오류 현상을 최대한 구체적으로 적어주세요. 발생 동작 / 기대결과 / 실제결과를 함께 적으면 원인 추적이 정확해집니다.</div>
+        <div class="hint hd20AiCtxHint">현재 화면(<span class="hd20AiCtxLabel">${esc(activeLabel())}</span>)에서 발생한 오류 현상을 최대한 구체적으로 적어주세요. 발생 동작 / 기대결과 / 실제결과를 함께 적으면 원인 추적이 정확해집니다.</div>
         <textarea placeholder="예: 고도화 수준 Map 팝업이 열리지 않습니다."></textarea>
         <div style="text-align:right;margin-top:10px"><button type="button" class="hd20AiSubmitErr">접수</button></div>
       </div>
@@ -127,7 +129,7 @@ function build(){
   `;
   document.body.append(fab,p);
 
-  fab.onclick=()=>p.classList.toggle('on');
+  fab.onclick=()=>{p.classList.toggle('on');refreshCtxLabel()};
   p.querySelector('.hd20AiClose').onclick=()=>p.classList.remove('on');
 
   // Tabs
@@ -136,7 +138,15 @@ function build(){
     const key=btn.dataset.tab;
     p.querySelectorAll('.hd20AiPane').forEach(pane=>pane.classList.toggle('on',pane.dataset.pane===key));
     if(key==='history')renderErrHistory(p.querySelector('[data-pane="history"]'));
+    if(key==='report')refreshCtxLabel();
   });
+
+  // The '현재 화면' hint (and the answer()/report page context) must reflect
+  // whichever tab is ACTUALLY active right now, not just whatever was active
+  // the moment this panel was first built. Refresh on every main-nav click,
+  // and once more whenever the panel itself is opened.
+  const refreshCtxLabel=()=>{const el=p.querySelector('.hd20AiCtxLabel');if(el)el.textContent=activeLabel()};
+  document.addEventListener('click',e=>{if(e.target.closest('.beginnerNav button'))setTimeout(refreshCtxLabel,30)});
 
   // FAQ accordion
   p.querySelectorAll('.hd20AiFaqItem').forEach(item=>{
