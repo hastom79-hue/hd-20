@@ -1,0 +1,19 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+
+# The JS/CSS in this repo is intentionally written dense (one statement per
+# line, no line-wrap) to keep file counts/sizes manageable across ~50 small
+# script files. Don't let an editor's default wrap/format settings rewrite
+# existing lines -- only new code you type should follow indent_size above.
+[*.{js,css}]
+max_line_length = off
+
+[*.md]
+trim_trailing_whitespace = false

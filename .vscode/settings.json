@@ -1,0 +1,40 @@
+{
+  "files.encoding": "utf8",
+  "files.eol": "\n",
+  "files.insertFinalNewline": true,
+  "files.trimTrailingWhitespace": true,
+
+  // The existing JS/CSS is written dense (one long line per function) to
+  // keep ~50 small script files manageable. Auto-formatting on save would
+  // rewrite every file the first time it's opened and produce huge,
+  // unreviewable diffs -- so it's off by default. Format explicitly
+  // (Shift+Alt+F) only when you're deliberately rewriting a file.
+  "editor.formatOnSave": false,
+  "editor.formatOnPaste": false,
+
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "editor.wordWrap": "on",
+  "editor.rulers": [],
+
+  "[html]": { "editor.defaultFormatter": "vscode.html-language-features" },
+  "[css]": { "editor.defaultFormatter": "vscode.css-language-features" },
+  "[javascript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[markdown]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+
+  "search.exclude": {
+    "**/node_modules": true,
+    "*.zip": true
+  },
+  "files.watcherExclude": {
+    "**/node_modules/**": true
+  },
+
+  "liveServer.settings.root": "/",
+  "liveServer.settings.port": 5501,
+  "liveServer.settings.donotShowInfoMsg": true,
+
+  "javascript.validate.enable": false,
+  "html.validate.scripts": false
+}
+

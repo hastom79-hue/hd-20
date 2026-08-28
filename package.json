@@ -1,0 +1,10 @@
+{
+  "name": "hd-20",
+  "private": true,
+  "version": "0.0.0",
+  "description": "울산캠퍼스 5S 활동관리 시스템 -- static site, no build step. This file exists only to give VS Code's terminal / npm-scripts panel a one-command way to preview locally.",
+  "scripts": {
+    "dev": "npx --yes serve@latest . -l 5500",
+    "dev:python": "python3 -m http.server 5500"
+  }
+}
