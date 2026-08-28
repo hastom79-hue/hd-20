@@ -95,12 +95,23 @@ function renderMap(s){
   confirmed.forEach(x=>{const team=String(x.team||'').trim();const lv=levelOf(x);if(!team||!lv)return;const k=team+'|'+lv;byTeamLevel.set(k,(byTeamLevel.get(k)||0)+1)});
   const groups=[...byTeamLevel.entries()].map(([k,count])=>{const[team,lv]=k.split('|');return{team,lv:+lv,count}});
   const maxCount=Math.max(1,...groups.map(g=>g.count));
-  groups.forEach(g=>{
-    const x=6+Math.min(92,(g.count/maxCount)*86);
+  /* Collision avoidance: several teams often land on the same
+   * (count, level) cell, which would stack their labels on top of each
+   * other. Nudge x within the same level row until it clears prior dots
+   * placed at that level, matching the pattern used by
+   * integrated-performance-map.js's ipDot placement. */
+  const placedByLevel=new Map();
+  groups.sort((a,b)=>b.count-a.count).forEach(g=>{
+    let x=6+Math.min(92,(g.count/maxCount)*86);
     const y=6+((g.lv-1)/4)*88;
+    const taken=placedByLevel.get(g.lv)||[];
+    let guard=0;
+    while(taken.some(px=>Math.abs(px-x)<9)&&guard<20){x=Math.max(4,Math.min(96,x+ (guard%2?1:-1)*(5+guard)));guard++}
+    taken.push(x);placedByLevel.set(g.lv,taken);
     const dot=document.createElement('div');
     dot.className='hpMapDot';
     dot.style.left=x+'%';dot.style.bottom=y+'%';
+    dot.title=`${g.team} · Lv.${g.lv} · 확정 ${g.count}건`;
     dot.innerHTML=`<span>${esc(g.team)}</span>`;
     map.appendChild(dot);
   });
