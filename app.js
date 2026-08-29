@@ -1,7 +1,7 @@
 (()=>{'use strict';
 const TEAMS=['대형메인팀','휠로더Front팀','대형Att.팀','휠로더리어팀','중형상부1팀','중형메인팀','중형Att팀','대형상부팀','프레임제작팀','휠로더메인팀','중형상부2팀','중형하부팀','Boom제작팀','초대형조립팀','성능팀','트러블슈팅팀'];
-const ORDER_KEY='gmes5s_team_display_order',TARGET_KEY='gmes5s_quarter_targets';
-let teamOrder=[...TEAMS],targetMaster={Q1:45,Q2:50,Q3:55,Q4:60};
+const ORDER_KEY='gmes5s_team_display_order',TARGET_KEY='gmes5s_quarter_perperson_targets';
+let teamOrder=[...TEAMS],targetMaster={Q1:0.5,Q2:0.6,Q3:0.6,Q4:0.7};
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
 function ensureRecoveryCSS(){if(document.querySelector('link[data-hd20-mobile-recovery]'))return;const l=document.createElement('link');l.rel='stylesheet';l.href='mobile-runtime-restore.css?v=20260828-restore-1';l.dataset.hd20MobileRecovery='1';document.head.appendChild(l)}
 function ensureFailSafeNav(){
@@ -21,7 +21,7 @@ function snapshot(){if(window.HD20KPIData?.snapshot)return window.HD20KPIData.sn
 function teamOf(x){return String(x?.team||'').trim()}
 function counts(){const s=snapshot(),out=new Map(TEAMS.map(t=>[t,{activity:0,candidate:0,secured:0}]));(s.activities||[]).forEach(x=>{const d=out.get(teamOf(x));if(d)d.activity++});(s.candidates||[]).forEach(x=>{const d=out.get(teamOf(x));if(d)d.candidate++});(s.newSecured||[]).forEach(x=>{const d=out.get(teamOf(x));if(d)d.secured++});return out}
 function quarter(){const m=new Date().getMonth()+1;return m<=3?'Q1':m<=6?'Q2':m<=9?'Q3':'Q4'}
-function renderTargetLine(){const q=quarter(),v=Number(targetMaster[q]||0),line=$('#targetLine'),label=$('#targetLabel');if(line)line.style.top=Math.max(0,Math.min(100,(1-v/Math.max(1,v,80))*100))+'%';if(label)label.textContent=`${q} 목표 ${v}건`}
+function renderTargetLine(){const q=quarter(),v=Number(targetMaster[q]||0),line=$('#targetLine'),label=$('#targetLabel');if(line)line.style.top=Math.max(0,Math.min(100,(1-v/Math.max(1,v,80))*100))+'%';if(label)label.textContent=`${q} 목표 ${v}건/인`}
 function renderChart(){const root=$('#cols');if(!root)return;const map=counts(),vals=teamOrder.map(t=>map.get(t)||{activity:0,candidate:0,secured:0}),maxA=Math.max(1,...vals.map(x=>x.activity)),maxC=Math.max(1,...vals.map(x=>x.candidate)),maxS=Math.max(1,...vals.map(x=>x.secured));root.innerHTML=teamOrder.map((t,i)=>{const d=vals[i];return`<div class="grp"><div class="bar blue" style="height:${Math.max(d.activity?4:0,d.activity/maxA*235)}px"><em>${d.activity}</em></div><div class="bar orange" style="height:${Math.max(d.candidate?4:0,d.candidate/maxC*92)}px"><em>${d.candidate}</em></div><div class="bar green" style="height:${Math.max(d.secured?4:0,d.secured/maxS*76)}px"><em>${d.secured}</em></div><label>${t}</label></div>`}).join('');renderTargetLine()}
 function renderOrderEditor(){const list=$('#orderList');if(!list)return;list.innerHTML=teamOrder.map((t,i)=>`<div class="orderRow"><div class="orderNo">${i+1}</div><div class="orderName">${t}</div><div class="orderBtns"><button type="button" data-act="up" data-i="${i}">▲</button><button type="button" data-act="down" data-i="${i}">▼</button></div></div>`).join('');$$('[data-act]',list).forEach(btn=>btn.onclick=()=>{const i=+btn.dataset.i;if(btn.dataset.act==='up'&&i>0)[teamOrder[i-1],teamOrder[i]]=[teamOrder[i],teamOrder[i-1]];if(btn.dataset.act==='down'&&i<teamOrder.length-1)[teamOrder[i+1],teamOrder[i]]=[teamOrder[i],teamOrder[i+1]];renderOrderEditor()})}
 function loadTargets(){['Q1','Q2','Q3','Q4'].forEach((q,i)=>{const e=$(`#q${i+1}Target`);if(e)e.value=Number(targetMaster[q]||0)})}
