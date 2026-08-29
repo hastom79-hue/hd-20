@@ -33,28 +33,7 @@ function snap(){
 
 /* Ported from approved-landing-v2.js `operational()` so both dashboards
  * compute the six operating metrics identically. */
-function operational(s){
-  const rows=s.rows||[];
-  const judgmentScope=rows.filter(x=>x.candidate===true||x.isCandidate===true||String(x.judgeState||'').trim());
-  const judged=judgmentScope.filter(x=>['확정','보완요청','미확정'].includes(String(x.judgeState||'').trim())&&pick(x,['judgedAt','judgeDate','confirmedAt']));
-  const lead=judged.map(x=>daysBetween(pick(x,['createdAt','regDate','date','importedAt']),pick(x,['judgedAt','judgeDate','confirmedAt']))).filter(Number.isFinite);
-  const levels=(s.confirmed||[]).map(levelOf).filter(Number.isFinite);
-  const sixResults=(s.confirmed||[]).map(x=>String(pick(x,['audit6Result','audit6mResult','sixMonthAuditResult','audit6State','sixMonthState'])||'').trim()).filter(Boolean);
-  const sixPass=sixResults.filter(v=>/적합|유효|유지|완료|pass|ok/i.test(v)&&!/부적합|실패|해제|중지/i.test(v)).length;
-  const act=actions();
-  const recRows=act.filter(x=>pick(x,['recurrence','recurrent','recurrenceState','재발여부'])!==null);
-  const recurred=recRows.filter(x=>/true|1|yes|재발|발생/i.test(String(pick(x,['recurrence','recurrent','recurrenceState','재발여부'])))).length;
-  const completed=act.filter(x=>pick(x,['doneDate','completedDate','finishDate']));
-  const ontime=completed.filter(x=>{const done=asDate(pick(x,['doneDate','completedDate','finishDate'])),due=asDate(pick(x,['targetDate','due','dueDate']));return done&&due&&done<=due}).length;
-  return{
-    judgmentRate:pct(judged.length,judgmentScope.length),
-    avgLead:lead.length?Math.round(lead.reduce((a,b)=>a+b,0)/lead.length*10)/10:null,
-    maturity:levels.length?Math.round(levels.reduce((a,b)=>a+b,0)/levels.length*10)/10:null,
-    sixRetention:pct(sixPass,sixResults.length),
-    recurrence:pct(recurred,recRows.length),
-    actionOnTime:pct(ontime,completed.filter(x=>pick(x,['targetDate','due','dueDate'])).length)
-  };
-}
+function operational(s){return window.HD20KPIData?.operational?.(s)||{judgmentRate:null,avgLead:null,maturity:null,sixRetention:null,recurrence:null,actionOnTime:null}}
 
 function fmt(v,unit){return v===null||v===undefined?'—':`${v}${unit||''}`}
 
@@ -78,7 +57,7 @@ function wireGridModal(){
 function renderKpis(s){
   const m=operational(s);
   const cards=[
-    {label:'공식 판정 완료율',val:fmt(m.judgmentRate,'%'),color:'#2f80ed'},
+    {label:'5S 고도화 판정 완료율',val:fmt(m.judgmentRate,'%'),color:'#2f80ed'},
     {label:'평균 판정 Lead Time',val:fmt(m.avgLead,'일'),color:'#cf8618'},
     {label:'고도화 수준 (클릭)',val:m.maturity==null?'—':`Lv.${m.maturity}`,color:'#27ae60'},
     {label:'6개월 유지율',val:fmt(m.sixRetention,'%'),color:'#7a5af8'},
@@ -88,7 +67,7 @@ function renderKpis(s){
   $('#hpKpis').innerHTML=cards.map(c=>`<div class="hpKpi" data-hp-grid="kpi" tabindex="0" role="button"><small>${c.label}</small><b style="color:${c.color}">${c.val}</b><span class="hpSub">실데이터 미연결 시 — 표시 · 전월대비 비교는 이력 축적 후 제공</span></div>`).join('');
   const act=actions();
   const kpiHandlers=[
-    ()=>{const scope=(s.rows||[]).filter(x=>x.candidate===true||x.isCandidate===true||String(x.judgeState||'').trim());gridOpen('공식 판정 완료율',['생산팀','작업장/사례','현장 등록일','판정상태','판정일','판정자'],scope.map(x=>[x.team||'-',x.workplace||x.title||'-',dateOnly(x,['date','regDate','createdAt'])||'-',x.judgeState||'판정대기',dateOnly(x,['judgedAt','judgeDate','confirmedAt'])||'-',x.judgeOwner||'-']),'판정대상 전체 원천 기준')},
+    ()=>{const scope=(s.rows||[]).filter(x=>x.candidate===true||x.isCandidate===true||String(x.judgeState||'').trim());gridOpen('5S 고도화 판정 완료율',['생산팀','작업장/사례','현장 등록일','판정상태','판정일','판정자'],scope.map(x=>[x.team||'-',x.workplace||x.title||'-',dateOnly(x,['date','regDate','createdAt'])||'-',x.judgeState||'판정대기',dateOnly(x,['judgedAt','judgeDate','confirmedAt'])||'-',x.judgeOwner||'-']),'판정대상 전체 원천 기준')},
     ()=>{const judged=(s.rows||[]).filter(x=>['확정','보완요청','미확정'].includes(String(x.judgeState||'').trim())&&pick(x,['judgedAt','judgeDate','confirmedAt']));gridOpen('평균 판정 Lead Time',['생산팀','작업장/사례','등록일','판정일','Lead Time(일)'],judged.map(x=>{const regd=dateOnly(x,['createdAt','regDate','date','importedAt']),jd=dateOnly(x,['judgedAt','judgeDate','confirmedAt']);return[x.team||'-',x.workplace||x.title||'-',regd||'-',jd||'-',regd&&jd?daysBetween(regd,jd):'—']}),'등록일→판정완료일 소요일 개별 사례')},
     ()=>{const confirmed=(s.confirmed||[]).filter(x=>levelOf(x));gridOpen('고도화 수준',['생산팀','작업장/사례','고도화 Level','판정일'],confirmed.map(x=>[x.team||'-',x.workplace||x.title||'-','Lv.'+levelOf(x),dateOnly(x,['judgedAt','judgeDate','confirmedAt'])||'-']),'공식확정 사례 중 Level 부여 건')},
     ()=>{const six=(s.confirmed||[]).filter(x=>pick(x,['audit6Result','audit6mResult','sixMonthAuditResult','audit6State','sixMonthState']));gridOpen('6개월 유지율',['생산팀','작업장/사례','판정일','6개월 Audit 결과'],six.map(x=>[x.team||'-',x.workplace||x.title||'-',dateOnly(x,['judgedAt','judgeDate','confirmedAt'])||'-',pick(x,['audit6Result','audit6mResult','sixMonthAuditResult','audit6State','sixMonthState'])||'-']),'6개월 Audit 결과가 있는 확정 사례')},
@@ -226,7 +205,7 @@ function wireDownloads(s){
   const m=operational(s);
   $$('[data-hp-download]').forEach(btn=>btn.onclick=()=>{
     const kind=btn.dataset.hpDownload;
-    if(kind==='kpi')return csvDownload('HDPS_KPI_요약.csv',[['지표','값'],['공식 판정 완료율',fmt(m.judgmentRate,'%')],['평균 판정 Lead Time',fmt(m.avgLead,'일')],['고도화 수준',m.maturity==null?'—':'Lv.'+m.maturity],['6개월 유지율',fmt(m.sixRetention,'%')],['Audit 부적합 재발률',fmt(m.recurrence,'%')],['기한 내 개선조치 완료율',fmt(m.actionOnTime,'%')]]);
+    if(kind==='kpi')return csvDownload('HDPS_KPI_요약.csv',[['지표','값'],['5S 고도화 판정 완료율',fmt(m.judgmentRate,'%')],['평균 판정 Lead Time',fmt(m.avgLead,'일')],['고도화 수준',m.maturity==null?'—':'Lv.'+m.maturity],['6개월 유지율',fmt(m.sixRetention,'%')],['Audit 부적합 재발률',fmt(m.recurrence,'%')],['기한 내 개선조치 완료율',fmt(m.actionOnTime,'%')]]);
     if(kind==='metrics')return csvDownload('HDPS_운영지표.csv',[['생산팀','작업장','유형','등록일','판정상태','판정일'],...(s.rows||[]).map(x=>[x.team||'',x.workplace||x.title||'',catOf(x),x.date||x.regDate||'',x.judgeState||'',x.judgedAt||''])]);
     if(kind==='raw')return csvDownload('HDPS_Portfolio_RawData.csv',[['구분','생산팀','작업장','유형','판정상태'],...[...(s.candidates||[]),...(s.confirmed||[]),...(s.maintained||[])].map(x=>['원천',x.team||'',x.workplace||x.title||'',catOf(x),x.judgeState||''])]);
     if(kind==='gmes')return csvDownload('HDPS_공식확정_GMES사례.csv',[['생산팀','작업장','유형','판정일','판정자'],...(s.confirmed||[]).map(x=>[x.team||'',x.workplace||x.title||'',catOf(x),x.judgedAt||'',x.judgeOwner||''])]);
@@ -267,7 +246,7 @@ function wireNavGuard(){
     const s=snap();
     if(kind==='kpi'){
       const m=operational(s);
-      gridOpen('HDPS 5S 고도화 운영지표 (KPI) 요약',['지표','값'],[['공식 판정 완료율',fmt(m.judgmentRate,'%')],['평균 판정 Lead Time',fmt(m.avgLead,'일')],['고도화 수준',m.maturity==null?'—':'Lv.'+m.maturity],['6개월 유지율',fmt(m.sixRetention,'%')],['Audit 부적합 재발률',fmt(m.recurrence,'%')],['기한 내 개선조치 완료율',fmt(m.actionOnTime,'%')]],'6개 운영지표 요약');
+      gridOpen('HDPS 5S 고도화 운영지표 (KPI) 요약',['지표','값'],[['5S 고도화 판정 완료율',fmt(m.judgmentRate,'%')],['평균 판정 Lead Time',fmt(m.avgLead,'일')],['고도화 수준',m.maturity==null?'—':'Lv.'+m.maturity],['6개월 유지율',fmt(m.sixRetention,'%')],['Audit 부적합 재발률',fmt(m.recurrence,'%')],['기한 내 개선조치 완료율',fmt(m.actionOnTime,'%')]],'6개 운영지표 요약');
       return;
     }
     if(kind==='action'){

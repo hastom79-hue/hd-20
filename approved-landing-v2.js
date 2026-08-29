@@ -26,28 +26,7 @@ function snap(){
  const maintained=confirmed.filter(x=>!/중지|부적합|해제|실패/.test(String(x.maintainState||x.auditState||x.status||''))&&x.valid!==false);
  return{rows,activities:rows,candidates:rows.filter(x=>x.judgeState&&x.judgeState!=='미확정'),newSecured:confirmed,confirmed,maintained,headcount:null,perPerson:null,year:new Date().getFullYear()}
 }
-function operational(s){
- const rows=s.rows||[];
- const judgmentScope=rows.filter(x=>x.candidate===true||x.isCandidate===true||String(x.judgeState||'').trim());
- const judged=judgmentScope.filter(x=>['확정','보완요청','미확정'].includes(String(x.judgeState||'').trim())&&pick(x,['judgedAt','judgeDate','confirmedAt']));
- const lead=judged.map(x=>daysBetween(pick(x,['createdAt','regDate','date','importedAt']),pick(x,['judgedAt','judgeDate','confirmedAt']))).filter(Number.isFinite);
- const levels=(s.confirmed||[]).map(levelOf).filter(Number.isFinite);
- const sixResults=(s.confirmed||[]).map(x=>String(pick(x,['audit6Result','audit6mResult','sixMonthAuditResult','audit6State','sixMonthState'])||'').trim()).filter(Boolean);
- const sixPass=sixResults.filter(v=>/적합|유효|유지|완료|pass|ok/i.test(v)&&!/부적합|실패|해제|중지/i.test(v)).length;
- const act=actions();
- const recRows=act.filter(x=>pick(x,['recurrence','recurrent','recurrenceState','재발여부'])!==null);
- const recurred=recRows.filter(x=>/true|1|yes|재발|발생/i.test(String(pick(x,['recurrence','recurrent','recurrenceState','재발여부'])))).length;
- const completed=act.filter(x=>pick(x,['doneDate','completedDate','finishDate']));
- const ontime=completed.filter(x=>{const done=asDate(pick(x,['doneDate','completedDate','finishDate'])),due=asDate(pick(x,['targetDate','due','dueDate']));return done&&due&&done<=due}).length;
- return{
-  judgmentRate:pct(judged.length,judgmentScope.length),
-  avgLead:lead.length?Math.round(lead.reduce((a,b)=>a+b,0)/lead.length*10)/10:null,
-  maturity:levels.length?Math.round(levels.reduce((a,b)=>a+b,0)/levels.length*10)/10:null,
-  sixRetention:pct(sixPass,sixResults.length),
-  recurrence:pct(recurred,recRows.length),
-  actionOnTime:pct(ontime,completed.filter(x=>pick(x,['targetDate','due','dueDate'])).length)
- }
-}
+function operational(s){return window.HD20KPIData?.operational?.(s)||{judgmentRate:null,avgLead:null,maturity:null,sixRetention:null,recurrence:null,actionOnTime:null}}
 function fmtValue(v,unit){if(v===null||v===undefined)return'—';return`${v}${unit?`<em>${unit}</em>`:''}`}
 function renderKpis(host){
  const s=snap(),vals=[s.perPerson==null?null:s.perPerson.toFixed(2),s.candidates.length,s.newSecured.length,s.confirmed.length,s.maintained.length],units=['건/인','건','곳','곳','곳'];
@@ -75,7 +54,7 @@ function build(){
  host.innerHTML=`<div class="hd20ALNotice"><span>◀</span><b>알림</b><span>5S 정기 Audit 및 고도화 후보 판정 일정을 확인하세요.</span><button class="more" data-go="audit">더보기 +</button></div>
  <div class="hd20ALKpis">${labels.map((x,i)=>`<article class="hd20ALKpi ${['blue','orange','green','cyan','purple'][i]}" data-kpi="${i}" role="button" tabindex="0"><div class="kIcon">${['♙','⌕','✓','▤','♢'][i]}</div><small>${x}</small><strong>—</strong><div class="delta">GMES 공식 판정 원천 기준</div><div class="spark no-data"></div></article>`).join('')}</div>
  <div class="hd20ALMetrics">
-  <div class="hd20ALMetric"><b>공식 판정 완료율</b><strong>—</strong><small>판정대상 대비 판정완료</small></div>
+  <div class="hd20ALMetric"><b>5S 고도화 판정 완료율</b><strong>—</strong><small>5S 고도화 후보 중 판정 완료 비율</small></div>
   <div class="hd20ALMetric"><b>평균 판정 Lead Time</b><strong>—</strong><small>등록일→판정일</small></div>
   <div class="hd20ALMetric"><b>고도화 수준</b><strong>—</strong><small>공식확정 Level 평균</small></div>
   <div class="hd20ALMetric"><b>6개월 유지율</b><strong>—</strong><small>실제 6개월 Audit 결과</small></div>
