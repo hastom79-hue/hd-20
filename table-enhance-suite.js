@@ -14,15 +14,15 @@ function css(){
   const s=document.createElement('style');s.id=STYLE;
   s.textContent=`
   .teToolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 9px}
-  .teSearch{flex:1;min-width:160px;max-width:280px;border:1px solid #cbdbe5;border-radius:8px;padding:8px 11px;font-size:11.5px}
-  .teCount{font-size:10.5px;color:#6d8394;font-weight:800}
+  .teSearch{flex:1;min-width:160px;max-width:280px;border:1px solid #cbdbe5;border-radius:8px;padding:8px 11px;font-size:15px}
+  .teCount{font-size:14px;color:#6d8394;font-weight:800}
   .teMore{margin:10px 0 2px;text-align:center}
-  .teMore button{border:1px solid #cbdbe5;border-radius:8px;background:#fff;padding:8px 16px;font-size:11px;font-weight:900;color:#234c69;cursor:pointer}
+  .teMore button{border:1px solid #cbdbe5;border-radius:8px;background:#fff;padding:8px 16px;font-size:14.5px;font-weight:900;color:#234c69;cursor:pointer}
   .teMore button:hover{background:#f0f6fa}
   .awTable thead th{cursor:pointer;user-select:none;position:relative}
   .awTable thead th:hover{background:#e3edf3}
-  .awTable thead th.teSortAsc:after{content:' ▲';font-size:9px}
-  .awTable thead th.teSortDesc:after{content:' ▼';font-size:9px}
+  .awTable thead th.teSortAsc:after{content:' ▲';font-size:12.5px}
+  .awTable thead th.teSortDesc:after{content:' ▼';font-size:12.5px}
   .awTable tbody tr{cursor:pointer;transition:background .12s}
   .awTable tbody tr:hover{background:#f2f8fc!important}
   .awTable tbody tr.teHidden{display:none}
@@ -34,10 +34,10 @@ function css(){
   .teRowModal.on{display:flex}
   .teRowBox{width:min(640px,94vw);max-height:86vh;overflow:auto;background:#fff;border-radius:14px;box-shadow:0 26px 70px rgba(8,30,49,.28)}
   .teRowHead{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:15px 18px;background:linear-gradient(90deg,#12324d,#1a4d78);color:#fff;border-radius:14px 14px 0 0}
-  .teRowHead b{font-size:15px}
-  .teRowHead button{border:0;background:#ffffff26;color:#fff;border-radius:8px;width:30px;height:30px;font-size:17px;cursor:pointer}
+  .teRowHead b{font-size:18.5px}
+  .teRowHead button{border:0;background:#ffffff26;color:#fff;border-radius:8px;width:30px;height:30px;font-size:20.5px;cursor:pointer}
   .teRowBody{padding:16px 18px}
-  .teRowGrid{display:grid;grid-template-columns:120px 1fr;gap:9px 12px;font-size:12.5px}
+  .teRowGrid{display:grid;grid-template-columns:120px 1fr;gap:9px 12px;font-size:16px}
   .teRowGrid b{color:#3e5a70;font-weight:900}
   .teRowGrid span{color:#1c2f40;word-break:break-word}
   `;

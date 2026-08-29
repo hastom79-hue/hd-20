@@ -56,18 +56,18 @@ function css(){
 .auditDraw{margin:12px 0}
 .auditDrawBody{display:flex;flex-wrap:wrap;gap:16px;align-items:center}
 .auditDrawResult{flex:1;min-width:220px}
-.auditDrawResult .team{font-size:22px;font-weight:950;color:#123e5d}
-.auditDrawResult .leader{margin-top:4px;font-size:11px;color:#5f7c92}
-.auditDrawEmpty{color:#8a99a6;font-size:11px}
+.auditDrawResult .team{font-size:25.5px;font-weight:950;color:#123e5d}
+.auditDrawResult .leader{margin-top:4px;font-size:14.5px;color:#5f7c92}
+.auditDrawEmpty{color:#8a99a6;font-size:14.5px}
 .auditDrawBtns{display:flex;gap:7px;flex-wrap:wrap}
-.auditDrawBtns button{border:1px solid #c8d9e5;border-radius:8px;background:#fff;padding:9px 13px;font-size:11px;font-weight:900;cursor:pointer}
+.auditDrawBtns button{border:1px solid #c8d9e5;border-radius:8px;background:#fff;padding:9px 13px;font-size:14.5px;font-weight:900;cursor:pointer}
 .auditDrawBtns .primary{background:#1268a8;color:#fff;border-color:#1268a8}
 .auditDrawBtns .outlook{background:#0f6cbd;color:#fff;border-color:#0f6cbd}
 .auditDrawBtns .auto{background:#7a5af8;color:#fff;border-color:#7a5af8}
 .auditDrawBtns .auto:disabled{opacity:.6;cursor:wait}
 .auditDrawBtns .auto.sent{background:#27ae60;border-color:#27ae60}
-.auditDrawHint{margin-top:9px;padding:9px 11px;background:#eef7fd;border-radius:8px;font-size:10px;color:#43677f}
-.auditDrawHistory{margin-top:12px;font-size:11px}
+.auditDrawHint{margin-top:9px;padding:9px 11px;background:#eef7fd;border-radius:8px;font-size:13.5px;color:#43677f}
+.auditDrawHistory{margin-top:12px;font-size:14.5px}
 .auditDrawHistory table{width:100%;border-collapse:collapse}
 .auditDrawHistory th{text-align:left;padding:7px;background:#edf4f8}
 .auditDrawHistory td{padding:7px;border-top:1px solid #e4ebf0}

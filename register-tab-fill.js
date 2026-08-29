@@ -10,7 +10,7 @@ const PP_TARGET_KEY='gmes5s_quarter_perperson_targets';
 const ADV_TARGET_KEY='gmes5s_quarter_advancement_targets';
 const CATS=['정리','정돈','청소','시각화','위험구역관리','5S 고도화'];
 const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-function css(){if(document.getElementById('registerTabFillStyle'))return;const s=document.createElement('style');s.id='registerTabFillStyle';s.textContent='.awAdvRate{display:inline-block;padding:3px 8px;border-radius:999px;background:#eef2f6;color:#5f7c92;font-weight:900;font-size:10px}.awAdvRate.mid{background:#fff0d6;color:#a36a00}.awAdvRate.good{background:#e3f3e7;color:#2e7c43}';document.head.appendChild(s)}
+function css(){if(document.getElementById('registerTabFillStyle'))return;const s=document.createElement('style');s.id='registerTabFillStyle';s.textContent='.awAdvRate{display:inline-block;padding:3px 8px;border-radius:999px;background:#eef2f6;color:#5f7c92;font-weight:900;font-size:13.5px}.awAdvRate.mid{background:#fff0d6;color:#a36a00}.awAdvRate.good{background:#e3f3e7;color:#2e7c43}';document.head.appendChild(s)}
 function leaders(){try{const v=JSON.parse(localStorage.getItem(LEAD_KEY)||'[]');return Array.isArray(v)?v:[]}catch{return[]}}
 function order(){try{const v=JSON.parse(localStorage.getItem(ORDER_KEY)||'null');return Array.isArray(v)?v:null}catch{return null}}
 /* 5S 개선활동 목표는 인당 개선건수 기준이다 — 팀 규모가 다른 생산팀을

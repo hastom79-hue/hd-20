@@ -48,40 +48,40 @@ function css(){
   if(document.getElementById(STYLE))return;
   const s=document.createElement('style');s.id=STYLE;
   s.textContent=`
-.hd20AiFab{position:fixed;right:20px;bottom:20px;z-index:13000;width:56px;height:56px;border:1px solid #cad9e4;border-radius:17px;background:#fff;color:#173f61;box-shadow:0 12px 30px rgba(24,61,88,.18);font-weight:950;font-size:17px;cursor:pointer}
+.hd20AiFab{position:fixed;right:20px;bottom:20px;z-index:13000;width:56px;height:56px;border:1px solid #cad9e4;border-radius:17px;background:#fff;color:#173f61;box-shadow:0 12px 30px rgba(24,61,88,.18);font-weight:950;font-size:20.5px;cursor:pointer}
 .hd20AiPanel{position:fixed;right:20px;bottom:88px;z-index:13000;width:min(520px,calc(100vw - 28px));height:min(680px,calc(100vh - 120px));display:none;flex-direction:column;background:#fff;border:1px solid #cbdbe6;border-radius:17px;box-shadow:0 24px 70px rgba(31,62,88,.24);overflow:hidden}
 .hd20AiPanel.on{display:flex}
 .hd20AiHead{display:flex;justify-content:space-between;gap:12px;padding:16px 18px;background:linear-gradient(135deg,#12324d,#1a4d78)}
-.hd20AiHead b{display:block;color:#fff;font-size:16px}
-.hd20AiHead small{display:block;margin-top:3px;color:#c3d6e4;font-size:10px}
-.hd20AiHead button{border:0;background:#ffffff26;color:#fff;width:28px;height:28px;border-radius:8px;font-size:16px;cursor:pointer}
+.hd20AiHead b{display:block;color:#fff;font-size:19.5px}
+.hd20AiHead small{display:block;margin-top:3px;color:#c3d6e4;font-size:13.5px}
+.hd20AiHead button{border:0;background:#ffffff26;color:#fff;width:28px;height:28px;border-radius:8px;font-size:19.5px;cursor:pointer}
 .hd20AiTabs{display:flex;gap:6px;padding:9px 10px;border-bottom:1px solid #e5ebef;background:#f7fafc}
-.hd20AiTabs button{flex:1;border:1px solid #d2e0e9;background:#fff;border-radius:9px;padding:8px 6px;font-size:11px;font-weight:900;color:#3d6280;cursor:pointer}
+.hd20AiTabs button{flex:1;border:1px solid #d2e0e9;background:#fff;border-radius:9px;padding:8px 6px;font-size:14.5px;font-weight:900;color:#3d6280;cursor:pointer}
 .hd20AiTabs button.on{background:#173f61;border-color:#173f61;color:#fff}
 .hd20AiBody{flex:1;overflow:auto;padding:14px 16px;background:#fbfdff}
 .hd20AiPane{display:none}
 .hd20AiPane.on{display:block}
-.hd20AiPane h4{margin:0 0 10px;font-size:14px;color:#173a57}
+.hd20AiPane h4{margin:0 0 10px;font-size:17.5px;color:#173a57}
 .hd20AiFaqItem{border:1px solid #dfe8ee;border-radius:10px;margin-bottom:7px;overflow:hidden;background:#fff}
-.hd20AiFaqQ{display:flex;align-items:center;gap:8px;padding:10px 11px;cursor:pointer;font-size:11.5px;font-weight:850;color:#20415c}
-.hd20AiFaqQ .arrow{transition:transform .15s;color:#7c93a4;font-size:9px}
+.hd20AiFaqQ{display:flex;align-items:center;gap:8px;padding:10px 11px;cursor:pointer;font-size:15px;font-weight:850;color:#20415c}
+.hd20AiFaqQ .arrow{transition:transform .15s;color:#7c93a4;font-size:12.5px}
 .hd20AiFaqItem.open .arrow{transform:rotate(90deg)}
-.hd20AiFaqA{display:none;padding:0 12px 11px 27px;font-size:11px;line-height:1.6;color:#48657a}
+.hd20AiFaqA{display:none;padding:0 12px 11px 27px;font-size:14.5px;line-height:1.6;color:#48657a}
 .hd20AiFaqItem.open .hd20AiFaqA{display:block}
 .hd20AiAsk{margin-top:12px;border:1px solid #cbdbe6;border-radius:12px;background:#fff;padding:8px;display:grid;grid-template-columns:1fr auto;gap:8px}
 .hd20AiAsk input{border:0;outline:0;font:inherit;padding:8px;color:#294b62}
 .hd20AiAsk button{border:0;border-radius:9px;background:#173f61;color:#fff;font-weight:900;padding:0 16px;cursor:pointer}
-.hd20AiAnswer{margin-top:10px;border:1px solid #dde7ed;border-radius:10px;padding:11px 12px;background:#fff;font-size:11px;line-height:1.6;color:#294b62}
-.hd20AiAnswer b{display:block;margin-bottom:6px;color:#173a57;font-size:12.5px}
-.hd20AiAnswer .tags span{display:inline-block;margin:7px 4px 0 0;padding:3px 7px;border-radius:999px;background:#eef6fb;color:#28658e;font-size:9px;font-weight:900}
+.hd20AiAnswer{margin-top:10px;border:1px solid #dde7ed;border-radius:10px;padding:11px 12px;background:#fff;font-size:14.5px;line-height:1.6;color:#294b62}
+.hd20AiAnswer b{display:block;margin-bottom:6px;color:#173a57;font-size:16px}
+.hd20AiAnswer .tags span{display:inline-block;margin:7px 4px 0 0;padding:3px 7px;border-radius:999px;background:#eef6fb;color:#28658e;font-size:12.5px;font-weight:900}
 .hd20AiReport textarea{width:100%;box-sizing:border-box;min-height:110px;border:1px solid #cad9e3;border-radius:10px;padding:10px;font:inherit;resize:vertical}
-.hd20AiReport .hint{margin:8px 0 12px;font-size:10px;color:#7c93a4}
+.hd20AiReport .hint{margin:8px 0 12px;font-size:13.5px;color:#7c93a4}
 .hd20AiReport button{border:0;border-radius:9px;background:#173f61;color:#fff;font-weight:900;padding:10px 16px;cursor:pointer}
 .hd20AiErrRow{padding:9px 0;border-bottom:1px solid #eef2f5}
-.hd20AiErrRow .txt{font-size:11.5px;color:#294b62;font-weight:700}
-.hd20AiErrRow small{display:block;margin-top:3px;color:#8798a6;font-size:9.5px}
-.hd20AiEmpty{padding:18px 4px;text-align:center;color:#8798a6;font-size:11px}
-.hd20AiFoot{padding:8px 16px;text-align:center;font-size:8.5px;color:#8798a6;background:#fff;border-top:1px solid #eef2f5}
+.hd20AiErrRow .txt{font-size:15px;color:#294b62;font-weight:700}
+.hd20AiErrRow small{display:block;margin-top:3px;color:#8798a6;font-size:13px}
+.hd20AiEmpty{padding:18px 4px;text-align:center;color:#8798a6;font-size:14.5px}
+.hd20AiFoot{padding:8px 16px;text-align:center;font-size:12px;color:#8798a6;background:#fff;border-top:1px solid #eef2f5}
 @media(max-width:600px){.hd20AiPanel{right:10px;bottom:78px;width:calc(100vw - 20px);height:78vh}.hd20AiFab{right:12px;bottom:12px}}
 `;
   document.head.appendChild(s);

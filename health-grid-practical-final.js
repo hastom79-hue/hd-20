@@ -16,7 +16,7 @@ function patchModal(){
   const th=[...m.querySelectorAll('table thead th')];if(th.length){cfg.heads.forEach((h,i)=>{if(th[i])th[i].textContent=h})}
  }
 }
-function style(){if(document.getElementById(ID))return;const s=document.createElement('style');s.id=ID;s.textContent=`.hd20DecisionNote{margin:8px 14px 10px;padding:8px 10px;border:1px solid #dbe7ef;border-radius:8px;background:#f7fbfd;color:#526f82;font-size:11px;line-height:1.45}.kpiModal table,.modal table{font-size:11px}.kpiModal thead th,.modal thead th{white-space:nowrap;background:#f4f8fb;color:#274e68}.kpiModal tbody td,.modal tbody td{vertical-align:middle}`;document.head.appendChild(s)}
+function style(){if(document.getElementById(ID))return;const s=document.createElement('style');s.id=ID;s.textContent=`.hd20DecisionNote{margin:8px 14px 10px;padding:8px 10px;border:1px solid #dbe7ef;border-radius:8px;background:#f7fbfd;color:#526f82;font-size:14.5px;line-height:1.45}.kpiModal table,.modal table{font-size:14.5px}.kpiModal thead th,.modal thead th{white-space:nowrap;background:#f4f8fb;color:#274e68}.kpiModal tbody td,.modal tbody td{vertical-align:middle}`;document.head.appendChild(s)}
 function boot(){style();document.addEventListener('click',()=>setTimeout(patchModal,40),true);new MutationObserver(()=>patchModal()).observe(document.body,{childList:true,subtree:true});patchModal()}
 document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot,{once:true}):boot();
 })();

@@ -18,7 +18,7 @@ function ensureOverrides(){
  if(document.getElementById('hd20ApprovedLandingRuntimeFix'))return;
  const s=document.createElement('style');s.id='hd20ApprovedLandingRuntimeFix';s.textContent=`
  .hd20ALKpi[role="button"]{cursor:pointer}.hd20ALKpi[role="button"]:focus{outline:2px solid #2b78bd;outline-offset:2px}
- .hd20TrendChart.no-data:before,.hd20TrendChart.no-data:after{display:none!important}.hd20TrendChart.no-data{display:grid;place-items:center;border:1px dashed #dce4eb!important;color:#8091a0}.hd20TrendChart.no-data span{font-size:8px;font-weight:800}.hd20ALKpi .spark.no-data:after{display:none!important}`;document.head.appendChild(s)
+ .hd20TrendChart.no-data:before,.hd20TrendChart.no-data:after{display:none!important}.hd20TrendChart.no-data{display:grid;place-items:center;border:1px dashed #dce4eb!important;color:#8091a0}.hd20TrendChart.no-data span{font-size:11.5px;font-weight:800}.hd20ALKpi .spark.no-data:after{display:none!important}`;document.head.appendChild(s)
 }
 function snap(){
  if(window.HD20KPIData?.snapshot)return window.HD20KPIData.snapshot();
