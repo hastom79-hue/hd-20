@@ -21,10 +21,9 @@ function ppTargets(){try{const v=JSON.parse(localStorage.getItem(PP_TARGET_KEY)|
 function activityQuarterOf(x){const d=new Date(x.date||x.regDate||x.createdAt);if(Number.isNaN(d.getTime()))return null;return 'Q'+(Math.floor(d.getMonth()/3)+1)}
 function perPersonByQuarter(){const s=window.HD20KPIData?.snapshot?.(),rows=s?.activities||[],people=s?.headcount;const cnt={Q1:0,Q2:0,Q3:0,Q4:0};rows.forEach(x=>{const q=activityQuarterOf(x);if(q&&cnt[q]!==undefined)cnt[q]++});if(!people)return{people:null,value:{Q1:null,Q2:null,Q3:null,Q4:null}};const value={};['Q1','Q2','Q3','Q4'].forEach(q=>value[q]=Math.round(cnt[q]/people*100)/100);return{people,value}}
 /* 5S 고도화 확정은 3대 기준(시각화·형적관리/인간공학적 Green Zone/정량축소·
- * 정위치 변경)을 모두 충족해야 하는, 난이도가 높은 확정 절차다. 기존
- * gmes5s_quarter_targets(45~60건/분기)는 전체 5S 활동 등록량 기준 레거시
- * 목표이며 고도화 확정과는 별개 지표이므로, 확정 사례 전용의 훨씬 낮고
- * 현실적인 목표를 별도로 둔다. */
+ * 정위치 변경)을 모두 충족해야 하는, 난이도가 높은 확정 절차다. 고도화 확정과는 완전히 별개 지표이므로, 확정 사례 전용의
+ * 훨씬 낮고 현실적인 절대건수 목표를 별도로 둔다 (5S 활동 목표는 인당
+ * 개선건수 기준으로 아래 ppTargets()에서 관리, 고도화 확정은 절대 건수). */
 function advTargets(){try{const v=JSON.parse(localStorage.getItem(ADV_TARGET_KEY)||'null');return v&&typeof v==='object'?v:{Q1:2,Q2:3,Q3:3,Q4:4}}catch{return{Q1:2,Q2:3,Q3:3,Q4:4}}}
 function quarterOf(dateStr){const d=new Date(dateStr);if(Number.isNaN(d.getTime()))return null;return 'Q'+(Math.floor(d.getMonth()/3)+1)}
 function confirmedByQuarter(){const s=window.HD20KPIData?.snapshot?.(),confirmed=s?.confirmed||[],out={Q1:0,Q2:0,Q3:0,Q4:0};confirmed.forEach(x=>{const q=quarterOf(x.judgedAt||x.judgeDate||x.confirmedAt);if(q&&out[q]!==undefined)out[q]++});return out}
