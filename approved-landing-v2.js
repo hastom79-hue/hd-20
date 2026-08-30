@@ -52,7 +52,9 @@ function build(){
  const nav=$('.beginnerNav');if(!nav)return false;const labels=$$('.cards .kpi small').slice(0,5).map(textOf);if(labels.length<5)return false;
  document.body.classList.add('hd20-approved-landing');const host=document.createElement('section');host.className='hd20ApprovedLanding';host.setAttribute('aria-label','승인 대시보드 첫 화면');
  host.innerHTML=`<div class="hd20ALNotice"><span>◀</span><b>알림</b><span>5S 정기 Audit 및 고도화 후보 판정 일정을 확인하세요.</span><button class="more" data-go="audit">더보기 +</button></div>
+ <div class="hd20ALSectionLabel">📦 누적 실적 (고도화 후보·확보·유지 건수)</div>
  <div class="hd20ALKpis">${labels.map((x,i)=>`<article class="hd20ALKpi ${['blue','orange','green','cyan','purple'][i]}" data-kpi="${i}" role="button" tabindex="0"><div class="kIcon">${['♙','⌕','✓','▤','♢'][i]}</div><small>${x}</small><strong>—</strong><div class="delta">GMES 공식 판정 원천 기준</div><div class="spark no-data"></div></article>`).join('')}</div>
+ <div class="hd20ALSectionLabel">📐 운영 효율 지표 (판정·Lead Time·유지율·재발률·완료율)</div>
  <div class="hd20ALMetrics">
   <div class="hd20ALMetric"><b>5S 고도화 판정 완료율</b><strong>—</strong><small>5S 고도화 후보 중 판정 완료 비율</small></div>
   <div class="hd20ALMetric"><b>평균 판정 Lead Time</b><strong>—</strong><small>등록일→판정일</small></div>
