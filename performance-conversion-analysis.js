@@ -35,7 +35,7 @@
       const withRate=steps.filter(s=>s[2]>0).map(s=>({label:s[0],pct:s[1]/s[2]}));
       if(withRate.length){
         const worst=withRate.reduce((a,b)=>b.pct<a.pct?b:a);
-        insight.textContent=`💡 가장 큰 병목: ${worst.label} 단계 (${Math.round(worst.pct*100)}%). 확정 자체가 3대 기준을 모두 충족해야 하는 절차라 후보 대비 확정 비율이 낮은 것은 자연스러운 결과이며, 이 단계에 판정 지원을 집중하면 전체 전환이 개선됩니다.`;
+        insight.textContent=`💡 가장 큰 병목: ${worst.label} 단계 (${Math.round(worst.pct*100)}%). 확정 자체가 3대 기준 중 2개 이상을 충족해야 하는 절차라 후보 대비 확정 비율이 낮은 것은 자연스러운 결과이며, 이 단계에 판정 지원을 집중하면 전체 전환이 개선됩니다.`;
       }else insight.textContent='';
     }
   }

@@ -58,7 +58,7 @@ function render(){
     </div></div>`}
   </div>
   <div class="awCard mrCard mr-gold" style="margin-top:12px"><div class="awHead">🏆 5S 고도화 확정 목표 (분기, 3대 기준 충족 사례 기준 · 절대 건수)</div><div class="awBody">
-    <p class="awHint" style="margin:0 0 10px">고도화 확정은 시각화·형적관리 / 인간공학적 Green Zone / 정량축소·정위치 변경 3대 기준을 모두 충족해야 하는 난이도 높은 절차이며, 위 개선활동 목표와 달리 인원 규모와 무관하게 절대 건수로 관리합니다.</p>
+    <p class="awHint" style="margin:0 0 10px">고도화 확정은 시각화·형적관리 / 인간공학적 Green Zone / 정량축소·정위치 변경 3대 기준 중 2개 이상을 충족해야 하는 난이도 높은 절차이며, 위 개선활동 목표와 달리 인원 규모와 무관하게 절대 건수로 관리합니다.</p>
     <table class="awTable"><thead><tr><th>분기</th><th>확정 목표</th><th>실제 확정</th><th>달성률</th></tr></thead><tbody>${advRows}</tbody></table>
   </div></div>
   <p class="awHint" style="margin-top:10px">팀 표시순서·목표·팀장 정보 수정은 상단 <b>⚙ 통합기준정보</b> 버튼에서 진행합니다. 이 화면은 현재 설정값의 조회·추출용입니다.</p>`);
