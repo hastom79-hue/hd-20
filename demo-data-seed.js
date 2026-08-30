@@ -33,13 +33,13 @@ function buildActivityRows(){
   const rows=[];
   for(let i=0;i<120;i++){
     const team=pick(TEAMS),type=pick(CATS);
-    const regDaysAgo=15+Math.floor(rnd()*220);
+    const regDaysAgo=1+Math.floor(rnd()*150);
     const date=dateStr(regDaysAgo);
     const judgeState=pick(JUDGE);
     const isCandidate=judgeState!=='판정대기'?true:rnd()>0.4;
     const confirmed=judgeState==='확정';
     const judgeLagDays=(confirmed||judgeState==='보완요청'||judgeState==='미확정')?3+Math.floor(rnd()*30):null;
-    const judgedAt=judgeLagDays!=null?dateStr(regDaysAgo-judgeLagDays):null;
+    const judgedAt=judgeLagDays!=null?dateStr(Math.max(0,regDaysAgo-judgeLagDays)):null;
     const level=confirmed?1+Math.floor(rnd()*5):null;
     const sixResults=['적합','유지','부적합','완료'];
     const audit6Result=confirmed&&rnd()>0.3?pick(sixResults):null;
@@ -77,10 +77,10 @@ function buildActionCases(leaders){
   const out=[];
   for(let i=0;i<26;i++){
     const team=pick(TEAMS);
-    const regDaysAgo=5+Math.floor(rnd()*120);
+    const regDaysAgo=Math.floor(rnd()*65);
     const startDate=dateStr(regDaysAgo);
-    const dueDaysAfter=7+Math.floor(rnd()*14);
-    const due=dateStr(Math.max(0,regDaysAgo-dueDaysAfter));
+    const dueDaysAfter=7+Math.floor(rnd()*35);
+    const due=dateStr(regDaysAgo-dueDaysAfter);
     const done=rnd()>0.35;
     const doneDate=done?dateStr(Math.max(0,regDaysAgo-dueDaysAfter+Math.floor(rnd()*6-2))):null;
     const leader=leaders.find(t=>t.team===team);
