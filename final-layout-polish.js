@@ -1,1 +1,1 @@
-(()=>{/* Retired: this layer injected late !important light-layout rules and reordered the approved framework after boot, causing desktop layout drift. Design 2 layout is now owned by approved-landing-v2.css/js only. */})();
+(()=>{'use strict';const ID='hd20CanonicalOverhaulCss';let link=document.getElementById(ID);if(!link){link=document.createElement('link');link.id=ID;link.rel='stylesheet';link.href='hd20-overhaul.css?v=20260902-1';document.head.appendChild(link)}})();
