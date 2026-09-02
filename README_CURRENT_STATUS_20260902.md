@@ -20,7 +20,7 @@
 - 라인 정보가 없는 경우 작업장명에서 임의 추정하지 않음.
 
 ## Audit 현재 운영모델
-`Risk 가중 랜덤 대상추출 → Audit 실시(D-Day) → 실시일 기준 6개월 지속관리 → 개선요청/개선조치 → 효과검증·재발 → 종료평가 → 차기 Risk 참고`
+`Risk 가중 랜덤 대상추출 → Audit 실시(D-Day) → 실시일 기준 6개월 지속관리 → 개선요청/개선조치 → 효과검증·재발 → 종료평가 → 차기 Audit 판단 근거`
 
 과거 `1개월 점검 / 3개월 Audit / 6개월 Audit` 고정 Lifecycle은 현재 운영모델에서 사용하지 않는다.
 
@@ -43,6 +43,9 @@
 - 평가근거와 평가일시 저장.
 - `미흡` 결과 자체에 임의 Risk 가중계수를 부여하지 않음.
 - 기존 개선요청·기한경과·재발 이력은 차기 Audit Risk 입력으로 유지.
+- 통합 대시보드에서 `종료평가 대기 / 유지 / 미흡`을 각각 집계.
+- Audit Case Trace에서 6개월 종료일, 종료평가 상태, 평가근거를 동일 Case 행에서 확인 가능.
+- Trace 흐름은 `BEFORE → 조치 → AFTER → 효과검증 → 재발 → 종료평가`까지 연결됨.
 
 ## Legacy 제거 진행상태
 - `hdps-dashboard.js`: Canonical Audit/Action Store 직접 사용.
@@ -74,6 +77,8 @@ Browser #116이 검증한 실제 사용자 흐름:
 
 테스트에서 사용한 `개선기한 7일`은 E2E용 임시 정책값이며 실제 운영정책을 7일로 확정한 것이 아니다.
 
+종료평가 Dashboard/Trace 연결 이후 최신 Runtime/Browser/Pages 검증은 다시 실행되며, 완료 전에는 성공으로 간주하지 않는다.
+
 ## 검증 과정에서 발견·수정한 사항
 - Browser #98: `maturity-seq-action-link.js`가 1M/3M/6M UI를 실제 렌더링하던 문제 검출 → Compatibility Adapter로 전환.
 - Runtime #164: `audit-close-evaluation.js` 안내문 템플릿 문자열 SyntaxError 검출 → 수정.
@@ -83,6 +88,7 @@ Browser #116이 검증한 실제 사용자 흐름:
 
 ## 데이터 의미판정
 - `미발생`을 `발생` 부분문자열 때문에 재발로 오인하지 않도록 명시값 기준으로 판정.
+- Audit Risk와 6개월 지속관리 모두 문제내용/상태 텍스트의 단순 `재발` 단어 포함 여부를 재발 근거로 사용하지 않음.
 - `부적합`을 `적합` 부분문자열 때문에 효과검증 성공으로 오인하지 않도록 명시값 기준으로 판정.
 - 사용자 입력/원천값을 HTML에 삽입하는 보정 로직은 escape 처리 유지.
 
@@ -96,8 +102,8 @@ Browser #116이 검증한 실제 사용자 흐름:
 - `DEVELOPMENT_LOG_20260902_SEMANTIC_FIX.md`
 
 ## 다음 작업
-- Audit Risk 계산에서 재발 입력을 문제설명 텍스트가 아니라 명시적인 재발 상태값으로만 집계하도록 점검/교정.
-- 6개월 종료평가 결과를 Dashboard/Case Trace 상세 Grid에 연결.
+- 최신 Runtime/Browser/Pages 검증 결과 확정.
+- 종료평가 표시를 Browser E2E fixture로 확장하여 `대기/유지/미흡` 회귀검증 강화.
 - 남은 `HD20MaturityFollowup` 활성 참조를 Canonical Audit Store로 단계적으로 제거.
 - `approved-landing-v2.js`의 장기 구조 리팩터링을 메인 배치 안정성을 해치지 않는 범위에서 진행.
 - 운영정책과 Batch E2E를 계속 회귀검증에 유지.
