@@ -27,7 +27,7 @@ jobs:
           python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/hd20-http.log 2>&1 &
           for i in {1..30}; do curl -fsS http://127.0.0.1:4173/index.html >/dev/null && exit 0; sleep 1; done
           cat /tmp/hd20-http.log; exit 1
-      - name: Execute five-area browser contract
+      - name: Execute five-area and HDPS dashboard browser contracts
         run: |
           mkdir -p artifacts
           cat > hd20-browser-smoke.cjs <<'NODE'
@@ -36,48 +36,79 @@ jobs:
 
           (async () => {
             const browser = await chromium.launch({ headless: true });
-            const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
-            const pageErrors = [];
             let failure = null;
-
-            page.on('pageerror', e => pageErrors.push(String(e)));
+            const evidence = {};
 
             try {
+              const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+              const mainErrors = [];
+              page.on('pageerror', e => mainErrors.push(String(e)));
+
               await page.goto('http://127.0.0.1:4173/index.html', { waitUntil: 'networkidle', timeout: 30000 });
               await page.waitForSelector('.beginnerNav', { timeout: 10000 });
               await page.waitForSelector('.hd20ApprovedLanding', { timeout: 10000 });
-              await page.waitForTimeout(1000);
+              await page.waitForTimeout(800);
 
-              const diag = await page.evaluate(() => ({
+              const main = await page.evaluate(() => ({
                 nav: [...document.querySelectorAll('.beginnerNav button[data-key]')].map(x => x.dataset.key),
                 kpiCount: document.querySelectorAll('.hd20ALKpi').length,
                 metricCount: document.querySelectorAll('.hd20ALMetric').length,
                 landing: !!document.querySelector('.hd20ApprovedLanding'),
                 bridge: !!document.getElementById('hd20OperationalBridge'),
-                audit: window.HD20_APPROVED_LANDING_AUDIT || null
+                text: document.body.innerText
               }));
-
               const expected = ['dashboard', 'activity', 'advancement', 'audit', 'action'];
-              if (JSON.stringify(diag.nav) !== JSON.stringify(expected)) throw new Error('Five-area nav mismatch: ' + JSON.stringify(diag.nav));
-              if (diag.kpiCount !== 5) throw new Error('KPI count mismatch: ' + diag.kpiCount);
-              if (diag.metricCount !== 6) throw new Error('Operating metric count mismatch: ' + diag.metricCount);
-              if (!diag.landing) throw new Error('Approved landing missing');
-              if (!diag.bridge) throw new Error('Operational bridge missing');
-              if (pageErrors.length) throw new Error('Page errors: ' + pageErrors.join(' | '));
+              if (JSON.stringify(main.nav) !== JSON.stringify(expected)) throw new Error('Main five-area nav mismatch: ' + JSON.stringify(main.nav));
+              if (main.kpiCount !== 5) throw new Error('Main KPI count mismatch: ' + main.kpiCount);
+              if (main.metricCount !== 6) throw new Error('Main operating metric count mismatch: ' + main.metricCount);
+              if (!main.landing || !main.bridge) throw new Error('Main landing/bridge missing');
+              if (/1개월 점검|3개월 AUDIT|6개월 AUDIT/.test(main.text)) throw new Error('Legacy Audit label rendered on main');
+              if (mainErrors.length) throw new Error('Main page errors: ' + mainErrors.join(' | '));
 
               for (const key of ['activity', 'advancement', 'audit', 'action', 'dashboard']) {
                 await page.click(`.beginnerNav button[data-key="${key}"]`);
-                await page.waitForTimeout(180);
+                await page.waitForTimeout(150);
               }
+              await page.screenshot({ path: 'artifacts/main-dashboard.png', fullPage: true });
+              evidence.main = { ...main, text: undefined, pageErrors: mainErrors };
 
-              fs.writeFileSync('artifacts/diagnostics.json', JSON.stringify({ ...diag, pageErrors }, null, 2));
-              console.log('HD20 FIVE AREA BROWSER PASS', diag);
+              const hp = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+              const hpErrors = [];
+              hp.on('pageerror', e => hpErrors.push(String(e)));
+              await hp.goto('http://127.0.0.1:4173/hdps-dashboard.html', { waitUntil: 'networkidle', timeout: 30000 });
+              await hp.waitForSelector('.hpNav', { timeout: 10000 });
+              await hp.waitForSelector('#hpKpis .hpKpi', { timeout: 10000 });
+              await hp.waitForSelector('#hpActionRows .hpActionRow', { timeout: 10000 });
+              await hp.waitForTimeout(500);
+
+              const hdps = await hp.evaluate(() => ({
+                nav: [...document.querySelectorAll('.hpNav button[data-hp-nav]')].map(x => x.dataset.hpNav),
+                kpiCount: document.querySelectorAll('#hpKpis .hpKpi').length,
+                actionCount: document.querySelectorAll('#hpActionRows .hpActionRow').length,
+                labels: [...document.querySelectorAll('#hpKpis .hpKpi small')].map(x => x.textContent.trim()),
+                actionLabels: [...document.querySelectorAll('#hpActionRows .hpActionRow > span:first-child')].map(x => x.textContent.trim()),
+                text: document.body.innerText
+              }));
+              if (JSON.stringify(hdps.nav) !== JSON.stringify(expected)) throw new Error('HDPS five-area nav mismatch: ' + JSON.stringify(hdps.nav));
+              if (hdps.kpiCount !== 6) throw new Error('HDPS KPI count mismatch: ' + hdps.kpiCount);
+              if (hdps.actionCount !== 4) throw new Error('HDPS Action Summary count mismatch: ' + hdps.actionCount);
+              if (!hdps.labels.includes('Audit 후 6개월 유지율')) throw new Error('HDPS six-month KPI label missing');
+              for (const label of ['Audit 실시 대기','Audit 후 6개월 관리중','개선조치 미완료','개선조치 기한경과']) {
+                if (!hdps.actionLabels.includes(label)) throw new Error('HDPS action label missing: ' + label);
+              }
+              if (/1개월 점검|3개월 Audit|6개월 Audit|1·3·6개월/.test(hdps.text)) throw new Error('Legacy lifecycle rendered on HDPS dashboard');
+              if (hpErrors.length) throw new Error('HDPS page errors: ' + hpErrors.join(' | '));
+              await hp.screenshot({ path: 'artifacts/hdps-dashboard.png', fullPage: true });
+              evidence.hdps = { ...hdps, text: undefined, pageErrors: hpErrors };
+              await hp.close();
+
+              fs.writeFileSync('artifacts/diagnostics.json', JSON.stringify(evidence, null, 2));
+              console.log('HD20 BROWSER CONTRACTS PASS', evidence);
             } catch (e) {
               failure = e;
-              console.error('HD20 FIVE AREA BROWSER FAIL', e);
-              fs.writeFileSync('artifacts/diagnostics.json', JSON.stringify({ failure: String(e), pageErrors }, null, 2));
+              console.error('HD20 BROWSER CONTRACTS FAIL', e);
+              fs.writeFileSync('artifacts/diagnostics.json', JSON.stringify({ ...evidence, failure: String(e) }, null, 2));
             } finally {
-              try { await page.screenshot({ path: 'artifacts/main-dashboard.png', fullPage: true }); } catch (_) {}
               await browser.close();
             }
 
