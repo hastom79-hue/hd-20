@@ -40,14 +40,26 @@ jobs:
           if not nav: sys.exit('Missing beginnerNav')
           keys=re.findall(r'data-key="([^"]+)"',nav.group(0)); expected=['dashboard','activity','advancement','audit','action']
           if keys!=expected: sys.exit('Static nav keys mismatch: '+str(keys))
-          for x in ['1개월 점검','3개월 AUDIT','6개월 AUDIT','⑦ 기준정보','⑥ 문제점·개선조치']:
+          for x in ['1개월 점검','3개월 AUDIT','6개월 AUDIT','⑦ 기준정보','⑥ 문제점·개선조치','Q3 목표 55건']:
             if x in html: sys.exit('Legacy label remains: '+x)
-          for retired in ['maturity-seq-action-link.js','demo-data-seed.js','action-demo-seed.js','audit-global-seed.js']:
+          for retired in ['maturity-seq-action-link.js','demo-data-seed.js','action-demo-seed.js','audit-global-seed.js','emergency-ui-stabilizer-v2.js']:
             if retired in html: sys.exit('Retired script ref remains: '+retired)
           if 'audit-checklist-master.js' not in html: sys.exit('Audit checklist master script missing')
-          for x in ['Audit 후 6개월 지속관리','정량축소·정위치 변경을 통한 공간 활용']:
+          if 'app-visibility-failsafe.js' not in html: sys.exit('App visibility failsafe missing')
+          for x in ['Audit 후 6개월 지속관리','정량축소·정위치 변경을 통한 공간 활용','인당 목표 미설정']:
             if x not in html: sys.exit('Required label missing: '+x)
           PY
+      - name: Verify canonical dashboard core target contract
+        run: |
+          set -euo pipefail
+          grep -q 'targetMaster={Q1:null,Q2:null,Q3:null,Q4:null}' app.js
+          grep -q 'HD20DashboardCore' app.js
+          grep -q '인당 목표 미설정' app.js
+          ! grep -q 'ensureFailSafeNav\|grid-template-columns:repeat(7\|1·3·6개월 점검\|HD20LegacyDashboard' app.js
+          ! grep -q 'Q1:0.5\|Q2:0.6\|Q3:0.6\|Q4:0.7' app.js
+          test -s app-visibility-failsafe.js
+          test ! -e emergency-ui-stabilizer-v2.js
+          grep -q 'hd20-ready' app-visibility-failsafe.js
       - name: Verify five-area navigation controller
         run: |
           set -euo pipefail
