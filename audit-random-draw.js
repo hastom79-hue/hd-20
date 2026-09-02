@@ -1,6 +1,6 @@
 (()=>{'use strict';
 const STYLE='auditRandomDrawStyle',DRAW_KEY='hd20AuditRandomDrawsV1',TEAM_KEY='hd20TeamLeaderMasterV1',ACTION_KEY='hd20ActionCasesV2',POLICY_KEY='hd20OperatingPolicyV1';
-const TEAMS=['대형메인팀','휠로더Front팀','대형Att.팀','휠로더리어팀','중형상부1팀','중형메인팀','중형Att팀','대형상부팀','프레임제작팀','휠로더메인팀','중형상부2팀','중형하부팀','Boom제작팀','초대형조립팀','성능팀','트러블슈팅팀'];
+const TEAMS=window.HD20ProductionTeamMaster?.teamNames?.()||[];
 function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function load(k){try{const v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[]}catch{return[]}}
 function save(k,v){localStorage.setItem(k,JSON.stringify(v))}
@@ -15,7 +15,7 @@ function sampleCount(){if(window.HD20PolicyConfig?.auditSampleCount)return windo
 function teamRisk(team){const acts=load(ACTION_KEY).filter(a=>String(a.team||'').trim()===team),{start,end}=previousMonthRange();let prev=0,overdue=0,recurrence=0;for(const a of acts){const d=dateOnly(a.date||a.registeredAt||a.created);if(d&&d>=start&&d<end)prev++;const due=dateOnly(a.due);if(isOpen(a)&&due&&due<dateOnly(new Date()))overdue++;if(recurrenceOf(a))recurrence++}const cumulative=acts.length,w=policyWeights();const weight=w?1+(prev*w.previousMonth)+(cumulative*w.cumulative)+(overdue*w.overdue)+(recurrence*w.recurrence):1;return{team,prev,cumulative,overdue,recurrence,weight:Math.max(0.0001,Number(weight.toFixed(4))),policyApplied:!!w}}
 function riskTable(){return TEAMS.map(teamRisk).sort((a,b)=>b.weight-a.weight)}
 function weightedPick(rows){const total=rows.reduce((s,r)=>s+r.weight,0);let n=Math.random()*total;for(const r of rows){n-=r.weight;if(n<=0)return r}return rows[rows.length-1]}
-function pickTeams(count){const n=Number(count);if(!Number.isInteger(n)||n<1)throw new Error('Audit 표본수가 설정되지 않았습니다.');if(n>TEAMS.length)throw new Error(`Audit 표본수는 전체 대상팀 ${TEAMS.length}개를 초과할 수 없습니다.`);const available=riskTable().slice(),picked=[];while(picked.length<n&&available.length){const row=weightedPick(available);picked.push(row);available.splice(available.findIndex(x=>x.team===row.team),1)}return picked}
+function pickTeams(count){if(!TEAMS.length)throw new Error('생산팀 Canonical Master를 불러오지 못했습니다.');const n=Number(count);if(!Number.isInteger(n)||n<1)throw new Error('Audit 표본수가 설정되지 않았습니다.');if(n>TEAMS.length)throw new Error(`Audit 표본수는 전체 대상팀 ${TEAMS.length}개를 초과할 수 없습니다.`);const available=riskTable().slice(),picked=[];while(picked.length<n&&available.length){const row=weightedPick(available);picked.push(row);available.splice(available.findIndex(x=>x.team===row.team),1)}return picked}
 function pickTeam(){return pickTeams(1)[0]}
 function mailFields(team,x){const subject=`[5S Audit 안내] ${team} Audit 대상 선정`;const body=`${x.leader||'팀장'}님,\n\n5S Audit 자동 추출 결과 ${team}이(가) 이번 점검 대상으로 선정되었습니다.\n\n- 선정일시: ${new Date().toLocaleString('ko-KR')}\n- 선정 방식: ${policyWeights()?'기준정보에 설정된 Risk 가중 랜덤':'세부 Risk 가중정책 미설정 상태의 균등 랜덤'}\n- 동일 추출 Batch 내 중복선정: 없음\n\n담당자 안내에 따라 점검 일정에 협조해 주시기 바랍니다.\n\n울산캠퍼스 5S 활동관리 시스템`;return{subject,body}}
 function openMail(team,x){if(!x.email)return alert('해당 팀장의 실제 이메일이 기준정보에 등록되지 않았습니다.');const{subject,body}=mailFields(team,x);location.href=`mailto:${encodeURIComponent(x.email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`}
