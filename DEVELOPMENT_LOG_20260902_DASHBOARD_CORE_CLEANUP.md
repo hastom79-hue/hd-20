@@ -65,10 +65,36 @@ Runtime Smoke에 다음 회귀방지 계약을 추가했다.
 관련 커밋:
 - `8a913492ca156a8d7fa348d0b9d0a98724a38379`.
 
-## 5. 검증 상태
-본 기록 시점에는 위 최신 HEAD에 대한 Runtime/Browser/Package/Pages가 실행 중일 수 있으므로 **성공으로 선기록하지 않는다**. 결과가 모두 확정된 후 성공 Run 번호를 추가 기록한다.
+## 5. 검증 결과
+Dashboard Core Canonical 정리와 문서 기록까지 포함한 commit `ad1566e21e47568aa1c3e4c28808be0fa54cb8bc` 기준 자동검증이 모두 성공했다.
 
-## 6. 후속 점검
+- Runtime Smoke #228: **success**
+- Browser Smoke #171: **success**
+- Package HD20 source #432: **success**
+- GitHub Pages #623: **success**
+
+Browser Smoke의 실제 Chromium contract도 성공했다.
+
+## 6. 배포 노출용 Prototype / Sample 퇴역
+실행경로에는 연결되지 않았지만 GitHub Pages와 전체 소스 ZIP에 포함되던 독립 Prototype 및 가상 데이터 파일을 추가 점검했다.
+
+퇴역 대상:
+- `management.html`: 고정 KPI, 임의 48건 Raw Data, 샘플 외부 이미지, 과거 탭 구조를 포함한 독립 Prototype.
+- `v2-preview.html`: 과거 디자인 Preview 페이지.
+- `HD20_생산팀장_메일정보_강제생성_샘플.csv`: 가상 이름과 `example.com` 메일을 포함한 샘플.
+- `data/HD20_생산팀장_메일정보_강제생성_샘플.csv`: 위 파일의 중복본.
+
+현재 index/HDPS/Boot Loader의 참조가 없음을 확인한 뒤 삭제했다. 과거 개발 맥락은 Worklog/개발일지에 남기고 운영 배포물에서는 제거한다.
+
+관련 커밋:
+- `511401dbac5aa706da47569b4e784b8b3b52c213` — 루트 가상 팀장 CSV 삭제.
+- `b8863e2e6f6aefd5ca33fc33675bd98622614f44` — data 중복 가상 팀장 CSV 삭제.
+- `d391047c88fbd58c6da977de8a1a864904eed7ac` — `management.html` 삭제.
+- `e549a4f7f82846e9a36504d2dd9dc56a16aed3d2` — `v2-preview.html` 삭제.
+- `e34571d3afbfcd6b5bd3ebeb5c6c3a83ca39e70f` — 4개 파일 재유입 방지 Runtime 계약.
+
+## 7. 후속 점검
 - 실제 실행 JS/HTML의 `mock / seed / legacy / 1·3·6개월` 잔여를 계속 점검한다.
 - 총 건수와 인당 실적처럼 단위가 다른 지표를 동일 축/목표선으로 혼합하지 않는다.
 - 분기 목표는 실제 기준정보에 저장된 값만 운영값으로 사용한다.
+- 현재 배포물에 불필요한 독립 Preview/가상 데이터 파일을 다시 포함하지 않는다.
