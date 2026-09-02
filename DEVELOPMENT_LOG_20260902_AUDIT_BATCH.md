@@ -19,6 +19,7 @@
 - `audit-batch-execution.js`
 - `final-layout-polish.js`
 - `.github/workflows/runtime-smoke.yml`
+- `.github/workflows/browser-smoke.yml`
 
 ## 구현 내용
 
@@ -52,8 +53,7 @@
 
 ## 자동검증 보강
 
-Runtime Smoke에 다음 계약을 추가했다.
-
+### Runtime Smoke
 - `sampleCount:null` 정책 기본값 존재.
 - `auditSampleCount()` 존재.
 - `pickTeams()` 존재.
@@ -61,8 +61,22 @@ Runtime Smoke에 다음 계약을 추가했다.
 - Batch ID 기록.
 - 표본수 미설정 상태 안내.
 - Master의 `data-op-sample` 입력 존재.
+- 전체 JavaScript `node --check`가 `audit-batch-execution.js` 포함 전체 JS를 검사.
 
-추가로 전체 JavaScript `node --check`가 `audit-batch-execution.js`도 자동 검사한다.
+### Browser Smoke E2E
+커밋 `1357470321b924e342636c44cac43301f948ed21`에서 다음 실제 사용자 흐름을 추가했다.
+
+1. 테스트 브라우저 LocalStorage에 `Audit 표본수=3`, Risk disabled, 개선기한 7일을 주입.
+2. 유지·Audit 탭으로 이동.
+3. 실제 `대상 일괄추출` 버튼 클릭.
+4. 같은 Batch에서 정확히 3개 팀이 생성되는지 확인.
+5. 선정된 생산팀이 `Set` 기준 3개로 모두 고유한지 확인하여 Batch 내 중복 0건 검증.
+6. `audit-batch-execution.js`의 실시대기 선택지가 3건인지 확인.
+7. 첫 번째 선정팀의 `Audit 실시일=2026-09-02 / 결과=적합 / 작업장 / 실시자`를 실제 입력 후 등록 버튼 클릭.
+8. `hd20AuditRandomDrawsV1`에서 `auditDate`가 저장된 건이 정확히 1건인지 확인.
+9. 등록 결과가 `적합`, 실시일이 `2026-09-02`인지 확인.
+10. 실시대기 선택지가 3건에서 2건으로 감소했는지 확인.
+11. 메인 대시보드, Audit Batch 실행화면, HDPS 대시보드 스크린샷 및 diagnostics JSON을 CI Artifact로 저장.
 
 ## 커밋
 
@@ -71,15 +85,16 @@ Runtime Smoke에 다음 계약을 추가했다.
 - `dab4cdf28832f9d65a5d36b245489a52f1945abd` — Runtime Smoke 계약 보강.
 - `3fd7b3a95dcb47a50c004b68d089c1693765881e` — Batch 실시대상 선택/등록 확장 모듈 추가.
 - `2c47eafb0e7197c5eb355440c6b7f612422f4878` — Batch 실행 모듈 화면 로딩 연결.
+- `1357470321b924e342636c44cac43301f948ed21` — Audit Batch 실제 추출/실시 Browser E2E 추가.
 
 ## 검증 상태
 
 - Runtime Smoke run #134: **success**.
 - Browser Smoke run #77: **success**.
-- 최신 Batch 실행 UX 변경분은 main push 후 Runtime/Browser/Pages 재검증 중이며 완료 전에는 성공으로 간주하지 않는다.
+- Batch 실행 UX 적용 후 Runtime Smoke run #154: **success**.
+- 신규 E2E가 포함된 Browser Smoke run #98은 본 기록 시점 `in_progress`; 완료 전에는 성공으로 간주하지 않는다.
 
 ## 후속사항
 
-- Browser Smoke에서 정책값을 LocalStorage에 주입한 뒤 실제 다중 추출 버튼을 클릭하여 선택 수와 중복 0건을 확인하는 E2E 테스트 추가.
-- Batch별 Audit 실시결과 등록 E2E 테스트 추가.
+- 신규 E2E run #98 완료 결과를 본 문서와 README에 반영.
 - 6개월 지속관리 종료평가와 차기 Audit Risk 환류 UI를 한 화면에서 추적 가능하도록 연결.
