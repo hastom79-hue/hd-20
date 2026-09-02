@@ -150,6 +150,22 @@ jobs:
           grep -q 'auditSampleCount' hd20-policy-config.js
           grep -q 'data-op-sample' operating-policy-master.js
 
+      - name: Verify Audit to action canonical linkage
+        run: |
+          set -euo pipefail
+          test -s action-audit-linkage.js
+          grep -q "CASE_KEY='hd20ActionCasesV2'" action-audit-linkage.js
+          grep -q 'hd20ActionAuditLinkPendingV1' action-audit-linkage.js
+          grep -q 'sourceCaseId=sourceSnapshot.auditDrawId' action-audit-linkage.js
+          grep -q 'auditDrawId=sourceSnapshot.auditDrawId' action-audit-linkage.js
+          grep -q "autoDuePolicyState='자동지정'" action-audit-linkage.js
+          grep -q "autoDuePolicyState='정책미설정'" action-audit-linkage.js
+          grep -q 'action-audit-linkage.js' final-layout-polish.js
+          grep -q 'data-abe-select' audit-checklist-enhance.js
+          grep -q 'auditDrawId' audit-checklist-enhance.js
+          grep -q "TEAM_KEY='hd20TeamLeaderMasterV1'" audit-closed-loop-workflow.js
+          ! grep -q "leader:'자동연결'\|workplace:'Audit 대상 현장'" audit-closed-loop-workflow.js
+
       - name: Verify dashboard closed-loop summaries
         run: |
           set -euo pipefail
