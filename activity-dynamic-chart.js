@@ -1,7 +1,7 @@
 (()=>{'use strict';
 const KEY='hd20GMES5SAutoImproveRawV1';
 const CATS=['정리','정돈','청소','시각화','위험구역관리','5S 고도화'];
-const TEAM_MASTER=['대형메인팀','휠로더Front팀','대형Att.팀','휠로더리어팀','중형상부1팀','중형메인팀','중형Att팀','대형상부팀','프레임제작팀','휠로더메인팀','중형상부2팀','중형하부팀','Boom제작팀','초대형조립팀','성능팀','트러블슈팅팀'];
+const TEAM_MASTER=window.HD20ProductionTeamMaster?.teamNames?.()||[];
 const COLORS=['#4ea4ff','#5fcf86','#f0ab3c','#9f7aea','#ef6f6c','#53c7c2'];
 function load(){try{const v=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(v)?v:[]}catch{return[]}}
 function rowDate(x){return window.HD20KPIData?.rowDate?.(x)||x.date||x.regDate||x.createdAt||x.importedAt||''}
