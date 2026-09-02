@@ -35,14 +35,16 @@ jobs:
           python3 - <<'PY'
           import pathlib,re,sys
           html=pathlib.Path('index.html').read_text(encoding='utf-8')
+          if '<h1>울산캠퍼스 5S 활동관리 시스템</h1>' not in html: sys.exit('Main title mismatch')
           nav=re.search(r'<nav class="beginnerNav".*?</nav>',html,re.S)
           if not nav: sys.exit('Missing beginnerNav')
           keys=re.findall(r'data-key="([^"]+)"',nav.group(0)); expected=['dashboard','activity','advancement','audit','action']
           if keys!=expected: sys.exit('Static nav keys mismatch: '+str(keys))
           for x in ['1개월 점검','3개월 AUDIT','6개월 AUDIT','⑦ 기준정보','⑥ 문제점·개선조치']:
             if x in html: sys.exit('Legacy label remains: '+x)
-          for retired in ['maturity-seq-action-link.js','demo-data-seed.js']:
+          for retired in ['maturity-seq-action-link.js','demo-data-seed.js','audit-global-seed.js']:
             if retired in html: sys.exit('Retired script ref remains: '+retired)
+          if 'audit-checklist-master.js' not in html: sys.exit('Audit checklist master script missing')
           for x in ['Audit 후 6개월 지속관리','정량축소·정위치 변경을 통한 공간 활용']:
             if x not in html: sys.exit('Required label missing: '+x)
           PY
@@ -169,7 +171,7 @@ jobs:
           set -euo pipefail
           grep -q 'splitStoreDisabled:true' workflow-crud.js
           ! grep -q 'hd20WorkflowDataV1' workflow-crud.js
-      - name: Verify demo pollution guards
+      - name: Verify demo pollution and Audit master guards
         run: |
           set -euo pipefail
           test ! -e demo-data-seed.js
@@ -178,5 +180,9 @@ jobs:
           ! grep -R --include='*.js' --exclude-dir='.git' -n "source:'demo-seed'" .
           grep -q 'HD20_ACTION_DEMO_SEED_DISABLED' action-demo-seed.js
           ! grep -q 'commons.wikimedia.org' action-field-photo-gallery.js
-          grep -q 'score:0' audit-global-seed.js
-          grep -q "result:'N/A'" audit-global-seed.js
+          test -s audit-checklist-master.js
+          test ! -e audit-global-seed.js
+          grep -q 'score:0' audit-checklist-master.js
+          grep -q "result:'N/A'" audit-checklist-master.js
+          grep -q 'Audit 실시 후 6개월 지속관리 기간 동안 유지되는가?' audit-checklist-master.js
+          ! grep -q '1·3·6개월 Audit' audit-checklist-master.js
