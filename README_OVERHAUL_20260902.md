@@ -14,6 +14,8 @@ HD-20은 기존 7개 업무탭을 그대로 유지하지 않고 목적과 업무
 
 `통합기준정보`는 업무탭이 아니라 상단 공통 Utility로 유지한다. `HDPS · 5S Expert AI`는 공통 지원기능이다.
 
+정적 `index.html` 자체도 5영역으로 전환되어 첫 렌더링부터 동일한 구조를 사용한다. 실행 후 JavaScript가 7탭을 사후 치환하는 방식에 의존하지 않는다.
+
 ## 2. 5S 활동유형
 정본 6종은 다음과 같다.
 
@@ -91,7 +93,9 @@ Audit 추출/실시 Store: `hd20AuditRandomDrawsV1`
 
 `고도화 조건 충족 수준 → 적용범위 → Audit 6개월 관리 → 개선조치 미완료/기한경과 → 효과검증 → 재발 → 차기 Risk`
 
-운영지표의 `6개월 유지율`은 과거 특정 6개월 Audit 합격률이 아니라 **Audit 실시 후 6개월 관리가 종료된 대상 중 요구수준을 유지한 비율**로 해석한다.
+운영지표의 `6개월 유지율`은 과거 특정 6개월 Audit 합격률이 아니라 **Audit 실시 후 6개월 관리가 종료된 대상 중 요구수준을 유지한 비율**로 해석한다. 사용자 화면 명칭은 `Audit 후 6개월 유지율`로 통일한다.
+
+상단 `HDPS 대시보드`도 별도 Patch Layer 없이 `hdps-dashboard.js` 원본이 `hd20AuditRandomDrawsV1`과 `hd20ActionCasesV2`를 직접 읽는다. 과거 `HD20MaturityFollowup`, `audit6Result` 계열, 1/3/6개월 Lifecycle 직접 참조는 제거했다.
 
 ## 9. 주요 개편 스크립트
 - `hd20-five-area-integration.js`
@@ -108,6 +112,7 @@ Audit 추출/실시 Store: `hd20AuditRandomDrawsV1`
 - `audit-action-case-trace.js`
 - `dashboard-operational-bridge.js`
 - `legacy-lifecycle-retirement.js`
+- `hdps-dashboard.js`
 - `final-layout-polish.js`
 
 ## 10. 검증 계약
@@ -115,7 +120,7 @@ Audit 추출/실시 Store: `hd20AuditRandomDrawsV1`
 
 - 전체 JavaScript `node --check`
 - index script reference 존재여부
-- 5개 영역 Navigation contract
+- 정적 `index.html` 5개 영역 Navigation contract
 - Canonical KPI source 연결
 - Audit D-Day + 달력 6개월 관리
 - D+7~D+14 개선기한 범위
@@ -123,6 +128,8 @@ Audit 추출/실시 Store: `hd20AuditRandomDrawsV1`
 - 라인 임의추정 금지
 - Demo 데이터 운영 KPI 자동주입 금지
 - Audit 표본수 정책 보존 및 Batch 무중복 추출 계약
+- HDPS 대시보드 Canonical Audit/Action Store 직접 연결
+- HDPS 대시보드 내 구형 `HD20MaturityFollowup`, `audit6Result`, 1/3/6개월 Lifecycle 재유입 방지
 - Browser Smoke에서 5개 영역 실제 클릭전환
 
 ### 2026-09-02 1차 main 배포 검증
@@ -133,7 +140,7 @@ Audit 추출/실시 Store: `hd20AuditRandomDrawsV1`
 
 ### Audit Batch 추출 후속 검증
 - Runtime Smoke run #134: **success**
-- Browser Smoke run #77: 최신 기록 시점 실행 중 — 완료 결과는 개발일지에 후속 기록.
+- Browser Smoke run #77: **success**
 
 ## 11. 개발/반영 규칙
 코드 변경은 다음 순서를 따른다.
@@ -159,9 +166,17 @@ Audit 표본수가 미설정이면 시스템이 임의로 1건을 추출하지 �
 
 세부 구현 이력은 `DEVELOPMENT_LOG_20260902_AUDIT_BATCH.md`에도 기록한다.
 
-## 13. 현재 배포 이후 후속개발 우선순위
+## 13. HDPS 대시보드 Canonical 전환
 
-1. 정적 `index.html`의 7탭 및 1/3/6개월 Audit Legacy 문구를 실제 소스에서 제거하여 런타임 치환 의존도를 낮춘다.
-2. 다중 선정된 각 Audit 대상의 실시결과 등록 UX를 Batch 단위로 개선한다.
+- `hdps-dashboard.js`가 Audit/Action Canonical Store를 직접 사용하도록 재작성되었다.
+- `hdps-dashboard.html`에서 `maturity-seq-action-link.js` 및 임시 `hdps-dashboard-current-model.js` 로딩을 제거했다.
+- 임시 보정 파일 `hdps-dashboard-current-model.js`는 저장소에서 삭제했다.
+- Action Summary는 `Audit 실시 대기 / Audit 후 6개월 관리중 / 개선조치 미완료 / 개선조치 기한경과`로 구성한다.
+- 상세 구현 및 커밋은 `DEVELOPMENT_LOG_20260902_HDPS_CANONICAL.md`에 기록한다.
+
+## 14. 현재 후속개발 우선순위
+
+1. Browser Smoke에서 `hdps-dashboard.html` 직접 진입 및 핵심 KPI/Action Summary 렌더링을 검증한다.
+2. 다중 선정된 각 Audit 대상의 `Audit 실시일 / 결과 / 개선요청` 입력 UX를 Batch 단위로 개선한다.
 3. Browser Smoke에 운영정책 주입 → 실제 다중추출 → 선택수/중복 0건 검증을 추가한다.
 4. 각 변경마다 Runtime/Browser/Pages 검증과 개발일지 기록을 반복한다.
