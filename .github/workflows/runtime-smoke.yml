@@ -163,7 +163,7 @@ jobs:
           grep -q 'action-audit-linkage.js' final-layout-polish.js
           grep -q 'data-abe-select' audit-checklist-enhance.js
           grep -q 'auditDrawId' audit-checklist-enhance.js
-          grep -q "TEAM_KEY='hd20TeamLeaderMasterV1'" audit-closed-loop-workflow.js
+          grep -q "LEADER_KEY='hd20TeamLeaderMasterV1'" audit-closed-loop-workflow.js
           ! grep -q "leader:'자동연결'\|workplace:'Audit 대상 현장'" audit-closed-loop-workflow.js
 
       - name: Verify dashboard closed-loop summaries
