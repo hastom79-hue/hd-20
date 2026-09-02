@@ -98,6 +98,10 @@ jobs:
           grep -q 'finalEvaluationRiskReference' audit-close-evaluation.js
           grep -q '별도 Risk 가중계수는 임의로 부여하지 않으며' audit-close-evaluation.js
           grep -q 'audit-close-evaluation.js' final-layout-polish.js
+          grep -q 'Audit ↔ 개선조치 ↔ 종료평가 Case 추적' audit-action-case-trace.js
+          grep -q 'function closeState' audit-action-case-trace.js
+          grep -q 'finalEvaluationNote' audit-action-case-trace.js
+          grep -q '종료평가 대기' audit-action-case-trace.js
           ! grep -q '1개월 점검\|3개월 AUDIT\|6개월 AUDIT' audit-action-auto-link.js
       - name: Verify audit operating-policy and batch-draw contract
         run: |
@@ -123,6 +127,11 @@ jobs:
           set -euo pipefail
           test -s dashboard-operational-bridge.js
           grep -q '운영 폐쇄루프 현황' dashboard-operational-bridge.js
+          grep -q '종료평가 대기' dashboard-operational-bridge.js
+          grep -q '종료평가 · 유지' dashboard-operational-bridge.js
+          grep -q '종료평가 · 미흡' dashboard-operational-bridge.js
+          grep -q "finalEvaluation==='유지'" dashboard-operational-bridge.js
+          grep -q "finalEvaluation==='미흡'" dashboard-operational-bridge.js
           grep -q 'dashboard-operational-bridge.js' final-layout-polish.js
       - name: Verify split CRUD store is retired
         run: |
