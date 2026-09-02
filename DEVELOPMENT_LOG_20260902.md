@@ -1,6 +1,6 @@
 # HD-20 전면개편 개발일지 — 2026-09-02
 
-> 대상 브랜치: `hd20-overhaul-20260902`
+> 대상 브랜치: `hd20-overhaul-20260902` → `main` 배포 진행
 > 목적: 2026-09-02 전면개편 작업의 요구사항, 구현, 검증, 잔여사항을 코드 변경과 동시에 누적 기록한다.
 > 원칙: 과거 기준은 삭제하지 않고 Historical로 보존하되, 현재 기준과 충돌하는 경우 `README_OVERHAUL_20260902.md`와 본 일지를 우선한다.
 
@@ -23,7 +23,7 @@
 - `hd20-five-area-integration.js`, `hd20-five-area.css`, `hd20-overhaul.css` 추가.
 - `beginner-navigation.js`를 5영역 기준으로 개편.
 - `통합기준정보`는 업무탭이 아니라 상단 Utility로 유지.
-- `main`은 변경하지 않고 작업 브랜치에서 진행.
+- 초기 구현은 작업 브랜치에서 진행.
 
 ## 2026-09-02 / 고도화 조건 충족 × 적용범위 분석
 
@@ -133,12 +133,31 @@
 - 정책 저장 시 `hd20OperatingPolicyV1`에 저장하고 `hd20-policy-updated` 이벤트를 발생시켜 Audit/개선조치 화면에 즉시 반영.
 - 정책 미설정 상태를 숨기지 않고 화면에 `정책미설정` 또는 `균등 랜덤`으로 표시.
 
-### 회귀검증 대상
-- Master 기존 생산팀 표시순서/분기목표 탭이 정상 유지되는지 확인.
-- 운영정책 탭 진입/저장 후 기존 Master 닫기/저장 동작과 충돌 없는지 확인.
-- 정책 저장 후 Audit 랜덤 추출 설명, 개선요청 자동기한 표시가 즉시 변경되는지 확인.
+## 2026-09-02 11:33 KST / 전면개편 1차 main 배포
 
-### 잔여사항
-- 정적 `index.html`의 기존 7탭 및 1/3/6 Audit 문구를 실제 소스에서 5영역 기준으로 직접 정리 필요.
-- Runtime/Browser Smoke 계약에 운영정책 UI 및 정책값 유효성 검증 추가 필요.
-- Audit 표본수 설정값을 다중 무작위 추출 로직에 연결하는 구현 필요.
+### 반영 방식
+- 작업 브랜치 `hd20-overhaul-20260902`에서 Runtime Smoke 및 Browser Smoke 성공 확인 후 Pull Request #1 생성.
+- PR #1 `HD-20 2026-09-02 전면개편 배포`를 `main`에 병합.
+- main 배포 기준 Merge Commit: `28f53aa2aceabed41eda554235dae8e429a74ee5`.
+
+### main 배포 검증
+- Runtime Smoke run #129: **success**.
+- Browser Smoke run #72: **success**. 5개 영역 실제 클릭 전환 포함.
+- Package HD20 source run #333: **success**.
+- GitHub Pages build/deployment run #524: **success**.
+
+### 배포된 주요 범위
+- 5영역 Navigation 및 통합 레이어.
+- 고도화 1/2/3조건 × 작업장/라인 분석.
+- 실제 Audit 실시일 기준 6개월 지속관리.
+- Risk 랜덤 Audit 정책 구조.
+- Audit ↔ 개선조치 Case 연계 및 효과/재발 추적.
+- 개선요청 D+7~D+14 정책 구조 및 운영정책 Master.
+- 운영 폐쇄루프 Dashboard Bridge.
+- Runtime/Browser 회귀검증 체계.
+
+### 다음 작업
+- 정적 `index.html`에 남은 7탭 및 1/3/6 Audit Legacy 문구를 실제 소스에서 제거.
+- Audit 표본수 설정을 중복 없는 다중 랜덤 추출에 연결.
+- 다중 Audit 선정 건의 통지/실시/6개월 관리 UX 정리.
+- 각 변경 후 main 배포 및 개발일지/README 갱신을 반복.
