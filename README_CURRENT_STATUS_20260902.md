@@ -28,7 +28,7 @@
 - `activity-dynamic-chart.js`
 - `performance-conversion-analysis.js`
 
-팀장명·이메일은 팀 목록과 분리하여 실제 입력값만 `hd20TeamLeaderMasterV1`에 저장한다.
+팀장명·이메일은 팀 목록과 분리하여 실제 입력값만 `hd20TeamLeaderMasterV1`에 저장한다. 생산팀장 업로드 양식도 가상 이름·가상 이메일 없이 `생산팀 / 생산팀장 / 이메일` 헤더만 제공한다.
 
 ## 고도화 분석 / 공식판정 분리
 고도화 3개 조건은 다음으로 고정한다.
@@ -103,35 +103,48 @@
 
 Audit 체크리스트 Master는 `audit-checklist-master.js`가 `N/A / 0` 초기상태만 제공하며 실제 실적을 생성하지 않는다.
 
-## 데이터 의미판정
+## 데이터 의미·출력 안전성
 - `미발생`을 `발생` 부분문자열로 재발 오인하지 않음.
 - 문제내용/상태 텍스트에 `재발`이 들어갔다는 이유만으로 재발판정하지 않음.
 - `부적합`을 `적합` 부분문자열로 효과검증 성공 처리하지 않음.
 - 사용자/원천값을 HTML에 삽입할 때 escape 처리 유지.
+- `audit-six-month-control.js`의 생산팀 출력도 `esc()`를 적용해 저장된 과거 Audit 원천값이 HTML로 해석되지 않도록 보강함.
 
-## 최근 자동검증 이력
-Commit `d9902e7b055c64a5c908beffc8bd72c991b4fc12` 생산팀 Master 2차 단일화 기준:
-- Runtime Smoke #245: **success**
-- Browser Smoke #188: **success**
-- Package #449: **success**
-- Pages #640: 당시 확인 시 pending이었으므로 성공으로 선기록하지 않음.
+## Canonical Runtime 정리 중 실패·교정 이력
+- Runtime #260: **failure** — `performance-conversion-analysis.js` 구문 오류를 발견해 Canonical 버전으로 재작성.
+- Runtime #261: **failure** — 이미 퇴역한 `awRegister`를 Runtime 계약이 계속 요구하는 검증계약 오류를 수정.
+- Runtime #262: **failure** — 고도화 의미검증 문구와 grep 문자열의 불일치를 수정.
+- Runtime #265: 전체 현행화 계약 **success**.
 
-이후 Canonical Runtime 정리 과정에서 실패도 그대로 기록한다.
+실패 Run도 삭제하거나 숨기지 않고 `DEVELOPMENT_LOG_20260902_CANONICAL_RUNTIME.md`에 원인·조치를 기록한다.
 
-Commit `00fb06ebb1bb72aced0bfe5ef77c44b35077c973`:
-- Runtime Smoke #260: **failure** — `performance-conversion-analysis.js` 구문 오류 발견.
+## 최신 확정 자동검증 기준점
+Commit `c662915a20cfab3eeecddf0c420d09c6bb2fb092`:
+- Runtime Smoke #268: **success**
+- Browser Smoke #211: **success**
+- Package HD20 source #472: **success**
+- Pages build and deployment #663: **success**
 
-Commit `309a389668f08863fc9250bfc101a9d5685cd658`:
-- JavaScript syntax 및 이전 10개 Runtime 계약: **success**
-- Runtime Smoke #261: **failure** — 퇴역한 `awRegister`를 검증계약이 계속 요구.
-- Package #465: **success**
+Browser #211은 실제 `③ 고도화·판정` 화면을 열어 다음 의미계약까지 확인한다.
 
-조치:
-- `performance-conversion-analysis.js` Canonical 재작성.
-- Runtime Smoke를 현재 5영역/4개 실제 Workflow screen 기준으로 재정의.
-- 퇴역 파일, 팀 Master 중복, 가상 판정자/사유, 조건충족/공식판정 혼용 재유입을 자동 차단.
+- 조건 충족 수준과 공식판정 분리.
+- 판정주체 `생산혁신팀 + 5S 모듈`.
+- 가상 판정자 미노출.
+- `2개 이상 충족 → 자동 확정` 형태의 의미혼용 미노출.
+- 기존 Audit Batch / Audit 실시 / 종료평가 / Case Trace / Dashboard / HDPS E2E.
 
-최신 HEAD의 Runtime / Browser / Package / Pages는 완료 결과가 확정된 뒤에만 성공으로 추가 기록한다.
+Package #472 Artifact를 직접 압축 해제해 검사한 활성 JS/HTML 기준 다음 잔여는 0건이다.
+
+- `HD20MaturityFollowup`
+- `hd20WorkflowDataV1`
+- `management.html` 죽은 링크
+- `awRegister`
+- `생산혁신팀 메인 담당자`
+- `example.com / 홍길동 / 김현대`
+- `1개월 점검 / 3개월 AUDIT / 6개월 AUDIT`
+- 독립 16개 생산팀 배열 (`app.js`의 `CANONICAL_TEAMS`만 존재)
+
+그 이후 보안성 보강으로 `audit-six-month-control.js`의 생산팀 HTML 출력 escape를 추가 반영했다. 이 후속 변경은 해당 최신 HEAD의 자동검증이 완료된 뒤 별도 성공 기준점으로 확정한다.
 
 ## 주요 최신 개발일지
 - `DEVELOPMENT_LOG_20260902.md`
@@ -145,7 +158,7 @@ Commit `309a389668f08863fc9250bfc101a9d5685cd658`:
 - `DEVELOPMENT_LOG_20260902_CANONICAL_RUNTIME.md`
 
 ## 다음 작업
-- 최신 HEAD의 Runtime / Browser / Package / Pages 결과 확정 및 실패 시 즉시 교정.
-- Browser Smoke에 `③ 고도화·판정` 화면 직접 검증 강화.
-- 배포 HTML/JS의 죽은 링크, 가상값, 폐기 Lifecycle 잔여를 계속 전수검색.
-- 운영정책/기간필터/표시문구가 실제 데이터 구조와 일치하는지 계속 검증.
+- Audit·개선조치·고도화 화면에서 원천/사용자 입력을 `innerHTML`에 삽입하는 나머지 경로의 escape 여부 전수점검.
+- 배포 HTML/JS의 죽은 링크·가상값·폐기 Lifecycle 잔여를 계속 전수검색.
+- 운영정책/표시문구가 실제 데이터 구조와 일치하는지 계속 검증.
+- 변경 후 Runtime / Browser / Package / Pages를 모두 확인하고 개발일지·README를 계속 현행화.
