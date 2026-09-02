@@ -47,7 +47,15 @@ jobs:
               if(main.kpi!==5||main.metric!==6||!main.landing||!main.bridge)throw new Error('Main dashboard contract mismatch');
               if(/1개월 점검|3개월 AUDIT|6개월 AUDIT/.test(main.text))throw new Error('Legacy Audit label on main');
               if(errors.length)throw new Error('Main page errors '+errors.join(' | '));
-              for(const key of ['activity','advancement','audit','action','dashboard']){await page.click(`.beginnerNav button[data-key="${key}"]`);await page.waitForTimeout(120)}
+
+              await page.click('.beginnerNav button[data-key="advancement"]');
+              await page.waitForSelector('#performanceConversionAnalysis.on',{timeout:10000});
+              const advancement=await page.evaluate(()=>{const el=document.getElementById('performanceConversionAnalysis'),text=el?.innerText||'';return{visible:!!el?.classList.contains('on'),text,hasSeparation:text.includes('조건 충족 수준과 공식 판정은 분리'),hasActor:text.includes('생산혁신팀 + 5S 모듈 판정'),hasFakeOwner:text.includes('생산혁신팀 메인 담당자'),hasAutoConfirm:/2개 이상.*확정|조건 충족.*자동.*확정/.test(text)}});
+              if(!advancement.visible||!advancement.hasSeparation||!advancement.hasActor||advancement.hasFakeOwner||advancement.hasAutoConfirm)throw new Error('Advancement semantic contract '+JSON.stringify(advancement));
+              evidence.advancement={visible:advancement.visible,hasSeparation:advancement.hasSeparation,hasActor:advancement.hasActor,hasFakeOwner:advancement.hasFakeOwner,hasAutoConfirm:advancement.hasAutoConfirm};
+              await page.screenshot({path:'artifacts/advancement-canonical.png',fullPage:true});
+
+              for(const key of ['activity','audit','action','dashboard']){await page.click(`.beginnerNav button[data-key="${key}"]`);await page.waitForTimeout(120)}
               evidence.main={nav:main.nav,kpi:main.kpi,metric:main.metric};
               await page.screenshot({path:'artifacts/main-dashboard.png',fullPage:true});
 
