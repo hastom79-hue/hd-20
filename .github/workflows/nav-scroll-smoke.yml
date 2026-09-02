@@ -1,0 +1,57 @@
+name: HD20 nav scroll smoke
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  nav-scroll:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install Playwright Chromium
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Start local web server
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/hd20-http.log 2>&1 &
+          for i in {1..30}; do curl -fsS http://127.0.0.1:4173/index.html >/dev/null && exit 0; sleep 1; done
+          cat /tmp/hd20-http.log; exit 1
+      - name: Verify five top tabs never retain scroll
+        run: |
+          cat > nav-scroll-smoke.cjs <<'NODE'
+          const { chromium } = require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:1440,height:900}});
+            await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'networkidle',timeout:30000});
+            await page.waitForSelector('.beginnerNav button[data-key="dashboard"]');
+            await page.waitForFunction(()=>!!window.HD20NavScrollStability,{},{timeout:10000});
+            const keys=['dashboard','activity','advancement','audit','action'];
+            for(const key of keys){
+              await page.evaluate(()=>window.scrollTo(0,0));
+              await page.evaluate(k=>document.querySelector(`.beginnerNav button[data-key="${k}"]`).click(),key);
+              await page.waitForTimeout(380);
+              let y=await page.evaluate(()=>window.scrollY);
+              if(y!==0)throw new Error(`${key}: top click ended at scrollY=${y}`);
+
+              await page.evaluate(()=>window.scrollTo(0,Math.min(650,Math.max(1,document.documentElement.scrollHeight-innerHeight))));
+              await page.evaluate(k=>document.querySelector(`.beginnerNav button[data-key="${k}"]`).click(),key);
+              await page.waitForTimeout(380);
+              y=await page.evaluate(()=>window.scrollY);
+              if(y!==0)throw new Error(`${key}: scrolled switch ended at scrollY=${y}`);
+            }
+            await browser.close();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+          node nav-scroll-smoke.cjs
