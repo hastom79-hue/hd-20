@@ -69,6 +69,16 @@ jobs:
           test ! -e maturity-seq-action-link.js
           ! grep -R --include='*.js' --exclude-dir='.git' -n 'HD20MaturityFollowup' .
           ! grep -R --include='*.html' --exclude-dir='.git' -n 'maturity-seq-action-link.js' .
+      - name: Verify canonical approved landing
+        run: |
+          set -euo pipefail
+          grep -q "DRAW_KEY='hd20AuditRandomDrawsV1'" approved-landing-v2.js
+          grep -q 'Audit 후 6개월 유지율' approved-landing-v2.js
+          grep -q 'Audit 후 6개월 관리 대상' approved-landing-v2.js
+          grep -q 'audit.navCount===5' approved-landing-v2.js
+          ! grep -q 'HD20MaturityFollowup' approved-landing-v2.js
+          ! grep -q '3개월 AUDIT\|3개월 Audit\|실제 6개월 Audit 결과\|AUDIT 6개월 유지율\|audit.navCount===7' approved-landing-v2.js
+          ! grep -q 'patchApprovedLanding' legacy-lifecycle-retirement.js
       - name: Verify workflow screen contract
         run: |
           set -euo pipefail
