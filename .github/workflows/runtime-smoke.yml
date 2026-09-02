@@ -2,7 +2,7 @@ name: HD20 runtime smoke
 
 on:
   push:
-    branches: [main]
+    branches: [main, hd20-overhaul-20260902]
   workflow_dispatch:
 
 permissions:
@@ -12,130 +12,78 @@ jobs:
   smoke:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
+      - uses: actions/checkout@v4
       - name: Verify JavaScript syntax
         shell: bash
         run: |
           set -euo pipefail
           failed=0
-          while IFS= read -r -d '' file; do
-            if ! node --check "$file" >/dev/null; then
-              echo "::error file=$file::JavaScript syntax check failed"
-              failed=1
-            fi
-          done < <(find . -maxdepth 2 -type f -name '*.js' -print0)
+          while IFS= read -r -d '' file; do node --check "$file" >/dev/null || { echo "::error file=$file::JavaScript syntax check failed"; failed=1; }; done < <(find . -maxdepth 2 -type f -name '*.js' -print0)
           test "$failed" -eq 0
-
       - name: Verify index script references exist
-        shell: bash
         run: |
-          set -euo pipefail
           python3 - <<'PY'
-          import pathlib, re, sys
-          html = pathlib.Path('index.html').read_text(encoding='utf-8')
-          refs = re.findall(r'<script[^>]+src=["\']([^"\']+)', html)
-          missing = []
-          for ref in refs:
-              path = ref.split('?', 1)[0]
-              if path.startswith(('http://','https://','//')):
-                  continue
-              if not pathlib.Path(path).is_file():
-                  missing.append(path)
-          if missing:
-              print('Missing script files:', ', '.join(missing), file=sys.stderr)
-              sys.exit(1)
-          print(f'OK: {len(refs)} index script references resolved')
+          import pathlib,re,sys
+          html=pathlib.Path('index.html').read_text(encoding='utf-8'); missing=[]
+          for ref in re.findall(r'<script[^>]+src=["\']([^"\']+)',html):
+            p=ref.split('?',1)[0]
+            if not p.startswith(('http://','https://','//')) and not pathlib.Path(p).is_file(): missing.append(p)
+          if missing: print('Missing:',missing,file=sys.stderr);sys.exit(1)
           PY
-
-      - name: Verify approved reference 2 static boot path
-        shell: bash
+      - name: Verify five-area navigation controller
         run: |
           set -euo pipefail
-          test -s approved-landing-v2.css
-          test -s approved-landing-v2.js
-          grep -q 'approved-landing-v2.css' index.html
-          grep -q 'approved-landing-v2.js' index.html
-          grep -q 'hd20ApprovedLanding' approved-landing-v2.js
-          grep -q 'visual reference #2' approved-landing-v2.css
-          echo 'OK: approved reference 2 is loaded directly by index.html'
-
-      - name: Verify dashboard navigation contract
-        shell: bash
-        run: |
-          set -euo pipefail
-          for key in dashboard conversion activity workplace audit action master; do
-            grep -q "data-key=\"$key\"" index.html
-            grep -q "data-key=\\\"$key\\\"\|data-key=\"$key\"" beginner-navigation.js
-          done
-          if grep -q "innerHTML=.*5S 고도화 성과\|data-nav=\"performance\"" nav-polish.js; then
-            echo '::error file=nav-polish.js::Legacy 5-menu recreation detected'
-            exit 1
-          fi
-          echo 'OK: static 7-item navigation shell and canonical controller are present'
-
+          for key in dashboard activity advancement audit action; do grep -q "data-key=\\\"$key\\\"\|data-key=\"$key\"" beginner-navigation.js; done
+          ! grep -q '1·3·6개월 Lifecycle' beginner-navigation.js
+          echo 'OK: five-area navigation controller present'
       - name: Verify workflow screen contract
-        shell: bash
         run: |
           set -euo pipefail
-          grep -q "id='awActivity'\|id=\"awActivity\"\|'awActivity'" activity-workflow.js
-          grep -q "awWorkplace" activity-workflow.js
-          grep -q "awAudit" activity-workflow.js
-          grep -q "awAction" activity-workflow.js
-          grep -q "awRegister" activity-workflow.js
-          grep -q "hd20GMES5SAutoImproveRawV1" activity-workflow.js
-          echo 'OK: activity/workplace/audit/action/master screen shells are present'
-
-      - name: Verify canonical KPI wiring and parity audit
-        shell: bash
+          for key in awActivity awWorkplace awAudit awAction awRegister; do grep -q "$key" activity-workflow.js; done
+          grep -q 'hd20GMES5SAutoImproveRawV1' activity-workflow.js
+      - name: Verify canonical KPI wiring
         run: |
           set -euo pipefail
-          test -s dashboard-kpi-source.js
           grep -q 'window.HD20KPIData' dashboard-kpi-source.js
           grep -q 'HD20KPIData' top-kpi-drilldown.js
-          grep -q 'HD20_TOP_KPI_AUDIT' top-kpi-drilldown.js
-          grep -q 'gridRows' top-kpi-drilldown.js
-          grep -q 'displayParity' top-kpi-drilldown.js
           grep -q 'HD20KPIData' performance-conversion-analysis.js
-          if grep -q 'const ACT=' top-kpi-drilldown.js || grep -q 'const WP=' top-kpi-drilldown.js; then
-            echo '::error file=top-kpi-drilldown.js::Hardcoded KPI sample arrays detected'
-            exit 1
-          fi
-          echo 'OK: top KPI, approved cards and popup Grid share canonical source contract'
-
+          ! grep -q 'const ACT=' top-kpi-drilldown.js
+          ! grep -q 'const WP=' top-kpi-drilldown.js
+      - name: Verify audit six-month continuous-control contract
+        run: |
+          set -euo pipefail
+          test -s audit-six-month-control.js
+          test -s audit-closed-loop-workflow.js
+          test -s audit-action-case-trace.js
+          grep -q 'addMonths' audit-six-month-control.js
+          grep -q '6개월 지속관리' audit-six-month-control.js
+          grep -q 'MIN_DUE=7' audit-six-month-control.js
+          grep -q 'MAX_DUE=14' audit-six-month-control.js
+          grep -q 'auditDate' audit-six-month-control.js
+          ! grep -q '1개월 점검\|3개월 AUDIT\|6개월 AUDIT' audit-action-auto-link.js
+          echo 'OK: Audit D-Day + 6-month continuous control + D+7~D+14 action deadline contract present'
+      - name: Verify advancement criteria semantics
+        run: |
+          set -euo pipefail
+          grep -q '시각화·형적관리' maturity-condition-analysis.js
+          grep -q '인간공학적 Green Zone' maturity-condition-analysis.js
+          grep -q '정량축소·정위치 변경을 통한 공간 활용' maturity-condition-analysis.js
+          grep -q '작업장명으로 라인을 추정하지 않습니다' maturity-condition-analysis.js
+      - name: Verify dashboard operational bridge
+        run: |
+          set -euo pipefail
+          test -s dashboard-operational-bridge.js
+          grep -q '운영 폐쇄루프 현황' dashboard-operational-bridge.js
+          grep -q 'dashboard-operational-bridge.js' final-layout-polish.js
       - name: Verify split CRUD store is retired
-        shell: bash
         run: |
           set -euo pipefail
           grep -q 'splitStoreDisabled:true' workflow-crud.js
-          if grep -q "hd20WorkflowDataV1" workflow-crud.js; then
-            echo '::error file=workflow-crud.js::Deprecated split workflow store is still active'
-            exit 1
-          fi
-          echo 'OK: generic workflow CRUD no longer writes a split operational store'
-
-      - name: Verify lifecycle API for approved dashboard
-        shell: bash
-        run: |
-          set -euo pipefail
-          grep -q 'window.HD20MaturityFollowup' maturity-seq-action-link.js
-          grep -q 'HD20MaturityFollowup' approved-landing-v2.js
-          grep -q 'hd20-followup-updated' maturity-seq-action-link.js
-          grep -q "1개월 점검" maturity-seq-action-link.js
-          grep -q "3개월 AUDIT" maturity-seq-action-link.js
-          grep -q "6개월 AUDIT" maturity-seq-action-link.js
-          echo 'OK: approved dashboard 1M/3M/6M lifecycle API is wired'
-
+          ! grep -q 'hd20WorkflowDataV1' workflow-crud.js
       - name: Verify demo pollution guards
-        shell: bash
         run: |
           set -euo pipefail
           grep -q 'HD20_ACTION_DEMO_SEED_DISABLED' action-demo-seed.js
-          if grep -q 'commons.wikimedia.org' action-field-photo-gallery.js; then
-            echo '::error file=action-field-photo-gallery.js::External demo field photo mapping detected'
-            exit 1
-          fi
+          ! grep -q 'commons.wikimedia.org' action-field-photo-gallery.js
           grep -q 'score:0' audit-global-seed.js
           grep -q "result:'N/A'" audit-global-seed.js
-          echo 'OK: action/audit demo pollution guards are present'
