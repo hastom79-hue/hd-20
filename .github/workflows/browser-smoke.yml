@@ -69,6 +69,34 @@ jobs:
               if(after.completed!==1||after.auditDate!=='2026-09-02'||after.auditResult!=='적합'||after.pendingOptions!==2)throw new Error('Batch execution contract '+JSON.stringify(after));
               evidence.auditBatch={before,after};await page.screenshot({path:'artifacts/audit-batch-execution.png',fullPage:true});
 
+              await page.evaluate(()=>{
+                const draws=JSON.parse(localStorage.getItem('hd20AuditRandomDrawsV1')||'[]');
+                draws.unshift({id:'E2E-CLOSE-1',team:'성능팀',date:'2026-01-31T00:00:00.000Z',auditDate:'2026-02-01',auditResult:'적합',workplace:'E2E Close Workplace',auditor:'E2E Tester'});
+                localStorage.setItem('hd20AuditRandomDrawsV1',JSON.stringify(draws));
+                const actions=JSON.parse(localStorage.getItem('hd20ActionCasesV2')||'[]');
+                actions.unshift({id:'E2E-ACTION-CLOSE-1',sourceCaseId:'E2E-CLOSE-1',team:'성능팀',registeredAt:'2026-02-02',due:'2026-02-09',status:'완료',action:'E2E close action',effectState:'유효',effectVerified:true,recurrence:false,recurrenceState:'미발생'});
+                localStorage.setItem('hd20ActionCasesV2',JSON.stringify(actions));
+              });
+              await page.reload({waitUntil:'networkidle'});await page.click('.beginnerNav button[data-key="audit"]');
+              await page.waitForSelector('#hd20AuditCloseEvaluation [data-ace-case]',{timeout:10000});
+              await page.waitForFunction(()=>[...document.querySelectorAll('#hd20AuditCloseEvaluation [data-ace-case] option')].some(o=>o.value==='E2E-CLOSE-1'),{},{timeout:10000});
+              await page.selectOption('#hd20AuditCloseEvaluation [data-ace-case]','E2E-CLOSE-1');
+              await page.selectOption('#hd20AuditCloseEvaluation [data-ace-result]',{label:'미흡'});
+              await page.fill('#hd20AuditCloseEvaluation [data-ace-note]','E2E 종료평가 미흡 근거');
+              await page.click('#hd20AuditCloseEvaluation [data-ace-save]');
+              await page.waitForFunction(()=>{const d=JSON.parse(localStorage.getItem('hd20AuditRandomDrawsV1')||'[]').find(x=>x.id==='E2E-CLOSE-1');return d?.finalEvaluation==='미흡'&&d?.finalEvaluationNote==='E2E 종료평가 미흡 근거'},{},{timeout:10000});
+              const closeSaved=await page.evaluate(()=>{const d=JSON.parse(localStorage.getItem('hd20AuditRandomDrawsV1')||'[]').find(x=>x.id==='E2E-CLOSE-1');return{result:d?.finalEvaluation,note:d?.finalEvaluationNote,at:d?.finalEvaluationAt||null,riskReference:d?.finalEvaluationRiskReference}});
+              if(closeSaved.result!=='미흡'||closeSaved.note!=='E2E 종료평가 미흡 근거'||closeSaved.riskReference!==true)throw new Error('Close evaluation save contract '+JSON.stringify(closeSaved));
+              await page.waitForFunction(()=>{const t=document.querySelector('.hd20CaseTraceAudit')?.innerText||'';return t.includes('E2E-CLOSE-1')&&t.includes('종료평가 · 미흡')&&t.includes('E2E 종료평가 미흡 근거')},{},{timeout:10000});
+              const traceClose=await page.evaluate(()=>{const t=document.querySelector('.hd20CaseTraceAudit')?.innerText||'';return{hasCase:t.includes('E2E-CLOSE-1'),hasWeak:t.includes('종료평가 · 미흡'),hasNote:t.includes('E2E 종료평가 미흡 근거')}});
+              await page.screenshot({path:'artifacts/audit-close-evaluation.png',fullPage:true});
+              await page.click('.beginnerNav button[data-key="dashboard"]');
+              await page.waitForFunction(()=>{const t=document.getElementById('hd20OperationalBridge')?.innerText||'';return t.includes('종료평가 · 미흡')},{},{timeout:10000});
+              const dashboardClose=await page.evaluate(()=>{const t=document.getElementById('hd20OperationalBridge')?.innerText||'';return{hasPending:t.includes('종료평가 대기'),hasMaintain:t.includes('종료평가 · 유지'),hasWeak:t.includes('종료평가 · 미흡'),text:t}});
+              if(!dashboardClose.hasPending||!dashboardClose.hasMaintain||!dashboardClose.hasWeak)throw new Error('Close evaluation dashboard contract '+JSON.stringify(dashboardClose));
+              evidence.auditClose={closeSaved,traceClose,dashboard:{hasPending:dashboardClose.hasPending,hasMaintain:dashboardClose.hasMaintain,hasWeak:dashboardClose.hasWeak}};
+              await page.screenshot({path:'artifacts/dashboard-close-evaluation.png',fullPage:true});
+
               const hp=await browser.newPage({viewport:{width:1440,height:1000}}),hpErrors=[];hp.on('pageerror',e=>hpErrors.push(String(e)));
               await hp.goto('http://127.0.0.1:4173/hdps-dashboard.html',{waitUntil:'networkidle',timeout:30000});await hp.waitForSelector('#hpKpis .hpKpi');await hp.waitForSelector('#hpActionRows .hpActionRow');
               const hdps=await hp.evaluate(()=>({nav:[...document.querySelectorAll('.hpNav button[data-hp-nav]')].map(x=>x.dataset.hpNav),kpi:document.querySelectorAll('#hpKpis .hpKpi').length,actions:document.querySelectorAll('#hpActionRows .hpActionRow').length,labels:[...document.querySelectorAll('#hpKpis .hpKpi small')].map(x=>x.textContent.trim()),actionLabels:[...document.querySelectorAll('#hpActionRows .hpActionRow > span:first-child')].map(x=>x.textContent.trim()),text:document.body.innerText}));
