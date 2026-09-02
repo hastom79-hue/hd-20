@@ -62,6 +62,17 @@ jobs:
           grep -q 'auditDate' audit-six-month-control.js
           ! grep -q '1개월 점검\|3개월 AUDIT\|6개월 AUDIT' audit-action-auto-link.js
           echo 'OK: Audit D-Day + 6-month continuous control + D+7~D+14 action deadline contract present'
+      - name: Verify audit operating-policy and batch-draw contract
+        run: |
+          set -euo pipefail
+          grep -q 'sampleCount:null' hd20-policy-config.js
+          grep -q 'auditSampleCount' hd20-policy-config.js
+          grep -q 'function pickTeams' audit-random-draw.js
+          grep -q 'available.splice' audit-random-draw.js
+          grep -q 'batchId' audit-random-draw.js
+          grep -q 'Audit 표본수가 미설정' audit-random-draw.js
+          grep -q 'data-op-sample' operating-policy-master.js
+          echo 'OK: Audit sample policy + weighted draw without replacement contract present'
       - name: Verify advancement criteria semantics
         run: |
           set -euo pipefail
