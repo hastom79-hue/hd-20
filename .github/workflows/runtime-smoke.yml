@@ -41,7 +41,8 @@ jobs:
           if keys!=expected: sys.exit('Static nav keys mismatch: '+str(keys))
           for x in ['1개월 점검','3개월 AUDIT','6개월 AUDIT','⑦ 기준정보','⑥ 문제점·개선조치']:
             if x in html: sys.exit('Legacy label remains: '+x)
-          if 'maturity-seq-action-link.js' in html: sys.exit('Retired maturity adapter script ref remains')
+          for retired in ['maturity-seq-action-link.js','demo-data-seed.js']:
+            if retired in html: sys.exit('Retired script ref remains: '+retired)
           for x in ['Audit 후 6개월 지속관리','정량축소·정위치 변경을 통한 공간 활용']:
             if x not in html: sys.exit('Required label missing: '+x)
           PY
@@ -58,6 +59,7 @@ jobs:
           ! grep -q '⑥ 기준정보' hdps-dashboard.html
           ! grep -q 'maturity-seq-action-link.js' hdps-dashboard.html
           ! grep -q 'hdps-dashboard-current-model.js' hdps-dashboard.html
+          ! grep -q 'demo-data-seed.js' hdps-dashboard.html
           grep -q "ACTION_KEY='hd20ActionCasesV2'" hdps-dashboard.js
           grep -q "DRAW_KEY='hd20AuditRandomDrawsV1'" hdps-dashboard.js
           grep -q 'Audit 후 6개월 유지율' hdps-dashboard.js
@@ -77,7 +79,10 @@ jobs:
           grep -q 'Audit 후 6개월 유지율' approved-landing-v2.js
           grep -q 'Audit 후 6개월 관리 대상' approved-landing-v2.js
           grep -q 'audit.navCount===5' approved-landing-v2.js
+          grep -q '공식 확정된 고도화 사례가 아직 없습니다.' approved-landing-v2.js
+          grep -q '공식 판정 완료 사례' approved-landing-v2.js
           ! grep -q 'HD20MaturityFollowup' approved-landing-v2.js
+          ! grep -q '3대 기준 중 2개 이상을 충족한 공식확정\|어렵게 확보한 성과' approved-landing-v2.js
           ! grep -q '3개월 AUDIT\|3개월 Audit\|실제 6개월 Audit 결과\|AUDIT 6개월 유지율\|audit.navCount===7' approved-landing-v2.js
       - name: Verify canonical dashboard side summary
         run: |
@@ -167,6 +172,10 @@ jobs:
       - name: Verify demo pollution guards
         run: |
           set -euo pipefail
+          test ! -e demo-data-seed.js
+          ! grep -q 'demo-data-seed.js' index.html
+          ! grep -q 'demo-data-seed.js' hdps-dashboard.html
+          ! grep -R --include='*.js' --exclude-dir='.git' -n "source:'demo-seed'" .
           grep -q 'HD20_ACTION_DEMO_SEED_DISABLED' action-demo-seed.js
           ! grep -q 'commons.wikimedia.org' action-field-photo-gallery.js
           grep -q 'score:0' audit-global-seed.js
