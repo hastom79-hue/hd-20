@@ -97,6 +97,7 @@ Audit 추출/실시 Store: `hd20AuditRandomDrawsV1`
 - `hd20-five-area.css`
 - `hd20-overhaul.css`
 - `hd20-policy-config.js`
+- `operating-policy-master.js`
 - `maturity-condition-analysis.js`
 - `maturity-condition-analysis.css`
 - `audit-random-draw.js`
@@ -133,12 +134,15 @@ Audit 추출/실시 Store: `hd20AuditRandomDrawsV1`
 
 과거 코드/문서에 `1개월/3개월/6개월 Audit`, 7개 탭, 임의 Demo KPI, 임의 Risk 계수 등 현재 기준과 충돌하는 표현이 남아 있으면 **Historical/Legacy로 취급**하고 현재 운영기준으로 다시 사용하지 않는다.
 
-## 12. 현재 정책 설정 필요항목
+## 12. 통합기준정보 운영정책
 
-다음 항목은 승인된 방향은 있으나 정확한 숫자/계수가 아직 확정되지 않았다. 따라서 코드에 임의 상수로 박지 않고 `통합기준정보`에서 설정하도록 구현한다.
+`통합기준정보 > 운영정책`에서 다음 값을 관리한다.
 
-- 개선요청 자동 완료기한 기본일수: 7~14 범위
-- Audit Risk 가중치: 전월 개선요청 / 누적 개선요청 / 기한경과 / 재발
+- 개선요청 자동 완료기한 기본일수: 7~14 범위 정수
+- Audit Risk 가중 적용 여부
+- Risk 가중치: 전월 개선요청 / 누적 개선요청 / 기한경과 / 재발
 - Audit 표본수
 
-세부 정책이 설정되지 않은 상태는 화면에서 숨기지 않고 `정책미설정` 또는 `균등 랜덤`으로 명확히 표시한다.
+`operating-policy-master.js`가 입력값을 검증하고 `hd20OperatingPolicyV1`에 저장한다. 정책 저장 시 `hd20-policy-updated` 이벤트를 발생시켜 Audit/개선조치 화면이 즉시 새 정책을 사용한다.
+
+세부 정책이 설정되지 않은 상태는 화면에서 숨기지 않고 `정책미설정` 또는 `균등 랜덤`으로 명확히 표시한다. Audit 표본수는 현재 Master 저장까지 연결되었으며 다중 추출 로직 연결은 후속 구현 대상이다.
