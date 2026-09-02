@@ -1,3 +1,11 @@
+# HD-20 5S 활동관리 시스템
+
+> **현재 전면개편 기준(2026-09-02):** [`README_OVERHAUL_20260902.md`](./README_OVERHAUL_20260902.md)
+>
+> 아래 내용은 HD-20이 현재 구조로 개편되기 전의 Prototype 개발 이력이다. 5S 유형, 7개/과거 탭 구조, Audit 운영방식 등에서 현재 기준과 충돌할 수 있으므로 **현재 개발/운영 판단은 `README_OVERHAUL_20260902.md`와 `DEVELOPMENT_LOG.md`의 2026-09-02 이후 기록을 우선한다.**
+
+---
+
 # GMES HDPS 5S 활동관리 Prototype (v4 — 실제 생산현장팀 반영)
 
 `index.html` / `styles.css` / `app.js` 3개 파일로 동작하는 단일 정적 프로토타입입니다. `ARCHITECTURE.md`는 업무 로직 문서로 기존대로 유지합니다.
