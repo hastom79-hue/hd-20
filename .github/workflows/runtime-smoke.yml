@@ -42,7 +42,7 @@ jobs:
           if keys!=expected: sys.exit('Static nav keys mismatch: '+str(keys))
           for x in ['1개월 점검','3개월 AUDIT','6개월 AUDIT','⑦ 기준정보','⑥ 문제점·개선조치']:
             if x in html: sys.exit('Legacy label remains: '+x)
-          for retired in ['maturity-seq-action-link.js','demo-data-seed.js','audit-global-seed.js']:
+          for retired in ['maturity-seq-action-link.js','demo-data-seed.js','action-demo-seed.js','audit-global-seed.js']:
             if retired in html: sys.exit('Retired script ref remains: '+retired)
           if 'audit-checklist-master.js' not in html: sys.exit('Audit checklist master script missing')
           for x in ['Audit 후 6개월 지속관리','정량축소·정위치 변경을 통한 공간 활용']:
@@ -175,10 +175,10 @@ jobs:
         run: |
           set -euo pipefail
           test ! -e demo-data-seed.js
-          ! grep -q 'demo-data-seed.js' index.html
-          ! grep -q 'demo-data-seed.js' hdps-dashboard.html
-          ! grep -R --include='*.js' --exclude-dir='.git' -n "source:'demo-seed'" .
-          grep -q 'HD20_ACTION_DEMO_SEED_DISABLED' action-demo-seed.js
+          test ! -e action-demo-seed.js
+          ! grep -q 'demo-data-seed.js\|action-demo-seed.js' index.html
+          ! grep -q 'demo-data-seed.js\|action-demo-seed.js' hdps-dashboard.html
+          ! grep -R --include='*.js' --exclude-dir='.git' -n "source:'demo-seed'\|HD20_DEMO_ACTIONS\|HD20_ACTION_DEMO_SEED_DISABLED" .
           ! grep -q 'commons.wikimedia.org' action-field-photo-gallery.js
           test -s audit-checklist-master.js
           test ! -e audit-global-seed.js
