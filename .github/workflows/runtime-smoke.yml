@@ -41,6 +41,7 @@ jobs:
           if keys!=expected: sys.exit('Static nav keys mismatch: '+str(keys))
           for x in ['1개월 점검','3개월 AUDIT','6개월 AUDIT','⑦ 기준정보','⑥ 문제점·개선조치']:
             if x in html: sys.exit('Legacy label remains: '+x)
+          if 'maturity-seq-action-link.js' in html: sys.exit('Retired maturity adapter script ref remains')
           for x in ['Audit 후 6개월 지속관리','정량축소·정위치 변경을 통한 공간 활용']:
             if x not in html: sys.exit('Required label missing: '+x)
           PY
@@ -78,7 +79,16 @@ jobs:
           grep -q 'audit.navCount===5' approved-landing-v2.js
           ! grep -q 'HD20MaturityFollowup' approved-landing-v2.js
           ! grep -q '3개월 AUDIT\|3개월 Audit\|실제 6개월 Audit 결과\|AUDIT 6개월 유지율\|audit.navCount===7' approved-landing-v2.js
-          ! grep -q 'patchApprovedLanding' legacy-lifecycle-retirement.js
+      - name: Verify canonical dashboard side summary
+        run: |
+          set -euo pipefail
+          test -s dashboard-side-summary.js
+          test ! -e legacy-lifecycle-retirement.js
+          grep -q 'HD20DashboardSideSummary' dashboard-side-summary.js
+          grep -q "DRAW='hd20AuditRandomDrawsV1'" dashboard-side-summary.js
+          grep -q "ACTION='hd20ActionCasesV2'" dashboard-side-summary.js
+          grep -q 'dashboard-side-summary.js' final-layout-polish.js
+          ! grep -q 'legacy-lifecycle-retirement.js' final-layout-polish.js
       - name: Verify workflow screen contract
         run: |
           set -euo pipefail
