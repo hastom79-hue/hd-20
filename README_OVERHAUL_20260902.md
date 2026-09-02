@@ -91,7 +91,17 @@ Audit Case Trace와 통합 대시보드에서 `종료평가 대기 / 유지 / �
 
 Audit Checklist Master는 결과를 `result:'N/A'`, `score:0`으로 시작하며 운영 실적을 만들어내지 않는다. 구형 `1·3·6개월 Audit` 체크리스트 문구도 `Audit 실시 후 6개월 지속관리 기간 동안 유지되는가?`로 교정했다.
 
-## 12. 주요 현재 모듈
+## 12. 메인 대시보드 목표·복구 기준
+- `app.js`는 5영역 Navigation을 재생성하지 않는다. Navigation 정본은 정적 `index.html` + `beginner-navigation.js`이다.
+- 과거 `Q1=0.5 / Q2=0.6 / Q3=0.6 / Q4=0.7` 임의 기본 목표는 삭제했다.
+- 분기별 인당 5S 목표 기본값은 `null / 미설정`이며 `통합기준정보`에 실제 값이 저장된 경우에만 사용한다.
+- 팀별 메인 차트의 막대는 총 활동/후보/확보 건수이므로 단위가 다른 `건/인` 목표선을 차트 높이 기준으로 겹쳐 그리지 않는다.
+- 정적 `Q3 목표 55건` Prototype 문구를 제거했다.
+- 구형 `emergency-ui-stabilizer-v2.js`는 삭제하고 화면 visibility fail-safe만 `app-visibility-failsafe.js`로 분리했다.
+
+## 13. 주요 현재 모듈
+- `app.js`
+- `app-visibility-failsafe.js`
 - `hd20-five-area-integration.js`
 - `hd20-policy-config.js`
 - `operating-policy-master.js`
@@ -117,8 +127,9 @@ Audit Checklist Master는 결과를 `result:'N/A'`, `score:0`으로 시작하며
 - `demo-data-seed.js`
 - `action-demo-seed.js`
 - `audit-global-seed.js`
+- `emergency-ui-stabilizer-v2.js`
 
-## 13. 검증 계약
+## 14. 검증 계약
 `main`에서 다음을 자동검증한다.
 
 - 전체 JavaScript syntax check
@@ -136,10 +147,13 @@ Audit Checklist Master는 결과를 `result:'N/A'`, `score:0`으로 시작하며
 - 종료평가 `유지/미흡` 및 Dashboard/Case Trace 연결
 - Demo seed 파일/참조/전역 재유입 금지
 - Audit Checklist Master `N/A / 0` 초기값 및 현재 6개월 지속관리 문구
+- `app.js` 임의 분기목표 및 7메뉴 복구코드 재유입 금지
+- 정적 `Q3 목표 55건` 재유입 금지
+- 구형 emergency stabilizer 재유입 금지
 - Browser E2E: 표본수 3 → 고유팀 3개 → 1건 Audit 실시 → 대기 2건
 - Browser E2E: 6개월 종료 Case → `미흡` 저장 → Dashboard/Case Trace 반영
 
-## 14. 최근 확정 검증
+## 15. 최근 확정 검증
 Commit `587dd943f85942bc142b23d53fe36e30bb657b92`:
 - Runtime #186 success
 - Browser #129 success
@@ -151,11 +165,15 @@ Commit `cd2ba4cabb7198bcdf538be628d854755a1fcfb5` 구조정리:
 - Browser #141 success
 - Package #402 success
 
-그 이후 공식판정 문구 분리, Demo/Action Demo 퇴역, Audit Checklist Master 전환까지 추가 반영했다. 최신 HEAD 결과는 완료 후에만 성공으로 기록한다.
+Commit `b52122d...` Demo/Seed 퇴역 + Audit Checklist Master 전환:
+- Runtime #218 success
+- Browser #161 success
+- Package #422 success
+- Pages #613 success
 
-## 15. 개발/기록 규칙
+그 이후 메인 대시보드 목표/복구 레거시 제거까지 추가 반영했다. 최신 HEAD 결과는 완료 후에만 성공으로 기록한다.
+
+## 16. 개발/기록 규칙
 작업 순서는 다음 기준을 유지한다.
 
 `요구사항 확인 → main 구현 → Runtime/Browser/Package/Pages 검증 → 개발일지 기록 → README 현행화 → 다음 작업`
-
-상세 이력은 `DEVELOPMENT_LOG_20260902*.md`에 누적한다. 특히 Demo/Seed 정리는 `DEVELOPMENT_LOG_20260902_DEMO_RETIREMENT.md`, Legacy 정리는 `DEVELOPMENT_LOG_20260902_LEGACY_ADAPTER.md`, Audit 종료평가는 `DEVELOPMENT_LOG_20260902_AUDIT_CLOSE.md`를 기준으로 확인한다.
