@@ -120,6 +120,45 @@ Browser E2E의 `D+7`은 **테스트 정책**일 뿐 운영 기본값이 아니�
 - `HD20DashboardCore` 사용.
 - visibility 복구만 `app-visibility-failsafe.js`가 담당.
 
+## UI Architecture / Design System 현행화
+기존처럼 `*-fix.css`, `*-hotfix.css`, `*-polish.css`를 계속 추가하는 방식이 아니라 canonical Design System 중심으로 통합 중이다.
+
+- `index.html`에서 중첩 로딩되던 `readability-polish.css`, `dashboard-premium-theme.css`, `dashboard-contrast-fix.css`, `title-underline-fix.css`, `dashboard-balance-hotfix.css`, `shared-color-theme-final.css`를 메인 스타일 체인에서 제외.
+- `final-layout-polish.js`가 runtime에 CSS를 재삽입하던 구조 제거.
+- `hd20-overhaul.css`를 공통 token / header / nav / KPI / card / table / form / modal / responsive 기준으로 재구축.
+- `kpi-modal-bootstrap.js`, `table-enhance-suite.js`, `expert-chatbot-final.js`의 runtime `<style>` 삽입을 제거하고 동작 JS와 표현 CSS를 분리.
+- ②~⑤ 화면은 `업무영역 Header → Workflow/상태 → Form/Grid`의 공통 정보구조를 사용하되 각 업무 의미는 유지.
+
+## 통합 대시보드 정보 우선순위
+`dashboard-priority-layout.js`가 `HD20KPIData.operational()`의 실제 산식을 사용해 다음 운영 KPI 6종을 대시보드 최상위 판단영역에 표시한다.
+
+1. 공식 판정 완료율
+2. 평균 판정 Lead Time
+3. 고도화 수준
+4. Audit 후 6개월 유지율
+5. Audit 부적합 재발률
+6. 기한 내 개선조치 완료율
+
+계산할 실제 데이터가 없는 KPI는 `—`로 표시한다. 임의 목표·임의 등급·임의 합격/경고 Threshold는 생성하지 않는다.
+
+대시보드 정보 계층은 다음 순서로 정리했다.
+
+`운영 건전성 KPI → 5S 활동·고도화 성과 흐름 → 팀별 실행·Audit 유지관리 → 3대 판정기준·고도화 추이`
+
+KPI의 `관련 화면 →`는 기존 업무영역으로 연결한다. 판정·Lead Time·고도화 수준은 `③ 고도화·판정`, 6개월 유지율·재발률은 `④ 유지·Audit`, 기한 내 완료율은 `⑤ 개선조치`로 이동한다.
+
+## Design Layout 회귀검증
+`.github/workflows/design-layout-smoke.yml`을 추가해 Desktop `1440×1000`과 Mobile `375×812`에서 5개 업무영역을 Chromium으로 검증한다.
+
+- 5개 탭 active 상태
+- document horizontal overflow
+- ②~⑤ Area Header 중복
+- pageerror
+- 대시보드 운영 KPI 카드 6개 존재
+- 운영 KPI 6개 명칭이 승인명칭과 일치
+
+초기 Design Layout Smoke #2는 Mobile `③ 고도화·판정`에서 `718 > 375` horizontal overflow를 실제 검출했다. 이를 숨기지 않고 `performanceConversionAnalysis + awWorkplace` 내부 최소폭 전파 문제로 기록했으며, `hd20-five-area.css`에서 컨테이너 `min-width:0 / max-width:100%`, 모바일 `pcType` 재배치, 상세 Table 내부 스크롤로 교정했다.
+
 ## Demo / Seed / Prototype 퇴역
 운영 Store를 가상 데이터로 채우거나 배포본에 혼동을 주던 파일은 퇴역했다.
 
@@ -208,10 +247,15 @@ Package Artifact를 직접 압축 해제해 검사한 활성 JS/HTML 기준 다�
 - `DEVELOPMENT_LOG_20260902_CANONICAL_RUNTIME.md`
 - `DEVELOPMENT_LOG_20260902_RUNTIME_SECURITY_CLEANUP.md`
 - `DEVELOPMENT_LOG_20260902_NAV_SCROLL_FIX.md`
+- `DEVELOPMENT_LOG_20260902_DESIGN_SYSTEM_REBUILD.md`
+- `DEVELOPMENT_LOG_20260902_DESIGN_SYSTEM_REBUILD_PHASE2.md`
+- `DEVELOPMENT_LOG_20260902_DESIGN_SYSTEM_REBUILD_PHASE3.md`
+- `DEVELOPMENT_LOG_20260902_DESIGN_SYSTEM_REBUILD_PHASE4.md`
 
 ## 다음 작업
+- Design Layout Smoke의 Desktop/Mobile 전 화면 검증을 유지하고 신규 화면구조 변경 시 즉시 계약을 보강.
+- 통합 대시보드의 운영 KPI 6종과 기존 상세 Grid/Drill-down 연결성을 추가 검증.
 - Audit·개선조치·고도화 화면에서 원천/사용자 입력을 `innerHTML`에 삽입하는 나머지 경로의 escape 여부 전수점검.
 - 배포 HTML/JS의 죽은 링크·가상값·폐기 Lifecycle 잔여를 계속 전수검색.
 - 운영정책/표시문구가 실제 데이터 구조와 일치하는지 계속 검증.
-- 상단 5개 탭의 Scroll 회귀검증을 유지하고 PC/모바일의 화면 전환 안정성을 계속 점검.
-- 변경 후 Runtime / Browser / Nav Scroll / Package / Pages를 모두 확인하고 개발일지·README를 계속 현행화.
+- 변경 후 Runtime / Browser / Nav Scroll / Design Layout / Package / Pages를 모두 확인하고 개발일지·README를 계속 현행화.
