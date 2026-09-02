@@ -50,23 +50,41 @@
 - `maturity-seq-action-link.js`: 1M/3M/6M UI 생성 제거, 임시 Compatibility Adapter로 전환.
 - `audit-summary-drilldown.js`: `Audit 실시 대기 / 6개월 관리중 / 종료평가 대기 / 종료평가 완료`로 전환.
 - `dashboard-grid-drilldown.js`: `6개월 Audit 결과`, `3개월 AUDIT`, `1·3·6개월 Lifecycle` 상세 Grid 제거.
+- 메인 승인 대시보드의 Legacy Audit 표현은 Current Model 보정 레이어에서 현재 상태로 치환하며, 5영역 유효성 기준도 적용.
 
-## 검증
-자동검증은 다음을 수행한다.
-- 전체 JavaScript syntax check.
-- 정적 5영역 Navigation.
-- Canonical KPI/Audit/Action Store 계약.
-- Audit 표본수 및 Batch 무중복 추출.
-- Browser E2E에서 표본수 3 주입 → 3개 고유팀 추출 → 1건 Audit 실시등록 → 대기 2건 감소 검증.
-- HDPS 대시보드 직접 진입 및 KPI/Action Summary 검증.
+## 최신 자동검증 결과
 
-### 최근 검증 이슈
-- Browser Smoke run #98은 Batch 기능 검증 전에 메인 화면의 구형 Lifecycle UI를 감지하여 실패함.
-- 원인: `maturity-seq-action-link.js`가 1M/3M/6M UI를 실제 렌더링하고 있었음.
-- 해당 파일을 Canonical Audit Compatibility Adapter로 교체함.
-- Runtime Smoke run #164는 `audit-close-evaluation.js` 안내문 내 백틱으로 인한 JavaScript SyntaxError를 감지하여 실패함.
-- SyntaxError는 커밋 `18c8e2397c6706ac165cdc473c2ffe522c1a525d`에서 수정함.
-- 수정 후 Runtime/Browser/Pages 검증은 재실행되며, 완료 전에는 성공으로 간주하지 않는다.
+배포 기준 commit `a1a2f76db942bb7b9d21a22cb4599308b44e2b4b`에서 다음 검증을 완료했다.
+
+- Runtime Smoke run #173: **success**.
+- Browser Smoke run #116: **success**.
+- Package HD20 source run #377: **success**.
+- GitHub Pages build/deployment run #568: **success**.
+
+Browser #116이 검증한 실제 사용자 흐름:
+- 메인 5영역 Navigation과 Legacy Audit 문구 부재.
+- 테스트 정책 `Audit 표본수=3` 주입.
+- 실제 `대상 일괄추출` 실행.
+- 같은 Batch에서 3개 팀 생성 및 3개 팀 모두 고유함 확인.
+- Batch 실시대기 선택지 3건 확인.
+- 첫 대상에 `Audit 실시일=2026-09-02`, `결과=적합`, 작업장/실시자를 실제 입력 후 저장.
+- Canonical Audit Store에서 auditDate 저장 1건 확인.
+- 실시대기 선택지가 3건 → 2건으로 감소 확인.
+- `hdps-dashboard.html` 직접 진입 후 5영역, KPI 6종, Action Summary 4종, `Audit 후 6개월 유지율` 확인.
+
+테스트에서 사용한 `개선기한 7일`은 E2E용 임시 정책값이며 실제 운영정책을 7일로 확정한 것이 아니다.
+
+## 검증 과정에서 발견·수정한 사항
+- Browser #98: `maturity-seq-action-link.js`가 1M/3M/6M UI를 실제 렌더링하던 문제 검출 → Compatibility Adapter로 전환.
+- Runtime #164: `audit-close-evaluation.js` 안내문 템플릿 문자열 SyntaxError 검출 → 수정.
+- Browser #109: `approved-landing-v2.js`가 메인 승인 대시보드에서 Legacy Audit 문구를 재생성하는 문제 검출 → Current Model 보정 강화.
+- Browser #112: Batch `<option>` 3건이 이미 DOM에 존재했지만 Playwright가 option visibility를 기다려 timeout → `option count===3` 조건으로 수정.
+- Browser #116: 전체 E2E 최종 성공.
+
+## 데이터 의미판정
+- `미발생`을 `발생` 부분문자열 때문에 재발로 오인하지 않도록 명시값 기준으로 판정.
+- `부적합`을 `적합` 부분문자열 때문에 효과검증 성공으로 오인하지 않도록 명시값 기준으로 판정.
+- 사용자 입력/원천값을 HTML에 삽입하는 보정 로직은 escape 처리 유지.
 
 ## 주요 최신 개발일지
 - `DEVELOPMENT_LOG_20260902.md`
@@ -74,9 +92,12 @@
 - `DEVELOPMENT_LOG_20260902_AUDIT_CLOSE.md`
 - `DEVELOPMENT_LOG_20260902_HDPS_CANONICAL.md`
 - `DEVELOPMENT_LOG_20260902_LEGACY_ADAPTER.md`
+- `DEVELOPMENT_LOG_20260902_APPROVED_LANDING_AUDIT.md`
+- `DEVELOPMENT_LOG_20260902_SEMANTIC_FIX.md`
 
 ## 다음 작업
-- 최신 Runtime/Browser/Pages 검증 결과 확정 및 실패 시 즉시 교정.
-- 남은 `HD20MaturityFollowup` 참조를 Canonical Audit Store로 단계적 제거.
-- 종료평가 결과를 Dashboard/Case Trace 상세 Grid에 노출.
+- Audit Risk 계산에서 재발 입력을 문제설명 텍스트가 아니라 명시적인 재발 상태값으로만 집계하도록 점검/교정.
+- 6개월 종료평가 결과를 Dashboard/Case Trace 상세 Grid에 연결.
+- 남은 `HD20MaturityFollowup` 활성 참조를 Canonical Audit Store로 단계적으로 제거.
+- `approved-landing-v2.js`의 장기 구조 리팩터링을 메인 배치 안정성을 해치지 않는 범위에서 진행.
 - 운영정책과 Batch E2E를 계속 회귀검증에 유지.
