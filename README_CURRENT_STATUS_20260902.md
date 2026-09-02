@@ -71,17 +71,24 @@
 
 상세 기록: `DEVELOPMENT_LOG_20260902_DASHBOARD_CORE_CLEANUP.md`.
 
-## 생산팀 Master 단일화
-현재 운영 중인 16개 생산팀명은 변경하지 않고 Source 중복만 단계적으로 제거하고 있다.
+## 생산팀 Master 단일화 완료
+현재 운영 중인 16개 생산팀명은 변경하지 않고 Source 중복을 제거했다.
 
 - `app.js`가 `window.HD20ProductionTeamMaster` Canonical Source를 제공.
 - 메인 Dashboard는 Canonical Team Master의 `teamNames()`를 사용.
 - `team-master-safety.js`의 독립 16개 팀 배열 제거.
-- 팀장 기준정보 누락 보완도 Canonical Team Master 기준으로 수행.
-- Canonical Team Master 미로딩 시 임의 팀 목록을 새로 만들지 않음.
-- Runtime Smoke에서 `team-master-safety.js`에 독립 팀 배열이 다시 생기면 실패하도록 계약 추가.
+- `audit-random-draw.js`의 독립 Audit 대상팀 배열 제거.
+- `action-mail-workflow.js`의 독립 개선조치 팀 배열 제거.
+- Dashboard / 팀장 기준정보 / Audit 랜덤추출 / 개선조치가 동일 16개 팀 기준을 공유.
+- Canonical Team Master 미로딩 시 Audit 추출은 임의 모집단으로 진행하지 않고 명시 오류 처리.
+- 팀장명·이메일은 팀명 Master와 분리하여 `hd20TeamLeaderMasterV1`에 실제 입력값만 저장.
+- Runtime Smoke에서 세 소비 모듈의 독립 팀 배열 재유입을 차단.
 
-아직 `audit-random-draw.js`, `action-mail-workflow.js`에는 동일 팀 배열이 남아 있으며 핵심 운영 흐름 검증을 유지하면서 다음 단계에서 순차적으로 단일화한다.
+추가로 개선조치 활성 화면의 구형 IA/운영문구를 교정했다.
+
+- `⑥ 문제점 · 개선조치` → `⑤ 개선조치`.
+- `⑤ Audit 관리` → `④ 유지·Audit`.
+- 승인되지 않은 `정기 5S Audit(매월말·익월초)` 고정주기 문구 제거.
 
 상세 기록: `DEVELOPMENT_LOG_20260902_TEAM_MASTER.md`.
 
@@ -144,7 +151,7 @@ Commit `ad1566e21e47568aa1c3e4c28808be0fa54cb8bc` Dashboard Core Canonical 정�
 - Package #432: **success**
 - Pages #623: **success**
 
-그 이후 Prototype/가상 샘플 퇴역 및 생산팀 Master 1차 단일화를 추가 반영했다. 최신 HEAD의 4개 workflow는 완료 결과가 확정된 뒤에만 성공으로 기록한다.
+그 이후 Prototype/가상 샘플 퇴역 및 생산팀 Master 단일화를 추가 반영했다. 최신 HEAD의 4개 workflow는 완료 결과가 확정된 뒤에만 성공으로 기록한다.
 
 ## 주요 최신 개발일지
 - `DEVELOPMENT_LOG_20260902.md`
@@ -160,6 +167,6 @@ Commit `ad1566e21e47568aa1c3e4c28808be0fa54cb8bc` Dashboard Core Canonical 정�
 
 ## 다음 작업
 - 최신 HEAD의 Runtime/Browser/Package/Pages 결과 확정 및 실패 시 즉시 교정.
-- `audit-random-draw.js`와 `action-mail-workflow.js`의 생산팀 배열을 Canonical Team Master로 순차 연결.
 - 현재 배포 가능한 HTML/JS/데이터에서 하드코딩된 샘플값·가상정보를 계속 전수검색.
+- 기간 필터와 운영상태 문구가 실제 데이터/정책과 일치하는지 점검.
 - Side Summary를 6개월 종료평가 상태와 더 직접 연결할 필요가 있는지 운영 관점에서 점검.
