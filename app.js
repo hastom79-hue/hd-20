@@ -1,5 +1,8 @@
 (()=>{'use strict';
-const TEAMS=['대형메인팀','휠로더Front팀','대형Att.팀','휠로더리어팀','중형상부1팀','중형메인팀','중형Att팀','대형상부팀','프레임제작팀','휠로더메인팀','중형상부2팀','중형하부팀','Boom제작팀','초대형조립팀','성능팀','트러블슈팅팀'];
+const CANONICAL_TEAMS=['대형메인팀','휠로더Front팀','대형Att.팀','휠로더리어팀','중형상부1팀','중형메인팀','중형Att팀','대형상부팀','프레임제작팀','휠로더메인팀','중형상부2팀','중형하부팀','Boom제작팀','초대형조립팀','성능팀','트러블슈팅팀'];
+const TEAM_MASTER=window.HD20ProductionTeamMaster||Object.freeze({teamNames:()=>[...CANONICAL_TEAMS],has:team=>CANONICAL_TEAMS.includes(String(team||'').trim()),count:()=>CANONICAL_TEAMS.length});
+window.HD20ProductionTeamMaster=TEAM_MASTER;
+const TEAMS=TEAM_MASTER.teamNames();
 const ORDER_KEY='gmes5s_team_display_order',TARGET_KEY='gmes5s_quarter_perperson_targets';
 let teamOrder=[...TEAMS],targetMaster={Q1:null,Q2:null,Q3:null,Q4:null};
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
