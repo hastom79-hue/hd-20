@@ -9,164 +9,143 @@
 4. 유지·Audit
 5. 개선조치
 
-`통합기준정보`는 상단 Utility이며 `HDPS · 5S Expert AI`는 공통 지원기능이다.
+`통합기준정보`는 상단 Utility이며 `HDPS · 5S Expert AI`는 공통 지원기능이다. 과거 `⑦ 기준정보`, `⑥ 문제점·개선조치`, `1개월 점검 / 3개월 Audit / 6개월 Audit` 고정 Lifecycle은 현재 운영모델에서 사용하지 않는다.
+
+## Canonical Data / Master
+- 5S·고도화 원천: `hd20GMES5SAutoImproveRawV1`
+- 개선조치: `hd20ActionCasesV2`
+- Audit 추출·실시·종료평가: `hd20AuditRandomDrawsV1`
+- 운영정책: `hd20OperatingPolicyV1`
+- 팀장 기준정보: `hd20TeamLeaderMasterV1`
+- 생산팀 목록: `window.HD20ProductionTeamMaster`
+
+현재 16개 생산팀 배열은 `app.js`의 Canonical Team Master만 Source로 사용하며 다음 실행모듈이 동일 목록을 공유한다.
+
+- `team-master-safety.js`
+- `audit-random-draw.js`
+- `action-mail-workflow.js`
+- `activity-workflow.js`
+- `activity-dynamic-chart.js`
+- `performance-conversion-analysis.js`
+
+팀장명·이메일은 팀 목록과 분리하여 실제 입력값만 `hd20TeamLeaderMasterV1`에 저장한다.
 
 ## 고도화 분석 / 공식판정 분리
-- 시각화·형적관리
-- 인간공학적 Green Zone
-- 정량축소·정위치 변경을 통한 공간 활용
-- 정확 1조건 / 정확 2조건 / 정확 3조건으로 중복 없이 분류.
-- 작업장과 라인 적용범위를 분리.
-- 라인 정보가 없는 경우 작업장명에서 임의 추정하지 않음.
-- 조건충족 분석은 성과·현상 분석축이며 공식확정 판정 자체와 동일시하지 않음.
-- 공식판정은 생산혁신팀 + 5S 모듈의 판정결과를 사용.
+고도화 3개 조건은 다음으로 고정한다.
+
+1. 시각화·형적관리
+2. 인간공학적 Green Zone
+3. 정량축소·정위치 변경을 통한 공간 활용
+
+성과·현상 분석은 `정확 1조건 / 정확 2조건 / 정확 3조건`으로 중복 없이 분류한다. `2개 이상`은 누적 표현이 필요할 때만 2+3을 합산한다.
+
+조건 충족 수준은 공식판정과 별도 축이다. **조건 충족 개수만으로 공식 확정을 자동 결정하지 않는다.** 공식판정은 생산혁신팀 + 5S 모듈의 실제 판정결과 `확정 / 보완요청 / 미확정`을 사용한다.
+
+라인 정보는 명시된 구조화 필드만 사용하며 작업장명에서 라인을 임의 추정하지 않는다. 라인 정보가 없으면 `미분류/라인 매핑 필요`로 관리한다.
+
+`maturity-map-drilldown.js`는 실제 저장된 판정자·판정사유가 없을 때 가상 판정자/사유를 생성하지 않고 `—`로 표시한다.
+
+## Workflow 원본 정리
+`activity-workflow.js`는 현재 구조로 재작성했다.
+
+- `② 5S 활동`: 실제 등록·GMES 원천 활동현황
+- `③ 고도화·판정`: 후보·조건충족 수준·공식판정·라인/작업장 범위
+- `④ 유지·Audit`: Risk 추출·Audit 실시·6개월 지속관리·종료평가
+- `⑤ 개선조치`: D+7~D+14·효과검증·재발관리
+
+구형 `awRegister` 화면은 사용하지 않는다. `register-tab-fill.js`, `audit-admin-import.js`, `crud-hotfix.js`, `action-button-hotfix.js`는 퇴역했다.
 
 ## Audit 현재 운영모델
 `Risk 가중 랜덤 대상추출 → Audit 실시(D-Day) → 실시일 기준 6개월 지속관리 → 개선요청/개선조치 → 효과검증·재발 → 종료평가 → 차기 Audit 판단 근거`
 
-과거 `1개월 점검 / 3개월 Audit / 6개월 Audit` 고정 Lifecycle은 현재 운영모델에서 사용하지 않는다.
-
-## Audit Batch
-- 기준정보의 Audit 표본수를 실제 일괄추출에 연결.
-- 동일 Batch 내 중복 없는 추출.
+- Audit 대상은 자동 랜덤 추출.
+- 전월/누적 개선요청이 많은 팀은 설정된 Risk 정책이 있을 때 가중확률 적용.
 - Risk 정책 미설정 시 균등 랜덤.
-- 선정된 팀별로 `Audit 실시일 / 결과 / 작업장 / 실시자 / 개선요청` 개별 등록 가능.
-- 저장은 `hd20AuditRandomDrawsV1` Canonical Store 사용.
-- 개선요청 발생 시 `hd20ActionCasesV2` Canonical Action Case 자동연계.
+- 동일 Batch 내 중복 팀 없음.
+- Audit 표본수는 통합기준정보의 설정값을 사용하며 임의 고정하지 않음.
+- Audit 실시일부터 **달력 기준 +6개월** 지속관리.
+- 고정 M+1/M+3/M+6 체크포인트를 운영규칙으로 사용하지 않음.
 
 ## 개선요청 Deadline
 - 등록일 기준 D+7~D+14 범위.
 - 정확한 자동지정 일수는 `통합기준정보 > 운영정책`에서 설정.
-- 임의 긴급/일반/복잡 분류나 임의 10일 Default를 업무기준으로 사용하지 않음.
+- 정책 미설정 시 임의 7일/10일/14일을 운영값으로 만들지 않음.
+- `등록일 / 자동 완료기한 / 잔여일 / 경과일 / 상태`를 관리.
 
 ## 6개월 종료평가
 - Audit 실시일 + 달력 기준 6개월이 지난 Case만 평가 가능.
 - 종료평가 값: `유지 / 미흡`.
 - 평가근거와 평가일시 저장.
 - `미흡` 결과 자체에 임의 Risk 가중계수를 부여하지 않음.
-- 통합 대시보드에서 `종료평가 대기 / 유지 / 미흡`을 각각 집계.
-- Audit Case Trace에서 6개월 종료일, 종료평가 상태, 평가근거를 동일 Case 행에서 확인 가능.
-- Trace 흐름은 `BEFORE → 조치 → AFTER → 효과검증 → 재발 → 종료평가`까지 연결됨.
+- Dashboard에서 `종료평가 대기 / 유지 / 미흡`을 각각 집계.
+- Audit Case Trace는 `Audit 실시 → 6개월 관리 → 개선조치 → 효과검증/재발 → 종료평가`를 연결.
 
-## Canonical 구조정리 완료사항
-- `hdps-dashboard.js`: Canonical Audit/Action Store 직접 사용.
-- `hdps-dashboard-current-model.js`: 삭제.
-- `maturity-seq-action-link.js`: Compatibility Adapter까지 완전 삭제.
-- 활성 JavaScript에서 `HD20MaturityFollowup` 전역 참조 제거.
-- `approved-landing-v2.js`: Canonical Audit Store 직접 사용, 5영역 `navCount===5`, `Audit 후 6개월 유지율`, `Audit 후 6개월 관리 대상` 원본 적용.
-- 승인 대시보드의 `3개월 AUDIT`, `실제 6개월 Audit 결과`, `AUDIT 6개월 유지율`, `navCount===7` 제거.
-- 공식확정 사례 영역에서 `2개 이상 조건 충족=공식확정`처럼 읽히는 문구 제거.
-- `legacy-lifecycle-retirement.js`: 삭제.
-- Side Card 갱신은 역할이 명확한 `dashboard-side-summary.js`로 분리.
-- 정적 `index.html`에서 삭제된 Adapter script reference 제거.
-
-## 메인 Dashboard Core 정리
-- `app.js`의 7메뉴 Fail-safe 재생성 코드 제거.
-- 과거 분기별 임의 인당 목표 `0.5 / 0.6 / 0.6 / 0.7` 제거.
+## 메인 Dashboard Core
+- 구형 7메뉴 Fail-safe 재생성 제거.
+- 과거 임의 분기 인당목표 `0.5 / 0.6 / 0.6 / 0.7` 제거.
 - 분기 목표 기본값은 `null / 미설정`, 실제 기준정보 저장값이 있을 때만 사용.
-- 총 건수 차트에 단위가 다른 `건/인` 목표선을 겹쳐 그리지 않음.
-- 정적 `Q3 목표 55건` Prototype 문구 제거.
-- `HD20LegacyDashboard`를 `HD20DashboardCore`로 정리.
-- `emergency-ui-stabilizer-v2.js` 삭제, 실제 필요한 visibility 기능만 `app-visibility-failsafe.js`로 분리.
+- 총 건수 차트와 `건/인` 목표선을 동일 축에 혼합하지 않음.
+- 정적 `Q3 목표 55건` 제거.
+- `HD20DashboardCore` 사용.
+- visibility 복구만 `app-visibility-failsafe.js`가 담당.
 
-상세 기록: `DEVELOPMENT_LOG_20260902_DASHBOARD_CORE_CLEANUP.md`.
+## Demo / Seed / Prototype 퇴역
+운영 Store를 가상 데이터로 채우거나 배포본에 혼동을 주던 파일은 퇴역했다.
 
-## 생산팀 Master 단일화 완료
-현재 운영 중인 16개 생산팀명은 변경하지 않고 Source 중복을 제거했다.
+- `demo-data-seed.js`
+- `action-demo-seed.js`
+- `audit-global-seed.js`
+- `management.html`
+- `v2-preview.html`
+- 루트 및 `data/`의 가상 팀장 샘플 CSV
+- `emergency-ui-stabilizer-v2.js`
+- `maturity-seq-action-link.js`
 
-- `app.js`가 `window.HD20ProductionTeamMaster` Canonical Source를 제공.
-- 메인 Dashboard는 Canonical Team Master의 `teamNames()`를 사용.
-- `team-master-safety.js`의 독립 16개 팀 배열 제거.
-- `audit-random-draw.js`의 독립 Audit 대상팀 배열 제거.
-- `action-mail-workflow.js`의 독립 개선조치 팀 배열 제거.
-- Dashboard / 팀장 기준정보 / Audit 랜덤추출 / 개선조치가 동일 16개 팀 기준을 공유.
-- Canonical Team Master 미로딩 시 Audit 추출은 임의 모집단으로 진행하지 않고 명시 오류 처리.
-- 팀장명·이메일은 팀명 Master와 분리하여 `hd20TeamLeaderMasterV1`에 실제 입력값만 저장.
-- Runtime Smoke에서 세 소비 모듈의 독립 팀 배열 재유입을 차단.
-
-추가로 개선조치 활성 화면의 구형 IA/운영문구를 교정했다.
-
-- `⑥ 문제점 · 개선조치` → `⑤ 개선조치`.
-- `⑤ Audit 관리` → `④ 유지·Audit`.
-- 승인되지 않은 `정기 5S Audit(매월말·익월초)` 고정주기 문구 제거.
-
-상세 기록: `DEVELOPMENT_LOG_20260902_TEAM_MASTER.md`.
-
-## Demo / Seed 운영데이터 오염 방지
-### Canonical Demo Seed
-`demo-data-seed.js`가 Canonical Store가 비었을 때 5S 활동 120건, 개선조치 26건, 가상 팀장/이메일을 자동 생성하던 구조를 발견해 완전히 퇴역했다.
-
-- `index.html`, `hdps-dashboard.html` 로딩 제거.
-- `demo-data-seed.js` 삭제.
-- `source:'demo-seed'` 재유입을 Runtime Smoke에서 차단.
-
-### Action Demo Guard
-`action-demo-seed.js`는 실제 Seed 기능 없이 `HD20_DEMO_ACTIONS`, `HD20_ACTION_DEMO_SEED_DISABLED` 두 전역만 설정하던 고립 파일이었다. 다른 활성 코드의 의존이 없음을 확인하고 로딩과 파일을 모두 삭제했다.
-
-### Audit Checklist Master
-과거 `audit-global-seed.js`는 현재 실적을 생성하지 않고 체크리스트 Master를 `result:'N/A'`, `score:0`으로 초기화하는 역할만 하고 있었다. 역할을 명확히 하기 위해 `audit-checklist-master.js`로 전환하고 구형 파일을 삭제했다.
-
-- 체크리스트 결과 초기값은 계속 `N/A / 0`.
-- 폐기된 `1·3·6개월 Audit` 문구를 `Audit 실시 후 6개월 지속관리 기간 동안 유지되는가?`로 교정.
-- 실제 원천데이터가 없으면 임의 샘플로 운영 KPI를 채우지 않고 `0 / — / 데이터 없음`으로 표현.
-
-상세 기록: `DEVELOPMENT_LOG_20260902_DEMO_RETIREMENT.md`.
-
-## 배포용 Prototype / 가상 샘플 퇴역
-현재 운영 Runtime에는 연결되지 않았지만 Pages 및 전체 소스 ZIP에 포함되던 아래 파일을 제거했다.
-
-- `management.html`: 고정 KPI·임의 Raw Data·샘플 이미지가 있는 구형 독립 Prototype.
-- `v2-preview.html`: 구형 디자인 Preview.
-- 루트 및 `data/`의 `HD20_생산팀장_메일정보_강제생성_샘플.csv`: 가상 이름과 `example.com` 메일을 포함한 중복 샘플.
-
-개발 이력은 Worklog에 보존하되 현재 배포본에는 포함하지 않는다. Runtime Smoke에서 네 경로의 재유입을 차단한다.
+Audit 체크리스트 Master는 `audit-checklist-master.js`가 `N/A / 0` 초기상태만 제공하며 실제 실적을 생성하지 않는다.
 
 ## 데이터 의미판정
-- `미발생`을 `발생` 부분문자열 때문에 재발로 오인하지 않도록 명시값 기준으로 판정.
-- Audit Risk와 6개월 지속관리 모두 문제내용/상태 텍스트의 단순 `재발` 단어 포함 여부를 재발 근거로 사용하지 않음.
-- `부적합`을 `적합` 부분문자열 때문에 효과검증 성공으로 오인하지 않도록 명시값 기준으로 판정.
-- 사용자 입력/원천값을 HTML에 삽입하는 로직은 escape 처리 유지.
+- `미발생`을 `발생` 부분문자열로 재발 오인하지 않음.
+- 문제내용/상태 텍스트에 `재발`이 들어갔다는 이유만으로 재발판정하지 않음.
+- `부적합`을 `적합` 부분문자열로 효과검증 성공 처리하지 않음.
+- 사용자/원천값을 HTML에 삽입할 때 escape 처리 유지.
 
-## 최근 확정 자동검증
-Commit `587dd943f85942bc142b23d53fe36e30bb657b92`:
-- Runtime Smoke #186: **success**
-- Browser Smoke #129: **success**
-- Package #390: **success**
-- Pages #581: **success**
+## 최근 자동검증 이력
+Commit `d9902e7b055c64a5c908beffc8bd72c991b4fc12` 생산팀 Master 2차 단일화 기준:
+- Runtime Smoke #245: **success**
+- Browser Smoke #188: **success**
+- Package #449: **success**
+- Pages #640: 당시 확인 시 pending이었으므로 성공으로 선기록하지 않음.
 
-Commit `cd2ba4cabb7198bcdf538be628d854755a1fcfb5` 구조정리 기준:
-- Runtime Smoke #198: **success**
-- Browser Smoke #141: **success**
-- Package #402: **success**
+이후 Canonical Runtime 정리 과정에서 실패도 그대로 기록한다.
 
-Commit `b52122dc653ce5bdebdac2e0309226b7309c7459` Demo/Seed 퇴역 기준:
-- Runtime Smoke #218: **success**
-- Browser Smoke #161: **success**
-- Package #422: **success**
-- Pages #613: **success**
+Commit `00fb06ebb1bb72aced0bfe5ef77c44b35077c973`:
+- Runtime Smoke #260: **failure** — `performance-conversion-analysis.js` 구문 오류 발견.
 
-Commit `ad1566e21e47568aa1c3e4c28808be0fa54cb8bc` Dashboard Core Canonical 정리 기준:
-- Runtime Smoke #228: **success**
-- Browser Smoke #171: **success**
-- Package #432: **success**
-- Pages #623: **success**
+Commit `309a389668f08863fc9250bfc101a9d5685cd658`:
+- JavaScript syntax 및 이전 10개 Runtime 계약: **success**
+- Runtime Smoke #261: **failure** — 퇴역한 `awRegister`를 검증계약이 계속 요구.
+- Package #465: **success**
 
-그 이후 Prototype/가상 샘플 퇴역 및 생산팀 Master 단일화를 추가 반영했다. 최신 HEAD의 4개 workflow는 완료 결과가 확정된 뒤에만 성공으로 기록한다.
+조치:
+- `performance-conversion-analysis.js` Canonical 재작성.
+- Runtime Smoke를 현재 5영역/4개 실제 Workflow screen 기준으로 재정의.
+- 퇴역 파일, 팀 Master 중복, 가상 판정자/사유, 조건충족/공식판정 혼용 재유입을 자동 차단.
+
+최신 HEAD의 Runtime / Browser / Package / Pages는 완료 결과가 확정된 뒤에만 성공으로 추가 기록한다.
 
 ## 주요 최신 개발일지
 - `DEVELOPMENT_LOG_20260902.md`
 - `DEVELOPMENT_LOG_20260902_AUDIT_BATCH.md`
 - `DEVELOPMENT_LOG_20260902_AUDIT_CLOSE.md`
 - `DEVELOPMENT_LOG_20260902_HDPS_CANONICAL.md`
-- `DEVELOPMENT_LOG_20260902_LEGACY_ADAPTER.md`
-- `DEVELOPMENT_LOG_20260902_APPROVED_LANDING_AUDIT.md`
 - `DEVELOPMENT_LOG_20260902_SEMANTIC_FIX.md`
 - `DEVELOPMENT_LOG_20260902_DEMO_RETIREMENT.md`
 - `DEVELOPMENT_LOG_20260902_DASHBOARD_CORE_CLEANUP.md`
 - `DEVELOPMENT_LOG_20260902_TEAM_MASTER.md`
+- `DEVELOPMENT_LOG_20260902_CANONICAL_RUNTIME.md`
 
 ## 다음 작업
-- 최신 HEAD의 Runtime/Browser/Package/Pages 결과 확정 및 실패 시 즉시 교정.
-- 현재 배포 가능한 HTML/JS/데이터에서 하드코딩된 샘플값·가상정보를 계속 전수검색.
-- 기간 필터와 운영상태 문구가 실제 데이터/정책과 일치하는지 점검.
-- Side Summary를 6개월 종료평가 상태와 더 직접 연결할 필요가 있는지 운영 관점에서 점검.
+- 최신 HEAD의 Runtime / Browser / Package / Pages 결과 확정 및 실패 시 즉시 교정.
+- Browser Smoke에 `③ 고도화·판정` 화면 직접 검증 강화.
+- 배포 HTML/JS의 죽은 링크, 가상값, 폐기 Lifecycle 잔여를 계속 전수검색.
+- 운영정책/기간필터/표시문구가 실제 데이터 구조와 일치하는지 계속 검증.
