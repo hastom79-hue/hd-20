@@ -66,11 +66,30 @@
 - Audit 실시일부터 **달력 기준 +6개월** 지속관리.
 - 고정 M+1/M+3/M+6 체크포인트를 운영규칙으로 사용하지 않음.
 
+## Audit → 개선조치 연결 무결성
+Audit 점검항목의 `→ 개선요청`은 현재 Batch에서 사용자가 선택한 Audit Case를 기준으로 연결한다. 단순히 최근 추출목록의 첫 번째 팀을 사용하는 방식은 제거했다.
+
+개선조치 Canonical Case에는 원본 Audit 추적정보를 보존한다.
+
+- `sourceCaseId = 원본 Audit Draw ID`
+- `auditDrawId = 원본 Audit Draw ID`
+- `sourceStage = AUDIT-CHECKLIST`
+- 생산팀은 현재 선택된 Audit 대상팀 사용
+- 생산팀장/이메일은 `hd20TeamLeaderMasterV1`의 실제 저장값 사용
+- 팀장정보 미등록 시 `미지정 / 이메일 빈값`
+- 작업장 미입력 시 `Audit 대상 현장` 같은 가상 작업장명을 저장하지 않음
+
+`action-audit-linkage.js`가 기존 개선조치 메일/Outlook/회신 기능을 변경하지 않으면서 Audit 원본 ID와 기한상태를 Canonical Store `hd20ActionCasesV2`에 보존한다.
+
 ## 개선요청 Deadline
 - 등록일 기준 D+7~D+14 범위.
 - 정확한 자동지정 일수는 `통합기준정보 > 운영정책`에서 설정.
-- 정책 미설정 시 임의 7일/10일/14일을 운영값으로 만들지 않음.
+- 정책이 7~14 범위로 설정되어 있고 개선조치 등록 시 기한이 비어 있으면 등록일 기준 자동기한을 즉시 지정.
+- 정책 미설정 시 임의 7일/10일/14일을 운영값으로 만들지 않고 `정책미설정`으로 저장.
+- 사용자가 실제 기한을 직접 지정하면 `수동지정`으로 구분.
 - `등록일 / 자동 완료기한 / 잔여일 / 경과일 / 상태`를 관리.
+
+Browser E2E의 `D+7`은 **테스트 정책**일 뿐 운영 기본값이 아니다.
 
 ## 6개월 종료평가
 - Audit 실시일 + 달력 기준 6개월이 지난 Case만 평가 가능.
@@ -118,22 +137,34 @@ Audit 체크리스트 Master는 `audit-checklist-master.js`가 `N/A / 0` 초기�
 
 실패 Run도 삭제하거나 숨기지 않고 `DEVELOPMENT_LOG_20260902_CANONICAL_RUNTIME.md`에 원인·조치를 기록한다.
 
-## 최신 확정 자동검증 기준점
-Commit `c662915a20cfab3eeecddf0c420d09c6bb2fb092`:
-- Runtime Smoke #268: **success**
-- Browser Smoke #211: **success**
-- Package HD20 source #472: **success**
-- Pages build and deployment #663: **success**
+## 확정 자동검증 기준점 — Canonical Runtime / 보안
+Commit `1307c42cc00d4a3c36d2ca8a752784194bd5d4c0`:
+- Runtime Smoke #271: **success**
+- Browser Smoke #214: **success**
+- Package HD20 source #475: **success**
+- Pages build and deployment #666: **success**
 
-Browser #211은 실제 `③ 고도화·판정` 화면을 열어 다음 의미계약까지 확인한다.
+이 기준점에는 고도화 의미분리, Audit Batch, 종료평가, Case Trace, Dashboard, HDPS E2E, Audit 6개월 화면 HTML escape 보강이 포함된다.
 
-- 조건 충족 수준과 공식판정 분리.
-- 판정주체 `생산혁신팀 + 5S 모듈`.
-- 가상 판정자 미노출.
-- `2개 이상 충족 → 자동 확정` 형태의 의미혼용 미노출.
-- 기존 Audit Batch / Audit 실시 / 종료평가 / Case Trace / Dashboard / HDPS E2E.
+## 확정 자동검증 — Audit → 개선조치 연결
+Commit `7b21c5b3e6b187fd0e4d6ffc8789b2dc7e4ba33d`:
+- Runtime Smoke #278: **success**
+- Browser Smoke #221: **success**
+- Package HD20 source #482: **success**
+- Pages build and deployment #673: **cancelled** — 연속 후속 커밋으로 해당 Run이 supersede되어 취소됨. 기능 실패로 성공 처리하지 않는다.
 
-Package #472 Artifact를 직접 압축 해제해 검사한 활성 JS/HTML 기준 다음 잔여는 0건이다.
+Browser #221은 실제 브라우저에서 다음을 확인했다.
+
+- Audit 원본 `sourceCaseId / auditDrawId`가 개선조치 Case까지 보존.
+- 테스트 정책 `defaultDays=7`에서 등록일 `2026-09-02` → 자동기한 `2026-09-09`.
+- `autoDuePolicyState = 자동지정`, `autoDueDays = 7`.
+- `defaultDays=null`에서는 기한을 생성하지 않고 `정책미설정`.
+- 기존 Audit Batch / Audit 실시 / 종료평가 / Case Trace / Dashboard / HDPS E2E도 계속 통과.
+
+Pages는 최신 문서 커밋을 포함한 후속 HEAD에서 다시 success를 확인한 뒤 최신 완전검증 기준점으로 승격한다.
+
+## 배포본 전수점검 결과
+Package Artifact를 직접 압축 해제해 검사한 활성 JS/HTML 기준 다음 잔여는 0건으로 관리한다.
 
 - `HD20MaturityFollowup`
 - `hd20WorkflowDataV1`
@@ -144,12 +175,11 @@ Package #472 Artifact를 직접 압축 해제해 검사한 활성 JS/HTML 기준
 - `1개월 점검 / 3개월 AUDIT / 6개월 AUDIT`
 - 독립 16개 생산팀 배열 (`app.js`의 `CANONICAL_TEAMS`만 존재)
 
-그 이후 보안성 보강으로 `audit-six-month-control.js`의 생산팀 HTML 출력 escape를 추가 반영했다. 이 후속 변경은 해당 최신 HEAD의 자동검증이 완료된 뒤 별도 성공 기준점으로 확정한다.
-
 ## 주요 최신 개발일지
 - `DEVELOPMENT_LOG_20260902.md`
 - `DEVELOPMENT_LOG_20260902_AUDIT_BATCH.md`
 - `DEVELOPMENT_LOG_20260902_AUDIT_CLOSE.md`
+- `DEVELOPMENT_LOG_20260902_AUDIT_ACTION_LINK.md`
 - `DEVELOPMENT_LOG_20260902_HDPS_CANONICAL.md`
 - `DEVELOPMENT_LOG_20260902_SEMANTIC_FIX.md`
 - `DEVELOPMENT_LOG_20260902_DEMO_RETIREMENT.md`
@@ -158,6 +188,7 @@ Package #472 Artifact를 직접 압축 해제해 검사한 활성 JS/HTML 기준
 - `DEVELOPMENT_LOG_20260902_CANONICAL_RUNTIME.md`
 
 ## 다음 작업
+- 최신 문서 HEAD의 Runtime / Browser / Package / Pages 4종을 확인하고 Pages success 기준점을 확정.
 - Audit·개선조치·고도화 화면에서 원천/사용자 입력을 `innerHTML`에 삽입하는 나머지 경로의 escape 여부 전수점검.
 - 배포 HTML/JS의 죽은 링크·가상값·폐기 Lifecycle 잔여를 계속 전수검색.
 - 운영정책/표시문구가 실제 데이터 구조와 일치하는지 계속 검증.
