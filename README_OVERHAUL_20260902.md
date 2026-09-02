@@ -1,6 +1,6 @@
 # HD-20 전면개편 현재 기준 — 2026-09-02
 
-> 이 문서는 `hd20-overhaul-20260902` 브랜치의 **현재 개발 기준 README**이다. 기존 `README.md`의 과거 Prototype 이력은 보존하되, 서로 충돌하는 경우 본 문서와 `DEVELOPMENT_LOG.md`의 2026-09-02 이후 기록을 우선한다.
+> 이 문서는 `hd20-overhaul-20260902` 브랜치의 **현재 개발 기준 README**이다. 기존 `README.md`의 과거 Prototype 이력은 보존하되, 서로 충돌하는 경우 본 문서와 `DEVELOPMENT_LOG_20260902.md`의 기록을 우선한다.
 
 ## 1. 현재 정보구조
 HD-20은 기존 7개 업무탭을 그대로 유지하지 않고 목적과 업무흐름 기준으로 5개 영역으로 재구성한다.
@@ -54,7 +54,7 @@ Audit 기준일은 대상 추출일이나 고도화 확정일이 아니라 **실
 
 Audit 대상은 Eligible 생산현장팀 중 자동 랜덤 추출한다. 전월 또는 누적 개선요청사항이 많은 팀은 다음 Audit 추출에서 확률을 높이는 Risk 가중 방식으로 관리하되, 특정 고위험팀을 무조건 강제선정하지 않는다.
 
-정확한 Risk 가중계수와 Audit 표본수는 Master/정책값으로 관리하며 임의 상수로 업무기준을 확정하지 않는다.
+정확한 Risk 가중계수와 Audit 표본수는 Master/정책값으로 관리하며 임의 상수로 업무기준을 확정하지 않는다. 세부 가중치가 아직 설정되지 않은 동안에는 시스템이 **균등 랜덤**으로 동작하며 당시 정책적용 여부를 추출이력에 남긴다.
 
 ## 6. 개선요청 자동 Deadline
 Audit 또는 운영 중 발생한 개선요청사항은 **등록일로부터 최소 7일, 최대 14일 이내** 자동 완료기한을 가져야 한다.
@@ -71,6 +71,8 @@ Audit 또는 운영 중 발생한 개선요청사항은 **등록일로부터 최
 
 기한이 지나고 완료되지 않은 건은 자동으로 기한경과 상태로 판단한다. 7~14일 중 정확히 며칠을 선택할지는 별도 정책값으로 관리하며, 승인되지 않은 긴급/일반/복잡도 임의 분류를 정식 업무규칙으로 고정하지 않는다.
 
+현재 중앙 정책 Store는 `hd20OperatingPolicyV1`이며 `improvementDeadline.minDays=7`, `maxDays=14`, `defaultDays=null`을 기본으로 한다. `defaultDays`가 기준정보에서 확정되기 전에는 신규 Case에 임의 10일을 부여하지 않고 `정책미설정`으로 명시한다.
+
 ## 7. Audit ↔ 개선조치 Case 연결
 Audit 개선요청과 개선조치는 동일 Case로 연결한다.
 
@@ -81,6 +83,7 @@ Audit 화면과 개선조치 화면은 동일 Canonical Store를 사용하여 �
 개선조치 Canonical Store: `hd20ActionCasesV2`
 Audit 추출/실시 Store: `hd20AuditRandomDrawsV1`
 고도화/5S Canonical Store: `hd20GMES5SAutoImproveRawV1`
+운영정책 Store: `hd20OperatingPolicyV1`
 
 ## 8. 대시보드 운영 폐쇄루프
 메인 대시보드는 단순 KPI 표시가 아니라 다음 흐름을 한 화면에서 판단할 수 있어야 한다.
@@ -93,6 +96,7 @@ Audit 추출/실시 Store: `hd20AuditRandomDrawsV1`
 - `hd20-five-area-integration.js`
 - `hd20-five-area.css`
 - `hd20-overhaul.css`
+- `hd20-policy-config.js`
 - `maturity-condition-analysis.js`
 - `maturity-condition-analysis.css`
 - `audit-random-draw.js`
@@ -101,7 +105,7 @@ Audit 추출/실시 Store: `hd20AuditRandomDrawsV1`
 - `audit-action-auto-link.js`
 - `audit-action-case-trace.js`
 - `dashboard-operational-bridge.js`
-- `legacy-lifecycle-retire.js`
+- `legacy-lifecycle-retirement.js`
 - `final-layout-polish.js`
 
 ## 10. 검증 계약
@@ -123,8 +127,18 @@ Audit 추출/실시 Store: `hd20AuditRandomDrawsV1`
 ## 11. 개발/반영 규칙
 코드 변경은 다음 순서를 따른다.
 
-`요구사항 확인 → 작업 브랜치 구현 → 자동검증 → DEVELOPMENT_LOG 기록 → README 현재기준 갱신 → 사용자 확인 → main 반영/배포`
+`요구사항 확인 → 작업 브랜치 구현 → 자동검증 → DEVELOPMENT_LOG_20260902 기록 → README 현재기준 갱신 → 사용자 확인 → main 반영/배포`
 
 `main`은 사용자 승인 없이 개편 브랜치 변경을 병합하지 않는다.
 
 과거 코드/문서에 `1개월/3개월/6개월 Audit`, 7개 탭, 임의 Demo KPI, 임의 Risk 계수 등 현재 기준과 충돌하는 표현이 남아 있으면 **Historical/Legacy로 취급**하고 현재 운영기준으로 다시 사용하지 않는다.
+
+## 12. 현재 정책 설정 필요항목
+
+다음 항목은 승인된 방향은 있으나 정확한 숫자/계수가 아직 확정되지 않았다. 따라서 코드에 임의 상수로 박지 않고 `통합기준정보`에서 설정하도록 구현한다.
+
+- 개선요청 자동 완료기한 기본일수: 7~14 범위
+- Audit Risk 가중치: 전월 개선요청 / 누적 개선요청 / 기한경과 / 재발
+- Audit 표본수
+
+세부 정책이 설정되지 않은 상태는 화면에서 숨기지 않고 `정책미설정` 또는 `균등 랜덤`으로 명확히 표시한다.
