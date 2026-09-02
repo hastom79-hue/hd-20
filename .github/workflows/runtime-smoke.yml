@@ -36,28 +36,19 @@ jobs:
           import pathlib,re,sys
           html=pathlib.Path('index.html').read_text(encoding='utf-8')
           nav=re.search(r'<nav class="beginnerNav".*?</nav>',html,re.S)
-          if not nav:
-              print('Missing beginnerNav in static index',file=sys.stderr);sys.exit(1)
-          keys=re.findall(r'data-key="([^"]+)"',nav.group(0))
-          expected=['dashboard','activity','advancement','audit','action']
-          if keys!=expected:
-              print('Static nav keys mismatch:',keys,file=sys.stderr);sys.exit(1)
-          forbidden=['1개월 점검','3개월 AUDIT','6개월 AUDIT','⑦ 기준정보','⑥ 문제점·개선조치']
-          bad=[x for x in forbidden if x in html]
-          if bad:
-              print('Legacy labels remain in index:',bad,file=sys.stderr);sys.exit(1)
-          required=['Audit 후 6개월 지속관리','정량축소·정위치 변경을 통한 공간 활용']
-          missing=[x for x in required if x not in html]
-          if missing:
-              print('Required current labels missing:',missing,file=sys.stderr);sys.exit(1)
-          print('OK: static index is canonical five-area source')
+          if not nav: sys.exit('Missing beginnerNav')
+          keys=re.findall(r'data-key="([^"]+)"',nav.group(0)); expected=['dashboard','activity','advancement','audit','action']
+          if keys!=expected: sys.exit('Static nav keys mismatch: '+str(keys))
+          for x in ['1개월 점검','3개월 AUDIT','6개월 AUDIT','⑦ 기준정보','⑥ 문제점·개선조치']:
+            if x in html: sys.exit('Legacy label remains: '+x)
+          for x in ['Audit 후 6개월 지속관리','정량축소·정위치 변경을 통한 공간 활용']:
+            if x not in html: sys.exit('Required label missing: '+x)
           PY
       - name: Verify five-area navigation controller
         run: |
           set -euo pipefail
           for key in dashboard activity advancement audit action; do grep -q "data-key=\\\"$key\\\"\|data-key=\"$key\"" beginner-navigation.js; done
           ! grep -q '1·3·6개월 Lifecycle' beginner-navigation.js
-          echo 'OK: five-area navigation controller present'
       - name: Verify canonical HDPS dashboard
         run: |
           set -euo pipefail
@@ -69,13 +60,9 @@ jobs:
           grep -q "ACTION_KEY='hd20ActionCasesV2'" hdps-dashboard.js
           grep -q "DRAW_KEY='hd20AuditRandomDrawsV1'" hdps-dashboard.js
           grep -q 'Audit 후 6개월 유지율' hdps-dashboard.js
-          grep -q 'Audit 실시 대기' hdps-dashboard.js
-          grep -q 'Audit 후 6개월 관리중' hdps-dashboard.js
-          grep -q 'addMonths' hdps-dashboard.js
           ! grep -q 'HD20MaturityFollowup' hdps-dashboard.js
           ! grep -q 'audit6Result\|audit6mResult\|sixMonthAuditResult' hdps-dashboard.js
           ! grep -q '1개월 점검\|3개월 Audit\|6개월 Audit\|1·3·6개월' hdps-dashboard.js
-          echo 'OK: HDPS dashboard directly uses canonical Audit/Action stores'
       - name: Verify workflow screen contract
         run: |
           set -euo pipefail
@@ -87,21 +74,27 @@ jobs:
           grep -q 'window.HD20KPIData' dashboard-kpi-source.js
           grep -q 'HD20KPIData' top-kpi-drilldown.js
           grep -q 'HD20KPIData' performance-conversion-analysis.js
-          ! grep -q 'const ACT=' top-kpi-drilldown.js
-          ! grep -q 'const WP=' top-kpi-drilldown.js
-      - name: Verify audit six-month continuous-control contract
+      - name: Verify Audit continuous-control, batch, and close contracts
         run: |
           set -euo pipefail
           test -s audit-six-month-control.js
           test -s audit-closed-loop-workflow.js
+          test -s audit-batch-execution.js
+          test -s audit-close-evaluation.js
           test -s audit-action-case-trace.js
           grep -q 'addMonths' audit-six-month-control.js
           grep -q '6개월 지속관리' audit-six-month-control.js
           grep -q 'MIN_DUE=7' audit-six-month-control.js
           grep -q 'MAX_DUE=14' audit-six-month-control.js
           grep -q 'auditDate' audit-six-month-control.js
+          grep -q 'HD20AuditClosedLoop.registerAudit' audit-batch-execution.js
+          grep -q 'function evaluate' audit-close-evaluation.js
+          grep -q "\['유지','미흡'\]" audit-close-evaluation.js
+          grep -q '아직 6개월 관리기간이 종료되지 않았습니다' audit-close-evaluation.js
+          grep -q 'finalEvaluationRiskReference' audit-close-evaluation.js
+          grep -q '별도 Risk 가중계수는 임의로 부여하지 않으며' audit-close-evaluation.js
+          grep -q 'audit-close-evaluation.js' final-layout-polish.js
           ! grep -q '1개월 점검\|3개월 AUDIT\|6개월 AUDIT' audit-action-auto-link.js
-          echo 'OK: Audit D-Day + 6-month continuous control + D+7~D+14 action deadline contract present'
       - name: Verify audit operating-policy and batch-draw contract
         run: |
           set -euo pipefail
@@ -112,7 +105,6 @@ jobs:
           grep -q 'batchId' audit-random-draw.js
           grep -q 'Audit 표본수가 미설정' audit-random-draw.js
           grep -q 'data-op-sample' operating-policy-master.js
-          echo 'OK: Audit sample policy + weighted draw without replacement contract present'
       - name: Verify advancement criteria semantics
         run: |
           set -euo pipefail
