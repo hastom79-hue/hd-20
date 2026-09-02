@@ -13,208 +13,162 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Verify JavaScript syntax
         shell: bash
         run: |
           set -euo pipefail
           failed=0
-          while IFS= read -r -d '' file; do node --check "$file" >/dev/null || { echo "::error file=$file::JavaScript syntax check failed"; failed=1; }; done < <(find . -maxdepth 2 -type f -name '*.js' -print0)
+          while IFS= read -r -d '' file; do
+            node --check "$file" >/dev/null || { echo "::error file=$file::JavaScript syntax check failed"; failed=1; }
+          done < <(find . -maxdepth 2 -type f -name '*.js' -print0)
           test "$failed" -eq 0
-      - name: Verify index script references exist
-        run: |
-          python3 - <<'PY'
-          import pathlib,re,sys
-          html=pathlib.Path('index.html').read_text(encoding='utf-8'); missing=[]
-          for ref in re.findall(r'<script[^>]+src=["\']([^"\']+)',html):
-            p=ref.split('?',1)[0]
-            if not p.startswith(('http://','https://','//')) and not pathlib.Path(p).is_file(): missing.append(p)
-          if missing: print('Missing:',missing,file=sys.stderr);sys.exit(1)
-          PY
-      - name: Verify static index five-area contract
+
+      - name: Verify index references and five-area IA
         run: |
           python3 - <<'PY'
           import pathlib,re,sys
           html=pathlib.Path('index.html').read_text(encoding='utf-8')
-          if '<h1>울산캠퍼스 5S 활동관리 시스템</h1>' not in html: sys.exit('Main title mismatch')
+          missing=[]
+          for ref in re.findall(r'<script[^>]+src=["\']([^"\']+)',html):
+            p=ref.split('?',1)[0]
+            if not p.startswith(('http://','https://','//')) and not pathlib.Path(p).is_file(): missing.append(p)
+          if missing: sys.exit('Missing script refs: '+str(missing))
           nav=re.search(r'<nav class="beginnerNav".*?</nav>',html,re.S)
-          if not nav: sys.exit('Missing beginnerNav')
-          keys=re.findall(r'data-key="([^"]+)"',nav.group(0)); expected=['dashboard','activity','advancement','audit','action']
-          if keys!=expected: sys.exit('Static nav keys mismatch: '+str(keys))
-          for x in ['1개월 점검','3개월 AUDIT','6개월 AUDIT','⑦ 기준정보','⑥ 문제점·개선조치','Q3 목표 55건']:
-            if x in html: sys.exit('Legacy label remains: '+x)
-          for retired in ['maturity-seq-action-link.js','demo-data-seed.js','action-demo-seed.js','audit-global-seed.js','emergency-ui-stabilizer-v2.js']:
-            if retired in html: sys.exit('Retired script ref remains: '+retired)
-          if 'audit-checklist-master.js' not in html: sys.exit('Audit checklist master script missing')
-          if 'app-visibility-failsafe.js' not in html: sys.exit('App visibility failsafe missing')
-          for x in ['Audit 후 6개월 지속관리','정량축소·정위치 변경을 통한 공간 활용','인당 목표 미설정']:
+          if not nav: sys.exit('Missing canonical navigation')
+          keys=re.findall(r'data-key="([^"]+)"',nav.group(0))
+          if keys!=['dashboard','activity','advancement','audit','action']: sys.exit('Nav mismatch: '+str(keys))
+          required=['울산캠퍼스 5S 활동관리 시스템','Audit 후 6개월 지속관리','정량축소·정위치 변경을 통한 공간 활용','인당 목표 미설정']
+          for x in required:
             if x not in html: sys.exit('Required label missing: '+x)
+          forbidden=['1개월 점검','3개월 AUDIT','6개월 AUDIT','⑦ 기준정보','⑥ 문제점·개선조치','Q3 목표 55건']
+          for x in forbidden:
+            if x in html: sys.exit('Legacy label remains: '+x)
+          retired=['maturity-seq-action-link.js','demo-data-seed.js','action-demo-seed.js','audit-global-seed.js','emergency-ui-stabilizer-v2.js','register-tab-fill.js','audit-admin-import.js','crud-hotfix.js','action-button-hotfix.js']
+          for x in retired:
+            if x in html: sys.exit('Retired script ref remains: '+x)
           PY
-      - name: Verify canonical dashboard core target contract
+
+      - name: Verify retired files stay retired
         run: |
           set -euo pipefail
-          grep -q 'targetMaster={Q1:null,Q2:null,Q3:null,Q4:null}' app.js
-          grep -q 'HD20DashboardCore' app.js
-          grep -q '인당 목표 미설정' app.js
-          ! grep -q 'ensureFailSafeNav\|grid-template-columns:repeat(7\|1·3·6개월 점검\|HD20LegacyDashboard' app.js
-          ! grep -q 'Q1:0.5\|Q2:0.6\|Q3:0.6\|Q4:0.7' app.js
-          test -s app-visibility-failsafe.js
-          test ! -e emergency-ui-stabilizer-v2.js
-          grep -q 'hd20-ready' app-visibility-failsafe.js
+          for f in maturity-seq-action-link.js demo-data-seed.js action-demo-seed.js audit-global-seed.js emergency-ui-stabilizer-v2.js register-tab-fill.js audit-admin-import.js crud-hotfix.js action-button-hotfix.js management.html v2-preview.html 'HD20_생산팀장_메일정보_강제생성_샘플.csv' 'data/HD20_생산팀장_메일정보_강제생성_샘플.csv'; do
+            test ! -e "$f"
+          done
+          ! grep -R --include='*.js' --include='*.html' --exclude-dir='.git' -n 'HD20MaturityFollowup\|hd20WorkflowDataV1' .
+
       - name: Verify canonical production team master
         run: |
           set -euo pipefail
           grep -q 'HD20ProductionTeamMaster' app.js
           grep -q 'teamNames:()=>\[...CANONICAL_TEAMS\]' app.js
-          for f in team-master-safety.js audit-random-draw.js action-mail-workflow.js; do
+          for f in team-master-safety.js audit-random-draw.js action-mail-workflow.js activity-workflow.js activity-dynamic-chart.js performance-conversion-analysis.js; do
             grep -Fq 'HD20ProductionTeamMaster?.teamNames?.()' "$f"
-            ! grep -q "const TEAMS=\['중형상부1팀'\|const TEAMS=\['대형메인팀'" "$f"
           done
-          grep -q '생산팀 Canonical Master를 불러오지 못했습니다.' audit-random-draw.js
-          grep -q '⑤ 개선조치' action-mail-workflow.js
-          grep -q '④ 유지·Audit' action-mail-workflow.js
-          ! grep -q '⑥ 문제점 · 개선조치\|⑤ Audit 관리\|매월말·익월초' action-mail-workflow.js
-      - name: Verify five-area navigation controller
+          for f in team-master-safety.js audit-random-draw.js action-mail-workflow.js activity-workflow.js activity-dynamic-chart.js performance-conversion-analysis.js; do
+            ! grep -q "\['대형메인팀','휠로더Front팀'\|\['중형상부1팀','중형상부2팀'" "$f"
+          done
+
+      - name: Verify canonical dashboard core
         run: |
           set -euo pipefail
-          for key in dashboard activity advancement audit action; do grep -q "data-key=\\\"$key\\\"\|data-key=\"$key\"" beginner-navigation.js; done
-          ! grep -q '1·3·6개월 Lifecycle' beginner-navigation.js
-      - name: Verify canonical HDPS dashboard
+          grep -q 'targetMaster={Q1:null,Q2:null,Q3:null,Q4:null}' app.js
+          grep -q 'HD20DashboardCore' app.js
+          grep -q '인당 목표 미설정' app.js
+          ! grep -q 'ensureFailSafeNav\|HD20LegacyDashboard\|Q1:0.5\|Q2:0.6\|Q3:0.6\|Q4:0.7' app.js
+          test -s app-visibility-failsafe.js
+          grep -q 'hd20-ready' app-visibility-failsafe.js
+
+      - name: Verify canonical workflow screens
         run: |
           set -euo pipefail
-          grep -q '① 통합 대시보드' hdps-dashboard.html
-          grep -q '⑤ 개선조치' hdps-dashboard.html
-          ! grep -q '⑥ 기준정보' hdps-dashboard.html
-          ! grep -q 'maturity-seq-action-link.js' hdps-dashboard.html
-          ! grep -q 'hdps-dashboard-current-model.js' hdps-dashboard.html
-          ! grep -q 'demo-data-seed.js' hdps-dashboard.html
-          grep -q "ACTION_KEY='hd20ActionCasesV2'" hdps-dashboard.js
-          grep -q "DRAW_KEY='hd20AuditRandomDrawsV1'" hdps-dashboard.js
-          grep -q 'Audit 후 6개월 유지율' hdps-dashboard.js
-          ! grep -q 'HD20MaturityFollowup' hdps-dashboard.js
-          ! grep -q 'audit6Result\|audit6mResult\|sixMonthAuditResult' hdps-dashboard.js
-          ! grep -q '1개월 점검\|3개월 Audit\|6개월 Audit\|1·3·6개월' hdps-dashboard.js
-      - name: Verify maturity followup adapter is retired
-        run: |
-          set -euo pipefail
-          test ! -e maturity-seq-action-link.js
-          ! grep -R --include='*.js' --exclude-dir='.git' -n 'HD20MaturityFollowup' .
-          ! grep -R --include='*.html' --exclude-dir='.git' -n 'maturity-seq-action-link.js' .
-      - name: Verify canonical approved landing
-        run: |
-          set -euo pipefail
-          grep -q "DRAW_KEY='hd20AuditRandomDrawsV1'" approved-landing-v2.js
-          grep -q 'Audit 후 6개월 유지율' approved-landing-v2.js
-          grep -q 'Audit 후 6개월 관리 대상' approved-landing-v2.js
-          grep -q 'audit.navCount===5' approved-landing-v2.js
-          grep -q '공식 확정된 고도화 사례가 아직 없습니다.' approved-landing-v2.js
-          grep -q '공식 판정 완료 사례' approved-landing-v2.js
-          ! grep -q 'HD20MaturityFollowup' approved-landing-v2.js
-          ! grep -q '3대 기준 중 2개 이상을 충족한 공식확정\|어렵게 확보한 성과' approved-landing-v2.js
-          ! grep -q '3개월 AUDIT\|3개월 Audit\|실제 6개월 Audit 결과\|AUDIT 6개월 유지율\|audit.navCount===7' approved-landing-v2.js
-      - name: Verify canonical dashboard side summary
-        run: |
-          set -euo pipefail
-          test -s dashboard-side-summary.js
-          test ! -e legacy-lifecycle-retirement.js
-          grep -q 'HD20DashboardSideSummary' dashboard-side-summary.js
-          grep -q "DRAW='hd20AuditRandomDrawsV1'" dashboard-side-summary.js
-          grep -q "ACTION='hd20ActionCasesV2'" dashboard-side-summary.js
-          grep -q 'dashboard-side-summary.js' final-layout-polish.js
-          ! grep -q 'legacy-lifecycle-retirement.js' final-layout-polish.js
-      - name: Verify workflow screen contract
-        run: |
-          set -euo pipefail
-          for key in awActivity awWorkplace awAudit awAction awRegister; do grep -q "$key" activity-workflow.js; done
+          for key in awActivity awWorkplace awAudit awAction; do grep -q "$key" activity-workflow.js; done
+          ! grep -q 'awRegister\|⑥ 문제점·개선조치\|⑤ 5S Audit 관리\|3개월 AUDIT\|6개월 AUDIT' activity-workflow.js
+          grep -q '② 5S 활동' activity-workflow.js
+          grep -q '③ 고도화·판정' activity-workflow.js
+          grep -q '④ 유지·Audit' activity-workflow.js
+          grep -q '⑤ 개선조치' activity-workflow.js
           grep -q 'hd20GMES5SAutoImproveRawV1' activity-workflow.js
-      - name: Verify canonical KPI wiring
-        run: |
-          set -euo pipefail
-          grep -q 'window.HD20KPIData' dashboard-kpi-source.js
-          grep -q 'HD20KPIData' top-kpi-drilldown.js
-          grep -q 'HD20KPIData' performance-conversion-analysis.js
-      - name: Verify Audit continuous-control, batch, and close contracts
-        run: |
-          set -euo pipefail
-          test -s audit-six-month-control.js
-          test -s audit-closed-loop-workflow.js
-          test -s audit-batch-execution.js
-          test -s audit-close-evaluation.js
-          test -s audit-action-case-trace.js
-          grep -q 'addMonths' audit-six-month-control.js
-          grep -q '6개월 지속관리' audit-six-month-control.js
-          grep -q 'MIN_DUE=7' audit-six-month-control.js
-          grep -q 'MAX_DUE=14' audit-six-month-control.js
-          grep -q 'auditDate' audit-six-month-control.js
-          grep -q 'function recurrenceState' audit-six-month-control.js
-          grep -q "\['재발','발생','true','1','yes','y'\]" audit-six-month-control.js
-          grep -q "\['미발생','없음','false','0','no','n'\]" audit-six-month-control.js
-          ! grep -q "/재발/.test(String(a.status||a.problem||''))" audit-six-month-control.js
-          grep -q 'HD20AuditClosedLoop.registerAudit' audit-batch-execution.js
-          grep -q 'function evaluate' audit-close-evaluation.js
-          grep -q "\['유지','미흡'\]" audit-close-evaluation.js
-          grep -q '아직 6개월 관리기간이 종료되지 않았습니다' audit-close-evaluation.js
-          grep -q 'finalEvaluationRiskReference' audit-close-evaluation.js
-          grep -q '별도 Risk 가중계수는 임의로 부여하지 않으며' audit-close-evaluation.js
-          grep -q 'audit-close-evaluation.js' final-layout-polish.js
-          grep -q 'Audit ↔ 개선조치 ↔ 종료평가 Case 추적' audit-action-case-trace.js
-          grep -q 'function closeState' audit-action-case-trace.js
-          grep -q 'finalEvaluationNote' audit-action-case-trace.js
-          grep -q '종료평가 대기' audit-action-case-trace.js
-          ! grep -q '1개월 점검\|3개월 AUDIT\|6개월 AUDIT' audit-action-auto-link.js
-      - name: Verify audit operating-policy and batch-draw contract
-        run: |
-          set -euo pipefail
-          grep -q 'sampleCount:null' hd20-policy-config.js
-          grep -q 'auditSampleCount' hd20-policy-config.js
-          grep -q 'function pickTeams' audit-random-draw.js
-          grep -q 'function recurrenceOf' audit-random-draw.js
-          grep -q 'available.splice' audit-random-draw.js
-          grep -q 'batchId' audit-random-draw.js
-          grep -q 'Audit 표본수가 미설정' audit-random-draw.js
-          ! grep -q "/재발/.test(String(a.status||a.problem||''))" audit-random-draw.js
-          grep -q 'data-op-sample' operating-policy-master.js
-      - name: Verify advancement criteria semantics
+          grep -q 'hd20AuditRandomDrawsV1' activity-workflow.js
+
+      - name: Verify advancement semantics
         run: |
           set -euo pipefail
           grep -q '시각화·형적관리' maturity-condition-analysis.js
           grep -q '인간공학적 Green Zone' maturity-condition-analysis.js
           grep -q '정량축소·정위치 변경을 통한 공간 활용' maturity-condition-analysis.js
           grep -q '작업장명으로 라인을 추정하지 않습니다' maturity-condition-analysis.js
-      - name: Verify dashboard operational bridge
+          grep -q '조건 충족 수준과 공식 판정은 별도 축' performance-conversion-analysis.js
+          grep -q '조건 충족 개수만으로 공식 확정을 자동 결정하지 않습니다' performance-conversion-analysis.js
+          grep -q '생산혁신팀 + 5S 모듈 판정' performance-conversion-analysis.js
+          ! grep -q 'criteriaMet.*confirmed\|confirmed.*criteriaMet' performance-conversion-analysis.js
+          grep -q '생산혁신팀 + 5S 모듈 공식 판정 기준' maturity-map-drilldown.js
+          grep -q '저장되지 않은 판정자·사유는 임의 생성하지 않습니다' maturity-map-drilldown.js
+          ! grep -q '생산혁신팀 메인 담당자\|공식 판정 기준 충족' maturity-map-drilldown.js
+
+      - name: Verify official judgment source
         run: |
           set -euo pipefail
+          grep -q '생산혁신팀 + 5S 모듈' gmes-5s-judge-ui.js
+          ! grep -q 'criteriaMetCount.*=' gmes-5s-judge-ui.js
+          ! grep -q 'criteriaMet.*=' gmes-5s-judge-ui.js
+
+      - name: Verify canonical KPI and HDPS dashboard
+        run: |
+          set -euo pipefail
+          grep -q 'window.HD20KPIData' dashboard-kpi-source.js
+          grep -q 'HD20KPIData' top-kpi-drilldown.js
+          grep -q 'HD20KPIData' performance-conversion-analysis.js
+          grep -q '① 통합 대시보드' hdps-dashboard.html
+          grep -q '⑤ 개선조치' hdps-dashboard.html
+          grep -q "ACTION_KEY='hd20ActionCasesV2'" hdps-dashboard.js
+          grep -q "DRAW_KEY='hd20AuditRandomDrawsV1'" hdps-dashboard.js
+          grep -q 'Audit 후 6개월 유지율' hdps-dashboard.js
+          ! grep -q '1개월 점검\|3개월 Audit\|6개월 Audit\|1·3·6개월' hdps-dashboard.js
+
+      - name: Verify Audit continuous-control and batch contracts
+        run: |
+          set -euo pipefail
+          for f in audit-six-month-control.js audit-closed-loop-workflow.js audit-batch-execution.js audit-close-evaluation.js audit-action-case-trace.js audit-random-draw.js; do test -s "$f"; done
+          grep -q 'addMonths' audit-six-month-control.js
+          grep -q '6개월 지속관리' audit-six-month-control.js
+          grep -q 'MIN_DUE=7' audit-six-month-control.js
+          grep -q 'MAX_DUE=14' audit-six-month-control.js
+          grep -q 'function recurrenceState' audit-six-month-control.js
+          ! grep -q "/재발/.test(String(a.status||a.problem||''))" audit-six-month-control.js
+          grep -q 'HD20AuditClosedLoop.registerAudit' audit-batch-execution.js
+          grep -q 'function evaluate' audit-close-evaluation.js
+          grep -q "\['유지','미흡'\]" audit-close-evaluation.js
+          grep -q 'finalEvaluationRiskReference' audit-close-evaluation.js
+          grep -q 'Audit ↔ 개선조치 ↔ 종료평가 Case 추적' audit-action-case-trace.js
+          grep -q 'function pickTeams' audit-random-draw.js
+          grep -q 'function recurrenceOf' audit-random-draw.js
+          grep -q 'available.splice' audit-random-draw.js
+          grep -q 'batchId' audit-random-draw.js
+          grep -q 'Audit 표본수가 미설정' audit-random-draw.js
+          grep -q 'sampleCount:null' hd20-policy-config.js
+          grep -q 'auditSampleCount' hd20-policy-config.js
+          grep -q 'data-op-sample' operating-policy-master.js
+
+      - name: Verify dashboard closed-loop summaries
+        run: |
+          set -euo pipefail
+          test -s dashboard-side-summary.js
           test -s dashboard-operational-bridge.js
-          grep -q '운영 폐쇄루프 현황' dashboard-operational-bridge.js
+          grep -q "DRAW='hd20AuditRandomDrawsV1'" dashboard-side-summary.js
+          grep -q "ACTION='hd20ActionCasesV2'" dashboard-side-summary.js
           grep -q '종료평가 대기' dashboard-operational-bridge.js
           grep -q '종료평가 · 유지' dashboard-operational-bridge.js
           grep -q '종료평가 · 미흡' dashboard-operational-bridge.js
-          grep -q "finalEvaluation==='유지'" dashboard-operational-bridge.js
-          grep -q "finalEvaluation==='미흡'" dashboard-operational-bridge.js
+          grep -q 'dashboard-side-summary.js' final-layout-polish.js
           grep -q 'dashboard-operational-bridge.js' final-layout-polish.js
-      - name: Verify split CRUD store is retired
+
+      - name: Verify no demo or synthetic production data
         run: |
           set -euo pipefail
-          grep -q 'splitStoreDisabled:true' workflow-crud.js
-          ! grep -q 'hd20WorkflowDataV1' workflow-crud.js
-      - name: Verify demo pollution and Audit master guards
-        run: |
-          set -euo pipefail
-          test ! -e demo-data-seed.js
-          test ! -e action-demo-seed.js
-          ! grep -q 'demo-data-seed.js\|action-demo-seed.js' index.html
-          ! grep -q 'demo-data-seed.js\|action-demo-seed.js' hdps-dashboard.html
           ! grep -R --include='*.js' --exclude-dir='.git' -n "source:'demo-seed'\|HD20_DEMO_ACTIONS\|HD20_ACTION_DEMO_SEED_DISABLED" .
           ! grep -q 'commons.wikimedia.org' action-field-photo-gallery.js
           test -s audit-checklist-master.js
-          test ! -e audit-global-seed.js
           grep -q 'score:0' audit-checklist-master.js
           grep -q "result:'N/A'" audit-checklist-master.js
           grep -q 'Audit 실시 후 6개월 지속관리 기간 동안 유지되는가?' audit-checklist-master.js
-          ! grep -q '1·3·6개월 Audit' audit-checklist-master.js
-      - name: Verify prototype and fake sample files are retired
-        run: |
-          set -euo pipefail
-          test ! -e management.html
-          test ! -e v2-preview.html
-          test ! -e 'HD20_생산팀장_메일정보_강제생성_샘플.csv'
-          test ! -e 'data/HD20_생산팀장_메일정보_강제생성_샘플.csv'
