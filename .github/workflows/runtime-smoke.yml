@@ -65,8 +65,14 @@ jobs:
           set -euo pipefail
           grep -q 'HD20ProductionTeamMaster' app.js
           grep -q 'teamNames:()=>\[...CANONICAL_TEAMS\]' app.js
-          grep -q 'HD20ProductionTeamMaster?.teamNames?.()' team-master-safety.js
-          ! grep -q "const TEAMS=\['중형상부1팀'\|const TEAMS=\['대형메인팀'" team-master-safety.js
+          for f in team-master-safety.js audit-random-draw.js action-mail-workflow.js; do
+            grep -Fq 'HD20ProductionTeamMaster?.teamNames?.()' "$f"
+            ! grep -q "const TEAMS=\['중형상부1팀'\|const TEAMS=\['대형메인팀'" "$f"
+          done
+          grep -q '생산팀 Canonical Master를 불러오지 못했습니다.' audit-random-draw.js
+          grep -q '⑤ 개선조치' action-mail-workflow.js
+          grep -q '④ 유지·Audit' action-mail-workflow.js
+          ! grep -q '⑥ 문제점 · 개선조치\|⑤ Audit 관리\|매월말·익월초' action-mail-workflow.js
       - name: Verify five-area navigation controller
         run: |
           set -euo pipefail
