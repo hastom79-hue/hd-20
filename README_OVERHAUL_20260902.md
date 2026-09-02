@@ -1,6 +1,7 @@
 # HD-20 전면개편 현재 기준 — 2026-09-02
 
-> 이 문서는 `hd20-overhaul-20260902` 브랜치의 **현재 개발 기준 README**이다. 기존 `README.md`의 과거 Prototype 이력은 보존하되, 서로 충돌하는 경우 본 문서와 `DEVELOPMENT_LOG_20260902.md`의 기록을 우선한다.
+> 이 문서는 HD-20의 **현재 개발·배포 기준 README**이다. 기존 `README.md`의 과거 Prototype 이력은 보존하되, 서로 충돌하는 경우 본 문서와 `DEVELOPMENT_LOG_20260902.md`의 기록을 우선한다.
+> 2026-09-02 1차 전면개편은 `main`에 배포되었으며 배포 기준 Merge Commit은 `28f53aa2aceabed41eda554235dae8e429a74ee5`이다.
 
 ## 1. 현재 정보구조
 HD-20은 기존 7개 업무탭을 그대로 유지하지 않고 목적과 업무흐름 기준으로 5개 영역으로 재구성한다.
@@ -110,7 +111,7 @@ Audit 추출/실시 Store: `hd20AuditRandomDrawsV1`
 - `final-layout-polish.js`
 
 ## 10. 검증 계약
-작업 브랜치에서도 다음 자동검증을 실행한다.
+다음 자동검증을 작업 브랜치와 `main`에서 사용한다.
 
 - 전체 JavaScript `node --check`
 - index script reference 존재여부
@@ -123,14 +124,18 @@ Audit 추출/실시 Store: `hd20AuditRandomDrawsV1`
 - Demo 데이터 운영 KPI 자동주입 금지
 - Browser Smoke에서 5개 영역 실제 클릭전환
 
-2026-09-02 기준 Runtime Smoke와 Browser Smoke의 5영역 전환 검증이 성공한 이력이 있다. 이후 변경도 같은 검증을 통과해야 완료로 판단한다.
+### 2026-09-02 1차 main 배포 검증
+- Runtime Smoke run #129: **success**
+- Browser Smoke run #72: **success**
+- Package HD20 source run #333: **success**
+- GitHub Pages build/deployment run #524: **success**
 
 ## 11. 개발/반영 규칙
 코드 변경은 다음 순서를 따른다.
 
-`요구사항 확인 → 작업 브랜치 구현 → 자동검증 → DEVELOPMENT_LOG_20260902 기록 → README 현재기준 갱신 → 사용자 확인 → main 반영/배포`
+`요구사항 확인 → 구현 → 자동검증 → DEVELOPMENT_LOG_20260902 기록 → README 현재기준 갱신 → main 반영 → GitHub Pages 배포 검증`
 
-`main`은 사용자 승인 없이 개편 브랜치 변경을 병합하지 않는다.
+사용자가 배포하면서 작업하도록 승인한 상태이므로, 후속 변경도 검증을 거쳐 `main`과 GitHub Pages에 순차 반영하며 개발일지/README를 함께 유지한다.
 
 과거 코드/문서에 `1개월/3개월/6개월 Audit`, 7개 탭, 임의 Demo KPI, 임의 Risk 계수 등 현재 기준과 충돌하는 표현이 남아 있으면 **Historical/Legacy로 취급**하고 현재 운영기준으로 다시 사용하지 않는다.
 
@@ -146,3 +151,10 @@ Audit 추출/실시 Store: `hd20AuditRandomDrawsV1`
 `operating-policy-master.js`가 입력값을 검증하고 `hd20OperatingPolicyV1`에 저장한다. 정책 저장 시 `hd20-policy-updated` 이벤트를 발생시켜 Audit/개선조치 화면이 즉시 새 정책을 사용한다.
 
 세부 정책이 설정되지 않은 상태는 화면에서 숨기지 않고 `정책미설정` 또는 `균등 랜덤`으로 명확히 표시한다. Audit 표본수는 현재 Master 저장까지 연결되었으며 다중 추출 로직 연결은 후속 구현 대상이다.
+
+## 13. 현재 배포 이후 후속개발 우선순위
+
+1. 정적 `index.html`의 7탭 및 1/3/6개월 Audit Legacy 문구를 실제 소스에서 제거하여 런타임 치환 의존도를 낮춘다.
+2. Audit 표본수 설정을 중복 없는 다중 랜덤 추출에 연결한다.
+3. 다중 선정 대상의 통지·Audit 실시·6개월 관리 흐름을 일관되게 연결한다.
+4. 각 변경마다 Runtime/Browser/Pages 검증과 개발일지 기록을 반복한다.
