@@ -122,6 +122,7 @@ Audit 추출/실시 Store: `hd20AuditRandomDrawsV1`
 - 고도화 3대 조건 정확한 명칭
 - 라인 임의추정 금지
 - Demo 데이터 운영 KPI 자동주입 금지
+- Audit 표본수 정책 보존 및 Batch 무중복 추출 계약
 - Browser Smoke에서 5개 영역 실제 클릭전환
 
 ### 2026-09-02 1차 main 배포 검증
@@ -130,10 +131,14 @@ Audit 추출/실시 Store: `hd20AuditRandomDrawsV1`
 - Package HD20 source run #333: **success**
 - GitHub Pages build/deployment run #524: **success**
 
+### Audit Batch 추출 후속 검증
+- Runtime Smoke run #134: **success**
+- Browser Smoke run #77: 최신 기록 시점 실행 중 — 완료 결과는 개발일지에 후속 기록.
+
 ## 11. 개발/반영 규칙
 코드 변경은 다음 순서를 따른다.
 
-`요구사항 확인 → 구현 → 자동검증 → DEVELOPMENT_LOG_20260902 기록 → README 현재기준 갱신 → main 반영 → GitHub Pages 배포 검증`
+`요구사항 확인 → 구현 → 자동검증 → 개발일지 기록 → README 현재기준 갱신 → main 반영 → GitHub Pages 배포 검증`
 
 사용자가 배포하면서 작업하도록 승인한 상태이므로, 후속 변경도 검증을 거쳐 `main`과 GitHub Pages에 순차 반영하며 개발일지/README를 함께 유지한다.
 
@@ -148,13 +153,15 @@ Audit 추출/실시 Store: `hd20AuditRandomDrawsV1`
 - Risk 가중치: 전월 개선요청 / 누적 개선요청 / 기한경과 / 재발
 - Audit 표본수
 
-`operating-policy-master.js`가 입력값을 검증하고 `hd20OperatingPolicyV1`에 저장한다. 정책 저장 시 `hd20-policy-updated` 이벤트를 발생시켜 Audit/개선조치 화면이 즉시 새 정책을 사용한다.
+`operating-policy-master.js`가 입력값을 검증하고 `hd20OperatingPolicyV1`에 저장한다. `hd20-policy-config.js`가 `sampleCount`를 포함한 정책값을 중앙에서 보존·조회한다. 정책 저장 시 `hd20-policy-updated` 이벤트를 발생시켜 Audit/개선조치 화면이 즉시 새 정책을 사용한다.
 
-세부 정책이 설정되지 않은 상태는 화면에서 숨기지 않고 `정책미설정` 또는 `균등 랜덤`으로 명확히 표시한다. Audit 표본수는 현재 Master 저장까지 연결되었으며 다중 추출 로직 연결은 후속 구현 대상이다.
+Audit 표본수가 미설정이면 시스템이 임의로 1건을 추출하지 않고 설정 필요 상태를 표시한다. 표본수가 설정되면 `audit-random-draw.js`가 해당 수만큼 하나의 Batch로 추출하며, 각 선정 후 후보군에서 제거하여 **동일 Batch 내 중복선정을 방지**한다. Risk 가중치가 설정되지 않은 경우에는 동일 구조에서 균등 랜덤을 사용한다.
+
+세부 구현 이력은 `DEVELOPMENT_LOG_20260902_AUDIT_BATCH.md`에도 기록한다.
 
 ## 13. 현재 배포 이후 후속개발 우선순위
 
 1. 정적 `index.html`의 7탭 및 1/3/6개월 Audit Legacy 문구를 실제 소스에서 제거하여 런타임 치환 의존도를 낮춘다.
-2. Audit 표본수 설정을 중복 없는 다중 랜덤 추출에 연결한다.
-3. 다중 선정 대상의 통지·Audit 실시·6개월 관리 흐름을 일관되게 연결한다.
+2. 다중 선정된 각 Audit 대상의 실시결과 등록 UX를 Batch 단위로 개선한다.
+3. Browser Smoke에 운영정책 주입 → 실제 다중추출 → 선택수/중복 0건 검증을 추가한다.
 4. 각 변경마다 Runtime/Browser/Pages 검증과 개발일지 기록을 반복한다.
