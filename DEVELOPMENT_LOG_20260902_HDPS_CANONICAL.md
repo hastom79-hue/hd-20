@@ -39,16 +39,26 @@
 - `Audit 후 6개월 유지율`, `Audit 실시 대기`, `Audit 후 6개월 관리중` 문구 존재 확인.
 - `HD20MaturityFollowup`, `audit6Result` 계열, 1/3/6개월 Lifecycle 문구가 다시 들어오면 실패하도록 설정.
 
+### 5. Browser Smoke 직접 진입 계약 추가
+- `hdps-dashboard.html`을 Chromium에서 직접 연다.
+- 5영역 메뉴 순서가 `dashboard / activity / advancement / audit / action`인지 확인한다.
+- KPI 카드가 6개인지 확인한다.
+- `Audit 후 6개월 유지율` KPI 명칭을 확인한다.
+- Action Summary 4개 항목 `Audit 실시 대기 / Audit 후 6개월 관리중 / 개선조치 미완료 / 개선조치 기한경과`를 확인한다.
+- 화면에 과거 `1개월 점검 / 3개월 Audit / 6개월 Audit / 1·3·6개월` 문구가 렌더링되면 실패한다.
+- 메인 대시보드와 HDPS 대시보드 스크린샷 및 diagnostics JSON을 CI Artifact로 남긴다.
+
 ## 주요 커밋
 - `4671aafbabc4e2dfb2a194241a457376ba0a1e26` — HDPS dashboard Canonical rewrite
 - `cf855c64f35b918ad0720919ff6892d49e1d3616` — legacy lifecycle/bridge script loading removal
 - `5cbcd5cc20b74825ca28c17a63af4fcb1293a7a7` — Runtime Smoke canonical contract
 - `4a985c18f065586e77a12465b91566358fa9e5c5` — obsolete bridge file deletion
+- `b73803d15a543158a2041f99249dc9861be4925b` — direct HDPS dashboard browser smoke
 
 ## 검증 상태
-본 문서 작성 시점에 최신 `main` 변경으로 Runtime/Browser/Pages 워크플로우가 재실행된다. 완료 결과 확인 전에는 성공으로 간주하지 않는다.
+최신 `main` 변경으로 Runtime/Browser/Pages 워크플로우가 재실행된다. 완료 결과 확인 전에는 성공으로 간주하지 않는다.
 
 ## 후속 작업
-- Browser Smoke에서 `hdps-dashboard.html` 직접 진입 검증 추가.
 - Audit Batch 다중선정 건에 대해 개별 `Audit 실시일 / 결과 / 개선요청` 입력 UX 연결.
-- README와 메인 개발일지에서 본 Canonical 전환을 현재 기준으로 참조.
+- Browser Smoke에 운영정책 주입 → 실제 다중추출 → 선택수/중복 0건 검증 추가.
+- README와 메인 개발일지에서 본 Canonical 전환을 현재 기준으로 계속 유지.
