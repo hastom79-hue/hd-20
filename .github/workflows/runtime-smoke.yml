@@ -60,6 +60,13 @@ jobs:
           test -s app-visibility-failsafe.js
           test ! -e emergency-ui-stabilizer-v2.js
           grep -q 'hd20-ready' app-visibility-failsafe.js
+      - name: Verify canonical production team master
+        run: |
+          set -euo pipefail
+          grep -q 'HD20ProductionTeamMaster' app.js
+          grep -q 'teamNames:()=>\[...CANONICAL_TEAMS\]' app.js
+          grep -q 'HD20ProductionTeamMaster?.teamNames?.()' team-master-safety.js
+          ! grep -q "const TEAMS=\['중형상부1팀'\|const TEAMS=\['대형메인팀'" team-master-safety.js
       - name: Verify five-area navigation controller
         run: |
           set -euo pipefail
