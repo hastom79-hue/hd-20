@@ -2,18 +2,16 @@
 const $=(s,r=document)=>r.querySelector(s);
 const $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const GMES_KEY='hd20GMES5SAutoImproveRawV1';
-const ACTION_KEY='hd20ActionCasesV2';
+const DRAW_KEY='hd20AuditRandomDrawsV1';
 function textOf(el){return (el?.textContent||'').replace(/\s+/g,' ').trim()}
 function json(key,fallback=[]){try{const v=JSON.parse(localStorage.getItem(key)||'null');return v??fallback}catch{return fallback}}
 function load(){const v=json(GMES_KEY,[]);return Array.isArray(v)?v:[]}
-function actions(){const v=json(ACTION_KEY,[]);return Array.isArray(v)?v:[]}
-function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[m]))}
+function draws(){const v=json(DRAW_KEY,[]);return Array.isArray(v)?v:[]}
+function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function asDate(v){if(!v)return null;const d=new Date(v);return Number.isNaN(d.getTime())?null:d}
 function dateOnly(v){const d=asDate(v);return d?d.toISOString().slice(0,10):'—'}
+function addMonths(v,n=6){const d=asDate(v);if(!d)return null;const x=new Date(d),day=x.getDate();x.setDate(1);x.setMonth(x.getMonth()+n);x.setDate(Math.min(day,new Date(x.getFullYear(),x.getMonth()+1,0).getDate()));return x}
 function levelOf(x){const v=String(x?.level||x?.maturityLevel||x?.lv||'').match(/[1-5]/);return v?+v[0]:null}
-function daysBetween(a,b){a=asDate(a);b=asDate(b);return a&&b?Math.max(0,Math.round((b-a)/86400000)):null}
-function pick(x,keys){for(const k of keys){if(x?.[k]!==undefined&&x[k]!==null&&x[k]!=='')return x[k]}return null}
-function pct(n,d){return d?Math.round(n/d*1000)/10:null}
 function ensureOverrides(){
  if(document.getElementById('hd20ApprovedLandingRuntimeFix'))return;
  const s=document.createElement('style');s.id='hd20ApprovedLandingRuntimeFix';s.textContent=`
@@ -35,14 +33,18 @@ function renderKpis(host){
  set(0,m.judgmentRate,'%');set(1,m.avgLead,'일');set(2,m.maturity,' Lv');set(3,m.sixRetention,'%');set(4,m.recurrence,'%');set(5,m.actionOnTime,'%');
  host.dataset.kpiRows=String(s.rows.length)
 }
+function auditManagementRows(){
+ const now=asDate(new Date());
+ return draws().map(d=>{const start=asDate(d.auditDate),end=start?addMonths(start,6):null;if(!start||!end||end<now)return null;return{...d,start,end,remaining:Math.max(0,Math.ceil((end-now)/86400000))}}).filter(Boolean).sort((a,b)=>a.end-b.end)
+}
 function renderLive(host){
  const s=snap(),rows=s.confirmed||[];renderKpis(host);
  const recent=[...rows].sort((a,b)=>new Date(b.judgedAt||0)-new Date(a.judgedAt||0)).slice(0,5),recentBox=$('.hd20Recent',host);
  if(recentBox)recentBox.innerHTML=recent.length?recent.map((x,i)=>`<div class="hd20RecentRow${i===0?' hd20RecentTop':''}">${i===0?'<span class="hd20TrophyBadge">🏆 최신 확정</span>':''}<span class="badge">${levelOf(x)?'Lv.'+levelOf(x):'확정'}</span><b>${esc(x.workplace||x.title||'미지정')}</b><span>${esc(x.team||'미지정')}</span><span>${dateOnly(x.judgedAt)}</span></div>`).join(''):'<div class="hd20RecentRow"><span>3대 기준 중 2개 이상을 충족한 공식확정 사례가 아직 없습니다 — 고도화 확정은 원래 쉽게 나오지 않는 성과입니다.</span></div>';
  const levels=[1,2,3,4,5].map(n=>rows.filter(x=>levelOf(x)===n).length),known=levels.reduce((a,b)=>a+b,0),maxLv=Math.max(1,...levels);
  $$('.hd20Level',host).forEach((el,i)=>{const strong=$('strong',el),small=$('small',el),fill=$('.hd20LevelFill',el);if(strong)strong.textContent=known?`${levels[i]}곳`:'—';if(small)small.textContent=known?`${Math.round(levels[i]/known*100)}%`:'—';if(fill)fill.style.width=known?`${Math.max(4,Math.round(levels[i]/maxLv*100))}%`:'2%'});
- const sum=window.HD20MaturityFollowup?.summary?.(),due=(sum?.three||[]).filter(x=>x.state==='기한임박').sort((a,b)=>a.diff-b.diff),dueBox=$('.hd20Due',host);
- if(dueBox)dueBox.innerHTML=due.length?due.slice(0,5).map(x=>`<div class="hd20DueRow"><strong>${Math.max(0,x.diff)}일 남음</strong><b>${esc(x.workplace||x.title||'미지정')}</b><span>${esc(x.team||'미지정')}</span><span>${dateOnly(x.date)}</span></div>`).join(''):`<div class="hd20DueRow"><span>${sum?'기한임박 3개월 AUDIT 대상 없음':'Lifecycle 산식 초기화 중'}</span></div>`;
+ const active=auditManagementRows(),dueBox=$('.hd20Due',host);
+ if(dueBox)dueBox.innerHTML=active.length?active.slice(0,5).map(x=>`<div class="hd20DueRow"><strong>${x.remaining}일 남음</strong><b>${esc(x.workplace||x.auditWorkplace||'작업장 미등록')}</b><span>${esc(x.team||'미지정')}</span><span>${dateOnly(x.end)}</span></div>`).join(''):'<div class="hd20DueRow"><span>현재 Audit 후 6개월 관리중인 Case가 없습니다.</span></div>';
  host.dataset.liveSource=GMES_KEY;host.dataset.liveRows=String(rows.length)
 }
 function openGrid(i){const card=$$('.cards .kpi')[i];if(card)card.click()}
@@ -59,7 +61,7 @@ function build(){
   <div class="hd20ALMetric"><b>5S 고도화 판정 완료율</b><strong>—</strong><small>5S 고도화 후보 중 판정 완료 비율</small></div>
   <div class="hd20ALMetric"><b>평균 판정 Lead Time</b><strong>—</strong><small>등록일→판정일</small></div>
   <div class="hd20ALMetric"><b>고도화 수준</b><strong>—</strong><small>공식확정 Level 평균</small></div>
-  <div class="hd20ALMetric"><b>6개월 유지율</b><strong>—</strong><small>실제 6개월 Audit 결과</small></div>
+  <div class="hd20ALMetric"><b>Audit 후 6개월 유지율</b><strong>—</strong><small>Audit 실시일 기준 6개월 유지상태</small></div>
   <div class="hd20ALMetric"><b>Audit 부적합 재발률</b><strong>—</strong><small>실제 재발 이력 기준</small></div>
   <div class="hd20ALMetric"><b>기한 내 개선조치 완료율</b><strong>—</strong><small>실제 완료일·목표일 기준</small></div>
  </div>
@@ -70,14 +72,14 @@ function build(){
  </div></article>
  <article class="hd20ALPanel"><h3>5S 고도화 수준 Map <small>(기존 판정 Level 기준)</small></h3><div class="hd20LevelMap">${[['Lv.1','기본'],['Lv.2','관리'],['Lv.3','체계'],['Lv.4','최적'],['Lv.5','선도']].map(x=>`<div class="hd20Level"><div class="hd20LevelLabel"><b>${x[0]}</b><span>${x[1]}</span></div><div class="hd20LevelTrack"><div class="hd20LevelFill"></div></div><div class="hd20LevelStat"><strong>—</strong><small>—</small></div></div>`).join('')}</div></article>
  <article class="hd20ALPanel hd20AchievementPanel"><h3>🏆 최근 공식 확정 사례 <small>(3대 기준 중 2개 이상 충족 · 어렵게 확보한 성과)</small></h3><div class="hd20Recent"></div></article></div>
- <div class="hd20ALBottom"><article class="hd20ALPanel"><h3>월별 추이</h3><div class="hd20Trends">${[['orange','고도화 후보 발굴'],['green','고도화 작업장 신규 확보'],['blue','누적 고도화 작업장 확보'],['purple','현재 유지 작업장'],['navy','AUDIT 6개월 유지율']].map(x=>`<div class="hd20Trend ${x[0]}"><b>${x[1]}</b><div class="hd20TrendChart no-data"><span>실제 시계열 데이터 없음</span></div></div>`).join('')}</div></article><article class="hd20ALPanel"><h3>기한임박 점검 대상 <small>(3개월 AUDIT)</small></h3><div class="hd20Due"></div></article></div>
+ <div class="hd20ALBottom"><article class="hd20ALPanel"><h3>월별 추이</h3><div class="hd20Trends">${[['orange','고도화 후보 발굴'],['green','고도화 작업장 신규 확보'],['blue','누적 고도화 작업장 확보'],['purple','현재 유지 작업장'],['navy','Audit 후 6개월 유지율']].map(x=>`<div class="hd20Trend ${x[0]}"><b>${x[1]}</b><div class="hd20TrendChart no-data"><span>실제 시계열 데이터 없음</span></div></div>`).join('')}</div></article><article class="hd20ALPanel"><h3>Audit 후 6개월 관리 대상 <small>(관리종료일 순)</small></h3><div class="hd20Due"></div></article></div>
  <div class="hd20ALFooter"><span>※ 데이터 기준 : 시스템 현재 데이터</span><span>울산캠퍼스 5S 활동관리 시스템</span><span>문의 : 생산혁신팀(5S 모듈)</span></div>`;
  const anchor=nav.nextElementSibling?.classList.contains('beginnerHint')?nav.nextElementSibling:nav;anchor.insertAdjacentElement('afterend',host);
  host.addEventListener('click',e=>{const k=e.target.closest('[data-kpi]');if(k)openGrid(+k.dataset.kpi);const go=e.target.closest('[data-go]');if(go)navClick(go.dataset.go);const c=e.target.closest('[data-criterion]');if(c){const idx=+c.dataset.criterion;if(typeof window.openCriteriaFinal==='function')window.openCriteriaFinal(idx+1);else $$('.crit')[idx]?.click()}});
  host.addEventListener('keydown',e=>{const k=e.target.closest('[data-kpi]');if(k&&(e.key==='Enter'||e.key===' ')){e.preventDefault();openGrid(+k.dataset.kpi)}});
- renderLive(host);['hd20-followup-updated','hd20-kpi-source-updated','hd20-gmes-5s-judged','hd20-gmes-5s-imported','hd20-action-updated'].forEach(ev=>window.addEventListener(ev,()=>renderLive(host)));
- const audit={created:true,navCount:$$('.beginnerNav button').length,kpiCount:$$('.hd20ALKpi',host).length,metricCount:$$('.hd20ALMetric',host).length,criteriaCount:$$('.hd20Criterion',host).length,levelCount:$$('.hd20Level',host).length,trendCount:$$('.hd20Trend',host).length,source:host.dataset.liveSource};
- audit.valid=audit.navCount===7&&audit.kpiCount===5&&audit.metricCount===6&&audit.criteriaCount===3&&audit.levelCount===5&&audit.trendCount===5&&audit.source===GMES_KEY;window.HD20_APPROVED_LANDING_AUDIT=audit;document.documentElement.dataset.hd20ApprovedLanding=audit.valid?'1':'partial';return true
+ renderLive(host);['hd20-kpi-source-updated','hd20-gmes-5s-judged','hd20-gmes-5s-imported','hd20-action-updated','hd20-audit-draw','hd20-audit-updated','hd20-audit-performed'].forEach(ev=>window.addEventListener(ev,()=>renderLive(host)));
+ const audit={created:true,navCount:$$('.beginnerNav button[data-key]').length,kpiCount:$$('.hd20ALKpi',host).length,metricCount:$$('.hd20ALMetric',host).length,criteriaCount:$$('.hd20Criterion',host).length,levelCount:$$('.hd20Level',host).length,trendCount:$$('.hd20Trend',host).length,source:host.dataset.liveSource};
+ audit.valid=audit.navCount===5&&audit.kpiCount===5&&audit.metricCount===6&&audit.criteriaCount===3&&audit.levelCount===5&&audit.trendCount===5&&audit.source===GMES_KEY;window.HD20_APPROVED_LANDING_AUDIT=audit;document.documentElement.dataset.hd20ApprovedLanding=audit.valid?'1':'partial';return true
 }
 function boot(){if(build())return;let n=0;const retry=()=>{if(build())return;if(++n<30)setTimeout(retry,60)};retry()}
 document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot,{once:true}):boot();
