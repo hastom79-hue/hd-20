@@ -50,47 +50,51 @@
 ## Legacy 제거 진행상태
 - `hdps-dashboard.js`: Canonical Audit/Action Store 직접 사용.
 - `hdps-dashboard-current-model.js`: 삭제.
-- `maturity-seq-action-link.js`: 1M/3M/6M UI 생성 제거, 임시 Compatibility Adapter로 전환.
+- `maturity-seq-action-link.js`: **Compatibility Adapter까지 완전 삭제**.
+- 활성 JavaScript에서 `HD20MaturityFollowup` 전역 참조 제거.
 - `audit-summary-drilldown.js`: `Audit 실시 대기 / 6개월 관리중 / 종료평가 대기 / 종료평가 완료`로 전환.
 - `dashboard-grid-drilldown.js`: `6개월 Audit 결과`, `3개월 AUDIT`, `1·3·6개월 Lifecycle` 상세 Grid 제거.
-- 메인 승인 대시보드의 Legacy Audit 표현은 Current Model 보정 레이어에서 현재 상태로 치환하며, 5영역 유효성 기준도 적용.
+- `approved-landing-v2.js`: `hd20AuditRandomDrawsV1` 직접 사용, 5영역 `navCount===5`, `Audit 후 6개월 유지율`, `Audit 후 6개월 관리 대상` 원본 적용.
+- 승인 대시보드의 `3개월 AUDIT`, `실제 6개월 Audit 결과`, `AUDIT 6개월 유지율`, `navCount===7` 제거.
+- `legacy-lifecycle-retirement.js`의 승인 대시보드 후처리 `patchApprovedLanding()` 제거. 이 파일은 구형 Side Card 안전 치환만 담당.
 
-## 최신 자동검증 결과
+## 최신 확정 자동검증 결과
+배포 기준 commit `587dd943f85942bc142b23d53fe36e30bb657b92`에서 다음 검증을 모두 완료했다.
 
-배포 기준 commit `a1a2f76db942bb7b9d21a22cb4599308b44e2b4b`에서 다음 검증을 완료했다.
+- Runtime Smoke run #186: **success**.
+- Browser Smoke run #129: **success**.
+- Package HD20 source run #390: **success**.
+- GitHub Pages build/deployment run #581: **success**.
 
-- Runtime Smoke run #173: **success**.
-- Browser Smoke run #116: **success**.
-- Package HD20 source run #377: **success**.
-- GitHub Pages build/deployment run #568: **success**.
+Browser #129는 기존 Audit Batch E2E와 함께 6개월 종료평가 E2E까지 검증한다.
+- 메인 5영역 Navigation 및 Legacy Audit 문구 부재.
+- 표본수 3 → 동일 Batch 3개 고유팀 추출.
+- 1건 Audit 실시등록 후 대기 3건 → 2건 감소.
+- 6개월이 지난 Audit Case fixture 생성.
+- 종료평가 `미흡`과 평가근거 저장.
+- Canonical Audit Store의 `finalEvaluation / finalEvaluationNote / finalEvaluationAt` 확인.
+- Audit Case Trace와 통합 대시보드에서 동일 종료평가 상태 확인.
+- `hdps-dashboard.html` 직접 진입 후 5영역, KPI 6종, Action Summary 검증.
 
-Browser #116이 검증한 실제 사용자 흐름:
-- 메인 5영역 Navigation과 Legacy Audit 문구 부재.
-- 테스트 정책 `Audit 표본수=3` 주입.
-- 실제 `대상 일괄추출` 실행.
-- 같은 Batch에서 3개 팀 생성 및 3개 팀 모두 고유함 확인.
-- Batch 실시대기 선택지 3건 확인.
-- 첫 대상에 `Audit 실시일=2026-09-02`, `결과=적합`, 작업장/실시자를 실제 입력 후 저장.
-- Canonical Audit Store에서 auditDate 저장 1건 확인.
-- 실시대기 선택지가 3건 → 2건으로 감소 확인.
-- `hdps-dashboard.html` 직접 진입 후 5영역, KPI 6종, Action Summary 4종, `Audit 후 6개월 유지율` 확인.
+테스트에서 사용하는 `개선기한 7일`은 E2E용 임시 정책값이며 실제 운영정책을 7일로 확정한 것이 아니다.
 
-테스트에서 사용한 `개선기한 7일`은 E2E용 임시 정책값이며 실제 운영정책을 7일로 확정한 것이 아니다.
+## 최근 추가 변경 — 검증 재실행 중
+확정 검증 commit 이후 다음 구조정리를 `main`에 추가 반영했다.
 
-종료평가 Dashboard/Trace 연결 이후 최신 Runtime/Browser/Pages 검증은 다시 실행되며, 완료 전에는 성공으로 간주하지 않는다.
+- `c8417830a710fe3b5867f02c89db0da7d99548d5`: `maturity-seq-action-link.js` 완전 삭제.
+- `7af701a76c2e9b75fa8304dd733e200feec119a8`: Adapter 퇴역 Runtime 계약.
+- `28406ba53ed7effe55159d07b5c8db626b74dbfb`: 승인 대시보드 원본 Canonical 전환.
+- `d6cd920062fd82c3db017dbe53b75949bf79f5cf`: 승인 대시보드 후처리 의존 제거.
+- `3c326202bc2357aa3cbe9f1a6aebcb1cad1b0a87`: 승인 대시보드 Canonical Runtime 계약.
+- `898d1013e0d6b47c14ce8116850214f8e06a1dc8`: Adapter 퇴역 개발일지 현행화.
 
-## 검증 과정에서 발견·수정한 사항
-- Browser #98: `maturity-seq-action-link.js`가 1M/3M/6M UI를 실제 렌더링하던 문제 검출 → Compatibility Adapter로 전환.
-- Runtime #164: `audit-close-evaluation.js` 안내문 템플릿 문자열 SyntaxError 검출 → 수정.
-- Browser #109: `approved-landing-v2.js`가 메인 승인 대시보드에서 Legacy Audit 문구를 재생성하는 문제 검출 → Current Model 보정 강화.
-- Browser #112: Batch `<option>` 3건이 이미 DOM에 존재했지만 Playwright가 option visibility를 기다려 timeout → `option count===3` 조건으로 수정.
-- Browser #116: 전체 E2E 최종 성공.
+위 변경 이후 최신 Runtime/Browser/Package/Pages는 다시 실행되며 완료 전에는 성공으로 간주하지 않는다.
 
 ## 데이터 의미판정
 - `미발생`을 `발생` 부분문자열 때문에 재발로 오인하지 않도록 명시값 기준으로 판정.
 - Audit Risk와 6개월 지속관리 모두 문제내용/상태 텍스트의 단순 `재발` 단어 포함 여부를 재발 근거로 사용하지 않음.
 - `부적합`을 `적합` 부분문자열 때문에 효과검증 성공으로 오인하지 않도록 명시값 기준으로 판정.
-- 사용자 입력/원천값을 HTML에 삽입하는 보정 로직은 escape 처리 유지.
+- 사용자 입력/원천값을 HTML에 삽입하는 로직은 escape 처리 유지.
 
 ## 주요 최신 개발일지
 - `DEVELOPMENT_LOG_20260902.md`
@@ -102,8 +106,7 @@ Browser #116이 검증한 실제 사용자 흐름:
 - `DEVELOPMENT_LOG_20260902_SEMANTIC_FIX.md`
 
 ## 다음 작업
-- 최신 Runtime/Browser/Pages 검증 결과 확정.
-- 종료평가 표시를 Browser E2E fixture로 확장하여 `대기/유지/미흡` 회귀검증 강화.
-- 남은 `HD20MaturityFollowup` 활성 참조를 Canonical Audit Store로 단계적으로 제거.
-- `approved-landing-v2.js`의 장기 구조 리팩터링을 메인 배치 안정성을 해치지 않는 범위에서 진행.
-- 운영정책과 Batch E2E를 계속 회귀검증에 유지.
+- Adapter/승인 대시보드 원본 전환 이후 최신 Runtime/Browser/Package/Pages 결과 확정 및 실패 시 즉시 교정.
+- `legacy-lifecycle-retirement.js`가 실제 정적 Side Card에 계속 필요한지 확인하고 필요 없으면 파일 자체 퇴역 검토.
+- 남은 구형 Audit/Lifecycle 문자열을 실행 코드 기준으로 전수검색.
+- 운영정책과 Audit Batch/종료평가 Browser E2E를 계속 회귀검증에 유지.
