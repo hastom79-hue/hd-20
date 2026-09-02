@@ -32,21 +32,24 @@ jobs:
                 await page.locator(`.beginnerNav button[data-key="${key}"]`).click();
                 await page.waitForTimeout(450);
                 const state=await page.evaluate((key)=>{
-                  const de=document.documentElement;
-                  const body=document.body;
+                  const de=document.documentElement,body=document.body;
                   const active=document.querySelector('.beginnerNav button.active')?.dataset.key||'';
                   const visible=[...document.querySelectorAll('.awScreen.on,#performanceConversionAnalysis.on')].filter(el=>getComputedStyle(el).display!=='none');
                   const headers=visible.reduce((n,el)=>n+el.querySelectorAll(':scope > .hd20AreaHeader').length,0);
-                  return {key,active,scrollWidth:Math.max(de.scrollWidth,body.scrollWidth),clientWidth:de.clientWidth,headers};
+                  const shown=sel=>{const el=document.querySelector(sel);return !!el&&getComputedStyle(el).display!=='none'&&el.getClientRects().length>0};
+                  return {key,active,scrollWidth:Math.max(de.scrollWidth,body.scrollWidth),clientWidth:de.clientWidth,headers,priority:shown('#hd20DashboardPriority'),bridge:shown('#hd20OperationalBridge'),labels:[...document.querySelectorAll('.hd20DashboardSectionLabel')].filter(el=>getComputedStyle(el).display!=='none'&&el.getClientRects().length>0).length};
                 },key);
                 if(state.active!==key) throw new Error(`${vp.name}/${key}: active=${state.active}`);
                 if(state.scrollWidth>state.clientWidth+2) throw new Error(`${vp.name}/${key}: horizontal overflow ${state.scrollWidth}>${state.clientWidth}`);
                 if(key!=='dashboard' && state.headers>1) throw new Error(`${vp.name}/${key}: duplicate area headers=${state.headers}`);
                 if(key==='dashboard'){
+                  if(!state.priority||!state.bridge) throw new Error(`${vp.name}/dashboard: dashboard priority/detail layer missing`);
                   const count=await page.locator('#hd20DashboardPriority .hd20HealthKpi').count();
                   if(count!==6) throw new Error(`${vp.name}/dashboard: operational KPI count=${count}`);
                   const labels=await page.locator('#hd20DashboardPriority .hd20HealthKpiBody small').allTextContents();
                   for(const label of expectedKpis) if(!labels.includes(label)) throw new Error(`${vp.name}/dashboard: missing KPI ${label}`);
+                }else{
+                  if(state.priority||state.bridge||state.labels) throw new Error(`${vp.name}/${key}: dashboard-only layer leaked priority=${state.priority} bridge=${state.bridge} labels=${state.labels}`);
                 }
               }
               if(errors.length) throw new Error(`${vp.name}: page errors: ${errors.join(' | ')}`);
