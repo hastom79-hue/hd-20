@@ -23,6 +23,7 @@ jobs:
             const browser=await chromium.launch({headless:true});
             const cases=[{name:'desktop',width:1440,height:1000},{name:'mobile',width:375,height:812}];
             const tabs=['dashboard','activity','advancement','audit','action'];
+            const expectedKpis=['공식 판정 완료율','평균 판정 Lead Time','고도화 수준','Audit 후 6개월 유지율','Audit 부적합 재발률','기한 내 개선조치 완료율'];
             for(const vp of cases){
               const page=await browser.newPage({viewport:{width:vp.width,height:vp.height}});
               const errors=[]; page.on('pageerror',e=>errors.push(String(e))); page.on('dialog',d=>d.accept());
@@ -41,6 +42,12 @@ jobs:
                 if(state.active!==key) throw new Error(`${vp.name}/${key}: active=${state.active}`);
                 if(state.scrollWidth>state.clientWidth+2) throw new Error(`${vp.name}/${key}: horizontal overflow ${state.scrollWidth}>${state.clientWidth}`);
                 if(key!=='dashboard' && state.headers>1) throw new Error(`${vp.name}/${key}: duplicate area headers=${state.headers}`);
+                if(key==='dashboard'){
+                  const count=await page.locator('#hd20DashboardPriority .hd20HealthKpi').count();
+                  if(count!==6) throw new Error(`${vp.name}/dashboard: operational KPI count=${count}`);
+                  const labels=await page.locator('#hd20DashboardPriority .hd20HealthKpiBody small').allTextContents();
+                  for(const label of expectedKpis) if(!labels.includes(label)) throw new Error(`${vp.name}/dashboard: missing KPI ${label}`);
+                }
               }
               if(errors.length) throw new Error(`${vp.name}: page errors: ${errors.join(' | ')}`);
               await page.close();
