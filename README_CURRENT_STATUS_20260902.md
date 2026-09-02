@@ -11,6 +11,18 @@
 
 `통합기준정보`는 상단 Utility이며 `HDPS · 5S Expert AI`는 공통 지원기능이다. 과거 `⑦ 기준정보`, `⑥ 문제점·개선조치`, `1개월 점검 / 3개월 Audit / 6개월 Audit` 고정 Lifecycle은 현재 운영모델에서 사용하지 않는다.
 
+## 상단 5개 탭 Scroll 안정화
+상단 5개 화면 탭을 선택할 때 이전 화면의 스크롤 위치 또는 동적 화면의 포커스 위치를 따라 화면이 내려가 보이던 현상을 수정했다.
+
+- 적용 모듈: `nav-scroll-stability.js`
+- 대상: `.beginnerNav button[data-key]`의 5개 탭 전체
+- 탭 전환 시 활성 입력요소 포커스와 URL hash를 정리하고 화면을 페이지 상단으로 복귀
+- 동적 화면 생성·재렌더링 직후 브라우저가 viewport를 다시 아래로 이동시키는 경우까지 짧은 안정화 구간에서 재확인
+- 탭 전환 중에는 부드러운 스크롤 애니메이션을 비활성화해 끌려 내려가는 시각효과를 방지
+- 화면 내부의 정상적인 사용자 입력 포커스 기능은 유지
+
+전용 Chromium 회귀검증 `.github/workflows/nav-scroll-smoke.yml`은 `dashboard / activity / advancement / audit / action` 각각에 대해 상단 상태와 페이지가 내려간 상태 양쪽에서 탭을 전환하고 최종 `window.scrollY === 0`을 확인한다.
+
 ## Canonical Data / Master
 - 5S·고도화 원천: `hd20GMES5SAutoImproveRawV1`
 - 개선조치: `hd20ActionCasesV2`
@@ -161,7 +173,15 @@ Browser #221은 실제 브라우저에서 다음을 확인했다.
 - `defaultDays=null`에서는 기한을 생성하지 않고 `정책미설정`.
 - 기존 Audit Batch / Audit 실시 / 종료평가 / Case Trace / Dashboard / HDPS E2E도 계속 통과.
 
-Pages는 최신 문서 커밋을 포함한 후속 HEAD에서 다시 success를 확인한 뒤 최신 완전검증 기준점으로 승격한다.
+## 최신 확정 자동검증 — 상단 탭 Scroll 안정화
+Commit `99c79c7cfcfd069774044ada2ab4785a6a044ee0`:
+- Runtime Smoke #292: **success**
+- Browser Smoke #235: **success**
+- Nav Scroll Smoke #1: **success**
+- Package HD20 source #496: **success**
+- Pages build and deployment #687: **success**
+
+Nav Scroll Smoke #1은 5개 상단 탭 전체에서 화면 상단 선택 및 스크롤된 상태의 화면 전환 후 모두 최종 `scrollY=0`을 확인했다. 이 Commit을 상단 탭 Scroll 오류 수정의 완전검증·실배포 기준점으로 사용한다.
 
 ## 배포본 전수점검 결과
 Package Artifact를 직접 압축 해제해 검사한 활성 JS/HTML 기준 다음 잔여는 0건으로 관리한다.
@@ -186,10 +206,12 @@ Package Artifact를 직접 압축 해제해 검사한 활성 JS/HTML 기준 다�
 - `DEVELOPMENT_LOG_20260902_DASHBOARD_CORE_CLEANUP.md`
 - `DEVELOPMENT_LOG_20260902_TEAM_MASTER.md`
 - `DEVELOPMENT_LOG_20260902_CANONICAL_RUNTIME.md`
+- `DEVELOPMENT_LOG_20260902_RUNTIME_SECURITY_CLEANUP.md`
+- `DEVELOPMENT_LOG_20260902_NAV_SCROLL_FIX.md`
 
 ## 다음 작업
-- 최신 문서 HEAD의 Runtime / Browser / Package / Pages 4종을 확인하고 Pages success 기준점을 확정.
 - Audit·개선조치·고도화 화면에서 원천/사용자 입력을 `innerHTML`에 삽입하는 나머지 경로의 escape 여부 전수점검.
 - 배포 HTML/JS의 죽은 링크·가상값·폐기 Lifecycle 잔여를 계속 전수검색.
 - 운영정책/표시문구가 실제 데이터 구조와 일치하는지 계속 검증.
-- 변경 후 Runtime / Browser / Package / Pages를 모두 확인하고 개발일지·README를 계속 현행화.
+- 상단 5개 탭의 Scroll 회귀검증을 유지하고 PC/모바일의 화면 전환 안정성을 계속 점검.
+- 변경 후 Runtime / Browser / Nav Scroll / Package / Pages를 모두 확인하고 개발일지·README를 계속 현행화.
