@@ -64,7 +64,7 @@
 - 전체 JavaScript `node --check`가 `audit-batch-execution.js` 포함 전체 JS를 검사.
 
 ### Browser Smoke E2E
-커밋 `1357470321b924e342636c44cac43301f948ed21`에서 다음 실제 사용자 흐름을 추가했다.
+다음 실제 사용자 흐름을 자동검증한다.
 
 1. 테스트 브라우저 LocalStorage에 `Audit 표본수=3`, Risk disabled, 개선기한 7일을 주입.
 2. 유지·Audit 탭으로 이동.
@@ -78,6 +78,8 @@
 10. 실시대기 선택지가 3건에서 2건으로 감소했는지 확인.
 11. 메인 대시보드, Audit Batch 실행화면, HDPS 대시보드 스크린샷 및 diagnostics JSON을 CI Artifact로 저장.
 
+초기 run #98은 Legacy Lifecycle 문구가 실제 화면에 남아 있음을 검출했고, run #112는 Batch 선택 `<option>`이 DOM에 3건 존재해도 Playwright의 option visibility 대기 때문에 실패했다. Legacy UI를 제거하고 대기조건을 `option count===3`으로 수정한 뒤 최종 E2E가 성공했다.
+
 ## 커밋
 
 - `a411822034d524c2081880175c02f601febdfb79` — sampleCount 중앙 정책 보존 수정.
@@ -86,15 +88,20 @@
 - `3fd7b3a95dcb47a50c004b68d089c1693765881e` — Batch 실시대상 선택/등록 확장 모듈 추가.
 - `2c47eafb0e7197c5eb355440c6b7f612422f4878` — Batch 실행 모듈 화면 로딩 연결.
 - `1357470321b924e342636c44cac43301f948ed21` — Audit Batch 실제 추출/실시 Browser E2E 추가.
+- `a1a2f76db942bb7b9d21a22cb4599308b44e2b4b` — Batch option 개수 기반 E2E 대기조건 보정.
 
-## 검증 상태
+## 최신 검증 결과
 
-- Runtime Smoke run #134: **success**.
-- Browser Smoke run #77: **success**.
-- Batch 실행 UX 적용 후 Runtime Smoke run #154: **success**.
-- 신규 E2E가 포함된 Browser Smoke run #98은 본 기록 시점 `in_progress`; 완료 전에는 성공으로 간주하지 않는다.
+현재 배포 기준 commit `a1a2f76db942bb7b9d21a22cb4599308b44e2b4b`에서 다음을 확인했다.
+
+- Runtime Smoke run #173: **success**.
+- Browser Smoke run #116: **success**.
+- Package HD20 source run #377: **success**.
+- GitHub Pages build/deployment run #568: **success**.
+
+Browser #116은 단순 화면 오픈만이 아니라 `표본수 3 → 3개 고유팀 추출 → 1건 Audit 실시등록 → 대기 2건 감소 → HDPS 대시보드 Canonical 상태 확인`까지 전체 E2E를 통과했다.
 
 ## 후속사항
 
-- 신규 E2E run #98 완료 결과를 본 문서와 README에 반영.
-- 6개월 지속관리 종료평가와 차기 Audit Risk 환류 UI를 한 화면에서 추적 가능하도록 연결.
+- 6개월 지속관리 종료평가와 차기 Audit Risk 참고정보를 Dashboard/Case Trace에 연결.
+- Audit Risk 계산의 재발 입력은 문제설명 텍스트가 아니라 명시적인 재발 상태값만 사용하도록 지속 점검.
