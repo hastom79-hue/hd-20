@@ -1,0 +1,12 @@
+(()=>{'use strict';
+const DRAW='hd20AuditRandomDrawsV1',ACTION='hd20ActionCasesV2';
+function load(k){try{const v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[]}catch{return[]}}
+function date(v){const d=new Date(v);return Number.isNaN(d.getTime())?null:d}
+function add6(v){const d=date(v);if(!d)return null;const day=d.getDate();d.setDate(1);d.setMonth(d.getMonth()+6);d.setDate(Math.min(day,new Date(d.getFullYear(),d.getMonth()+1,0).getDate()));return d}
+function done(a){return /완료|종결|close|done/i.test(String(a.status||''))}
+function stats(){const now=new Date(),draws=load(DRAW).filter(x=>x.auditDate),actions=load(ACTION);const active=draws.filter(x=>add6(x.auditDate)>=now),closed=draws.filter(x=>add6(x.auditDate)<now),open=actions.filter(x=>!done(x)),over=open.filter(x=>{const d=date(x.due||x.targetDate);return d&&d<now}),rec=actions.filter(x=>x.recurrence===true||/재발|발생/.test(String(x.recurrenceState||'')));return{active,closed,open,over,rec}}
+function patch(){const s=stats();document.querySelectorAll('.sideStack .card').forEach(card=>{const h=card.querySelector('.cardHead h2');if(!h)return;const title=h.textContent||'';if(/고도화 유지상태|유효성 AUDIT/.test(title)){h.innerHTML=`Audit 후 6개월 지속관리 <small>(관리중 ${s.active.length}건)</small>`;const rows=[...card.querySelectorAll('.drow')];const data=[['6개월 지속관리중',s.active.length],['6개월 관리 종료',s.closed.length],['재발 발생',s.rec.length]];rows.slice(0,3).forEach((r,i)=>{const span=r.querySelector('span:last-child');if(span)span.innerHTML=`${data[i][0]}<br><b>${data[i][1]}건</b>`})}
+if(/Action Summary/.test(title)){const rows=[...card.querySelectorAll('.actionRow')];const data=[['Audit 실시 대기',load(DRAW).filter(x=>!x.auditDate).length],['개선조치 미완료',s.open.length],['기한경과',s.over.length],['재발',s.rec.length]];rows.slice(0,4).forEach((r,i)=>{const spans=r.querySelectorAll('span');if(spans[1])spans[1].textContent=data[i][0];const b=r.querySelector('b');if(b)b.textContent=data[i][1]+'건'})}})}
+function boot(){patch();['hd20-audit-draw','hd20-audit-updated','hd20-action-updated','hd20-kpi-source-updated'].forEach(e=>window.addEventListener(e,()=>setTimeout(patch,0)));document.addEventListener('click',e=>{if(e.target.closest('[data-key="dashboard"]'))setTimeout(patch,30)},true)}
+window.HD20LegacyLifecycleRetirement={patch,stats};document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot,{once:true}):boot();
+})();
