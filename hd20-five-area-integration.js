@@ -8,7 +8,7 @@ function markOperationalScreens(){
   const audit=document.getElementById('awAudit');
   const action=document.getElementById('awAction');
   addAreaHeader(activity,'FIELD EXECUTION','5S 활동','6개 5S 유형의 현장 활동 등록·증빙·실행현황을 관리합니다. 현장 등록은 공식 고도화 확정과 분리됩니다.');
-  addAreaHeader(audit,'SUSTAINABILITY','유지·Audit','공식 확정 이후 +1M 점검, +3M Audit, +6M Audit와 유지상태를 하나의 Lifecycle로 관리합니다.');
+  addAreaHeader(audit,'SUSTAINABILITY','유지·Audit','Risk 가중 랜덤 대상 추출부터 실제 Audit 실시일 기준 6개월 지속관리·종료평가까지 관리합니다.');
   addAreaHeader(action,'CLOSED LOOP ACTION','개선조치','부적합·기한경과부터 BEFORE/AFTER, 효과검증, 재발관리까지 하나의 Case로 추적합니다.');
   if(activity)activity.dataset.area='activity';if(audit)audit.dataset.area='audit';if(action)action.dataset.area='action';
 }
@@ -24,14 +24,11 @@ function integrateAdvancement(){
   if(workplace)workplace.classList.add('on');
 }
 function masterUtility(){
-  const btn=document.getElementById('openMaster');if(btn){btn.textContent='⚙ 통합기준정보';btn.title='생산팀·목표·판정주체·6개 5S 유형·3대 판정기준·1M/3M/6M 기준'}
-}
-function fixUnsupportedCopy(){
-  document.querySelectorAll('#performanceConversionAnalysis .pcInsight').forEach(el=>{if(/3대 기준 중 2개 이상/.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/확정 자체가 3대 기준 중 2개 이상을 충족해야 하는 절차라 후보 대비 확정 비율이 낮은 것은 자연스러운 결과이며,\s*/,'공식 확정은 승인된 3대 판정기준에 따라 생산혁신팀과 5S 모듈이 판정합니다. ')})
+  const btn=document.getElementById('openMaster');if(btn){btn.textContent='⚙ 통합기준정보';btn.title='생산팀·목표·운영정책·6개 5S 유형·3대 판정기준'}
 }
 function normalizeLabels(){document.querySelectorAll('#performanceConversionAnalysis').forEach(root=>{root.querySelectorAll('*').forEach(el=>{if(el.children.length===0&&el.textContent?.includes('5S고도화'))el.textContent=el.textContent.replaceAll('5S고도화','5S 고도화')})})}
-function refresh(){markOperationalScreens();masterUtility();integrateAdvancement();fixUnsupportedCopy();normalizeLabels()}
-['hd20-open-performance-conversion','hd20-kpi-source-updated','hd20-gmes-5s-imported','hd20-gmes-5s-judged','hd20-followup-updated','hd20-action-updated'].forEach(ev=>window.addEventListener(ev,()=>setTimeout(refresh,0)));
+function refresh(){markOperationalScreens();masterUtility();integrateAdvancement();normalizeLabels()}
+['hd20-open-performance-conversion','hd20-kpi-source-updated','hd20-gmes-5s-imported','hd20-gmes-5s-judged','hd20-action-updated'].forEach(ev=>window.addEventListener(ev,()=>setTimeout(refresh,0)));
 document.readyState==='loading'?document.addEventListener('DOMContentLoaded',()=>{refresh();setTimeout(refresh,250)},{once:true}):(()=>{refresh();setTimeout(refresh,250)})();
 window.HD20_FIVE_AREA={refresh,areas:['dashboard','activity','advancement','audit','action']};
 })();
