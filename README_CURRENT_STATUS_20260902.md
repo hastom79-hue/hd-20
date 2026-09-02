@@ -21,7 +21,7 @@
 - 탭 전환 중에는 부드러운 스크롤 애니메이션을 비활성화해 끌려 내려가는 시각효과를 방지
 - 화면 내부의 정상적인 사용자 입력 포커스 기능은 유지
 
-전용 Chromium 회귀검증 `.github/workflows/nav-scroll-smoke.yml`은 `dashboard / activity / advancement / audit / action` 각각에 대해 상단 상태와 페이지가 내려간 상태 양쪽에서 탭을 전환하고 최종 `window.scrollY === 0`을 확인한다.
+전용 Chromium 회귀검증 `.github/workflows/nav-scroll-smoke.yml`은 `dashboard / activity / advancement / audit / action` 각각에 대해 상단 상태와 페이지가 내려간 상태 양쪽에서 탭을 전환하고 최종 `window.scrollY === 0`을 확인한다. 검증 viewport는 Desktop `1440×900`과 Mobile `375×812` 두 환경이며, 5개 탭 전체를 두 환경에서 각각 반복 검증한다.
 
 ## Canonical Data / Master
 - 5S·고도화 원천: `hd20GMES5SAutoImproveRawV1`
@@ -173,15 +173,15 @@ Browser #221은 실제 브라우저에서 다음을 확인했다.
 - `defaultDays=null`에서는 기한을 생성하지 않고 `정책미설정`.
 - 기존 Audit Batch / Audit 실시 / 종료평가 / Case Trace / Dashboard / HDPS E2E도 계속 통과.
 
-## 최신 확정 자동검증 — 상단 탭 Scroll 안정화
-Commit `99c79c7cfcfd069774044ada2ab4785a6a044ee0`:
-- Runtime Smoke #292: **success**
-- Browser Smoke #235: **success**
-- Nav Scroll Smoke #1: **success**
-- Package HD20 source #496: **success**
-- Pages build and deployment #687: **success**
+## 최신 확정 자동검증 — 상단 탭 Scroll 안정화 + Mobile
+Commit `372f2fbbbf7a726ba2d808baaf478631ec7d14e8`:
+- Runtime Smoke #295: **success**
+- Browser Smoke #238: **success**
+- Nav Scroll Smoke #4: **success**
+- Package HD20 source #499: **success**
+- Pages build and deployment #690: **success**
 
-Nav Scroll Smoke #1은 5개 상단 탭 전체에서 화면 상단 선택 및 스크롤된 상태의 화면 전환 후 모두 최종 `scrollY=0`을 확인했다. 이 Commit을 상단 탭 Scroll 오류 수정의 완전검증·실배포 기준점으로 사용한다.
+Nav Scroll Smoke #4는 Desktop `1440×900`과 Mobile `375×812` 두 viewport 모두에서 5개 상단 탭 전체의 화면 상단 선택 및 스크롤된 상태의 화면 전환 후 최종 `scrollY=0`을 확인했다. 이 Commit을 상단 탭 Scroll 오류의 현재 완전검증·실배포 기준점으로 사용한다.
 
 ## 배포본 전수점검 결과
 Package Artifact를 직접 압축 해제해 검사한 활성 JS/HTML 기준 다음 잔여는 0건으로 관리한다.
