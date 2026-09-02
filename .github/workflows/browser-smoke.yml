@@ -60,6 +60,27 @@ jobs:
               await page.screenshot({path:'artifacts/main-dashboard.png',fullPage:true});
 
               await page.evaluate(()=>{
+                localStorage.removeItem('hd20ActionCasesV2');
+                localStorage.setItem('hd20OperatingPolicyV1',JSON.stringify({auditRisk:{enabled:false,weights:null,sampleCount:3},improvementDeadline:{minDays:7,maxDays:14,defaultDays:7}}));
+              });
+              await page.reload({waitUntil:'networkidle'});await page.click('.beginnerNav button[data-key="action"]');
+              await page.waitForFunction(()=>!!window.HD20ActionAuditLinkage&&!!document.getElementById('amDraft'),{},{timeout:10000});
+              await page.evaluate(()=>window.dispatchEvent(new CustomEvent('hd20-audit-to-action',{detail:{auditDrawId:'E2E-LINK-1',sourceStage:'AUDIT-CHECKLIST',team:'성능팀',problem:'[5S Audit 미흡] E2E linkage'}})));
+              await page.fill('#amDate','2026-09-02');await page.fill('#amDue','');await page.fill('#amWorkplace','E2E Link Workplace');await page.fill('#amProblem','[5S Audit 미흡] E2E linkage');await page.click('#amDraft');
+              await page.waitForFunction(()=>JSON.parse(localStorage.getItem('hd20ActionCasesV2')||'[]').some(x=>x.sourceCaseId==='E2E-LINK-1'),{},{timeout:10000});
+              const linkAuto=await page.evaluate(()=>{const x=JSON.parse(localStorage.getItem('hd20ActionCasesV2')||'[]').find(v=>v.sourceCaseId==='E2E-LINK-1');return{sourceCaseId:x?.sourceCaseId,auditDrawId:x?.auditDrawId,due:x?.due,registeredAt:x?.registeredAt,policy:x?.autoDuePolicyState,days:x?.autoDueDays}});
+              if(linkAuto.sourceCaseId!=='E2E-LINK-1'||linkAuto.auditDrawId!=='E2E-LINK-1'||linkAuto.due!=='2026-09-09'||linkAuto.registeredAt!=='2026-09-02'||linkAuto.policy!=='자동지정'||linkAuto.days!==7)throw new Error('Audit action auto-deadline linkage '+JSON.stringify(linkAuto));
+
+              await page.evaluate(()=>localStorage.setItem('hd20OperatingPolicyV1',JSON.stringify({auditRisk:{enabled:false,weights:null,sampleCount:3},improvementDeadline:{minDays:7,maxDays:14,defaultDays:null}})));
+              await page.fill('#amDue','');
+              await page.evaluate(()=>window.dispatchEvent(new CustomEvent('hd20-audit-to-action',{detail:{auditDrawId:'E2E-LINK-2',sourceStage:'AUDIT-CHECKLIST',team:'성능팀',problem:'[5S Audit 미흡] E2E no policy'}})));
+              await page.fill('#amDate','2026-09-02');await page.fill('#amWorkplace','E2E No Policy Workplace');await page.fill('#amProblem','[5S Audit 미흡] E2E no policy');await page.click('#amDraft');
+              await page.waitForFunction(()=>JSON.parse(localStorage.getItem('hd20ActionCasesV2')||'[]').some(x=>x.sourceCaseId==='E2E-LINK-2'),{},{timeout:10000});
+              const linkUnset=await page.evaluate(()=>{const x=JSON.parse(localStorage.getItem('hd20ActionCasesV2')||'[]').find(v=>v.sourceCaseId==='E2E-LINK-2');return{sourceCaseId:x?.sourceCaseId,due:x?.due||'',policy:x?.autoDuePolicyState}});
+              if(linkUnset.sourceCaseId!=='E2E-LINK-2'||linkUnset.due!==''||linkUnset.policy!=='정책미설정')throw new Error('Audit action unset-policy linkage '+JSON.stringify(linkUnset));
+              evidence.auditActionLink={auto:linkAuto,unset:linkUnset};await page.screenshot({path:'artifacts/audit-action-linkage.png',fullPage:true});
+
+              await page.evaluate(()=>{
                 localStorage.removeItem('hd20AuditRandomDrawsV1');
                 localStorage.removeItem('hd20ActionCasesV2');
                 localStorage.setItem('hd20OperatingPolicyV1',JSON.stringify({auditRisk:{enabled:false,weights:null,sampleCount:3},improvementDeadline:{minDays:7,maxDays:14,defaultDays:7}}));
