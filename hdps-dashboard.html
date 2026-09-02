@@ -27,17 +27,16 @@
         <button type="button" id="hpFullscreen" title="전체화면" aria-label="전체화면">⛶</button>
         <button type="button" id="hpLogout" title="로그아웃" aria-label="로그아웃">⏻</button>
       </div>
-      <a class="hpLink" href="index.html">기존 대시보드 →</a>
+      <a class="hpLink" href="index.html">5S 통합관리 →</a>
     </div>
   </header>
 
   <nav class="hpNav" aria-label="HDPS 5S 메뉴">
-    <button type="button" class="on" data-hp-nav="dashboard">① 대시보드</button>
-    <button type="button" data-hp-nav="activity">② 5S 활동관리</button>
-    <button type="button" data-hp-nav="workplace">③ 고도화 작업장</button>
-    <button type="button" data-hp-nav="audit">④ Audit 관리</button>
-    <button type="button" data-hp-nav="action">⑤ 문제점·개선조치</button>
-    <button type="button" data-hp-nav="master">⑥ 기준정보</button>
+    <button type="button" class="on" data-current-nav="dashboard">① 통합 대시보드</button>
+    <button type="button" data-current-nav="activity">② 5S 활동</button>
+    <button type="button" data-current-nav="advancement">③ 고도화·판정</button>
+    <button type="button" data-current-nav="audit">④ 유지·Audit</button>
+    <button type="button" data-current-nav="action">⑤ 개선조치</button>
   </nav>
 
   <div class="hpSectionHead">
@@ -112,7 +111,7 @@
 
     <aside class="hpCol">
       <div class="hpSideCard">
-        <h3>Action Summary <small style="display:inline;margin:0;font-weight:700">(추적점검/개선)</small></h3>
+        <h3>Action Summary <small style="display:inline;margin:0;font-weight:700">(Audit 지속관리·개선)</small></h3>
         <small id="hpActionAsOf"></small>
         <div id="hpActionRows"></div>
         <button type="button" class="hpBtn" data-hp-detail="action">Action 상세보기 →</button>
@@ -156,8 +155,9 @@
 
 </div>
 <script src="demo-data-seed.js?v=1"></script>
-<script src="dashboard-kpi-source.js?v=hdps-1"></script>
+<script src="dashboard-kpi-source.js?v=hdps-2"></script>
 <script src="maturity-seq-action-link.js?v=hdps-1"></script>
 <script src="hdps-dashboard.js?v=1"></script>
+<script src="hdps-dashboard-current-model.js?v=20260902-1"></script>
 </body>
 </html>
