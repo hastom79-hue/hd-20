@@ -8,156 +8,19 @@
 </head>
 <body>
 <div class="hpShell">
-
-  <header class="hpHeader">
-    <div class="hpBrand">
-      <svg class="hpLogo" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2 L21 7 L21 17 L12 22 L3 17 L3 7 Z" opacity=".35"/><path d="M9 8 L17 12 L9 16 Z"/></svg>
-      <b>HD HYUNDAI</b>
-      <span>HDPS 5S 고도화 사례 관리 시스템</span>
-    </div>
-    <div class="hpUser">
-      <span id="hpTeamLabel">생산혁신팀(오퍼레이션 엑설런스 팀)</span>
-      <span class="hpDivider"></span>
-      <span id="hpUserLabel">서지철 (Jicheol Seoh, 徐池澈)</span>
-      <span class="hpDivider"></span>
-      <select id="hpCampus"><option>Korea Campus</option></select>
-      <span class="hpDivider"></span>
-      <div class="hpIconBtns">
-        <button type="button" id="hpRefresh" title="새로고침" aria-label="새로고침">⟳</button>
-        <button type="button" id="hpFullscreen" title="전체화면" aria-label="전체화면">⛶</button>
-        <button type="button" id="hpLogout" title="로그아웃" aria-label="로그아웃">⏻</button>
-      </div>
-      <a class="hpLink" href="index.html">5S 통합관리 →</a>
-    </div>
-  </header>
-
-  <nav class="hpNav" aria-label="HDPS 5S 메뉴">
-    <button type="button" class="on" data-current-nav="dashboard">① 통합 대시보드</button>
-    <button type="button" data-current-nav="activity">② 5S 활동</button>
-    <button type="button" data-current-nav="advancement">③ 고도화·판정</button>
-    <button type="button" data-current-nav="audit">④ 유지·Audit</button>
-    <button type="button" data-current-nav="action">⑤ 개선조치</button>
-  </nav>
-
-  <div class="hpSectionHead">
-    <h2>HDPS 5S 고도화 운영지표 (KPI)</h2>
-    <div class="hpSectionTools">
-      <span>기준일 :</span>
-      <select id="hpAsOf"><option id="hpAsOfOpt"></option></select>
-      <button type="button" class="hpMore" data-hp-detail="kpi">상세보기 →</button>
-    </div>
-  </div>
-
-  <section class="hpKpis" id="hpKpis" aria-label="운영지표 6종">
-    <!-- 6 KPI cards injected by hdps-dashboard.js -->
-  </section>
-
-  <div class="hpGrid">
-    <div class="hpCol">
-
-      <section class="hpPanel">
-        <div class="hpPanelHead">
-          <h3>5S 활동유형별 현황 <small id="hpTypesScope">(전체 생산팀)</small></h3>
-          <div class="hpToggle">
-            <button type="button" class="on" data-hp-mode="all">전체 팀 비교</button>
-            <button type="button" data-hp-mode="single">단일 팀 월별 추이</button>
-          </div>
-        </div>
-        <div class="hpPanelBody">
-          <div class="hpTypes" id="hpTypes"></div>
-        </div>
-      </section>
-
-      <section class="hpPanel">
-        <div class="hpMapRow">
-          <div class="hpMapCol">
-            <h3 style="font-size:17.5px;font-weight:950;margin:0">팀별 고도화 수준 Map <small style="font-weight:700;color:var(--hp-muted);font-size:14px">(공식 확정 사례수 기준)</small></h3>
-            <div class="hpMap" id="hpMap">
-              <div class="hpMapYLabels"><span>Lv.5</span><span>Lv.4</span><span>Lv.3</span><span>Lv.2</span><span>Lv.1</span></div>
-            </div>
-            <div class="hpMapAxisX">공식 확정 사례수 (건)</div>
-            <div class="hpMapLegend"><span><i class="hpMapDot-lv1"></i>Lv.1</span><span><i class="hpMapDot-lv2"></i>Lv.2</span><span><i class="hpMapDot-lv3"></i>Lv.3</span><span><i class="hpMapDot-lv4"></i>Lv.4</span><span><i class="hpMapDot-lv5"></i>Lv.5</span></div>
-          </div>
-          <div class="hpDistCol">
-            <h3 style="font-size:17.5px;font-weight:950;margin:0">수준별 분포 현황</h3>
-            <table class="hpDistTable" id="hpDistTable">
-              <thead><tr><th>수준</th><th>팀수</th><th>확정건수</th><th>비율</th></tr></thead>
-              <tbody id="hpDistBody"></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <section class="hpBottomRow">
-        <div class="hpPanel">
-          <div class="hpPanelHead"><h3>공지사항</h3><a class="hpSideLink" href="#" data-hp-detail="notice">전체보기 →</a></div>
-          <div class="hpPanelBody"><ul class="hpNotice" id="hpNotice"></ul></div>
-        </div>
-        <div class="hpPanel">
-          <div class="hpPanelHead"><h3>다운로드</h3></div>
-          <div class="hpPanelBody">
-            <div class="hpDownloads">
-              <button type="button" data-hp-download="kpi">KPI 요약 (CSV)</button>
-              <button type="button" data-hp-download="metrics">운영지표 (CSV)</button>
-              <button type="button" data-hp-download="raw">Portfolio Raw Data (CSV)</button>
-              <button type="button" data-hp-download="gmes">공식 확정 GMES 사례 (CSV)</button>
-              <button type="button" id="hpPrint">⎙ 전체 인쇄</button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-    </div>
-
-    <aside class="hpCol">
-      <div class="hpSideCard">
-        <h3>Action Summary <small style="display:inline;margin:0;font-weight:700">(Audit 지속관리·개선)</small></h3>
-        <small id="hpActionAsOf"></small>
-        <div id="hpActionRows"></div>
-        <button type="button" class="hpBtn" data-hp-detail="action">Action 상세보기 →</button>
-      </div>
-
-      <div class="hpSideCard">
-        <div class="hpSideStat"><h3>Portfolio Raw Data</h3></div>
-        <small>(후보+확정+유지 전체)</small>
-        <div class="hpSideStat"><b id="hpRawTotal">—</b><a class="hpSideLink" href="#" data-hp-detail="raw">상세보기 →</a></div>
-      </div>
-
-      <div class="hpSideCard">
-        <div class="hpSideStat"><h3>공식 확정 GMES 사례</h3></div>
-        <div class="hpSideStat"><b id="hpGmesTotal">—</b><a class="hpSideLink" href="#" data-hp-detail="gmes">상세보기 →</a></div>
-      </div>
-
-      <div class="hpSideCard hpAiCard">
-        <h3>HDPS · 5S Expert AI <span style="font-weight:700;font-size:13.5px;color:#8a97a8">(Prototype)</span></h3>
-        <p>HDPS 5S 고도화 및 유지관리, Audit, 문제해결 전문 AI입니다.<br>현재는 Prototype 단계이며, 실제 OpenAI API 연결은 아닙니다.</p>
-        <div class="hpAiBtns">
-          <button type="button" class="hpAiPrimary" id="hpAiOpen">AI 상담하기</button>
-          <button type="button" class="hpAiGhost" id="hpAiErrReport">오류 접수</button>
-          <button type="button" class="hpAiGhost" id="hpAiErrHistory">오류 이력</button>
-        </div>
-      </div>
-    </aside>
-  </div>
-
-  <div class="hpFooter">
-    <span id="hpFootDate">※ 데이터 기준일 : —</span>
-    <span>Copyright © HD Hyundai Infracore Co., Ltd. All rights reserved.</span>
-    <span>문의 : 생산혁신팀(5S 모듈)</span>
-  </div>
-
-  <div class="hpGridModal" id="hpGridModal" role="dialog" aria-modal="true">
-    <div class="hpGridBox">
-      <div class="hpGridHead"><b id="hpGridTitle">상세 Grid</b><button type="button" id="hpGridClose" aria-label="닫기">×</button></div>
-      <div class="hpGridBody" id="hpGridBody"></div>
-    </div>
-  </div>
-
+<header class="hpHeader"><div class="hpBrand"><svg class="hpLogo" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2 L21 7 L21 17 L12 22 L3 17 L3 7 Z" opacity=".35"/><path d="M9 8 L17 12 L9 16 Z"/></svg><b>HD HYUNDAI</b><span>HDPS 5S 고도화 사례 관리 시스템</span></div><div class="hpUser"><span id="hpTeamLabel">생산혁신팀(오퍼레이션 엑설런스 팀)</span><span class="hpDivider"></span><span id="hpUserLabel">서지철 (Jicheol Seoh, 徐池澈)</span><span class="hpDivider"></span><select id="hpCampus"><option>Korea Campus</option></select><span class="hpDivider"></span><div class="hpIconBtns"><button type="button" id="hpRefresh" title="새로고침" aria-label="새로고침">⟳</button><button type="button" id="hpFullscreen" title="전체화면" aria-label="전체화면">⛶</button><button type="button" id="hpLogout" title="로그아웃" aria-label="로그아웃">⏻</button></div><a class="hpLink" href="index.html">5S 통합관리 →</a></div></header>
+<nav class="hpNav" aria-label="HDPS 5S 메뉴"><button type="button" class="on" data-hp-nav="dashboard">① 통합 대시보드</button><button type="button" data-hp-nav="activity">② 5S 활동</button><button type="button" data-hp-nav="advancement">③ 고도화·판정</button><button type="button" data-hp-nav="audit">④ 유지·Audit</button><button type="button" data-hp-nav="action">⑤ 개선조치</button></nav>
+<div class="hpSectionHead"><h2>HDPS 5S 고도화 운영지표 (KPI)</h2><div class="hpSectionTools"><span>기준일 :</span><select id="hpAsOf"><option id="hpAsOfOpt"></option></select><button type="button" class="hpMore" data-hp-detail="kpi">상세보기 →</button></div></div>
+<section class="hpKpis" id="hpKpis" aria-label="운영지표 6종"></section>
+<div class="hpGrid"><div class="hpCol"><section class="hpPanel"><div class="hpPanelHead"><h3>5S 활동유형별 현황 <small id="hpTypesScope">(전체 생산팀)</small></h3><div class="hpToggle"><button type="button" class="on" data-hp-mode="all">전체 팀 비교</button><button type="button" data-hp-mode="single">단일 팀 월별 추이</button></div></div><div class="hpPanelBody"><div class="hpTypes" id="hpTypes"></div></div></section>
+<section class="hpPanel"><div class="hpMapRow"><div class="hpMapCol"><h3 style="font-size:17.5px;font-weight:950;margin:0">팀별 고도화 수준 Map <small style="font-weight:700;color:var(--hp-muted);font-size:14px">(공식 확정 사례수 기준)</small></h3><div class="hpMap" id="hpMap"><div class="hpMapYLabels"><span>Lv.5</span><span>Lv.4</span><span>Lv.3</span><span>Lv.2</span><span>Lv.1</span></div></div><div class="hpMapAxisX">공식 확정 사례수 (건)</div><div class="hpMapLegend"><span><i class="hpMapDot-lv1"></i>Lv.1</span><span><i class="hpMapDot-lv2"></i>Lv.2</span><span><i class="hpMapDot-lv3"></i>Lv.3</span><span><i class="hpMapDot-lv4"></i>Lv.4</span><span><i class="hpMapDot-lv5"></i>Lv.5</span></div></div><div class="hpDistCol"><h3 style="font-size:17.5px;font-weight:950;margin:0">수준별 분포 현황</h3><table class="hpDistTable" id="hpDistTable"><thead><tr><th>수준</th><th>팀수</th><th>확정건수</th><th>비율</th></tr></thead><tbody id="hpDistBody"></tbody></table></div></div></section>
+<section class="hpBottomRow"><div class="hpPanel"><div class="hpPanelHead"><h3>공지사항</h3><a class="hpSideLink" href="#" data-hp-detail="notice">전체보기 →</a></div><div class="hpPanelBody"><ul class="hpNotice" id="hpNotice"></ul></div></div><div class="hpPanel"><div class="hpPanelHead"><h3>다운로드</h3></div><div class="hpPanelBody"><div class="hpDownloads"><button type="button" data-hp-download="kpi">KPI 요약 (CSV)</button><button type="button" data-hp-download="metrics">운영지표 (CSV)</button><button type="button" data-hp-download="raw">Portfolio Raw Data (CSV)</button><button type="button" data-hp-download="gmes">공식 확정 GMES 사례 (CSV)</button><button type="button" id="hpPrint">⎙ 전체 인쇄</button></div></div></div></section></div>
+<aside class="hpCol"><div class="hpSideCard"><h3>Action Summary <small style="display:inline;margin:0;font-weight:700">(Audit 지속관리·개선)</small></h3><small id="hpActionAsOf"></small><div id="hpActionRows"></div><button type="button" class="hpBtn" data-hp-detail="action">Action 상세보기 →</button></div><div class="hpSideCard"><div class="hpSideStat"><h3>Portfolio Raw Data</h3></div><small>(후보+확정+유지 전체)</small><div class="hpSideStat"><b id="hpRawTotal">—</b><a class="hpSideLink" href="#" data-hp-detail="raw">상세보기 →</a></div></div><div class="hpSideCard"><div class="hpSideStat"><h3>공식 확정 GMES 사례</h3></div><div class="hpSideStat"><b id="hpGmesTotal">—</b><a class="hpSideLink" href="#" data-hp-detail="gmes">상세보기 →</a></div></div><div class="hpSideCard hpAiCard"><h3>HDPS · 5S Expert AI <span style="font-weight:700;font-size:13.5px;color:#8a97a8">(Prototype)</span></h3><p>HDPS 5S 고도화 및 유지관리, Audit, 문제해결 전문 AI입니다.<br>현재는 Prototype 단계이며, 실제 OpenAI API 연결은 아닙니다.</p><div class="hpAiBtns"><button type="button" class="hpAiPrimary" id="hpAiOpen">AI 상담하기</button><button type="button" class="hpAiGhost" id="hpAiErrReport">오류 접수</button><button type="button" class="hpAiGhost" id="hpAiErrHistory">오류 이력</button></div></div></aside></div>
+<div class="hpFooter"><span id="hpFootDate">※ 데이터 기준일 : —</span><span>Copyright © HD Hyundai Infracore Co., Ltd. All rights reserved.</span><span>문의 : 생산혁신팀(5S 모듈)</span></div>
+<div class="hpGridModal" id="hpGridModal" role="dialog" aria-modal="true"><div class="hpGridBox"><div class="hpGridHead"><b id="hpGridTitle">상세 Grid</b><button type="button" id="hpGridClose" aria-label="닫기">×</button></div><div class="hpGridBody" id="hpGridBody"></div></div></div>
 </div>
 <script src="demo-data-seed.js?v=1"></script>
-<script src="dashboard-kpi-source.js?v=hdps-2"></script>
-<script src="maturity-seq-action-link.js?v=hdps-1"></script>
-<script src="hdps-dashboard.js?v=1"></script>
-<script src="hdps-dashboard-current-model.js?v=20260902-1"></script>
+<script src="dashboard-kpi-source.js?v=hdps-3"></script>
+<script src="hdps-dashboard.js?v=20260902-canonical-1"></script>
 </body>
 </html>
