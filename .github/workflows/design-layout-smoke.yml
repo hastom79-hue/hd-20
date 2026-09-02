@@ -1,0 +1,50 @@
+name: HD20 design layout smoke
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  layout:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm init -y >/dev/null 2>&1 && npm i playwright@1.55.0 >/dev/null 2>&1 && npx playwright install chromium --with-deps >/dev/null 2>&1
+      - name: Verify five-area desktop and mobile layout
+        run: |
+          python3 -m http.server 4173 >/tmp/hd20-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID || true' EXIT
+          node <<'NODE'
+          const {chromium}=require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const cases=[{name:'desktop',width:1440,height:1000},{name:'mobile',width:375,height:812}];
+            const tabs=['dashboard','activity','advancement','audit','action'];
+            for(const vp of cases){
+              const page=await browser.newPage({viewport:{width:vp.width,height:vp.height}});
+              const errors=[]; page.on('pageerror',e=>errors.push(String(e))); page.on('dialog',d=>d.accept());
+              await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'networkidle',timeout:30000});
+              for(const key of tabs){
+                await page.locator(`.beginnerNav button[data-key="${key}"]`).click();
+                await page.waitForTimeout(450);
+                const state=await page.evaluate((key)=>{
+                  const de=document.documentElement;
+                  const body=document.body;
+                  const active=document.querySelector('.beginnerNav button.active')?.dataset.key||'';
+                  const visible=[...document.querySelectorAll('.awScreen.on,#performanceConversionAnalysis.on')].filter(el=>getComputedStyle(el).display!=='none');
+                  const headers=visible.reduce((n,el)=>n+el.querySelectorAll(':scope > .hd20AreaHeader').length,0);
+                  return {key,active,scrollWidth:Math.max(de.scrollWidth,body.scrollWidth),clientWidth:de.clientWidth,headers};
+                },key);
+                if(state.active!==key) throw new Error(`${vp.name}/${key}: active=${state.active}`);
+                if(state.scrollWidth>state.clientWidth+2) throw new Error(`${vp.name}/${key}: horizontal overflow ${state.scrollWidth}>${state.clientWidth}`);
+                if(key!=='dashboard' && state.headers>1) throw new Error(`${vp.name}/${key}: duplicate area headers=${state.headers}`);
+              }
+              if(errors.length) throw new Error(`${vp.name}: page errors: ${errors.join(' | ')}`);
+              await page.close();
+            }
+            await browser.close();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
