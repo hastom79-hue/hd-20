@@ -1,0 +1,72 @@
+name: HD20 dashboard canonical smoke
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dashboard-canonical:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Chromium
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0 >/dev/null 2>&1
+          npx playwright install --with-deps chromium >/dev/null 2>&1
+      - name: Verify static canonical dashboard contract
+        run: |
+          python3 - <<'PY'
+          import pathlib,sys
+          html=pathlib.Path('index.html').read_text(encoding='utf-8')
+          forbidden=['approved-landing-v2.js','approved-landing-v2.css']
+          for x in forbidden:
+              if x in html: sys.exit(f'duplicate landing runtime remains: {x}')
+          required=['dashboard-priority-layout.js','dashboard-operational-bridge.js']
+          final=pathlib.Path('final-layout-polish.js').read_text(encoding='utf-8')
+          for x in required:
+              if x not in final: sys.exit(f'canonical dashboard module missing: {x}')
+          nav=pathlib.Path('beginner-navigation.js').read_text(encoding='utf-8')
+          if '.hd20ApprovedLanding' in nav: sys.exit('navigation still depends on retired approved landing')
+          bridge=pathlib.Path('dashboard-operational-bridge.js').read_text(encoding='utf-8')
+          if "document.querySelector('.cards')" not in bridge: sys.exit('operational bridge not anchored to canonical cards')
+          PY
+      - name: Serve
+        run: python3 -m http.server 4173 >/tmp/hd20-http.log 2>&1 &
+      - name: Verify rendered dashboard hierarchy
+        run: |
+          node <<'JS'
+          const { chromium }=require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            for(const viewport of [{width:1440,height:1000},{width:375,height:812}]){
+              const page=await browser.newPage({viewport});
+              const errors=[];page.on('pageerror',e=>errors.push(e.message));
+              await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'networkidle'});
+              await page.waitForTimeout(1600);
+              const state=await page.evaluate(()=>({
+                approved:document.querySelectorAll('.hd20ApprovedLanding').length,
+                priority:document.querySelectorAll('#hd20DashboardPriority').length,
+                health:document.querySelectorAll('#hd20DashboardPriority .hd20HealthKpi').length,
+                bridge:document.querySelectorAll('#hd20OperationalBridge').length,
+                cards:document.querySelectorAll('.cards .kpi').length,
+                labels:[...document.querySelectorAll('.hd20DashboardSectionLabel')].map(x=>x.textContent.replace(/\s+/g,' ').trim()),
+                overflow:Math.max(document.documentElement.scrollWidth,document.body.scrollWidth)-document.documentElement.clientWidth
+              }));
+              if(errors.length)throw new Error(`page errors: ${errors.join(' | ')}`);
+              if(state.approved!==0)throw new Error(`duplicate approved landing rendered: ${state.approved}`);
+              if(state.priority!==1||state.health!==6)throw new Error(`priority layer invalid: ${JSON.stringify(state)}`);
+              if(state.bridge!==1||state.cards!==5)throw new Error(`canonical body invalid: ${JSON.stringify(state)}`);
+              if(state.overflow>2)throw new Error(`horizontal overflow ${state.overflow}px @ ${viewport.width}`);
+              await page.close();
+            }
+            await browser.close();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          JS
