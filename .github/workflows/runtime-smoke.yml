@@ -110,6 +110,8 @@ jobs:
         run: |
           set -euo pipefail
           grep -q '생산혁신팀 + 5S 모듈' gmes-5s-judge-ui.js
+          grep -q 'function esc' gmes-5s-judge-ui.js
+          grep -q "esc(item.judgeState||'판정대기')" gmes-5s-judge-ui.js
           ! grep -q 'criteriaMetCount.*=' gmes-5s-judge-ui.js
           ! grep -q 'criteriaMet.*=' gmes-5s-judge-ui.js
 
@@ -117,6 +119,12 @@ jobs:
         run: |
           set -euo pipefail
           grep -q 'window.HD20KPIData' dashboard-kpi-source.js
+          grep -q 'function recurrenceState' dashboard-kpi-source.js
+          grep -q 'teamActs.some(recurrenceState)' dashboard-kpi-source.js
+          grep -q 'recRows.filter(recurrenceState)' dashboard-kpi-source.js
+          grep -q "finalState==='미흡'" dashboard-kpi-source.js
+          ! grep -q "/재발/.test(String(a.status||a.problem||''))" dashboard-kpi-source.js
+          ! grep -q '/true|1|yes|재발|발생/i' dashboard-kpi-source.js
           grep -q 'HD20KPIData' top-kpi-drilldown.js
           grep -q 'HD20KPIData' performance-conversion-analysis.js
           grep -q '① 통합 대시보드' hdps-dashboard.html
@@ -125,6 +133,20 @@ jobs:
           grep -q "DRAW_KEY='hd20AuditRandomDrawsV1'" hdps-dashboard.js
           grep -q 'Audit 후 6개월 유지율' hdps-dashboard.js
           ! grep -q '1개월 점검\|3개월 Audit\|6개월 Audit\|1·3·6개월' hdps-dashboard.js
+
+      - name: Verify canonical conversion and portfolio map
+        run: |
+          set -euo pipefail
+          test -s conversion-chart.js
+          ! grep -q 'targetMaster\|Q3:55\|||55\|convTarget\|분기 활동목표' conversion-chart.js
+          grep -q '총 활동건수와 인당 목표(건/인)는 같은 축에 혼합하지 않습니다' conversion-chart.js
+          test -s integrated-performance-map.js
+          grep -q 'HD20KPIData?.snapshot?.()' integrated-performance-map.js
+          grep -q 'snap.confirmed' integrated-performance-map.js
+          grep -q 'snap.maintained' integrated-performance-map.js
+          grep -q '현재 유지' integrated-performance-map.js
+          grep -q '중앙선은 시각적 참고선이며 운영 판정기준이 아닙니다' integrated-performance-map.js
+          ! grep -q 'd.valid=d.secured\|rate>=50\|핵심 고도화팀\|육성 필요' integrated-performance-map.js
 
       - name: Verify Audit continuous-control and batch contracts
         run: |
@@ -165,6 +187,18 @@ jobs:
           grep -q 'auditDrawId' audit-checklist-enhance.js
           grep -q "LEADER_KEY='hd20TeamLeaderMasterV1'" audit-closed-loop-workflow.js
           ! grep -q "leader:'자동연결'\|workplace:'Audit 대상 현장'" audit-closed-loop-workflow.js
+          grep -q 'retired:true' audit-action-auto-link.js
+          grep -q 'function sync(){return 0}' audit-action-auto-link.js
+          ! grep -q "const GMES_KEY\|const ACTION_KEY\|localStorage.setItem\|leader:'자동연결'" audit-action-auto-link.js
+
+      - name: Verify output safety guards
+        run: |
+          set -euo pipefail
+          grep -q "document.createElement('img')" action-field-photo-gallery.js
+          grep -q 'function evidenceCell' action-field-photo-gallery.js
+          ! grep -q 'td.innerHTML=src\|src="\${src}"' action-field-photo-gallery.js
+          grep -q 'function esc' audit-six-month-control.js
+          grep -q "esc(r.team||'—')" audit-six-month-control.js
 
       - name: Verify dashboard closed-loop summaries
         run: |
