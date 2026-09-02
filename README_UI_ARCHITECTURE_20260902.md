@@ -1,4 +1,4 @@
-# HD-20 UI Architecture Current Status — 2026-09-02
+# HD-20 UI Architecture Current Status — 2026-09-03
 
 이 README는 `README_CURRENT_STATUS_20260902.md`의 업무기준을 변경하지 않고, 전면 디자인 구조개편의 최신 상태만 보완 기록한다.
 
@@ -49,6 +49,19 @@ Repository code search 기준 남아 있는 `createElement('style')`은 `nav-scr
 
 이 rule은 탭 전환 중 브라우저 scroll restoration으로 화면이 끌려 내려가는 것을 방지하기 위한 기능 안정화 규칙이며 테마·컴포넌트 디자인을 결정하지 않는다.
 
+## 퇴역 stylesheet 물리 삭제
+Phase 6에서 이미 메인 스타일 체인에서 제외된 과거 override 파일을 저장소에서도 삭제했다.
+
+- `readability-polish.css`
+- `dashboard-premium-theme.css`
+- `dashboard-contrast-fix.css`
+- `title-underline-fix.css`
+- `dashboard-balance-hotfix.css`
+- `shared-color-theme-final.css`
+- `mobile-runtime-restore.css`
+
+따라서 과거 dark theme / contrast lock / emergency hotfix / mobile override가 실수로 다시 연결되어 canonical Design System과 경쟁할 가능성을 줄였다.
+
 ## 자동검증
 `HD20 design layout smoke`는 Desktop `1440×1000`, Mobile `375×812`에서 5개 업무영역을 모두 확인한다.
 
@@ -63,14 +76,14 @@ Repository code search 기준 남아 있는 `createElement('style')`은 `nav-scr
 Phase 3에서 검출된 Mobile `③ 고도화·판정`의 `718 > 375` overflow는 실제 결함으로 기록 후 container min-width 및 table 내부 scrolling으로 수정했다.
 
 ## 현재 다음 구조정리
-대형 runtime visual CSS의 퇴역이 완료되었으므로 다음 단계는 추가 stylesheet를 만드는 것이 아니라 기존 canonical CSS 내부의 중복 selector와 `!important` 사용량을 줄이는 방향으로 진행한다.
+다음 단계는 실제 로딩 중인 보조 stylesheet만 대상으로 canonical CSS에 안전하게 흡수한다.
 
 우선순위:
-- `hd20-overhaul.css`와 `hd20-five-area.css`의 역할경계 명확화
-- 같은 selector의 중복 정의 축소
+- `tab-polish.css`의 table/search/detail 표현을 canonical component 규칙으로 이전
+- `modal-chrome-unify.css`의 modal chrome을 `hd20-overhaul.css`의 modal contract와 통합
+- `hd20-overhaul.css`와 `hd20-five-area.css`의 같은 selector 중복 정의 축소
 - ②~⑤ 화면의 table/form 폭·밀도 미세조정
 - modal 및 mobile bounding-box 회귀검증 강화
-- 더 이상 main에서 로딩하지 않는 legacy theme/hotfix 파일의 안전한 퇴역 검토
 
 상세 변경이력:
 - `DEVELOPMENT_LOG_20260902_DESIGN_SYSTEM_REBUILD.md`
@@ -78,3 +91,4 @@ Phase 3에서 검출된 Mobile `③ 고도화·판정`의 `718 > 375` overflow�
 - `DEVELOPMENT_LOG_20260902_DESIGN_SYSTEM_REBUILD_PHASE3.md`
 - `DEVELOPMENT_LOG_20260902_DESIGN_SYSTEM_REBUILD_PHASE4.md`
 - `DEVELOPMENT_LOG_20260902_DESIGN_SYSTEM_REBUILD_PHASE5.md`
+- `DEVELOPMENT_LOG_20260903_DESIGN_SYSTEM_REBUILD_PHASE6.md`
