@@ -149,12 +149,69 @@ Commit `309a389668f08863fc9250bfc101a9d5685cd658` 기준.
 관련 커밋:
 - `c357c3519a9f85ce002bc9b93dce957b414a2470`
 
-## 7. 검증 원칙
+### Runtime #262 — failure
+Runtime 계약 현행화 직후 `Verify advancement semantics`에서 화면 문구와 grep 문구가 미세하게 달라 실패했다.
+
+기능 오류가 아니라 검증문구 불일치였으며 실제 Canonical 문구 `공식 판정 결과는 별도 축` 기준으로 계약을 수정했다.
+
+관련 커밋:
+- `fb6c4ac5afb0dce610ca270f07f299d1618b0bde`
+
+이후 Runtime #265는 전체 계약을 **success**로 통과했다.
+
+## 7. Browser 의미검증 강화
+Browser Smoke가 단순 메뉴 클릭만 하지 않고 `③ 고도화·판정` 화면을 직접 열어 다음을 검증하도록 강화했다.
+
+- `#performanceConversionAnalysis.on` 실제 표시.
+- `조건 충족 수준과 공식 판정은 분리` 문구 확인.
+- `생산혁신팀 + 5S 모듈 판정` 확인.
+- `생산혁신팀 메인 담당자` 가상 판정자 미노출.
+- `2개 이상 충족 → 자동 확정` 식 의미가 화면에 나타나지 않는지 확인.
+- 기존 Audit Batch / Audit 실시 / 종료평가 / Case Trace / Dashboard / HDPS E2E는 계속 수행.
+
+관련 커밋:
+- `07ad9d2ed3f403a79a6f16dac34d3a4fd54b71fb`
+
+## 8. 배포 ZIP 직접검증 및 가상 팀장 템플릿 제거
+Package Artifact를 직접 압축 해제해 활성 JS/HTML을 검색했다.
+
+발견사항:
+- `team-leader-excel-import.js`의 다운로드 양식에 `홍길동`, `김현대`, `hong@example.com`, `kim@example.com` 가상 예시가 남아 있었다.
+
+조치:
+- 생산팀장 업로드양식을 `생산팀,생산팀장,이메일` 컬럼 헤더만 제공하도록 변경.
+- Runtime Smoke에서 활성 JS/HTML에 `example.com`, `홍길동`, `김현대`가 재유입되면 실패하도록 추가.
+
+관련 커밋:
+- `30b680fb49b6173d349f6181f9b9bd4739637829`
+- `c662915a20cfab3eeecddf0c420d09c6bb2fb092`
+
+최신 Package #472 Artifact를 다시 직접 풀어 검사한 결과:
+- `HD20MaturityFollowup`: 0건
+- `hd20WorkflowDataV1`: 0건
+- `management.html` 링크: 0건
+- `awRegister`: 0건
+- 가상 판정자: 0건
+- `example.com / 홍길동 / 김현대`: 0건
+- `1개월 점검 / 3개월 AUDIT / 6개월 AUDIT`: 0건
+- 독립 16개 팀 배열: 0건 (`app.js`의 `CANONICAL_TEAMS`만 존재)
+
+## 9. 확정 검증 기준점
+Commit `c662915a20cfab3eeecddf0c420d09c6bb2fb092`:
+
+- Runtime Smoke #268: **success**
+- Browser Smoke #211: **success**
+- Package HD20 source #472: **success**
+- Pages build and deployment #663: **success**
+
+Browser #211에는 새 고도화 의미검증과 기존 Audit Batch/종료평가/HDPS E2E가 모두 포함된다.
+
+## 10. 검증 원칙
 최신 HEAD의 Runtime / Browser / Package / Pages가 모두 확정되기 전에는 성공으로 기록하지 않는다.
 
 기능 실패와 검증계약 실패를 구분해 기록하며, 실패한 Workflow Run도 삭제하거나 숨기지 않는다.
 
 ## 후속
-- 최신 HEAD 자동검증 4종 결과 확정.
-- Browser Smoke에서 ③ 고도화·판정 화면 직접 열기 및 조건충족/공식판정 분리 문구 확인을 추가 검토.
-- 배포 소스 전체에서 과거 Lifecycle/가상값/죽은 링크를 계속 검색.
+- 활성 Runtime의 죽은 링크·미사용 UI·가상 기본값을 계속 제거한다.
+- 운영 Master/정책이 없는 상태에서 임의 수치나 임의 담당자를 만들지 않는 원칙을 유지한다.
+- 이후 기능 추가도 `code → Runtime → Browser → Package/Pages → 개발일지/README` 순으로 검증한다.
