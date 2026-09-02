@@ -1,7 +1,7 @@
 # HD-20 Design System Rebuild Phase 5 — 2026-09-02
 
 ## 목적
-Phase 4에서 추가한 통합 대시보드 우선순위 계층을 ②~⑤ 업무화면과 완전히 분리하고, 남아 있던 고도화 성과전환·폐쇄루프 상세의 runtime CSS 소유권을 canonical Design System으로 이동한다.
+Phase 4에서 추가한 통합 대시보드 우선순위 계층을 ②~⑤ 업무화면과 완전히 분리하고, 남아 있던 화면용 runtime CSS 소유권을 canonical Design System으로 이동한다.
 
 ## 1. Dashboard 전용 영역 유출 방지
 `dashboard-priority-layout.js`가 만든 다음 요소는 통합 대시보드 전용이다.
@@ -42,7 +42,35 @@ JS는 다음 동작만 담당한다.
 
 최상위 운영 KPI 6종과 역할이 겹치지 않도록 화면 명칭을 `폐쇄루프 상세 운영상태`로 낮추고, 시각적 중요도도 보조 레벨로 조정했다.
 
-## 4. Design Layout 계약 강화
+## 4. Workflow foundation runtime CSS 제거
+`activity-workflow.js`가 생성하던 `activityWorkflowStyle` 전체를 제거했다.
+
+JS는 다음 업무기능만 유지한다.
+- 6개 5S 유형 등록
+- BEFORE / AFTER 증빙
+- 고도화 후보 Gate
+- 고도화 후보 / 공식판정 Raw Grid
+- 조건충족 × 적용범위 Grid
+- Audit 상태 집계
+- Canonical Store 저장 및 이벤트 발생
+
+기존 `.awScreen / .awHero / .awFlow / .awKpis / .awGrid / .awCard / .awForm / .awPhoto / .awDrop / .awTable / .awStatus` foundation style은 `hd20-five-area.css`로 이전했다.
+
+특히 `.awScreen{display:none}` / `.awScreen.on{display:block}` 계약도 static CSS가 소유하므로, 선택되지 않은 업무 Screen이 DOM에 존재하더라도 화면에 동시에 노출되지 않는다.
+
+## 5. 상단 Navigation runtime CSS 제거
+`beginner-navigation.js`의 `beginnerNavStyle` 생성 코드를 제거했다.
+
+다음 동작은 그대로 유지한다.
+- 5개 Navigation DOM 정규화
+- Dashboard / Activity / Advancement / Audit / Action 전환
+- 기존 deep link `conversion / workplace / master` 정규화
+- `awFocused` 상태 전환
+- 통합 업무 흐름 안내문
+
+상단 Navigation의 시각 규칙은 `hd20-overhaul.css + hd20-five-area.css`에서만 관리한다.
+
+## 6. Design Layout 계약 강화
 `HD20 design layout smoke`에 dashboard-only layer 검증을 추가했다.
 
 Dashboard에서는:
@@ -55,6 +83,15 @@ Dashboard에서는:
 - `.hd20DashboardSectionLabel` 비표시
 
 기존 desktop/mobile horizontal overflow, active tab, duplicate header, pageerror 검증은 유지한다.
+
+## Runtime style 잔여
+Repository code search 기준 대형 visual `createElement('style')` 경로는 제거됐다.
+
+남은 `nav-scroll-stability.js`의 1줄 rule:
+
+`html.hd20-nav-switching{scroll-behavior:auto!important}`
+
+은 탭 전환 중 브라우저의 부드러운 스크롤 복원 동작을 막기 위한 functional rule이며 시각테마를 결정하지 않으므로 유지한다.
 
 ## 업무 로직 보존
 이번 단계에서 변경하지 않은 항목:
@@ -72,3 +109,6 @@ Dashboard에서는:
 - `d5f0323` — performance conversion runtime CSS 제거
 - `70225c4` — canonical CSS 통합 + dashboard-only visibility 계약
 - `891562b` — design layout dashboard-only leak regression
+- `81e4a98` — activity workflow runtime CSS 제거
+- `7c84d03` — workflow foundation static CSS 이전
+- `c6df9e9` — beginner navigation runtime CSS 제거
