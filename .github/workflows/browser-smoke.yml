@@ -59,7 +59,7 @@ jobs:
               await page.reload({waitUntil:'networkidle'});await page.click('.beginnerNav button[data-key="audit"]');
               await page.waitForSelector('.auditDraw [data-draw="pick"]',{timeout:10000});await page.click('.auditDraw [data-draw="pick"]');
               await page.waitForFunction(()=>{const d=JSON.parse(localStorage.getItem('hd20AuditRandomDrawsV1')||'[]');return d.length>=3&&d[0].batchId},{},{timeout:10000});
-              await page.waitForSelector('#hd20AuditBatchExecution select[data-abe-select] option',{timeout:10000});
+              await page.waitForFunction(()=>document.querySelectorAll('#hd20AuditBatchExecution select[data-abe-select] option').length===3,{},{timeout:10000});
               const before=await page.evaluate(()=>{const d=JSON.parse(localStorage.getItem('hd20AuditRandomDrawsV1')||'[]'),id=d[0]?.batchId,b=d.filter(x=>x.batchId===id);return{batchId:id,count:b.length,uniqueTeams:new Set(b.map(x=>x.team)).size,teams:b.map(x=>x.team),options:document.querySelectorAll('#hd20AuditBatchExecution select[data-abe-select] option').length}});
               if(before.count!==3||before.uniqueTeams!==3||before.options!==3)throw new Error('Batch extraction contract '+JSON.stringify(before));
               await page.fill('.auditClosedLoop [data-cl-date]','2026-09-02');await page.selectOption('.auditClosedLoop [data-cl-result]',{label:'적합'});await page.fill('.auditClosedLoop [data-cl-workplace]','E2E Audit Workplace');await page.fill('.auditClosedLoop [data-cl-auditor]','E2E Tester');await page.click('.auditClosedLoop [data-cl-save]');
