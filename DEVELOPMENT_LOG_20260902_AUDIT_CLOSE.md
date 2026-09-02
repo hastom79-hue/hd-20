@@ -55,6 +55,16 @@ Runtime Smoke에서 다음을 검사한다.
 - `dashboard-operational-bridge.js`가 종료평가 대기/유지/미흡을 직접 집계.
 - `audit-random-draw.js`, `audit-six-month-control.js`에서 문제/상태 텍스트 부분일치 재발판정을 사용하지 않음.
 
+Browser Smoke E2E에는 다음 종료평가 흐름을 추가했다.
+1. Audit 실시일이 6개월 이상 지난 `E2E-CLOSE-1` Case를 테스트 LocalStorage에 주입.
+2. 연결된 완료 Action Case와 효과검증 `유효`, 재발 `미발생` 상태를 주입.
+3. 유지·Audit 화면의 `6개월 관리 종료평가`에서 해당 Case 선택.
+4. 종료평가를 `미흡`, 근거를 `E2E 종료평가 미흡 근거`로 입력 후 저장.
+5. Canonical Audit Store에서 `finalEvaluation=미흡`, `finalEvaluationNote`, `finalEvaluationAt`, `finalEvaluationRiskReference=true` 저장 여부 확인.
+6. Audit Case Trace에서 동일 Case의 `종료평가 · 미흡`과 평가근거가 보이는지 확인.
+7. 통합 대시보드의 운영 폐쇄루프 카드에 `종료평가 대기 / 유지 / 미흡` 상태가 모두 존재하는지 확인.
+8. 종료평가 및 대시보드 화면을 CI Artifact 스크린샷으로 저장.
+
 ## 주요 커밋
 - `dc9a9ba947553083bd51aa113fb573dafc4948cf` — 종료평가 UI/저장 로직.
 - `35eee4ea54fa7084b9ac0dd5903636475d7a3326` — 화면 로딩 연결.
@@ -65,13 +75,16 @@ Runtime Smoke에서 다음을 검사한다.
 - `eb6036cf2a6978111c025741906fadacd28324b0` — 종료평가를 Audit Case Trace에 연결.
 - `9a1b5f6bc1932f6e9fc26a7c3c1241097559915c` — 종료평가를 통합 대시보드 운영 폐쇄루프에 연결.
 - `d3e3c68423d094453a096b8ee99760b167c6bb9e` — Dashboard/Trace 종료평가 회귀검증 계약 추가.
+- `248038045fc6ad27b0f932e84b0a68dffa444534` — Runtime 재발 함수명 계약을 실제 구현과 정렬.
+- `6a6095a4edbefc7c238ac1433ada3352c106e843` — 종료평가 Browser E2E 추가.
 
 ## 검증 상태
 기존 배포 기준 commit `a1a2f76db942bb7b9d21a22cb4599308b44e2b4b`에서 Runtime #173, Browser #116, Package #377, Pages #568은 모두 success였다.
 
-본 종료평가 Dashboard/Trace 연결 커밋 이후 최신 Runtime/Browser/Pages 검증은 다시 실행되며, 완료 전에는 성공으로 간주하지 않는다.
+종료평가 연결 후 Runtime #183은 기능 오류가 아니라 테스트에서 `audit-random-draw.js` 함수명을 `recurrenceState`로 잘못 기대하여 실패했다. 실제 함수명 `recurrenceOf`에 맞춰 커밋 `2480380...`에서 테스트 계약을 수정했다.
+
+종료평가 Browser E2E 추가 이후 최신 Runtime/Browser/Pages 검증은 다시 실행되며, 완료 전에는 성공으로 간주하지 않는다.
 
 ## 후속
 - 최신 Runtime/Browser/Pages 결과를 확정해 본 기록에 추가.
-- 필요 시 Browser E2E에 6개월 종료평가 표시 시나리오를 별도 fixture로 추가.
 - `미흡` 종료평가를 차기 Risk 확률에 포함할지는 별도 가중치 정책이 명시적으로 정의될 때만 적용.
