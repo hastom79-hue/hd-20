@@ -98,7 +98,7 @@ jobs:
           grep -q '인간공학적 Green Zone' maturity-condition-analysis.js
           grep -q '정량축소·정위치 변경을 통한 공간 활용' maturity-condition-analysis.js
           grep -q '작업장명으로 라인을 추정하지 않습니다' maturity-condition-analysis.js
-          grep -q '조건 충족 수준과 공식 판정은 별도 축' performance-conversion-analysis.js
+          grep -q '공식 판정 결과는 별도 축' performance-conversion-analysis.js
           grep -q '조건 충족 개수만으로 공식 확정을 자동 결정하지 않습니다' performance-conversion-analysis.js
           grep -q '생산혁신팀 + 5S 모듈 판정' performance-conversion-analysis.js
           ! grep -q 'criteriaMet.*confirmed\|confirmed.*criteriaMet' performance-conversion-analysis.js
