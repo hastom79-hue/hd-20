@@ -30,6 +30,28 @@ jobs:
             if not p.startswith(('http://','https://','//')) and not pathlib.Path(p).is_file(): missing.append(p)
           if missing: print('Missing:',missing,file=sys.stderr);sys.exit(1)
           PY
+      - name: Verify static index five-area contract
+        run: |
+          python3 - <<'PY'
+          import pathlib,re,sys
+          html=pathlib.Path('index.html').read_text(encoding='utf-8')
+          nav=re.search(r'<nav class="beginnerNav".*?</nav>',html,re.S)
+          if not nav:
+              print('Missing beginnerNav in static index',file=sys.stderr);sys.exit(1)
+          keys=re.findall(r'data-key="([^"]+)"',nav.group(0))
+          expected=['dashboard','activity','advancement','audit','action']
+          if keys!=expected:
+              print('Static nav keys mismatch:',keys,file=sys.stderr);sys.exit(1)
+          forbidden=['1개월 점검','3개월 AUDIT','6개월 AUDIT','⑦ 기준정보','⑥ 문제점·개선조치']
+          bad=[x for x in forbidden if x in html]
+          if bad:
+              print('Legacy labels remain in index:',bad,file=sys.stderr);sys.exit(1)
+          required=['Audit 후 6개월 지속관리','정량축소·정위치 변경을 통한 공간 활용']
+          missing=[x for x in required if x not in html]
+          if missing:
+              print('Required current labels missing:',missing,file=sys.stderr);sys.exit(1)
+          print('OK: static index is canonical five-area source')
+          PY
       - name: Verify five-area navigation controller
         run: |
           set -euo pipefail
