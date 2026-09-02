@@ -58,6 +58,21 @@ jobs:
           for key in dashboard activity advancement audit action; do grep -q "data-key=\\\"$key\\\"\|data-key=\"$key\"" beginner-navigation.js; done
           ! grep -q '1·3·6개월 Lifecycle' beginner-navigation.js
           echo 'OK: five-area navigation controller present'
+      - name: Verify HDPS dashboard current-model bridge
+        run: |
+          set -euo pipefail
+          test -s hdps-dashboard-current-model.js
+          grep -q 'hdps-dashboard-current-model.js' hdps-dashboard.html
+          grep -q '① 통합 대시보드' hdps-dashboard.html
+          grep -q '⑤ 개선조치' hdps-dashboard.html
+          ! grep -q '⑥ 기준정보' hdps-dashboard.html
+          grep -q "DRAW_KEY='hd20AuditRandomDrawsV1'" hdps-dashboard-current-model.js
+          grep -q "ACTION_KEY='hd20ActionCasesV2'" hdps-dashboard-current-model.js
+          grep -q 'Audit 후 6개월 유지율' hdps-dashboard-current-model.js
+          grep -q 'Audit 실시 대기' hdps-dashboard-current-model.js
+          grep -q '6개월 관리 중' hdps-dashboard-current-model.js
+          grep -q 'addMonths' hdps-dashboard-current-model.js
+          echo 'OK: HDPS dashboard uses current Audit D-Day / six-month / Action bridge'
       - name: Verify workflow screen contract
         run: |
           set -euo pipefail
