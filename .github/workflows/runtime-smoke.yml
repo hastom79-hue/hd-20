@@ -87,6 +87,10 @@ jobs:
           grep -q 'MIN_DUE=7' audit-six-month-control.js
           grep -q 'MAX_DUE=14' audit-six-month-control.js
           grep -q 'auditDate' audit-six-month-control.js
+          grep -q 'function recurrenceState' audit-six-month-control.js
+          grep -q "\['재발','발생','true','1','yes','y'\]" audit-six-month-control.js
+          grep -q "\['미발생','없음','false','0','no','n'\]" audit-six-month-control.js
+          ! grep -q "/재발/.test(String(a.status||a.problem||''))" audit-six-month-control.js
           grep -q 'HD20AuditClosedLoop.registerAudit' audit-batch-execution.js
           grep -q 'function evaluate' audit-close-evaluation.js
           grep -q "\['유지','미흡'\]" audit-close-evaluation.js
@@ -101,9 +105,11 @@ jobs:
           grep -q 'sampleCount:null' hd20-policy-config.js
           grep -q 'auditSampleCount' hd20-policy-config.js
           grep -q 'function pickTeams' audit-random-draw.js
+          grep -q 'function recurrenceState' audit-random-draw.js
           grep -q 'available.splice' audit-random-draw.js
           grep -q 'batchId' audit-random-draw.js
           grep -q 'Audit 표본수가 미설정' audit-random-draw.js
+          ! grep -q "/재발/.test(String(a.status||a.problem||''))" audit-random-draw.js
           grep -q 'data-op-sample' operating-policy-master.js
       - name: Verify advancement criteria semantics
         run: |
