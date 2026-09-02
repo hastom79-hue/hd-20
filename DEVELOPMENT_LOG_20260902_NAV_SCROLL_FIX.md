@@ -47,10 +47,20 @@ Date: 2026-09-02
 
 Playwright가 클릭 대상 버튼으로 자동 스크롤하는 영향을 제거하기 위해 테스트에서는 DOM의 `button.click()`을 직접 호출하여 실제 탭 전환 로직 자체를 검증한다.
 
+### 4. Desktop + Mobile viewport 회귀검증 확장
+사용자 환경별 화면 폭 차이에서도 같은 스크롤 안정화가 유지되는지 확인하기 위해 Nav Scroll Smoke를 다음 두 viewport로 확장했다.
+- Desktop: `1440 × 900`
+- Mobile: `375 × 812`
+
+각 viewport에서 `dashboard / activity / advancement / audit / action` 5개 탭 모두에 대해 상단 상태와 스크롤된 상태의 전환을 반복하고 최종 `window.scrollY === 0`을 검증한다.
+
+모바일용 `.beginnerNav` 레이아웃은 기존 `mobile-runtime-restore.css`의 2열 grid 규칙을 그대로 사용하며, 이번 변경에서 화면의 업무구조나 탭 명칭은 변경하지 않았다.
+
 ## 관련 Commit
 - `edb0632f359574cbd8252b8b26c97db7c52ae3b2` — `nav-scroll-stability.js` 추가
 - `fd1c589fba19366e83d3adaed4145b570bb48403` — `final-layout-polish.js`에 로더 연결
 - `99c79c7cfcfd069774044ada2ab4785a6a044ee0` — Nav Scroll 전용 회귀검증 Workflow 추가
+- `372f2fbbbf7a726ba2d808baaf478631ec7d14e8` — Nav Scroll 회귀검증을 Desktop + Mobile viewport로 확장
 
 ## 자동검증 결과 — Commit `99c79c7cfcfd069774044ada2ab4785a6a044ee0`
 - Runtime Smoke #292: **success**
@@ -59,7 +69,16 @@ Playwright가 클릭 대상 버튼으로 자동 스크롤하는 영향을 제거
 - Package HD20 source #496: **success**
 - Pages build and deployment #687: **success**
 
+## 모바일 확장 자동검증 결과 — Commit `372f2fbbbf7a726ba2d808baaf478631ec7d14e8`
+- Runtime Smoke #295: **success**
+- Browser Smoke #238: **success**
+- Nav Scroll Smoke #4: **success**
+- Package HD20 source #499: **success**
+- Pages build and deployment #690: **success**
+
+Nav Scroll Smoke #4는 Desktop 1440×900과 Mobile 375×812 모두에서 상단 5개 탭 전체의 전환 후 `scrollY=0`을 확인했다.
+
 ## 결론
 상단 5개 화면 탭은 이제 이전 화면의 스크롤 위치를 승계하지 않는다. 화면이 내려간 상태에서 탭을 전환해도 새 화면은 페이지 상단에서 표시되며, 동적 모듈의 후속 렌더링이 viewport를 다시 아래로 이동시키는 경우도 짧은 안정화 구간에서 차단한다.
 
-이 동작은 전용 Chromium 회귀검증으로 고정했으므로 이후 변경에서 다시 `scrollY`가 남으면 CI가 실패하도록 관리한다.
+이 동작은 Desktop과 Mobile viewport 모두를 대상으로 한 전용 Chromium 회귀검증으로 고정했으므로 이후 변경에서 다시 `scrollY`가 남으면 CI가 실패하도록 관리한다.
