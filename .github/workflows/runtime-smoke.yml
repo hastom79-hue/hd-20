@@ -109,7 +109,7 @@ jobs:
           grep -q 'sampleCount:null' hd20-policy-config.js
           grep -q 'auditSampleCount' hd20-policy-config.js
           grep -q 'function pickTeams' audit-random-draw.js
-          grep -q 'function recurrenceState' audit-random-draw.js
+          grep -q 'function recurrenceOf' audit-random-draw.js
           grep -q 'available.splice' audit-random-draw.js
           grep -q 'batchId' audit-random-draw.js
           grep -q 'Audit 표본수가 미설정' audit-random-draw.js
