@@ -101,7 +101,13 @@ Browser Smoke에 실제 사용자 흐름을 추가했다.
 관련 커밋:
 - `7b21c5b3e6b187fd0e4d6ffc8789b2dc7e4ba33d`
 
-Browser #221: **검증 중**
+Browser #221: **success**
+- Playwright 설치: success
+- 로컬 Web server: success
+- Execute browser contracts: success
+- Browser evidence 업로드: success
 
-## 검증 원칙
-Browser #221 및 최신 HEAD의 Runtime / Package / Pages 완료 결과가 확인되기 전에는 이번 연결보강을 최종 검증완료로 기록하지 않는다.
+## 검증결론
+`Audit 선택대상 → 개선요청 → 개선조치 Canonical Case` 연결에서 생산팀과 원본 Audit Case ID가 보존되고, 승인된 운영정책 범위 내 자동기한 규칙이 실제 브라우저에서 동작함을 확인했다.
+
+테스트에서 사용한 `D+7`은 운영 기본값을 의미하지 않으며 Browser E2E용 테스트 정책이다. 운영에서는 `통합기준정보 > 운영정책`의 실제 설정값을 사용하고, 미설정 상태에서는 임의기한을 생성하지 않는다.
