@@ -63,6 +63,12 @@ jobs:
           ! grep -q 'HD20MaturityFollowup' hdps-dashboard.js
           ! grep -q 'audit6Result\|audit6mResult\|sixMonthAuditResult' hdps-dashboard.js
           ! grep -q '1개월 점검\|3개월 Audit\|6개월 Audit\|1·3·6개월' hdps-dashboard.js
+      - name: Verify maturity followup adapter is retired
+        run: |
+          set -euo pipefail
+          test ! -e maturity-seq-action-link.js
+          ! grep -R --include='*.js' --exclude-dir='.git' -n 'HD20MaturityFollowup' .
+          ! grep -R --include='*.html' --exclude-dir='.git' -n 'maturity-seq-action-link.js' .
       - name: Verify workflow screen contract
         run: |
           set -euo pipefail
