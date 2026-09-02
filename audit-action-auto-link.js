@@ -1,22 +1,18 @@
-(()=>{
-const GMES_KEY='hd20GMES5SAutoImproveRawV1',ACTION_KEY='hd20ActionCasesV2',STYLE='auditActionAutoLinkStyle';
-function load(k){try{return JSON.parse(localStorage.getItem(k)||'[]')}catch{return[]}}function save(k,v){localStorage.setItem(k,JSON.stringify(v))}
+(()=>{'use strict';
+const GMES_KEY='hd20GMES5SAutoImproveRawV1',ACTION_KEY='hd20ActionCasesV2',POLICY_KEY='hd20OperatingPolicyV1',STYLE='auditActionAutoLinkStyle';
+function load(k){try{const v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[]}catch{return[]}}function save(k,v){localStorage.setItem(k,JSON.stringify(v))}
 function norm(v){return String(v??'').trim()}
-function addMonths(iso,m){const d=new Date(iso);if(Number.isNaN(d.getTime()))return null;const x=new Date(d);x.setMonth(x.getMonth()+m);return x}
+function dateOnly(v){const d=new Date(v);if(Number.isNaN(d.getTime()))return null;d.setHours(0,0,0,0);return d}
+function addDays(v,n){const d=dateOnly(v);if(!d)return null;d.setDate(d.getDate()+n);return d}
 function ymd(d){return d?d.toISOString().slice(0,10):''}
-function dueStatus(d){if(!d)return'예정';const t=new Date();t.setHours(0,0,0,0);const x=new Date(d);x.setHours(0,0,0,0);const diff=Math.round((x-t)/86400000);return diff<0?'경과':diff<=7?'기한임박':'예정'}
-function actionId(srcId,stage){return `AUTO-${String(srcId).replace(/[^a-zA-Z0-9가-힣_-]/g,'').slice(-24)}-${stage}`}
-function candidates(){const g=load(GMES_KEY).filter(x=>x.confirmed===true&&x.judgeState==='확정'&&x.judgedAt);const out=[];for(const x of g){for(const [stage,months,label] of [['1M',1,'1개월 정기점검'],['3M',3,'3개월 유효성 AUDIT'],['6M',6,'6개월 유효성 AUDIT']]){const due=addMonths(x.judgedAt,months),status=dueStatus(due);if(status==='경과')out.push({x,stage,label,due,status,reason:`${label} 예정일이 경과했습니다. 현장 유지상태 확인 및 필요 시 개선조치가 필요합니다.`})}if(x.auditResult==='부적합'||x.maintainState==='부적합'){out.push({x,stage:'NC',label:'Audit 부적합',due:new Date(),status:'부적합',reason:x.auditIssue||x.auditReason||'Audit 부적합 사례로 개선조치가 필요합니다.'})}}return out}
-function sync(){const acts=load(ACTION_KEY),idx=new Set(acts.map(a=>a.id));let added=0;for(const c of candidates()){const id=actionId(c.x.id,c.stage);if(idx.has(id))continue;acts.unshift({id,date:new Date().toISOString().slice(0,10),team:norm(c.x.team)||'미지정',workplace:norm(c.x.workplace||c.x.title)||'미지정',leader:'자동연결',email:'',problem:`[${c.label}] ${c.reason}`,due:ymd(c.due),before:'',evidence:'',status:'조치대기',created:new Date().toISOString(),source:'5S 고도화 자동연결',sourceCaseId:String(c.x.id),sourceStage:c.stage,autoCreated:true});idx.add(id);added++}if(added)save(ACTION_KEY,acts);updateBadge(added);return added}
-/* Per explicit request: no numeric badge on the nav bar. The underlying
- * auto-linking logic (creating an action case when a confirmed 고도화
- * 사례's 1M/3M/6M follow-up lapses, or an Audit comes back 부적합) is
- * unaffected -- only the always-visible count badge on the menu button
- * is removed. */
-function updateBadge(added){document.querySelector('.hd20AutoActionBadge')?.remove()}
-function css(){if(document.getElementById(STYLE))return;const s=document.createElement('style');s.id=STYLE;s.textContent=`.hd20AutoActionBadge{margin-left:6px;min-width:17px;height:17px;padding:0 5px;border-radius:999px;align-items:center;justify-content:center;background:#fff1e8;color:#b55d25;font-size:12.5px;font-weight:950;vertical-align:middle}.amCases tr[data-auto='1'] td:first-child:after{content:'AUTO';margin-left:5px;padding:1px 4px;border-radius:5px;background:#eef6fb;color:#47718d;font-size:11px;font-weight:950}`;document.head.appendChild(s)}
-function markActionRows(){document.querySelectorAll('#amCaseRows tr').forEach(tr=>{const id=tr.querySelector('[data-id]')?.dataset.id;if(!id)return;const a=load(ACTION_KEY).find(x=>x.id===id);if(a?.autoCreated)tr.dataset.auto='1'})}
-function boot(){css();sync();setTimeout(markActionRows,300);let timer=0;new MutationObserver(m=>{if(!m.some(x=>x.addedNodes.length))return;clearTimeout(timer);timer=setTimeout(markActionRows,120)}).observe(document.body,{childList:true,subtree:true})}
-['hd20-gmes-5s-judged','hd20-gmes-5s-imported'].forEach(ev=>window.addEventListener(ev,()=>setTimeout(sync,80)));
-document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot,{once:true}):boot();
+function deadlineDays(){if(window.HD20PolicyConfig?.deadlineDays)return window.HD20PolicyConfig.deadlineDays();try{const p=JSON.parse(localStorage.getItem(POLICY_KEY)||'{}').improvementDeadline||{},n=Number(p.defaultDays);return Number.isFinite(n)&&n>=7&&n<=14?Math.round(n):null}catch{return null}}
+function actionId(srcId,stage){return `AUTO-${String(srcId||'AUDIT').replace(/[^a-zA-Z0-9가-힣_-]/g,'').slice(-24)}-${stage}`}
+function candidates(){const rows=load(GMES_KEY),out=[];for(const x of rows){const issue=norm(x.auditIssue||x.auditReason||x.improvementRequest||x.개선요청사항);const nonconforming=x.auditResult==='부적합'||x.maintainState==='부적합'||x.auditNonconformity===true;const requested=!!issue||x.improvementRequired===true||x.actionRequired===true;if(!nonconforming&&!requested)continue;const srcDate=x.auditDate||x.auditPerformedAt||x.auditedAt||x.updatedAt||new Date().toISOString();out.push({x,stage:'AUDIT-NC',label:nonconforming?'Audit 부적합':'Audit 개선요청',date:srcDate,reason:issue||'Audit 결과에 따른 개선조치가 필요합니다.'})}return out}
+function sync(){const acts=load(ACTION_KEY),idx=new Set(acts.map(a=>a.id));let added=0;const days=deadlineDays();for(const c of candidates()){const id=actionId(c.x.id,c.stage);if(idx.has(id))continue;const base=dateOnly(c.date)||dateOnly(new Date()),due=days===null?null:addDays(base,days);acts.unshift({id,date:ymd(base),registeredAt:ymd(base),team:norm(c.x.team)||'미지정',workplace:norm(c.x.workplace||c.x.title)||'미지정',leader:'자동연결',email:'',problem:`[${c.label}] ${c.reason}`,due:ymd(due),autoDueDays:days,autoDueAssigned:days!==null,autoDuePolicyState:days===null?'정책미설정':'자동지정',before:'',evidence:'',status:'조치대기',created:new Date().toISOString(),source:'5S Audit 자동연결',sourceCaseId:String(c.x.id||''),sourceStage:c.stage,auditDate:ymd(base),autoCreated:true});idx.add(id);added++}if(added){save(ACTION_KEY,acts);window.dispatchEvent(new CustomEvent('hd20-action-updated',{detail:{added}}))}updateBadge();return added}
+function updateBadge(){document.querySelector('.hd20AutoActionBadge')?.remove()}
+function css(){if(document.getElementById(STYLE))return;const s=document.createElement('style');s.id=STYLE;s.textContent=`.amCases tr[data-auto='1'] td:first-child:after{content:'AUTO';margin-left:5px;padding:1px 4px;border-radius:5px;background:#eef6fb;color:#47718d;font-size:11px;font-weight:950}`;document.head.appendChild(s)}
+function markActionRows(){const acts=load(ACTION_KEY),ids=new Set(acts.filter(x=>x.autoCreated).map(x=>x.id));document.querySelectorAll('#amCaseRows tr').forEach(tr=>{const id=tr.querySelector('[data-id]')?.dataset.id;if(id&&ids.has(id))tr.dataset.auto='1'})}
+function boot(){css();sync();setTimeout(markActionRows,300)}
+['hd20-gmes-5s-judged','hd20-gmes-5s-imported','hd20-audit-updated','hd20-policy-updated'].forEach(ev=>window.addEventListener(ev,()=>setTimeout(()=>{sync();markActionRows()},80)));
+window.HD20AuditActionAutoLink={sync,candidates,deadlineDays};document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot,{once:true}):boot();
 })();
