@@ -60,6 +60,17 @@
 - Side Card 갱신은 역할이 명확한 `dashboard-side-summary.js`로 분리.
 - 정적 `index.html`에서 삭제된 Adapter script reference 제거.
 
+## 메인 Dashboard Core 정리
+- `app.js`의 7메뉴 Fail-safe 재생성 코드 제거.
+- 과거 분기별 임의 인당 목표 `0.5 / 0.6 / 0.6 / 0.7` 제거.
+- 분기 목표 기본값은 `null / 미설정`, 실제 기준정보 저장값이 있을 때만 사용.
+- 총 건수 차트에 단위가 다른 `건/인` 목표선을 겹쳐 그리지 않음.
+- 정적 `Q3 목표 55건` Prototype 문구 제거.
+- `HD20LegacyDashboard`를 `HD20DashboardCore`로 정리.
+- `emergency-ui-stabilizer-v2.js` 삭제, 실제 필요한 visibility 기능만 `app-visibility-failsafe.js`로 분리.
+
+상세 기록: `DEVELOPMENT_LOG_20260902_DASHBOARD_CORE_CLEANUP.md`.
+
 ## Demo / Seed 운영데이터 오염 방지
 ### Canonical Demo Seed
 `demo-data-seed.js`가 Canonical Store가 비었을 때 5S 활동 120건, 개선조치 26건, 가상 팀장/이메일을 자동 생성하던 구조를 발견해 완전히 퇴역했다.
@@ -80,6 +91,15 @@
 
 상세 기록: `DEVELOPMENT_LOG_20260902_DEMO_RETIREMENT.md`.
 
+## 배포용 Prototype / 가상 샘플 퇴역
+현재 운영 Runtime에는 연결되지 않았지만 Pages 및 전체 소스 ZIP에 포함되던 아래 파일을 제거했다.
+
+- `management.html`: 고정 KPI·임의 Raw Data·샘플 이미지가 있는 구형 독립 Prototype.
+- `v2-preview.html`: 구형 디자인 Preview.
+- 루트 및 `data/`의 `HD20_생산팀장_메일정보_강제생성_샘플.csv`: 가상 이름과 `example.com` 메일을 포함한 중복 샘플.
+
+개발 이력은 Worklog에 보존하되 현재 배포본에는 포함하지 않는다. Runtime Smoke에서 네 경로의 재유입을 차단한다.
+
 ## 데이터 의미판정
 - `미발생`을 `발생` 부분문자열 때문에 재발로 오인하지 않도록 명시값 기준으로 판정.
 - Audit Risk와 6개월 지속관리 모두 문제내용/상태 텍스트의 단순 `재발` 단어 포함 여부를 재발 근거로 사용하지 않음.
@@ -98,7 +118,19 @@ Commit `cd2ba4cabb7198bcdf538be628d854755a1fcfb5` 구조정리 기준:
 - Browser Smoke #141: **success**
 - Package #402: **success**
 
-그 이후 공식판정 문구 분리, Demo seed 퇴역, Audit Checklist Master 전환, Action Demo Guard 삭제까지 추가 반영되었다. 최신 HEAD의 Runtime/Browser/Package/Pages는 다시 검증하며 완료 전에는 성공으로 간주하지 않는다.
+Commit `b52122dc653ce5bdebdac2e0309226b7309c7459` Demo/Seed 퇴역 기준:
+- Runtime Smoke #218: **success**
+- Browser Smoke #161: **success**
+- Package #422: **success**
+- Pages #613: **success**
+
+Commit `ad1566e21e47568aa1c3e4c28808be0fa54cb8bc` Dashboard Core Canonical 정리 기준:
+- Runtime Smoke #228: **success**
+- Browser Smoke #171: **success**
+- Package #432: **success**
+- Pages #623: **success**
+
+그 이후 미사용 Prototype/가상 샘플 파일 퇴역과 재유입 방지 계약을 추가 반영했다. 최신 HEAD의 4개 workflow는 완료 결과가 확정된 뒤에만 성공으로 기록한다.
 
 ## 주요 최신 개발일지
 - `DEVELOPMENT_LOG_20260902.md`
@@ -109,9 +141,10 @@ Commit `cd2ba4cabb7198bcdf538be628d854755a1fcfb5` 구조정리 기준:
 - `DEVELOPMENT_LOG_20260902_APPROVED_LANDING_AUDIT.md`
 - `DEVELOPMENT_LOG_20260902_SEMANTIC_FIX.md`
 - `DEVELOPMENT_LOG_20260902_DEMO_RETIREMENT.md`
+- `DEVELOPMENT_LOG_20260902_DASHBOARD_CORE_CLEANUP.md`
 
 ## 다음 작업
 - 최신 HEAD의 Runtime/Browser/Package/Pages 결과 확정 및 실패 시 즉시 교정.
-- 실행 코드 전체에서 다른 Prototype/mock/seed가 Canonical 운영 Store에 자동 데이터를 넣는지 계속 전수검색.
-- 남은 구형 Audit/Lifecycle 문자열을 실행 코드 기준으로 전수검색.
+- 현재 배포 가능한 HTML/JS/데이터에서 하드코딩된 샘플값·가상정보를 계속 전수검색.
+- 팀 목록·기간 필터·목표값이 실제 Master와 일치하는지 점검.
 - Side Summary를 6개월 종료평가 상태와 더 직접 연결할 필요가 있는지 운영 관점에서 점검.
