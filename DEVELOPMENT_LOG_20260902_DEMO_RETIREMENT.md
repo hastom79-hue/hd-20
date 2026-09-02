@@ -94,12 +94,17 @@ Runtime Smoke에서 다음을 검사한다.
 - 구형 `1·3·6개월 Audit` 문구가 Audit Checklist Master에 존재하면 실패.
 - 메인 `<h1>`은 정확히 `울산캠퍼스 5S 활동관리 시스템`이어야 함.
 
-## 8. 검증 상태
-Commit `6ec52aafb3ca66d23f9f761b8160f8322b73bc0f` 기준 Runtime #212, Browser #155 등은 실행이 시작된 것을 확인했다. 그 이후 Action Demo Guard 퇴역과 Runtime 계약까지 추가 반영되었으므로 최종 검증은 최신 HEAD 기준으로 다시 확인한다.
+## 8. 검증 결과
+최종 정리 및 README 현행화까지 포함한 commit `b52122dc653ce5bdebdac2e0309226b7309c7459`에서 다음 자동검증이 모두 성공했다.
 
-완료 전에는 성공으로 간주하지 않는다.
+- Runtime Smoke run #218: **success**
+- Browser Smoke run #161: **success**
+- Package HD20 source run #422: **success**
+- GitHub Pages build/deployment run #613: **success**
+
+Browser Smoke는 기존 5영역 전환, Audit Batch 무중복 추출, Audit 실시등록, 6개월 종료평가 Dashboard/Case Trace 반영 계약을 계속 포함한다.
 
 ## 9. 후속
-- 최신 HEAD의 Runtime / Browser / Package / GitHub Pages 결과를 확정한다.
 - 실행 코드 전체에서 다른 Prototype/mock/seed가 Canonical 운영 Store에 자동 데이터를 넣는지 계속 전수점검한다.
 - 실제 운영데이터가 없을 때 화면은 `0 / — / 데이터 없음`을 유지한다.
+- 현재 운영모델과 충돌하는 1/3/6개월 Legacy 문자열은 실행 코드에서 재유입되지 않도록 Smoke 계약을 유지한다.
