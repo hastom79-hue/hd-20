@@ -167,6 +167,7 @@ jobs:
         run: |
           set -euo pipefail
           ! grep -R --include='*.js' --exclude-dir='.git' -n "source:'demo-seed'\|HD20_DEMO_ACTIONS\|HD20_ACTION_DEMO_SEED_DISABLED" .
+          ! grep -R --include='*.js' --include='*.html' --exclude-dir='.git' -n 'example\.com\|홍길동\|김현대' .
           ! grep -q 'commons.wikimedia.org' action-field-photo-gallery.js
           test -s audit-checklist-master.js
           grep -q 'score:0' audit-checklist-master.js
