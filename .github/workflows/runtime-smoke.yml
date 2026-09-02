@@ -198,3 +198,10 @@ jobs:
           grep -q "result:'N/A'" audit-checklist-master.js
           grep -q 'Audit 실시 후 6개월 지속관리 기간 동안 유지되는가?' audit-checklist-master.js
           ! grep -q '1·3·6개월 Audit' audit-checklist-master.js
+      - name: Verify prototype and fake sample files are retired
+        run: |
+          set -euo pipefail
+          test ! -e management.html
+          test ! -e v2-preview.html
+          test ! -e 'HD20_생산팀장_메일정보_강제생성_샘플.csv'
+          test ! -e 'data/HD20_생산팀장_메일정보_강제생성_샘플.csv'
