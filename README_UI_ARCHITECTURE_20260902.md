@@ -30,16 +30,17 @@ HD-20은 더 이상 여러 theme/hotfix CSS의 load order로 최종 디자인을
 Dashboard 전용 `#hd20DashboardPriority`, `#hd20OperationalBridge`, `.hd20DashboardSectionLabel`은 ②~⑤ 화면에서 표시하지 않는다.
 
 ## 현재 실제 stylesheet chain
-현재 `index.html`이 직접 로드하는 메인 표현 계층은 다음 6개다.
+현재 `index.html`이 직접 로드하는 메인 표현 계층은 다음 5개다.
 
 1. `styles.css`
 2. `hd20-overhaul.css`
 3. `hd20-five-area.css`
-4. `dashboard-priority-groups.css`
-5. `workflow-area-density.css`
-6. `maturity-condition-analysis.css`
+4. `workflow-area-density.css`
+5. `maturity-condition-analysis.css`
 
-새로운 `*-fix.css`, `*-hotfix.css`, `*-polish.css`를 추가하는 방식은 사용하지 않는다. 다음 단계의 목표는 위 실제 로딩 chain 내부에서 공통 규칙을 canonical component로 흡수하여 파일 간 중복 selector와 `!important` 경쟁을 계속 줄이는 것이다.
+Phase 10에서 `dashboard-priority-groups.css` 로딩을 제거하고 파일을 물리 삭제했다. Dashboard priority/group/detail density 규칙은 `hd20-five-area.css`의 Dashboard contract가 소유한다.
+
+새로운 `*-fix.css`, `*-hotfix.css`, `*-polish.css`를 추가하는 방식은 사용하지 않는다. 다음 단계의 목표는 남아 있는 실제 로딩 chain 내부에서 공통 규칙을 canonical component로 흡수하여 파일 간 중복 selector와 `!important` 경쟁을 계속 줄이는 것이다.
 
 ## Runtime CSS 분리 완료상태
 JS 모듈에서 대형 visual stylesheet를 생성하던 아래 경로는 표현 소유권을 canonical CSS로 이전했다.
@@ -62,7 +63,7 @@ Repository code search 기준 남아 있는 `createElement('style')`은 `nav-scr
 이 rule은 탭 전환 중 브라우저 scroll restoration으로 화면이 끌려 내려가는 것을 방지하기 위한 기능 안정화 규칙이며 테마·컴포넌트 디자인을 결정하지 않는다.
 
 ## 퇴역 stylesheet 물리 삭제
-Canonical Design System 전환 이후 더 이상 실제 메인 화면에 참여하지 않는 과거 theme / fix / polish layer를 저장소에서도 삭제했다.
+Canonical Design System 전환 이후 더 이상 실제 메인 화면에 참여하지 않는 과거 theme / fix / polish / 보조 Dashboard layer를 저장소에서도 삭제했다.
 
 삭제 완료:
 - `readability-polish.css`
@@ -74,31 +75,31 @@ Canonical Design System 전환 이후 더 이상 실제 메인 화면에 참여�
 - `mobile-runtime-restore.css`
 - `tab-polish.css`
 - `modal-chrome-unify.css`
+- `dashboard-priority-groups.css`
 
-Phase 7에서 마지막 두 파일까지 제거했다. `tab-polish.css`의 form/button/split 표현은 현재 canonical 화면 계층이 담당하며, `modal-chrome-unify.css`가 사용하던 높은 specificity 기반 modal 강제 통일 방식도 더 이상 유지하지 않는다.
+Phase 10에서 Dashboard 전용 보조 stylesheet까지 제거하여 Dashboard 표현 소유권을 `hd20-five-area.css`로 단일화했다.
 
 ## 자동검증
-`HD20 design layout smoke`는 Desktop `1440×1000`, Mobile `375×812`에서 5개 업무영역을 모두 확인한다.
+`HD20 design layout smoke`는 Desktop `1440×1000`, 125% 배율 상당 `1152×800`, Tablet `900×900`, Mobile `375×812`에서 5개 업무영역을 모두 확인한다.
 
 검증내용:
-- active tab
-- horizontal overflow
+- active tab 및 tab switch scroll top
+- horizontal overflow / critical bounding box
 - duplicate Area Header
 - pageerror
 - Dashboard KPI 6종 존재·명칭
 - Dashboard 전용 UI의 ②~⑤ 유출 여부
+- 통합기준정보 modal bounding box
 
-Phase 3에서 검출된 Mobile `③ 고도화·판정`의 `718 > 375` overflow는 실제 결함으로 기록 후 container min-width 및 table 내부 scrolling으로 수정했다.
+Phase 3에서 검출된 Mobile `③ 고도화·판정`의 overflow는 container min-width 및 table 내부 scrolling으로 수정했다. Phase 8~9에서는 125% 상당 viewport와 modal bounding-box 회귀검증을 추가했다.
 
 ## 현재 다음 구조정리
 다음 단계는 실제 로딩 중인 보조 stylesheet만 대상으로 canonical CSS에 안전하게 흡수한다.
 
 우선순위:
-- `dashboard-priority-groups.css`의 Dashboard 전용 group 규칙을 `hd20-five-area.css`의 Dashboard contract와 정리
-- `workflow-area-density.css`의 ②~⑤ 화면별 규칙 중 공통 table/form/card 밀도를 canonical component로 흡수
+- `workflow-area-density.css`의 ②~⑤ 화면별 규칙 중 공통 table/form/card 밀도를 `hd20-five-area.css` canonical component로 흡수
 - `hd20-overhaul.css`와 `hd20-five-area.css`의 같은 selector 중복 정의 및 불필요한 `!important` 축소
 - ②~⑤ 화면의 table/form 폭·밀도 미세조정
-- modal 및 mobile bounding-box 회귀검증 강화
 - 각 업무영역이 `어디를 보고 → 무엇을 판단하고 → 다음에 무엇을 해야 하는지` 순서로 읽히는지 정보계층 재검증
 
 상세 변경이력:
@@ -109,3 +110,6 @@ Phase 3에서 검출된 Mobile `③ 고도화·판정`의 `718 > 375` overflow�
 - `DEVELOPMENT_LOG_20260902_DESIGN_SYSTEM_REBUILD_PHASE5.md`
 - `DEVELOPMENT_LOG_20260903_DESIGN_SYSTEM_REBUILD_PHASE6.md`
 - `DEVELOPMENT_LOG_20260903_DESIGN_SYSTEM_REBUILD_PHASE7.md`
+- `DEVELOPMENT_LOG_20260903_DESIGN_SYSTEM_REBUILD_PHASE8.md`
+- `DEVELOPMENT_LOG_20260903_DESIGN_SYSTEM_REBUILD_PHASE9.md`
+- `DEVELOPMENT_LOG_20260903_DESIGN_SYSTEM_REBUILD_PHASE10.md`
