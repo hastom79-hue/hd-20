@@ -33,6 +33,10 @@ jobs:
               const page=await browser.newPage({viewport:{width:vp.width,height:vp.height}});
               const errors=[]; page.on('pageerror',e=>errors.push(String(e))); page.on('dialog',d=>d.accept());
               await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'networkidle',timeout:30000});
+              const cssContract=await page.evaluate(()=>[...document.querySelectorAll('link[rel="stylesheet"]')].map(x=>new URL(x.href).pathname.split('/').pop()));
+              const expectedCss=['styles.css','hd20-overhaul.css','hd20-five-area.css','workflow-area-density.css','maturity-condition-analysis.css'];
+              if(JSON.stringify(cssContract)!==JSON.stringify(expectedCss)) throw new Error(`${vp.name}: stylesheet contract=${JSON.stringify(cssContract)}`);
+              if(cssContract.some(x=>/dashboard-priority-groups|hotfix|polish/i.test(x))) throw new Error(`${vp.name}: retired stylesheet leaked ${JSON.stringify(cssContract)}`);
               const navCount=await page.locator('.beginnerNav button[data-key]').count();
               if(navCount!==5) throw new Error(`${vp.name}: nav count=${navCount}`);
               for(const key of tabs){
@@ -55,8 +59,16 @@ jobs:
                 if(key!=='dashboard' && state.headers!==1) throw new Error(`${vp.name}/${key}: area header count=${state.headers}`);
                 if(key==='activity'&&!state.activity) throw new Error(`${vp.name}/activity: activity grid missing`);
                 if(key==='advancement'&&!state.advancement) throw new Error(`${vp.name}/advancement: workplace layer missing`);
-                if(key==='audit'&&!state.audit) throw new Error(`${vp.name}/audit: audit lifecycle lane missing`);
-                if(key==='action'&&!state.action) throw new Error(`${vp.name}/action: action case grid missing`);
+                if(key==='audit'){
+                  if(!state.audit) throw new Error(`${vp.name}/audit: audit lifecycle lane missing`);
+                  const flow=await page.locator('#awAudit>.awAuditLane').evaluate(el=>getComputedStyle(el,'::before').content);
+                  if(!flow.includes('Audit 실시(D-Day)')||!flow.includes('+6개월 지속관리')||!flow.includes('종료평가')) throw new Error(`${vp.name}/audit: lifecycle semantic contract=${flow}`);
+                }
+                if(key==='action'){
+                  if(!state.action) throw new Error(`${vp.name}/action: action case grid missing`);
+                  const flow=await page.locator('#awAction>.amHeroNote').evaluate(el=>getComputedStyle(el,'::before').content);
+                  for(const term of ['BEFORE','문제정의','개선조치','AFTER','효과검증','재발관리']) if(!flow.includes(term)) throw new Error(`${vp.name}/action: missing ${term} in flow ${flow}`);
+                }
                 if(key==='dashboard'){
                   if(!state.priority||!state.bridge) throw new Error(`${vp.name}/dashboard: dashboard priority/detail layer missing`);
                   const count=await page.locator('#hd20DashboardPriority .hd20HealthKpi').count();
