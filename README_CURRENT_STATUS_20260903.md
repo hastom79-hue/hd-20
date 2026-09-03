@@ -60,7 +60,9 @@ Dashboard 탭 복귀는 `#hd20DashboardPriority`를 canonical target으로 사�
 
 조건 충족수는 정확 1/2/3개로 분석하며 공식판정과 분리한다. 공식판정은 생산혁신팀 + 5S 모듈의 실제 `확정 / 보완요청 / 미확정` 값을 사용한다.
 
-라인은 명시된 구조화 필드만 사용하고 작업장명에서 임의 추정하지 않는다. 미입력은 `미분류/라인 매핑 필요`로 관리한다.
+현재 화면은 `고도화 3대 조건 → 후보/공식판정 → 운영상태 → 조건 충족 × 적용범위` 순서로 읽히도록 재정리했다. 후보/공식판정 Header에는 `조건 충족수 ≠ 공식판정`을 명시하고, 조건 충족수 열과 공식판정 열을 시각적으로 분리했다.
+
+`조건 충족 × 적용범위`는 별도 2차 분석영역으로 두고 라인/작업장/생산팀/후보/공식확정/3개 모두 충족/최근일을 함께 확인한다. 라인은 명시된 구조화 필드만 사용하고 작업장명에서 임의 추정하지 않는다. 미입력은 `미분류/라인 매핑 필요`로 관리한다.
 
 ## 6. 유지·Audit
 현재 운영 흐름:
@@ -93,7 +95,7 @@ Audit에서 생성된 개선조치는 원본 `sourceCaseId / auditDrawId / sourc
 
 `dashboard-priority-groups.css = Dashboard 업무영역 그룹 specialization`
 
-`workflow-area-density.css = ②~⑤ 업무화면 밀도/반응형 specialization`
+`workflow-area-density.css = ②~⑤ 업무화면 밀도/반응형 및 ③ 판정 계층 specialization`
 
 `maturity-condition-analysis.css = advancement analysis specialization`
 
@@ -102,7 +104,7 @@ Audit에서 생성된 개선조치는 원본 `sourceCaseId / auditDrawId / sourc
 - 구형 `*-fix.css`, `*-hotfix.css`, 다중 polish layer를 active chain에서 정리했다.
 - ②~⑤ 화면은 `업무영역 Header → Workflow/상태 → Form/Grid` 공통 구조를 사용한다.
 - ② 5S 활동은 입력 Form보다 실적/이력 영역을 넓게 배치하고 Desktop에서 등록 Form을 sticky 보조영역으로 운영한다.
-- ③ 고도화·판정은 후보/공식판정 Table을 운영상태보다 우선 배치한다.
+- ③ 고도화·판정은 후보/공식판정 Table을 운영상태보다 우선 배치하고, 조건 충족과 공식판정을 명시적으로 분리한다.
 - Table이 전체 페이지 폭을 밀지 않도록 `.awBody` 내부 가로스크롤과 셀 wrapping을 적용했다.
 - 최근 직접등록 목록은 제목 ellipsis + 날짜 고정열로 정리했다.
 - `minmax(0,1fr)` 및 `min-width:0` 기반 responsive 구조를 확대해 중첩 grid의 horizontal overflow 위험을 낮췄다.
@@ -126,6 +128,8 @@ Audit에서 생성된 개선조치는 원본 `sourceCaseId / auditDrawId / sourc
 
 Workflow Area Density 반영 HEAD `dcad24c`에서 7개 Actions가 생성되었고 failure 상태 workflow 조회 결과는 0건이었다. 확인된 Package/Runtime Smoke도 success였다.
 
+고도화·판정 계층 개편 commit `3084030`에서도 7개 Actions가 새로 시작되었으며 현재 자동검증 진행 중이다.
+
 ## 10. 2026-09-03 핵심 변경
 - duplicate `approved-landing-v2.css/js` active reference 제거
 - `approved-landing-v2.js/css` 파일 자체 삭제
@@ -137,6 +141,7 @@ Workflow Area Density 반영 HEAD `dcad24c`에서 7개 Actions가 생성되었�
 - KPI 그룹별 해당 업무화면 직접 이동 추가
 - ②~⑤ 업무화면의 입력/현황/Table 정보밀도 재정렬
 - 업무 Table 독립 overflow 및 셀 wrapping 안정화
+- ③ 고도화·판정의 조건 충족 / 공식판정 / 운영상태 / 적용범위 시각계층 재정렬
 - `styles.css`를 legacy visual layer에서 structural foundation으로 축소
 - 전용 Dashboard Canonical Smoke 추가
 - 상세 개발일지: `DEVELOPMENT_LOG_20260903_DASHBOARD_CANONICALIZATION.md`
