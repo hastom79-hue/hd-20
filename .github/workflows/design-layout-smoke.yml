@@ -12,7 +12,7 @@ jobs:
         with:
           node-version: '20'
       - run: npm init -y >/dev/null 2>&1 && npm i playwright@1.55.0 >/dev/null 2>&1 && npx playwright install chromium --with-deps >/dev/null 2>&1
-      - name: Verify five-area desktop and mobile layout
+      - name: Verify five-area desktop, mobile and modal layout
         run: |
           python3 -m http.server 4173 >/tmp/hd20-http.log 2>&1 &
           SERVER_PID=$!
@@ -29,7 +29,6 @@ jobs:
             ];
             const tabs=['dashboard','activity','advancement','audit','action'];
             const expectedKpis=['공식 판정 완료율','평균 판정 Lead Time','고도화 수준','Audit 후 6개월 유지율','Audit 부적합 재발률','기한 내 개선조치 완료율'];
-            const rectOk=r=>r.width>0&&r.height>0&&r.left>=-2&&r.right<=innerWidth+2;
             for(const vp of cases){
               const page=await browser.newPage({viewport:{width:vp.width,height:vp.height}});
               const errors=[]; page.on('pageerror',e=>errors.push(String(e))); page.on('dialog',d=>d.accept());
@@ -68,6 +67,12 @@ jobs:
                   throw new Error(`${vp.name}/${key}: dashboard-only layer leaked priority=${state.priority} bridge=${state.bridge} labels=${state.labels}`);
                 }
               }
+              await page.locator('#openMaster').click();
+              await page.waitForTimeout(150);
+              const modal=await page.evaluate(()=>{const overlay=document.querySelector('#masterModal'),box=document.querySelector('#masterModal .modalBox');const r=box?.getBoundingClientRect();const s=overlay?getComputedStyle(overlay):null;return {visible:!!overlay&&s.display!=='none'&&overlay.getClientRects().length>0,left:r?.left??-1,right:r?.right??-1,top:r?.top??-1,bottom:r?.bottom??-1,width:r?.width??0,height:r?.height??0,viewportW:innerWidth,viewportH:innerHeight};});
+              if(!modal.visible) throw new Error(`${vp.name}/modal: master modal not visible`);
+              if(modal.width<=0||modal.height<=0||modal.left<-2||modal.right>modal.viewportW+2||modal.top<-2||modal.bottom>modal.viewportH+2) throw new Error(`${vp.name}/modal: box out of viewport ${JSON.stringify(modal)}`);
+              await page.locator('#closeMaster').click();
               if(errors.length) throw new Error(`${vp.name}: page errors: ${errors.join(' | ')}`);
               await page.close();
             }
