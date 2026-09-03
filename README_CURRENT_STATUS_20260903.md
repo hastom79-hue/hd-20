@@ -62,7 +62,7 @@ Dashboard 탭 복귀는 `#hd20DashboardPriority`를 canonical target으로 사�
 
 현재 화면은 `고도화 3대 조건 → 후보/공식판정 → 운영상태 → 조건 충족 × 적용범위` 순서로 읽히도록 재정리했다. 후보/공식판정 Header에는 `조건 충족수 ≠ 공식판정`을 명시하고, 조건 충족수 열과 공식판정 열을 시각적으로 분리했다.
 
-`조건 충족 × 적용범위`는 별도 2차 분석영역으로 두고 라인/작업장/생산팀/후보/공식확정/3개 모두 충족/최근일을 함께 확인한다. 라인은 명시된 구조화 필드만 사용하고 작업장명에서 임의 추정하지 않는다. 미입력은 `미분류/라인 매핑 필요`로 관리한다.
+`조건 충족 × 적용범위`는 별도 2차 분석영역으로 두고 라인/작업장/생산팀/후보/공식확정/3개 모두 충족/최근일을 함께 확인한다. 라인은 명시된 구조화 필드만 사용하고 작업장명에서 임의 추정하지 않는다. 미입력은 실제 화면에서 `미분류/라인 매핑 필요`로 표시한다.
 
 ## 6. 유지·Audit
 현재 운영 흐름:
@@ -130,9 +130,11 @@ Audit에서 생성된 개선조치는 원본 `sourceCaseId / auditDrawId / sourc
 
 `dashboard-canonical-smoke.yml`은 Desktop `1440×1000`, Mobile `375×812`에서 duplicate approved landing 0개, canonical priority 1개, 운영 KPI 6개, operational bridge 1개, 성과 KPI 5개, horizontal overflow/pageerror 없음을 검증한다.
 
+`design-layout-smoke.yml`은 5개 업무영역을 `1440×1000 / 1152×800 / 900×900 / 375×812`에서 횡단 검증한다. `1152×800`은 1440px급 화면에서 브라우저 125% 확대 사용 시와 유사한 CSS viewport 검증용이다. 각 탭의 active state, horizontal overflow, 단일 Area Header, 핵심 화면 Layer 존재, Dashboard 전용 Layer 누출 여부를 검사한다.
+
 `browser-smoke.yml`도 동일한 canonical dashboard 계약을 사용하도록 수정했다. 더 이상 `.hd20ApprovedLanding` 존재를 요구하지 않는다.
 
-④ 유지·Audit 개편 이후 HEAD `031f068`에서 Runtime Smoke와 Package Source가 success로 확인되었다. ⑤ 개선조치 계층 개편은 commit `0d53b86`에 반영했으며 후속 자동검증 대상이다.
+⑤ 개선조치 개편 HEAD `e17e561`에서 Runtime Smoke와 Package Source는 success로 확인됐다. 확대된 5영역 Layout Smoke는 commit `ec2ceb1`부터 실행된다.
 
 ## 10. 2026-09-03 핵심 변경
 - duplicate `approved-landing-v2.css/js` active reference 제거
@@ -148,6 +150,8 @@ Audit에서 생성된 개선조치는 원본 `sourceCaseId / auditDrawId / sourc
 - ③ 고도화·판정의 조건 충족 / 공식판정 / 운영상태 / 적용범위 시각계층 재정렬
 - ④ 유지·Audit의 D-Day / 달력 +6개월 / 종료평가 상태 시각계층 재정렬
 - ⑤ 개선조치의 BEFORE/문제정의/담당/조치/AFTER/효과확인 폐쇄루프 시각계층 재정렬
+- 5영역 Layout Smoke를 1440/1152/900/375 viewport로 확대
+- 라인 미매핑 표시를 `미분류/라인 매핑 필요`로 통일
 - `styles.css`를 legacy visual layer에서 structural foundation으로 축소
 - 전용 Dashboard Canonical Smoke 추가
 - 상세 개발일지: `DEVELOPMENT_LOG_20260903_DASHBOARD_CANONICALIZATION.md`
