@@ -41,10 +41,10 @@ jobs:
               const page=await browser.newPage({viewport:{width:1440,height:1000}}),errors=[];
               page.on('pageerror',e=>errors.push(String(e)));page.on('dialog',d=>d.accept());
               await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'networkidle',timeout:30000});
-              await page.waitForSelector('.beginnerNav');await page.waitForSelector('.hd20ApprovedLanding');await page.waitForTimeout(700);
-              const main=await page.evaluate(()=>({nav:[...document.querySelectorAll('.beginnerNav button[data-key]')].map(x=>x.dataset.key),kpi:document.querySelectorAll('.hd20ALKpi').length,metric:document.querySelectorAll('.hd20ALMetric').length,landing:!!document.querySelector('.hd20ApprovedLanding'),bridge:!!document.getElementById('hd20OperationalBridge'),text:document.body.innerText}));
+              await page.waitForSelector('.beginnerNav');await page.waitForSelector('#hd20DashboardPriority');await page.waitForSelector('#hd20OperationalBridge');await page.waitForTimeout(700);
+              const main=await page.evaluate(()=>({nav:[...document.querySelectorAll('.beginnerNav button[data-key]')].map(x=>x.dataset.key),kpi:document.querySelectorAll('.cards .kpi').length,metric:document.querySelectorAll('.hd20HealthKpi').length,priority:document.querySelectorAll('#hd20DashboardPriority').length,legacyLanding:document.querySelectorAll('.hd20ApprovedLanding').length,bridge:!!document.getElementById('hd20OperationalBridge'),text:document.body.innerText}));
               if(JSON.stringify(main.nav)!==JSON.stringify(expected))throw new Error('Main nav mismatch '+JSON.stringify(main.nav));
-              if(main.kpi!==5||main.metric!==6||!main.landing||!main.bridge)throw new Error('Main dashboard contract mismatch');
+              if(main.kpi!==5||main.metric!==6||main.priority!==1||main.legacyLanding!==0||!main.bridge)throw new Error('Main dashboard contract mismatch '+JSON.stringify(main));
               if(/1개월 점검|3개월 AUDIT|6개월 AUDIT/.test(main.text))throw new Error('Legacy Audit label on main');
               if(errors.length)throw new Error('Main page errors '+errors.join(' | '));
 
@@ -56,7 +56,7 @@ jobs:
               await page.screenshot({path:'artifacts/advancement-canonical.png',fullPage:true});
 
               for(const key of ['activity','audit','action','dashboard']){await page.click(`.beginnerNav button[data-key="${key}"]`);await page.waitForTimeout(120)}
-              evidence.main={nav:main.nav,kpi:main.kpi,metric:main.metric};
+              evidence.main={nav:main.nav,kpi:main.kpi,metric:main.metric,priority:main.priority,legacyLanding:main.legacyLanding};
               await page.screenshot({path:'artifacts/main-dashboard.png',fullPage:true});
 
               await page.evaluate(()=>{
