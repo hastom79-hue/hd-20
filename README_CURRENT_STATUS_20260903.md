@@ -75,11 +75,23 @@ Audit에서 생성된 개선조치는 원본 `sourceCaseId / auditDrawId / sourc
 ## 8. Design System
 공통 표현은 `hd20-overhaul.css`와 `hd20-five-area.css`의 canonical layer를 사용한다.
 
-- JS runtime `<style>` 삽입 제거 진행 완료: KPI modal / Table Enhancement / Expert AI
-- 구형 `*-fix.css`, `*-hotfix.css`, 다중 polish layer를 active chain에서 정리
-- ②~⑤ 화면: `업무영역 Header → Workflow/상태 → Form/Grid`
-- Modal/Table/AI의 공통 시각규칙을 Design System으로 통합
-- Mobile/PC responsive 회귀검증 운영
+현재 스타일 책임은 다음처럼 정리했다.
+
+`styles.css = structural baseline`
+
+`hd20-overhaul.css = global canonical Design System`
+
+`hd20-five-area.css = 5-area workflow-specific layout`
+
+`maturity-condition-analysis.css = advancement analysis specialization`
+
+- `styles.css`에 남아 있던 큰 폰트, 구형 card visual theme, 고정 폭 중심 grid, 중복 hover/animation을 제거하고 구조용 baseline으로 축소했다.
+- JS runtime `<style>` 삽입 제거 완료: KPI modal / Table Enhancement / Expert AI / Workflow foundation.
+- 구형 `*-fix.css`, `*-hotfix.css`, 다중 polish layer를 active chain에서 정리했다.
+- ②~⑤ 화면은 `업무영역 Header → Workflow/상태 → Form/Grid` 공통 구조를 사용한다.
+- `minmax(0,1fr)` 및 `min-width:0` 기반 responsive 구조를 확대해 중첩 grid의 horizontal overflow 위험을 낮췄다.
+- Modal/Table/AI의 공통 시각규칙을 Design System으로 통합했다.
+- 새 `*-fix.css`, `*-hotfix.css`, `*-polish.css`는 추가하지 않는다.
 
 ## 9. 자동 회귀검증
 현재 주요 GitHub Actions:
@@ -99,5 +111,7 @@ Audit에서 생성된 개선조치는 원본 `sourceCaseId / auditDrawId / sourc
 - Dashboard 탭 복귀 target을 canonical priority layer로 전환
 - Operational Bridge를 `.cards` 기준으로 고정
 - 단일 Dashboard information hierarchy 확립
+- `styles.css`를 legacy visual layer에서 structural foundation으로 축소
 - 전용 Dashboard Canonical Smoke 추가
 - 상세 개발일지: `DEVELOPMENT_LOG_20260903_DASHBOARD_CANONICALIZATION.md`
+- 상세 개발일지: `DEVELOPMENT_LOG_20260903_BASELINE_CSS_CONSOLIDATION.md`
