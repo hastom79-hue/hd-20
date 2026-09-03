@@ -82,7 +82,46 @@
 #awAudit>.awAuditLane span{display:block;max-width:80%;font-size:10.5px!important;font-weight:800!important;color:#64747d}
 #awAudit>.awAuditLane>div:nth-child(2) span:after{content:' · Audit 실시일부터 +6개월';display:block;margin-top:3px;color:#8a7347;font-size:9px;font-weight:700}
 #awAudit>.awAuditLane>div:nth-child(3) span:after{content:' · 6개월 종료 후 최종 확인';display:block;margin-top:3px;color:#8a7347;font-size:9px;font-weight:700}
+#awAction{position:relative}
+#awAction>.awHero{border-left-width:4px!important;background:linear-gradient(90deg,#fff6f5 0,#fff 42%)!important}
+#awAction>.amHeroNote{position:relative;margin:8px 0 10px!important;padding:28px 12px 9px!important;border:1px solid #ead9d7!important;border-left:3px solid #b34e47!important;background:#fffafa!important;color:#6c5b5a!important;font-size:10.5px!important;line-height:1.45!important}
+#awAction>.amHeroNote:before{content:'BEFORE → 문제정의 → 담당팀·팀장 → 개선조치 → AFTER → 효과검증 → 재발관리';position:absolute;left:12px;top:8px;color:#9b4540;font-size:10px;font-weight:950;letter-spacing:-.01em}
+#awAction>.amSummary{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:8px!important;margin:8px 0 10px!important}
+#awAction>.amSummary>div{min-width:0;min-height:68px!important;padding:9px 10px!important;border-radius:8px!important;border-top-width:2px!important}
+#awAction>.amSummary small{font-size:10px!important;font-weight:800!important}
+#awAction>.amSummary b{font-size:18px!important}
+#awAction>.amGrid{grid-template-columns:minmax(320px,.82fr) minmax(0,1.18fr)!important;gap:10px!important;align-items:start}
+#awAction>.amGrid>.amCard:first-child{position:sticky;top:86px;border-top:2px solid #b34e47!important}
+#awAction>.amGrid>.amCard:last-child{border-top:2px solid #6d8797!important}
+#awAction .amHead{display:flex;align-items:center;min-height:39px!important;padding:8px 11px!important;font-size:12px!important}
+#awAction>.amGrid>.amCard:first-child>.amHead:after{content:'Case 생성';margin-left:auto;color:#a4504a;font-size:9px;font-weight:900}
+#awAction>.amGrid>.amCard:last-child>.amHead:after{content:'기한·상태 관리';margin-left:auto;color:#6d8290;font-size:9px;font-weight:900}
+#awAction .amBody{min-width:0;padding:11px 12px!important}
+#awAction .amForm{gap:8px!important}
+#awAction .amForm label{font-size:10.5px!important;color:#5d707d!important}
+#awAction .amForm input,#awAction .amForm select,#awAction .amForm textarea{margin-top:4px!important;min-height:34px!important;padding:7px 8px!important;border-radius:7px!important}
+#awAction .amForm textarea{min-height:66px!important;resize:vertical}
+#awAction .amDrop{min-height:82px!important}
+#awAction .amActions{gap:6px!important;margin-top:8px!important;padding-top:8px;border-top:1px solid #edf1f3}
+#awAction .amBtn{padding:7px 9px!important;font-size:10.5px!important}
+#awAction .amBackendNote{margin-top:8px!important;padding:7px 9px!important;font-size:9.5px!important;line-height:1.45!important}
+#awAction .amHead2{margin:11px 0 6px!important;padding-top:9px!important;font-size:11px!important}
+#awAction .amCasesScroll{max-width:100%;overflow:auto;overscroll-behavior-inline:contain}
+#awAction .amCases{min-width:700px;font-size:10.5px!important}
+#awAction .amCases th{padding:7px 8px!important;background:#f5f8fa!important;color:#506a7a!important;font-size:10px!important}
+#awAction .amCases td{padding:7px 8px!important;vertical-align:middle}
+#awAction .amCases td:nth-child(4),#awAction .amCases td:nth-child(5){font-weight:850;white-space:nowrap}
+#awAction .amMailBtns{gap:4px!important;flex-wrap:nowrap!important}
+#awAction .amMailBtns .amBtn{padding:5px 7px!important;font-size:9.5px!important}
+#awAction>.amResponse{margin-top:10px!important;border-top:3px solid #3b8a61!important}
+#awAction>.amResponse>.amHead{background:#f3faf6!important;color:#315f49!important}
+#awAction>.amResponse>.amHead:after{content:'AFTER → 효과확인';margin-left:auto;color:#4e7c65;font-size:9px;font-weight:900}
+#awAction>.amResponse .amInfo{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:6px!important}
+#awAction>.amResponse .amInfo>div{min-width:0;padding:7px 8px!important}
+#awAction>.amResponse .amInfo b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#awAction>.amMaster{border-top:2px solid #8998a2!important}
+#awAction>.amMaster>.amHead:after{content:'지원 기준정보';margin-left:auto;color:#7c8b94;font-size:9px;font-weight:850}
 #awAction .awKpis{grid-template-columns:repeat(4,minmax(0,1fr))!important}
-@media(max-width:1100px){.awScreen[data-area] .awGrid,.awScreen[data-area] .awSplit,#awWorkplace .awSplit{grid-template-columns:1fr!important}.awScreen[data-area="activity"] .awGrid>.awCard:first-child{position:static}.awScreen[data-area] .awTable{width:max(100%,760px)}#awWorkplace .awSplit>.awCard:last-child .awAuditLane{grid-template-columns:repeat(4,minmax(0,1fr))!important}}
-@media(max-width:700px){.awScreen[data-area]>.awHero{align-items:flex-start!important;gap:8px!important}.awScreen[data-area]>.awHero .awActions{margin-left:0!important}.awScreen[data-area] .awFlow,.awScreen[data-area] .awKpis,.awScreen[data-area] .awAuditLane,#awAction .awKpis,#awWorkplace .awSplit>.awCard:last-child .awAuditLane{grid-template-columns:repeat(2,minmax(0,1fr))!important}.awScreen[data-area] .awCriteriaBanner{display:block}.awScreen[data-area] .awCriteriaBanner>span{display:block;margin-top:5px}.awScreen[data-area] .awTable{width:max(100%,680px)}#awWorkplace .awSplit>.awCard:first-child .awHead:after{display:none}#awAudit>.awAuditLane{grid-template-columns:repeat(2,minmax(0,1fr))!important;padding-top:30px}}
-@media(max-width:440px){.awScreen[data-area] .awFlow,.awScreen[data-area] .awKpis,.awScreen[data-area] .awAuditLane,#awAction .awKpis,#awWorkplace .awSplit>.awCard:last-child .awAuditLane{grid-template-columns:1fr!important}#awAudit>.awAuditLane{grid-template-columns:1fr!important;padding-top:42px}}
+@media(max-width:1100px){.awScreen[data-area] .awGrid,.awScreen[data-area] .awSplit,#awWorkplace .awSplit{grid-template-columns:1fr!important}.awScreen[data-area="activity"] .awGrid>.awCard:first-child,#awAction>.amGrid>.amCard:first-child{position:static}.awScreen[data-area] .awTable{width:max(100%,760px)}#awWorkplace .awSplit>.awCard:last-child .awAuditLane{grid-template-columns:repeat(4,minmax(0,1fr))!important}#awAction>.amGrid{grid-template-columns:1fr!important}}
+@media(max-width:700px){.awScreen[data-area]>.awHero{align-items:flex-start!important;gap:8px!important}.awScreen[data-area]>.awHero .awActions{margin-left:0!important}.awScreen[data-area] .awFlow,.awScreen[data-area] .awKpis,.awScreen[data-area] .awAuditLane,#awAction .awKpis,#awWorkplace .awSplit>.awCard:last-child .awAuditLane,#awAction>.amSummary{grid-template-columns:repeat(2,minmax(0,1fr))!important}.awScreen[data-area] .awCriteriaBanner{display:block}.awScreen[data-area] .awCriteriaBanner>span{display:block;margin-top:5px}.awScreen[data-area] .awTable{width:max(100%,680px)}#awWorkplace .awSplit>.awCard:first-child .awHead:after{display:none}#awAudit>.awAuditLane{grid-template-columns:repeat(2,minmax(0,1fr))!important;padding-top:30px}#awAction>.amHeroNote{padding-top:40px!important}#awAction .amPhoto,#awAction>.amResponse .amInfo{grid-template-columns:1fr!important}}
+@media(max-width:440px){.awScreen[data-area] .awFlow,.awScreen[data-area] .awKpis,.awScreen[data-area] .awAuditLane,#awAction .awKpis,#awWorkplace .awSplit>.awCard:last-child .awAuditLane,#awAction>.amSummary{grid-template-columns:1fr!important}#awAudit>.awAuditLane{grid-template-columns:1fr!important;padding-top:42px}#awAction>.amHeroNote{padding-top:52px!important}}
