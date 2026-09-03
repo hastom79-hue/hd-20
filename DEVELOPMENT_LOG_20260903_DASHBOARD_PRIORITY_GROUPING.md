@@ -20,6 +20,17 @@ Canonical Dashboard 정리 이후 운영 KPI 6종이 동일한 카드 6개로 �
 - `index.html`
   - 위 specialization stylesheet를 canonical five-area CSS 다음에 로드한다.
 
+## Dashboard 균형 재조정
+Header/Navigation 공통 스케일 정규화 후 ① 통합 대시보드 본체도 같은 밀도 기준으로 재조정했다.
+- 운영 KPI 그룹 비율을 `고도화·판정 > 유지·Audit > 개선조치` 순으로 실제 지표 수에 맞춰 조정했다.
+- 그룹 Header 높이를 88px에서 72px 수준으로 낮추고 KPI 최소높이도 축소해 첫 화면에서 운영상태가 과도하게 세로로 늘어나지 않도록 했다.
+- 성과 보조 KPI 5종은 높이·아이콘·값 크기를 한 단계 축소해 운영 KPI보다 시각 우선순위가 높아지지 않도록 했다.
+- 메인 차트 : 우측 Summary 비율을 재조정해 팀별 실행/고도화 현황을 더 넓게 확보했다.
+- 우측 `Audit 후 6개월 지속관리 / Action Summary`는 card head/body와 row 높이를 압축해 보조 정보 성격을 명확히 했다.
+- 하단 `3대 판정기준 / 고도화 추이` 비율과 카드 높이를 조정해 Dashboard 전체의 좌우 균형을 개선했다.
+- 1100px 이하에서는 메인/하단 영역을 1열로 전환하고 우측 Summary는 2열로 병렬 배치하며, Mobile에서는 다시 1열로 전환한다.
+- Dashboard 데이터, KPI 산식, 카드 라벨, 대상 업무영역 이동 로직은 변경하지 않았다.
+
 ## 회귀 원칙
 - 운영 KPI는 기존 6종 그대로 유지한다.
 - `HD20KPIData.operational()`을 단일 Source로 유지한다.
@@ -28,9 +39,10 @@ Canonical Dashboard 정리 이후 운영 KPI 6종이 동일한 카드 6개로 �
 - 공식 판정과 3개 조건 충족수는 혼합하지 않는다.
 
 ## 직전 검증
-직전 HEAD `0e6e2d2e...`에서 Browser Smoke의 Chromium 계약 테스트는 성공했고, 해당 HEAD의 failure workflow 조회 결과는 0건이었다.
+직전 Header/Navigation 정규화 HEAD `5068a62`에서 Package Source와 Runtime Smoke가 success로 확인됐다.
 
 ## 이번 단계 Commit
 - `4a91327` — 운영 KPI 업무영역 그룹화
 - `7529e30` — 그룹형 Dashboard layout CSS 추가
 - `667f05b` — index에서 그룹형 layout 활성화
+- `4e53935` — Dashboard KPI/차트/Summary/하단영역 시각 균형 재조정
