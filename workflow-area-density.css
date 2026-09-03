@@ -1,0 +1,43 @@
+/* HD-20 workflow area density — 2026-09-03
+   Presentation only. No business rules, thresholds or data semantics. */
+.awScreen[data-area]>.hd20AreaHeader{margin-bottom:8px}
+.awScreen[data-area]>.awHero{position:relative;min-height:54px!important;padding:9px 12px 9px 15px!important;border-left:3px solid #267aa2!important}
+.awScreen[data-area="audit"]>.awHero{border-left-color:#b77a1b!important}
+.awScreen[data-area="action"]>.awHero{border-left-color:#b34e47!important}
+.awScreen[data-area]>.awHero h2{font-size:15px!important;font-weight:900!important;letter-spacing:-.02em}
+.awScreen[data-area]>.awHero p{max-width:780px;line-height:1.4!important}
+.awScreen[data-area] .awFlow{counter-reset:workflow-step}
+.awScreen[data-area] .awStep{min-height:62px!important;padding:9px 11px 9px 39px!important}
+.awScreen[data-area] .awStep:before{counter-increment:workflow-step;content:counter(workflow-step);position:absolute;left:10px;top:10px;width:20px;height:20px;display:grid;place-items:center;border-radius:6px;background:#edf5f8;color:#246786;font-size:9px;font-weight:900}
+.awScreen[data-area="audit"] .awStep:before{background:#fff6e7;color:#996314}
+.awScreen[data-area="action"] .awStep:before{background:#fff0ee;color:#a44841}
+.awScreen[data-area] .awStep b{font-size:12px!important}
+.awScreen[data-area] .awStep small{margin-top:2px!important}
+.awScreen[data-area] .awGrid{grid-template-columns:minmax(300px,.78fr) minmax(0,1.22fr)!important;align-items:start}
+.awScreen[data-area] .awSplit{grid-template-columns:minmax(0,1.45fr) minmax(260px,.55fr)!important;align-items:start}
+.awScreen[data-area="activity"] .awGrid>.awCard:first-child{position:sticky;top:86px}
+.awScreen[data-area] .awCard{border:1px solid #dfe8ed!important}
+.awScreen[data-area] .awHead{display:flex;align-items:center;min-height:40px!important;padding:8px 12px!important;font-size:12.5px!important;color:#294b61!important}
+.awScreen[data-area] .awBody{padding:11px 12px!important}
+.awScreen[data-area] .awForm label{font-size:10.5px!important;font-weight:800!important;color:#536d7e!important}
+.awScreen[data-area] .awForm input:not([type="checkbox"]),.awScreen[data-area] .awForm select,.awScreen[data-area] .awForm textarea{margin-top:4px;min-height:34px;border-radius:7px!important}
+.awScreen[data-area] .awForm textarea{min-height:64px!important;resize:vertical}
+.awScreen[data-area] .awPhoto{gap:8px!important}
+.awScreen[data-area] .awDrop{min-height:82px!important;padding:8px!important;background:#fafcfd!important}
+.awScreen[data-area] .awKpis,.awScreen[data-area] .awAuditLane{margin-bottom:8px!important}
+.awScreen[data-area] .awKpi,.awScreen[data-area] .awAuditLane>div{min-height:66px!important;padding:9px 10px!important}
+.awScreen[data-area] .awKpi b,.awScreen[data-area] .awAuditLane b{font-size:18px!important}
+.awScreen[data-area] .awTable{table-layout:auto}
+.awScreen[data-area] .awTable th{white-space:nowrap;background:#f5f8fa!important;color:#496477!important;font-size:10.5px!important}
+.awScreen[data-area] .awTable td{vertical-align:top;line-height:1.4}
+.awScreen[data-area] .awTable tbody tr:hover td{background:#f8fbfd}
+.awScreen[data-area] .awEmpty{padding:22px 12px!important;text-align:center!important;color:#7b8f9c!important}
+.awScreen[data-area] .awRecentList{margin-top:10px!important;padding-top:8px!important;border-top:1px solid #edf2f5}
+.awScreen[data-area] .awCriteriaBanner{display:flex;align-items:flex-start;gap:12px}
+.awScreen[data-area] .awCriteriaBanner>b{flex:0 0 auto}
+.awScreen[data-area] .awCriteriaBanner>span{min-width:0;line-height:1.45}
+#awWorkplace .awSplit>.awCard:last-child .awAuditLane{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+#awAudit .awAuditLane,#awAction .awKpis{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+@media(max-width:1100px){.awScreen[data-area] .awGrid,.awScreen[data-area] .awSplit{grid-template-columns:1fr!important}.awScreen[data-area="activity"] .awGrid>.awCard:first-child{position:static}.awScreen[data-area] .awTable{min-width:760px}.awScreen[data-area] .awBody:has(>.awTable){overflow-x:auto}}
+@media(max-width:700px){.awScreen[data-area]>.awHero{align-items:flex-start!important;gap:8px!important}.awScreen[data-area]>.awHero .awActions{margin-left:0!important}.awScreen[data-area] .awFlow,.awScreen[data-area] .awKpis,.awScreen[data-area] .awAuditLane,#awAudit .awAuditLane,#awAction .awKpis{grid-template-columns:repeat(2,minmax(0,1fr))!important}.awScreen[data-area] .awCriteriaBanner{display:block}.awScreen[data-area] .awCriteriaBanner>span{display:block;margin-top:5px}.awScreen[data-area] .awTable{min-width:680px}}
+@media(max-width:440px){.awScreen[data-area] .awFlow,.awScreen[data-area] .awKpis,.awScreen[data-area] .awAuditLane,#awAudit .awAuditLane,#awAction .awKpis{grid-template-columns:1fr!important}}
