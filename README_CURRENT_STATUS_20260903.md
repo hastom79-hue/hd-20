@@ -82,7 +82,9 @@ Risk 정책 미설정 시 균등 랜덤이며, Audit 표본수는 통합기준�
 
 `BEFORE → 문제정의 → 담당팀/팀장 → 개선조치 → AFTER → 효과검증 → 재발관리`
 
-Audit에서 생성된 개선조치는 원본 `sourceCaseId / auditDrawId / sourceStage`를 보존한다.
+현재 화면은 이 폐쇄루프를 상단에 명시하고 `전체 요청 / 완료 / 진행중 / 기한경과 → Case 생성 → 기한·상태 관리 → AFTER·효과확인` 순서로 읽히도록 재정리했다. Desktop에서는 Case 현황을 신규 등록보다 넓게 배치하고, 회신/AFTER Evidence는 완료 단계로 별도 구분한다.
+
+Audit에서 생성된 개선조치는 원본 `sourceCaseId / auditDrawId / sourceStage`를 보존한다. `hd20ActionCasesV2`와 기존 자동기한·메일·Outlook·자동발송 기능은 변경하지 않았다.
 
 ## 8. Design System
 공통 표현은 `hd20-overhaul.css`와 `hd20-five-area.css`의 canonical layer를 사용한다.
@@ -97,7 +99,7 @@ Audit에서 생성된 개선조치는 원본 `sourceCaseId / auditDrawId / sourc
 
 `dashboard-priority-groups.css = Dashboard 업무영역 그룹 specialization`
 
-`workflow-area-density.css = ②~⑤ 업무화면 밀도/반응형 및 ③ 판정·④ Audit 계층 specialization`
+`workflow-area-density.css = ②~⑤ 업무화면 밀도/반응형 및 ③ 판정·④ Audit·⑤ 개선조치 계층 specialization`
 
 `maturity-condition-analysis.css = advancement analysis specialization`
 
@@ -108,6 +110,7 @@ Audit에서 생성된 개선조치는 원본 `sourceCaseId / auditDrawId / sourc
 - ② 5S 활동은 입력 Form보다 실적/이력 영역을 넓게 배치하고 Desktop에서 등록 Form을 sticky 보조영역으로 운영한다.
 - ③ 고도화·판정은 후보/공식판정 Table을 운영상태보다 우선 배치하고, 조건 충족과 공식판정을 명시적으로 분리한다.
 - ④ 유지·Audit은 `대상 추출 → D-Day 실시 → +6개월 지속관리 → 종료평가` 흐름과 실제 4개 운영상태를 한 방향으로 읽도록 정리했다.
+- ⑤ 개선조치는 Case 생성/현황/회신을 분리하고 BEFORE→AFTER 폐쇄루프를 화면 상단 기준축으로 사용한다.
 - Table이 전체 페이지 폭을 밀지 않도록 `.awBody` 내부 가로스크롤과 셀 wrapping을 적용했다.
 - 최근 직접등록 목록은 제목 ellipsis + 날짜 고정열로 정리했다.
 - `minmax(0,1fr)` 및 `min-width:0` 기반 responsive 구조를 확대해 중첩 grid의 horizontal overflow 위험을 낮췄다.
@@ -129,9 +132,7 @@ Audit에서 생성된 개선조치는 원본 `sourceCaseId / auditDrawId / sourc
 
 `browser-smoke.yml`도 동일한 canonical dashboard 계약을 사용하도록 수정했다. 더 이상 `.hd20ApprovedLanding` 존재를 요구하지 않는다.
 
-Workflow Area Density 반영 HEAD `dcad24c`에서 7개 Actions가 생성되었고 failure 상태 workflow 조회 결과는 0건이었다. 확인된 Package/Runtime Smoke도 success였다.
-
-고도화·판정 계층 개편 commit `3084030`에서도 7개 Actions가 새로 시작되었다. ④ 유지·Audit 계층 개편은 commit `597651b`에 반영했으며 후속 자동검증 대상이다.
+④ 유지·Audit 개편 이후 HEAD `031f068`에서 Runtime Smoke와 Package Source가 success로 확인되었다. ⑤ 개선조치 계층 개편은 commit `0d53b86`에 반영했으며 후속 자동검증 대상이다.
 
 ## 10. 2026-09-03 핵심 변경
 - duplicate `approved-landing-v2.css/js` active reference 제거
@@ -146,6 +147,7 @@ Workflow Area Density 반영 HEAD `dcad24c`에서 7개 Actions가 생성되었�
 - 업무 Table 독립 overflow 및 셀 wrapping 안정화
 - ③ 고도화·판정의 조건 충족 / 공식판정 / 운영상태 / 적용범위 시각계층 재정렬
 - ④ 유지·Audit의 D-Day / 달력 +6개월 / 종료평가 상태 시각계층 재정렬
+- ⑤ 개선조치의 BEFORE/문제정의/담당/조치/AFTER/효과확인 폐쇄루프 시각계층 재정렬
 - `styles.css`를 legacy visual layer에서 structural foundation으로 축소
 - 전용 Dashboard Canonical Smoke 추가
 - 상세 개발일지: `DEVELOPMENT_LOG_20260903_DASHBOARD_CANONICALIZATION.md`
