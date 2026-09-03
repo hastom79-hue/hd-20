@@ -93,12 +93,18 @@ Audit에서 생성된 개선조치는 원본 `sourceCaseId / auditDrawId / sourc
 
 `dashboard-priority-groups.css = Dashboard 업무영역 그룹 specialization`
 
+`workflow-area-density.css = ②~⑤ 업무화면 밀도/반응형 specialization`
+
 `maturity-condition-analysis.css = advancement analysis specialization`
 
 - `styles.css`에 남아 있던 큰 폰트, 구형 card visual theme, 고정 폭 중심 grid, 중복 hover/animation을 제거하고 구조용 baseline으로 축소했다.
 - JS runtime `<style>` 삽입 제거 완료: KPI modal / Table Enhancement / Expert AI / Workflow foundation.
 - 구형 `*-fix.css`, `*-hotfix.css`, 다중 polish layer를 active chain에서 정리했다.
 - ②~⑤ 화면은 `업무영역 Header → Workflow/상태 → Form/Grid` 공통 구조를 사용한다.
+- ② 5S 활동은 입력 Form보다 실적/이력 영역을 넓게 배치하고 Desktop에서 등록 Form을 sticky 보조영역으로 운영한다.
+- ③ 고도화·판정은 후보/공식판정 Table을 운영상태보다 우선 배치한다.
+- Table이 전체 페이지 폭을 밀지 않도록 `.awBody` 내부 가로스크롤과 셀 wrapping을 적용했다.
+- 최근 직접등록 목록은 제목 ellipsis + 날짜 고정열로 정리했다.
 - `minmax(0,1fr)` 및 `min-width:0` 기반 responsive 구조를 확대해 중첩 grid의 horizontal overflow 위험을 낮췄다.
 - Modal/Table/AI의 공통 시각규칙을 Design System으로 통합했다.
 - 새 `*-fix.css`, `*-hotfix.css`, `*-polish.css`는 추가하지 않는다.
@@ -118,7 +124,7 @@ Audit에서 생성된 개선조치는 원본 `sourceCaseId / auditDrawId / sourc
 
 `browser-smoke.yml`도 동일한 canonical dashboard 계약을 사용하도록 수정했다. 더 이상 `.hd20ApprovedLanding` 존재를 요구하지 않는다.
 
-Dashboard Priority Grouping 반영 HEAD `10488bc`에서 7개 Actions가 생성되었고 확인된 runtime smoke 및 dashboard canonical smoke는 success 상태다.
+Workflow Area Density 반영 HEAD `dcad24c`에서 7개 Actions가 생성되었고 failure 상태 workflow 조회 결과는 0건이었다. 확인된 Package/Runtime Smoke도 success였다.
 
 ## 10. 2026-09-03 핵심 변경
 - duplicate `approved-landing-v2.css/js` active reference 제거
@@ -129,9 +135,12 @@ Dashboard Priority Grouping 반영 HEAD `10488bc`에서 7개 Actions가 생성�
 - 단일 Dashboard information hierarchy 확립
 - 운영 KPI 6종을 고도화·판정 / 유지·Audit / 개선조치 업무영역으로 재그룹화
 - KPI 그룹별 해당 업무화면 직접 이동 추가
+- ②~⑤ 업무화면의 입력/현황/Table 정보밀도 재정렬
+- 업무 Table 독립 overflow 및 셀 wrapping 안정화
 - `styles.css`를 legacy visual layer에서 structural foundation으로 축소
 - 전용 Dashboard Canonical Smoke 추가
 - 상세 개발일지: `DEVELOPMENT_LOG_20260903_DASHBOARD_CANONICALIZATION.md`
 - 상세 개발일지: `DEVELOPMENT_LOG_20260903_BASELINE_CSS_CONSOLIDATION.md`
 - 상세 개발일지: `DEVELOPMENT_LOG_20260903_CANONICAL_DASHBOARD_CLEANUP.md`
 - 상세 개발일지: `DEVELOPMENT_LOG_20260903_DASHBOARD_PRIORITY_GROUPING.md`
+- 상세 개발일지: `DEVELOPMENT_LOG_20260903_WORKFLOW_AREA_DENSITY.md`
