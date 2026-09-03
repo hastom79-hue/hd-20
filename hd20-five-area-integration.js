@@ -27,7 +27,8 @@ function masterUtility(){
   const btn=document.getElementById('openMaster');if(btn){btn.textContent='⚙ 통합기준정보';btn.title='생산팀·목표·운영정책·6개 5S 유형·3대 판정기준'}
 }
 function normalizeLabels(){document.querySelectorAll('#performanceConversionAnalysis').forEach(root=>{root.querySelectorAll('*').forEach(el=>{if(el.children.length===0&&el.textContent?.includes('5S고도화'))el.textContent=el.textContent.replaceAll('5S고도화','5S 고도화')})})}
-function refresh(){markOperationalScreens();masterUtility();integrateAdvancement();normalizeLabels()}
+function normalizeUnmappedLines(){document.querySelectorAll('#awWorkplace [data-live-workplace-line] tr').forEach(tr=>{const cell=tr.querySelector('td:first-child');if(cell&&cell.textContent.trim()==='—'){cell.textContent='미분류/라인 매핑 필요';cell.dataset.hd20UnmappedLine='1';cell.title='원천데이터에 명시적 라인 정보가 없어 임의 추론하지 않습니다.'}})}
+function refresh(){markOperationalScreens();masterUtility();integrateAdvancement();normalizeLabels();normalizeUnmappedLines()}
 ['hd20-open-performance-conversion','hd20-kpi-source-updated','hd20-gmes-5s-imported','hd20-gmes-5s-judged','hd20-action-updated'].forEach(ev=>window.addEventListener(ev,()=>setTimeout(refresh,0)));
 document.readyState==='loading'?document.addEventListener('DOMContentLoaded',()=>{refresh();setTimeout(refresh,250)},{once:true}):(()=>{refresh();setTimeout(refresh,250)})();
 window.HD20_FIVE_AREA={refresh,areas:['dashboard','activity','advancement','audit','action']};
