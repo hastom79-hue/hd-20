@@ -21,7 +21,12 @@ jobs:
           const {chromium}=require('playwright');
           (async()=>{
             const browser=await chromium.launch({headless:true});
-            const cases=[{name:'desktop',width:1440,height:1000},{name:'mobile',width:375,height:812}];
+            const cases=[
+              {name:'desktop',width:1440,height:1000},
+              {name:'desktop-125pct-equivalent',width:1152,height:800},
+              {name:'tablet',width:900,height:900},
+              {name:'mobile',width:375,height:812}
+            ];
             const tabs=['dashboard','activity','advancement','audit','action'];
             const expectedKpis=['공식 판정 완료율','평균 판정 Lead Time','고도화 수준','Audit 후 6개월 유지율','Audit 부적합 재발률','기한 내 개선조치 완료율'];
             for(const vp of cases){
@@ -36,12 +41,18 @@ jobs:
                   const active=document.querySelector('.beginnerNav button.active')?.dataset.key||'';
                   const visible=[...document.querySelectorAll('.awScreen.on,#performanceConversionAnalysis.on')].filter(el=>getComputedStyle(el).display!=='none');
                   const headers=visible.reduce((n,el)=>n+el.querySelectorAll(':scope > .hd20AreaHeader').length,0);
+                  const heroes=visible.reduce((n,el)=>n+el.querySelectorAll(':scope > .awHero').length,0);
                   const shown=sel=>{const el=document.querySelector(sel);return !!el&&getComputedStyle(el).display!=='none'&&el.getClientRects().length>0};
-                  return {key,active,scrollWidth:Math.max(de.scrollWidth,body.scrollWidth),clientWidth:de.clientWidth,headers,priority:shown('#hd20DashboardPriority'),bridge:shown('#hd20OperationalBridge'),labels:[...document.querySelectorAll('.hd20DashboardSectionLabel')].filter(el=>getComputedStyle(el).display!=='none'&&el.getClientRects().length>0).length};
+                  return {key,active,scrollWidth:Math.max(de.scrollWidth,body.scrollWidth),clientWidth:de.clientWidth,headers,heroes,priority:shown('#hd20DashboardPriority'),bridge:shown('#hd20OperationalBridge'),labels:[...document.querySelectorAll('.hd20DashboardSectionLabel')].filter(el=>getComputedStyle(el).display!=='none'&&el.getClientRects().length>0).length,activity:shown('#awActivity .awGrid'),advancement:shown('#awWorkplace'),audit:shown('#awAudit .awAuditLane'),action:shown('#awAction .amGrid')};
                 },key);
                 if(state.active!==key) throw new Error(`${vp.name}/${key}: active=${state.active}`);
                 if(state.scrollWidth>state.clientWidth+2) throw new Error(`${vp.name}/${key}: horizontal overflow ${state.scrollWidth}>${state.clientWidth}`);
                 if(key!=='dashboard' && state.headers>1) throw new Error(`${vp.name}/${key}: duplicate area headers=${state.headers}`);
+                if(key!=='dashboard' && state.headers!==1) throw new Error(`${vp.name}/${key}: area header missing=${state.headers}`);
+                if(key==='activity'&&!state.activity) throw new Error(`${vp.name}/activity: activity grid missing`);
+                if(key==='advancement'&&!state.advancement) throw new Error(`${vp.name}/advancement: workplace layer missing`);
+                if(key==='audit'&&!state.audit) throw new Error(`${vp.name}/audit: audit lifecycle lane missing`);
+                if(key==='action'&&!state.action) throw new Error(`${vp.name}/action: action case grid missing`);
                 if(key==='dashboard'){
                   if(!state.priority||!state.bridge) throw new Error(`${vp.name}/dashboard: dashboard priority/detail layer missing`);
                   const count=await page.locator('#hd20DashboardPriority .hd20HealthKpi').count();
