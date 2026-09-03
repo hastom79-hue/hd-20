@@ -69,9 +69,11 @@ Dashboard 탭 복귀는 `#hd20DashboardPriority`를 canonical target으로 사�
 
 `Risk 가중 랜덤 대상 추출 → Audit 실시(D-Day) → 실시일부터 달력 기준 +6개월 지속관리 → 개선요청/개선조치 → 효과검증·재발 → 종료평가 → 차기 Audit 판단 근거`
 
+화면 상단은 실제 Audit 상태를 `Audit 실시 대기 → 6개월 관리중 → 종료평가 대기 → 종료평가 완료` 4단계로 표시한다. `6개월 관리중`은 실제 `auditDate`부터 달력 기준 +6개월이며, 기간이 끝난 뒤 `finalEvaluation`이 없으면 종료평가 대기로 분류한다. 이 표현은 기존 `renderAudit()` 계산을 그대로 사용하며 산식은 변경하지 않았다.
+
 Risk 정책 미설정 시 균등 랜덤이며, Audit 표본수는 통합기준정보 설정값을 사용한다. 동일 Batch 내 중복 팀은 허용하지 않는다.
 
-고정 M+1/M+3/M+6 Lifecycle은 사용하지 않는다.
+고정 M+1/M+3/M+6 Lifecycle은 사용하지 않으며, 임의 일/주/월 점검주기도 추가하지 않는다.
 
 ## 7. 개선조치
 등록일 기준 자동기한은 D+7~D+14 범위이며 실제 자동지정 일수는 운영정책 설정값을 사용한다. 정책 미설정 시 임의 기본값을 생성하지 않는다.
@@ -95,7 +97,7 @@ Audit에서 생성된 개선조치는 원본 `sourceCaseId / auditDrawId / sourc
 
 `dashboard-priority-groups.css = Dashboard 업무영역 그룹 specialization`
 
-`workflow-area-density.css = ②~⑤ 업무화면 밀도/반응형 및 ③ 판정 계층 specialization`
+`workflow-area-density.css = ②~⑤ 업무화면 밀도/반응형 및 ③ 판정·④ Audit 계층 specialization`
 
 `maturity-condition-analysis.css = advancement analysis specialization`
 
@@ -105,6 +107,7 @@ Audit에서 생성된 개선조치는 원본 `sourceCaseId / auditDrawId / sourc
 - ②~⑤ 화면은 `업무영역 Header → Workflow/상태 → Form/Grid` 공통 구조를 사용한다.
 - ② 5S 활동은 입력 Form보다 실적/이력 영역을 넓게 배치하고 Desktop에서 등록 Form을 sticky 보조영역으로 운영한다.
 - ③ 고도화·판정은 후보/공식판정 Table을 운영상태보다 우선 배치하고, 조건 충족과 공식판정을 명시적으로 분리한다.
+- ④ 유지·Audit은 `대상 추출 → D-Day 실시 → +6개월 지속관리 → 종료평가` 흐름과 실제 4개 운영상태를 한 방향으로 읽도록 정리했다.
 - Table이 전체 페이지 폭을 밀지 않도록 `.awBody` 내부 가로스크롤과 셀 wrapping을 적용했다.
 - 최근 직접등록 목록은 제목 ellipsis + 날짜 고정열로 정리했다.
 - `minmax(0,1fr)` 및 `min-width:0` 기반 responsive 구조를 확대해 중첩 grid의 horizontal overflow 위험을 낮췄다.
@@ -128,7 +131,7 @@ Audit에서 생성된 개선조치는 원본 `sourceCaseId / auditDrawId / sourc
 
 Workflow Area Density 반영 HEAD `dcad24c`에서 7개 Actions가 생성되었고 failure 상태 workflow 조회 결과는 0건이었다. 확인된 Package/Runtime Smoke도 success였다.
 
-고도화·판정 계층 개편 commit `3084030`에서도 7개 Actions가 새로 시작되었으며 현재 자동검증 진행 중이다.
+고도화·판정 계층 개편 commit `3084030`에서도 7개 Actions가 새로 시작되었다. ④ 유지·Audit 계층 개편은 commit `597651b`에 반영했으며 후속 자동검증 대상이다.
 
 ## 10. 2026-09-03 핵심 변경
 - duplicate `approved-landing-v2.css/js` active reference 제거
@@ -142,6 +145,7 @@ Workflow Area Density 반영 HEAD `dcad24c`에서 7개 Actions가 생성되었�
 - ②~⑤ 업무화면의 입력/현황/Table 정보밀도 재정렬
 - 업무 Table 독립 overflow 및 셀 wrapping 안정화
 - ③ 고도화·판정의 조건 충족 / 공식판정 / 운영상태 / 적용범위 시각계층 재정렬
+- ④ 유지·Audit의 D-Day / 달력 +6개월 / 종료평가 상태 시각계층 재정렬
 - `styles.css`를 legacy visual layer에서 structural foundation으로 축소
 - 전용 Dashboard Canonical Smoke 추가
 - 상세 개발일지: `DEVELOPMENT_LOG_20260903_DASHBOARD_CANONICALIZATION.md`
