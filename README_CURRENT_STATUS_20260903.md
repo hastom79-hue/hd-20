@@ -51,6 +51,8 @@
 
 Dashboard 탭 복귀는 `#hd20DashboardPriority`를 canonical target으로 사용하며 `.cards`를 fallback으로 사용한다.
 
+최신 시각 재조정에서는 운영 KPI 그룹을 가장 우선에 두고, 성과 보조 KPI 5종은 높이와 값 크기를 한 단계 낮췄다. 메인 팀별 차트는 우측 Summary보다 더 넓게 확보했으며, 우측 `Audit 후 6개월 지속관리 / Action Summary`와 하단 `3대 판정기준 / 고도화 추이`는 보조정보 성격에 맞게 compact하게 정리했다. 데이터·산식·라벨은 변경하지 않았다.
+
 ## 5. 고도화·판정
 고도화 조건은 다음 3개다.
 
@@ -93,11 +95,11 @@ Audit에서 생성된 개선조치는 원본 `sourceCaseId / auditDrawId / sourc
 
 `styles.css = structural baseline`
 
-`hd20-overhaul.css = global canonical Design System`
+`hd20-overhaul.css = global canonical Design System + Header/Navigation scale`
 
 `hd20-five-area.css = 5-area workflow-specific layout`
 
-`dashboard-priority-groups.css = Dashboard 업무영역 그룹 specialization`
+`dashboard-priority-groups.css = Dashboard 업무영역 그룹 + KPI/차트/Summary 균형 specialization`
 
 `workflow-area-density.css = ②~⑤ 업무화면 밀도/반응형 및 ③ 판정·④ Audit·⑤ 개선조치 계층 specialization`
 
@@ -106,6 +108,8 @@ Audit에서 생성된 개선조치는 원본 `sourceCaseId / auditDrawId / sourc
 - `styles.css`에 남아 있던 큰 폰트, 구형 card visual theme, 고정 폭 중심 grid, 중복 hover/animation을 제거하고 구조용 baseline으로 축소했다.
 - JS runtime `<style>` 삽입 제거 완료: KPI modal / Table Enhancement / Expert AI / Workflow foundation.
 - 구형 `*-fix.css`, `*-hotfix.css`, 다중 polish layer를 active chain에서 정리했다.
+- Header/Utility/5영역 Navigation은 중간폭 및 브라우저 확대 상황에서 5열→3열→2열→1열로 단계적으로 전환한다.
+- Dashboard는 운영 KPI를 최우선, 성과 KPI/우측 Summary/하단 분석을 보조계층으로 시각 강도를 차등화했다.
 - ②~⑤ 화면은 `업무영역 Header → Workflow/상태 → Form/Grid` 공통 구조를 사용한다.
 - ② 5S 활동은 입력 Form보다 실적/이력 영역을 넓게 배치하고 Desktop에서 등록 Form을 sticky 보조영역으로 운영한다.
 - ③ 고도화·판정은 후보/공식판정 Table을 운영상태보다 우선 배치하고, 조건 충족과 공식판정을 명시적으로 분리한다.
@@ -134,7 +138,7 @@ Audit에서 생성된 개선조치는 원본 `sourceCaseId / auditDrawId / sourc
 
 `browser-smoke.yml`도 동일한 canonical dashboard 계약을 사용하도록 수정했다. 더 이상 `.hd20ApprovedLanding` 존재를 요구하지 않는다.
 
-⑤ 개선조치 개편 HEAD `e17e561`에서 Runtime Smoke와 Package Source는 success로 확인됐다. 확대된 5영역 Layout Smoke는 commit `ec2ceb1`부터 실행된다.
+Header/Navigation 정규화 HEAD `5068a62`에서는 Package Source와 Runtime Smoke가 success로 확인됐다. Dashboard 균형 재조정은 commit `4e53935`부터 후속 자동검증 대상이다.
 
 ## 10. 2026-09-03 핵심 변경
 - duplicate `approved-landing-v2.css/js` active reference 제거
@@ -144,7 +148,9 @@ Audit에서 생성된 개선조치는 원본 `sourceCaseId / auditDrawId / sourc
 - Operational Bridge를 `.cards` 기준으로 고정
 - 단일 Dashboard information hierarchy 확립
 - 운영 KPI 6종을 고도화·판정 / 유지·Audit / 개선조치 업무영역으로 재그룹화
+- Dashboard KPI/차트/우측 Summary/하단 분석의 시각 비중 재조정
 - KPI 그룹별 해당 업무화면 직접 이동 추가
+- Header/Utility/5영역 Navigation 공통 스케일·반응형 정규화
 - ②~⑤ 업무화면의 입력/현황/Table 정보밀도 재정렬
 - 업무 Table 독립 overflow 및 셀 wrapping 안정화
 - ③ 고도화·판정의 조건 충족 / 공식판정 / 운영상태 / 적용범위 시각계층 재정렬
