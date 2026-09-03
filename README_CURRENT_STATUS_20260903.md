@@ -39,7 +39,7 @@
 
 `운영 건전성 KPI 6종 → 5S 활동/고도화 성과 보조지표 5종 → 폐쇄루프 상세 운영상태 → 팀별 실행/Audit 유지관리 → 3대 판정기준/고도화 추이`
 
-`approved-landing-v2.js`가 별도로 만들던 5개 성과 KPI, 6개 운영 KPI, 3대 기준, 수준 Map, 추이, Audit 관리대상 화면은 active runtime에서 제거하여 중복 대시보드를 해소했다.
+구형 `approved-landing-v2.js/css`는 active runtime 제거 후 저장소에서도 삭제했다. 과거 승인형 대시보드가 별도로 만들던 5개 성과 KPI, 6개 운영 KPI, 3대 기준, 수준 Map, 추이, Audit 관리대상 화면은 더 이상 실행경로에 존재하지 않는다.
 
 Dashboard 탭 복귀는 `#hd20DashboardPriority`를 canonical target으로 사용하며 `.cards`를 fallback으로 사용한다.
 
@@ -106,8 +106,12 @@ Audit에서 생성된 개선조치는 원본 `sourceCaseId / auditDrawId / sourc
 
 `dashboard-canonical-smoke.yml`은 Desktop `1440×1000`, Mobile `375×812`에서 duplicate approved landing 0개, canonical priority 1개, 운영 KPI 6개, operational bridge 1개, 성과 KPI 5개, horizontal overflow/pageerror 없음을 검증한다.
 
+`browser-smoke.yml`도 동일한 canonical dashboard 계약을 사용하도록 수정했다. 더 이상 `.hd20ApprovedLanding` 존재를 요구하지 않는다.
+
 ## 10. 2026-09-03 핵심 변경
 - duplicate `approved-landing-v2.css/js` active reference 제거
+- `approved-landing-v2.js/css` 파일 자체 삭제
+- Browser Smoke를 canonical dashboard 계약으로 전환
 - Dashboard 탭 복귀 target을 canonical priority layer로 전환
 - Operational Bridge를 `.cards` 기준으로 고정
 - 단일 Dashboard information hierarchy 확립
@@ -115,3 +119,4 @@ Audit에서 생성된 개선조치는 원본 `sourceCaseId / auditDrawId / sourc
 - 전용 Dashboard Canonical Smoke 추가
 - 상세 개발일지: `DEVELOPMENT_LOG_20260903_DASHBOARD_CANONICALIZATION.md`
 - 상세 개발일지: `DEVELOPMENT_LOG_20260903_BASELINE_CSS_CONSOLIDATION.md`
+- 상세 개발일지: `DEVELOPMENT_LOG_20260903_CANONICAL_DASHBOARD_CLEANUP.md`
