@@ -53,7 +53,7 @@ Dashboard-only layer인 `#hd20DashboardPriority`, `#hd20OperationalBridge`, `.hd
 ## Runtime presentation cleanup — Phase 15
 `health-grid-practical-final.js`가 Modal용 시각 CSS를 런타임 `<style>`로 주입하던 경로를 제거했다. KPI 상세 설명은 기존 canonical `.awHint` 표현을 재사용하며, 표와 Modal의 시각계약은 정적 CSS가 담당한다.
 
-동시에 해당 모듈의 KPI 식별명을 `6개월 유지율`에서 승인된 정확한 명칭인 `Audit 후 6개월 유지율`로 교정했다. `기한 내 개선조치 완료율` 설명도 운영정책에 설정된 자동 완료기한을 기준으로 표현하도록 정리하여, 화면 설명에서 특정 일수를 임의 정책처럼 다시 고정하지 않도록 했다.
+동시에 해당 모듈의 KPI 식별명을 `6개월 유지율`에서 승인된 정확한 명칭인 `Audit 후 6개월 유지율`로 교정했다. `기한 내 개선조치 완료율` 설명도 `등록일 기준 운영정책으로 자동 지정된 완료기한`을 기준으로 표현하도록 정리하여 특정 일수를 화면 설명이 임의 정책처럼 다시 고정하지 않도록 했다.
 
 Repository code search 기준 visual `createElement('style')` 주입은 제거되었고, 남은 것은 `nav-scroll-stability.js`의 탭 전환용 functional 1줄 rule뿐이다.
 
