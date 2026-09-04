@@ -1,6 +1,6 @@
 # HD-20 Current Status — 2026-09-04
 
-이 문서는 2026-09-04 기준 HD-20 전면개편의 최신 UI/Design System 상태를 기록한다. 업무기준과 상세 이력은 `README_OVERHAUL_20260902.md`, `README_CURRENT_STATUS_20260902.md`, `README_UI_ARCHITECTURE_20260902.md`, `DEVELOPMENT_LOG_20260904_DESIGN_SYSTEM_REBUILD_PHASE14.md`를 함께 참조한다.
+이 문서는 2026-09-04 기준 HD-20 전면개편의 최신 UI/Design System 상태를 기록한다. 업무기준과 상세 이력은 `README_OVERHAUL_20260902.md`, `README_CURRENT_STATUS_20260902.md`, `README_UI_ARCHITECTURE_20260902.md`, `DEVELOPMENT_LOG_20260904_DESIGN_SYSTEM_REBUILD_PHASE14.md`, `DEVELOPMENT_LOG_20260904_DESIGN_SYSTEM_REBUILD_PHASE15.md`를 함께 참조한다.
 
 ## 현재 IA
 1. 통합 대시보드
@@ -49,6 +49,13 @@ Dashboard-only layer인 `#hd20DashboardPriority`, `#hd20OperationalBridge`, `.hd
 공통 Hero/Card/Form/KPI/Empty-state density는 `hd20-five-area.css` canonical component가 소유한다. `workflow-area-density.css`에는 현재 Workflow step numbering, Activity 입력 layout, 고도화 조건/공식판정/적용범위 구분, Audit 6개월 lifecycle 표현, 개선조치 closed-loop 표현, area별 의미색과 반응형 구조처럼 업무영역 고유 표현만 남겨 두었다.
 
 즉, 현재 단계는 `workflow-area-density.css`를 성급하게 삭제한 것이 아니라 **중복 density 제거 → area-specific contract만 남김 → 회귀검증 → 최종 병합/삭제 판단** 순서다.
+
+## Runtime presentation cleanup — Phase 15
+`health-grid-practical-final.js`가 Modal용 시각 CSS를 런타임 `<style>`로 주입하던 경로를 제거했다. KPI 상세 설명은 기존 canonical `.awHint` 표현을 재사용하며, 표와 Modal의 시각계약은 정적 CSS가 담당한다.
+
+동시에 해당 모듈의 KPI 식별명을 `6개월 유지율`에서 승인된 정확한 명칭인 `Audit 후 6개월 유지율`로 교정했다. `기한 내 개선조치 완료율` 설명도 운영정책에 설정된 자동 완료기한을 기준으로 표현하도록 정리하여, 화면 설명에서 특정 일수를 임의 정책처럼 다시 고정하지 않도록 했다.
+
+Repository code search 기준 visual `createElement('style')` 주입은 제거되었고, 남은 것은 `nav-scroll-stability.js`의 탭 전환용 functional 1줄 rule뿐이다.
 
 ## Regression contract
 `.github/workflows/design-layout-smoke.yml`은 Desktop 1440×1000, 125% 배율 대응 1152×800, Tablet 900×900, Mobile 375×812를 검증한다.
