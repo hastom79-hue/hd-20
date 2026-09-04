@@ -1,6 +1,6 @@
 # HD-20 Current Status — 2026-09-04
 
-이 문서는 2026-09-04 기준 HD-20 전면개편의 최신 UI/Design System 상태를 기록한다. 업무기준과 상세 이력은 `README_OVERHAUL_20260902.md`, `README_CURRENT_STATUS_20260902.md`, `README_UI_ARCHITECTURE_20260902.md`, `DEVELOPMENT_LOG_20260904_DESIGN_SYSTEM_REBUILD_PHASE14.md`, `DEVELOPMENT_LOG_20260904_DESIGN_SYSTEM_REBUILD_PHASE15.md`, `DEVELOPMENT_LOG_20260904_DESIGN_SYSTEM_REBUILD_PHASE16.md`를 함께 참조한다.
+이 문서는 2026-09-04 기준 HD-20 전면개편의 최신 UI/Design System 상태를 기록한다. 업무기준과 상세 이력은 `README_OVERHAUL_20260902.md`, `README_CURRENT_STATUS_20260902.md`, `README_UI_ARCHITECTURE_20260902.md`, `DEVELOPMENT_LOG_20260904_DESIGN_SYSTEM_REBUILD_PHASE14.md`, `DEVELOPMENT_LOG_20260904_DESIGN_SYSTEM_REBUILD_PHASE15.md`, `DEVELOPMENT_LOG_20260904_DESIGN_SYSTEM_REBUILD_PHASE16.md`, `DEVELOPMENT_LOG_20260904_DESIGN_SYSTEM_REBUILD_PHASE17.md`를 함께 참조한다.
 
 ## 현재 IA
 1. 통합 대시보드
@@ -47,6 +47,11 @@ Phase 14에서 `workflow-area-density.css`의 공통 Card/Form/KPI density를 �
 
 병합 대상은 Workflow step numbering, Activity 입력 layout, 고도화 조건/공식판정/적용범위 구분, Audit 6개월 lifecycle, 개선조치 closed-loop, 영역별 의미색 및 반응형 규칙이다. 병합 후 `index.html` link를 제거하고 파일을 물리 삭제했다.
 
+## Navigation ownership cleanup — Phase 17
+`hd20-overhaul.css`와 `hd20-five-area.css`가 동시에 Navigation 열수와 버튼 높이를 지정하던 중복을 축소했다. 공통 Navigation 표면·색·상호작용은 `hd20-overhaul.css`가 유지하고, 5개 업무영역의 실제 열수와 버튼 최소높이 및 1100/700px 반응형 전환은 `hd20-five-area.css`가 단독 소유한다.
+
+이에 따라 `hd20-overhaul.css`에서 `.beginnerNav`의 `grid-template-columns`, `.beginnerNav button`의 `min-height`, 980/700/460px 구간의 Navigation 열수·높이 override를 제거했다. `index.html`의 `hd20-overhaul.css` cache key도 `20260904-nav-owner-1`로 갱신했다.
+
 ## Runtime presentation cleanup
 `health-grid-practical-final.js`의 runtime visual `<style>` 주입은 Phase 15에서 제거했다. KPI 상세 설명은 canonical `.awHint` 표현을 재사용한다. Repository code search 기준 visual runtime style은 제거되었고 `nav-scroll-stability.js`의 탭 전환용 functional 1줄 rule만 남는다.
 
@@ -58,6 +63,6 @@ Phase 14에서 `workflow-area-density.css`의 공통 Card/Form/KPI density를 �
 Phase 16부터 stylesheet contract는 `styles.css / hd20-overhaul.css / hd20-five-area.css / maturity-condition-analysis.css` 정확히 4개로 고정하며 `workflow-area-density.css`가 다시 로드되면 실패하도록 했다.
 
 ## 다음 통합 대상
-최신 Design Layout/Browser/Runtime/Nav/Dashboard/Package/Pages 검증 후 `hd20-overhaul.css`와 `hd20-five-area.css`의 중복 selector 및 불필요한 `!important`를 추가 축소한다. 이후 ②~⑤ 각 화면이 `어디를 보고 → 무엇을 판단하고 → 다음에 무엇을 해야 하는지` 순서로 읽히는지 정보계층을 다시 점검한다.
+최신 Design Layout/Browser/Runtime/Nav/Dashboard/Package/Pages 검증 후 `hd20-overhaul.css`와 `hd20-five-area.css`의 나머지 중복 selector를 보수적으로 축소한다. 특히 공통 Workflow base와 5-area scoped rule을 구분하여, 범용 component가 필요한 곳은 `hd20-overhaul.css`, 5개 화면 고유 밀도·반응형은 `hd20-five-area.css`가 소유하도록 정리한다.
 
 업무 산식, Canonical Store, 승인되지 않은 Threshold/정책은 디자인 통합 과정에서 변경하지 않는다.
