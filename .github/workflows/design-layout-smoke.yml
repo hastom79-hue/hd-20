@@ -34,9 +34,9 @@ jobs:
               const errors=[]; page.on('pageerror',e=>errors.push(String(e))); page.on('dialog',d=>d.accept());
               await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'networkidle',timeout:30000});
               const cssContract=await page.evaluate(()=>[...document.querySelectorAll('link[rel="stylesheet"]')].map(x=>new URL(x.href).pathname.split('/').pop()));
-              const expectedCss=['styles.css','hd20-overhaul.css','hd20-five-area.css','workflow-area-density.css','maturity-condition-analysis.css'];
+              const expectedCss=['styles.css','hd20-overhaul.css','hd20-five-area.css','maturity-condition-analysis.css'];
               if(JSON.stringify(cssContract)!==JSON.stringify(expectedCss)) throw new Error(`${vp.name}: stylesheet contract=${JSON.stringify(cssContract)}`);
-              if(cssContract.some(x=>/dashboard-priority-groups|hotfix|polish/i.test(x))) throw new Error(`${vp.name}: retired stylesheet leaked ${JSON.stringify(cssContract)}`);
+              if(cssContract.some(x=>/dashboard-priority-groups|workflow-area-density|hotfix|polish/i.test(x))) throw new Error(`${vp.name}: retired stylesheet leaked ${JSON.stringify(cssContract)}`);
               const navCount=await page.locator('.beginnerNav button[data-key]').count();
               if(navCount!==5) throw new Error(`${vp.name}: nav count=${navCount}`);
               for(const key of tabs){
