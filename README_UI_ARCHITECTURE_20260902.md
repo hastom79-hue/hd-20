@@ -41,8 +41,15 @@ Phase 12에서 `dashboard-priority-groups.css`를 실제 병합 후 제거했고
 
 새로운 `*-fix.css`, `*-hotfix.css`, `*-polish.css`를 추가하는 방식은 사용하지 않는다.
 
+## 표현 소유권
+`hd20-overhaul.css`는 token, Page shell, Header, Navigation surface/interaction, 공통 Card/Form/Table/Modal 및 Expert AI 같은 범용 표현을 담당한다.
+
+`hd20-five-area.css`는 5개 업무영역의 실제 정보밀도, Dashboard grouping, Navigation의 5-area 열수·버튼 최소높이·반응형 열전환, Workflow step/card/table 배치, 고도화·Audit·개선조치의 의미표현을 담당한다.
+
+Phase 17에서는 이 경계를 Navigation부터 실제 코드에 적용했다. `hd20-overhaul.css`에서 `.beginnerNav` 열수와 `.beginnerNav button` 최소높이, 980/700/460px 구간의 열수·높이 override를 제거했다. 이제 열수와 높이의 최종 소유자는 `hd20-five-area.css`이며, 색·border·sticky·hover·active 같은 공통 Navigation surface는 `hd20-overhaul.css`에 남아 있다.
+
 ## Workflow presentation ownership
-`.awScreen / .awHero / .awFlow / .awStep / .awKpis / .awGrid / .awSplit / .awForm / .awTable / .awCriteriaBanner` 및 ③·④·⑤의 의미표현은 이제 `hd20-five-area.css`가 직접 소유한다.
+`.awScreen / .awHero / .awFlow / .awStep / .awKpis / .awGrid / .awSplit / .awForm / .awTable / .awCriteriaBanner` 및 ③·④·⑤의 의미표현은 `hd20-five-area.css`가 직접 소유한다.
 
 포함되는 area-specific contract:
 - Workflow step numbering
@@ -88,9 +95,9 @@ Phase 13 Design Layout Smoke에서 Repository에 이미 존재하지 않는 `mob
 Phase 16부터 stylesheet contract는 정확히 4개로 고정한다. `workflow-area-density.css`, `dashboard-priority-groups.css`, hotfix/polish 계열이 다시 들어오면 실패한다.
 
 ## 현재 다음 구조정리
-- 최신 Design Layout / Browser / Runtime / Nav / Dashboard / Package / Pages 검증 완료
-- `hd20-overhaul.css`와 `hd20-five-area.css`의 중복 selector 및 불필요한 `!important` 추가 축소
+- Phase 17 최신 Design Layout / Browser / Runtime / Nav / Dashboard / Package / Pages 검증
+- `hd20-overhaul.css`와 `hd20-five-area.css`의 나머지 중복 selector 중 범용 base와 5-area scoped override를 구분해 추가 축소
 - ②~⑤ table/form 폭·밀도 미세조정
 - 각 업무영역이 `어디를 보고 → 무엇을 판단하고 → 다음에 무엇을 해야 하는지` 순서로 읽히는지 정보계층 재검증
 
-상세 변경이력은 `DEVELOPMENT_LOG_20260904_DESIGN_SYSTEM_REBUILD_PHASE16.md`까지 이어진다.
+상세 변경이력은 `DEVELOPMENT_LOG_20260904_DESIGN_SYSTEM_REBUILD_PHASE17.md`까지 이어진다.
