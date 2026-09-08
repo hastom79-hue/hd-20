@@ -6,7 +6,6 @@ const TEAMS=TEAM_MASTER.teamNames();
 const ORDER_KEY='gmes5s_team_display_order',TARGET_KEY='gmes5s_quarter_perperson_targets';
 let teamOrder=[...TEAMS],targetMaster={Q1:null,Q2:null,Q3:null,Q4:null};
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
-function ensureRecoveryCSS(){if(document.querySelector('link[data-hd20-mobile-recovery]'))return;const l=document.createElement('link');l.rel='stylesheet';l.href='mobile-runtime-restore.css?v=20260828-restore-1';l.dataset.hd20MobileRecovery='1';document.head.appendChild(l)}
 function loadSettings(){try{const v=JSON.parse(localStorage.getItem(ORDER_KEY)||'null');if(Array.isArray(v)&&v.length===TEAMS.length&&TEAMS.every(t=>v.includes(t)))teamOrder=v}catch{}try{const v=JSON.parse(localStorage.getItem(TARGET_KEY)||'null');if(v&&typeof v==='object'){['Q1','Q2','Q3','Q4'].forEach(q=>{const n=Number(v[q]);targetMaster[q]=Number.isFinite(n)&&n>0?n:null})}}catch{}}
 function snapshot(){if(window.HD20KPIData?.snapshot)return window.HD20KPIData.snapshot();try{const rows=JSON.parse(localStorage.getItem('hd20GMES5SAutoImproveRawV1')||'[]');return{activities:Array.isArray(rows)?rows:[],candidates:[],newSecured:[]}}catch{return{activities:[],candidates:[],newSecured:[]}}}
 function teamOf(x){return String(x?.team||'').trim()}
@@ -18,7 +17,7 @@ function renderOrderEditor(){const list=$('#orderList');if(!list)return;list.inn
 function loadTargets(){['Q1','Q2','Q3','Q4'].forEach((q,i)=>{const e=$(`#q${i+1}Target`);if(e)e.value=targetMaster[q]??''})}
 function readTargetInput(id){const raw=String($(id)?.value??'').trim();if(!raw)return null;const n=Number(raw);return Number.isFinite(n)&&n>0?n:null}
 function initMaster(){const modal=$('#masterModal');const open=$('#openMaster'),close=$('#closeMaster'),cancel=$('#cancelOrder'),save=$('#saveOrder'),tabs=$$('[data-master-tab]');let tab='order';const setTab=t=>{tab=t;tabs.forEach(b=>b.classList.toggle('on',b.dataset.masterTab===t));const order=$('#masterOrderPanel'),target=$('#masterTargetPanel');if(order)order.style.display=t==='order'?'block':'none';if(target)target.style.display=t==='target'?'block':'none';if(t==='order')renderOrderEditor();else loadTargets()};if(open)open.onclick=()=>{modal?.classList.add('on');setTab('order')};if(close)close.onclick=()=>modal?.classList.remove('on');if(cancel)cancel.onclick=()=>modal?.classList.remove('on');tabs.forEach(b=>b.onclick=()=>setTab(b.dataset.masterTab));if(save)save.onclick=()=>{if(tab==='order')localStorage.setItem(ORDER_KEY,JSON.stringify(teamOrder));else{targetMaster={Q1:readTargetInput('#q1Target'),Q2:readTargetInput('#q2Target'),Q3:readTargetInput('#q3Target'),Q4:readTargetInput('#q4Target')};localStorage.setItem(TARGET_KEY,JSON.stringify(targetMaster))}renderChart();modal?.classList.remove('on')}}
-function boot(){ensureRecoveryCSS();loadSettings();renderChart();initMaster()}
+function boot(){loadSettings();renderChart();initMaster()}
 window.renderChart=renderChart;window.HD20DashboardCore={renderChart,counts,teamOrder:()=>[...teamOrder],targets:()=>({...targetMaster})};
 ['hd20-kpi-source-updated','hd20-gmes-5s-imported','hd20-gmes-5s-judged'].forEach(ev=>window.addEventListener(ev,()=>setTimeout(renderChart,0)));
 document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot,{once:true}):boot();
