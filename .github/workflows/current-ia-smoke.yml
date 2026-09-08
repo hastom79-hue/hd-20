@@ -37,7 +37,8 @@ jobs:
             const page=await browser.newPage({viewport:{width:1440,height:1000}});
             const errors=[];
             page.on('pageerror',e=>errors.push(String(e)));
-            page.on('console',m=>{if(m.type()==='error'&&!/favicon|EmailJS|supabase/i.test(m.text()))errors.push('console: '+m.text())});
+            page.on('response',r=>{if(r.status()===404&&!/favicon\.ico$/i.test(new URL(r.url()).pathname))errors.push('404: '+r.url())});
+            page.on('console',m=>{if(m.type()==='error'&&!/Failed to load resource|favicon|EmailJS|supabase/i.test(m.text()))errors.push('console: '+m.text())});
             page.on('dialog',d=>d.accept());
             await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'networkidle',timeout:30000});
             await page.waitForFunction(()=>window.HD20_NAV&&window.HD20_SUBNAV&&document.getElementById('awActivity')&&document.getElementById('awWorkplace')&&document.getElementById('awAudit')&&document.getElementById('awAction'),{},{timeout:15000});
