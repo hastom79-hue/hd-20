@@ -74,10 +74,12 @@ jobs:
 
             await clickArea('advancement');
             await clickSub('후보·판정');
-            assert(await visible(page,'#performanceConversionAnalysis'),'advancement judgment analysis hidden');
+            assert(await visible(page,'#performanceConversionAnalysis'),'advancement judgment container hidden');
+            assert(await visible(page,'#performanceConversionAnalysis .pcHeader'),'advancement judgment analysis hidden');
             assert(await visible(page,'#awWorkplace'),'advancement workplace hidden');
             await clickSub('확정·수평전개');
-            assert(!(await visible(page,'#performanceConversionAnalysis')),'advancement standard should hide conversion analysis');
+            assert(await visible(page,'#performanceConversionAnalysis'),'advancement standard container hidden');
+            assert(!(await visible(page,'#performanceConversionAnalysis .pcHeader')),'advancement standard should hide judgment analysis');
             assert(await visible(page,'#awWorkplace'),'advancement standard workplace hidden');
 
             await clickArea('audit');
