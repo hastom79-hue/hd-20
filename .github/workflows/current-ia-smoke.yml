@@ -28,7 +28,7 @@ jobs:
           cat /tmp/hd20-current-ia-http.log; exit 1
       - name: Validate all areas, subtabs and popup workflows
         run: |
-          cat > /tmp/hd20-current-ia.cjs <<'NODE'
+          cat > hd20-current-ia.cjs <<'NODE'
           const { chromium } = require('playwright');
           const assert = (ok,msg)=>{if(!ok)throw new Error(msg)};
           const visible = async(page,sel)=>page.locator(sel).evaluate(el=>{const s=getComputedStyle(el),r=el.getBoundingClientRect();return s.display!=='none'&&s.visibility!=='hidden'&&r.width>0&&r.height>0});
@@ -107,4 +107,4 @@ jobs:
             await browser.close();
           })().catch(e=>{console.error(e.stack||e);process.exit(1)});
           NODE
-          node /tmp/hd20-current-ia.cjs
+          node hd20-current-ia.cjs
