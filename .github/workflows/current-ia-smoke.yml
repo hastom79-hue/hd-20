@@ -1,0 +1,110 @@
+name: HD20 current IA smoke
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  current-ia:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Start local server
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/hd20-current-ia-http.log 2>&1 &
+          for i in {1..30}; do curl -fsS http://127.0.0.1:4173/index.html >/dev/null && exit 0; sleep 1; done
+          cat /tmp/hd20-current-ia-http.log; exit 1
+      - name: Validate all areas, subtabs and popup workflows
+        run: |
+          cat > /tmp/hd20-current-ia.cjs <<'NODE'
+          const { chromium } = require('playwright');
+          const assert = (ok,msg)=>{if(!ok)throw new Error(msg)};
+          const visible = async(page,sel)=>page.locator(sel).evaluate(el=>{const s=getComputedStyle(el),r=el.getBoundingClientRect();return s.display!=='none'&&s.visibility!=='hidden'&&r.width>0&&r.height>0});
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:1440,height:1000}});
+            const errors=[];
+            page.on('pageerror',e=>errors.push(String(e)));
+            page.on('console',m=>{if(m.type()==='error'&&!/favicon|EmailJS|supabase/i.test(m.text()))errors.push('console: '+m.text())});
+            page.on('dialog',d=>d.accept());
+            await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'networkidle',timeout:30000});
+            await page.waitForFunction(()=>window.HD20_NAV&&window.HD20_SUBNAV&&document.getElementById('awActivity')&&document.getElementById('awWorkplace')&&document.getElementById('awAudit')&&document.getElementById('awAction'),{},{timeout:15000});
+            const expectedAreas=['dashboard','activity','advancement','audit','action'];
+            const expectedSubs={dashboard:['종합현황','성과·운영분석'],activity:['활동관리','실적분석'],advancement:['후보·판정','확정·수평전개'],audit:['Audit 관리','유지관리'],action:['개선조치','효과·재발관리']};
+            const keys=await page.locator('.beginnerNav button[data-key]').evaluateAll(xs=>xs.map(x=>x.dataset.key));
+            assert(JSON.stringify(keys)===JSON.stringify(expectedAreas),'Top nav mismatch: '+JSON.stringify(keys));
+            const checkNoOverflow=async(label)=>{const x=await page.evaluate(()=>({sw:document.documentElement.scrollWidth,cw:document.documentElement.clientWidth}));assert(x.sw<=x.cw+4,`${label} horizontal overflow ${x.sw}/${x.cw}`)};
+            const clickArea=async key=>{await page.click(`.beginnerNav button[data-key="${key}"]`);await page.waitForTimeout(180);const active=await page.locator(`.beginnerNav button[data-key="${key}"]`).evaluate(x=>x.classList.contains('active'));assert(active,key+' top tab not active');const area=await page.evaluate(()=>window.HD20_SUBNAV.state().area);assert(area===key,`${key} subnav state=${area}`);const labels=await page.locator('#hd20Subnav button').evaluateAll(xs=>xs.map(x=>x.textContent.trim()));assert(JSON.stringify(labels)===JSON.stringify(expectedSubs[key]),`${key} subtabs ${JSON.stringify(labels)}`);await checkNoOverflow(key)};
+            const clickSub=async label=>{await page.getByRole('button',{name:label,exact:true}).click();await page.waitForTimeout(100);const on=await page.getByRole('button',{name:label,exact:true}).evaluate(x=>x.classList.contains('on'));assert(on,'Subtab not active: '+label)};
+
+            await clickArea('dashboard');
+            await clickSub('종합현황');
+            assert(await visible(page,'.cards'),'dashboard summary KPI hidden');
+            assert(await visible(page,'.mainGrid'),'dashboard summary main hidden');
+            assert(!(await visible(page,'#hd20OperationalBridge')),'dashboard summary bridge should be hidden');
+            assert(!(await visible(page,'.bottomGrid')),'dashboard summary bottom should be hidden');
+            await clickSub('성과·운영분석');
+            assert(!(await visible(page,'.cards')),'dashboard analysis KPI should be hidden');
+            assert(await visible(page,'#hd20OperationalBridge'),'dashboard analysis bridge hidden');
+            assert(await visible(page,'.bottomGrid'),'dashboard analysis bottom hidden');
+            assert((await page.locator('.trendBox').innerText()).trim().length>0,'trendBox rendered blank');
+
+            await clickArea('activity');
+            assert(await visible(page,'#awActivity'),'activity screen hidden');
+            await clickSub('활동관리');
+            await page.waitForSelector('#awRegisterModal',{state:'attached',timeout:5000});
+            await page.click('#awActivity [data-aw="new"]');
+            await page.waitForSelector('#awRegisterModal.on',{state:'visible'});
+            await page.keyboard.press('Escape');
+            await page.waitForFunction(()=>!document.querySelector('#awRegisterModal')?.classList.contains('on'));
+            await clickSub('실적분석');
+            assert(await visible(page,'#awActivity'),'activity analysis screen hidden');
+
+            await clickArea('advancement');
+            await clickSub('후보·판정');
+            assert(await visible(page,'#performanceConversionAnalysis'),'advancement judgment analysis hidden');
+            assert(await visible(page,'#awWorkplace'),'advancement workplace hidden');
+            await clickSub('확정·수평전개');
+            assert(!(await visible(page,'#performanceConversionAnalysis')),'advancement standard should hide conversion analysis');
+            assert(await visible(page,'#awWorkplace'),'advancement standard workplace hidden');
+
+            await clickArea('audit');
+            assert(await visible(page,'#awAudit'),'audit screen hidden');
+            await clickSub('Audit 관리');
+            assert(await visible(page,'#awAudit'),'audit manage hidden');
+            await clickSub('유지관리');
+            assert(await visible(page,'#awAudit'),'audit retention hidden');
+
+            await clickArea('action');
+            assert(await visible(page,'#awAction'),'action screen hidden');
+            await clickSub('개선조치');
+            await page.waitForSelector('#hd20ActionRegisterBtn',{state:'visible',timeout:5000});
+            await page.click('#hd20ActionRegisterBtn');
+            await page.waitForSelector('#hd20ActionRegisterModal.on',{state:'visible'});
+            await page.keyboard.press('Escape');
+            await page.waitForFunction(()=>!document.querySelector('#hd20ActionRegisterModal')?.classList.contains('on'));
+            await clickSub('효과·재발관리');
+            assert(await visible(page,'#awAction'),'action verify hidden');
+
+            assert(errors.length===0,'Page errors: '+errors.join(' | '));
+            console.log('PASS desktop: all 5 areas, 10 subtabs, activity/action modals and dashboard visibility contracts');
+
+            await page.setViewportSize({width:390,height:844});
+            for(const key of expectedAreas){await clickArea(key)}
+            console.log('PASS mobile: all 5 areas navigable without document horizontal overflow');
+            await browser.close();
+          })().catch(e=>{console.error(e.stack||e);process.exit(1)});
+          NODE
+          node /tmp/hd20-current-ia.cjs
