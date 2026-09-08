@@ -12,7 +12,8 @@ function ensureNav(){let nav=document.querySelector('.beginnerNav');if(!nav){nav
 function ensureHint(nav){let hint=document.querySelector('.beginnerHint');if(!hint){hint=document.createElement('div');hint.className='beginnerHint';nav.insertAdjacentElement('afterend',hint)}hint.innerHTML='<b>5S 운영 흐름</b> · 활동 실행 → 성과 전환·고도화 판정 → Risk 기반 진단·Audit → 6개월 유지관리 → 개선실행·효과검증 → 표준화·성과 반영'}
 function bind(nav){nav.querySelectorAll('button[data-key]').forEach(btn=>btn.onclick=()=>go(btn.dataset.key,nav))}
 function normalizeDeepLink(k){return ({conversion:'advancement',workplace:'advancement',master:'dashboard'})[k]||k}
-function init(){const nav=ensureNav();ensureHint(nav);bind(nav);const raw=new URL(location.href).searchParams.get('tab');const key=normalizeDeepLink(raw);if(key&&nav.querySelector(`[data-key="${key}"]`))setTimeout(()=>go(key,nav),30)}
+function loadSeed(){if(window.HD20_DEMO_SEED||document.querySelector('script[data-hd20-demo-seed]'))return;const s=document.createElement('script');s.src='demo-seed-data.js?v=20260908-1';s.dataset.hd20DemoSeed='1';document.head.appendChild(s)}
+function init(){loadSeed();const nav=ensureNav();ensureHint(nav);bind(nav);const raw=new URL(location.href).searchParams.get('tab');const key=normalizeDeepLink(raw);if(key&&nav.querySelector(`[data-key="${key}"]`))setTimeout(()=>go(key,nav),30)}
 window.HD20_NAV={go:key=>{const nav=document.querySelector('.beginnerNav');if(nav)go(normalizeDeepLink(key),nav)},active:()=>activeKey,areas:['dashboard','activity','advancement','audit','action']};
 document.readyState==='loading'?document.addEventListener('DOMContentLoaded',init,{once:true}):init();
 })();
