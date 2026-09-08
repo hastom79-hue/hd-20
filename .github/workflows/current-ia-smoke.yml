@@ -42,13 +42,34 @@ jobs:
             page.on('dialog',d=>d.accept());
             await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'networkidle',timeout:30000});
             await page.waitForFunction(()=>window.HD20_NAV&&window.HD20_SUBNAV&&document.getElementById('awActivity')&&document.getElementById('awWorkplace')&&document.getElementById('awAudit')&&document.getElementById('awAction'),{},{timeout:15000});
+
+            // Localhost-only verification fixtures. These never leave the Playwright browser and never touch Supabase/production data.
+            await page.evaluate(()=>{
+              localStorage.setItem('hd20GMES5SAutoImproveRawV1',JSON.stringify([
+                {id:'E2E-ACT-1',date:'2026-09-01',type:'정리',team:'성능팀',workplace:'E2E 작업장 A',problem:'E2E 문제 A',improvement:'E2E 개선 A',status:'완료',source:'e2e-fixture'},
+                {id:'E2E-ADV-1',date:'2026-09-02',type:'5S 고도화',team:'대형메인팀',workplace:'E2E 고도화 작업장',problem:'E2E 문제 B',improvement:'E2E 개선 B',candidate:true,isCandidate:true,confirmed:true,judgeState:'확정',confirmedAt:'2026-09-03',criteriaMatched:['시각화·형적관리','인간공학적 Green Zone','정량축소·정위치 변경을 통한 공간 활용'],source:'e2e-fixture'}
+              ]));
+              localStorage.setItem('hd20AuditRandomDrawsV1',JSON.stringify([
+                {id:'E2E-AUD-PENDING',date:'2026-09-01',team:'성능팀',status:'Audit 실시 대기',source:'e2e-fixture'},
+                {id:'E2E-AUD-MANAGE',date:'2026-08-01',team:'대형메인팀',auditDate:'2026-08-05',auditResult:'적합',status:'6개월 관리중',source:'e2e-fixture'},
+                {id:'E2E-AUD-CLOSED',date:'2026-02-01',team:'프레임제작팀',auditDate:'2026-02-05',auditResult:'적합',finalEvaluation:'적합',finalEvaluationAt:'2026-08-05',status:'종료',source:'e2e-fixture'}
+              ]));
+              localStorage.setItem('hd20ActionCasesV2',JSON.stringify([
+                {id:'E2E-ACTION-OPEN',registeredAt:'2026-09-01',team:'성능팀',problem:'E2E 개선 대기',action:'E2E 조치중',status:'조치중',source:'e2e-fixture'},
+                {id:'E2E-ACTION-OK',registeredAt:'2026-08-01',team:'대형메인팀',problem:'E2E 효과 확인',action:'E2E 완료조치',status:'완료',effectVerified:true,effectState:'유효',recurrence:false,recurrenceState:'미발생',source:'e2e-fixture'},
+                {id:'E2E-ACTION-RECUR',registeredAt:'2026-07-01',team:'프레임제작팀',problem:'E2E 재발 확인',action:'E2E 완료조치2',status:'완료',effectVerified:true,effectState:'유효',recurrence:true,recurrenceState:'재발',source:'e2e-fixture'}
+              ]));
+            });
+            await page.reload({waitUntil:'networkidle'});
+            await page.waitForFunction(()=>window.HD20_NAV&&window.HD20_SUBNAV&&document.getElementById('awActivity')&&document.getElementById('awWorkplace')&&document.getElementById('awAudit')&&document.getElementById('awAction'),{},{timeout:15000});
+
             const expectedAreas=['dashboard','activity','advancement','audit','action'];
             const expectedSubs={dashboard:['종합현황','성과·운영분석'],activity:['활동관리','실적분석'],advancement:['후보·판정','확정·수평전개'],audit:['Audit 관리','유지관리'],action:['개선조치','효과·재발관리']};
             const keys=await page.locator('.beginnerNav button[data-key]').evaluateAll(xs=>xs.map(x=>x.dataset.key));
             assert(JSON.stringify(keys)===JSON.stringify(expectedAreas),'Top nav mismatch: '+JSON.stringify(keys));
             const checkNoOverflow=async(label)=>{const x=await page.evaluate(()=>({sw:document.documentElement.scrollWidth,cw:document.documentElement.clientWidth}));assert(x.sw<=x.cw+4,`${label} horizontal overflow ${x.sw}/${x.cw}`)};
             const clickArea=async key=>{await page.click(`.beginnerNav button[data-key="${key}"]`);await page.waitForTimeout(180);const active=await page.locator(`.beginnerNav button[data-key="${key}"]`).evaluate(x=>x.classList.contains('active'));assert(active,key+' top tab not active');const area=await page.evaluate(()=>window.HD20_SUBNAV.state().area);assert(area===key,`${key} subnav state=${area}`);const labels=await page.locator('#hd20Subnav button').evaluateAll(xs=>xs.map(x=>x.textContent.trim()));assert(JSON.stringify(labels)===JSON.stringify(expectedSubs[key]),`${key} subtabs ${JSON.stringify(labels)}`);await checkNoOverflow(key)};
-            const clickSub=async label=>{await page.getByRole('button',{name:label,exact:true}).click();await page.waitForTimeout(100);const on=await page.getByRole('button',{name:label,exact:true}).evaluate(x=>x.classList.contains('on'));assert(on,'Subtab not active: '+label)};
+            const clickSub=async label=>{await page.getByRole('button',{name:label,exact:true}).click();await page.waitForTimeout(120);const on=await page.getByRole('button',{name:label,exact:true}).evaluate(x=>x.classList.contains('on'));assert(on,'Subtab not active: '+label)};
 
             await clickArea('dashboard');
             await clickSub('종합현황');
@@ -65,6 +86,7 @@ jobs:
             await clickArea('activity');
             assert(await visible(page,'#awActivity'),'activity screen hidden');
             await clickSub('활동관리');
+            assert((await page.locator('#awActivity [data-live-activity] tr').count())>=2,'activity fixture rows not rendered');
             await page.waitForSelector('#awRegisterModal',{state:'attached',timeout:5000});
             await page.click('#awActivity [data-aw="new"]');
             await page.waitForSelector('#awRegisterModal.on',{state:'visible'});
@@ -72,23 +94,30 @@ jobs:
             await page.waitForFunction(()=>!document.querySelector('#awRegisterModal')?.classList.contains('on'));
             await clickSub('실적분석');
             assert(await visible(page,'#awActivity'),'activity analysis screen hidden');
+            assert((await page.locator('#awActivity [data-live-activity]').innerText()).includes('E2E 개선 A'),'activity analysis data missing');
 
             await clickArea('advancement');
             await clickSub('후보·판정');
             assert(await visible(page,'#performanceConversionAnalysis'),'advancement judgment container hidden');
             assert(await visible(page,'#performanceConversionAnalysis .pcHeader'),'advancement judgment analysis hidden');
             assert(await visible(page,'#awWorkplace'),'advancement workplace hidden');
+            assert((await page.locator('#awWorkplace [data-live-workplace]').innerText()).includes('E2E 고도화 작업장'),'advancement candidate data missing');
             await clickSub('확정·수평전개');
             assert(await visible(page,'#performanceConversionAnalysis'),'advancement standard container hidden');
             assert(!(await visible(page,'#performanceConversionAnalysis .pcHeader')),'advancement standard should hide judgment analysis');
             assert(await visible(page,'#awWorkplace'),'advancement standard workplace hidden');
+            assert((await page.locator('#awWorkplace').innerText()).includes('E2E 고도화 작업장'),'advancement standard data missing');
 
             await clickArea('audit');
             assert(await visible(page,'#awAudit'),'audit screen hidden');
             await clickSub('Audit 관리');
-            assert(await visible(page,'#awAudit'),'audit manage hidden');
+            assert(await visible(page,'#awAudit .auditDraw'),'audit draw hidden');
+            assert(!(await visible(page,'#awAudit .audit6m')),'audit retention should be hidden in manage view');
             await clickSub('유지관리');
-            assert(await visible(page,'#awAudit'),'audit retention hidden');
+            assert(await visible(page,'#awAudit .audit6m'),'audit retention panel hidden');
+            assert(!(await visible(page,'#awAudit .auditDraw')),'audit draw should be hidden in retention view');
+            const auditText=await page.locator('#awAudit').innerText();
+            assert(/6개월|유지|종료/.test(auditText),'audit retention content blank');
 
             await clickArea('action');
             assert(await visible(page,'#awAction'),'action screen hidden');
@@ -100,9 +129,12 @@ jobs:
             await page.waitForFunction(()=>!document.querySelector('#hd20ActionRegisterModal')?.classList.contains('on'));
             await clickSub('효과·재발관리');
             assert(await visible(page,'#awAction'),'action verify hidden');
+            assert(await visible(page,'#hd20ActionVerifyStatus'),'action verification status hidden');
+            const verifyText=await page.locator('#hd20ActionVerifyStatus').innerText();
+            for(const term of ['전체 개선요청','3건','효과검증 완료','2건','재발 확인','1건'])assert(verifyText.includes(term),'action verify missing '+term+': '+verifyText);
 
             assert(errors.length===0,'Page errors: '+errors.join(' | '));
-            console.log('PASS desktop: all 5 areas, 10 subtabs, activity/action modals and dashboard visibility contracts');
+            console.log('PASS desktop: all 5 areas, 10 subtabs, isolated canonical fixtures, modals and semantic content contracts');
 
             await page.setViewportSize({width:390,height:844});
             for(const key of expectedAreas){await clickArea(key)}
