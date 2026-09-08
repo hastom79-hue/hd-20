@@ -1,5 +1,5 @@
 (()=>{'use strict';
-const KEYS=['hd20GMES5SAutoImproveRawV1','hd20ActionCasesV2','hd20AuditRandomDrawsV1','hd20OperatingPolicyV1','hd20AuditChecklistV1','hd20TeamLeaderMasterV1'];
+const KEYS=['hd20GMES5SAutoImproveRawV1','hd20ActionCasesV2','hd20AuditRandomDrawsV1','hd20OperatingPolicyV1','hd20AuditChecklistV1','hd20TeamLeaderMasterV1','hd20TeamHeadcountMasterV1'];
 const ROW='canonical_v1',META='hd20DbSyncMetaV1';let client=null,user=null,ready=false,applying=false,timer=null,patched=false,booting=false,lastRemoteAt='';
 const parse=v=>{try{return JSON.parse(v)}catch{return v}};
 function snapshot(){const payload={};KEYS.forEach(k=>{const v=localStorage.getItem(k);if(v!==null)payload[k]=parse(v)});return payload}
