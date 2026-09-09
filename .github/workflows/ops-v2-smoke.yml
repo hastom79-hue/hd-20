@@ -1,0 +1,33 @@
+name: HD20 ops v2 smoke
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'hd20-ops-v2.js'
+      - 'hd20-ops-v2.css'
+      - 'index.html'
+      - '.github/workflows/ops-v2-smoke.yml'
+  workflow_dispatch:
+jobs:
+  ops-v2:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: JavaScript syntax
+        run: node --check hd20-ops-v2.js
+      - name: Integration contract
+        run: |
+          test -s hd20-ops-v2.js
+          test -s hd20-ops-v2.css
+          grep -q 'hd20-ops-v2.css' index.html
+          grep -q 'hd20-ops-v2.js' index.html
+          grep -q 'HD20_OPS_V2' hd20-ops-v2.js
+          grep -q 'openTraceability' hd20-ops-v2.js
+          grep -q 'hd20GridControls' hd20-ops-v2.js
+          grep -q 'auditDrawId' hd20-ops-v2.js
+          grep -q 'sourceCaseId' hd20-ops-v2.js
+          grep -q 'hd20DeepLink' hd20-ops-v2.css
+          grep -q 'hd20TraceModal' hd20-ops-v2.css
+      - name: Guard no fake data labels
+        run: |
+          ! grep -Eqi 'sample data|mock data|dummy data|가상 데이터 생성|임의 데이터 생성' hd20-ops-v2.js
