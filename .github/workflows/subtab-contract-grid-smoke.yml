@@ -1,0 +1,74 @@
+name: HD20 subtab contract grid smoke
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  subtab-contract-grid:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Start local server
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/hd20-subtab-http.log 2>&1 &
+          for i in {1..30}; do curl -fsS http://127.0.0.1:4173/index.html >/dev/null && exit 0; sleep 1; done
+          cat /tmp/hd20-subtab-http.log; exit 1
+      - name: Validate purpose contracts and detail grid
+        run: |
+          cat > smoke.cjs <<'NODE'
+          const {chromium}=require('playwright');
+          const assert=(v,m)=>{if(!v)throw new Error(m)};
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:1440,height:1000}});
+            const errs=[]; page.on('pageerror',e=>errs.push(String(e)));
+            page.on('dialog',d=>d.accept());
+            await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'networkidle',timeout:30000});
+            await page.waitForFunction(()=>window.HD20_NAV&&window.HD20_SUBNAV&&document.querySelector('#hd20PurposePanel'),{},{timeout:15000});
+            await page.evaluate(()=>{
+              localStorage.setItem('hd20GMES5SAutoImproveRawV1',JSON.stringify([{id:'GRID-A',date:'2026-09-10',type:'정리',team:'성능팀',workplace:'Grid 작업장',problem:'Grid 문제',improvement:'Grid 개선',status:'완료'}]));
+              localStorage.setItem('hd20AuditRandomDrawsV1',JSON.stringify([{id:'GRID-U',date:'2026-09-10',team:'성능팀',auditDate:'2026-09-10',auditResult:'적합',status:'6개월 관리중'}]));
+              localStorage.setItem('hd20ActionCasesV2',JSON.stringify([{id:'GRID-C',registeredAt:'2026-09-10',team:'성능팀',problem:'Grid 조치',action:'Grid 완료',status:'완료',effectVerified:true,effectState:'유효',recurrence:false}]));
+            });
+            await page.reload({waitUntil:'networkidle'});
+            const areas={dashboard:['종합현황','성과·운영분석'],activity:['활동관리','실적분석'],advancement:['후보·판정','확정·수평전개'],audit:['Audit 관리','유지관리'],action:['개선조치','효과·재발관리']};
+            let count=0;
+            for(const [area,subs] of Object.entries(areas)){
+              await page.click(`.beginnerNav button[data-key="${area}"]`); await page.waitForTimeout(150);
+              for(const sub of subs){
+                await page.getByRole('button',{name:sub,exact:true}).click(); await page.waitForTimeout(100);
+                const c=await page.locator('#hd20PurposePanel').getAttribute('data-contract');
+                assert(c&&c.startsWith(area+'.'),`contract missing for ${area}/${sub}: ${c}`);
+                const text=await page.locator('#hd20PurposePanel').innerText();
+                for(const term of ['판단','다음','상세 데이터 그리드'])assert(text.includes(term),`${term} missing ${area}/${sub}`);
+                await page.getByRole('button',{name:'상세 데이터 그리드',exact:true}).click();
+                await page.waitForSelector('#hd20UniversalGridModal.on',{state:'visible'});
+                const meta=await page.locator('#hd20GridMeta').innerText(); assert(meta.length>0,'grid meta missing');
+                await page.keyboard.press('Escape'); count++;
+              }
+            }
+            assert(count===10,'not all subtabs checked');
+            assert(errs.length===0,'page errors: '+errs.join(' | '));
+            await page.setViewportSize({width:390,height:844});
+            await page.click('.beginnerNav button[data-key="activity"]'); await page.waitForTimeout(100);
+            await page.getByRole('button',{name:'활동관리',exact:true}).click();
+            await page.getByRole('button',{name:'상세 데이터 그리드',exact:true}).click();
+            const box=await page.locator('.hd20GridBox').boundingBox(); assert(box&&box.width<=390.5,'mobile grid overflow');
+            console.log('PASS: 10 subtab contracts + universal detail grid + mobile');
+            await browser.close();
+          })().catch(e=>{console.error(e.stack||e);process.exit(1)});
+          NODE
+          node smoke.cjs
