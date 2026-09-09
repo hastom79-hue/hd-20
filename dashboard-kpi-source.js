@@ -1,6 +1,7 @@
 (()=>{'use strict';
 const KEY='hd20GMES5SAutoImproveRawV1',HEADCOUNT_KEY='hd20TeamHeadcountMasterV1',AUDIT_KEY='hd20AuditRandomDrawsV1';
-function load(){try{const v=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(v)?v:[]}catch{return[]}}
+function isNonProdRow(x){if(!x||typeof x!=='object')return false;const source=String(x.source||'').toLowerCase(),id=String(x.id||'').toUpperCase();return x.isDemo===true||x.isTest===true||source==='demo-seed'||source==='e2e-fixture'||id.startsWith('DEMO-')||id.startsWith('E2E-')}
+function load(){try{const v=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(v)?v.filter(x=>!isNonProdRow(x)):[]}catch{return[]}}
 function yearOf(v){const m=String(v??'').match(/(20\d{2})/);return m?Number(m[1]):null}
 function selectedYear(){const txt=document.querySelector('.controls select')?.textContent||'';const y=yearOf(txt);return y||new Date().getFullYear()}
 function isAdvancementType(x){const v=String(x?.type||x?.category||x?.sType||x?.['5S구분']||x?.['활동유형']||'').trim();return v==='5S 고도화'||v==='고도화'||v==='5S고도화'}
@@ -20,8 +21,8 @@ function daysBetween(a,b){a=asDate(a);b=asDate(b);return a&&b?Math.max(0,Math.ro
 function levelOf(x){const v=String(x?.level||x?.maturityLevel||x?.lv||'').match(/[1-5]/);return v?+v[0]:null}
 function pct(n,d){return d?Math.round(n/d*1000)/10:null}
 function recurrenceState(x){if(x?.recurrence===true)return true;if(x?.recurrence===false)return false;const v=String(x?.recurrenceState??x?.recurrent??x?.['재발여부']??'').trim().toLowerCase();if(['재발','발생','true','1','yes','y'].includes(v))return true;if(['미발생','없음','false','0','no','n'].includes(v))return false;return false}
-function actionCases(){try{const v=JSON.parse(localStorage.getItem('hd20ActionCasesV2')||'[]');return Array.isArray(v)?v:[]}catch{return[]}}
-function auditDraws(){try{const v=JSON.parse(localStorage.getItem(AUDIT_KEY)||'[]');return Array.isArray(v)?v:[]}catch{return[]}}
+function actionCases(){try{const v=JSON.parse(localStorage.getItem('hd20ActionCasesV2')||'[]');return Array.isArray(v)?v.filter(x=>!isNonProdRow(x)):[]}catch{return[]}}
+function auditDraws(){try{const v=JSON.parse(localStorage.getItem(AUDIT_KEY)||'[]');return Array.isArray(v)?v.filter(x=>!isNonProdRow(x)):[]}catch{return[]}}
 function addMonths(v,m){const d=asDate(v);if(!d)return null;const day=d.getDate(),x=new Date(d);x.setDate(1);x.setMonth(x.getMonth()+m);const last=new Date(x.getFullYear(),x.getMonth()+1,0).getDate();x.setDate(Math.min(day,last));return x}
 function sixMonthRetention(){const now=new Date(),rows=auditDraws().filter(d=>d.auditDate);const closed=rows.filter(d=>{const end=addMonths(d.auditDate,6);return end&&end<=now});if(!closed.length)return null;const act=actionCases();let pass=0;for(const d of closed){const start=asDate(d.auditDate),end=addMonths(d.auditDate,6);const teamActs=act.filter(a=>String(a.team||'')===String(d.team||'')&&asDate(a.date||a.registeredAt||a.created)>=start&&asDate(a.date||a.registeredAt||a.created)<=end);const unresolved=teamActs.some(a=>!/완료|종결|close|done/i.test(String(a.status||'')));const recurrent=teamActs.some(recurrenceState);const finalState=String(d.finalEvaluation||d.auditFinalState||'').trim();const failed=finalState==='미흡'||['부적합','실패','해제','중지'].includes(finalState);if(!unresolved&&!recurrent&&!failed)pass++}return pct(pass,closed.length)}
 function operational(s){
@@ -38,6 +39,6 @@ function operational(s){
   return{judgmentRate:pct(judged.length,judgmentScope.length),avgLead:lead.length?Math.round(lead.reduce((a,b)=>a+b,0)/lead.length*10)/10:null,maturity:levels.length?Math.round(levels.reduce((a,b)=>a+b,0)/levels.length*10)/10:null,sixRetention:sixMonthRetention(),recurrence:pct(recurred,recRows.length),actionOnTime:pct(ontime,completed.filter(x=>pickField(x,['targetDate','due','dueDate'])).length)}
 }
 function signal(){window.dispatchEvent(new CustomEvent('hd20-kpi-source-updated',{detail:snapshot()}))}
-window.HD20KPIData={KEY,HEADCOUNT_KEY,AUDIT_KEY,load,yearOf,selectedYear,isCandidate,isConfirmed,isMaintained,isAdvancementType,rowDate,confirmedDate,headcount,snapshot,operational,sixMonthRetention,recurrenceState,signal};
+window.HD20KPIData={KEY,HEADCOUNT_KEY,AUDIT_KEY,load,isNonProdRow,yearOf,selectedYear,isCandidate,isConfirmed,isMaintained,isAdvancementType,rowDate,confirmedDate,headcount,snapshot,operational,sixMonthRetention,recurrenceState,signal};
 ['hd20-gmes-5s-imported','hd20-gmes-5s-judged','hd20-audit-updated','hd20-action-updated'].forEach(e=>window.addEventListener(e,()=>setTimeout(signal,0)));window.addEventListener('storage',e=>{if(e.key===KEY||e.key===HEADCOUNT_KEY||e.key===AUDIT_KEY||e.key==='hd20ActionCasesV2')signal()});
 })();
