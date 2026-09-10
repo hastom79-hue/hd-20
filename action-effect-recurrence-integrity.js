@@ -1,0 +1,14 @@
+(()=>{'use strict';
+const KEY='hd20ActionCasesV2';
+function load(){try{const v=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(v)?v:[]}catch{return[]}}
+function currentId(m){return m?.dataset?.actionId||m?.querySelector?.('[data-trace-id]')?.value||''}
+function currentCase(m){const id=currentId(m);return load().find(x=>String(x.id)===String(id))||null}
+function hasExistingAfter(c){return !!(c?.after||c?.afterEvidence)}
+function prepareTraceModal(m){if(!m)return;const sel=m.querySelector('[data-trace-recur]');if(!sel)return;const c=currentCase(m),hasExplicit=c&&(typeof c.recurrence==='boolean'||String(c.recurrenceState||'').trim());if(![...sel.options].some(o=>o.value==='미확인')){const o=document.createElement('option');o.value='미확인';o.textContent='미확인';sel.insertBefore(o,sel.firstChild)}if(!hasExplicit)sel.value='미확인';sel.dataset.integrityPrepared='1'}
+function validateTraceSave(e){const btn=e.target?.closest?.('[data-trace-save]');if(!btn)return;const m=btn.closest('.hd20TraceModal');if(!m)return;const eff=m.querySelector('[data-trace-effect]')?.value||'대기',done=m.querySelector('[data-trace-done]')?.value||'',action=m.querySelector('[data-trace-action]')?.value.trim()||'',afterImg=m.querySelector('[data-trace-after-img]'),c=currentCase(m),hasAfter=hasExistingAfter(c)||!!afterImg?.dataset?.pending;
+if(eff==='유효'&&(!done||!action||!hasAfter)){e.preventDefault();e.stopImmediatePropagation();alert('효과검증을 유효로 확정하려면 완료일, 실제 조치내용, AFTER Evidence가 모두 필요합니다.');return}
+const rec=m.querySelector('[data-trace-recur]')?.value||'미확인';if(rec==='재발'&&eff!=='유효'){e.preventDefault();e.stopImmediatePropagation();alert('재발 판정은 효과검증 결과를 먼저 확정한 뒤 등록해 주세요.');}}
+function afterTraceUpdate(e){if(e.detail?.source!=='audit-trace')return;const id=e.detail?.id;if(!id)return;const rows=load(),c=rows.find(x=>String(x.id)===String(id));if(!c)return;let changed=false;const state=String(c.recurrenceState||'').trim();if(state==='미확인'&&c.recurrence===false){delete c.recurrence;changed=true}if(c.effectState==='대기'&&c.effectVerified===false){delete c.effectVerified;changed=true}if(!changed)return;localStorage.setItem(KEY,JSON.stringify(rows));window.dispatchEvent(new CustomEvent('hd20-action-updated',{detail:{source:'action-effect-recurrence-integrity',id}}))}
+function bind(){document.addEventListener('click',e=>{if(e.target?.closest?.('[data-trace-edit]'))setTimeout(()=>prepareTraceModal(document.querySelector('.hd20TraceModal.on')),0)},true);document.addEventListener('click',validateTraceSave,true);window.addEventListener('hd20-action-updated',afterTraceUpdate)}
+document.readyState==='loading'?document.addEventListener('DOMContentLoaded',bind,{once:true}):bind();
+})();
