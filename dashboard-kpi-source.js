@@ -23,8 +23,10 @@ function levelOf(x){const v=String(x?.level||x?.maturityLevel||x?.lv||'').match(
 function pct(n,d){return d?Math.round(n/d*1000)/10:null}
 function txt(v){return String(v??'').trim()}
 function actionDone(x){return /완료|확정|종료|종결|close|done/i.test(txt(x?.status||x?.activityStatus||x?.judgeState||x?.auditState))}
+function actionCompleted(x){return !!pickField(x,['doneDate','completedDate','finishDate'])&&!!txt(x?.action||x?.improvement)&&!!(x?.after||x?.afterEvidence)}
 function effectVerified(x){if(x?.effectVerified===true)return true;const v=txt(x?.effectState||x?.effectResult);if(!v||/대기|미검증|미흡|부적합|무효|false|^0$|^N$/i.test(v))return false;return /^(유효|적합|효과확인|효과확인완료|검증완료|완료|true|1|Y)$/i.test(v)}
 function recurrenceState(x){if(x?.recurrence===true)return true;if(x?.recurrence===false)return false;const v=txt(x?.recurrenceState??x?.recurrent??x?.['재발여부']);if(!v||/^(미발생|없음|미재발|false|0|no|n)$/i.test(v))return false;return /^(재발|발생|true|1|yes|y)$/i.test(v)}
+function recurrenceObserved(x){const v=txt(x?.recurrenceState??x?.recurrent??x?.['재발여부']);if(v)return /^(재발|발생|미발생|없음|미재발|true|false|1|0|yes|no|y|n)$/i.test(v);return typeof x?.recurrence==='boolean'}
 function closedLoopRecurrence(x){return actionDone(x)&&effectVerified(x)&&recurrenceState(x)}
 function actionCases(){try{const v=JSON.parse(localStorage.getItem('hd20ActionCasesV2')||'[]');return Array.isArray(v)?v.filter(x=>!isNonProdRow(x)):[]}catch{return[]}}
 function auditDraws(){try{const v=JSON.parse(localStorage.getItem(AUDIT_KEY)||'[]');return Array.isArray(v)?v.filter(x=>!isNonProdRow(x)):[]}catch{return[]}}
@@ -39,14 +41,14 @@ function operational(s){
   const judged=judgmentScope.filter(x=>['확정','보완요청','미확정'].includes(String(x.judgeState||'').trim())&&pickField(x,['judgedAt','judgeDate','confirmedAt']));
   const lead=judged.map(x=>daysBetween(pickField(x,['createdAt','regDate','date','importedAt']),pickField(x,['judgedAt','judgeDate','confirmedAt']))).filter(Number.isFinite);
   const levels=(s?.confirmed||[]).map(levelOf).filter(Number.isFinite);
-  const act=actionCases(),verified=act.filter(x=>actionDone(x)&&effectVerified(x));
-  const recurred=verified.filter(recurrenceState).length;
-  const completed=act.filter(x=>pickField(x,['doneDate','completedDate','finishDate'])||actionDone(x));
+  const act=actionCases(),verified=act.filter(x=>actionDone(x)&&effectVerified(x)),recurrenceScope=verified.filter(recurrenceObserved);
+  const recurred=recurrenceScope.filter(recurrenceState).length;
+  const completed=act.filter(actionCompleted);
   const ontime=completed.filter(x=>{const done=asDate(pickField(x,['doneDate','completedDate','finishDate'])),due=asDate(pickField(x,['targetDate','due','dueDate','deadline']));return done&&due&&done<=due}).length;
-  const timedCompleted=completed.filter(x=>pickField(x,['doneDate','completedDate','finishDate'])&&pickField(x,['targetDate','due','dueDate','deadline']));
-  return{judgmentRate:pct(judged.length,judgmentScope.length),avgLead:lead.length?Math.round(lead.reduce((a,b)=>a+b,0)/lead.length*10)/10:null,maturity:levels.length?Math.round(levels.reduce((a,b)=>a+b,0)/levels.length*10)/10:null,sixRetention:sixMonthRetention(),recurrence:pct(recurred,verified.length),actionOnTime:pct(ontime,timedCompleted.length)}
+  const timedCompleted=completed.filter(x=>pickField(x,['targetDate','due','dueDate','deadline']));
+  return{judgmentRate:pct(judged.length,judgmentScope.length),avgLead:lead.length?Math.round(lead.reduce((a,b)=>a+b,0)/lead.length*10)/10:null,maturity:levels.length?Math.round(levels.reduce((a,b)=>a+b,0)/levels.length*10)/10:null,sixRetention:sixMonthRetention(),recurrence:pct(recurred,recurrenceScope.length),actionOnTime:pct(ontime,timedCompleted.length)}
 }
 function signal(){window.dispatchEvent(new CustomEvent('hd20-kpi-source-updated',{detail:snapshot()}))}
-window.HD20KPIData={KEY,HEADCOUNT_KEY,AUDIT_KEY,load,isNonProdRow,yearOf,selectedYear,isCandidate,isConfirmed,isMaintained,isAdvancementType,rowDate,confirmedDate,headcount,snapshot,operational,sixMonthRetention,recurrenceState,effectVerified,closedLoopRecurrence,seoulDateKey,signal};
+window.HD20KPIData={KEY,HEADCOUNT_KEY,AUDIT_KEY,load,isNonProdRow,yearOf,selectedYear,isCandidate,isConfirmed,isMaintained,isAdvancementType,rowDate,confirmedDate,headcount,snapshot,operational,sixMonthRetention,recurrenceState,recurrenceObserved,effectVerified,actionCompleted,closedLoopRecurrence,seoulDateKey,signal};
 ['hd20-gmes-5s-imported','hd20-gmes-5s-judged','hd20-audit-updated','hd20-action-updated'].forEach(e=>window.addEventListener(e,()=>setTimeout(signal,0)));window.addEventListener('storage',e=>{if(e.key===KEY||e.key===HEADCOUNT_KEY||e.key===AUDIT_KEY||e.key==='hd20ActionCasesV2')signal()});
 })();
