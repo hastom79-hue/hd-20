@@ -1,54 +1,49 @@
-# HD-20 Operation UX Upgrade — 2026-09-10
+# HD-20 Operational UX Development Log — 2026-09-10
 
-## 목표
-HD-20을 단순 5S 현황 화면이 아닌 실제 업무 운영시스템으로 고도화한다. 사용자는 각 화면에서 `왜 보는가 → 무엇을 판단하는가 → 다음에 무엇을 해야 하는가 → 어떤 근거 데이터를 봐야 하는가`를 즉시 이해해야 한다.
+## 목적
+HD-20을 단순 메뉴 모음이 아니라 실제 운영 판단과 후속조치가 이어지는 웹 시스템으로 강화한다.
 
-## 이번 반영
-### 1. 10개 서브탭 업무 계약 정의
-- 통합현황 / 종합현황
-- 통합현황 / 성과·운영분석
-- 5S 활동 / 활동관리
-- 5S 활동 / 실적분석
-- 고도화·표준화 / 후보·판정
-- 고도화·표준화 / 확정·수평전개
-- 진단·유지 / Audit 관리
-- 진단·유지 / 유지관리
-- 개선실행 / 개선조치
-- 개선실행 / 효과·재발관리
+## 서브탭 운영계약
+- dashboard.summary: 종합현황
+- dashboard.analysis: 성과·운영분석
+- activity.manage: 활동관리
+- activity.analysis: 실적분석
+- advancement.judge: 후보·판정
+- advancement.standard: 확정·수평전개
+- audit.audit: Audit 관리
+- audit.retention: 유지관리
+- action.manage: 개선조치
+- action.verify: 효과·재발관리
 
-각 서브탭은 화면 상단에 목적, 판단기준, 다음 행동, 핵심 기능을 독립적으로 표시한다.
+각 서브탭에는 목적, 판단기준, 다음 행동, 핵심 기능을 명시한다.
 
-### 2. Universal Detail Grid
-각 업무화면에서 `상세 데이터 그리드`를 호출할 수 있다.
-- 현재 화면에 실제 표시된 테이블 우선 사용
-- 화면 테이블이 없으면 해당 업무영역의 실제 localStorage 원천데이터를 사용
-- 검색 지원
-- CSV 다운로드 지원
-- 데이터가 없으면 명확한 Empty State 표시
-- 임의 샘플/가상 실적 생성 금지
-- 모바일에서는 전체화면 그리드로 전환
+## 상세 데이터 그리드
+- 현재 화면의 실제 표를 우선 사용
+- 표가 없을 경우 Canonical localStorage 원천을 사용
+- 검색, CSV 다운로드, 정렬, 행 표시 수, 행 상세팝업 제공
+- 실제 데이터가 없으면 Empty State 표시
+- 임의/샘플 데이터 생성 금지
 
 원천 키:
 - 5S 활동 / 고도화: `hd20GMES5SAutoImproveRawV1`
 - Audit / 유지관리: `hd20AuditRandomDrawsV1`
 - 개선조치 / 효과·재발: `hd20ActionCasesV2`
 
-### 3. 자동검증
-`.github/workflows/subtab-contract-grid-smoke.yml` 추가.
-검증 범위:
-- 5개 Main Area / 10개 Subtab 전환
-- Subtab별 `data-contract` 갱신
-- 목적 패널의 판단 / 다음 / 상세 데이터 그리드 기능 존재
-- 상세그리드 Modal open/close
-- 테스트 브라우저 내부 격리 Fixture 기반 데이터 표시
-- 모바일 390px 상세그리드 Overflow 검증
+## Traceability
+Audit → 개선조치 → 효과검증 → 재발 흐름을 `auditDrawId` / `sourceCaseId` 기준으로 연결한다.
 
-## 다음 고도화 우선순위
-1. 각 서브탭의 KPI/상태카드를 업무계약에 맞춰 재배치
-2. 상세그리드에서 정렬/필터/페이지네이션/행 클릭 상세보기 추가
-3. Dashboard 이상지표 → 해당 업무 Subtab + 필터상태로 바로 이동하는 Deep Link
-4. Audit 부적합 → 개선조치 → 효과검증 → 재발관리 Traceability 강화
-5. 실제 Supabase 데이터 기준 권한/동시성/감사이력 최종 검증
+## 2026-09-10 추가 무결성 보정
+- 한국 운영 기준의 기한경과 판단은 `Asia/Seoul` 날짜를 사용하도록 보정.
+- 효과검증 완료 집계는 `조치 완료 + 효과검증 완료` 조건을 모두 만족한 Case만 포함.
+- 재발 집계는 `조치 완료 + 효과검증 완료 + 재발 확인` Case만 포함.
+- 기존 V2 본체를 임의 중복 수정하지 않고 `hd20-operational-integrity.js` 모듈로 운영기준 보정 기능을 분리.
 
-## 변경 원칙
-기존 계산/판정 기준을 임의 변경하지 않는다. 실제 데이터가 없으면 `—` 또는 Empty State를 표시한다. 화면 고도화가 KPI 정의나 공식 판정 로직을 변형해서는 안 된다.
+## 자동검증
+- `.github/workflows/subtab-contract-grid-smoke.yml`
+- `.github/workflows/ops-v2-smoke.yml`
+- 기존 Runtime / Browser / Layout / IA smoke와 병행 확인
+
+## 검증 원칙
+- GitHub Pages 배포 SHA가 최신 main SHA와 일치하는지 확인
+- Actions 공통 실행환경 실패와 애플리케이션 코드 실패를 분리 판단
+- 실제 운영 데이터에 Demo/E2E fixture를 저장하거나 동기화하지 않음
