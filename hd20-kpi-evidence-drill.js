@@ -14,7 +14,7 @@ function confirmed(x){return !!x&&advancementType(x)&&x.confirmed===true&&txt(x.
 function due(x){return txt(x?.due||x?.targetDate||x?.deadline).slice(0,10)}
 function overdue(x){const d=due(x);return !!d&&!done(x)&&d<today()}
 function effect(x){if(x?.effectVerified===true)return true;const v=txt(x?.effectState??x?.effectResult);if(['미흡','부적합','무효','대기','미검증','효과확인대기','false','0','N','n'].includes(v))return false;return['유효','적합','검증완료','효과확인','효과확인완료','완료','true','1','Y','y'].includes(v)}
-function recur(x){if(x?.recurrence===true)return true;const v=txt(x?.recurrenceState??x?.recurrent??x?.['재발여부']);if(['미발생','없음','미재발','false','0','N','n'].includes(v))return false;return['재발','발생','true','1','Y','y'].includes(v)}
+function recur(x){if(x?.recurrence===true)return true;const v=txt(x?.recurrenceState);if(['미발생','없음','미재발','false','0','N','n'].includes(v))return false;return['재발','발생','true','1','Y','y'].includes(v)}
 function closedRecur(x){return done(x)&&effect(x)&&recur(x)}
 function auditId(x){return txt(x?.id||x?.drawId||x?.auditDrawId)}
 function actionSourceId(x){return txt(x?.auditDrawId||x?.sourceCaseId)}
