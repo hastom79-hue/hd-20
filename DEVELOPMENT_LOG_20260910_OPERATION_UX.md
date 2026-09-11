@@ -51,7 +51,12 @@ Audit → 개선조치 → 효과검증 → 재발 흐름을 `auditDrawId` / `so
 - 6개월 지속관리의 Action 범위는 더 이상 `같은 팀 + 6개월 날짜범위`로 추정하지 않고 정확 Audit ID 연결만 사용한다.
 - 유지율 KPI 역시 정확 Audit ID 연결, 미완료 여부, 폐쇄루프 재발, 종료평가 결과를 같은 기준으로 사용한다.
 - 알려진 Legacy Test Audit ID는 생산 KPI/동기화 대상에서 제외·격리되도록 검증했다.
-- 브라우저 캐시 반영을 위해 `audit-random-draw.js`, `dashboard-kpi-source.js`, `hd20-operational-integrity.js`, `audit-six-month-control.js`, `dashboard-side-summary.js`, `final-layout-polish.js`의 관련 버전 키를 갱신했다.
+- `hd20-ops-v2.js` 자체 계산을 Canonical 규칙으로 올려 후처리 보정 모듈의 실행순서와 무관하게 동일 KPI가 계산되도록 했다.
+- 상세그리드에 Activity ID, Audit ID, Action ID, 원천 Audit ID, 기한, 운영상태, 효과검증, 재발 등 실제 원천 및 파생 운영상태를 노출하여 KPI → 근거 데이터 역검증이 가능하도록 했다.
+- Audit Action Trace의 파생 `AUTO-AUDIT-*` fallback을 제거하고 정확 Audit ID 연계만 허용하도록 정리했다.
+- `hd20-trace-exact.js`는 상세그리드에 이미 ID 열이 존재할 경우 추가 삽입을 건너뛰므로 신규 원천그리드 ID 열과 중복되지 않음을 확인했다.
+- 활동 신규등록의 기본일자가 UTC 기준으로 하루 어긋날 수 있는 위험을 `activity-seoul-date-guard.js`로 보정했다. 화면 생성 시 서울 날짜를 기본값으로 교정하고, 날짜 공란 저장 시에도 등록 직전에 서울 날짜를 채운다.
+- 브라우저 캐시 반영을 위해 `audit-random-draw.js`, `dashboard-kpi-source.js`, `hd20-operational-integrity.js`, `audit-six-month-control.js`, `dashboard-side-summary.js`, `final-layout-polish.js`, `hd20-subtabs.js`, `hd20-ops-v2.js`, `audit-action-case-trace.js`, `activity-seoul-date-guard.js`의 관련 버전 키를 갱신했다.
 
 ## 자동검증
 - `.github/workflows/subtab-contract-grid-smoke.yml`
