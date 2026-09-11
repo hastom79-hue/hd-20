@@ -1,0 +1,7 @@
+(()=>{'use strict';
+const TARGET='#awActivity #awDate';
+function seoulDate(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())}
+function normalizeDefault(){const input=document.querySelector(TARGET);if(!input)return false;if(input.dataset.hd20DateTouched==='1')return true;const utc=new Date().toISOString().slice(0,10),seoul=seoulDate();if(!input.value||input.value===utc)input.value=seoul;return true}
+function bind(){const mark=e=>{if(e.target?.matches?.(TARGET))e.target.dataset.hd20DateTouched='1'};document.addEventListener('input',mark,true);document.addEventListener('change',mark,true);document.addEventListener('click',e=>{const save=e.target.closest?.('#awActivity [data-aw="save"]');if(!save)return;const input=document.querySelector(TARGET);if(input&&!input.value)input.value=seoulDate()},true);let n=0;const sync=()=>{normalizeDefault();if(++n<80)setTimeout(sync,100)};sync();new MutationObserver(()=>normalizeDefault()).observe(document.documentElement,{subtree:true,childList:true})}
+window.HD20ActivitySeoulDateGuard={seoulDate,normalizeDefault};document.readyState==='loading'?document.addEventListener('DOMContentLoaded',bind,{once:true}):bind();
+})();
