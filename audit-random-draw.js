@@ -8,7 +8,7 @@ function loadActions(){return load(ACTION_KEY).filter(x=>!nonProd(x))}
 function save(k,v){localStorage.setItem(k,JSON.stringify(v))}
 function loadDraws(){return load(DRAW_KEY)}function saveDraws(v){save(DRAW_KEY,v)}function leaders(){return load(TEAM_KEY)}
 function leaderFor(team){return leaders().find(x=>x.team===team)||{team,leader:'미지정',email:''}}
-function isOpen(a){return !/완료|종결|close|done/i.test(String(a.status||''))}
+function isOpen(a){return !/완료|확정|종료|종결|close|done/i.test(String(a.status||a.activityStatus||a.judgeState||a.auditState||''))}
 function effectVerified(a){if(a?.effectVerified===true)return true;const v=String(a?.effectState||a?.effectResult||'').trim();if(!v||/대기|미검증|미흡|부적합|무효|false|^0$|^N$/i.test(v))return false;return /^(유효|적합|효과확인|효과확인완료|검증완료|완료|true|1|Y)$/i.test(v)}
 function recurrenceOf(a){if(a?.recurrence===true)return true;const v=String(a?.recurrenceState??a?.recurrence??'').trim();if(['미발생','없음','미재발','false','0','N','n'].includes(v))return false;return ['재발','발생','true','1','Y','y'].includes(v)}
 function seoulDateKey(v=new Date()){const d=v instanceof Date?v:new Date(v);if(Number.isNaN(d.getTime()))return'';return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(d)}
