@@ -57,6 +57,12 @@ Audit → 개선조치 → 효과검증 → 재발 흐름을 `auditDrawId` / `so
 - `hd20-trace-exact.js`는 상세그리드에 이미 ID 열이 존재할 경우 추가 삽입을 건너뛰므로 신규 원천그리드 ID 열과 중복되지 않음을 확인했다.
 - 활동 신규등록의 기본일자가 UTC 기준으로 하루 어긋날 수 있는 위험을 `activity-seoul-date-guard.js`로 보정했다. 화면 생성 시 서울 날짜를 기본값으로 교정하고, 날짜 공란 저장 시에도 등록 직전에 서울 날짜를 채운다.
 - 브라우저 캐시 반영을 위해 `audit-random-draw.js`, `dashboard-kpi-source.js`, `hd20-operational-integrity.js`, `audit-six-month-control.js`, `dashboard-side-summary.js`, `final-layout-polish.js`, `hd20-subtabs.js`, `hd20-ops-v2.js`, `audit-action-case-trace.js`, `activity-seoul-date-guard.js`의 관련 버전 키를 갱신했다.
+- `hd20-ops-v2.js`의 고도화 후보/공식확정 기준을 `dashboard-kpi-source.js`와 동일한 엄격 기준으로 통일했다.
+- `advancement.standard`의 상세그리드는 후보 전체가 아니라 실제 공식확정 Case만 표시하도록 수정했다.
+- Audit 유지관리 `재발/미흡`은 종료평가 미흡 또는 정확 Audit ID로 연결된 폐쇄루프 재발이 있는 Audit만 포함하며, 상세그리드에 `유지 Risk` 근거열을 추가했다.
+- `hd20-kpi-evidence-drill.js`를 추가하여 10개 서브탭의 40개 KPI 클릭 시 해당 KPI 계산에 실제 사용한 Case 집합만 상세그리드로 표시한다. 따라서 KPI 건수와 상세근거 행 수가 1:1로 일치한다. 생산팀 수처럼 집계형 KPI는 팀별 1행으로 생성한다.
+- 고도화 `현재 유지`와 `유지 미흡`은 상호배타적으로 보정했다. `valid=false`는 현재 유지에서 제외되고 유지 미흡에만 포함된다.
+- KPI Evidence 모듈은 `HD20_OPS_V2.metrics()` 외부 API의 고도화 유지/미흡 결과도 동일 Canonical 기준으로 보정한다.
 
 ## 자동검증
 - `.github/workflows/subtab-contract-grid-smoke.yml`
