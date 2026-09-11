@@ -1,0 +1,7 @@
+(()=>{'use strict';
+const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];let scheduled=false,running=false;
+function patch(){if(running)return;running=true;try{const api=window.HD20_KPI_EVIDENCE,st=window.HD20_SUBNAV?.state?.(),bar=$('#hd20OpsMetrics');if(!api?.evidence||!st||!bar)return;$$('button[data-metric]',bar).forEach((b,i)=>{const ev=api.evidence(st.area,st.sub,i);if(!ev)return;const el=$('b',b);if(!el)return;const em=$('em',el),unit=em?.textContent||'';const html=`${ev.rows.length}<em>${unit}</em>`;if(el.innerHTML!==html)el.innerHTML=html});bar.dataset.kpiEvidenceParity='1'}finally{running=false}}
+function schedule(){if(scheduled)return;scheduled=true;requestAnimationFrame(()=>{scheduled=false;patch()})}
+function bind(){['hd20-subtab-changed','hd20-gmes-5s-imported','hd20-gmes-5s-judged','hd20-action-updated','hd20-audit-draw','hd20-audit-updated','hd20-refresh-requested','storage'].forEach(ev=>window.addEventListener(ev,schedule));new MutationObserver(schedule).observe(document.documentElement,{subtree:true,childList:true});schedule()}
+window.HD20_KPI_PARITY_GUARD={patch,schedule};document.readyState==='loading'?document.addEventListener('DOMContentLoaded',bind,{once:true}):bind();
+})();
