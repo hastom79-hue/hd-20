@@ -1,0 +1,51 @@
+(()=>{'use strict';
+const ACT='hd20GMES5SAutoImproveRawV1',AUD='hd20AuditRandomDrawsV1',ACTION='hd20ActionCasesV2';
+const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
+function read(k){try{const v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[]}catch{return[]}}
+function txt(v){return String(v??'').trim()}
+function esc(v){return txt(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function today(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())}
+function status(x){return txt(x?.status||x?.activityStatus||x?.judgeState||x?.auditState)}
+function done(x){return /완료|확정|종료|종결|close|done/i.test(status(x))}
+function advancementType(x){const v=txt(x?.type||x?.category||x?.sType||x?.['5S구분']||x?.['활동유형']);return v==='5S 고도화'||v==='고도화'||v==='5S고도화'}
+function candidate(x){if(!x||!advancementType(x))return false;if(x.candidate===true||x.isCandidate===true)return true;const s=txt(x.judgeState||x.status);if(!s||s==='미확정')return false;return /판정대기|보완요청|확정|후보|검토|대기/.test(s)}
+function confirmed(x){return !!x&&advancementType(x)&&x.confirmed===true&&txt(x.judgeState)==='확정'}
+function due(x){return txt(x?.due||x?.targetDate||x?.deadline).slice(0,10)}
+function overdue(x){const d=due(x);return !!d&&!done(x)&&d<today()}
+function effect(x){if(x?.effectVerified===true)return true;const v=txt(x?.effectState??x?.effectResult);if(['미흡','부적합','무효','대기','미검증','효과확인대기','false','0','N','n'].includes(v))return false;return['유효','적합','검증완료','효과확인','효과확인완료','완료','true','1','Y','y'].includes(v)}
+function recur(x){if(x?.recurrence===true)return true;const v=txt(x?.recurrenceState??x?.recurrent??x?.['재발여부']);if(['미발생','없음','미재발','false','0','N','n'].includes(v))return false;return['재발','발생','true','1','Y','y'].includes(v)}
+function closedRecur(x){return done(x)&&effect(x)&&recur(x)}
+function auditId(x){return txt(x?.id||x?.drawId||x?.auditDrawId)}
+function actionSourceId(x){return txt(x?.auditDrawId||x?.sourceCaseId)}
+function maintained(x){return confirmed(x)&&!/미흡|부적합|중지|해제|실패/.test(txt(x.maintainState||x.auditState||x.status))&&x.valid!==false}
+function weakMaintain(x){return confirmed(x)&&(/미흡|부적합|중지|해제|실패/.test(txt(x.maintainState||x.auditState||x.status))||x.valid===false)}
+function recent30(x){const d=new Date(x.date||x.regDate||x.createdAt||0);return Number.isFinite(d.getTime())&&Date.now()-d.getTime()<=2592e6}
+function nonconforming(x){return /부적합|미흡|NG|fail/i.test(txt(x.auditResult||x.result||x.status))}
+function retentionRisk(d,actions){const id=auditId(d),finalState=txt(d.finalEvaluation||d.auditFinalState);return /미흡|부적합|실패|해제|중지/.test(finalState)||!!id&&actions.some(a=>actionSourceId(a)===id&&closedRecur(a))}
+function criteria3(x){return window.HD20MaturityConditionAnalysis?.criteriaState?.(x)?.count===3}
+function activityRow(x){return[x.id||'—',x.date||x.regDate||'—',x.type||x.category||'—',x.team||'—',x.workplace||x.location||x.title||'—',status(x)||'—',candidate(x)?'후보':'—']}
+function advancementRow(x){return[x.id||'—',x.date||x.regDate||'—',x.team||'—',x.workplace||x.location||x.title||'—',x.judgeState||x.status||'—',confirmed(x)?'확정':'미확정',x.confirmedAt||x.judgedAt||'—',x.maintainState||x.auditState||'—',x.horizontalRollout||/전개/.test(txt(x.rolloutState))?'전개':'—']}
+function auditRow(x,actions){const id=auditId(x),linked=actions.filter(a=>id&&actionSourceId(a)===id);return[id||'—',x.date||x.drawDate||'—',x.team||'—',x.workplace||'—',x.auditDate||'—',x.auditResult||x.result||'—',x.finalEvaluation||'—',linked.length,retentionRisk(x,actions)?'재발/미흡':'—']}
+function actionRow(x){return[x.id||'—',actionSourceId(x)||'—',x.registeredAt||x.date||'—',x.team||'—',x.owner||x.assignee||'—',due(x)||'—',status(x)||'—',overdue(x)?'기한경과':done(x)?'완료':'진행중',effect(x)?'검증완료':'검증대기',closedRecur(x)?'재발':recur(x)?'재발(미폐쇄)':'—']}
+function evidence(area,sub,index){const acts=read(ACT),audits=read(AUD),actions=read(ACTION),candidates=acts.filter(candidate),confirmedRows=acts.filter(confirmed),doneActions=actions.filter(done),linkedActions=actions.filter(a=>{const id=actionSourceId(a);return !!id&&audits.some(d=>auditId(d)===id)});const key=`${area}.${sub}.${index}`;let title='',headers=[],rows=[];
+const A=['Activity ID','일자','유형','생산팀','작업장','상태','고도화 후보'],V=['Activity ID','후보일','생산팀','작업장','판정상태','공식확정','확정일','유지상태','수평전개'],U=['Audit ID','선정일','생산팀','작업장','Audit일','결과','종료평가','Action 연계','유지 Risk'],X=['Action ID','원천 Audit ID','등록일','생산팀','담당','기한','조치상태','운영상태','효과검증','재발'];
+const setA=(n,r)=>{title=n;headers=A;rows=r.map(activityRow)},setV=(n,r)=>{title=n;headers=V;rows=r.map(advancementRow)},setU=(n,r)=>{title=n;headers=U;rows=r.map(x=>auditRow(x,actions))},setX=(n,r)=>{title=n;headers=X;rows=r.map(actionRow)};
+switch(key){
+case'dashboard.summary.0':setA('5S 활동',acts);break;case'dashboard.summary.1':setV('고도화 후보',candidates);break;case'dashboard.summary.2':setU('Audit 실시 대기',audits.filter(x=>!x.auditDate));break;case'dashboard.summary.3':setX('기한경과',actions.filter(overdue));break;
+case'dashboard.analysis.0':setA('완료 활동',acts.filter(done));break;case'dashboard.analysis.1':setV('공식확정',confirmedRows);break;case'dashboard.analysis.2':setU('6개월 관리',audits.filter(x=>x.auditDate&&!x.finalEvaluation));break;case'dashboard.analysis.3':setX('폐쇄루프 재발',actions.filter(closedRecur));break;
+case'activity.manage.0':setA('전체 활동',acts);break;case'activity.manage.1':setA('완료/확정 활동',acts.filter(done));break;case'activity.manage.2':setA('진행/등록 활동',acts.filter(x=>!done(x)));break;case'activity.manage.3':setV('고도화 후보',candidates);break;
+case'activity.analysis.0':setA('전체 활동',acts);break;case'activity.analysis.1':title='생산팀';headers=['생산팀','활동건수'];rows=[...new Set(acts.map(x=>txt(x.team)).filter(Boolean))].map(t=>[t,acts.filter(x=>txt(x.team)===t).length]);break;case'activity.analysis.2':setV('고도화 전환',candidates);break;case'activity.analysis.3':setA('최근 30일 활동',acts.filter(recent30));break;
+case'advancement.judge.0':setV('고도화 후보',candidates);break;case'advancement.judge.1':setV('판정대기',candidates.filter(x=>!confirmed(x)));break;case'advancement.judge.2':setV('공식확정',confirmedRows);break;case'advancement.judge.3':setV('3조건 충족',candidates.filter(criteria3));break;
+case'advancement.standard.0':setV('공식확정',confirmedRows);break;case'advancement.standard.1':setV('현재 유지',confirmedRows.filter(maintained));break;case'advancement.standard.2':setV('유지 미흡',confirmedRows.filter(weakMaintain));break;case'advancement.standard.3':setV('수평전개',confirmedRows.filter(x=>x.horizontalRollout||/전개/.test(txt(x.rolloutState))));break;
+case'audit.audit.0':setU('Audit 원천',audits);break;case'audit.audit.1':setU('Audit 실시 대기',audits.filter(x=>!x.auditDate));break;case'audit.audit.2':setU('Audit 완료',audits.filter(x=>x.auditDate));break;case'audit.audit.3':setU('Audit 부적합',audits.filter(nonconforming));break;
+case'audit.retention.0':setU('6개월 관리중',audits.filter(x=>x.auditDate&&!x.finalEvaluation));break;case'audit.retention.1':setU('종료평가',audits.filter(x=>x.finalEvaluation));break;case'audit.retention.2':setU('재발/미흡',audits.filter(x=>retentionRisk(x,actions)));break;case'audit.retention.3':setX('Audit 연계 Action',linkedActions);break;
+case'action.manage.0':setX('전체 개선요청',actions);break;case'action.manage.1':setX('진행/대기',actions.filter(x=>!done(x)));break;case'action.manage.2':setX('완료',doneActions);break;case'action.manage.3':setX('기한경과',actions.filter(overdue));break;
+case'action.verify.0':setX('효과검증 대상',doneActions);break;case'action.verify.1':setX('효과검증 완료',doneActions.filter(effect));break;case'action.verify.2':setX('효과검증 대기',doneActions.filter(x=>!effect(x)));break;case'action.verify.3':setX('폐쇄루프 재발',doneActions.filter(x=>effect(x)&&recur(x)));break;
+default:return null}
+return{title,headers,rows}}
+function ensureModal(){return $('#hd20UniversalGridModal')||window.HD20_SUBNAV?.openGrid?.()&&$('#hd20UniversalGridModal')}
+function table(headers,rows){return`<table><thead><tr>${headers.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map(v=>`<td>${esc(v===0?'0':v||'—')}</td>`).join('')}</tr>`).join('')}</tbody></table>`}
+function openEvidence(area,sub,index){const ev=evidence(area,sub,index);if(!ev)return false;let m=$('#hd20UniversalGridModal');if(!m){window.HD20_SUBNAV?.openGrid?.();m=$('#hd20UniversalGridModal')}if(!m)return false;const title=$('#hd20GridTitle',m),meta=$('#hd20GridMeta',m),body=$('#hd20GridBody',m),search=$('#hd20GridSearch',m);if(title)title.textContent=`${ev.title} · KPI 상세근거`;if(meta)meta.textContent=`KPI 계산 원천 기준 ${ev.rows.length}행 · 표시행 수와 KPI 건수 동일`;if(search)search.value='';if(body)body.innerHTML=ev.rows.length?`<section class="hd20GridSection"><h3>${esc(ev.title)}</h3>${table(ev.headers,ev.rows)}</section>`:'<div class="hd20GridEmpty"><b>해당 KPI의 실제 근거 데이터가 없습니다.</b><p>임의 행을 생성하지 않습니다.</p></div>';m.classList.add('on');m.dataset.kpiEvidence='1';setTimeout(()=>{window.dispatchEvent(new CustomEvent('hd20-kpi-evidence-opened',{detail:{area,sub,index,count:ev.rows.length}}))},0);return true}
+function bind(){document.addEventListener('click',e=>{const b=e.target.closest?.('#hd20OpsMetrics button[data-metric]');if(!b)return;const st=window.HD20_SUBNAV?.state?.();if(!st)return;e.preventDefault();e.stopImmediatePropagation();openEvidence(st.area,st.sub,Number(b.dataset.metric))},true);document.addEventListener('keydown',e=>{const b=e.target.closest?.('#hd20OpsMetrics button[data-metric]');if(!b||!(e.key==='Enter'||e.key===' '))return;const st=window.HD20_SUBNAV?.state?.();if(!st)return;e.preventDefault();e.stopImmediatePropagation();openEvidence(st.area,st.sub,Number(b.dataset.metric))},true)}
+window.HD20_KPI_EVIDENCE={evidence,openEvidence};document.readyState==='loading'?document.addEventListener('DOMContentLoaded',bind,{once:true}):bind();
+})();
