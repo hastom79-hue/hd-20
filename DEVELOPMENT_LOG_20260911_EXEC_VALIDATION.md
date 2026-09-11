@@ -31,6 +31,27 @@
    - 화면 흐름을 `5S 활동 등록 → 고도화 후보·판정 → Risk 기반 Audit → 개선조치·효과검증`으로 정리.
    - Activity와 Audit 사이에 직접 Activity ID lineage를 임의 생성하지 않음.
 
+5. `hd20-modal-layer-guard.js`
+   - ESC는 `Case Detail → 행 상세 → Trace → 상세 Grid` 순서로 최상위 레이어부터 1단계씩 닫음.
+   - `hd20-subtab-changed` 발생 시 Grid/행 상세/Case Detail/Trace를 모두 닫고 검색어, KPI Evidence/Canonical Grid 상태 플래그, 행 검색 숨김 상태를 초기화.
+   - 대분류 이동도 `render → apply → hd20-subtab-changed` 경로를 사용하므로 10개 서브탭 전환 모두 동일 초기화 적용.
+
+6. `hd20-canonical-grid-guard.js`
+   - 검색/페이지 표시수와 무관하게 현재 검색조건에 맞는 전체 행을 CSV로 내보냄.
+   - 검색 입력 직후 CSV 클릭 시에도 현재 검색 문자열을 직접 재판정하여 이벤트 타이밍 의존 제거.
+
+7. `hd20-trace-production-guard.js`
+   - Trace API/버튼/Case Detail을 생산데이터 전용으로 제한.
+   - legacy Exact Inline Trace는 화면에서 숨기고 생산데이터 전용 Inline Trace를 별도 생성.
+   - 삭제/재생성 방식의 MutationObserver ping-pong 가능성 제거.
+
+8. `hd20-action-verify-canonical-guard.js`
+   - 개선조치 native 요약(`[data-am-sum]`)과 효과·재발관리 본문 카드 모두 생산 Action만 사용.
+   - 완료 기준: `완료/확정/종료/종결/close/done`.
+   - 기한경과: `due/targetDate/deadline` + Asia/Seoul 오늘 이전 + 미완료.
+   - 효과검증/재발은 Canonical 명시 상태만 인정하며 legacy alias를 사용하지 않음.
+   - Demo/E2E 행이 기존 native 카드 숫자에 다시 섞이는 경로 차단.
+
 ## ID/Traceability 검증
 - Activity ID: `ACT-<timestamp>` 형태로 생성.
 - Audit ID: `BATCH-<timestamp>-<index>` 형태로 생성.
@@ -43,14 +64,14 @@
 - 효과검증 완료: Action 완료 + 명시적 효과검증 완료.
 - 재발: Action 완료 + 효과검증 완료 + 명시적 재발.
 - `효과확인대기`, `미발생` 등의 부분문자열 오판정 금지.
+- 모든 KPI Evidence/Canonical Grid/Trace/Action native 요약은 Demo/E2E 비생산행을 제외.
 
 ## 배포 검증 상태
-- 직전 확정 배포: `4479d7602c9278a906691bd02208068818f6cf8e` Pages 성공.
-- 이후 KPI/Action Summary/Workflow Sequence 보강 커밋들이 추가됨.
-- 이 기록 생성 시점의 최신 기능 반영 커밋: `5e42a3f1cecd029e9bf9637911ffec24ff4a40ad`.
-- 해당 SHA의 Pages run은 생성되었고 build/deploy 완료 여부를 계속 확인 중.
+- `51fee7487651d94c30ce5d73735dbe29aab789d1`: Pages build/deploy/report 모두 성공, `pages_build_version` 일치 및 `Reported success!` 확인.
+- 이후 Action native 요약 Canonical Guard 보강 커밋 `9416108377146d4d30b0dd0fff509cc01bfd16ce` 반영.
+- 이 기록 커밋 이후 최신 main SHA 기준으로 Pages build/deploy SHA를 다시 확인한다.
 
 ## 남은 검증
-- 최신 SHA의 Pages `pages_build_version` 일치 확인.
+- 최신 main SHA의 Pages `pages_build_version` 일치 확인.
 - 비-Pages Browser/Playwright workflow는 실행환경 실패와 애플리케이션 실패를 분리해 판정.
 - 실제 브라우저에서 10개 서브탭 전부의 클릭-through E2E는 자동 runner가 정상화되기 전까지 성공으로 선언하지 않음.
