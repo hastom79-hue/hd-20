@@ -1,0 +1,7 @@
+(()=>{'use strict';
+const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
+const MAP=[['dashboard','summary',2],['action','manage',1],['action','manage',3],['action','verify',3]];
+function open(index){const cfg=MAP[index],api=window.HD20_KPI_EVIDENCE;if(!cfg||!api?.openEvidence)return false;return api.openEvidence(cfg[0],cfg[1],cfg[2])}
+function bind(){const rows=$$('.actionList .actionRow');rows.forEach((row,i)=>{if(!MAP[i])return;row.classList.add('hd20EvidenceLink');row.setAttribute('role','button');row.tabIndex=0;row.title='클릭하여 실제 근거 데이터 보기'});document.addEventListener('click',e=>{const row=e.target.closest?.('.actionList .actionRow');if(!row)return;const rows=$$('.actionList .actionRow'),i=rows.indexOf(row);if(i<0||!MAP[i])return;e.preventDefault();e.stopImmediatePropagation();open(i)},true);document.addEventListener('keydown',e=>{const row=e.target.closest?.('.actionList .actionRow');if(!row||!(e.key==='Enter'||e.key===' '))return;const rows=$$('.actionList .actionRow'),i=rows.indexOf(row);if(i<0||!MAP[i])return;e.preventDefault();e.stopImmediatePropagation();open(i)},true)}
+window.HD20_ACTION_SUMMARY_EVIDENCE={open,map:MAP};document.readyState==='loading'?document.addEventListener('DOMContentLoaded',bind,{once:true}):bind();
+})();
