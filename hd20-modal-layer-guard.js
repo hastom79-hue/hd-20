@@ -1,6 +1,7 @@
 (()=>{'use strict';
-const $=(s,r=document)=>r.querySelector(s);
-function closeTop(){const targets=['#hd20ExactCaseDetail.on','#hd20RowDetail.on','#hd20ExactTraceModal.on','#hd20TraceModal.on'];for(const sel of targets){const el=$(sel);if(el){el.classList.remove('on');return true}}return false}
-function bind(){document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;if(closeTop()){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation()}},true)}
-window.HD20_MODAL_LAYER_GUARD={closeTop};document.readyState==='loading'?document.addEventListener('DOMContentLoaded',bind,{once:true}):bind();
+const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
+function closeTop(){const targets=['#hd20ExactCaseDetail.on','#hd20RowDetail.on','#hd20ExactTraceModal.on','#hd20TraceModal.on','#hd20UniversalGridModal.on'];for(const sel of targets){const el=$(sel);if(el){el.classList.remove('on');return true}}return false}
+function resetTransient(){['#hd20ExactCaseDetail','#hd20RowDetail','#hd20ExactTraceModal','#hd20TraceModal','#hd20UniversalGridModal'].forEach(sel=>$(sel)?.classList.remove('on'));const grid=$('#hd20UniversalGridModal');if(grid){delete grid.dataset.kpiEvidence;delete grid.dataset.canonicalGrid}const search=$('#hd20GridSearch');if(search)search.value='';$$('.hd20GridSection tbody tr').forEach(r=>{delete r.dataset.searchHidden});}
+function bind(){document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;if(closeTop()){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation()}},true);window.addEventListener('hd20-subtab-changed',resetTransient);window.addEventListener('hd20-area-changed',resetTransient)}
+window.HD20_MODAL_LAYER_GUARD={closeTop,resetTransient};document.readyState==='loading'?document.addEventListener('DOMContentLoaded',bind,{once:true}):bind();
 })();
