@@ -1,0 +1,5 @@
+(()=>{'use strict';
+function patch(){const root=document.querySelector('#awActivity .awFlow');if(!root)return;const steps=[...root.querySelectorAll('.awStep')],data=[['① 5S 활동 등록','문제·개선·증빙 기록'],['② 고도화 후보·판정','3조건 검토 후 공식확정'],['③ Risk 기반 Audit','팀 단위 Risk 가중 대상 추출'],['④ 개선조치·효과검증','Action → 효과확인 → 재발관리']];steps.slice(0,4).forEach((s,i)=>{const b=s.querySelector('b'),sm=s.querySelector('small');if(b&&b.textContent!==data[i][0])b.textContent=data[i][0];if(sm&&sm.textContent!==data[i][1])sm.textContent=data[i][1]});root.dataset.hd20WorkflowSequence='canonical'}
+function bind(){patch();new MutationObserver(patch).observe(document.documentElement,{subtree:true,childList:true});['hd20-subtab-changed','hd20-refresh-requested'].forEach(ev=>window.addEventListener(ev,patch))}
+window.HD20_WORKFLOW_SEQUENCE_GUARD={patch};document.readyState==='loading'?document.addEventListener('DOMContentLoaded',bind,{once:true}):bind();
+})();
