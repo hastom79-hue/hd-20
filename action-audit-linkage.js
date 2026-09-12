@@ -6,7 +6,7 @@ function loadCases(){try{const v=JSON.parse(localStorage.getItem(CASE_KEY)||'[]'
 function saveCases(v){localStorage.setItem(CASE_KEY,JSON.stringify(v))}
 function seoulDate(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())}
 function deadlineDays(){if(window.HD20PolicyConfig?.deadlineDays)return window.HD20PolicyConfig.deadlineDays();try{const p=JSON.parse(localStorage.getItem(POLICY_KEY)||'{}').improvementDeadline||{},n=Number(p.defaultDays);return Number.isFinite(n)&&n>=7&&n<=14?Math.round(n):null}catch{return null}}
-function addDays(v,n){if(!v||!Number.isFinite(n))return'';const d=new Date(v+'T00:00:00');if(Number.isNaN(d.getTime()))return'';d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)}
+function addDays(v,n){const m=String(v||'').trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);if(!m||!Number.isFinite(n))return'';const ms=Date.UTC(+m[1],+m[2]-1,+m[3])+Math.round(n)*86400000;return new Date(ms).toISOString().slice(0,10)}
 function readPending(){if(pendingSource)return pendingSource;try{const v=JSON.parse(sessionStorage.getItem(PENDING_KEY)||'null');return v&&typeof v==='object'?v:null}catch{return null}}
 function setPending(p){if(!p||typeof p!=='object')return;pendingSource={auditDrawId:String(p.auditDrawId||p.sourceCaseId||'').trim(),sourceStage:String(p.sourceStage||'AUDIT-CHECKLIST').trim(),team:String(p.team||'').trim(),workplace:String(p.workplace||'').trim(),problem:String(p.problem||'').trim(),auditDate:String(p.auditDate||'').trim()};if(!pendingSource.auditDrawId)return;sessionStorage.setItem(PENDING_KEY,JSON.stringify(pendingSource))}
 function clearPending(){pendingSource=null;sessionStorage.removeItem(PENDING_KEY)}
