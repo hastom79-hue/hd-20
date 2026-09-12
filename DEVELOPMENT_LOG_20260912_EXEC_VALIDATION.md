@@ -104,7 +104,7 @@
 - `hd20-native-production-guard.js?v=20260912-4`
 - `hd20-kpi-evidence-drill.js?v=20260911-6`
 - 동적 정책 로더: `hd20-policy-config.js?v=20260912-2`, `operating-policy-master.js?v=20260912-2`
-- Canonical Audit 실행: `audit-canonical-execution.js?v=20260912-1`
+- Canonical Audit 실행: `audit-canonical-execution.js?v=20260912-2`
 - Batch: `audit-batch-execution.js?v=20260912-2`
 - 종료평가: `audit-close-evaluation.js?v=20260912-2`
 
