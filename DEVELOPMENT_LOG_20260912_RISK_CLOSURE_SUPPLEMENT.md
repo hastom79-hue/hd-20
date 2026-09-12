@@ -1,10 +1,12 @@
-# HD-20 Risk / 종료평가 실행검증 보완 — 2026-09-12
+# HD-20 Risk / 종료평가 실행검증 보완 — 2026-09-12~13
 
 ## 검증 범위
 - Audit Risk 중복계상 여부
 - 과거 6개월 종료평가 `미흡`의 누적정책
 - 1 Audit : N Action 구조에서 종료평가 `유지` 판정 정확성
 - 6개월 관리 KPI의 실제 달력기간 반영 여부
+- 종료평가 저장 후 Dashboard / KPI Evidence / Canonical Grid / Trace 즉시 갱신
+- 과거 Audit Batch Risk Snapshot 보존과 차기 Batch Risk 재계산
 - 최신 브라우저 캐시 및 Pages 배포 SHA 검증
 
 ## 발견 및 수정
@@ -42,23 +44,59 @@
 - `finalEvaluationUnverifiedActions`
 - `finalEvaluationRecurrenceActions`
 
-종료평가 화면에도 Action 연계 건수와 `미완료 / 효과미검증 / 재발 / 폐쇄완료` 상태를 표시한다.
-
 ### 4. `6개월 관리중` KPI 달력기간 정합성 보정
-기존 KPI Evidence는 `Audit 실시일 존재 + 종료평가 없음`만으로 `6개월 관리중`을 계산했다. 따라서 실제 Audit 실시일 기준 달력 +6개월이 이미 지난 종료평가 대기 Case도 관리중으로 포함될 수 있었다.
-
-`hd20-retention-evidence-guard.js`를 추가해 다음 두 Evidence에 동일한 날짜 기준을 적용했다.
+`hd20-retention-evidence-guard.js`를 통해 다음 두 Evidence에 동일 기준을 적용한다.
 - `dashboard.analysis`의 `6개월 관리`
 - `audit.retention`의 `6개월 관리중`
 
 판정기준:
+- 종료평가 완료 건은 관리중에서 제외
 - Audit 실시일 기준 달력 +6개월 종료일 `>= Asia/Seoul 오늘` → 관리중
 - 종료일 다음 날부터 → 관리중 제외, 종료평가 대상/대기 영역
 
-KPI Parity Guard가 Evidence 행 수를 최종 KPI 값으로 사용하므로, 이 보정은 사용자 표시 KPI와 상세근거 행 수에 동시에 반영된다. 기존 `hd20-ops-v2.js`의 구형 내부 계산을 대규모 재작성하지 않고 사용자 경로를 Canonical Evidence로 고정했다.
+KPI Parity Guard가 Evidence 행 수를 최종 KPI 값으로 사용하므로 사용자 KPI와 상세근거 행 수가 동일 기준으로 계산된다.
+
+### 5. 열린 상세화면의 stale 데이터 제거
+`hd20-live-data-refresh-guard.js`를 추가했다.
+
+데이터 변경 이벤트 발생 시:
+- 열린 KPI Evidence → 동일 KPI를 최신 원천으로 재조회
+- 열린 Canonical Grid → 현재 탭 기준 최신 원천으로 재조회
+- 검색어, 페이지 크기, 정렬 상태 복원
+- 열린 Production Trace → 최신 Audit / Action 원천으로 재렌더링
+- 이미 열려 있던 Row Detail / Case Detail → 오래된 값을 보여주지 않도록 닫음
+
+대상 이벤트:
+- `hd20-audit-updated`
+- `hd20-audit-draw`
+- `hd20-audit-performed`
+- `hd20-action-updated`
+- `hd20-gmes-5s-imported`
+- `hd20-gmes-5s-judged`
+- `hd20-refresh-requested`
+- 생산 LocalStorage 3종 변경
+
+### 6. Risk Snapshot 보존 / 차기 Batch 재계산 원칙 검증
+Audit 추출 시 Batch 행에 당시 계산값을 Snapshot으로 저장한다.
+- `riskPrev`
+- `riskCumulative`
+- `riskOverdue`
+- `riskRecurrence`
+- `riskMaturityWeak`
+- `riskMaturityWeakAdvancement`
+- `riskRetentionWeak`
+- `riskRetentionState`
+- `riskRetentionAuditId`
+- `riskRetentionRecurrenceCovered`
+- `riskWeight`
+- `riskPolicyApplied`
+
+종료평가 저장은 `finalEvaluation*` 필드만 갱신하고 과거 `risk*` Snapshot을 덮어쓰지 않는다. 따라서 과거 Batch는 당시 선정근거를 유지한다.
+
+차기 Batch 생성은 `riskTable()` → `teamRisk()`를 매번 다시 계산하므로, 최신 종료평가가 `유지`로 바뀌면 다음 추출부터 `riskRetentionWeak=0`이 적용된다. 과거 Batch의 당시 `riskRetentionWeak=1`은 변경하지 않는다.
 
 ## 결정적 fixture 검증
-- Fixture A: 과거 `미흡` → 최신 `유지` ⇒ 종료평가 유지미흡 Risk = 0
+- Fixture A: 과거 `미흡` → 최신 `유지` ⇒ 현재 종료평가 유지미흡 Risk = 0
 - Fixture B: 최신 `미흡` + 동일 Audit ID 재발 Action ⇒ 종료평가 유지미흡 Risk = 0, 재발 Risk에서만 반영
 - Fixture C: 1 Audit에 Action 3건, 그중 1건 미완료 ⇒ `유지` 저장 차단
 - Fixture D: Action 3건 모두 완료, 1건 효과 미검증 ⇒ `유지` 저장 차단
@@ -66,13 +104,17 @@ KPI Parity Guard가 Evidence 행 수를 최종 KPI 값으로 사용하므로, �
 - Fixture F: Action 3건 모두 완료·효과검증·미재발 ⇒ `유지` 저장 허용
 - Fixture G: Audit 실시일 +6개월 종료일이 오늘 ⇒ `6개월 관리중` 포함
 - Fixture H: Audit 실시일 +6개월 종료일이 어제 ⇒ `6개월 관리중` 제외
+- Fixture I: 이전 최신 종료평가 `미흡` 상태에서 Risk=1 → 다음 Audit 최신 종료평가 `유지` 저장 후 현재 Risk=0
+- Fixture J: Fixture I 이후에도 과거 Batch의 `riskRetentionWeak=1`, `riskMaturityWeak=1` Snapshot은 그대로 보존
 
 ## 현재 캐시 기준
 - `audit-random-draw.js?v=20260912-maturity-7`
-- `final-layout-polish.js?v=20260912-13`
+- `final-layout-polish.js?v=20260913-16`
 - 동적 `operating-policy-master.js?v=20260912-4`
 - 동적 `audit-close-evaluation.js?v=20260912-3`
-- 동적 `hd20-retention-evidence-guard.js?v=20260912-1`
+- 동적 `hd20-retention-evidence-guard.js?v=20260912-2`
+- 동적 `hd20-live-data-refresh-guard.js?v=20260913-1`
+- 동적 `dashboard-side-summary.js?v=20260912-4`
 - `action-audit-linkage.js?v=20260912-3`
 
 ## 회귀 방지
@@ -80,5 +122,5 @@ KPI Parity Guard가 Evidence 행 수를 최종 KPI 값으로 사용하므로, �
 - Demo/E2E는 생산 Risk/종료평가/KPI Evidence 계산에서 제외.
 - Activity→Audit 임의 lineage는 생성하지 않음.
 - Audit→Action은 `auditDrawId || sourceCaseId`와 Audit ID 정확일치만 사용.
-- 선택형 `maturityWeak` 가중치가 0/미설정이면 신규 유지미흡 로직이 추출확률을 변경하지 않음.
+- 선택형 `maturityWeak` 가중치가 0/미설정이면 유지미흡 로직이 추출확률을 변경하지 않음.
 - 실제 브라우저 E2E 성공은 Runner가 테스트 step을 실제 수행한 경우에만 선언한다.
