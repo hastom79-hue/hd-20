@@ -2,8 +2,9 @@
 const txt=v=>String(v??'').trim();
 function seoulKey(v=new Date()){if(typeof v==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(v.trim()))return v.trim();const d=v instanceof Date?v:new Date(v);if(Number.isNaN(d.getTime()))return'';return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(d)}
 function add6(v){const key=seoulKey(v),m=key.match(/^(\d{4})-(\d{2})-(\d{2})$/);if(!m)return'';const y=+m[1],mo=+m[2],day=+m[3],total=y*12+(mo-1)+6,ny=Math.floor(total/12),nm=total%12+1,last=new Date(Date.UTC(ny,nm,0)).getUTCDate();return `${ny}-${String(nm).padStart(2,'0')}-${String(Math.min(day,last)).padStart(2,'0')}`}
-function activeRow(row){const auditDate=txt(row?.[4]),end=add6(auditDate);return !!auditDate&&!!end&&end>=seoulKey()}
+function hasFinal(row){const v=txt(row?.[6]);return !!v&&v!=='—'}
+function activeRow(row){const auditDate=txt(row?.[4]),end=add6(auditDate);return !!auditDate&&!hasFinal(row)&&!!end&&end>=seoulKey()}
 function patch(){const api=window.HD20_KPI_EVIDENCE;if(!api||api.__retentionCalendarPatched||typeof api.evidence!=='function')return false;const original=api.evidence;api.evidence=(area,sub,index)=>{const ev=original(area,sub,index);if(!ev||!Array.isArray(ev.rows))return ev;const active=(area==='dashboard'&&sub==='analysis'&&index===2)||(area==='audit'&&sub==='retention'&&index===0);if(!active)return ev;const rows=ev.rows.filter(activeRow);return{...ev,title:area==='audit'?'6개월 관리중':'6개월 관리',rows}};api.__retentionCalendarPatched=true;return true}
 function boot(){let n=0;const run=()=>{if(patch()){window.dispatchEvent(new CustomEvent('hd20-refresh-requested',{detail:{source:'retention-evidence-calendar'}}));return}if(++n<40)setTimeout(run,50)};run()}
-window.HD20_RETENTION_EVIDENCE_GUARD={patch,seoulKey,add6,activeRow};document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot,{once:true}):boot();
+window.HD20_RETENTION_EVIDENCE_GUARD={patch,seoulKey,add6,hasFinal,activeRow};document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot,{once:true}):boot();
 })();
