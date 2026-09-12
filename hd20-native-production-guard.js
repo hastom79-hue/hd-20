@@ -2,7 +2,7 @@
 const ACTIVITY='hd20GMES5SAutoImproveRawV1',AUDIT='hd20AuditRandomDrawsV1',ACTION='hd20ActionCasesV2';
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)],txt=v=>String(v??'').trim();
 function read(k){try{const v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[]}catch{return[]}}
-function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[m]))}
+function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function nonProd(x){if(window.HD20KPIData?.isNonProdRow)return window.HD20KPIData.isNonProdRow(x);const source=txt(x?.source).toLowerCase(),id=txt(x?.id).toUpperCase(),sid=txt(x?.sourceCaseId).toUpperCase();return x?.isDemo===true||x?.isTest===true||source==='demo-seed'||source==='e2e-fixture'||id.startsWith('DEMO-')||id.startsWith('E2E-')||sid.startsWith('DEMO-')||sid.startsWith('E2E-')}
 function prod(k){return read(k).filter(x=>!nonProd(x))}
 function status(x){return txt(x?.activityStatus||x?.status||x?.judgeState||x?.auditState)}
