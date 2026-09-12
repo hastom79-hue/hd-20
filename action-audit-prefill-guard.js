@@ -1,0 +1,8 @@
+(()=>{'use strict';
+const $=(s,r=document)=>r.querySelector(s);
+function seoulDate(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())}
+function apply(detail={}){const root=document.getElementById('awAction');if(!root)return false;const date=$('#amDate',root),team=$('#amTeam',root),work=$('#amWorkplace',root),problem=$('#amProblem',root);if(date)date.value=seoulDate();if(team&&detail.team){const opts=[...team.options];const hit=opts.find(o=>o.value===detail.team||o.textContent===detail.team);if(hit){team.value=hit.value;team.dispatchEvent(new Event('change',{bubbles:true}))}}if(work&&detail.workplace)work.value=detail.workplace;if(problem&&detail.problem)problem.value=detail.problem;return true}
+function normalizeDate(){const root=document.getElementById('awAction');if(!root)return false;const date=$('#amDate',root);if(!date)return false;const utc=new Date().toISOString().slice(0,10),kst=seoulDate();if(!date.value||date.value===utc)date.value=kst;return true}
+function boot(){let n=0;const run=()=>{if(normalizeDate())return;if(++n<80)setTimeout(run,100)};run();window.addEventListener('hd20-audit-to-action',e=>setTimeout(()=>apply(e.detail||{}),0));window.addEventListener('hd20-subtab-changed',()=>setTimeout(normalizeDate,0))}
+window.HD20_ACTION_AUDIT_PREFILL_GUARD={apply,normalizeDate,seoulDate};document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot,{once:true}):boot();
+})();
