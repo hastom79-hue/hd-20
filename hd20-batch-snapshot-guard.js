@@ -1,5 +1,5 @@
 (()=>{'use strict';
-const KEY='hd20AuditRandomDrawsV1';let normalizing=false;
+const KEY='hd20AuditRandomDrawsV1';let normalizing=false,refreshing=false;
 function read(){try{const v=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(v)?v:[]}catch{return[]}}
 function timeOf(x){const t=Date.parse(x?.date||x?.drawDate||x?.createdAt||'');return Number.isFinite(t)?t:0}
 function stableId(x){return String(x?.id||x?.drawId||x?.auditDrawId||'')}
@@ -7,7 +7,7 @@ function normalize(){if(normalizing)return false;const rows=read();if(rows.lengt
 function patchLabels(){const host=document.querySelector('.auditDrawHistory');if(!host)return;const table=host.querySelector('table');if(!table)return;const heads=[...table.querySelectorAll('thead th')];const weak=heads.find(x=>/유지미흡/.test(x.textContent||''));if(weak&&weak.textContent!=='유지미흡 (추출 당시 Snapshot)')weak.textContent='유지미흡 (추출 당시 Snapshot)';let note=host.querySelector('.hd20SnapshotNote');if(!note){note=document.createElement('div');note.className='hd20SnapshotNote';note.style.cssText='margin:8px 0 0;padding:8px 10px;border-radius:8px;background:#f6f9fb;color:#60788b;font-size:12px;font-weight:700';note.textContent='이력의 Risk 값은 각 Audit Batch 추출 당시 Snapshot입니다. 현재 Risk는 신규 추출 시점에 다시 계산됩니다.';host.appendChild(note)}}
 function latestBatchSafe(){const rows=read().slice().sort((a,b)=>timeOf(b)-timeOf(a));if(!rows.length)return[];const first=rows[0],bid=String(first?.batchId||'');if(!bid)return[first];return rows.filter(x=>String(x?.batchId||'')===bid).sort((a,b)=>Number(a?.batchIndex||0)-Number(b?.batchIndex||0))}
 function patchApi(){const api=window.HD20AuditRiskDraw;if(!api||api.__batchSnapshotGuardPatched)return false;api.latestBatch=latestBatchSafe;api.__batchSnapshotGuardPatched=true;return true}
-function refresh(){normalize();patchApi();setTimeout(patchLabels,0)}
+function refresh(){if(refreshing)return;refreshing=true;try{const changed=normalize();patchApi();if(changed&&window.HD20AuditRiskDraw?.render)setTimeout(()=>window.HD20AuditRiskDraw.render(),0);setTimeout(patchLabels,0)}finally{refreshing=false}}
 function bind(){refresh();['hd20-audit-draw','hd20-audit-updated','hd20-refresh-requested'].forEach(ev=>window.addEventListener(ev,()=>setTimeout(refresh,0)));window.addEventListener('storage',e=>{if(e.key===KEY)setTimeout(refresh,0)});new MutationObserver(()=>patchLabels()).observe(document.documentElement,{subtree:true,childList:true})}
-window.HD20_BATCH_SNAPSHOT_GUARD={normalize,latestBatchSafe,patchLabels,patchApi};document.readyState==='loading'?document.addEventListener('DOMContentLoaded',bind,{once:true}):bind();
+window.HD20_BATCH_SNAPSHOT_GUARD={normalize,latestBatchSafe,patchLabels,patchApi,refresh};document.readyState==='loading'?document.addEventListener('DOMContentLoaded',bind,{once:true}):bind();
 })();
