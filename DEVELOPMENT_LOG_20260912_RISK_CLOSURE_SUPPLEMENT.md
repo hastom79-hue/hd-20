@@ -4,6 +4,7 @@
 - Audit Risk 중복계상 여부
 - 과거 6개월 종료평가 `미흡`의 누적정책
 - 1 Audit : N Action 구조에서 종료평가 `유지` 판정 정확성
+- 6개월 관리 KPI의 실제 달력기간 반영 여부
 - 최신 브라우저 캐시 및 Pages 배포 SHA 검증
 
 ## 발견 및 수정
@@ -43,6 +44,19 @@
 
 종료평가 화면에도 Action 연계 건수와 `미완료 / 효과미검증 / 재발 / 폐쇄완료` 상태를 표시한다.
 
+### 4. `6개월 관리중` KPI 달력기간 정합성 보정
+기존 KPI Evidence는 `Audit 실시일 존재 + 종료평가 없음`만으로 `6개월 관리중`을 계산했다. 따라서 실제 Audit 실시일 기준 달력 +6개월이 이미 지난 종료평가 대기 Case도 관리중으로 포함될 수 있었다.
+
+`hd20-retention-evidence-guard.js`를 추가해 다음 두 Evidence에 동일한 날짜 기준을 적용했다.
+- `dashboard.analysis`의 `6개월 관리`
+- `audit.retention`의 `6개월 관리중`
+
+판정기준:
+- Audit 실시일 기준 달력 +6개월 종료일 `>= Asia/Seoul 오늘` → 관리중
+- 종료일 다음 날부터 → 관리중 제외, 종료평가 대상/대기 영역
+
+KPI Parity Guard가 Evidence 행 수를 최종 KPI 값으로 사용하므로, 이 보정은 사용자 표시 KPI와 상세근거 행 수에 동시에 반영된다. 기존 `hd20-ops-v2.js`의 구형 내부 계산을 대규모 재작성하지 않고 사용자 경로를 Canonical Evidence로 고정했다.
+
 ## 결정적 fixture 검증
 - Fixture A: 과거 `미흡` → 최신 `유지` ⇒ 종료평가 유지미흡 Risk = 0
 - Fixture B: 최신 `미흡` + 동일 Audit ID 재발 Action ⇒ 종료평가 유지미흡 Risk = 0, 재발 Risk에서만 반영
@@ -50,17 +64,21 @@
 - Fixture D: Action 3건 모두 완료, 1건 효과 미검증 ⇒ `유지` 저장 차단
 - Fixture E: Action 3건 모두 완료·효과검증, 1건 재발 ⇒ `유지` 저장 차단
 - Fixture F: Action 3건 모두 완료·효과검증·미재발 ⇒ `유지` 저장 허용
+- Fixture G: Audit 실시일 +6개월 종료일이 오늘 ⇒ `6개월 관리중` 포함
+- Fixture H: Audit 실시일 +6개월 종료일이 어제 ⇒ `6개월 관리중` 제외
 
 ## 현재 캐시 기준
 - `audit-random-draw.js?v=20260912-maturity-7`
-- `final-layout-polish.js?v=20260912-12`
+- `final-layout-polish.js?v=20260912-13`
 - 동적 `operating-policy-master.js?v=20260912-4`
 - 동적 `audit-close-evaluation.js?v=20260912-3`
+- 동적 `hd20-retention-evidence-guard.js?v=20260912-1`
 - `action-audit-linkage.js?v=20260912-3`
 
 ## 회귀 방지
 - `index.html`의 `고도화 작업장 추이` 카드 내 `<div class="cardBody"><div class="trendBox"></div></div>` 보존 확인.
-- Demo/E2E는 생산 Risk/종료평가 계산에서 제외.
+- Demo/E2E는 생산 Risk/종료평가/KPI Evidence 계산에서 제외.
 - Activity→Audit 임의 lineage는 생성하지 않음.
 - Audit→Action은 `auditDrawId || sourceCaseId`와 Audit ID 정확일치만 사용.
 - 선택형 `maturityWeak` 가중치가 0/미설정이면 신규 유지미흡 로직이 추출확률을 변경하지 않음.
+- 실제 브라우저 E2E 성공은 Runner가 테스트 step을 실제 수행한 경우에만 선언한다.
