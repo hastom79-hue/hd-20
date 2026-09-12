@@ -28,6 +28,10 @@
    - `audit-batch-execution.js`는 이 구형 전역 `HD20AuditClosedLoop.registerAudit()`에 직접 의존하고 있었다.
    - 따라서 구형 로더만 제거하면 Audit 실시 등록이 끊기는 연쇄 의존성이 있었다.
 
+5. Audit 종료평가 별칭 불일치
+   - native 유지관리 화면과 일부 Canonical 계산은 `finalEvaluation || auditFinalState`를 사용하지만 KPI Evidence는 `finalEvaluation`만 확인하는 경로가 남아 있었다.
+   - `auditFinalState`에 종료평가가 저장된 Case는 `6개월 관리중`과 `종료평가` 상세근거가 어긋날 수 있었다.
+
 ## 반영사항
 ### `hd20-native-production-guard.js`
 - Activity Store `hd20GMES5SAutoImproveRawV1`에서 생산행만 사용하여 native KPI/활동목록 재렌더링.
@@ -35,12 +39,18 @@
 - Audit 최신 Batch 표시 중 비생산 ID 버튼 제거.
 - Audit 추출 이력 테이블을 생산 Audit 행만으로 재구성.
 - 6개월 유지관리 `.audit6m` 패널을 canonical 방식으로 생성.
-- 관리 시작일: 실제 Audit 실시일.
+- 관리 시작일: 실제 Audit 실시일을 Asia/Seoul 날짜키로 변환.
 - 관리 종료일: 실시일 기준 달력 +6개월.
+- 종료평가 상태: `finalEvaluation || auditFinalState`를 동일한 종료평가 상태로 인정.
 - Audit→Action: `auditDrawId || sourceCaseId`가 Audit ID와 정확히 일치하는 Action만 연결.
 - Action 완료/효과검증/재발 판정은 기존 Canonical 규칙과 동일.
 - Demo/E2E, 문자열 유사도 추정연계, AUTO-AUDIT 파생 Action 생성 없음.
 - Audit 추출 이력에 `고도화 유지미흡` Risk 건수를 표시하여 선정 근거를 역추적 가능하게 함.
+
+### `hd20-kpi-evidence-drill.js`
+- Audit 종료평가 표시와 분류에 `finalEvaluation || auditFinalState`를 사용.
+- `dashboard.analysis`의 6개월 관리 Evidence와 `audit.retention`의 관리중/종료평가 Evidence가 native 유지관리 화면 및 Canonical 기준과 동일해짐.
+- KPI Parity Guard가 Evidence 행 수를 KPI 값으로 사용하는 구조이므로 종료평가 별칭에 따른 KPI/근거행 불일치를 제거.
 
 ### `final-layout-polish.js`
 - 구형 `audit-six-month-control.js` 동적 로드를 제거.
@@ -90,8 +100,9 @@
 
 ## 현재 캐시 기준
 - `audit-random-draw.js?v=20260912-maturity-5`
-- `final-layout-polish.js?v=20260912-7`
-- `hd20-native-production-guard.js?v=20260912-3`
+- `final-layout-polish.js?v=20260912-10`
+- `hd20-native-production-guard.js?v=20260912-4`
+- `hd20-kpi-evidence-drill.js?v=20260911-6`
 - 동적 정책 로더: `hd20-policy-config.js?v=20260912-2`, `operating-policy-master.js?v=20260912-2`
 - Canonical Audit 실행: `audit-canonical-execution.js?v=20260912-1`
 - Batch: `audit-batch-execution.js?v=20260912-2`
