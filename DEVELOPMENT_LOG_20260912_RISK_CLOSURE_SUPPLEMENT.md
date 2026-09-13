@@ -7,6 +7,7 @@
 - 6개월 관리 KPI의 실제 달력기간 반영 여부
 - 종료평가 저장 후 Dashboard / KPI Evidence / Canonical Grid / Trace 즉시 갱신
 - 과거 Audit Batch Risk Snapshot 보존과 차기 Batch Risk 재계산
+- Audit→Action Pending 오염 방지 및 1 Audit:N Action 추가등록 경로
 - 최신 브라우저 캐시 및 Pages 배포 SHA 검증
 
 ## 발견 및 수정
@@ -95,6 +96,27 @@ Audit 추출 시 Batch 행에 당시 계산값을 Snapshot으로 저장한다.
 
 차기 Batch 생성은 `riskTable()` → `teamRisk()`를 매번 다시 계산하므로, 최신 종료평가가 `유지`로 바뀌면 다음 추출부터 `riskRetentionWeak=0`이 적용된다. 과거 Batch의 당시 `riskRetentionWeak=1`은 변경하지 않는다.
 
+### 7. Audit→Action Pending 오염 차단
+`action-audit-linkage.js`와 `hd20-audit-action-pending-guard.js`를 보완했다.
+- Audit 개선요청에서 Action 등록 진입 시 exact Audit ID를 Pending으로 저장
+- Action 생성 성공 후 Pending 삭제
+- 모달 닫기/ESC/배경 클릭 시 Pending 삭제
+- 일반 `+ 개선요청 등록` 진입 시 기존 Audit Pending 삭제
+- legacy `hd20AuditToActionPending` 키는 1회 마이그레이션 후 제거
+- 정상 Audit→Action 라우팅 중 서브탭 변경은 Pending을 임의 삭제하지 않음
+
+따라서 취소한 Audit ID가 이후 일반 Action에 잘못 붙는 교차오염 경로를 차단한다.
+
+### 8. 1 Audit : N Action 추가등록 공식 경로
+`hd20-retention-action-bridge.js`를 추가했다.
+- 6개월 유지관리 화면에서 종료평가 전 개선요청/부적합 Audit만 후보 노출
+- Demo/E2E 제외
+- 선택 Audit의 exact ID를 `sourceCaseId / auditDrawId`로 다시 전달
+- 기존 Action은 수정하지 않고 신규 Action만 추가
+- 현재 연계 Action 건수를 후보에서 표시
+- Action 등록 후 `hd20-action-updated`로 유지관리/종료평가 화면 즉시 재계산
+- 종료평가 완료 Audit은 추가등록 후보에서 제외
+
 ## 결정적 fixture 검증
 - Fixture A: 과거 `미흡` → 최신 `유지` ⇒ 현재 종료평가 유지미흡 Risk = 0
 - Fixture B: 최신 `미흡` + 동일 Audit ID 재발 Action ⇒ 종료평가 유지미흡 Risk = 0, 재발 Risk에서만 반영
@@ -106,20 +128,33 @@ Audit 추출 시 Batch 행에 당시 계산값을 Snapshot으로 저장한다.
 - Fixture H: Audit 실시일 +6개월 종료일이 어제 ⇒ `6개월 관리중` 제외
 - Fixture I: 이전 최신 종료평가 `미흡` 상태에서 Risk=1 → 다음 Audit 최신 종료평가 `유지` 저장 후 현재 Risk=0
 - Fixture J: Fixture I 이후에도 과거 Batch의 `riskRetentionWeak=1`, `riskMaturityWeak=1` Snapshot은 그대로 보존
+- Fixture K: Audit A Pending 상태에서 등록 취소 후 일반 Action 등록 ⇒ Audit A ID 미연계
+- Fixture L: Audit A에 Action 1건 등록 후 유지관리 Bridge로 Action 2·3 추가 ⇒ 세 Action 모두 Audit A exact ID 유지
+- Fixture M: Audit A에 3 Action 중 1 미완료/1 효과미검증/1 재발 각각 존재 시 `유지` 차단, 전부 완료+효과검증+미재발 시 허용
 
 ## 현재 캐시 기준
 - `audit-random-draw.js?v=20260912-maturity-7`
-- `final-layout-polish.js?v=20260913-16`
+- `final-layout-polish.js?v=20260913-19`
 - 동적 `operating-policy-master.js?v=20260912-4`
 - 동적 `audit-close-evaluation.js?v=20260912-3`
 - 동적 `hd20-retention-evidence-guard.js?v=20260912-2`
 - 동적 `hd20-live-data-refresh-guard.js?v=20260913-1`
+- 동적 `hd20-batch-snapshot-guard.js?v=20260913-2`
+- 동적 `action-audit-linkage.js?v=20260913-5`
+- 동적 `hd20-audit-action-pending-guard.js?v=20260913-1`
+- 동적 `hd20-retention-action-bridge.js?v=20260913-1`
 - 동적 `dashboard-side-summary.js?v=20260912-4`
-- `action-audit-linkage.js?v=20260912-3`
+
+## 최신 배포 확인
+- 기능 소스 main SHA: `dd1dfad729dc82c5a54ab621055debeba7298079`
+- Pages build / report / deploy: success
+- `pages_build_version`: `dd1dfad729dc82c5a54ab621055debeba7298079`
+- 배포 결과: `Reported success!`
 
 ## 회귀 방지
 - `index.html`의 `고도화 작업장 추이` 카드 내 `<div class="cardBody"><div class="trendBox"></div></div>` 보존 확인.
-- Demo/E2E는 생산 Risk/종료평가/KPI Evidence 계산에서 제외.
+- `final-layout-polish.js`의 retired stylesheet 제거 MutationObserver 원형 보존 확인.
+- Demo/E2E는 생산 Risk/종료평가/KPI Evidence/추가 Action 후보 계산에서 제외.
 - Activity→Audit 임의 lineage는 생성하지 않음.
 - Audit→Action은 `auditDrawId || sourceCaseId`와 Audit ID 정확일치만 사용.
 - 선택형 `maturityWeak` 가중치가 0/미설정이면 유지미흡 로직이 추출확률을 변경하지 않음.
