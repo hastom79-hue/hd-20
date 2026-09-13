@@ -1,0 +1,18 @@
+(()=>{'use strict';
+const AUD='hd20AuditRandomDrawsV1',ACT='hd20ActionCasesV2',ID='hd20RetentionActionBridge';
+const $=(s,r=document)=>r.querySelector(s),txt=v=>String(v??'').trim(),esc=v=>txt(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+function raw(k){try{const v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[]}catch{return[]}}
+function nonProd(x){if(window.HD20KPIData?.isNonProdRow)return window.HD20KPIData.isNonProdRow(x);const source=txt(x?.source).toLowerCase(),id=txt(x?.id).toUpperCase(),sid=txt(x?.sourceCaseId).toUpperCase();return x?.isDemo===true||x?.isTest===true||source==='demo-seed'||source==='e2e-fixture'||id.startsWith('DEMO-')||id.startsWith('E2E-')||sid.startsWith('DEMO-')||sid.startsWith('E2E-')}
+function prod(k){return raw(k).filter(x=>!nonProd(x))}
+function auditId(x){return txt(x?.id||x?.drawId||x?.auditDrawId)}
+function actionAuditId(x){return txt(x?.auditDrawId||x?.sourceCaseId)}
+function finalState(x){return txt(x?.finalEvaluation||x?.auditFinalState)}
+function needsAction(x){return !!txt(x?.improvementRequest)||/개선요청|부적합/.test(txt(x?.auditResult||x?.result))}
+function candidates(){const actions=prod(ACT);return prod(AUD).filter(a=>a.auditDate&&!finalState(a)&&needsAction(a)&&auditId(a)).map(a=>({...a,_linked:actions.filter(x=>actionAuditId(x)===auditId(a)).length}))}
+function detail(a){const id=auditId(a);return{auditDrawId:id,sourceCaseId:id,sourceStage:'AUDIT-CHECKLIST',team:txt(a.team),workplace:txt(a.workplace),auditDate:txt(a.auditDate),problem:`[5S Audit ${txt(a.auditResult||a.result)||'개선요청'}] ${txt(a.improvementRequest)}`.trim()}}
+function openAction(a){if(!a)return false;const d=detail(a);window.HD20ActionAuditLinkage?.setPending?.(d);window.dispatchEvent(new CustomEvent('hd20-audit-to-action',{detail:d}));return true}
+function render(){const host=$('#awAudit .audit6m .awBody');if(!host)return false;let box=$('#'+ID,host);if(!box){box=document.createElement('div');box.id=ID;box.style.cssText='margin-top:12px;padding:11px 12px;border:1px solid #d7e4ec;border-radius:10px;background:#f8fbfd;display:flex;gap:8px;align-items:end;flex-wrap:wrap';host.appendChild(box)}const rows=candidates();box.innerHTML=rows.length?`<label style="flex:1;min-width:260px;font-size:12.5px;font-weight:900;color:#45657a">동일 Audit에 추가 개선조치<select data-rab-case style="width:100%;margin-top:4px;padding:8px;border:1px solid #c9d9e4;border-radius:8px;background:#fff">${rows.map(a=>`<option value="${esc(auditId(a))}">${esc(a.team||'—')} · ${esc(auditId(a))} · 연계 Action ${a._linked}건</option>`).join('')}</select></label><button type="button" data-rab-open style="border:1px solid #1268a8;border-radius:8px;background:#1268a8;color:#fff;padding:9px 13px;font-weight:900;cursor:pointer">+ 추가 개선조치</button><small style="flex-basis:100%;color:#698092">종료평가 전 동일 Audit ID를 유지하여 추가 Action을 등록합니다. 기존 Action은 수정하지 않습니다.</small>`:'<small style="color:#698092">추가 개선조치가 필요한 진행중 Audit이 없습니다.</small>';const b=$('[data-rab-open]',box);if(b)b.onclick=()=>{const id=$('[data-rab-case]',box)?.value,a=rows.find(x=>auditId(x)===id);openAction(a)};return true}
+let timer=0;function schedule(){clearTimeout(timer);timer=setTimeout(render,40)}
+function bind(){let n=0;const boot=()=>{if(render())return;if(++n<60)setTimeout(boot,100)};boot();['hd20-subtab-changed','hd20-audit-updated','hd20-action-updated','hd20-refresh-requested'].forEach(e=>window.addEventListener(e,schedule));new MutationObserver(schedule).observe(document.documentElement,{subtree:true,childList:true})}
+window.HD20_RETENTION_ACTION_BRIDGE={render,candidates,openAction,detail};document.readyState==='loading'?document.addEventListener('DOMContentLoaded',bind,{once:true}):bind();
+})();
