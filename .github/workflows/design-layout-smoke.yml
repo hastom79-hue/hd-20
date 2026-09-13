@@ -12,7 +12,7 @@ jobs:
         with:
           node-version: '20'
       - run: npm init -y >/dev/null 2>&1 && npm i playwright@1.55.0 >/dev/null 2>&1 && npx playwright install chromium --with-deps >/dev/null 2>&1
-      - name: Verify five-area desktop, mobile and modal layout
+      - name: Verify six-area desktop, mobile and modal layout
         run: |
           python3 -m http.server 4173 >/tmp/hd20-http.log 2>&1 &
           SERVER_PID=$!
@@ -27,7 +27,7 @@ jobs:
               {name:'tablet',width:900,height:900},
               {name:'mobile',width:375,height:812}
             ];
-            const tabs=['dashboard','activity','advancement','audit','action'];
+            const tabs=['dashboard','activity','advancement','maturitymap','audit','action'];
             const expectedKpis=['공식 판정 완료율','평균 판정 Lead Time','고도화 수준','Audit 후 6개월 유지율','Audit 부적합 재발률','기한 내 개선조치 완료율'];
             const advancementLevels=['1개 조건 충족 영역','2개 이상 충족 영역','3개 모두 충족 영역'];
             for(const vp of cases){
@@ -39,25 +39,26 @@ jobs:
               if(JSON.stringify(cssContract)!==JSON.stringify(expectedCss)) throw new Error(`${vp.name}: stylesheet contract=${JSON.stringify(cssContract)}`);
               if(cssContract.some(x=>/mobile-runtime-restore|hotfix|polish/i.test(x))) throw new Error(`${vp.name}: retired stylesheet leaked ${JSON.stringify(cssContract)}`);
               const navCount=await page.locator('.beginnerNav button[data-key]').count();
-              if(navCount!==5) throw new Error(`${vp.name}: nav count=${navCount}`);
+              if(navCount!==6) throw new Error(`${vp.name}: nav count=${navCount}`);
               for(const key of tabs){
                 await page.locator(`.beginnerNav button[data-key="${key}"]`).click();
-                await page.waitForTimeout(450);
+                await page.waitForTimeout(500);
                 const state=await page.evaluate((key)=>{
                   const de=document.documentElement,body=document.body;
                   const active=document.querySelector('.beginnerNav button.active')?.dataset.key||'';
                   const visible=[...document.querySelectorAll('.awScreen.on,#performanceConversionAnalysis.on')].filter(el=>getComputedStyle(el).display!=='none');
                   const headers=visible.reduce((n,el)=>n+el.querySelectorAll(':scope > .hd20AreaHeader').length,0);
                   const shown=sel=>{const el=document.querySelector(sel);return !!el&&getComputedStyle(el).display!=='none'&&el.getClientRects().length>0};
-                  const critical=[...document.querySelectorAll('.beginnerNav button,.hd20AreaHeader,.awHero,.awCard,.card,#hd20DashboardPriority,#hd20OperationalBridge,#hd20MaturityConditionAnalysis')].filter(el=>getComputedStyle(el).display!=='none'&&el.getClientRects().length).map(el=>{const r=el.getBoundingClientRect();return {tag:el.id||el.className||el.tagName,left:r.left,right:r.right,width:r.width,height:r.height}});
-                  return {key,active,scrollY:window.scrollY,scrollWidth:Math.max(de.scrollWidth,body.scrollWidth),clientWidth:de.clientWidth,headers,priority:shown('#hd20DashboardPriority'),bridge:shown('#hd20OperationalBridge'),labels:[...document.querySelectorAll('.hd20DashboardSectionLabel')].filter(el=>getComputedStyle(el).display!=='none'&&el.getClientRects().length>0).length,activity:shown('#awActivity .awGrid'),advancement:shown('#awWorkplace'),maturity:shown('#hd20MaturityConditionAnalysis .mcaLevelRail'),audit:shown('#awAudit .awAuditLane'),action:shown('#awAction .amGrid'),critical};
+                  const critical=[...document.querySelectorAll('.beginnerNav button,.hd20AreaHeader,.awHero,.awCard,.card,#hd20DashboardPriority,#hd20OperationalBridge,#hd20MaturityConditionAnalysis,#hd20MaturityMapTab .mmtHero,#hd20MaturityMapTab .mmtMapCard,#hd20MaturityMapTab .mmtCaseCard')].filter(el=>getComputedStyle(el).display!=='none'&&el.getClientRects().length).map(el=>{const r=el.getBoundingClientRect();return {tag:el.id||el.className||el.tagName,left:r.left,right:r.right,width:r.width,height:r.height}});
+                  return {key,active,scrollY:window.scrollY,scrollWidth:Math.max(de.scrollWidth,body.scrollWidth),clientWidth:de.clientWidth,headers,priority:shown('#hd20DashboardPriority'),bridge:shown('#hd20OperationalBridge'),labels:[...document.querySelectorAll('.hd20DashboardSectionLabel')].filter(el=>getComputedStyle(el).display!=='none'&&el.getClientRects().length>0).length,activity:shown('#awActivity .awGrid'),advancement:shown('#awWorkplace'),maturity:shown('#hd20MaturityConditionAnalysis .mcaLevelRail'),maturityMap:shown('#hd20MaturityMapTab .mmtMap'),maturityCases:shown('#hd20MaturityMapTab .mmtCaseCard'),audit:shown('#awAudit .awAuditLane'),action:shown('#awAction .amGrid'),critical};
                 },key);
                 if(state.active!==key) throw new Error(`${vp.name}/${key}: active=${state.active}`);
                 if(state.scrollY>2) throw new Error(`${vp.name}/${key}: tab switch scrollY=${state.scrollY}`);
                 if(state.scrollWidth>state.clientWidth+2) throw new Error(`${vp.name}/${key}: horizontal overflow ${state.scrollWidth}>${state.clientWidth}`);
                 const bad=state.critical.find(r=>r.width<=0||r.height<=0||r.left<-2||r.right>vp.width+2);
                 if(bad) throw new Error(`${vp.name}/${key}: critical box out of viewport ${JSON.stringify(bad)}`);
-                if(key!=='dashboard' && state.headers!==1) throw new Error(`${vp.name}/${key}: area header count=${state.headers}`);
+                if(!['dashboard','maturitymap'].includes(key) && state.headers!==1) throw new Error(`${vp.name}/${key}: area header count=${state.headers}`);
+                if(key==='maturitymap'&&state.headers!==0) throw new Error(`${vp.name}/maturitymap: unexpected area header count=${state.headers}`);
                 if(key==='activity'&&!state.activity) throw new Error(`${vp.name}/activity: activity grid missing`);
                 if(key==='advancement'){
                   if(!state.advancement) throw new Error(`${vp.name}/advancement: workplace layer missing`);
@@ -66,6 +67,11 @@ jobs:
                   for(const label of advancementLevels) if(!levelLabels.includes(label)) throw new Error(`${vp.name}/advancement: missing level ${label}`);
                   const text=await page.locator('#hd20MaturityConditionAnalysis').innerText();
                   for(const term of ['조건 충족수 ≠ 공식판정','시각화·형적관리','인간공학적 Green Zone','정량축소·정위치 변경을 통한 공간 활용','라인 미분류 / 매핑 필요','공식판정은 별도 관리']) if(!text.includes(term)) throw new Error(`${vp.name}/advancement: missing semantic ${term}`);
+                }
+                if(key==='maturitymap'){
+                  if(!state.maturityMap||!state.maturityCases) throw new Error(`${vp.name}/maturitymap: dedicated map/case panel missing`);
+                  const text=await page.locator('#hd20MaturityMapTab').innerText();
+                  for(const term of ['고도화 맵','고도화 후보','누적 공식확정','현재 유지','팀별 고도화 Portfolio Map','팀별 공식확정 Case']) if(!text.includes(term)) throw new Error(`${vp.name}/maturitymap: missing semantic ${term}`);
                 }
                 if(key==='audit'){
                   if(!state.audit) throw new Error(`${vp.name}/audit: audit lifecycle lane missing`);
