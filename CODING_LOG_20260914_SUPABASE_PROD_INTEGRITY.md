@@ -122,16 +122,34 @@ Commit:
 - remote row timestamp가 변하지 않았으므로 sanitize `push()`가 실제 인증 세션에서 아직 성공 실행되지 않았다.
 - 서버에서 `[]`로 직접 덮는 방식은 로컬 Production 손실 가능성 때문에 사용하지 않는다.
 
+## Health Guard 인증대기 안정화
+발견한 코드 위험:
+- `boot()`가 `HD20_DB_SYNC.fetchRemote` 준비 전 `setTimeout(boot,250)`를 제한 없이 생성할 수 있었다.
+- 비로그인/인증대기/우회 세션에서는 불필요한 polling이 계속될 수 있었다.
+
+수정 (`46a9de6193ec9c6957e2fcb69847c760b8dc7da7`):
+- module state `retry`, `retryTimer`, `bound` 도입
+- 최대 40회 × 250ms polling으로 제한
+- 준비 완료 시 timer clear + retry reset
+- `hd20-auth-ready` / `hd20-auth-bypass` / `hd20-db-status ready` / `hd20-db-synced` 이벤트에서 `boot(true)` 재개
+- `HD20_AUTH_BYPASS`에서는 fetch를 시도하지 않고 `DB 무결성 비활성` 표시
+- 버튼 click binding은 1회만 수행
+
+Cache commit:
+- `360b824eb0494cdf809df272cad0b923c4ee8ddd`
+- `hd20-db-production-health.js?v=20260915-2`
+
 ## Cache/로더 잔여위험
 - `index.html`의 `final-layout-polish.js?v=20260914-38` cache key 자체는 이번 배치에서 변경하지 않았다.
 - 이유: index가 한 줄 전체 파일이며 기존 외부 설정 문자열과 다수 script cache version을 포함하고 있어, Health Guard 1개를 위해 전체 파일 재기록 시 회귀 범위가 커진다.
 - 새 방문/캐시 갱신 환경에서는 최신 final-layout 파일이 로드된다. 장기 캐시 환경의 즉시 반영 여부는 별도 검증한다.
 
 ## 다음 코드 검증 체크리스트
-1. 인증 세션에서 Health Guard 표시 확인
-2. local Production Activity/Action 보존 확인
-3. sanitize Push 완료 후 remote `updated_at` 변경 확인
-4. Supabase Activity/Action/Audit non-production = 0 확인
-5. Health Guard가 `DB Production 정상`으로 전환되는지 확인
-6. KPI/Trace/Cases production-only 재검증
-7. 이후 모든 코드 변경 시 개발일지·코딩일지 동시 갱신
+1. 최신 main/Pages SHA에 Health Guard v2 포함 확인
+2. 인증 세션에서 Health Guard 표시 확인
+3. local Production Activity/Action 보존 확인
+4. sanitize Push 완료 후 remote `updated_at` 변경 확인
+5. Supabase Activity/Action/Audit non-production = 0 확인
+6. Health Guard가 `DB Production 정상`으로 전환되는지 확인
+7. KPI/Trace/Cases production-only 재검증
+8. 이후 모든 코드 변경 시 개발일지·코딩일지 동시 갱신
