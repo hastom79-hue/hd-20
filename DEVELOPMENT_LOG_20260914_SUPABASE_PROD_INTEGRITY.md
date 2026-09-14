@@ -95,6 +95,26 @@ Supabase `canonical_v1` payload의 핵심 3개 배열을 직접 집계했다.
 - `46a9de6193ec9c6957e2fcb69847c760b8dc7da7` — 유한 재시도 + 이벤트 기반 재기동
 - `360b824eb0494cdf809df272cad0b923c4ee8ddd` — `hd20-db-production-health.js?v=20260915-2` cache 갱신
 
+### Health Guard v2 최신 Pages 배포 및 DB 재검증 — 2026-09-15
+- 기준 main SHA: `5d016af36904e56414bb4ff00f10dad47bdc6b97`
+- Pages run: `34907958296`
+- run 결과: `completed / success`
+- build job `104188877901`: success
+- deploy job `104189002591`: success
+- report-build-status job `104189002693`: success
+- 세 job 모두 `head_sha = 5d016af36904e56414bb4ff00f10dad47bdc6b97`
+
+배포 완료 후 Supabase `canonical_v1`을 다시 동일 판정 규칙으로 조회했다.
+- remote `updated_at`: `2026-09-08 02:11:47.106+00`
+- Activity: 120 / non-production 120
+- Action: 86 / non-production 86
+- Audit: 21 / non-production 0
+
+최종 판정:
+- Health Guard v2와 sync production guard는 최신 Pages artifact에 포함됐다.
+- 그러나 원격 row가 9/8 이후 갱신되지 않아 인증된 실제 브라우저에서 sanitize Push가 아직 완료되지 않은 상태가 계속된다.
+- 이 시점에도 서버측 강제 비우기는 수행하지 않는다.
+
 ## 잔여 검증
 - 인증된 실제 HD-20 브라우저에서 최신 sync 코드가 실행된 뒤 원격 payload가 clean Production snapshot으로 교체되는지 재확인 필요.
 - 교체 후 Supabase SQL로 Activity/Action/Audit non-production = 0을 확인해야 한다.
