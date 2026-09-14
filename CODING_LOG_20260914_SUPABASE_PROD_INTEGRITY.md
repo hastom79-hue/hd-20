@@ -105,17 +105,33 @@ Commit:
 - `ebb4149cfd597020afc72ca36405d631ecbd26eb` — Health Guard 파일 생성
 - `0f8f7ba79554c6b31266a3dee440410381c4c64c` — `final-layout-polish.js` 동적 로더에 `hd20-db-production-health.js?v=20260915-1` 연결
 
+## 2026-09-15 최신 main/DB 재검증
+- 당시 main SHA: `2a00a852cc28671e17fb1c3137ac602ff71e00cc`
+- Pages run: `34907228765`
+- 상태: `completed / success`
+- Pages `head_sha` = `2a00a852cc28671e17fb1c3137ac602ff71e00cc`
+
+배포 성공 직후 동일 SQL을 재실행한 결과:
+- `updated_at = 2026-09-08 02:11:47.106+00`
+- Activity 120 / nonprod 120
+- Action 86 / nonprod 86
+- Audit 21 / nonprod 0
+
+코드 관점 결론:
+- 최신 `supabase-sync.js` 및 Health Guard 계열 소스는 main/Pages에 포함되어 있다.
+- remote row timestamp가 변하지 않았으므로 sanitize `push()`가 실제 인증 세션에서 아직 성공 실행되지 않았다.
+- 서버에서 `[]`로 직접 덮는 방식은 로컬 Production 손실 가능성 때문에 사용하지 않는다.
+
 ## Cache/로더 잔여위험
 - `index.html`의 `final-layout-polish.js?v=20260914-38` cache key 자체는 이번 배치에서 변경하지 않았다.
 - 이유: index가 한 줄 전체 파일이며 기존 외부 설정 문자열과 다수 script cache version을 포함하고 있어, Health Guard 1개를 위해 전체 파일 재기록 시 회귀 범위가 커진다.
 - 새 방문/캐시 갱신 환경에서는 최신 final-layout 파일이 로드된다. 장기 캐시 환경의 즉시 반영 여부는 별도 검증한다.
 
 ## 다음 코드 검증 체크리스트
-1. 최신 Health Guard 포함 Pages deploy SHA 확인
-2. 인증 세션에서 `DB 정리 대기 206건` 수준의 실제 원격 경고 표시 여부 확인(실제 건수는 조회 시점 기준으로 재계산)
-3. local Production Activity/Action 보존 확인
-4. sanitize Push 완료 후 remote `updated_at` 변경 확인
-5. Supabase Activity/Action/Audit non-production = 0 확인
-6. Health Guard가 `DB Production 정상`으로 전환되는지 확인
-7. KPI/Trace/Cases production-only 재검증
-8. 개발일지·코딩일지에 최종 DB row counts와 deployed SHA 기록
+1. 인증 세션에서 Health Guard 표시 확인
+2. local Production Activity/Action 보존 확인
+3. sanitize Push 완료 후 remote `updated_at` 변경 확인
+4. Supabase Activity/Action/Audit non-production = 0 확인
+5. Health Guard가 `DB Production 정상`으로 전환되는지 확인
+6. KPI/Trace/Cases production-only 재검증
+7. 이후 모든 코드 변경 시 개발일지·코딩일지 동시 갱신
