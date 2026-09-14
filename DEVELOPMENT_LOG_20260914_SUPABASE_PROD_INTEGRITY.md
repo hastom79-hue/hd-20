@@ -31,14 +31,48 @@ Supabase `canonical_v1` payload의 핵심 3개 배열을 직접 집계했다.
 ## Commit
 - `45bb83dc240baf5483e2f6d1ebca12e25c0ca9ec` — `fix: await production sanitization before initial reload`
 
+## 2026-09-15 후속 실행검증
+### 최신 배포 확인
+- main/cache refresh SHA: `f7bbbf88e57c4402d27532bdb491adfcba7cc66d`
+- Pages run: `34814541541`
+- Build / Deploy / Report 모두 성공
+- 배포 대상 head SHA가 `f7bbbf88e57c4402d27532bdb491adfcba7cc66d`와 일치
+- `index.html`에서 최신 sync cache `supabase-sync.js?v=20260914-prodguard-awaitpush-2` 로딩 확인
+- `고도화 작업장 추이`의 `<div class="cardBody"><div class="trendBox"></div></div>` 구조 보존 확인
+
+### 원격 DB 재검증
+최신 배포 이후 Supabase를 동일 Production 판정 규칙으로 재조회했다.
+- remote `updated_at`: `2026-09-08 02:11:47.106+00`
+- Activity: 120 / non-production 120
+- Action: 86 / non-production 86
+- Audit: 21 / non-production 0
+
+판정:
+- 최신 sanitize 로직과 cache bust는 Pages에 배포됨.
+- 그러나 원격 `updated_at`이 9/8에서 변하지 않았으므로 배포 이후 인증된 브라우저 세션이 아직 sanitize Push를 완료한 흔적이 없다.
+- 따라서 원격 배열을 서버에서 강제 삭제하지 않고 로컬 Production 보존 원칙을 계속 유지한다.
+
+### 운영 가시성 보완
+원격 Production 무결성을 운영 화면에서 직접 확인하기 위해 `hd20-db-production-health.js`를 추가했다.
+- Activity / Action / Audit 원격 배열을 production 판정 규칙으로 재검사
+- 이상 시 `DB 정리 대기 N건` 표시
+- 정상 시 `DB Production 정상` 표시
+- tooltip에 원격 갱신시각 및 배열별 total/non-production 건수 표시
+- 삭제/수정 작업은 수행하지 않는 read-only Health Guard
+
+관련 커밋:
+- `ebb4149cfd597020afc72ca36405d631ecbd26eb` — Production Health Guard 추가
+- `0f8f7ba79554c6b31266a3dee440410381c4c64c` — `final-layout-polish.js` 동적 로더 연결
+
 ## 잔여 검증
-- `index.html`은 현재 `supabase-sync.js?v=20260914-prodguard-1`을 참조한다. 파일 본문은 최신화됐으나 즉시 cache bust를 위한 query version 갱신은 별도 검증 필요.
-- 원격 Demo-only Activity/Action을 직접 삭제하는 방식은 로컬 Production 보존 검증 전까지 금지.
-- 실제 사용자 브라우저에서 최신 sync 코드가 로드된 뒤 원격 payload가 clean Production snapshot으로 교체되는지 재확인 필요.
-- 교체 후 Supabase SQL로 핵심 3개 배열의 non-production 행 수를 다시 0으로 확인해야 한다.
+- 인증된 실제 HD-20 브라우저에서 최신 sync 코드가 실행된 뒤 원격 payload가 clean Production snapshot으로 교체되는지 재확인 필요.
+- 교체 후 Supabase SQL로 Activity/Action/Audit non-production = 0을 확인해야 한다.
+- 새 Health Guard가 실제 브라우저에서 `DB 정리 대기` → `DB Production 정상`으로 전환되는지 확인한다.
+- `index.html`의 `final-layout-polish.js` cache key는 기존 v38이므로 장기 캐시 환경에서 새 동적 로더가 즉시 반영되는지 추가 확인한다. 전체 index 재기록은 회귀 위험 때문에 이번 배치에서는 수행하지 않았다.
 
 ## 회귀 방지 원칙
 - Demo/Test 원천을 Production으로 간주하지 않는다.
 - Production 데이터가 확인되지 않은 상태에서 원격 배열을 빈 배열로 강제 삭제하지 않는다.
 - Activity/Audit/Action exact ID 정책과 기존 KPI production filter는 유지한다.
-- Supabase 변경은 최신 changelog 확인 및 실제 DB 검증 후 진행한다.
+- Supabase 변경은 실제 DB 검증 후 진행한다.
+- 모든 변경은 개발일지와 코딩일지에 Commit/배포/잔여위험까지 기록한다.
