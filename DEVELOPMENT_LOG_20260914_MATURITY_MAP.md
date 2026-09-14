@@ -182,6 +182,7 @@ Core map의 `data-mmt-case`는 팀별 `t.cases` 원본 인덱스를 유지한다
 - `hd20-maturity-map-tab.js?v=20260914-2`
 - `hd20-maturity-map-operational-guard.js?v=20260914-6`
 - `hd20-maturity-map-priority-filter-guard.js?v=20260914-2`
+- `hd20-maturity-id-integrity-guard.js?v=20260914-1`
 - `final-layout-polish.js`
 - `index.html`
 
@@ -202,7 +203,18 @@ Core map의 `data-mmt-case`는 팀별 `t.cases` 원본 인덱스를 유지한다
 - `158f7f51c32e6f8de6b56a4b4803832a956a0c43`
   - `final-layout-polish.js?v=20260914-36` 캐시 강제갱신
 
-`158f7f51...` Pages run은 생성 확인 후 배포상태를 계속 검증한다.
+### Activity ID 무결성 방어 추가
+- `9433562460509cf9c93c546d208aed2bd3c2ce65`
+  - `hd20-maturity-id-integrity-guard.js` 신규 추가
+  - 공식확정 Case의 Activity ID 누락/중복 자동 탐지
+  - 중복 ID Case에 `ID 중복` Badge
+  - 동일 ID가 2건 이상이면 Exact Drill-down 버튼 자동 차단
+  - 누락 ID는 상세 Grid 이동 불가 상태로 유지
+- `8f705996f49544eaa0e97307ec2019f124b8db43`
+  - `final-layout-polish.js`에 ID Integrity Guard 동적 로더 연결
+- `fec198ffb03c1530568fcda82c25a3163f9443b3`
+  - `index.html`에서 `final-layout-polish.js?v=20260914-37` 적용
+  - `trendBox` / Supabase auth 버전 보존 확인
 
 ## 15. CI 해석 원칙
 일반 Browser/Design/Runtime Smoke가 GitHub Runner에서 step 시작 전 실패하는 기존 패턴이 반복되고 있다.
@@ -212,8 +224,10 @@ Core map의 `data-mmt-case`는 팀별 `t.cases` 원본 인덱스를 유지한다
 - 브라우저 E2E 성공은 runner가 실제 테스트 step을 수행하고 통과한 경우에만 선언
 
 ## 16. 현재 잔여 검증
-- 최신 `158f7f51...` Pages 배포 SHA exact 확인
-- 실제 브라우저에서 고도화 맵 → Activity Grid → 고도화 맵 복귀 시 팀/Case 강조 유지 여부
+- 최신 `fec198ff...` 이후 문서 commit 포함 현재 main의 Pages exact SHA 확인
+- 실제 Production canonical source에서 Activity ID 누락/중복 건수 확인
+- ID 중복 Case 상세에서 Drill-down 버튼이 실제 disabled 처리되는지 브라우저 실행검증
+- 고도화 맵 → Activity Grid → 고도화 맵 복귀 시 팀/Case 강조 유지 여부
 - 데이터 갱신 이벤트 발생 후 현재 유지/유지미흡/재점검 필터 상태 유지 여부
 - 모바일에서 복귀버튼 및 Case detail 버튼의 full-width/터치영역 검증
 
