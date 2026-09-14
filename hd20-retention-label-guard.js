@@ -1,0 +1,10 @@
+(()=>{'use strict';
+const CONTRACT='audit.retention';
+const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
+function patchMetric(){const bar=$(`#hd20OpsMetrics[data-contract="${CONTRACT}"]`);if(!bar)return false;const b=$$('button[data-metric]',bar)[1];const label=b?.querySelector('small');if(label&&label.textContent!=='종료평가 완료')label.textContent='종료평가 완료';return !!label}
+function patchGrid(){const m=$('#hd20UniversalGridModal.on');if(!m||m.dataset.kpiEvidence!=='1')return false;const st=window.HD20_SUBNAV?.state?.();if(st?.area!=='audit'||st?.sub!=='retention')return false;const title=$('#hd20GridTitle',m),section=$('#hd20GridBody .hd20GridSection h3',m);if(title&&/^종료평가\s*·/.test(title.textContent))title.textContent=title.textContent.replace(/^종료평가\s*·/,'종료평가 완료 ·');if(section&&section.textContent.trim()==='종료평가')section.textContent='종료평가 완료';return true}
+function patchApi(){const api=window.HD20_OPS_V2;if(!api||api.__retentionLabelPatched)return false;const original=api.metrics;if(typeof original==='function'){api.metrics=(area,sub)=>{const r=original(area,sub);if(area==='audit'&&sub==='retention'&&Array.isArray(r)&&r[1]){const out=r.map(x=>Array.isArray(x)?[...x]:x);out[1][0]='종료평가 완료';return out}return r}}api.__retentionLabelPatched=true;return true}
+let timer=0;function schedule(){if(timer)return;timer=setTimeout(()=>{timer=0;patchApi();patchMetric();patchGrid()},40)}
+function bind(){patchApi();schedule();['hd20-subtab-changed','hd20-kpi-evidence-opened','hd20-refresh-requested'].forEach(e=>window.addEventListener(e,schedule));new MutationObserver(rs=>{if(rs.some(r=>[...r.addedNodes].some(n=>n?.nodeType===1&&(n.id==='hd20OpsMetrics'||n.id==='hd20UniversalGridModal'||n.querySelector?.('#hd20OpsMetrics,#hd20UniversalGridModal')))))schedule()}).observe(document.documentElement,{childList:true,subtree:true})}
+window.HD20_RETENTION_LABEL_GUARD={patchMetric,patchGrid,patchApi};document.readyState==='loading'?document.addEventListener('DOMContentLoaded',bind,{once:true}):bind();
+})();
