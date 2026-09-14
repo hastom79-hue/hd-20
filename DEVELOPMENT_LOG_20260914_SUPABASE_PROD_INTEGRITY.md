@@ -64,6 +64,24 @@ Supabase `canonical_v1` payload의 핵심 3개 배열을 직접 집계했다.
 - `ebb4149cfd597020afc72ca36405d631ecbd26eb` — Production Health Guard 추가
 - `0f8f7ba79554c6b31266a3dee440410381c4c64c` — `final-layout-polish.js` 동적 로더 연결
 
+### 최신 main 배포 재확인 — 2026-09-15
+- 당시 main SHA: `2a00a852cc28671e17fb1c3137ac602ff71e00cc`
+- Pages run: `34907228765`
+- 결과: `completed / success`
+- Pages run의 `head_sha`가 위 main SHA와 정확히 일치
+- Health Guard 및 관련 로그 커밋이 포함된 main이 Pages 배포 대상에 포함됨
+
+배포 성공 직후 원격 DB를 다시 직접 조회했다.
+- remote `updated_at`: `2026-09-08 02:11:47.106+00`
+- Activity: 120 / non-production 120
+- Action: 86 / non-production 86
+- Audit: 21 / non-production 0
+
+결론:
+- 배포 성공 후에도 원격 DB 값과 갱신시각은 변하지 않았다.
+- 따라서 현 시점 병목은 Pages 코드 배포가 아니라 인증된 실제 브라우저에서 sanitize Push가 실행되는 단계이다.
+- 로컬 Production 존재 여부가 검증되지 않은 상태에서 서버측 강제 삭제/빈 배열 치환은 계속 금지한다.
+
 ## 잔여 검증
 - 인증된 실제 HD-20 브라우저에서 최신 sync 코드가 실행된 뒤 원격 payload가 clean Production snapshot으로 교체되는지 재확인 필요.
 - 교체 후 Supabase SQL로 Activity/Action/Audit non-production = 0을 확인해야 한다.
