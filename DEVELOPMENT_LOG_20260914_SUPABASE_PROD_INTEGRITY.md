@@ -82,6 +82,19 @@ Supabase `canonical_v1` payload의 핵심 3개 배열을 직접 집계했다.
 - 따라서 현 시점 병목은 Pages 코드 배포가 아니라 인증된 실제 브라우저에서 sanitize Push가 실행되는 단계이다.
 - 로컬 Production 존재 여부가 검증되지 않은 상태에서 서버측 강제 삭제/빈 배열 치환은 계속 금지한다.
 
+### Health Guard 인증대기 안정화 — 2026-09-15
+추가 실행검증에서 `HD20_DB_SYNC.fetchRemote`가 준비되지 않은 동안 250ms 무한 재시도할 수 있는 잔여위험을 확인했다.
+
+수정:
+- 최대 40회까지만 250ms polling
+- `hd20-auth-ready`, `hd20-db-status ready`, `hd20-db-synced` 이벤트에서 재기동
+- 인증 우회 모드에서는 원격검사를 실행하지 않고 `DB 무결성 비활성` 표시
+- 준비 완료 시 retry timer 정리 후 정상 remote check
+
+관련 커밋:
+- `46a9de6193ec9c6957e2fcb69847c760b8dc7da7` — 유한 재시도 + 이벤트 기반 재기동
+- `360b824eb0494cdf809df272cad0b923c4ee8ddd` — `hd20-db-production-health.js?v=20260915-2` cache 갱신
+
 ## 잔여 검증
 - 인증된 실제 HD-20 브라우저에서 최신 sync 코드가 실행된 뒤 원격 payload가 clean Production snapshot으로 교체되는지 재확인 필요.
 - 교체 후 Supabase SQL로 Activity/Action/Audit non-production = 0을 확인해야 한다.
