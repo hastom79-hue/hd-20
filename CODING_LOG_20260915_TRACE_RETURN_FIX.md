@@ -38,6 +38,8 @@ normalize Audit ID
 ## Commit
 - source fix: `ece46af0a8abe857efa79f8ab083f8f718b26261`
 - loader/cache: `009a8467980bf6f1c61055be7e79535b90d90c01`
+- 개발일지: `92cde83b263c0284743aa6e32ddc5577ea6d63f9`
+- 코딩일지/main 기준: `e70b9667c551e1f87ca31d5ab25ce4217d2ad171`
 
 ## 영향 없음
 - `hd20-trace-production-guard.js`의 production-only filtering
@@ -46,10 +48,24 @@ normalize Audit ID
 - Action closure/effect/recurrence canonical logic
 - Audit 6개월 종료평가 계산
 
+## 배포 코드 검증
+Pages run `34907593976` 기준:
+- build `104187762439` success
+- deploy `104187931113` success
+- report-build-status `104187931161` success
+- 모든 Pages job의 `head_sha` = `e70b9667c551e1f87ca31d5ab25ce4217d2ad171`
+
+따라서 배포 artifact가 생성된 source revision과 Trace return fix가 포함된 main revision의 SHA가 일치한다.
+
+## 소스 재확인
+- `final-layout-polish.js`가 `hd20-trace-backlink-guard.js?v=20260915-2`를 로드한다.
+- `hd20-trace-production-guard.js`는 `openForAudit(id)`에서 exact Audit ID만 사용한다.
+- Action 없는 Audit도 `renderTrace()`에서 `미연계` row를 생성하므로 return 대상 Audit 자체는 사라지지 않는다.
+- Case Detail은 production-filtered Action 배열의 exact Action ID로만 열린다.
+
 ## 다음 검증
-1. 최신 main SHA 확인
-2. Pages build/deploy/report 확인
-3. deployed SHA와 main 일치 확인
-4. Case Detail에서 원천 Audit ID가 없는 경우 backlink 미표시 유지 확인
-5. Action 0건 Audit은 Trace에서 미연계 상태 유지 확인
-6. 개발일지에 최종 deployed SHA 추가
+1. Dashboard/Action/Retention Evidence 3개 진입점에서 실제 browser return behavior 확인
+2. 원천 Audit ID 없는 Case에서 backlink가 생성되지 않는지 확인
+3. URL `tab=audit&sub=retention`과 visible main nav가 동시에 Audit으로 전환되는지 확인
+4. 일반 smoke runner step 시작 여부와 app assertion 실패를 구분하여 기록
+5. 이후 변경도 개발일지·코딩일지 동시 갱신
