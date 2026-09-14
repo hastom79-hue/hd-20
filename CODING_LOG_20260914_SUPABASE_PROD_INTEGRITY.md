@@ -2,6 +2,8 @@
 
 ## 대상
 - `supabase-sync.js`
+- `hd20-db-production-health.js`
+- `final-layout-polish.js`
 - `index.html`의 Supabase sync cache reference
 - Supabase table: `public.hd20_app_state`, row `canonical_v1`
 
@@ -53,16 +55,67 @@ SQL 집계 결과:
 ## Commit
 - `45bb83dc240baf5483e2f6d1ebca12e25c0ca9ec`
 
-## 캐시 상태
-- 현재 index 참조: `supabase-sync.js?v=20260914-prodguard-1`
-- sync 파일 본문은 위 commit으로 최신화됨.
-- query cache key 자체는 아직 prodguard-1이므로 다음 배치에서 cache bust 여부를 별도 처리/검증한다.
+## 2026-09-15 코드/배포 재검증
+### Cache bust 확인
+`index.html` 현재 참조:
+- `supabase-sync.js?v=20260914-prodguard-awaitpush-2`
+
+즉 초기 기록의 `prodguard-1` 잔여사항은 해소됐다.
+
+배포 기준:
+- SHA `f7bbbf88e57c4402d27532bdb491adfcba7cc66d`
+- Pages run `34814541541`
+- build/deploy/report success
+- workflow job의 `head_sha` 역시 `f7bbbf88e57c4402d27532bdb491adfcba7cc66d`
+
+### 원격 상태 재검증
+앱과 동일한 non-production 규칙에 legacy `teamleadN@example.com`까지 포함해 SQL로 재집계했다.
+- Activity 120 / nonprod 120
+- Action 86 / nonprod 86
+- Audit 21 / nonprod 0
+- remote `updated_at = 2026-09-08 02:11:47.106+00`
+
+따라서 최신 코드 배포와 별개로 인증 브라우저가 sanitize Push를 실행한 원격 변경 흔적은 아직 없다.
+
+## 신규 코드 — `hd20-db-production-health.js`
+목적: 원격 상태를 DB 삭제 없이 브라우저에서 즉시 확인한다.
+
+구성:
+- `nonProd(x)` — `supabase-sync.js`와 같은 핵심 production 제외 규칙 사용
+- `inspect(payload)` — Activity/Action/Audit 별 total/unsafe 집계
+- `ensureBadge()` — 상단 controls에 운영 상태 버튼 생성
+- `check()` — `HD20_DB_SYNC.fetchRemote()`로 원격 read-only 조회 후 상태 표시
+
+표시:
+- unsafe > 0: `DB 정리 대기 N건`
+- unsafe = 0: `DB Production 정상`
+- tooltip: 원격 갱신시각 + 배열별 total/non-production 건수
+
+이벤트:
+- `hd20-db-status` ready 이후 재검사
+- `hd20-db-synced` 이후 재검사
+- 버튼 클릭 시 수동 재검사
+
+API:
+- `window.HD20_DB_PRODUCTION_HEALTH.last`
+- `window.HD20_DB_PRODUCTION_HEALTH.check()`
+- `window.HD20_DB_PRODUCTION_HEALTH.inspect()`
+
+Commit:
+- `ebb4149cfd597020afc72ca36405d631ecbd26eb` — Health Guard 파일 생성
+- `0f8f7ba79554c6b31266a3dee440410381c4c64c` — `final-layout-polish.js` 동적 로더에 `hd20-db-production-health.js?v=20260915-1` 연결
+
+## Cache/로더 잔여위험
+- `index.html`의 `final-layout-polish.js?v=20260914-38` cache key 자체는 이번 배치에서 변경하지 않았다.
+- 이유: index가 한 줄 전체 파일이며 기존 외부 설정 문자열과 다수 script cache version을 포함하고 있어, Health Guard 1개를 위해 전체 파일 재기록 시 회귀 범위가 커진다.
+- 새 방문/캐시 갱신 환경에서는 최신 final-layout 파일이 로드된다. 장기 캐시 환경의 즉시 반영 여부는 별도 검증한다.
 
 ## 다음 코드 검증 체크리스트
-1. 최신 sync script 실제 브라우저 로드 확인
-2. local Production Activity/Action 보존 확인
-3. sanitize Push 완료 후 reload 확인
-4. Supabase `canonical_v1` 재조회
-5. Activity/Action/Audit non-production = 0 확인
-6. KPI/Trace/Cases production-only 재검증
-7. 개발일지·코딩일지에 최종 DB row counts와 deployed SHA 기록
+1. 최신 Health Guard 포함 Pages deploy SHA 확인
+2. 인증 세션에서 `DB 정리 대기 206건` 수준의 실제 원격 경고 표시 여부 확인(실제 건수는 조회 시점 기준으로 재계산)
+3. local Production Activity/Action 보존 확인
+4. sanitize Push 완료 후 remote `updated_at` 변경 확인
+5. Supabase Activity/Action/Audit non-production = 0 확인
+6. Health Guard가 `DB Production 정상`으로 전환되는지 확인
+7. KPI/Trace/Cases production-only 재검증
+8. 개발일지·코딩일지에 최종 DB row counts와 deployed SHA 기록
