@@ -1,0 +1,44 @@
+# HD-20 개발일지 — Supabase Production 무결성 검증 (2026-09-14)
+
+## 목적
+HD-20 운영 데이터가 Supabase `public.hd20_app_state / canonical_v1`과 동기화될 때 Demo/E2E seed가 Production 화면·KPI·Trace로 재유입되지 않도록 실제 DB 원천과 동기화 로직을 함께 검증한다.
+
+## 실제 DB 검증 결과
+Supabase `canonical_v1` payload의 핵심 3개 배열을 직접 집계했다.
+- `hd20GMES5SAutoImproveRawV1`: 120행 / non-production 판정 120행
+- `hd20ActionCasesV2`: 86행 / non-production 판정 86행
+- `hd20AuditRandomDrawsV1`: 21행 / non-production 판정 0행
+
+즉 Activity와 Action 원격 배열은 현재 Demo/Test seed만 존재하고, Audit 배열은 검출 기준상 Production 21행이다.
+
+## 중요한 운영 판단
+원격 Activity/Action 배열을 즉시 빈 배열로 삭제하지 않았다. 이유는 원격 Demo-only 배열을 단순 `[]`로 바꾸면 기존 브라우저의 로컬 Production 데이터가 다음 Pull에서 빈 배열로 덮일 위험이 있기 때문이다.
+
+따라서 안전한 순서는 다음과 같다.
+1. 원격 Demo-only payload 감지
+2. 브라우저 로컬에 Production 데이터가 있으면 로컬 Production을 보존
+3. Demo/Test를 제거한 clean snapshot을 원격으로 Push
+4. Push 성공 이후에만 최초 hydrate reload
+
+## 수정
+`supabase-sync.js`의 최초 boot 동기화에서 기존에는 sanitize Push를 예약한 뒤 80ms 후 reload할 수 있었다. 네트워크가 느리면 reload가 Push 완료 전에 발생할 가능성이 있었다.
+
+수정 후:
+- `needsSanitizedPush(outcome)`가 true이면 `await push()` 수행
+- clean snapshot Push가 끝난 뒤 hydrate reload 진행
+- 원격 Demo-only + 로컬 Production 조합에서 로컬 Production 보존 원칙 유지
+
+## Commit
+- `45bb83dc240baf5483e2f6d1ebca12e25c0ca9ec` — `fix: await production sanitization before initial reload`
+
+## 잔여 검증
+- `index.html`은 현재 `supabase-sync.js?v=20260914-prodguard-1`을 참조한다. 파일 본문은 최신화됐으나 즉시 cache bust를 위한 query version 갱신은 별도 검증 필요.
+- 원격 Demo-only Activity/Action을 직접 삭제하는 방식은 로컬 Production 보존 검증 전까지 금지.
+- 실제 사용자 브라우저에서 최신 sync 코드가 로드된 뒤 원격 payload가 clean Production snapshot으로 교체되는지 재확인 필요.
+- 교체 후 Supabase SQL로 핵심 3개 배열의 non-production 행 수를 다시 0으로 확인해야 한다.
+
+## 회귀 방지 원칙
+- Demo/Test 원천을 Production으로 간주하지 않는다.
+- Production 데이터가 확인되지 않은 상태에서 원격 배열을 빈 배열로 강제 삭제하지 않는다.
+- Activity/Audit/Action exact ID 정책과 기존 KPI production filter는 유지한다.
+- Supabase 변경은 최신 changelog 확인 및 실제 DB 검증 후 진행한다.
