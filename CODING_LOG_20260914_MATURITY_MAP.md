@@ -262,6 +262,7 @@ show = mode==='all'
 ['hd20MaturityMapTabScript','hd20-maturity-map-tab.js?v=20260914-2']
 ['hd20MaturityMapOperationalGuardScript','hd20-maturity-map-operational-guard.js?v=20260914-6']
 ['hd20MaturityMapPriorityFilterGuardScript','hd20-maturity-map-priority-filter-guard.js?v=20260914-2']
+['hd20MaturityIdIntegrityGuardScript','hd20-maturity-id-integrity-guard.js?v=20260914-1']
 ```
 
 ### 회귀보호
@@ -274,11 +275,11 @@ show = mode==='all'
 ### 수정 목적
 `final-layout-polish.js`의 신규 loader를 브라우저 캐시에 즉시 반영하기 위한 cache bust.
 
-### 변경
+### 변경 이력
 ```text
 final-layout-polish.js?v=20260914-35
-→
-final-layout-polish.js?v=20260914-36
+→ v36
+→ v37 (Activity ID Integrity Guard 강제 반영)
 ```
 
 ### 반드시 보존한 항목
@@ -363,11 +364,19 @@ Reported success!
 
 ### `158f7f51c32e6f8de6b56a4b4803832a956a0c43`
 - index의 `final-layout-polish.js` cache v36 적용
-- Pages run 생성 확인
-- 최종 Pages exact SHA 확인은 후속 검증 대상으로 유지
+
+### Activity ID Integrity commits
+- `9433562460509cf9c93c546d208aed2bd3c2ce65`
+  - 신규 `hd20-maturity-id-integrity-guard.js`
+- `8f705996f49544eaa0e97307ec2019f124b8db43`
+  - dynamic loader 연결
+- `fec198ffb03c1530568fcda82c25a3163f9443b3`
+  - index cache v37 적용
+- `c7088ab1eabf6a7fcc81ddf061800655c95d6fa5`
+  - 개발일지에 ID 무결성 방어 기록
 
 ### 문서화 commit
-- 개발일지 신규 파일 작성 commit은 기능 commit 이후 별도 문서 commit으로 남긴다.
+- 개발/코딩일지 commit은 기능 commit 이후 별도 문서 commit으로 남긴다.
 - 문서 commit 이후 `main SHA`와 실제 배포 기능 SHA가 달라질 수 있으므로 보고 시 구분한다.
 
 ---
@@ -393,6 +402,8 @@ Reported success!
 - [ ] Activity Drill-down exact ID만 사용
 - [ ] Map return context exact Activity ID 기준
 - [ ] 현재 유지 filter가 legacy `mmtFilter`와 충돌하지 않음
+- [ ] Activity ID 중복 시 exact Drill-down 차단
+- [ ] Activity ID 누락 상태 화면 경고
 - [ ] index 전체 replace 전 최신 SHA fetch
 - [ ] cache bust 후 Pages exact SHA 확인
 
@@ -415,3 +426,83 @@ Reported success!
 13. browser/runtime validation
 14. 잔여위험
 15. 다음 검증 항목
+
+---
+
+## 16. Activity ID 무결성 Guard 상세
+### 문제
+Exact Drill-down은 Activity ID가 유일하다는 전제를 가진다. 과거/비정상 데이터에 동일 Activity ID가 2건 이상 존재하면 `q=<ActivityID>` 검색 결과가 여러 Case가 되어 exact 의미가 깨질 수 있다. ID 누락 Case도 상세 Grid로 안전하게 이동할 수 없다.
+
+### 신규 파일
+`hd20-maturity-id-integrity-guard.js?v=20260914-1`
+
+### canonical source
+```js
+const rows = HD20KPIData.load().filter(HD20KPIData.isConfirmed)
+```
+공식확정 생산 Case만 검사한다.
+
+### `data()`
+- `id || activityId`를 stable ID 후보로 읽음
+- ID별 건수 `Map` 생성
+- 누락 건수 계산
+- `count > 1`인 ID를 duplicate map으로 분리
+
+### 화면 상태
+정상:
+```text
+Activity ID 무결성 정상 · 공식확정 N Case 모두 유일 ID
+```
+누락:
+```text
+Activity ID 무결성 주의 · ID 누락 N건
+```
+중복:
+```text
+Activity ID 무결성 오류 · 중복 ID N개 / M Case
+```
+
+### 카드 표시
+중복 Activity ID Case에는 `ID 중복` Badge 추가.
+
+### Drill-down 차단
+`[data-mmt-open-activity]` 버튼에 대해 ID 발생 건수가 정확히 1건일 때만 활성화한다.
+- 1건 → 정상
+- 0건 → disabled, `Activity ID 확인 필요`
+- 2건 이상 → disabled, `Activity ID 중복 · 상세 Grid 차단`
+
+따라서 ambiguous Activity ID가 `HD20_OPS_V2.go()`로 전달되는 경로를 UI 레벨에서 사전에 차단한다.
+
+### 자동 재검사 이벤트
+- `hd20-open-maturity-map-tab`
+- `hd20-kpi-source-updated`
+- `hd20-gmes-5s-imported`
+- `hd20-gmes-5s-judged`
+- `hd20-refresh-requested`
+- Map/Case/Detail DOM 추가 Mutation
+
+### 공개 API
+```js
+window.HD20_MATURITY_ID_INTEGRITY_GUARD={data,refresh,validate}
+```
+
+### 검증 포인트
+`validate()` 반환:
+```js
+{
+  confirmed,
+  missing,
+  duplicateIds,
+  duplicateCases,
+  exactSafe
+}
+```
+
+`exactSafe===true` 조건:
+- missing===0
+- duplicateIds===0
+
+### 잔여 검증
+- 실제 Production 원천에서 `validate()` 결과 확인
+- 중복 fixture가 존재할 경우 실제 상세 버튼 disabled 확인
+- 최신 Pages `pages_build_version` exact SHA 확인
