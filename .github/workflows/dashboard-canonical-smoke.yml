@@ -35,12 +35,14 @@ jobs:
               if x not in final: sys.exit(f'canonical dashboard module missing: {x}')
           nav=pathlib.Path('beginner-navigation.js').read_text(encoding='utf-8')
           if '.hd20ApprovedLanding' in nav: sys.exit('navigation still depends on retired approved landing')
+          if "go('dashboard',nav)" not in nav: sys.exit('dashboard boot contract missing')
+          if "searchParams.get('tab')" in nav: sys.exit('stale tab query restore must not control initial boot')
           bridge=pathlib.Path('dashboard-operational-bridge.js').read_text(encoding='utf-8')
           if "document.querySelector('.cards')" not in bridge: sys.exit('operational bridge not anchored to canonical cards')
           PY
       - name: Serve
         run: python3 -m http.server 4173 >/tmp/hd20-http.log 2>&1 &
-      - name: Verify rendered dashboard hierarchy
+      - name: Verify rendered dashboard hierarchy and refresh boot
         run: |
           node <<'JS'
           const { chromium }=require('playwright');
@@ -57,14 +59,30 @@ jobs:
                 health:document.querySelectorAll('#hd20DashboardPriority .hd20HealthKpi').length,
                 bridge:document.querySelectorAll('#hd20OperationalBridge').length,
                 cards:document.querySelectorAll('.cards .kpi').length,
-                labels:[...document.querySelectorAll('.hd20DashboardSectionLabel')].map(x=>x.textContent.replace(/\s+/g,' ').trim()),
+                active:document.querySelector('.beginnerNav button.active')?.dataset.key||'',
+                maturityOn:document.getElementById('hd20MaturityMapTab')?.classList.contains('on')||false,
                 overflow:Math.max(document.documentElement.scrollWidth,document.body.scrollWidth)-document.documentElement.clientWidth
               }));
               if(errors.length)throw new Error(`page errors: ${errors.join(' | ')}`);
               if(state.approved!==0)throw new Error(`duplicate approved landing rendered: ${state.approved}`);
               if(state.priority!==1||state.health!==6)throw new Error(`priority layer invalid: ${JSON.stringify(state)}`);
               if(state.bridge!==1||state.cards!==5)throw new Error(`canonical body invalid: ${JSON.stringify(state)}`);
+              if(state.active!=='dashboard'||state.maturityOn)throw new Error(`initial dashboard boot invalid: ${JSON.stringify(state)}`);
               if(state.overflow>2)throw new Error(`horizontal overflow ${state.overflow}px @ ${viewport.width}`);
+
+              await page.evaluate(()=>window.HD20_NAV?.go?.('maturitymap'));
+              await page.waitForTimeout(400);
+              let tab=await page.evaluate(()=>document.querySelector('.beginnerNav button.active')?.dataset.key||'');
+              if(tab!=='maturitymap')throw new Error(`maturity navigation failed: ${tab}`);
+              await page.reload({waitUntil:'networkidle'});
+              await page.waitForTimeout(1200);
+              let refresh=await page.evaluate(()=>({active:document.querySelector('.beginnerNav button.active')?.dataset.key||'',maturityOn:document.getElementById('hd20MaturityMapTab')?.classList.contains('on')||false}));
+              if(refresh.active!=='dashboard'||refresh.maturityOn)throw new Error(`refresh did not reset to dashboard: ${JSON.stringify(refresh)}`);
+
+              await page.goto('http://127.0.0.1:4173/index.html?tab=maturitymap&sub=legacy',{waitUntil:'networkidle'});
+              await page.waitForTimeout(1200);
+              let stale=await page.evaluate(()=>({active:document.querySelector('.beginnerNav button.active')?.dataset.key||'',maturityOn:document.getElementById('hd20MaturityMapTab')?.classList.contains('on')||false,search:location.search}));
+              if(stale.active!=='dashboard'||stale.maturityOn||/tab=|sub=/.test(stale.search))throw new Error(`stale deep-link boot regression: ${JSON.stringify(stale)}`);
               await page.close();
             }
             await browser.close();
