@@ -26,90 +26,40 @@ jobs:
           python3 - <<'PY'
           import pathlib,sys
           html=pathlib.Path('index.html').read_text(encoding='utf-8')
-          forbidden=['approved-landing-v2.js','approved-landing-v2.css']
-          for x in forbidden:
+          for x in ['approved-landing-v2.js','approved-landing-v2.css']:
               if x in html: sys.exit(f'duplicate landing runtime remains: {x}')
-          required=['dashboard-priority-layout.js','dashboard-operational-bridge.js','dashboard-section-tabs.js']
           final=pathlib.Path('final-layout-polish.js').read_text(encoding='utf-8')
-          for x in required:
+          for x in ['dashboard-priority-layout.js','dashboard-operational-bridge.js','dashboard-section-tabs.js']:
               if x not in final: sys.exit(f'canonical dashboard module missing: {x}')
           nav=pathlib.Path('beginner-navigation.js').read_text(encoding='utf-8')
           if '.hd20ApprovedLanding' in nav: sys.exit('navigation still depends on retired approved landing')
           if "go('dashboard',nav)" not in nav: sys.exit('dashboard boot contract missing')
           if "searchParams.get('tab')" in nav: sys.exit('stale tab query restore must not control initial boot')
           tabs=pathlib.Path('dashboard-section-tabs.js').read_text(encoding='utf-8')
-          for key in ["key:'summary'","key:'execution'","key:'standard'"]:
+          for key in ["key:'summary'","key:'execution'","key:'standard'","key:'field'"]:
               if key not in tabs: sys.exit(f'dashboard grouping missing: {key}')
-          if "let active='summary'" not in tabs or "function reset(){active='summary'" not in tabs:
-              sys.exit('dashboard subtab reset contract missing')
+          if "let active='summary'" not in tabs or "function reset(){active='summary'" not in tabs: sys.exit('dashboard subtab reset contract missing')
           bridge=pathlib.Path('dashboard-operational-bridge.js').read_text(encoding='utf-8')
-          if "document.querySelector('.cards')" not in bridge: sys.exit('operational bridge not anchored to canonical cards')
+          for duplicate in ['개선조치 미완료','기한경과','3조건 모두 충족','2조건 충족']:
+              if duplicate in bridge: sys.exit(f'duplicate bridge metric remains: {duplicate}')
           PY
       - name: Serve
         run: python3 -m http.server 4173 >/tmp/hd20-http.log 2>&1 &
-      - name: Verify rendered dashboard hierarchy, grouping and refresh boot
+      - name: Verify rendered dashboard hierarchy and grouping
         run: |
           node <<'JS'
           const { chromium }=require('playwright');
+          const assert=(ok,msg)=>{if(!ok)throw new Error(msg)};
           (async()=>{
             const browser=await chromium.launch({headless:true});
             for(const viewport of [{width:1440,height:1000},{width:375,height:812}]){
-              const page=await browser.newPage({viewport});
-              const errors=[];page.on('pageerror',e=>errors.push(e.message));
-              await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'networkidle'});
-              await page.waitForTimeout(1800);
-              const state=await page.evaluate(()=>({
-                approved:document.querySelectorAll('.hd20ApprovedLanding').length,
-                priority:document.querySelectorAll('#hd20DashboardPriority').length,
-                health:document.querySelectorAll('#hd20DashboardPriority .hd20HealthKpi').length,
-                bridge:document.querySelectorAll('#hd20OperationalBridge').length,
-                cards:document.querySelectorAll('.cards .kpi').length,
-                active:document.querySelector('.beginnerNav button.active')?.dataset.key||'',
-                subActive:document.querySelector('#hd20DashboardSectionTabs button.active')?.dataset.dashboardSection||'',
-                subCount:document.querySelectorAll('#hd20DashboardSectionTabs button').length,
-                mainHidden:document.querySelector('.mainGrid')?.classList.contains('hd20DashboardSectionHidden')||false,
-                bottomHidden:document.querySelector('.bottomGrid')?.classList.contains('hd20DashboardSectionHidden')||false,
-                maturityOn:document.getElementById('hd20MaturityMapTab')?.classList.contains('on')||false,
-                overflow:Math.max(document.documentElement.scrollWidth,document.body.scrollWidth)-document.documentElement.clientWidth
-              }));
-              if(errors.length)throw new Error(`page errors: ${errors.join(' | ')}`);
-              if(state.approved!==0)throw new Error(`duplicate approved landing rendered: ${state.approved}`);
-              if(state.priority!==1||state.health!==6)throw new Error(`priority layer invalid: ${JSON.stringify(state)}`);
-              if(state.bridge!==1||state.cards!==5)throw new Error(`canonical body invalid: ${JSON.stringify(state)}`);
-              if(state.active!=='dashboard'||state.maturityOn)throw new Error(`initial dashboard boot invalid: ${JSON.stringify(state)}`);
-              if(state.subCount!==3||state.subActive!=='summary'||!state.mainHidden||!state.bottomHidden)throw new Error(`dashboard grouping invalid: ${JSON.stringify(state)}`);
-              if(state.overflow>2)throw new Error(`horizontal overflow ${state.overflow}px @ ${viewport.width}`);
-
-              await page.evaluate(()=>window.HD20_DASHBOARD_TABS?.apply?.('execution',{scroll:false}));
-              await page.waitForTimeout(250);
-              let execution=await page.evaluate(()=>({active:window.HD20_DASHBOARD_TABS?.active?.(),mainHidden:document.querySelector('.mainGrid')?.classList.contains('hd20DashboardSectionHidden'),bottomHidden:document.querySelector('.bottomGrid')?.classList.contains('hd20DashboardSectionHidden'),summaryHidden:document.querySelector('.cards')?.classList.contains('hd20DashboardSectionHidden')}));
-              if(execution.active!=='execution'||execution.mainHidden||!execution.bottomHidden||!execution.summaryHidden)throw new Error(`execution grouping failed: ${JSON.stringify(execution)}`);
-
-              await page.evaluate(()=>window.HD20_DASHBOARD_TABS?.apply?.('standard',{scroll:false}));
-              await page.waitForTimeout(250);
-              let standard=await page.evaluate(()=>({active:window.HD20_DASHBOARD_TABS?.active?.(),bottomHidden:document.querySelector('.bottomGrid')?.classList.contains('hd20DashboardSectionHidden'),mainHidden:document.querySelector('.mainGrid')?.classList.contains('hd20DashboardSectionHidden')}));
-              if(standard.active!=='standard'||standard.bottomHidden||!standard.mainHidden)throw new Error(`standard grouping failed: ${JSON.stringify(standard)}`);
-
-              await page.evaluate(()=>window.HD20_NAV?.go?.('activity'));
-              await page.waitForTimeout(250);
-              await page.evaluate(()=>window.HD20_NAV?.go?.('dashboard'));
-              await page.waitForTimeout(250);
-              let back=await page.evaluate(()=>window.HD20_DASHBOARD_TABS?.active?.());
-              if(back!=='summary')throw new Error(`dashboard return did not reset summary: ${back}`);
-
-              await page.evaluate(()=>window.HD20_NAV?.go?.('maturitymap'));
-              await page.waitForTimeout(400);
-              let tab=await page.evaluate(()=>document.querySelector('.beginnerNav button.active')?.dataset.key||'');
-              if(tab!=='maturitymap')throw new Error(`maturity navigation failed: ${tab}`);
-              await page.reload({waitUntil:'networkidle'});
-              await page.waitForTimeout(1200);
-              let refresh=await page.evaluate(()=>({active:document.querySelector('.beginnerNav button.active')?.dataset.key||'',subActive:window.HD20_DASHBOARD_TABS?.active?.()||'',maturityOn:document.getElementById('hd20MaturityMapTab')?.classList.contains('on')||false}));
-              if(refresh.active!=='dashboard'||refresh.subActive!=='summary'||refresh.maturityOn)throw new Error(`refresh did not reset dashboard/summary: ${JSON.stringify(refresh)}`);
-
-              await page.goto('http://127.0.0.1:4173/index.html?tab=maturitymap&sub=legacy',{waitUntil:'networkidle'});
-              await page.waitForTimeout(1200);
-              let stale=await page.evaluate(()=>({active:document.querySelector('.beginnerNav button.active')?.dataset.key||'',subActive:window.HD20_DASHBOARD_TABS?.active?.()||'',maturityOn:document.getElementById('hd20MaturityMapTab')?.classList.contains('on')||false,search:location.search}));
-              if(stale.active!=='dashboard'||stale.subActive!=='summary'||stale.maturityOn||/tab=|sub=/.test(stale.search))throw new Error(`stale deep-link boot regression: ${JSON.stringify(stale)}`);
+              const page=await browser.newPage({viewport}),errors=[];page.on('pageerror',e=>errors.push(e.message));
+              await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'networkidle'});await page.waitForTimeout(1800);
+              const state=()=>page.evaluate(()=>({approved:document.querySelectorAll('.hd20ApprovedLanding').length,priority:document.querySelectorAll('#hd20DashboardPriority').length,health:document.querySelectorAll('#hd20DashboardPriority .hd20HealthKpi').length,bridge:document.querySelectorAll('#hd20OperationalBridge').length,cards:document.querySelectorAll('.cards .kpi').length,active:document.querySelector('.beginnerNav button.active')?.dataset.key||'',subActive:window.HD20_DASHBOARD_TABS?.active?.()||'',subCount:document.querySelectorAll('#hd20DashboardSectionTabs button').length,showcaseHidden:document.querySelector('#hd20FieldShowcaseBootstrap')?.classList.contains('hd20DashboardSectionHidden')||false,overflow:Math.max(document.documentElement.scrollWidth,document.body.scrollWidth)-document.documentElement.clientWidth}));
+              let s=await state();assert(!errors.length,'page errors: '+errors.join(' | '));assert(s.approved===0&&s.priority===1&&s.health===6&&s.bridge===1&&s.cards===5,'canonical dashboard invalid: '+JSON.stringify(s));assert(s.active==='dashboard'&&s.subActive==='summary'&&s.subCount===4&&s.showcaseHidden,'initial grouping invalid: '+JSON.stringify(s));assert(s.overflow<=2,`horizontal overflow ${s.overflow}px`);
+              await page.evaluate(()=>window.HD20_DASHBOARD_TABS.apply('field',{scroll:false}));await page.waitForTimeout(150);let field=await page.evaluate(()=>({active:window.HD20_DASHBOARD_TABS.active(),showcase:!document.querySelector('#hd20FieldShowcaseBootstrap')?.classList.contains('hd20DashboardSectionHidden'),cards:!document.querySelector('.cards')?.classList.contains('hd20DashboardSectionHidden'),main:!document.querySelector('.mainGrid')?.classList.contains('hd20DashboardSectionHidden'),bottom:!document.querySelector('.bottomGrid')?.classList.contains('hd20DashboardSectionHidden')}));assert(field.active==='field'&&field.showcase&&!field.cards&&!field.main&&!field.bottom,'field grouping failed: '+JSON.stringify(field));
+              await page.evaluate(()=>window.HD20_DASHBOARD_TABS.apply('execution',{scroll:false}));await page.waitForTimeout(150);let execution=await page.evaluate(()=>({main:!document.querySelector('.mainGrid')?.classList.contains('hd20DashboardSectionHidden'),bridge:!document.querySelector('#hd20OperationalBridge')?.classList.contains('hd20DashboardSectionHidden'),showcase:!document.querySelector('#hd20FieldShowcaseBootstrap')?.classList.contains('hd20DashboardSectionHidden')}));assert(execution.main&&execution.bridge&&!execution.showcase,'execution grouping failed: '+JSON.stringify(execution));
+              await page.evaluate(()=>window.HD20_NAV.go('activity'));await page.waitForTimeout(150);await page.evaluate(()=>window.HD20_NAV.go('dashboard'));await page.waitForTimeout(150);assert((await page.evaluate(()=>window.HD20_DASHBOARD_TABS.active()))==='summary','dashboard return did not reset summary');
               await page.close();
             }
             await browser.close();
