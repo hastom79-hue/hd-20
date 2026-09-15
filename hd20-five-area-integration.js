@@ -4,14 +4,15 @@ if(window[ID])return;window[ID]=true;
 const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[m]));
 function addAreaHeader(el,kicker,title,desc){if(!el||el.querySelector(':scope > .hd20AreaHeader'))return;const h=document.createElement('div');h.className='hd20AreaHeader';h.innerHTML=`<div><small>${esc(kicker)}</small><h2>${esc(title)}</h2><p>${esc(desc)}</p></div>`;el.prepend(h)}
 function normalizeAuditArea(audit){if(!audit)return;audit.querySelector(':scope > .hd20AreaHeader')?.remove();const hero=audit.querySelector(':scope > .awHero');const title=hero?.querySelector('h2');const desc=hero?.querySelector('p');if(title)title.textContent='⑤ 진단·유지';if(desc)desc.textContent='Risk 기반 대상 추출 → 실제 Audit 실시(D-Day) → 실시일부터 달력 기준 +6개월 지속관리 → 종료평가를 하나의 흐름으로 관리합니다.';audit.dataset.area='audit';audit.dataset.canonicalArea='diagnosis-retention'}
+function normalizeActionArea(action){if(!action)return;action.querySelector(':scope > .hd20AreaHeader')?.remove();const hero=action.querySelector(':scope > .awHero');const title=hero?.querySelector('h2');const desc=hero?.querySelector('p');if(title)title.textContent='⑥ 개선실행';if(desc)desc.textContent='개선 Case를 BEFORE → 문제정의 → 담당팀·팀장 → 개선조치 → AFTER → 효과검증 → 재발관리까지 하나의 폐쇄루프로 추적합니다.';action.dataset.area='action';action.dataset.canonicalArea='improvement-execution'}
 function markOperationalScreens(){
   const activity=document.getElementById('awActivity');
   const audit=document.getElementById('awAudit');
   const action=document.getElementById('awAction');
   addAreaHeader(activity,'FIELD EXECUTION','5S 활동','6개 5S 유형의 현장 활동 등록·증빙·실행현황을 관리합니다. 현장 등록은 공식 고도화 확정과 분리됩니다.');
   normalizeAuditArea(audit);
-  addAreaHeader(action,'CLOSED LOOP ACTION','개선조치','부적합·기한경과부터 BEFORE/AFTER, 효과검증, 재발관리까지 하나의 Case로 추적합니다.');
-  if(activity)activity.dataset.area='activity';if(action)action.dataset.area='action';
+  normalizeActionArea(action);
+  if(activity)activity.dataset.area='activity';
 }
 function integrateAdvancement(){
   const conversion=document.getElementById('performanceConversionAnalysis');
