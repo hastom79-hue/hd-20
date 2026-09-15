@@ -59,37 +59,50 @@ Commit:
 
 재조회 결과 `index.html`에 신규 cache key가 실제 반영된 것을 확인했다.
 
+## 수정 4 — Browser Smoke 실제 IA 계약 정렬
+대상: `.github/workflows/browser-smoke.yml`
+
+기존:
+```js
+const expected=['dashboard','activity','advancement','audit','action'];
+```
+이 하나의 배열을 main과 `hdps-dashboard.html` 양쪽에 사용했다.
+
+수정:
+```js
+const expectedMain=['dashboard','activity','advancement','maturitymap','audit','action'];
+const expectedHdps=['dashboard','activity','advancement','audit','action'];
+```
+- main assertion은 `expectedMain` 사용
+- HDPS dashboard assertion은 `expectedHdps` 사용
+- main navigation 왕복 smoke에 `maturitymap` 추가
+
+Commit:
+`caed3325be526d616b4ae19da3511d2791b0384d`
+
+애플리케이션 코드는 변경하지 않고 실제 IA와 테스트 계약만 일치시켰다.
+
 ## 정적 회귀 확인
 - ID Integrity Guard는 duplicate ID 건수/Case 수를 별도로 계산하고 동일 ID 2건 이상이면 Activity 상세 Grid 버튼을 disabled 처리한다.
 - Operational Guard의 Case 원본 mapping은 팀 + `data-mmt-case` 원본 인덱스를 사용한다.
-- 이번 Priority Filter Guard 수정도 같은 mapping 규칙으로 통일했다.
+- Priority Filter Guard도 같은 mapping 규칙으로 통일했다.
 - `현재 유지(ok)` 별도 상태키와 legacy `mmtFilter=all` 충돌방지 구조는 유지했다.
 - 원 Case 복귀 시 `mmtReturnFocus`가 숨김 상태이면 전체 필터로 전환하는 기존 repair 로직은 유지했다.
 
 ## CI 실행 결과 및 원인 분리
 - `8f2091b...` 기준 Browser Smoke `34909083051`, Nav Scroll Smoke `34909083054`는 failure.
 - Browser Smoke job raw log는 Azure Blob `BlobNotFound`로 회수 불가.
-- 최신 main `f7b7f16364bcc71304e63e4c13d2e36924125ffb` 기준 Runtime Smoke `34911473287`의 `smoke` job과 Package Source `34911473301`의 `package` job도 모두 failure이며 step 목록이 비어 있다.
-- 서로 다른 workflow가 실제 step 0개 상태로 동일 실패하므로 현재 CI 적색은 테스트 assertion 실패가 아니라 Runner/Actions 실행 전 단계 문제로 분류한다.
+- 이후 main `f7b7f16364bcc71304e63e4c13d2e36924125ffb` 기준 Runtime Smoke `34911473287`의 `smoke` job과 Package Source `34911473301`의 `package` job도 모두 failure이며 step 목록이 비어 있었다.
+- 서로 다른 workflow가 실제 step 0개 상태로 동일 실패하므로 해당 CI 적색은 테스트 assertion 실패가 아니라 Runner/Actions 실행 전 단계 문제로 분류했다.
 - 따라서 앱 코드를 CI 적색만 보고 임의 수정하지 않는다.
 
-## Browser Smoke 계약 드리프트
+## Browser Smoke 계약 드리프트 해소
 현재 실제 구조:
 ```js
 main = ['dashboard','activity','advancement','maturitymap','audit','action'] // 6영역
 hdps-dashboard = ['dashboard','activity','advancement','audit','action'] // 5영역
 ```
-
-기존 Browser Smoke는 하나의 `expected` 5영역 배열을 main과 HDPS dashboard 양쪽에 재사용하고 있다.
-Runner가 정상화되면 main nav assertion이 잘못 실패한다.
-
-수정 원칙:
-```js
-expectedMain = ['dashboard','activity','advancement','maturitymap','audit','action']
-expectedHdps = ['dashboard','activity','advancement','audit','action']
-```
-그리고 main 왕복 smoke에 `maturitymap`을 포함한다.
-현재 Runner 자체가 step 진입 전 실패하므로 대규모 workflow 교체로 진단 신호를 오염시키지 않고, 실행 환경 복구 후 최소 diff로 적용한다.
+기존 Browser Smoke의 단일 5영역 기대값을 분리했다. Runner가 복구되면 main nav assertion이 `maturitymap` 누락 때문에 오탐 실패하지 않도록 했다.
 
 ## Exact lineage 코드 재검증
 `action-audit-linkage.js`:
@@ -107,8 +120,8 @@ expectedHdps = ['dashboard','activity','advancement','audit','action']
 - `restoreReturnFocus()`도 exact `data-activity-id`로 원 Case를 복원한다.
 
 ## 다음 자동 검증
-- Actions Runner step 실행 복구 여부
-- Browser Smoke main/HDPS nav 기대값 분리
+- 신규 Browser Smoke commit의 Actions Runner step 실행 여부
+- main 6영역 / HDPS 5영역 Browser 계약 실제 실행
 - Pages deploy exact SHA
 - 브라우저 runtime `validate()`
 - duplicate ID fixture에서 서로 다른 상태의 카드 정렬/필터 독립성
