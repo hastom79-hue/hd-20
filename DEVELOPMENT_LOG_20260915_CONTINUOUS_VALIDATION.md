@@ -34,6 +34,11 @@ Activity ID Map lookup을 제거하고 기존 Core Map의 안정키를 그대로
   - `final-layout-polish.js?v=20260914-38` → `final-layout-polish.js?v=20260915-1`
   - commit `8f2091b782427b702f184728a6dd07f4c3c50921`
   - 재조회 결과 신규 cache key 반영 확인
+- `.github/workflows/browser-smoke.yml`
+  - main 기대 nav를 6영역으로 분리
+  - HDPS dashboard 기대 nav는 기존 5영역 유지
+  - main 왕복 smoke에 `maturitymap` 포함
+  - commit `caed3325be526d616b4ae19da3511d2791b0384d`
 
 ## 회귀방지 확인
 변경하지 않은 규칙:
@@ -51,14 +56,14 @@ Activity ID Map lookup을 제거하고 기존 Core Map의 안정키를 그대로
   - Runtime Smoke run `34911473287`: job `smoke`가 failure이나 step 목록이 비어 있음.
   - Package Source run `34911473301`: job `package`가 failure이나 step 목록이 비어 있음.
   - Browser Smoke의 최근 job 역시 step 목록이 비어 있고 raw log가 생성되지 않음.
-- 따라서 현재 GitHub Actions 적색 상태는 특정 HD-20 JavaScript 계약 실패가 아니라 Runner/Actions 실행 전 단계의 시스템성 실패 패턴으로 분리한다. 실제 test step이 실행되기 전 실패하므로 기능 회귀 판정 근거로 사용하지 않는다.
+- 따라서 해당 시점 GitHub Actions 적색 상태는 특정 HD-20 JavaScript 계약 실패가 아니라 Runner/Actions 실행 전 단계의 시스템성 실패 패턴으로 분리한다. 실제 test step이 실행되기 전 실패하므로 기능 회귀 판정 근거로 사용하지 않는다.
 
-## 추가 계약 불일치 발견
-- `runtime-smoke.yml`의 canonical IA는 `dashboard / activity / advancement / maturitymap / audit / action` 6영역이다.
-- `beginner-navigation.js`도 같은 6영역을 정적 검증한다.
-- 반면 기존 `browser-smoke.yml`은 main 화면 기대값을 아직 5영역 `dashboard / activity / advancement / audit / action`으로 유지한다.
-- 별도 `hdps-dashboard.html`은 실제로 5영역 nav가 맞다. 따라서 Browser Smoke 정상화 시 main=6영역, HDPS dashboard=5영역으로 기대값을 분리해야 한다.
-- Runner가 현재 step 진입 전 실패하므로 workflow 파일을 대규모 재작성하여 원인과 무관한 변경을 섞지 않고, Runner 정상화 후 해당 계약 드리프트를 최소 수정한다.
+## Browser Smoke 계약 수정
+- `runtime-smoke.yml`의 canonical IA와 실제 main은 `dashboard / activity / advancement / maturitymap / audit / action` 6영역이다.
+- 별도 `hdps-dashboard.html`은 `dashboard / activity / advancement / audit / action` 5영역이다.
+- 기존 `browser-smoke.yml`은 하나의 5영역 `expected`를 main과 HDPS 양쪽에 재사용하여 Runner 정상화 시 main assertion이 필연적으로 실패하는 계약 드리프트가 있었다.
+- 이를 `expectedMain` 6영역 / `expectedHdps` 5영역으로 분리하고 main 왕복 smoke에 `maturitymap`을 추가했다.
+- 애플리케이션 로직은 변경하지 않았으며 테스트 계약만 실제 IA에 맞췄다.
 
 ## Exact lineage 재검증
 - `action-audit-linkage.js`는 pending Audit ID를 `auditDrawId`로 보존하고 Action 생성 후 `sourceCaseId`와 `auditDrawId`에 동일 ID를 기록한다.
@@ -66,8 +71,8 @@ Activity ID Map lookup을 제거하고 기존 Core Map의 안정키를 그대로
 - `hd20-maturity-map-operational-guard.js`는 고도화 Case를 팀 + `data-mmt-case` 원본 인덱스로 canonical source에 매핑하고 Activity Grid 진입/복귀는 exact Activity ID를 사용한다.
 
 ## 잔여 검증
-1. Actions Runner가 실제 step 실행 단계로 복구되는지 지속 확인
-2. Browser Smoke main 6영역 / HDPS 5영역 기대값 분리
+1. 신규 Browser Smoke commit에서 Actions Runner가 실제 step 실행 단계로 복구되는지 확인
+2. Browser Smoke main 6영역 / HDPS 5영역 계약 실제 실행 확인
 3. Pages가 수정 SHA를 실제 배포했는지 확인
 4. 실제 브라우저에서 `HD20_MATURITY_PRIORITY_FILTER_GUARD.validate()` 결과 `mappingSafe=true` 확인
 5. 중복 ID Case 2건의 상태가 서로 달라도 각각의 정렬/필터가 원 Case 기준으로 유지되는지 확인
