@@ -1,0 +1,19 @@
+(()=>{'use strict';
+const ID='hd20FieldShowcaseBootstrap';
+const cases=[
+['ULS-5S-S01','중형상부1팀','정리','공구·치공구 혼재 구역 정위치화','진행중'],
+['ULS-5S-S02','대형메인팀','청소','조립 통로 오염원 제거 및 청소주기 표준화','완료'],
+['ULS-5S-S03','휠로더 Front팀','시각화','부품 대기구역 라인·표찰 시각관리','효과검증'],
+['ULS-5S-S04','Boom 제작팀','정돈','용접 치구 보관 위치 표준화','완료'],
+['ULS-5S-S05','프레임제작팀','5S 고도화','Green Zone 기반 자재 적치량 축소','Audit 예정'],
+['ULS-5S-S06','조립물류팀','동선개선','AGV·작업자 교차동선 위험구간 시각화','진행중']
+];
+const photos=[
+{src:'https://www.theconstructionindex.co.uk/assets/news_articles/2025/07/1752215843_hyundai-factory-in-ulsan.jpg',title:'울산 스마트팩토리 생산라인',note:'공개 보도사진 · 현장 참고',source:'https://www.hyundai-ce.com/ko/media/newspress/view?detailsKey=2278'},
+{src:'https://www.hd-infracore.com/file/news/view/1d9ff69d-f6e0-4958-9fa5-94f701926190',title:'생산현장 점검·정위치 관리',note:'HD 건설기계 공개 현장사진 · 참고',source:'https://www.hd-infracore.com/en/company/media/news-view/20174944?page=6'}
+];
+function css(){if(document.getElementById(ID+'Style'))return;const s=document.createElement('style');s.id=ID+'Style';s.textContent=`#${ID}{margin:14px 0;display:grid;grid-template-columns:1.25fr .75fr;gap:12px}#${ID} .fsCard{background:#fff;border:1px solid #dbe4ea;border-radius:12px;overflow:hidden;box-shadow:0 3px 12px rgba(25,54,73,.045)}#${ID} .fsHead{padding:12px 15px;border-bottom:1px solid #e5ecef;display:flex;justify-content:space-between;align-items:center;gap:10px}#${ID} .fsHead b{font-size:14px;color:#17384f}#${ID} .fsBadge{font-size:10px;font-weight:900;padding:4px 7px;border-radius:999px;background:#fff4d8;color:#8c6418}#${ID} table{width:100%;border-collapse:collapse;font-size:11.5px}#${ID} th,#${ID} td{padding:8px 10px;border-bottom:1px solid #edf1f3;text-align:left}#${ID} th{background:#f5f8fa;color:#4d6879}#${ID} .fsPhotos{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px}#${ID} figure{margin:0;border:1px solid #e1e8ec;border-radius:9px;overflow:hidden;background:#f8fafb}#${ID} img{width:100%;height:132px;object-fit:cover;display:block}#${ID} figcaption{padding:8px;font-size:10.5px;line-height:1.45;color:#526c7d}#${ID} figcaption b{display:block;color:#24465d;font-size:11.5px}#${ID} .fsNote{padding:0 12px 12px;color:#7b8e9b;font-size:10px;line-height:1.5}@media(max-width:950px){#${ID}{grid-template-columns:1fr}#${ID} .fsPhotos{grid-template-columns:1fr 1fr}}@media(max-width:560px){#${ID} .fsPhotos{grid-template-columns:1fr}}`;document.head.appendChild(s)}
+function render(){if(document.getElementById(ID))return;const anchor=document.querySelector('.cards');if(!anchor)return;css();const el=document.createElement('section');el.id=ID;el.innerHTML=`<div class="fsCard"><div class="fsHead"><b>현장형 초기 데이터 · 6건</b><span class="fsBadge">초기 구축 샘플 · 운영실적 제외</span></div><div style="overflow:auto"><table><thead><tr><th>Case</th><th>생산팀</th><th>유형</th><th>개선 주제</th><th>상태</th></tr></thead><tbody>${cases.map(r=>`<tr>${r.map(v=>`<td>${v}</td>`).join('')}</tr>`).join('')}</tbody></table></div><div class="fsNote">실제 운영 데이터가 확보되기 전 화면 공백을 줄이기 위한 현장형 샘플입니다. KPI·Supabase 운영실적에는 합산하지 않습니다.</div></div><div class="fsCard"><div class="fsHead"><b>울산 생산현장 참고사진</b><span class="fsBadge">공개 현장사진</span></div><div class="fsPhotos">${photos.map(p=>`<figure><a href="${p.source}" target="_blank" rel="noopener"><img src="${p.src}" alt="${p.title}" loading="lazy"></a><figcaption><b>${p.title}</b>${p.note}</figcaption></figure>`).join('')}</div><div class="fsNote">사진은 공개된 울산/건설기계 생산현장 자료를 참고용으로 표시하며, 특정 샘플 Case의 Before/After 증빙으로 오인하지 않도록 분리했습니다.</div></div>`;anchor.insertAdjacentElement('afterend',el)}
+function boot(){render();new MutationObserver(()=>{if(!document.getElementById(ID))render()}).observe(document.body,{childList:true,subtree:true})}
+document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot,{once:true}):boot();
+})();
