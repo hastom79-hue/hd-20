@@ -1,7 +1,7 @@
 (()=>{'use strict';
 const ID='hd20DashboardSectionTabs';
 const TABS=[
- {key:'summary',label:'종합현황',desc:'핵심 KPI·성과 요약',targets:['#hd20DashboardPriority','.cards']},
+ {key:'summary',label:'종합현황',desc:'핵심 KPI·성과 요약',targets:['#hd20DashboardPriority','.cards','#hd20FieldShowcaseBootstrap']},
  {key:'execution',label:'실행·유지',desc:'팀별 실행·Audit·Action',targets:['.mainGrid','#hd20OperationalBridge']},
  {key:'standard',label:'기준·추이',desc:'판정기준·월별 변화',targets:['.bottomGrid']}
 ];
