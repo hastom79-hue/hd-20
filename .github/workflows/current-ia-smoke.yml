@@ -41,44 +41,25 @@ jobs:
               page.on('dialog',d=>d.accept());
               await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'networkidle',timeout:30000});
               await page.waitForFunction(()=>window.HD20_NAV&&window.HD20_DASHBOARD_TABS&&document.getElementById('hd20DashboardSectionTabs'),{},{timeout:15000});
-
               const expected=['dashboard','activity','advancement','maturitymap','audit','action'];
               const keys=await page.locator('.beginnerNav button[data-key]').evaluateAll(xs=>xs.map(x=>x.dataset.key));
               assert(JSON.stringify(keys)===JSON.stringify(expected),'canonical top nav mismatch: '+JSON.stringify(keys));
               assert((await page.locator('.beginnerNav button.active').getAttribute('data-key'))==='dashboard','dashboard not initial tab');
-
               const groupKeys=await page.locator('#hd20DashboardSectionTabs button').evaluateAll(xs=>xs.map(x=>x.dataset.dashboardSection));
-              assert(JSON.stringify(groupKeys)===JSON.stringify(['summary','execution','standard']),'dashboard group mismatch: '+JSON.stringify(groupKeys));
-              const groupState=async()=>page.evaluate(()=>({
-                active:window.HD20_DASHBOARD_TABS.active(),
-                priority:!document.querySelector('#hd20DashboardPriority')?.classList.contains('hd20DashboardSectionHidden'),
-                cards:!document.querySelector('.cards')?.classList.contains('hd20DashboardSectionHidden'),
-                showcase:!document.querySelector('#hd20FieldShowcaseBootstrap')?.classList.contains('hd20DashboardSectionHidden'),
-                main:!document.querySelector('.mainGrid')?.classList.contains('hd20DashboardSectionHidden'),
-                bridge:!document.querySelector('#hd20OperationalBridge')?.classList.contains('hd20DashboardSectionHidden'),
-                bottom:!document.querySelector('.bottomGrid')?.classList.contains('hd20DashboardSectionHidden')
-              }));
+              assert(JSON.stringify(groupKeys)===JSON.stringify(['summary','execution','standard','field']),'dashboard group mismatch: '+JSON.stringify(groupKeys));
+              const groupState=async()=>page.evaluate(()=>({active:window.HD20_DASHBOARD_TABS.active(),priority:!document.querySelector('#hd20DashboardPriority')?.classList.contains('hd20DashboardSectionHidden'),cards:!document.querySelector('.cards')?.classList.contains('hd20DashboardSectionHidden'),showcase:!document.querySelector('#hd20FieldShowcaseBootstrap')?.classList.contains('hd20DashboardSectionHidden'),main:!document.querySelector('.mainGrid')?.classList.contains('hd20DashboardSectionHidden'),bridge:!document.querySelector('#hd20OperationalBridge')?.classList.contains('hd20DashboardSectionHidden'),bottom:!document.querySelector('.bottomGrid')?.classList.contains('hd20DashboardSectionHidden')}));
               let s=await groupState();
-              assert(s.active==='summary'&&s.priority&&s.cards&&!s.main&&!s.bridge&&!s.bottom,'summary isolation failed: '+JSON.stringify(s));
-              await page.evaluate(()=>window.HD20_DASHBOARD_TABS.apply('execution',{scroll:false}));
-              s=await groupState();
-              assert(s.active==='execution'&&!s.priority&&!s.cards&&s.main&&s.bridge&&!s.bottom,'execution isolation failed: '+JSON.stringify(s));
-              await page.evaluate(()=>window.HD20_DASHBOARD_TABS.apply('standard',{scroll:false}));
-              s=await groupState();
-              assert(s.active==='standard'&&!s.priority&&!s.cards&&!s.main&&!s.bridge&&s.bottom,'standard isolation failed: '+JSON.stringify(s));
-
-              for(const key of expected.slice(1)){
-                await page.evaluate(k=>window.HD20_NAV.go(k),key);await page.waitForTimeout(120);
-                assert((await page.locator('.beginnerNav button.active').getAttribute('data-key'))===key,key+' navigation failed');
-              }
-              await page.evaluate(()=>window.HD20_NAV.go('dashboard'));await page.waitForTimeout(120);
-              s=await groupState();
-              assert(s.active==='summary','dashboard return did not reset summary');
-              const overflow=await page.evaluate(()=>Math.max(document.documentElement.scrollWidth,document.body.scrollWidth)-document.documentElement.clientWidth);
-              assert(overflow<=4,`horizontal overflow ${overflow}px @ ${viewport.width}`);
-              assert(errors.length===0,'Page errors: '+errors.join(' | '));
-              console.log(`PASS ${viewport.width}: six-area IA + 3 dashboard groups`);
-              await page.close();
+              assert(s.active==='summary'&&s.priority&&s.cards&&!s.showcase&&!s.main&&!s.bridge&&!s.bottom,'summary isolation failed: '+JSON.stringify(s));
+              await page.evaluate(()=>window.HD20_DASHBOARD_TABS.apply('execution',{scroll:false}));s=await groupState();
+              assert(s.active==='execution'&&!s.priority&&!s.cards&&!s.showcase&&s.main&&s.bridge&&!s.bottom,'execution isolation failed: '+JSON.stringify(s));
+              await page.evaluate(()=>window.HD20_DASHBOARD_TABS.apply('standard',{scroll:false}));s=await groupState();
+              assert(s.active==='standard'&&!s.priority&&!s.cards&&!s.showcase&&!s.main&&!s.bridge&&s.bottom,'standard isolation failed: '+JSON.stringify(s));
+              await page.evaluate(()=>window.HD20_DASHBOARD_TABS.apply('field',{scroll:false}));s=await groupState();
+              assert(s.active==='field'&&!s.priority&&!s.cards&&s.showcase&&!s.main&&!s.bridge&&!s.bottom,'field isolation failed: '+JSON.stringify(s));
+              for(const key of expected.slice(1)){await page.evaluate(k=>window.HD20_NAV.go(k),key);await page.waitForTimeout(120);assert((await page.locator('.beginnerNav button.active').getAttribute('data-key'))===key,key+' navigation failed')}
+              await page.evaluate(()=>window.HD20_NAV.go('dashboard'));await page.waitForTimeout(120);s=await groupState();assert(s.active==='summary','dashboard return did not reset summary');
+              const overflow=await page.evaluate(()=>Math.max(document.documentElement.scrollWidth,document.body.scrollWidth)-document.documentElement.clientWidth);assert(overflow<=4,`horizontal overflow ${overflow}px @ ${viewport.width}`);assert(errors.length===0,'Page errors: '+errors.join(' | '));
+              console.log(`PASS ${viewport.width}: six-area IA + 4 dashboard groups`);await page.close();
             }
             await browser.close();
           })().catch(e=>{console.error(e.stack||e);process.exit(1)});
