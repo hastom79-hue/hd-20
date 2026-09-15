@@ -32,7 +32,8 @@ function metrics(area,sub){
  'action.verify':[['검증 대상',doneActions.length,'건'],['효과검증 완료',doneActions.filter(effect).length,'건'],['검증대기',doneActions.filter(x=>!effect(x)).length,'건'],['재발',doneActions.filter(x=>effect(x)&&recur(x)).length,'건']]};
  return map[`${area}.${sub}`]||map['dashboard.summary'];
 }
-function patch(){const api=window.HD20_OPS_V2;if(!api)return false;if(api.metrics!==metrics)api.metrics=metrics;api.__productionFilterGuard=true;window.dispatchEvent(new CustomEvent('hd20-ops-production-filter-ready'));return true}
+function restoreParity(api){if(api.__evidenceParityPatched)delete api.__evidenceParityPatched;const parity=window.HD20_KPI_PARITY_GUARD;if(parity?.patchApi){parity.patchApi();parity.schedule?.()}}
+function patch(){const api=window.HD20_OPS_V2;if(!api)return false;if(api.metrics!==metrics){api.metrics=metrics;restoreParity(api)}api.__productionFilterGuard=true;window.dispatchEvent(new CustomEvent('hd20-ops-production-filter-ready'));return true}
 function boot(){let n=0;const run=()=>{if(patch())return;if(++n<80)setTimeout(run,50)};run();setTimeout(patch,1200)}
 document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot,{once:true}):boot();
 ['hd20-kpi-source-updated','hd20-gmes-5s-imported','hd20-gmes-5s-judged','hd20-audit-updated','hd20-action-updated'].forEach(ev=>window.addEventListener(ev,()=>setTimeout(patch,0)));
