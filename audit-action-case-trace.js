@@ -8,8 +8,9 @@ function ymd(v){if(!v)return'—';const s=String(v).trim();if(/^\d{4}-\d{2}-\d{2
 function add6(v){const s=ymd(v);if(s==='—')return null;const [y,m,d]=s.split('-').map(Number),base=new Date(Date.UTC(y,m-1+6,1)),ty=base.getUTCFullYear(),tm=base.getUTCMonth()+1,last=new Date(Date.UTC(ty,tm,0)).getUTCDate();return `${ty}-${String(tm).padStart(2,'0')}-${String(Math.min(d,last)).padStart(2,'0')}`}
 function auditId(draw){return String(draw?.id||draw?.drawId||draw?.auditDrawId||'').trim()}
 function actionSourceId(a){return String(a?.auditDrawId||a?.sourceCaseId||'').trim()}
-function linkedAction(draw,actions){const id=auditId(draw);return id?actions.find(a=>actionSourceId(a)===id)||null:null}
-function rows(){const actions=load(ACTION_KEY);return load(DRAW_KEY).filter(d=>d.auditDate).map(d=>({draw:d,action:linkedAction(d,actions)}))}
+function linkedActions(draw,actions){const id=auditId(draw);return id?actions.filter(a=>actionSourceId(a)===id):[]}
+function linkedAction(draw,actions){return linkedActions(draw,actions)[0]||null}
+function rows(){const actions=load(ACTION_KEY);return load(DRAW_KEY).filter(d=>d.auditDate).flatMap(draw=>{const links=linkedActions(draw,actions);return links.length?links.map(action=>({draw,action})):[{draw,action:null}]})}
 function done(a){return !!a&&/완료|종결|close|done/i.test(String(a.status||''))}
 function hasBefore(a){return !!(a?.before||a?.evidence)}
 function hasAfter(a){return !!(a?.after||a?.afterEvidence)}
@@ -27,5 +28,5 @@ function tableHtml(){const data=rows();return `<div class="awHead">Audit ↔ 개
 function mount(host,cls){if(!host)return;let box=host.querySelector(`.${cls}`);if(!box){box=document.createElement('section');box.className=`awCard hd20CaseTrace ${cls}`;(host.querySelector('.audit6m')||host.querySelector('.auditClosedLoop')||host.querySelector('.awHero')||host.firstElementChild)?.insertAdjacentElement('afterend',box)}box.innerHTML=tableHtml();box.querySelectorAll('[data-trace-action]').forEach(b=>b.onclick=()=>openAction(b.dataset.traceAction));box.querySelectorAll('[data-trace-edit]').forEach(b=>b.onclick=()=>editAction(b.dataset.traceEdit))}
 function render(){mount(document.getElementById('awAudit'),'hd20CaseTraceAudit');mount(document.getElementById('awAction'),'hd20CaseTraceAction')}
 function boot(){css();modal();render();['hd20-audit-updated','hd20-audit-performed','hd20-action-updated'].forEach(e=>window.addEventListener(e,()=>setTimeout(render,0)));document.addEventListener('click',e=>{if(e.target.closest('[data-key="audit"],[data-key="action"]'))setTimeout(render,40)},true)}
-window.HD20AuditActionTrace={rows,linkedAction,editAction,render,effect,recurrence,closeState,auditId,actionSourceId,seoulDate,ymd,add6};document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot,{once:true}):boot();
+window.HD20AuditActionTrace={rows,linkedAction,linkedActions,editAction,render,effect,recurrence,closeState,auditId,actionSourceId,seoulDate,ymd,add6};document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot,{once:true}):boot();
 })();
