@@ -1,0 +1,18 @@
+(()=>{'use strict';
+const ID='hd20DashboardSectionTabs';
+const TABS=[
+ {key:'health',label:'핵심현황',desc:'운영 건전성 KPI',targets:['#hd20DashboardPriority','#hd20OperationalBridge']},
+ {key:'performance',label:'성과흐름',desc:'활동·고도화 성과',targets:['.cards']},
+ {key:'execution',label:'실행·유지',desc:'팀별 실행·Audit',targets:['.mainGrid']},
+ {key:'standard',label:'기준·추이',desc:'판정기준·고도화 추이',targets:['.bottomGrid']}
+];
+let active='health';
+function css(){if(document.getElementById('hd20DashboardSectionTabsStyle'))return;const s=document.createElement('style');s.id='hd20DashboardSectionTabsStyle';s.textContent=`#${ID}{display:flex;align-items:stretch;gap:8px;margin:14px 0 16px;padding:6px;background:#e9eef2;border:1px solid #d7e0e6;border-radius:12px;position:sticky;top:0;z-index:18}#${ID} button{flex:1;min-width:0;border:0;border-radius:9px;background:transparent;padding:10px 12px;cursor:pointer;text-align:left;color:#526672}#${ID} button b{display:block;font-size:13px;color:#334d5c}#${ID} button small{display:block;margin-top:3px;font-size:10px;color:#7a8c96;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#${ID} button.active{background:#fff;box-shadow:0 2px 8px rgba(20,48,76,.12)}#${ID} button.active b{color:#14304c}.hd20DashboardSectionHidden{display:none!important}.hd20DashboardSectionLabel.hd20DashboardSectionHidden{display:none!important}@media(max-width:760px){#${ID}{overflow-x:auto;position:static}#${ID} button{flex:0 0 140px}}`;document.head.appendChild(s)}
+function labelBefore(el){const p=el?.previousElementSibling;return p?.classList?.contains('hd20DashboardSectionLabel')?p:null}
+function dashboardVisible(){return window.HD20_NAV?.active?.()==='dashboard'&&!document.querySelector('.awScreen.on,#performanceConversionAnalysis.on')}
+function apply(key){if(!TABS.some(x=>x.key===key))key='health';active=key;const root=document.getElementById(ID);root?.querySelectorAll('button[data-dashboard-section]').forEach(b=>b.classList.toggle('active',b.dataset.dashboardSection===key));TABS.forEach(tab=>tab.targets.forEach(sel=>document.querySelectorAll(sel).forEach(el=>{const show=tab.key===key;el.classList.toggle('hd20DashboardSectionHidden',!show);labelBefore(el)?.classList.toggle('hd20DashboardSectionHidden',!show)})));if(root&&dashboardVisible())requestAnimationFrame(()=>root.scrollIntoView({block:'start'}))}
+function ensure(){css();const anchor=document.getElementById('hd20DashboardPriority')||document.querySelector('.cards');if(!anchor)return null;let root=document.getElementById(ID);if(!root){root=document.createElement('nav');root.id=ID;root.setAttribute('aria-label','대시보드 세부 메뉴');root.innerHTML=TABS.map((x,i)=>`<button type="button" data-dashboard-section="${x.key}" class="${i===0?'active':''}"><b>${i+1}. ${x.label}</b><small>${x.desc}</small></button>`).join('');anchor.insertAdjacentElement('beforebegin',root);root.querySelectorAll('button').forEach(b=>b.onclick=()=>apply(b.dataset.dashboardSection))}return root}
+function refresh(){if(!ensure())return;apply(active)}
+function boot(){refresh();const mo=new MutationObserver(()=>{if(!document.getElementById(ID)||TABS.some(t=>t.targets.some(s=>document.querySelector(s)&&!document.querySelector(s).dataset?.dashboardTabsSeen))){TABS.forEach(t=>t.targets.forEach(s=>document.querySelectorAll(s).forEach(e=>e.dataset.dashboardTabsSeen='1')));refresh()}});mo.observe(document.body,{childList:true,subtree:true});document.addEventListener('click',e=>{const b=e.target.closest?.('.beginnerNav button[data-key="dashboard"]');if(b)setTimeout(()=>apply(active),0)},true)}
+window.HD20_DASHBOARD_TABS={apply,refresh,active:()=>active,tabs:TABS};document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot,{once:true}):boot();
+})();
