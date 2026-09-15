@@ -7,3 +7,5 @@
 .mainGrid .grp:first-child label{left:58%}
 .mainGrid .grp:last-child label{left:42%}
 @media(max-width:1100px){.mainGrid .chart{overflow-x:auto;overflow-y:hidden;padding-bottom:112px}.mainGrid .cols{min-width:960px}}
+/* 2026-09-15: HD-22 background parity — override later theme gradient */
+html,body{background:#F4F6F8!important}
