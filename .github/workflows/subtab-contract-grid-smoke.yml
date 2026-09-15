@@ -48,9 +48,8 @@ jobs:
             const expectedMain=['dashboard','activity','advancement','maturitymap','audit','action'];
             const mainKeys=await page.locator('.beginnerNav button[data-key]').evaluateAll(xs=>xs.map(x=>x.dataset.key));
             assert(JSON.stringify(mainKeys)===JSON.stringify(expectedMain),'canonical six-area nav mismatch: '+mainKeys.join(','));
-            assert(window===window,'runtime alive');
             const dashKeys=await page.locator('#hd20DashboardSectionTabs button[data-dashboard-group]').evaluateAll(xs=>xs.map(x=>x.dataset.dashboardGroup));
-            assert(JSON.stringify(dashKeys)===JSON.stringify(['summary','execution','standard']),'dashboard groups mismatch: '+dashKeys.join(','));
+            assert(JSON.stringify(dashKeys)===JSON.stringify(['summary','execution','standard','field']),'dashboard groups mismatch: '+dashKeys.join(','));
             const areas={activity:['활동관리','실적분석'],advancement:['후보·판정','확정·수평전개'],audit:['Audit 관리','유지관리'],action:['개선조치','효과·재발관리']};
             let count=0;
             for(const [area,subs] of Object.entries(areas)){
@@ -76,7 +75,7 @@ jobs:
             await page.getByRole('button',{name:'활동관리',exact:true}).click();
             await page.getByRole('button',{name:'상세 데이터 그리드',exact:true}).click();
             const box=await page.locator('.hd20GridBox').boundingBox(); assert(box&&box.width<=390.5,'mobile grid overflow');
-            console.log('PASS: canonical six areas + 3 dashboard groups + 8 operational subtab contracts + maturity map + mobile grid');
+            console.log('PASS: canonical six areas + 4 dashboard groups + 8 operational subtab contracts + maturity map + mobile grid');
             await browser.close();
           })().catch(e=>{console.error(e.stack||e);process.exit(1)});
           NODE
