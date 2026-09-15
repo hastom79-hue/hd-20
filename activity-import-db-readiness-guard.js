@@ -1,0 +1,12 @@
+(()=>{'use strict';
+const ID='hd20ActivityExcelImport';
+const txt=v=>String(v??'').trim();
+function bar(){return document.getElementById(ID)}
+function result(){return bar()?.querySelector('.axResult')||null}
+function setState(label,state){const r=result();if(!r)return;r.dataset.dbState=state||'';if(label)r.title=label}
+function dbReady(){const api=window.HD20_DB_SYNC;if(window.HD20_AUTH_BYPASS)return true;return !!(api&&typeof api.ready==='function'&&api.ready())}
+function guard(e){const b=e.target?.closest?.('[data-ax-confirm]');if(!b||!bar()?.contains(b))return;if(dbReady())return;e.preventDefault();e.stopImmediatePropagation();const r=result();if(r)r.textContent='DB 연결 준비 후 반영 가능';alert('운영 DB 동기화 준비가 완료되지 않았습니다. 데이터 유실 방지를 위해 확정 반영을 차단했습니다. DB 연결됨 상태에서 다시 반영해 주세요.')}
+function dbStatus(e){const d=e.detail||{},r=result();if(!r)return;if(d.state==='syncing'){setState(`DB ${txt(d.mode)||'sync'} 진행 중`,'syncing');if(r.textContent.startsWith('반영완료'))r.textContent+=' · DB 동기화중'}else if(d.state==='error'){setState(`DB 오류: ${txt(d.message)||'확인 필요'}`,'error');if(r.textContent.includes('반영완료'))r.textContent=r.textContent.replace(/ · DB 동기화중$/,'')+' · DB 동기화 오류'}else if(d.state==='ready'){setState(`DB 연결됨${d.mode?` · ${d.mode}`:''}`,'ready');if(r.textContent.includes('반영완료'))r.textContent=r.textContent.replace(/ · DB 동기화중$/,'').replace(/ · DB 동기화 오류$/,'')+' · DB 반영 확인'}}
+function imported(e){if(e.detail?.source!=='excel-import')return;const r=result();if(!r)return;if(window.HD20_AUTH_BYPASS){r.textContent=r.textContent.replace(/ · DB.*$/,'')+' · 로컬 검증모드';return}if(dbReady()){r.textContent=r.textContent.replace(/ · DB.*$/,'')+' · DB 동기화 대기';setState('Canonical Store 저장 완료 · DB push 대기','queued')}else{r.textContent=r.textContent.replace(/ · DB.*$/,'')+' · DB 상태 확인 필요';setState('DB readiness 확인 필요','blocked')}}
+document.addEventListener('click',guard,true);window.addEventListener('hd20-db-status',dbStatus);window.addEventListener('hd20-gmes-5s-imported',imported);
+})();
