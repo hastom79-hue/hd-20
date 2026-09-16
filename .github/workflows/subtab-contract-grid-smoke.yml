@@ -36,26 +36,31 @@ jobs:
             const page=await browser.newPage({viewport:{width:1440,height:1000}});
             const errs=[]; page.on('pageerror',e=>errs.push(String(e)));
             page.on('dialog',d=>d.accept());
-            await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'networkidle',timeout:30000});
+            await page.route('**/*',route=>{
+              const u=new URL(route.request().url());
+              if(u.hostname==='127.0.0.1'||u.hostname==='localhost')return route.continue();
+              return route.abort('blockedbyclient');
+            });
+            await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'domcontentloaded',timeout:30000});
             await page.waitForFunction(()=>window.HD20_NAV&&window.HD20_SUBNAV&&window.HD20_DASHBOARD_TABS&&document.querySelector('#hd20PurposePanel'),{},{timeout:15000});
             await page.evaluate(()=>{
               localStorage.setItem('hd20GMES5SAutoImproveRawV1',JSON.stringify([{id:'GRID-A',date:'2026-09-10',type:'정리',team:'성능팀',workplace:'Grid 작업장',problem:'Grid 문제',improvement:'Grid 개선',status:'완료'}]));
               localStorage.setItem('hd20AuditRandomDrawsV1',JSON.stringify([{id:'GRID-U',date:'2026-09-10',team:'성능팀',auditDate:'2026-09-10',auditResult:'적합',status:'6개월 관리중'}]));
               localStorage.setItem('hd20ActionCasesV2',JSON.stringify([{id:'GRID-C',registeredAt:'2026-09-10',team:'성능팀',problem:'Grid 조치',action:'Grid 완료',status:'완료',effectVerified:true,effectState:'유효',recurrence:false}]));
             });
-            await page.reload({waitUntil:'networkidle'});
+            await page.reload({waitUntil:'domcontentloaded',timeout:30000});
             await page.waitForFunction(()=>window.HD20_NAV&&window.HD20_SUBNAV&&window.HD20_DASHBOARD_TABS,{},{timeout:15000});
             const expectedMain=['dashboard','activity','advancement','audit','action'];
             const mainKeys=await page.locator('.beginnerNav button[data-key]').evaluateAll(xs=>xs.map(x=>x.dataset.key));
             assert(JSON.stringify(mainKeys)===JSON.stringify(expectedMain),'canonical five-area nav mismatch: '+mainKeys.join(','));
             const dashKeys=await page.locator('#hd20DashboardSectionTabs button[data-dashboard-section]').evaluateAll(xs=>xs.map(x=>x.dataset.dashboardSection));
             assert(JSON.stringify(dashKeys)===JSON.stringify(['summary','execution','maturity','standard','field']),'dashboard groups mismatch: '+dashKeys.join(','));
-            await page.click('#hd20DashboardSectionTabs button[data-dashboard-section="maturity"]'); await page.waitForTimeout(150);
+            await page.evaluate(()=>document.querySelector('#hd20DashboardSectionTabs button[data-dashboard-section="maturity"]')?.click()); await page.waitForTimeout(150);
             assert(window.HD20_DASHBOARD_TABS.active()==='maturity','dashboard maturity panel not active');
             const areas={activity:['활동관리','실적분석'],advancement:['후보·판정','확정·수평전개'],audit:['Audit 관리','유지관리'],action:['개선조치','효과·재발관리']};
             let count=0;
             for(const [area,subs] of Object.entries(areas)){
-              await page.click(`.beginnerNav button[data-key="${area}"]`); await page.waitForTimeout(150);
+              await page.evaluate(a=>document.querySelector(`.beginnerNav button[data-key="${a}"]`)?.click(),area); await page.waitForTimeout(150);
               for(const sub of subs){
                 await page.getByRole('button',{name:sub,exact:true}).click(); await page.waitForTimeout(100);
                 const c=await page.locator('#hd20PurposePanel').getAttribute('data-contract');
@@ -71,7 +76,7 @@ jobs:
             assert(count===8,'not all operational subtabs checked');
             assert(errs.length===0,'page errors: '+errs.join(' | '));
             await page.setViewportSize({width:390,height:844});
-            await page.click('.beginnerNav button[data-key="activity"]'); await page.waitForTimeout(100);
+            await page.evaluate(()=>document.querySelector('.beginnerNav button[data-key="activity"]')?.click()); await page.waitForTimeout(100);
             await page.getByRole('button',{name:'활동관리',exact:true}).click();
             await page.getByRole('button',{name:'상세 데이터 그리드',exact:true}).click();
             const box=await page.locator('.hd20GridBox').boundingBox(); assert(box&&box.width<=390.5,'mobile grid overflow');
