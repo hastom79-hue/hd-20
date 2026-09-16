@@ -42,12 +42,15 @@ jobs:
             for(const vp of viewports){
               const page=await browser.newPage({viewport:{width:vp.width,height:vp.height}});
               await page.route('**/*',route=>{
-                const u=new URL(route.request().url());
+                const req=route.request(),u=new URL(req.url());
                 if(u.hostname==='127.0.0.1'||u.hostname==='localhost')return route.continue();
+                if(req.resourceType()==='script')return route.fulfill({status:200,contentType:'application/javascript',body:''});
                 return route.abort('blockedbyclient');
               });
-              await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'domcontentloaded',timeout:30000});
-              await page.waitForSelector('.beginnerNav button[data-key="dashboard"]',{timeout:15000});
+              await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'commit',timeout:30000});
+              await page.waitForSelector('.beginnerNav',{state:'attached',timeout:15000});
+              await page.waitForFunction(()=>!!window.HD20_NAV,{},{timeout:15000});
+              await page.waitForSelector('.beginnerNav button[data-key="dashboard"]',{state:'attached',timeout:15000});
               await page.waitForFunction(()=>!!window.HD20NavScrollStability,{},{timeout:10000});
 
               for(const key of keys){
