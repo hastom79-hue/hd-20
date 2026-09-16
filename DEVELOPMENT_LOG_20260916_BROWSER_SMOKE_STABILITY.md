@@ -7,17 +7,15 @@ Stabilize executable browser validation after the five-area IA and dashboard-nat
 
 ## Changes
 - Critical Playwright navigation first changed from `waitUntil: networkidle` to application-readiness based navigation.
-- Run 35055346412 proved that even `domcontentloaded` could time out before any UI contract assertion in the main browser smoke.
-- Main browser navigation was decoupled from unrelated external resource completion and now validates concrete HD-20 readiness.
-- Maturity visibility requires the panel to exist, not be `hidden`, and have computed display other than `none`.
 - Browser contract verifies five main areas only; dashboard maturity remains a dashboard subtab/panel, not a sixth standalone area.
+- Maturity visibility requires the panel to exist, not be `hidden`, and have computed display other than `none`.
 
 ## 2026-09-16 follow-up — remaining Chromium workflows
-- Exact HEAD `b9c874384b43b526b12bdba5332631165d247277` showed nav-scroll and subtab-grid failing before functional assertions because both still used `networkidle`; both were converted to CI-only external isolation plus application readiness.
-- Exact HEAD `01fe648cebe7e0f57713e8c8b8082dde49f821ba` then showed Pages deploy and package success, while design-layout smoke failed at its own stale `networkidle` entry point before any layout assertion.
-- Inspection also found that design-layout smoke still encoded the retired six-area contract (`maturitymap` as a main tab, nav count 6).
-- `design-layout-smoke.yml` is now aligned to the canonical five-area IA, uses CI-only external request isolation, checks nav count 5, and validates maturity map through the Dashboard `maturity` section instead of a standalone main tab.
-- Desktop, 125%-equivalent, tablet, mobile, KPI, overflow, modal, advancement, Audit and Action layout checks remain in place.
+- Nav-scroll and subtab-grid were converted to CI-only external isolation plus application readiness while retaining their assertions.
+- Design-layout smoke was aligned from retired six-area IA to canonical five-area IA; maturity is validated through the Dashboard section.
+- Exact HEAD `27838414805fa3cba444d262308b78324ec39634` confirmed Pages build/deploy and package success, but layout job `104676233121` still timed out at `page.goto(... waitUntil:'domcontentloaded')` before any layout assertion.
+- Because parser completion can still be held by external/parser-blocking resources even when CI routes abort them, layout smoke now waits only for the local HTTP response `commit`, then uses explicit canonical DOM selectors (`beginnerNav`, `hd20DashboardPriority`) as the application-readiness boundary.
+- Desktop, 125%-equivalent, tablet, mobile, KPI, overflow, modal, advancement, Audit, Action and Dashboard maturity checks remain intact.
 - No production authentication, canonical store, KPI, Supabase write, or application runtime behavior was changed.
 
 ## Validation boundary
