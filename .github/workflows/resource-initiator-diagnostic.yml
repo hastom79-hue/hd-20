@@ -42,7 +42,7 @@ jobs:
               return route.abort('blockedbyclient');
             });
             await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'commit',timeout:30000});
-            await page.waitForSelector('.beginnerNav',{state:'attached',timeout:10000});
+            await page.waitForFunction(()=>!!document.querySelector('.beginnerNav'),{},{timeout:10000});
             await page.waitForFunction(()=>!!window.HD20_NAV,{},{timeout:20000});
             await page.waitForTimeout(1000);
             await browser.close();
