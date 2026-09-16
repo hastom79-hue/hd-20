@@ -6,39 +6,20 @@ Date: 2026-09-16
 Stabilize executable browser validation after the five-area IA and dashboard-native maturity map conversion.
 
 ## Changes
-- Critical Playwright navigation first changed from `waitUntil: networkidle` to application-readiness based navigation.
 - Browser contract verifies five main areas only; dashboard maturity remains a dashboard subtab/panel, not a sixth standalone area.
-- Maturity visibility requires the panel to exist, not be `hidden`, and have computed display other than `none`.
+- Critical browser waits use application readiness instead of `networkidle`/`domcontentloaded` where parser-blocking runtime scripts make those lifecycle events unsuitable.
 
-## 2026-09-16 follow-up — Chromium boot trace
-- HEAD `f0508f70f48bd7c9f17cb7a106a76b1f9b70ee32` confirmed Pages build/deploy success, but browser run 35059920771 still timed out waiting for `domcontentloaded` even after external scripts were stubbed. The failure occurred before five-area assertions.
-- The browser smoke now returns to `waitUntil:'commit'`, waits for the static `.beginnerNav` container, then explicitly waits for `window.HD20_NAV`. It records local requested and completed resource paths so the next failure identifies the parser/bootstrap boundary rather than producing another opaque navigation timeout.
-- Current-IA smoke still contained a stale `networkidle` dependency. It now uses the same CI-only external script stubbing, `commit` navigation, static nav-container readiness, and explicit HD20 controller/dashboard-tab readiness while preserving desktop/mobile five-area and dashboard-group assertions.
-- This phase is diagnostic hardening, not a production bypass. No production application/authentication/store/Supabase write behavior changed.
+## 2026-09-16 — Boot/readiness repairs
+- Browser, current-IA, subtab-grid and resource diagnostic flows moved to `waitUntil:'commit'` plus explicit HD20 controller readiness and CI-only external-script stubbing.
+- Exact HEAD `a12df91564e5830986ccf65a873faaba3545a962` proved `.beginnerNav` could exist before it was visible; readiness was corrected to DOM attachment rather than visibility.
+- Dashboard canonical smoke was corrected from stale four-subtab expectations to canonical five groups: `summary / execution / maturity / standard / field`, including dashboard-native maturity validation.
+- Nav-scroll smoke was aligned to the same CI boot policy while preserving desktop/mobile five-area scroll reset checks.
 
-## 2026-09-16 follow-up — Subtab contract grid readiness
-- Exact subtab-contract-grid failure was another pre-assertion navigation timeout at `waitUntil:'domcontentloaded'`.
-- `.github/workflows/subtab-contract-grid-smoke.yml` now uses `waitUntil:'commit'` for both initial navigation and reload, then explicitly waits for the dashboard main-nav element and HD20 NAV/SUBNAV/DASHBOARD_TABS/purpose-panel readiness.
-- Existing contract coverage is preserved: canonical five main areas, five dashboard groups, dashboard-native maturity panel, all eight operational subtabs, purpose-panel judgment/next/grid contract, universal data-grid opening, and mobile grid width.
-- Test seed records remain browser-local only. No production data, auth, KPI, store, or Supabase write path changed.
-
-## 2026-09-16 follow-up — External boot parity and resource trace
-- Run 35061409470 reached committed navigation but timed out waiting for the generated dashboard button because the subtab workflow aborted every external request, unlike the already stabilized main browser smoke which returns an empty successful JavaScript response for external script resources.
-- Subtab contract smoke now uses the same CI-only external script stub policy as main browser smoke, while continuing to abort other external resources. It also waits for the static nav container and `window.HD20_NAV` before the generated dashboard button, preserving all five-area/dashboard/subtab/grid assertions.
-- Resource initiator diagnostic still used `networkidle`; it now uses CI-only external script stubbing, `waitUntil:'commit'`, static nav readiness and `window.HD20_NAV` readiness. Its 404 initiator tracing remains intact.
-- These changes affect test workflows only. Production authentication, canonical stores, KPI logic and Supabase write behavior are unchanged.
-
-## 2026-09-16 follow-up — Attached-vs-visible nav diagnosis
-- Exact HEAD `a12df91564e5830986ccf65a873faaba3545a962` had Pages build/deploy and runtime smoke success, but Chromium job `104718071211` failed before five-area assertions.
-- The failure log proves `.beginnerNav` already existed in the DOM but was hidden. Playwright `waitForSelector('.beginnerNav')` defaults to visible state, so the workflow was incorrectly treating the intentionally hidden pre-controller container as a boot failure.
-- Browser smoke now explicitly waits for `.beginnerNav` with `state:'attached'`, then waits for `window.HD20_NAV`, the generated dashboard button, dashboard priority and operational bridge. The actual boot contract still independently asserts body visibility and absence of `hd20-auth-pending`; no functional assertion was removed.
-- This is a test-readiness correction only. Production app/auth/store/Supabase code was not changed.
-
-## 2026-09-16 follow-up — Canonical five-subtab and nav-scroll boot alignment
-- Dashboard canonical smoke was stale: static checks omitted `maturity` and rendered checks still expected four dashboard subtabs. It now requires the canonical five groups `summary / execution / maturity / standard / field`, explicitly validates dashboard-native maturity visibility/no standalone maturity navigation, and preserves KPI, field, execution, overflow and dashboard-return assertions.
-- Dashboard canonical browser boot now uses CI-only external script stubbing, `waitUntil:'commit'`, attached static nav, HD20 NAV/DASHBOARD_TABS readiness, generated dashboard nav, priority and bridge readiness.
-- Nav-scroll smoke no longer waits for `domcontentloaded`; it uses the same CI-only external script stub and `commit` + attached-nav + controller readiness sequence while preserving desktop/mobile scroll-reset assertions for all five top areas.
-- These are workflow-contract corrections only. Production app/auth/store/KPI/Supabase behavior is unchanged and no server-side forced empty write was introduced.
+## 2026-09-16 — Early five-area navigation boot
+- HEAD `d7f2ccddc72a2ed0fc792a8f14a3fccde7ac5c9a` still showed browser/nav-scroll failures before generated navigation buttons. Logs proved `window.HD20_NAV` was defined while the button population remained deferred until `DOMContentLoaded`.
+- `index.html` places the static `.beginnerNav` and core dashboard DOM before the script chain, while many classic parser-blocking scripts follow. Waiting for the final `DOMContentLoaded` unnecessarily delayed canonical navigation initialization.
+- `beginner-navigation.js` now initializes immediately when the already-parsed static `.beginnerNav` exists, with a one-time guard and `DOMContentLoaded` fallback only if the nav is genuinely unavailable. This is production boot hardening, not a CI bypass.
+- Five-area order, dashboard default, deep-link normalization and dashboard-native maturity behavior are unchanged. No auth, store, KPI or Supabase write path changed; no server-side forced empty write was introduced.
 
 ## Validation boundary
-GitHub Pages deployment success alone is not browser E2E proof. Chromium workflow results must be checked separately. CI request isolation is test-only and does not bypass production authentication.
+Pages deployment success alone is not browser E2E proof. Chromium workflow results must be checked separately; CI request isolation remains test-only.
