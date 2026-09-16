@@ -23,3 +23,9 @@ Date: 2026-09-16
 - `.github/workflows/browser-smoke.yml` replaces boot-time attached-selector probes with `waitForFunction` DOM existence checks for `.beginnerNav`, generated dashboard nav, `#hd20DashboardPriority`, `#hd20OperationalBridge`, and the dashboard maturity button.
 - Functional coverage remains strict: exact five-area nav, body visible/no auth-pending, 5 top KPI cards, 6 health metrics, no legacy landing, no legacy 1/3/6-month Audit labels, advancement semantic separation/official actor/no fake owner/no auto-confirm wording, and dashboard-native maturity visibility.
 - CI external script stubbing remains test-only. No production code or canonical write path changed; no server-side forced empty writes were introduced.
+
+## 2026-09-17 cross-workflow readiness alignment
+- Replaced boot-time `waitForSelector(...,{state:'attached'})` calls with `waitForFunction` DOM probes in nav-scroll, current-IA, subtab-contract-grid, dashboard-canonical, design-layout and resource-initiator diagnostic.
+- Existing five-area, five dashboard-group, eight operational-subtab, desktop/mobile scroll, KPI, overflow, modal and maturity assertions remain in place.
+- Subtab universal-grid modal readiness now checks the `on` class directly. Design-layout external scripts receive the same empty successful CI stub used elsewhere; local resources continue normally.
+- These are workflow/test harness changes only. Production code, auth, Supabase, KPI and canonical write behavior are unchanged; no server-side forced empty writes were introduced.
