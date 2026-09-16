@@ -2,9 +2,10 @@
 
 Date: 2026-09-16
 
-- Browser smoke navigation contract fixed to canonical five-area IA: dashboard / activity / advancement / audit / action.
-- Removed Playwright `networkidle` dependency from the critical boot test. The page is now considered booted only after DOMContentLoaded plus concrete HD-20 UI selectors are available.
-- Added explicit checks that body is visible and `hd20-auth-pending` is cleared in local bypass mode.
-- Added dashboard maturity bridge verification: maturity stays inside dashboard, no standalone maturitymap navigation, no `tab=maturitymap` URL state.
-- Test scope intentionally focuses first on boot availability and canonical five-area routing so external auth/network activity cannot falsely hang the smoke test.
-- No production store write logic changed.
+- Browser smoke navigation contract remains canonical five-area IA: dashboard / activity / advancement / audit / action.
+- Initial removal of Playwright `networkidle` was insufficient: run 35055346412 timed out at `page.goto(... waitUntil:'domcontentloaded')` before any UI assertion.
+- Navigation now uses `waitUntil:'commit'`; after the local response begins, HD-20 readiness is determined only by `.beginnerNav`, `#hd20DashboardPriority`, and `#hd20OperationalBridge` attachment.
+- Added `document.readyState` to boot diagnostics while retaining body visibility and `hd20-auth-pending` checks.
+- Dashboard maturity visibility now checks the actual `hidden` property and computed `display`, avoiding false-positive visibility from class-only checks.
+- Dashboard maturity remains inside dashboard with no standalone `maturitymap` navigation and no `tab=maturitymap` URL state.
+- No production store write logic changed and no authentication restriction was removed.
