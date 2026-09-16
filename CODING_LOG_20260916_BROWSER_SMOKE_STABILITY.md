@@ -7,10 +7,8 @@ Date: 2026-09-16
 - No production store write logic changed and no authentication restriction was removed.
 
 ## Follow-up fixes
-- Nav-scroll and subtab-grid workflows use CI-only external isolation and application readiness while preserving functional assertions.
-- Design-layout smoke uses five main tabs, expects nav count 5, and validates maturity after activating Dashboard `data-dashboard-section="maturity"`.
-- HEAD `27838414805fa3cba444d262308b78324ec39634`: Pages build/deploy and package passed; layout job `104676233121` failed before any layout assertion because `domcontentloaded` did not fire within 30 seconds.
-- Layout navigation now uses Playwright `waitUntil:'commit'` (15s) only to establish the local HTTP response, then waits up to 20s for `.beginnerNav button[data-key="dashboard"]` and `#hd20DashboardPriority`. This prevents parser-blocking external resources from being mistaken for application layout failure.
-- Multi-viewport overflow, critical-box, modal, six-KPI, advancement hierarchy, Audit, Action and Dashboard maturity assertions remain unchanged in intent.
-- CI continues to block non-local requests only inside the test browser.
+- HEAD `f0508f70f48bd7c9f17cb7a106a76b1f9b70ee32`: Pages build/deploy succeeded, while browser job `104677870260` timed out at `page.goto(... waitUntil:'domcontentloaded')` before any UI assertion despite CI external-script stubbing.
+- `.github/workflows/browser-smoke.yml` now navigates with `waitUntil:'commit'`, confirms the static `.beginnerNav` container, then waits for `window.HD20_NAV`. Local request and request-finished paths are captured in the evidence artifact and printed as the last 12 paths on failure to expose the exact bootstrap boundary.
+- `.github/workflows/current-ia-smoke.yml` had an independent stale `networkidle` call. It now uses CI-only external script stubbing, `commit` navigation and explicit HD20 controller/dashboard-tab readiness. Existing desktop/mobile five-area navigation, five dashboard-group isolation and overflow assertions remain.
+- No assertion was converted into a production fail-open path. CI external stubs remain test-only.
 - No server-side forced empty writes were introduced. No canonical localStorage/Supabase production write path was changed.
