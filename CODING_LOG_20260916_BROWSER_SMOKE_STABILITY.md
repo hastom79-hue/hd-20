@@ -19,3 +19,9 @@ Date: 2026-09-16
 - All existing assertions remain: exact five-area main navigation, five dashboard groups, dashboard maturity activation, eight operational subtab contracts, judgment/next/grid text, universal grid modal/meta, and mobile grid width.
 - Browser-local GRID-A / GRID-U / GRID-C fixtures remain non-production test data only.
 - No production authentication/store/KPI/Supabase write behavior changed, and no server-side forced empty writes were introduced.
+
+## External boot parity + resource diagnostic fix
+- Failed subtab run `35061409470` timed out on `.beginnerNav button[data-key="dashboard"]` after `commit`; its request policy aborted all external resources, so parser-blocking external scripts did not receive the same CI stub treatment as the stabilized main browser smoke.
+- `.github/workflows/subtab-contract-grid-smoke.yml` now fulfills external script requests with an empty successful JavaScript stub and aborts other external resources. Readiness sequence is static `.beginnerNav` -> `window.HD20_NAV` -> generated dashboard button -> NAV/SUBNAV/DASHBOARD_TABS/purpose panel.
+- `.github/workflows/resource-initiator-diagnostic.yml` no longer uses `networkidle`; it uses the same CI-only script stub, `commit` navigation and explicit nav-controller readiness while preserving CDP 404 initiator tracing.
+- Functional assertions were not weakened. Production code was not changed. No server-side forced empty writes were introduced.
