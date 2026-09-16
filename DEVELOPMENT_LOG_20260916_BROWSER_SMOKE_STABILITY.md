@@ -11,13 +11,13 @@ Stabilize executable browser validation after the five-area IA and dashboard-nat
 - Main browser navigation was decoupled from unrelated external resource completion and now validates concrete HD-20 readiness.
 - Maturity visibility requires the panel to exist, not be `hidden`, and have computed display other than `none`.
 - Browser contract verifies five main areas only; dashboard maturity remains a dashboard subtab/panel, not a sixth standalone area.
-- Boot evidence records document readiness, body visibility and local auth-pending state.
 
 ## 2026-09-16 follow-up — remaining Chromium workflows
-- Exact HEAD `b9c874384b43b526b12bdba5332631165d247277` showed `HD20 nav scroll smoke` run 35056797325 and `HD20 subtab contract grid smoke` run 35056797377 failing before functional assertions because both still used `waitUntil:'networkidle'`.
-- `nav-scroll-smoke.yml` now blocks non-local requests inside CI only, uses `domcontentloaded`, and waits for the canonical dashboard navigation plus `HD20NavScrollStability` before exercising desktop/mobile scroll-reset behavior.
-- `subtab-contract-grid-smoke.yml` now applies the same CI-only external request isolation, replaces both initial and reload `networkidle` waits with `domcontentloaded`, and preserves all five-area, five-dashboard-group, eight operational-subtab, universal-grid and mobile-overflow assertions.
-- Main-area and dashboard maturity navigation in that smoke uses in-page DOM clicks so the CI-only blocked external auth SDK cannot make an overlay invalidate internal IA testing.
+- Exact HEAD `b9c874384b43b526b12bdba5332631165d247277` showed nav-scroll and subtab-grid failing before functional assertions because both still used `networkidle`; both were converted to CI-only external isolation plus application readiness.
+- Exact HEAD `01fe648cebe7e0f57713e8c8b8082dde49f821ba` then showed Pages deploy and package success, while design-layout smoke failed at its own stale `networkidle` entry point before any layout assertion.
+- Inspection also found that design-layout smoke still encoded the retired six-area contract (`maturitymap` as a main tab, nav count 6).
+- `design-layout-smoke.yml` is now aligned to the canonical five-area IA, uses CI-only external request isolation, checks nav count 5, and validates maturity map through the Dashboard `maturity` section instead of a standalone main tab.
+- Desktop, 125%-equivalent, tablet, mobile, KPI, overflow, modal, advancement, Audit and Action layout checks remain in place.
 - No production authentication, canonical store, KPI, Supabase write, or application runtime behavior was changed.
 
 ## Validation boundary
