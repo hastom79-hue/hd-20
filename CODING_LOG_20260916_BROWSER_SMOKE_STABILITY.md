@@ -12,3 +12,10 @@ Date: 2026-09-16
 - `.github/workflows/current-ia-smoke.yml` had an independent stale `networkidle` call. It now uses CI-only external script stubbing, `commit` navigation and explicit HD20 controller/dashboard-tab readiness. Existing desktop/mobile five-area navigation, five dashboard-group isolation and overflow assertions remain.
 - No assertion was converted into a production fail-open path. CI external stubs remain test-only.
 - No server-side forced empty writes were introduced. No canonical localStorage/Supabase production write path was changed.
+
+## Subtab contract grid readiness fix
+- The subtab-contract-grid Chromium job failed before functional assertions because both initial `goto` and `reload` still waited for `domcontentloaded`.
+- Both transitions now use `waitUntil:'commit'`, followed by explicit `.beginnerNav button[data-key="dashboard"]` attachment and `HD20_NAV + HD20_SUBNAV + HD20_DASHBOARD_TABS + #hd20PurposePanel` readiness.
+- All existing assertions remain: exact five-area main navigation, five dashboard groups, dashboard maturity activation, eight operational subtab contracts, judgment/next/grid text, universal grid modal/meta, and mobile grid width.
+- Browser-local GRID-A / GRID-U / GRID-C fixtures remain non-production test data only.
+- No production authentication/store/KPI/Supabase write behavior changed, and no server-side forced empty writes were introduced.
