@@ -104,10 +104,10 @@ jobs:
         run: |
           set -euo pipefail
           for key in awActivity awWorkplace awAudit awAction; do grep -q "$key" activity-workflow.js; done
-          grep -q '② 5S 활동' activity-workflow.js
-          grep -q '③ 고도화·판정' activity-workflow.js
-          grep -q '④ 유지·Audit' activity-workflow.js
-          grep -q '⑤ 개선조치' activity-workflow.js
+          grep -q '② 활동관리' activity-workflow.js
+          grep -q '③ 고도화·표준화' activity-workflow.js
+          grep -q "title.textContent='④ 진단·유지'" hd20-five-area-integration.js
+          grep -q "title.textContent='⑤ 개선실행'" hd20-five-area-integration.js
           grep -q '고도화 맵' beginner-navigation.js
 
       - name: Verify advancement and audit semantics
