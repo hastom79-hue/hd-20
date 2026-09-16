@@ -30,3 +30,10 @@ Date: 2026-09-16
 - At exact HEAD `a12df91564e5830986ccf65a873faaba3545a962`, Chromium job `104718071211` resolved `.beginnerNav` but reported it hidden; the timeout came from Playwright's default visible-state wait, not from a missing DOM node.
 - Main browser smoke changes only that readiness probe to `waitForSelector('.beginnerNav',{state:'attached'})`. It still requires `window.HD20_NAV`, generated dashboard navigation, dashboard priority, operational bridge, exact five-area order, body visibility, no auth-pending state, and dashboard-native maturity behavior.
 - Production code and production write paths are untouched. No server-side forced empty writes were introduced.
+
+## Canonical dashboard + nav-scroll alignment
+- `.github/workflows/dashboard-canonical-smoke.yml` now statically requires all five dashboard keys including `maturity`; rendered subtab count changes from stale `4` to canonical `5`.
+- Canonical smoke adds an explicit maturity assertion: active dashboard subtab is `maturity`, main nav remains `dashboard`, `#hd20MaturityMapTab` is visible, and no standalone `maturitymap` nav exists.
+- Canonical browser startup now uses external-script CI stubs, `waitUntil:'commit'`, attached `.beginnerNav`, HD20 NAV/DASHBOARD_TABS readiness, and attached priority/bridge readiness instead of `networkidle`.
+- `.github/workflows/nav-scroll-smoke.yml` replaces `domcontentloaded` with `commit`, uses the same external-script CI stub, and waits for attached nav + HD20_NAV before the existing HD20NavScrollStability contract.
+- Desktop/mobile five-area scroll assertions remain unchanged. No production code/write path changed and no server-side forced empty writes were introduced.
