@@ -35,55 +35,40 @@ jobs:
           const fs = require('fs');
           (async()=>{
             const browser=await chromium.launch({headless:true});
-            const evidence={}; let failure=null;
+            const evidence={localRequests:[],finished:[]}; let failure=null;
             try{
               const page=await browser.newPage({viewport:{width:1440,height:1000}}),errors=[];
               page.on('pageerror',e=>errors.push(String(e)));
               page.on('dialog',d=>d.accept());
+              page.on('request',r=>{const u=new URL(r.url());if(u.hostname==='127.0.0.1'||u.hostname==='localhost')evidence.localRequests.push(u.pathname)});
+              page.on('requestfinished',r=>{const u=new URL(r.url());if(u.hostname==='127.0.0.1'||u.hostname==='localhost')evidence.finished.push(u.pathname)});
               await page.route('**/*',route=>{
                 const req=route.request(),u=new URL(req.url());
                 if(u.hostname==='127.0.0.1'||u.hostname==='localhost')return route.continue();
                 if(req.resourceType()==='script')return route.fulfill({status:200,contentType:'application/javascript',body:'/* HD20 CI external script stub */'});
                 return route.abort('blockedbyclient');
               });
-              await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'domcontentloaded',timeout:20000});
-              await page.waitForSelector('.beginnerNav button[data-key="dashboard"]',{state:'attached',timeout:15000});
+              await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'commit',timeout:15000});
+              await page.waitForSelector('.beginnerNav',{state:'attached',timeout:10000});
+              await page.waitForFunction(()=>!!window.HD20_NAV,{},{timeout:20000});
+              await page.waitForSelector('.beginnerNav button[data-key="dashboard"]',{state:'attached',timeout:10000});
               await page.waitForSelector('#hd20DashboardPriority',{state:'attached',timeout:15000});
               await page.waitForSelector('#hd20OperationalBridge',{state:'attached',timeout:15000});
-              await page.waitForTimeout(800);
-              const main=await page.evaluate(()=>({
-                readyState:document.readyState,
-                nav:[...document.querySelectorAll('.beginnerNav button[data-key]')].map(x=>x.dataset.key),
-                bodyVisible:getComputedStyle(document.body).visibility!=='hidden',
-                authPending:document.documentElement.classList.contains('hd20-auth-pending'),
-                priority:document.querySelectorAll('#hd20DashboardPriority').length,
-                bridge:!!document.getElementById('hd20OperationalBridge')
-              }));
+              await page.waitForTimeout(500);
+              const main=await page.evaluate(()=>({readyState:document.readyState,nav:[...document.querySelectorAll('.beginnerNav button[data-key]')].map(x=>x.dataset.key),bodyVisible:getComputedStyle(document.body).visibility!=='hidden',authPending:document.documentElement.classList.contains('hd20-auth-pending'),priority:document.querySelectorAll('#hd20DashboardPriority').length,bridge:!!document.getElementById('hd20OperationalBridge')}));
               const expected=['dashboard','activity','advancement','audit','action'];
               if(JSON.stringify(main.nav)!==JSON.stringify(expected))throw new Error('Main nav mismatch '+JSON.stringify(main));
               if(!main.bodyVisible||main.authPending||main.priority!==1||!main.bridge)throw new Error('Boot contract mismatch '+JSON.stringify(main));
-              for(const key of ['activity','advancement','audit','action','dashboard']){
-                await page.evaluate(k=>document.querySelector(`.beginnerNav button[data-key="${k}"]`)?.click(),key); await page.waitForTimeout(120);
-              }
+              for(const key of ['activity','advancement','audit','action','dashboard']){await page.evaluate(k=>document.querySelector(`.beginnerNav button[data-key="${k}"]`)?.click(),key);await page.waitForTimeout(120)}
               await page.waitForSelector('#hd20DashboardSectionTabs button[data-dashboard-section="maturity"]',{state:'attached',timeout:10000});
-              await page.evaluate(()=>document.querySelector('#hd20DashboardSectionTabs button[data-dashboard-section="maturity"]')?.click());
-              await page.waitForTimeout(250);
-              const maturity=await page.evaluate(()=>{
-                const el=document.getElementById('hd20MaturityMapTab');
-                return {
-                  active:window.HD20_DASHBOARD_TABS?.active?.(),
-                  navActive:window.HD20_NAV?.active?.(),
-                  mapVisible:!!el&&!el.hidden&&getComputedStyle(el).display!=='none',
-                  standaloneNav:!!document.querySelector('.beginnerNav button[data-key="maturitymap"]'),
-                  urlTab:new URL(location.href).searchParams.get('tab')
-                };
-              });
+              await page.evaluate(()=>document.querySelector('#hd20DashboardSectionTabs button[data-dashboard-section="maturity"]')?.click());await page.waitForTimeout(250);
+              const maturity=await page.evaluate(()=>{const el=document.getElementById('hd20MaturityMapTab');return {active:window.HD20_DASHBOARD_TABS?.active?.(),navActive:window.HD20_NAV?.active?.(),mapVisible:!!el&&!el.hidden&&getComputedStyle(el).display!=='none',standaloneNav:!!document.querySelector('.beginnerNav button[data-key="maturitymap"]'),urlTab:new URL(location.href).searchParams.get('tab')}});
               if(maturity.active!=='maturity'||maturity.navActive!=='dashboard'||!maturity.mapVisible||maturity.standaloneNav||maturity.urlTab==='maturitymap')throw new Error('Maturity bridge mismatch '+JSON.stringify(maturity));
-              evidence.main=main; evidence.maturity=maturity; evidence.pageErrors=errors;
+              evidence.main=main;evidence.maturity=maturity;evidence.pageErrors=errors;
               await page.screenshot({path:'artifacts/main-dashboard.png',fullPage:true});
               fs.writeFileSync('artifacts/diagnostics.json',JSON.stringify(evidence,null,2));
               console.log('HD20 BROWSER BOOT/FIVE-AREA PASS',evidence);
-            }catch(e){failure=e;fs.writeFileSync('artifacts/diagnostics.json',JSON.stringify({...evidence,failure:String(e)},null,2));console.error(e)}finally{await browser.close()}
+            }catch(e){failure=e;evidence.failure=String(e);fs.writeFileSync('artifacts/diagnostics.json',JSON.stringify(evidence,null,2));console.error('BOOT TRACE',JSON.stringify({requested:evidence.localRequests.slice(-12),finished:evidence.finished.slice(-12)},null,2));console.error(e)}finally{await browser.close()}
             if(failure)process.exit(1);
           })();
           NODE
