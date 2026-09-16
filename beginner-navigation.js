@@ -3,7 +3,7 @@ const NAV_HTML=`<button class="active" data-key="dashboard"><span class="navTop"
 const SCREEN_BY_KEY={activity:'awActivity',audit:'awAudit',action:'awAction'};
 let activeKey='dashboard',initialized=false;
 function allScreens(){return [...document.querySelectorAll('.awScreen')];}
-function closeScreens(){allScreens().forEach(x=>x.classList.remove('on'));document.querySelector('.app')?.classList.remove('awFocused');document.body.classList.remove('navModeActivity');document.getElementById('performanceConversionAnalysis')?.classList.remove('on')}
+function closeScreens(){allScreens().forEach(x=>x.classList.remove('on'));document.querySelector('.app')?.classList.remove('awFocused');document.body?.classList.remove('navModeActivity');document.getElementById('performanceConversionAnalysis')?.classList.remove('on')}
 function syncNav(nav,key){activeKey=key;nav.querySelectorAll('button[data-key]').forEach(b=>b.classList.toggle('active',b.dataset.key===key))}
 function openScreen(id){const el=document.getElementById(id);if(!el)return false;closeScreens();window.dispatchEvent(new CustomEvent('hd20-close-maturity-map-tab'));document.querySelector('.app')?.classList.add('awFocused');el.classList.add('on');requestAnimationFrame(()=>el.scrollIntoView({block:'start'}));return true}
 function openAdvancement(nav){closeScreens();window.dispatchEvent(new CustomEvent('hd20-close-maturity-map-tab'));document.dispatchEvent(new CustomEvent('hd20-open-performance-conversion'));setTimeout(()=>{const conversion=document.getElementById('performanceConversionAnalysis');const workplace=document.getElementById('awWorkplace');document.querySelector('.app')?.classList.add('awFocused');if(conversion){conversion.classList.add('on');conversion.dataset.integratedArea='advancement'}if(workplace){workplace.classList.add('on');workplace.dataset.integratedArea='advancement'}},0);syncNav(nav,'advancement')}
@@ -16,5 +16,5 @@ function normalizeDeepLink(k){return ({conversion:'advancement',workplace:'advan
 function init(){if(initialized)return;const nav=document.querySelector('.beginnerNav');if(!nav)return;initialized=true;ensureNav();ensureHint(nav);bind(nav);const q=new URLSearchParams(location.search),raw=q.get('tab');if(['maturitymap','map','maturity'].includes(raw)){goDashboard(nav,'maturity');return}go('dashboard',nav)}
 window.HD20_NAV={go:key=>{const nav=document.querySelector('.beginnerNav');if(!nav)return;const k=normalizeDeepLink(key);if(['maturitymap','map','maturity'].includes(k)){goDashboard(nav,'maturity');return}go(k,nav)},active:()=>activeKey,areas:['dashboard','activity','advancement','audit','action'],ready:()=>initialized};
 init();
-if(!initialized)document.addEventListener('DOMContentLoaded',init,{once:true});
+if(!initialized){const root=document.documentElement;const observer=new MutationObserver(()=>{init();if(initialized)observer.disconnect()});observer.observe(root,{childList:true,subtree:true});document.addEventListener('DOMContentLoaded',()=>{init();observer.disconnect()},{once:true})}
 })();
