@@ -36,7 +36,7 @@ jobs:
           (async()=>{
             const browser=await chromium.launch({headless:true});
             const evidence={};let failure=null;
-            const expectedMain=['dashboard','activity','advancement','maturitymap','audit','action'];
+            const expectedMain=['dashboard','activity','advancement','audit','action'];
             const expectedHdps=['dashboard','activity','advancement','audit','action'];
             try{
               const page=await browser.newPage({viewport:{width:1440,height:1000}}),errors=[];
@@ -56,7 +56,13 @@ jobs:
               evidence.advancement={visible:advancement.visible,hasSeparation:advancement.hasSeparation,hasActor:advancement.hasActor,hasFakeOwner:advancement.hasFakeOwner,hasAutoConfirm:advancement.hasAutoConfirm};
               await page.screenshot({path:'artifacts/advancement-canonical.png',fullPage:true});
 
-              for(const key of ['activity','maturitymap','audit','action','dashboard']){await page.click(`.beginnerNav button[data-key="${key}"]`);await page.waitForTimeout(120)}
+              for(const key of ['activity','audit','action','dashboard']){await page.click(`.beginnerNav button[data-key="${key}"]`);await page.waitForTimeout(120)}
+              await page.waitForSelector('#hd20DashboardSectionTabs button[data-dashboard-section="maturity"]',{timeout:10000});
+              await page.click('#hd20DashboardSectionTabs button[data-dashboard-section="maturity"]');await page.waitForTimeout(180);
+              const maturity=await page.evaluate(()=>({active:window.HD20_DASHBOARD_TABS?.active?.(),navActive:window.HD20_NAV?.active?.(),mapVisible:!!document.getElementById('hd20MaturityMapTab')&&!document.getElementById('hd20MaturityMapTab').classList.contains('hd20DashboardSectionHidden'),standaloneNav:!!document.querySelector('.beginnerNav button[data-key="maturitymap"]'),urlTab:new URL(location.href).searchParams.get('tab')}));
+              if(maturity.active!=='maturity'||maturity.navActive!=='dashboard'||!maturity.mapVisible||maturity.standaloneNav||maturity.urlTab==='maturitymap')throw new Error('Dashboard maturity contract '+JSON.stringify(maturity));
+              evidence.maturity=maturity;
+              await page.click('#hd20DashboardSectionTabs button[data-dashboard-section="summary"]');await page.waitForTimeout(120);
               evidence.main={nav:main.nav,kpi:main.kpi,metric:main.metric,priority:main.priority,legacyLanding:main.legacyLanding};
               await page.screenshot({path:'artifacts/main-dashboard.png',fullPage:true});
 
