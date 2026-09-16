@@ -35,7 +35,15 @@ jobs:
             cdp.on('Network.responseReceived',e=>{
               if(e.response.status===404){const x=req.get(e.requestId);console.log('404',x?.url||e.response.url);console.log(JSON.stringify(x?.initiator||{},null,2))}
             });
-            await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'networkidle',timeout:30000});
+            await page.route('**/*',route=>{
+              const req=route.request(),u=new URL(req.url());
+              if(u.hostname==='127.0.0.1'||u.hostname==='localhost')return route.continue();
+              if(req.resourceType()==='script')return route.fulfill({status:200,contentType:'application/javascript',body:'/* HD20 CI external script stub */'});
+              return route.abort('blockedbyclient');
+            });
+            await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'commit',timeout:30000});
+            await page.waitForSelector('.beginnerNav',{state:'attached',timeout:10000});
+            await page.waitForFunction(()=>!!window.HD20_NAV,{},{timeout:20000});
             await page.waitForTimeout(1000);
             await browser.close();
           })().catch(e=>{console.error(e);process.exit(1)});
