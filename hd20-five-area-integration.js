@@ -3,8 +3,8 @@ const ID='hd20-five-area-integration';
 if(window[ID])return;window[ID]=true;
 const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[m]));
 function addAreaHeader(el,kicker,title,desc){if(!el||el.querySelector(':scope > .hd20AreaHeader'))return;const h=document.createElement('div');h.className='hd20AreaHeader';h.innerHTML=`<div><small>${esc(kicker)}</small><h2>${esc(title)}</h2><p>${esc(desc)}</p></div>`;el.prepend(h)}
-function normalizeAuditArea(audit){if(!audit)return;audit.querySelector(':scope > .hd20AreaHeader')?.remove();const hero=audit.querySelector(':scope > .awHero');const title=hero?.querySelector('h2');const desc=hero?.querySelector('p');if(title)title.textContent='⑤ 진단·유지';if(desc)desc.textContent='Risk 기반 대상 추출 → 실제 Audit 실시(D-Day) → 실시일부터 달력 기준 +6개월 지속관리 → 종료평가를 하나의 흐름으로 관리합니다.';audit.dataset.area='audit';audit.dataset.canonicalArea='diagnosis-retention'}
-function normalizeActionArea(action){if(!action)return;action.querySelector(':scope > .hd20AreaHeader')?.remove();const hero=action.querySelector(':scope > .awHero');const title=hero?.querySelector('h2');const desc=hero?.querySelector('p');if(title)title.textContent='⑥ 개선실행';if(desc)desc.textContent='개선 Case를 BEFORE → 문제정의 → 담당팀·팀장 → 개선조치 → AFTER → 효과검증 → 재발관리까지 하나의 폐쇄루프로 추적합니다.';action.dataset.area='action';action.dataset.canonicalArea='improvement-execution'}
+function normalizeAuditArea(audit){if(!audit)return;audit.querySelector(':scope > .hd20AreaHeader')?.remove();const hero=audit.querySelector(':scope > .awHero');const title=hero?.querySelector('h2');const desc=hero?.querySelector('p');if(title)title.textContent='④ 진단·유지';if(desc)desc.textContent='Risk 기반 대상 추출 → 실제 Audit 실시(D-Day) → 실시일부터 달력 기준 +6개월 지속관리 → 종료평가를 하나의 흐름으로 관리합니다.';audit.dataset.area='audit';audit.dataset.canonicalArea='diagnosis-retention'}
+function normalizeActionArea(action){if(!action)return;action.querySelector(':scope > .hd20AreaHeader')?.remove();const hero=action.querySelector(':scope > .awHero');const title=hero?.querySelector('h2');const desc=hero?.querySelector('p');if(title)title.textContent='⑤ 개선실행';if(desc)desc.textContent='개선 Case를 BEFORE → 문제정의 → 담당팀·팀장 → 개선조치 → AFTER → 효과검증 → 재발관리까지 하나의 폐쇄루프로 추적합니다.';action.dataset.area='action';action.dataset.canonicalArea='improvement-execution'}
 function markOperationalScreens(){
   const activity=document.getElementById('awActivity');
   const audit=document.getElementById('awAudit');
@@ -33,5 +33,5 @@ function normalizeUnmappedLines(){document.querySelectorAll('#awWorkplace [data-
 function refresh(){markOperationalScreens();masterUtility();integrateAdvancement();normalizeLabels();normalizeUnmappedLines()}
 ['hd20-open-performance-conversion','hd20-kpi-source-updated','hd20-gmes-5s-imported','hd20-gmes-5s-judged','hd20-action-updated'].forEach(ev=>window.addEventListener(ev,()=>setTimeout(refresh,0)));
 document.readyState==='loading'?document.addEventListener('DOMContentLoaded',()=>{refresh();setTimeout(refresh,250)},{once:true}):(()=>{refresh();setTimeout(refresh,250)})();
-window.HD20_FIVE_AREA={refresh,areas:['dashboard','activity','advancement','maturitymap','audit','action']};
+window.HD20_FIVE_AREA={refresh,areas:['dashboard','activity','advancement','audit','action']};
 })();
