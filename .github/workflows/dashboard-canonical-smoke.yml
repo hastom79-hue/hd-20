@@ -46,31 +46,35 @@ jobs:
       - name: Serve
         run: python3 -m http.server 4173 >/tmp/hd20-http.log 2>&1 &
       - name: Verify rendered dashboard hierarchy and grouping
+        timeout-minutes: 3
         run: |
           node <<'JS'
           const { chromium }=require('playwright');
           const assert=(ok,msg)=>{if(!ok)throw new Error(msg)};
           (async()=>{
             const browser=await chromium.launch({headless:true});
-            for(const viewport of [{width:1440,height:1000},{width:375,height:812}]){
-              const page=await browser.newPage({viewport}),errors=[];page.on('pageerror',e=>errors.push(e.message));
-              await page.route('**/*',route=>{const req=route.request(),u=new URL(req.url());if(u.hostname==='127.0.0.1'||u.hostname==='localhost')return route.continue();if(req.resourceType()==='script')return route.fulfill({status:200,contentType:'application/javascript',body:''});return route.abort('blockedbyclient')});
-              await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'commit',timeout:30000});
-              const wait=async(label,fn)=>{try{await page.waitForFunction(fn,{},{timeout:15000})}catch(e){const diag=await page.evaluate(()=>({ready:document.readyState,nav:!!document.querySelector('.beginnerNav'),navApi:!!window.HD20_NAV,tabsApi:!!window.HD20_DASHBOARD_TABS,priority:!!document.getElementById('hd20DashboardPriority'),bridge:!!document.getElementById('hd20OperationalBridge'),scripts:[...document.scripts].filter(s=>/dashboard|final-layout|beginner-navigation/.test(s.src)).map(s=>s.src.split('/').pop())}));throw new Error(`boot stage ${label} timeout: ${JSON.stringify(diag)}; pageErrors=${errors.join(' | ')}`)}};
-              await wait('beginnerNav',()=>!!document.querySelector('.beginnerNav'));
-              await wait('HD20_NAV',()=>!!window.HD20_NAV);
-              await wait('HD20_DASHBOARD_TABS',()=>!!window.HD20_DASHBOARD_TABS);
-              await wait('dashboard-nav-button',()=>!!document.querySelector('.beginnerNav button[data-key="dashboard"]'));
-              await wait('dashboard-priority',()=>!!document.getElementById('hd20DashboardPriority'));
-              await wait('operational-bridge',()=>!!document.getElementById('hd20OperationalBridge'));
-              const state=()=>page.evaluate(()=>({approved:document.querySelectorAll('.hd20ApprovedLanding').length,priority:document.querySelectorAll('#hd20DashboardPriority').length,health:document.querySelectorAll('#hd20DashboardPriority .hd20HealthKpi').length,bridge:document.querySelectorAll('#hd20OperationalBridge').length,cards:document.querySelectorAll('.cards .kpi').length,active:document.querySelector('.beginnerNav button.active')?.dataset.key||'',subActive:window.HD20_DASHBOARD_TABS?.active?.()||'',subCount:document.querySelectorAll('#hd20DashboardSectionTabs button').length,showcaseHidden:document.querySelector('#hd20FieldShowcaseBootstrap')?.classList.contains('hd20DashboardSectionHidden')||false,overflow:Math.max(document.documentElement.scrollWidth,document.body.scrollWidth)-document.documentElement.clientWidth}));
-              let s=await state();assert(!errors.length,'page errors: '+errors.join(' | '));assert(s.approved===0&&s.priority===1&&s.health===6&&s.bridge===1&&s.cards===5,'canonical dashboard invalid: '+JSON.stringify(s));assert(s.active==='dashboard'&&s.subActive==='summary'&&s.subCount===5&&s.showcaseHidden,'initial grouping invalid: '+JSON.stringify(s));assert(s.overflow<=2,`horizontal overflow ${s.overflow}px`);
-              await page.evaluate(()=>window.HD20_DASHBOARD_TABS.apply('maturity',{scroll:false}));await page.waitForTimeout(150);let maturity=await page.evaluate(()=>{const el=document.getElementById('hd20MaturityMapTab');return {active:window.HD20_DASHBOARD_TABS.active(),nav:window.HD20_NAV.active(),visible:!!el&&!el.hidden&&getComputedStyle(el).display!=='none',standalone:!!document.querySelector('.beginnerNav button[data-key="maturitymap"]')};});assert(maturity.active==='maturity'&&maturity.nav==='dashboard'&&maturity.visible&&!maturity.standalone,'maturity grouping failed: '+JSON.stringify(maturity));
-              await page.evaluate(()=>window.HD20_DASHBOARD_TABS.apply('field',{scroll:false}));await page.waitForTimeout(150);let field=await page.evaluate(()=>({active:window.HD20_DASHBOARD_TABS.active(),showcase:!document.querySelector('#hd20FieldShowcaseBootstrap')?.classList.contains('hd20DashboardSectionHidden'),cards:!document.querySelector('.cards')?.classList.contains('hd20DashboardSectionHidden'),main:!document.querySelector('.mainGrid')?.classList.contains('hd20DashboardSectionHidden'),bottom:!document.querySelector('.bottomGrid')?.classList.contains('hd20DashboardSectionHidden')}));assert(field.active==='field'&&field.showcase&&!field.cards&&!field.main&&!field.bottom,'field grouping failed: '+JSON.stringify(field));
-              await page.evaluate(()=>window.HD20_DASHBOARD_TABS.apply('execution',{scroll:false}));await page.waitForTimeout(150);let execution=await page.evaluate(()=>({main:!document.querySelector('.mainGrid')?.classList.contains('hd20DashboardSectionHidden'),bridge:!document.querySelector('#hd20OperationalBridge')?.classList.contains('hd20DashboardSectionHidden'),showcase:!document.querySelector('#hd20FieldShowcaseBootstrap')?.classList.contains('hd20DashboardSectionHidden')}));assert(execution.main&&execution.bridge&&!execution.showcase,'execution grouping failed: '+JSON.stringify(execution));
-              await page.evaluate(()=>window.HD20_NAV.go('activity'));await page.waitForTimeout(150);await page.evaluate(()=>window.HD20_NAV.go('dashboard'));await page.waitForTimeout(150);assert((await page.evaluate(()=>window.HD20_DASHBOARD_TABS.active()))==='summary','dashboard return did not reset summary');
-              await page.close();
+            try{
+              for(const viewport of [{width:1440,height:1000},{width:375,height:812}]){
+                const page=await browser.newPage({viewport}),errors=[];page.on('pageerror',e=>errors.push(e.message));
+                await page.route('**/*',route=>{const req=route.request(),u=new URL(req.url());if(u.hostname==='127.0.0.1'||u.hostname==='localhost')return route.continue();if(req.resourceType()==='script')return route.fulfill({status:200,contentType:'application/javascript',body:''});return route.abort('blockedbyclient')});
+                await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'commit',timeout:30000});
+                const wait=async(label,fn)=>{try{await page.waitForFunction(fn,{},{timeout:15000})}catch(e){throw new Error(`boot stage ${label} timeout; pageErrors=${errors.join(' | ')}`)}};
+                await wait('beginnerNav',()=>!!document.querySelector('.beginnerNav'));
+                await wait('HD20_NAV',()=>!!window.HD20_NAV);
+                await wait('HD20_DASHBOARD_TABS',()=>!!window.HD20_DASHBOARD_TABS);
+                await wait('dashboard-nav-button',()=>!!document.querySelector('.beginnerNav button[data-key="dashboard"]'));
+                await wait('dashboard-priority',()=>!!document.getElementById('hd20DashboardPriority'));
+                await wait('operational-bridge',()=>!!document.getElementById('hd20OperationalBridge'));
+                const state=()=>page.evaluate(()=>({approved:document.querySelectorAll('.hd20ApprovedLanding').length,priority:document.querySelectorAll('#hd20DashboardPriority').length,health:document.querySelectorAll('#hd20DashboardPriority .hd20HealthKpi').length,bridge:document.querySelectorAll('#hd20OperationalBridge').length,cards:document.querySelectorAll('.cards .kpi').length,active:document.querySelector('.beginnerNav button.active')?.dataset.key||'',subActive:window.HD20_DASHBOARD_TABS?.active?.()||'',subCount:document.querySelectorAll('#hd20DashboardSectionTabs button').length,showcaseHidden:document.querySelector('#hd20FieldShowcaseBootstrap')?.classList.contains('hd20DashboardSectionHidden')||false,overflow:Math.max(document.documentElement.scrollWidth,document.body.scrollWidth)-document.documentElement.clientWidth}));
+                let s=await state();assert(!errors.length,'page errors: '+errors.join(' | '));assert(s.approved===0&&s.priority===1&&s.health===6&&s.bridge===1&&s.cards===5,'canonical dashboard invalid: '+JSON.stringify(s));assert(s.active==='dashboard'&&s.subActive==='summary'&&s.subCount===5&&s.showcaseHidden,'initial grouping invalid: '+JSON.stringify(s));assert(s.overflow<=2,`horizontal overflow ${s.overflow}px`);
+                await page.evaluate(()=>window.HD20_DASHBOARD_TABS.apply('maturity',{scroll:false}));await page.waitForTimeout(150);let maturity=await page.evaluate(()=>{const el=document.getElementById('hd20MaturityMapTab');return {active:window.HD20_DASHBOARD_TABS.active(),nav:window.HD20_NAV.active(),visible:!!el&&!el.hidden&&getComputedStyle(el).display!=='none',standalone:!!document.querySelector('.beginnerNav button[data-key="maturitymap"]')};});assert(maturity.active==='maturity'&&maturity.nav==='dashboard'&&maturity.visible&&!maturity.standalone,'maturity grouping failed: '+JSON.stringify(maturity));
+                await page.evaluate(()=>window.HD20_DASHBOARD_TABS.apply('field',{scroll:false}));await page.waitForTimeout(150);let field=await page.evaluate(()=>({active:window.HD20_DASHBOARD_TABS.active(),showcase:!document.querySelector('#hd20FieldShowcaseBootstrap')?.classList.contains('hd20DashboardSectionHidden'),cards:!document.querySelector('.cards')?.classList.contains('hd20DashboardSectionHidden'),main:!document.querySelector('.mainGrid')?.classList.contains('hd20DashboardSectionHidden'),bottom:!document.querySelector('.bottomGrid')?.classList.contains('hd20DashboardSectionHidden')}));assert(field.active==='field'&&field.showcase&&!field.cards&&!field.main&&!field.bottom,'field grouping failed: '+JSON.stringify(field));
+                await page.evaluate(()=>window.HD20_DASHBOARD_TABS.apply('execution',{scroll:false}));await page.waitForTimeout(150);let execution=await page.evaluate(()=>({main:!document.querySelector('.mainGrid')?.classList.contains('hd20DashboardSectionHidden'),bridge:!document.querySelector('#hd20OperationalBridge')?.classList.contains('hd20DashboardSectionHidden'),showcase:!document.querySelector('#hd20FieldShowcaseBootstrap')?.classList.contains('hd20DashboardSectionHidden')}));assert(execution.main&&execution.bridge&&!execution.showcase,'execution grouping failed: '+JSON.stringify(execution));
+                await page.evaluate(()=>window.HD20_NAV.go('activity'));await page.waitForTimeout(150);await page.evaluate(()=>window.HD20_NAV.go('dashboard'));await page.waitForTimeout(150);assert((await page.evaluate(()=>window.HD20_DASHBOARD_TABS.active()))==='summary','dashboard return did not reset summary');
+                await page.close();
+              }
+            } finally {
+              await browser.close();
             }
-            await browser.close();
-          })().catch(e=>{console.error(e);process.exit(1)});
+          })().catch(e=>{console.error(e);process.exitCode=1});
           JS
