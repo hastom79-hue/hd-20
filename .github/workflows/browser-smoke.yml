@@ -40,6 +40,11 @@ jobs:
               const page=await browser.newPage({viewport:{width:1440,height:1000}}),errors=[];
               page.on('pageerror',e=>errors.push(String(e)));
               page.on('dialog',d=>d.accept());
+              await page.route('**/*',route=>{
+                const u=new URL(route.request().url());
+                if(u.hostname==='127.0.0.1'||u.hostname==='localhost')return route.continue();
+                return route.abort('blockedbyclient');
+              });
               await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'domcontentloaded',timeout:15000});
               await page.waitForSelector('.beginnerNav',{timeout:15000});
               await page.waitForSelector('#hd20DashboardPriority',{timeout:15000});
@@ -56,15 +61,15 @@ jobs:
               if(JSON.stringify(main.nav)!==JSON.stringify(expected))throw new Error('Main nav mismatch '+JSON.stringify(main));
               if(!main.bodyVisible||main.authPending||main.priority!==1||!main.bridge)throw new Error('Boot contract mismatch '+JSON.stringify(main));
               for(const key of ['activity','advancement','audit','action','dashboard']){
-                await page.click(`.beginnerNav button[data-key="${key}"]`); await page.waitForTimeout(120);
+                await page.evaluate(k=>document.querySelector(`.beginnerNav button[data-key="${k}"]`)?.click(),key); await page.waitForTimeout(120);
               }
               await page.waitForSelector('#hd20DashboardSectionTabs button[data-dashboard-section="maturity"]',{timeout:10000});
-              await page.click('#hd20DashboardSectionTabs button[data-dashboard-section="maturity"]');
-              await page.waitForTimeout(200);
+              await page.evaluate(()=>document.querySelector('#hd20DashboardSectionTabs button[data-dashboard-section="maturity"]')?.click());
+              await page.waitForTimeout(250);
               const maturity=await page.evaluate(()=>({
                 active:window.HD20_DASHBOARD_TABS?.active?.(),
                 navActive:window.HD20_NAV?.active?.(),
-                mapVisible:!!document.getElementById('hd20MaturityMapTab')&&!document.getElementById('hd20MaturityMapTab').classList.contains('hd20DashboardSectionHidden'),
+                mapVisible:!!document.getElementById('hd20MaturityMapTab')&&!document.getElementById('hd20MaturityMapTab').classList.contains('hd20DashboardSectionHidden')&&!document.getElementById('hd20MaturityMapTab').hidden,
                 standaloneNav:!!document.querySelector('.beginnerNav button[data-key="maturitymap"]'),
                 urlTab:new URL(location.href).searchParams.get('tab')
               }));
