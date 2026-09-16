@@ -25,3 +25,8 @@ Date: 2026-09-16
 - `.github/workflows/subtab-contract-grid-smoke.yml` now fulfills external script requests with an empty successful JavaScript stub and aborts other external resources. Readiness sequence is static `.beginnerNav` -> `window.HD20_NAV` -> generated dashboard button -> NAV/SUBNAV/DASHBOARD_TABS/purpose panel.
 - `.github/workflows/resource-initiator-diagnostic.yml` no longer uses `networkidle`; it uses the same CI-only script stub, `commit` navigation and explicit nav-controller readiness while preserving CDP 404 initiator tracing.
 - Functional assertions were not weakened. Production code was not changed. No server-side forced empty writes were introduced.
+
+## Attached nav readiness fix
+- At exact HEAD `a12df91564e5830986ccf65a873faaba3545a962`, Chromium job `104718071211` resolved `.beginnerNav` but reported it hidden; the timeout came from Playwright's default visible-state wait, not from a missing DOM node.
+- Main browser smoke changes only that readiness probe to `waitForSelector('.beginnerNav',{state:'attached'})`. It still requires `window.HD20_NAV`, generated dashboard navigation, dashboard priority, operational bridge, exact five-area order, body visibility, no auth-pending state, and dashboard-native maturity behavior.
+- Production code and production write paths are untouched. No server-side forced empty writes were introduced.
