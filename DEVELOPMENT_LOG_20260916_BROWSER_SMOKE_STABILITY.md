@@ -16,5 +16,11 @@ Stabilize executable browser validation after the five-area IA and dashboard-nat
 - Current-IA smoke still contained a stale `networkidle` dependency. It now uses the same CI-only external script stubbing, `commit` navigation, static nav-container readiness, and explicit HD20 controller/dashboard-tab readiness while preserving desktop/mobile five-area and dashboard-group assertions.
 - This phase is diagnostic hardening, not a production bypass. No production application/authentication/store/Supabase write behavior changed.
 
+## 2026-09-16 follow-up — Subtab contract grid readiness
+- Exact subtab-contract-grid failure was another pre-assertion navigation timeout at `waitUntil:'domcontentloaded'`.
+- `.github/workflows/subtab-contract-grid-smoke.yml` now uses `waitUntil:'commit'` for both initial navigation and reload, then explicitly waits for the dashboard main-nav element and HD20 NAV/SUBNAV/DASHBOARD_TABS/purpose-panel readiness.
+- Existing contract coverage is preserved: canonical five main areas, five dashboard groups, dashboard-native maturity panel, all eight operational subtabs, purpose-panel judgment/next/grid contract, universal data-grid opening, and mobile grid width.
+- Test seed records remain browser-local only. No production data, auth, KPI, store, or Supabase write path changed.
+
 ## Validation boundary
 GitHub Pages deployment success alone is not browser E2E proof. Chromium workflow results must be checked separately. CI request isolation is test-only and does not bypass production authentication.
