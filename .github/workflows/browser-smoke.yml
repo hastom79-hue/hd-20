@@ -49,22 +49,30 @@ jobs:
                 return route.abort('blockedbyclient');
               });
               await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'commit',timeout:15000});
-              await page.waitForSelector('.beginnerNav',{state:'attached',timeout:10000});
+              await page.waitForFunction(()=>!!document.querySelector('.beginnerNav'),{},{timeout:10000});
               await page.waitForFunction(()=>!!window.HD20_NAV,{},{timeout:20000});
-              await page.waitForSelector('.beginnerNav button[data-key="dashboard"]',{state:'attached',timeout:10000});
-              await page.waitForSelector('#hd20DashboardPriority',{state:'attached',timeout:15000});
-              await page.waitForSelector('#hd20OperationalBridge',{state:'attached',timeout:15000});
+              await page.waitForFunction(()=>!!document.querySelector('.beginnerNav button[data-key="dashboard"]'),{},{timeout:10000});
+              await page.waitForFunction(()=>!!document.getElementById('hd20DashboardPriority'),{},{timeout:15000});
+              await page.waitForFunction(()=>!!document.getElementById('hd20OperationalBridge'),{},{timeout:15000});
               await page.waitForTimeout(500);
-              const main=await page.evaluate(()=>({readyState:document.readyState,nav:[...document.querySelectorAll('.beginnerNav button[data-key]')].map(x=>x.dataset.key),bodyVisible:getComputedStyle(document.body).visibility!=='hidden',authPending:document.documentElement.classList.contains('hd20-auth-pending'),priority:document.querySelectorAll('#hd20DashboardPriority').length,bridge:!!document.getElementById('hd20OperationalBridge')}));
+              const main=await page.evaluate(()=>({readyState:document.readyState,nav:[...document.querySelectorAll('.beginnerNav button[data-key]')].map(x=>x.dataset.key),bodyVisible:getComputedStyle(document.body).visibility!=='hidden',authPending:document.documentElement.classList.contains('hd20-auth-pending'),priority:document.querySelectorAll('#hd20DashboardPriority').length,bridge:!!document.getElementById('hd20OperationalBridge'),kpi:document.querySelectorAll('.cards .kpi').length,metric:document.querySelectorAll('.hd20HealthKpi').length,legacyLanding:document.querySelectorAll('.hd20ApprovedLanding').length,text:document.body.innerText}));
               const expected=['dashboard','activity','advancement','audit','action'];
               if(JSON.stringify(main.nav)!==JSON.stringify(expected))throw new Error('Main nav mismatch '+JSON.stringify(main));
               if(!main.bodyVisible||main.authPending||main.priority!==1||!main.bridge)throw new Error('Boot contract mismatch '+JSON.stringify(main));
-              for(const key of ['activity','advancement','audit','action','dashboard']){await page.evaluate(k=>document.querySelector(`.beginnerNav button[data-key="${k}"]`)?.click(),key);await page.waitForTimeout(120)}
-              await page.waitForSelector('#hd20DashboardSectionTabs button[data-dashboard-section="maturity"]',{state:'attached',timeout:10000});
+              if(main.kpi!==5||main.metric!==6||main.legacyLanding!==0)throw new Error('Main dashboard contract mismatch '+JSON.stringify({kpi:main.kpi,metric:main.metric,legacyLanding:main.legacyLanding}));
+              if(/1개월 점검|3개월 AUDIT|6개월 AUDIT/.test(main.text))throw new Error('Legacy Audit label on main');
+              if(errors.length)throw new Error('Main page errors '+errors.join(' | '));
+              await page.evaluate(()=>document.querySelector('.beginnerNav button[data-key="advancement"]')?.click());
+              await page.waitForFunction(()=>document.getElementById('performanceConversionAnalysis')?.classList.contains('on'),{},{timeout:10000});
+              const advancement=await page.evaluate(()=>{const el=document.getElementById('performanceConversionAnalysis'),text=el?.innerText||'';return{visible:!!el?.classList.contains('on'),hasSeparation:text.includes('조건 충족 수준과 공식 판정은 분리'),hasActor:text.includes('생산혁신팀 + 5S 모듈 판정'),hasFakeOwner:text.includes('생산혁신팀 메인 담당자'),hasAutoConfirm:/2개 이상.*확정|조건 충족.*자동.*확정/.test(text)}});
+              if(!advancement.visible||!advancement.hasSeparation||!advancement.hasActor||advancement.hasFakeOwner||advancement.hasAutoConfirm)throw new Error('Advancement semantic contract '+JSON.stringify(advancement));
+              evidence.advancement=advancement;
+              for(const key of ['activity','audit','action','dashboard']){await page.evaluate(k=>document.querySelector(`.beginnerNav button[data-key="${k}"]`)?.click(),key);await page.waitForTimeout(120)}
+              await page.waitForFunction(()=>!!document.querySelector('#hd20DashboardSectionTabs button[data-dashboard-section="maturity"]'),{},{timeout:10000});
               await page.evaluate(()=>document.querySelector('#hd20DashboardSectionTabs button[data-dashboard-section="maturity"]')?.click());await page.waitForTimeout(250);
               const maturity=await page.evaluate(()=>{const el=document.getElementById('hd20MaturityMapTab');return {active:window.HD20_DASHBOARD_TABS?.active?.(),navActive:window.HD20_NAV?.active?.(),mapVisible:!!el&&!el.hidden&&getComputedStyle(el).display!=='none',standaloneNav:!!document.querySelector('.beginnerNav button[data-key="maturitymap"]'),urlTab:new URL(location.href).searchParams.get('tab')}});
               if(maturity.active!=='maturity'||maturity.navActive!=='dashboard'||!maturity.mapVisible||maturity.standaloneNav||maturity.urlTab==='maturitymap')throw new Error('Maturity bridge mismatch '+JSON.stringify(maturity));
-              evidence.main=main;evidence.maturity=maturity;evidence.pageErrors=errors;
+              evidence.main={readyState:main.readyState,nav:main.nav,bodyVisible:main.bodyVisible,authPending:main.authPending,priority:main.priority,bridge:main.bridge,kpi:main.kpi,metric:main.metric,legacyLanding:main.legacyLanding};evidence.maturity=maturity;evidence.pageErrors=errors;
               await page.screenshot({path:'artifacts/main-dashboard.png',fullPage:true});
               fs.writeFileSync('artifacts/diagnostics.json',JSON.stringify(evidence,null,2));
               console.log('HD20 BROWSER BOOT/FIVE-AREA PASS',evidence);
