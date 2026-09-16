@@ -43,21 +43,21 @@ jobs:
               return route.abort('blockedbyclient');
             });
             const waitReady=()=>page.waitForFunction(()=>window.HD20_NAV&&window.HD20_SUBNAV&&window.HD20_DASHBOARD_TABS&&document.querySelector('#hd20PurposePanel'),{},{timeout:20000});
+            const waitBoot=async()=>{
+              await page.waitForFunction(()=>!!document.querySelector('.beginnerNav'),{},{timeout:10000});
+              await page.waitForFunction(()=>!!window.HD20_NAV,{},{timeout:20000});
+              await page.waitForFunction(()=>!!document.querySelector('.beginnerNav button[data-key="dashboard"]'),{},{timeout:10000});
+              await waitReady();
+            };
             await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'commit',timeout:30000});
-            await page.waitForSelector('.beginnerNav',{state:'attached',timeout:10000});
-            await page.waitForFunction(()=>!!window.HD20_NAV,{},{timeout:20000});
-            await page.waitForSelector('.beginnerNav button[data-key="dashboard"]',{state:'attached',timeout:10000});
-            await waitReady();
+            await waitBoot();
             await page.evaluate(()=>{
               localStorage.setItem('hd20GMES5SAutoImproveRawV1',JSON.stringify([{id:'GRID-A',date:'2026-09-10',type:'정리',team:'성능팀',workplace:'Grid 작업장',problem:'Grid 문제',improvement:'Grid 개선',status:'완료'}]));
               localStorage.setItem('hd20AuditRandomDrawsV1',JSON.stringify([{id:'GRID-U',date:'2026-09-10',team:'성능팀',auditDate:'2026-09-10',auditResult:'적합',status:'6개월 관리중'}]));
               localStorage.setItem('hd20ActionCasesV2',JSON.stringify([{id:'GRID-C',registeredAt:'2026-09-10',team:'성능팀',problem:'Grid 조치',action:'Grid 완료',status:'완료',effectVerified:true,effectState:'유효',recurrence:false}]));
             });
             await page.reload({waitUntil:'commit',timeout:30000});
-            await page.waitForSelector('.beginnerNav',{state:'attached',timeout:10000});
-            await page.waitForFunction(()=>!!window.HD20_NAV,{},{timeout:20000});
-            await page.waitForSelector('.beginnerNav button[data-key="dashboard"]',{state:'attached',timeout:10000});
-            await waitReady();
+            await waitBoot();
             const expectedMain=['dashboard','activity','advancement','audit','action'];
             const mainKeys=await page.locator('.beginnerNav button[data-key]').evaluateAll(xs=>xs.map(x=>x.dataset.key));
             assert(JSON.stringify(mainKeys)===JSON.stringify(expectedMain),'canonical five-area nav mismatch: '+mainKeys.join(','));
@@ -76,7 +76,7 @@ jobs:
                 const text=await page.locator('#hd20PurposePanel').innerText();
                 for(const term of ['판단','다음','상세 데이터 그리드'])assert(text.includes(term),`${term} missing ${area}/${sub}`);
                 await page.getByRole('button',{name:'상세 데이터 그리드',exact:true}).click();
-                await page.waitForSelector('#hd20UniversalGridModal.on',{state:'visible'});
+                await page.waitForFunction(()=>document.querySelector('#hd20UniversalGridModal')?.classList.contains('on'),{},{timeout:10000});
                 const meta=await page.locator('#hd20GridMeta').innerText(); assert(meta.length>0,'grid meta missing');
                 await page.keyboard.press('Escape'); count++;
               }
