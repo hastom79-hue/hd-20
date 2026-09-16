@@ -28,5 +28,11 @@ Stabilize executable browser validation after the five-area IA and dashboard-nat
 - Resource initiator diagnostic still used `networkidle`; it now uses CI-only external script stubbing, `waitUntil:'commit'`, static nav readiness and `window.HD20_NAV` readiness. Its 404 initiator tracing remains intact.
 - These changes affect test workflows only. Production authentication, canonical stores, KPI logic and Supabase write behavior are unchanged.
 
+## 2026-09-16 follow-up — Attached-vs-visible nav diagnosis
+- Exact HEAD `a12df91564e5830986ccf65a873faaba3545a962` had Pages build/deploy and runtime smoke success, but Chromium job `104718071211` failed before five-area assertions.
+- The failure log proves `.beginnerNav` already existed in the DOM but was hidden. Playwright `waitForSelector('.beginnerNav')` defaults to visible state, so the workflow was incorrectly treating the intentionally hidden pre-controller container as a boot failure.
+- Browser smoke now explicitly waits for `.beginnerNav` with `state:'attached'`, then waits for `window.HD20_NAV`, the generated dashboard button, dashboard priority and operational bridge. The actual boot contract still independently asserts body visibility and absence of `hd20-auth-pending`; no functional assertion was removed.
+- This is a test-readiness correction only. Production app/auth/store/Supabase code was not changed.
+
 ## Validation boundary
 GitHub Pages deployment success alone is not browser E2E proof. Chromium workflow results must be checked separately. CI request isolation is test-only and does not bypass production authentication.
