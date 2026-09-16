@@ -27,5 +27,11 @@ Stabilize executable browser validation after the five-area IA and dashboard-nat
 - The browser contract again checks 5 top KPI cards, 6 health metrics, zero legacy landing panels, forbidden legacy Audit labels, advancement separation/actor semantics, exact five-area order and dashboard-native maturity behavior.
 - This change is test-only. Production application/auth/store/KPI/Supabase behavior is unchanged and no server-side forced empty write was introduced.
 
+## 2026-09-17 — Cross-workflow DOM probe alignment
+- The same contradictory attached-selector readiness pattern remained in nav-scroll, current-IA, subtab-contract-grid, dashboard-canonical, design-layout and resource-initiator diagnostic workflows.
+- All six workflows now use direct DOM existence probes with `waitForFunction` for boot-only readiness. Functional assertions were retained rather than weakened.
+- Subtab modal readiness was also converted to an explicit class-state DOM probe. Design-layout now uses the same CI-only external-script stub policy as the other browser workflows so external SDK availability does not block local static UI validation.
+- Production HTML/JS, authentication, Supabase data behavior, KPI calculations and write paths were not changed. No server-side forced empty write was introduced.
+
 ## Validation boundary
 Pages deployment success alone is not browser E2E proof. Chromium workflow results must be checked separately; CI request isolation remains test-only.
