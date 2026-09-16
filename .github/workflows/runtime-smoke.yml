@@ -43,19 +43,39 @@ jobs:
             if x in html: sys.exit('Retired script ref remains: '+x)
           PY
 
-      - name: Verify six-area navigation and operational IA
+      - name: Verify five-area navigation and dashboard maturity IA
         run: |
           set -euo pipefail
           test -s beginner-navigation.js
-          for key in dashboard activity advancement maturitymap audit action; do
+          for key in dashboard activity advancement audit action; do
             grep -q "data-key=\\\"$key\\\"" beginner-navigation.js
           done
-          grep -q "areas:\['dashboard','activity','advancement','maturitymap','audit','action'\]" beginner-navigation.js
-          grep -q 'canonical-six-area-v6' beginner-navigation.js
+          ! grep -q 'data-key="maturitymap"' beginner-navigation.js
+          grep -q "areas:\['dashboard','activity','advancement','audit','action'\]" beginner-navigation.js
+          grep -q 'canonical-five-area-v9-dashboard-map' beginner-navigation.js
+          grep -q "\['maturitymap','map','maturity'\]" beginner-navigation.js
+          grep -q "goDashboard(nav,'maturity')" beginner-navigation.js
           test -s hd20-maturity-map-tab.js
+          test -s dashboard-section-tabs.js
+          grep -q "key:'maturity'" dashboard-section-tabs.js
           test -s hd20-subtabs.js
           test -s hd20-five-area-integration.js
           grep -q "areas:\['dashboard','activity','advancement','audit','action'\]" hd20-five-area-integration.js
+
+      - name: Verify five-column navigation layout
+        run: |
+          set -euo pipefail
+          test -s hd20-six-nav-layout.js
+          grep -q "const ID='hd20FiveNavLayoutStyle'" hd20-six-nav-layout.js
+          grep -q 'repeat(5,minmax(0,1fr))' hd20-six-nav-layout.js
+
+      - name: Verify auth bootstrap fail-safe
+        run: |
+          set -euo pipefail
+          ! grep -q '<html[^>]*hd20-auth-pending' index.html
+          grep -q 'function showBootError' supabase-auth.js
+          grep -q '접속 초기화 오류' supabase-auth.js
+          grep -q 'startSupabase().catch(showBootError)' supabase-auth.js
 
       - name: Verify canonical stores and KPI bridge
         run: |
