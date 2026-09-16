@@ -58,6 +58,7 @@ jobs:
           test -s hd20-maturity-map-tab.js
           test -s dashboard-section-tabs.js
           grep -q "key:'maturity'" dashboard-section-tabs.js
+          grep -q "label:'고도화 맵'" dashboard-section-tabs.js
           test -s hd20-subtabs.js
           test -s hd20-five-area-integration.js
           grep -q "areas:\['dashboard','activity','advancement','audit','action'\]" hd20-five-area-integration.js
@@ -108,7 +109,7 @@ jobs:
           grep -q '③ 고도화·표준화' activity-workflow.js
           grep -q "title.textContent='④ 진단·유지'" hd20-five-area-integration.js
           grep -q "title.textContent='⑤ 개선실행'" hd20-five-area-integration.js
-          grep -q '고도화 맵' beginner-navigation.js
+          grep -q "label:'고도화 맵'" dashboard-section-tabs.js
 
       - name: Verify advancement and audit semantics
         run: |
