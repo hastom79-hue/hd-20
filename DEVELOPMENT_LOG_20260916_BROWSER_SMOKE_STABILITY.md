@@ -10,13 +10,11 @@ Stabilize executable browser validation after the five-area IA and dashboard-nat
 - Browser contract verifies five main areas only; dashboard maturity remains a dashboard subtab/panel, not a sixth standalone area.
 - Maturity visibility requires the panel to exist, not be `hidden`, and have computed display other than `none`.
 
-## 2026-09-16 follow-up — remaining Chromium workflows
-- Nav-scroll and subtab-grid were converted to CI-only external isolation plus application readiness while retaining their assertions.
-- Design-layout smoke was aligned from retired six-area IA to canonical five-area IA; maturity is validated through the Dashboard section.
-- Exact HEAD `27838414805fa3cba444d262308b78324ec39634` confirmed Pages build/deploy and package success, but layout job `104676233121` still timed out at `page.goto(... waitUntil:'domcontentloaded')` before any layout assertion.
-- Because parser completion can still be held by external/parser-blocking resources even when CI routes abort them, layout smoke now waits only for the local HTTP response `commit`, then uses explicit canonical DOM selectors (`beginnerNav`, `hd20DashboardPriority`) as the application-readiness boundary.
-- Desktop, 125%-equivalent, tablet, mobile, KPI, overflow, modal, advancement, Audit, Action and Dashboard maturity checks remain intact.
-- No production authentication, canonical store, KPI, Supabase write, or application runtime behavior was changed.
+## 2026-09-16 follow-up — Chromium boot trace
+- HEAD `f0508f70f48bd7c9f17cb7a106a76b1f9b70ee32` confirmed Pages build/deploy success, but browser run 35059920771 still timed out waiting for `domcontentloaded` even after external scripts were stubbed. The failure occurred before five-area assertions.
+- The browser smoke now returns to `waitUntil:'commit'`, waits for the static `.beginnerNav` container, then explicitly waits for `window.HD20_NAV`. It records local requested and completed resource paths so the next failure identifies the parser/bootstrap boundary rather than producing another opaque navigation timeout.
+- Current-IA smoke still contained a stale `networkidle` dependency. It now uses the same CI-only external script stubbing, `commit` navigation, static nav-container readiness, and explicit HD20 controller/dashboard-tab readiness while preserving desktop/mobile five-area and dashboard-group assertions.
+- This phase is diagnostic hardening, not a production bypass. No production application/authentication/store/Supabase write behavior changed.
 
 ## Validation boundary
 GitHub Pages deployment success alone is not browser E2E proof. Chromium workflow results must be checked separately. CI request isolation is test-only and does not bypass production authentication.
