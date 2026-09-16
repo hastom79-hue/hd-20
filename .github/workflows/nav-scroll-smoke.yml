@@ -48,9 +48,9 @@ jobs:
                 return route.abort('blockedbyclient');
               });
               await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'commit',timeout:30000});
-              await page.waitForSelector('.beginnerNav',{state:'attached',timeout:15000});
+              await page.waitForFunction(()=>!!document.querySelector('.beginnerNav'),{},{timeout:15000});
               await page.waitForFunction(()=>!!window.HD20_NAV,{},{timeout:15000});
-              await page.waitForSelector('.beginnerNav button[data-key="dashboard"]',{state:'attached',timeout:15000});
+              await page.waitForFunction(()=>!!document.querySelector('.beginnerNav button[data-key="dashboard"]'),{},{timeout:15000});
               await page.waitForFunction(()=>!!window.HD20NavScrollStability,{},{timeout:10000});
 
               for(const key of keys){
