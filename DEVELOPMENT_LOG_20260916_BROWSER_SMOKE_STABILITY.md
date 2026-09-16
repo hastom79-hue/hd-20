@@ -22,5 +22,11 @@ Stabilize executable browser validation after the five-area IA and dashboard-nat
 - Existing contract coverage is preserved: canonical five main areas, five dashboard groups, dashboard-native maturity panel, all eight operational subtabs, purpose-panel judgment/next/grid contract, universal data-grid opening, and mobile grid width.
 - Test seed records remain browser-local only. No production data, auth, KPI, store, or Supabase write path changed.
 
+## 2026-09-16 follow-up — External boot parity and resource trace
+- Run 35061409470 reached committed navigation but timed out waiting for the generated dashboard button because the subtab workflow aborted every external request, unlike the already stabilized main browser smoke which returns an empty successful JavaScript response for external script resources.
+- Subtab contract smoke now uses the same CI-only external script stub policy as main browser smoke, while continuing to abort other external resources. It also waits for the static nav container and `window.HD20_NAV` before the generated dashboard button, preserving all five-area/dashboard/subtab/grid assertions.
+- Resource initiator diagnostic still used `networkidle`; it now uses CI-only external script stubbing, `waitUntil:'commit'`, static nav readiness and `window.HD20_NAV` readiness. Its 404 initiator tracing remains intact.
+- These changes affect test workflows only. Production authentication, canonical stores, KPI logic and Supabase write behavior are unchanged.
+
 ## Validation boundary
 GitHub Pages deployment success alone is not browser E2E proof. Chromium workflow results must be checked separately. CI request isolation is test-only and does not bypass production authentication.
