@@ -34,5 +34,11 @@ Stabilize executable browser validation after the five-area IA and dashboard-nat
 - Browser smoke now explicitly waits for `.beginnerNav` with `state:'attached'`, then waits for `window.HD20_NAV`, the generated dashboard button, dashboard priority and operational bridge. The actual boot contract still independently asserts body visibility and absence of `hd20-auth-pending`; no functional assertion was removed.
 - This is a test-readiness correction only. Production app/auth/store/Supabase code was not changed.
 
+## 2026-09-16 follow-up — Canonical five-subtab and nav-scroll boot alignment
+- Dashboard canonical smoke was stale: static checks omitted `maturity` and rendered checks still expected four dashboard subtabs. It now requires the canonical five groups `summary / execution / maturity / standard / field`, explicitly validates dashboard-native maturity visibility/no standalone maturity navigation, and preserves KPI, field, execution, overflow and dashboard-return assertions.
+- Dashboard canonical browser boot now uses CI-only external script stubbing, `waitUntil:'commit'`, attached static nav, HD20 NAV/DASHBOARD_TABS readiness, generated dashboard nav, priority and bridge readiness.
+- Nav-scroll smoke no longer waits for `domcontentloaded`; it uses the same CI-only external script stub and `commit` + attached-nav + controller readiness sequence while preserving desktop/mobile scroll-reset assertions for all five top areas.
+- These are workflow-contract corrections only. Production app/auth/store/KPI/Supabase behavior is unchanged and no server-side forced empty write was introduced.
+
 ## Validation boundary
 GitHub Pages deployment success alone is not browser E2E proof. Chromium workflow results must be checked separately. CI request isolation is test-only and does not bypass production authentication.
