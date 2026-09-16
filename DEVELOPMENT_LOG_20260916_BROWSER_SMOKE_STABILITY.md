@@ -6,7 +6,7 @@ Date: 2026-09-16
 Stabilize executable browser validation after the five-area IA and dashboard-native maturity map conversion.
 
 ## Changes
-- Browser contract verifies five main areas only; dashboard maturity remains a dashboard subtab/panel, not a sixth standalone area.
+- Browser contract verifies canonical five main areas; dashboard maturity remains a dashboard subtab/panel, not a sixth standalone area.
 - Critical browser waits use application readiness instead of `networkidle`/`domcontentloaded` where parser-blocking runtime scripts make those lifecycle events unsuitable.
 
 ## 2026-09-16 — Boot/readiness repairs
@@ -20,6 +20,12 @@ Stabilize executable browser validation after the five-area IA and dashboard-nat
 - `index.html` places the static `.beginnerNav` and core dashboard DOM before the script chain, while many classic parser-blocking scripts follow. Waiting for the final `DOMContentLoaded` unnecessarily delayed canonical navigation initialization.
 - `beginner-navigation.js` now initializes immediately when the already-parsed static `.beginnerNav` exists, with a one-time guard and `DOMContentLoaded` fallback only if the nav is genuinely unavailable. This is production boot hardening, not a CI bypass.
 - Five-area order, dashboard default, deep-link normalization and dashboard-native maturity behavior are unchanged. No auth, store, KPI or Supabase write path changed; no server-side forced empty write was introduced.
+
+## 2026-09-17 — Playwright DOM probe correction
+- Chromium run `35096738551` on HEAD `de8a0952c9c820aeb8ba99c6492d18dc7e0a58a2` proved the early-nav production fix worked: Playwright resolved `.beginnerNav` as visible with controller `canonical-five-area-v10-early-boot`, but the `waitForSelector(... state:'attached')` readiness call still timed out before functional assertions.
+- Main browser smoke now uses `waitForFunction(() => document.querySelector(...))` for boot DOM-existence probes. This removes the contradictory selector-state wait while retaining explicit controller, dashboard priority, operational bridge and maturity readiness.
+- The browser contract again checks 5 top KPI cards, 6 health metrics, zero legacy landing panels, forbidden legacy Audit labels, advancement separation/actor semantics, exact five-area order and dashboard-native maturity behavior.
+- This change is test-only. Production application/auth/store/KPI/Supabase behavior is unchanged and no server-side forced empty write was introduced.
 
 ## Validation boundary
 Pages deployment success alone is not browser E2E proof. Chromium workflow results must be checked separately; CI request isolation remains test-only.
