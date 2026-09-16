@@ -9,11 +9,22 @@
 - verifies hd20-six-nav-layout.js actually implements five-column CSS.
 - added auth bootstrap fail-safe static contract.
 
+## `hd20-five-area-integration.js`
+- corrected `window.HD20_FIVE_AREA.areas` from the stale six-entry contract to `['dashboard','activity','advancement','audit','action']`.
+- corrected Audit display number from ⑤ to ④.
+- corrected Action display number from ⑥ to ⑤.
+- maturity map remains a dashboard subtab and is not restored as a standalone main area.
+- no canonical store, Supabase write, import, KPI, or production-data mutation path changed.
+
 ## Validation evidence
-Previous run 35049442279:
+Run 35049442279:
 - JavaScript syntax: PASS
 - index references: PASS
-- stale six-area IA assertion: FAIL
-- failure occurred before later checks due to `set -e`.
+- stale six-area IA assertion: FAIL.
 
-No application data write behavior changed by this workflow-only repair.
+Run 35050708482:
+- JavaScript syntax: PASS
+- index references: PASS
+- five-area IA step: FAIL because `hd20-five-area-integration.js` still exposed `maturitymap` as a sixth area.
+
+The integration contract has now been corrected and a new push-triggered validation cycle is required for final PASS confirmation.
