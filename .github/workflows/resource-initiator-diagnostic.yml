@@ -29,63 +29,49 @@ jobs:
           const fs=require('fs');
           const html=fs.readFileSync('index.html','utf8');
           const scripts=[...html.matchAll(/<script[^>]+src=["']([^"']+)["']/gi)]
-            .map(x=>x[1].split('?')[0])
-            .filter(x=>!/^https?:\/\//i.test(x));
-          const total=scripts.length;
-          const q=Math.ceil(total/4);
-          const ranges=[0,q,Math.min(q*2,total),Math.min(q*3,total),total];
-          const inQ=(i,n)=>i>=ranges[n-1]&&i<ranges[n];
+            .map(x=>x[1].split('?')[0]).filter(x=>!/^https?:\/\//i.test(x));
+          const q1=scripts.slice(0,16).filter(x=>x!=='beginner-navigation.js');
+          const q2=scripts.slice(16,32), q3=scripts.slice(32,48), q4=scripts.slice(48);
+          const a=q1.slice(0,5), b=q1.slice(5,10), c=q1.slice(10);
+          const set=(...parts)=>new Set(parts.flat());
           const modes=[
-            {name:'nav-only',allow:i=>false},
-            {name:'q1',allow:i=>inQ(i,1)},
-            {name:'q2',allow:i=>inQ(i,2)},
-            {name:'q3',allow:i=>inQ(i,3)},
-            {name:'q4',allow:i=>inQ(i,4)},
-            {name:'q1+q2',allow:i=>inQ(i,1)||inQ(i,2)},
-            {name:'q1+q3',allow:i=>inQ(i,1)||inQ(i,3)},
-            {name:'q1+q4',allow:i=>inQ(i,1)||inQ(i,4)},
-            {name:'q2+q3',allow:i=>inQ(i,2)||inQ(i,3)},
-            {name:'q2+q4',allow:i=>inQ(i,2)||inQ(i,4)},
-            {name:'q3+q4',allow:i=>inQ(i,3)||inQ(i,4)},
-            {name:'all',allow:i=>i>=0}
+            ['nav-only',set()],
+            ['q1a',set(a)],['q1b',set(b)],['q1c',set(c)],
+            ['q1a+q2',set(a,q2)],['q1b+q2',set(b,q2)],['q1c+q2',set(c,q2)],
+            ['q1a+q3',set(a,q3)],['q1b+q3',set(b,q3)],['q1c+q3',set(c,q3)],
+            ['q1a+q4',set(a,q4)],['q1b+q4',set(b,q4)],['q1c+q4',set(c,q4)]
           ];
-          console.log('SCRIPT_PARTITIONS','total='+total,'ranges='+ranges.join(','));
-          for(let n=1;n<=4;n++) console.log('QUARTER',n,'first='+scripts[ranges[n-1]],'last='+scripts[ranges[n]-1]);
+          console.log('Q1_GROUPS');
+          console.log('Q1A',a.join(',')); console.log('Q1B',b.join(',')); console.log('Q1C',c.join(','));
           (async()=>{
-            for(const mode of modes){
+            for(const [name,allow] of modes){
               const browser=await chromium.launch({headless:true});
               try{
-                const page=await browser.newPage();
-                const real=[];
-                page.on('pageerror',e=>console.log('PAGE_ERROR',mode.name,e.message));
+                const page=await browser.newPage(); const real=[];
+                page.on('pageerror',e=>console.log('PAGE_ERROR',name,e.message));
                 await page.route('**/*',async route=>{
                   const r=route.request(),u=new URL(r.url());
                   if(u.hostname!=='127.0.0.1'&&u.hostname!=='localhost'){
-                    if(r.resourceType()==='script')return route.fulfill({status:200,contentType:'application/javascript',body:'/* HD20 CI external script stub */'});
+                    if(r.resourceType()==='script')return route.fulfill({status:200,contentType:'application/javascript',body:'/* external stub */'});
                     return route.abort('blockedbyclient');
                   }
                   if(r.resourceType()==='script'){
                     const p=u.pathname.split('/').pop();
-                    if(p!=='beginner-navigation.js'){
-                      const i=scripts.indexOf(p);
-                      if(!mode.allow(i))return route.fulfill({status:200,contentType:'application/javascript',body:'/* cross bisect stub */'});
-                      real.push(p);
-                    }
+                    if(p!=='beginner-navigation.js'&&!allow.has(p))return route.fulfill({status:200,contentType:'application/javascript',body:'/* q1 isolate stub */'});
+                    if(p!=='beginner-navigation.js')real.push(p);
                   }
                   return route.continue();
                 });
-                await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'commit',timeout:15000});
-                const started=Date.now();
-                let stage='none';
+                await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'commit',timeout:10000});
+                const started=Date.now(); let stage='none';
                 try{
-                  await page.waitForFunction(()=>!!document.querySelector('.beginnerNav'),{},{timeout:5000});stage='nav-dom';
-                  await page.waitForFunction(()=>!!window.HD20_NAV,{},{timeout:5000});stage='nav-api';
-                  await page.waitForFunction(()=>window.HD20_NAV.ready(),{},{timeout:5000});stage='nav-ready';
+                  await page.waitForFunction(()=>!!document.querySelector('.beginnerNav'),{},{timeout:3000});stage='nav-dom';
+                  await page.waitForFunction(()=>!!window.HD20_NAV,{},{timeout:3000});stage='nav-api';
+                  await page.waitForFunction(()=>window.HD20_NAV.ready(),{},{timeout:3000});stage='nav-ready';
                 }catch(e){stage+='-timeout'}
-                console.log('BISECT_RESULT',mode.name,stage,'ms='+String(Date.now()-started),'real='+real.length,'last='+String(real.slice(-6)));
-                await page.close().catch(()=>{});
-              } finally {await Promise.race([browser.close().catch(()=>{}),new Promise(r=>setTimeout(r,2000))]);}
+                console.log('ISOLATE_RESULT',name,stage,'ms='+String(Date.now()-started),'real='+real.length,'q1='+q1.filter(x=>allow.has(x)).join(','));
+              } finally { await Promise.race([browser.close().catch(()=>{}),new Promise(r=>setTimeout(r,1000))]); }
             }
           })().catch(e=>{console.error(e);process.exitCode=1});
           NODE
-          timeout 110s node trace.cjs
+          timeout 75s node trace.cjs
