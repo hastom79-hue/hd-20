@@ -1,6 +1,6 @@
 (()=>{'use strict';
 const ROOT='#hd20MaturityMapTab',STYLE='hd20MaturityPriorityFilterStyle',MODE='mmtPriorityFilter';
-const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)],txt=v=>String(v??'').trim();
+const $=(s,r=document)=>r?.querySelector?.(s)||null,$$=(s,r=document)=>r?.querySelectorAll?[...r.querySelectorAll(s)]:[],txt=v=>String(v??'').trim();
 function api(){return window.HD20_MATURITY_MAP_OPERATIONAL_GUARD}
 function root(){return $(ROOT)}
 function canonical(){const k=window.HD20KPIData;if(!k)return{rows:[],byTeam:new Map()};const rows=k.load().filter(k.isConfirmed),byTeam=new Map();rows.forEach(x=>{const team=txt(x.team);if(!team)return;if(!byTeam.has(team))byTeam.set(team,[]);byTeam.get(team).push(x)});return{rows,byTeam}}
@@ -8,8 +8,8 @@ function sourceForButton(btn){const row=btn?.closest?.('.mmtTeamCases')?.previou
 function state(btn){const x=sourceForButton(btn);return api()?.stateOf?.(x)||{performance:'유지미흡',attention:''}}
 function dateKey(card){const t=card?.querySelector('small')?.textContent||'';return t.match(/\d{4}-\d{2}-\d{2}/)?.[0]||''}
 function css(){if(document.getElementById(STYLE))return;const s=document.createElement('style');s.id=STYLE;s.textContent=`#hd20MaturityMapTab .mmtTeamCases:not([hidden]){display:flex;flex-direction:column}.mmtOpFilter button[data-mmt-filter="ok"]{border-color:#cfe5d7;color:#347153}.mmtOpFilter button[data-mmt-filter="ok"].on{border-color:#2f8455;background:#edf8f1;color:#276c47}`;document.head.appendChild(s)}
-function setMode(r,mode){r.dataset[MODE]=mode;if(mode==='ok')r.dataset.mmtFilter='all'}
-function modeOf(r){return r.dataset[MODE]||r.dataset.mmtFilter||'all'}
+function setMode(r,mode){if(!r)return false;r.dataset[MODE]=mode;if(mode==='ok')r.dataset.mmtFilter='all';return true}
+function modeOf(r){return r?.dataset?.[MODE]||r?.dataset?.mmtFilter||'all'}
 function ensureCurrentFilter(){const r=root();if(!r)return false;const bar=$('.mmtOpFilter',r);if(!bar||$('[data-mmt-filter="ok"]',bar))return false;const b=document.createElement('button');b.type='button';b.dataset.mmtFilter='ok';b.textContent='현재 유지';bar.appendChild(b);b.onclick=()=>{setMode(r,'ok');applyFilter()};return true}
 function applyPriority(){const r=root();if(!r)return false;$$('.mmtTeamCases',r).forEach(box=>{const cards=$$('.mmtCase',box),ordered=cards.map(card=>{const btn=$('[data-mmt-case]',card),s=state(btn),rank=(s.performance==='유지미흡'?2:0)+(s.attention?1:0);return{card,rank,date:dateKey(card)}}).sort((a,b)=>(b.rank-a.rank)||b.date.localeCompare(a.date));ordered.forEach((x,i)=>x.card.style.order=String(i))});const hint=$('.mmtCaseCard .mmtHead span',r);if(hint)hint.textContent='팀 선택 → 유지미흡 · 재점검 필요 · 최신 판정순';return true}
 function applyFilter(){const r=root();if(!r)return false;ensureCurrentFilter();const mode=modeOf(r);if(mode==='ok')r.dataset.mmtFilter='all';$$('[data-mmt-case]',r).forEach(btn=>{const s=state(btn),show=mode==='all'||(mode==='weak'&&s.performance==='유지미흡')||(mode==='review'&&!!s.attention)||(mode==='ok'&&s.performance==='현재 유지');const card=btn.closest('.mmtCase');if(card)card.dataset.mmtFilterHidden=show?'0':'1'});$$('[data-mmt-filter]',r).forEach(b=>b.classList.toggle('on',b.dataset.mmtFilter===mode));return true}
