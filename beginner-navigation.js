@@ -15,6 +15,5 @@ function bind(nav){nav.querySelectorAll('button[data-key]').forEach(btn=>btn.onc
 function normalizeDeepLink(k){return ({conversion:'advancement',workplace:'advancement',master:'dashboard'})[k]||k}
 function init(){if(initialized)return;const nav=document.querySelector('.beginnerNav');if(!nav)return;initialized=true;ensureNav();ensureHint(nav);bind(nav);const q=new URLSearchParams(location.search),raw=q.get('tab');if(['maturitymap','map','maturity'].includes(raw)){goDashboard(nav,'maturity');return}go('dashboard',nav)}
 window.HD20_NAV={go:key=>{const nav=document.querySelector('.beginnerNav');if(!nav)return;const k=normalizeDeepLink(key);if(['maturitymap','map','maturity'].includes(k)){goDashboard(nav,'maturity');return}go(k,nav)},active:()=>activeKey,areas:['dashboard','activity','advancement','audit','action'],ready:()=>initialized};
-queueMicrotask(init);
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else setTimeout(init,0);
 })();
