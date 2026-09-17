@@ -33,7 +33,7 @@ jobs:
               await page.waitForFunction(()=>!!document.querySelector('.beginnerNav button[data-key="dashboard"]'),{},{timeout:20000});
               await page.waitForFunction(()=>!!document.getElementById('hd20DashboardPriority'),{},{timeout:20000});
               const cssContract=await page.evaluate(()=>[...document.querySelectorAll('link[rel="stylesheet"]')].map(x=>new URL(x.href).pathname.split('/').pop()));
-              const expectedCss=['styles.css','hd20-overhaul.css','hd20-five-area.css','dashboard-priority-groups.css','workflow-area-density.css','maturity-condition-analysis.css'];
+              const expectedCss=['styles.css','hd20-overhaul.css','hd20-five-area.css','dashboard-priority-groups.css','workflow-area-density.css','maturity-condition-analysis.css','hd20-subtabs.css','hd20-ops-v2.css','supabase-auth.css'];
               if(JSON.stringify(cssContract)!==JSON.stringify(expectedCss)) throw new Error(`${vp.name}: stylesheet contract=${JSON.stringify(cssContract)}`);
               if(cssContract.some(x=>/mobile-runtime-restore|hotfix|polish/i.test(x))) throw new Error(`${vp.name}: retired stylesheet leaked ${JSON.stringify(cssContract)}`);
               const navCount=await page.locator('.beginnerNav button[data-key]').count(); if(navCount!==5) throw new Error(`${vp.name}: nav count=${navCount}`);
