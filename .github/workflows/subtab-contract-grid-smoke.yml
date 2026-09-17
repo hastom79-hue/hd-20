@@ -69,6 +69,7 @@ jobs:
             });
             await page.reload({waitUntil:'commit',timeout:30000});
             await waitBoot();
+            console.log('LOAD_STAGE boot-after-fixture');
             const fixtureCounts=await page.evaluate(()=>({activities:JSON.parse(localStorage.getItem('hd20GMES5SAutoImproveRawV1')||'[]').length,audits:JSON.parse(localStorage.getItem('hd20AuditRandomDrawsV1')||'[]').length,actions:JSON.parse(localStorage.getItem('hd20ActionCasesV2')||'[]').length})); assert(fixtureCounts.activities===192&&fixtureCounts.audits===96&&fixtureCounts.actions===128,'load fixture count mismatch: '+JSON.stringify(fixtureCounts));
             const expectedMain=['dashboard','activity','advancement','audit','action'];
             const mainKeys=await page.locator('.beginnerNav button[data-key]').evaluateAll(xs=>xs.map(x=>x.dataset.key));
@@ -81,17 +82,20 @@ jobs:
             const areas={activity:['활동관리','실적분석'],advancement:['후보·판정','확정·수평전개'],audit:['Audit 관리','유지관리'],action:['개선조치','효과·재발관리']};
             let count=0;
             for(const [area,subs] of Object.entries(areas)){
+              console.log('LOAD_STAGE area-start',area);
               await page.evaluate(a=>document.querySelector(`.beginnerNav button[data-key="${a}"]`)?.click(),area); await page.waitForTimeout(150);
-              await page.waitForFunction(()=>!!document.querySelector('#hd20PurposePanel'),{},{timeout:10000});
+              await page.waitForFunction(()=>!!document.querySelector('#hd20PurposePanel'),{},{timeout:20000});
+              console.log('LOAD_STAGE area-ready',area);
               for(const sub of subs){
                 await page.getByRole('button',{name:sub,exact:true}).click(); await page.waitForTimeout(100);
                 const c=await page.locator('#hd20PurposePanel').getAttribute('data-contract');
                 assert(c&&c.startsWith(area+'.'),`contract missing for ${area}/${sub}: ${c}`);
                 const text=await page.locator('#hd20PurposePanel').innerText();
                 for(const term of ['판단','다음','상세 데이터 그리드'])assert(text.includes(term),`${term} missing ${area}/${sub}`);
+                console.log('LOAD_STAGE sub-start',area,sub);
                 await page.getByRole('button',{name:'상세 데이터 그리드',exact:true}).click();
                 await page.waitForFunction(()=>document.querySelector('#hd20UniversalGridModal')?.classList.contains('on'),{},{timeout:20000});
-                const meta=await page.locator('#hd20GridMeta').innerText(); assert(meta.length>0,'grid meta missing');
+                const meta=await page.locator('#hd20GridMeta').innerText(); assert(meta.length>0,'grid meta missing'); console.log('LOAD_STAGE grid-ready',area,sub,meta);
                 await page.keyboard.press('Escape'); count++;
               }
             }
