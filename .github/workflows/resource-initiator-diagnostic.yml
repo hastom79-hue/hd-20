@@ -11,7 +11,7 @@ permissions:
 jobs:
   trace:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -35,10 +35,14 @@ jobs:
           const q2=scripts.slice(16,32), q3=scripts.slice(32,48);
           const c=q1.slice(10);
           const groups={};
-          for(const file of c){ groups[file+'+q2']=new Set([file,...q2]); groups[file+'+q3']=new Set([file,...q3]); }
+          for(let i=0;i<c.length;i++) for(let j=i+1;j<c.length;j++){
+            const pair=c[i]+'+'+c[j];
+            groups[pair+'+q2']=new Set([c[i],c[j],...q2]);
+            groups[pair+'+q3']=new Set([c[i],c[j],...q3]);
+          }
           const allow=groups[mode];
           if(!allow) throw new Error('unknown mode '+mode);
-          console.log('ISOLATE_ALLOW',mode,'q1c='+c.filter(x=>allow.has(x)).join(','),'count='+allow.size);
+          console.log('PAIR_ALLOW',mode,'q1c='+c.filter(x=>allow.has(x)).join(','),'count='+allow.size);
           (async()=>{
             const browser=await chromium.launch({headless:true});
             const page=await browser.newPage(); const real=[];
@@ -51,7 +55,7 @@ jobs:
               }
               if(r.resourceType()==='script'){
                 const p=u.pathname.split('/').pop();
-                if(p!=='beginner-navigation.js'&&!allow.has(p))return route.fulfill({status:200,contentType:'application/javascript',body:'/* q1c isolate stub */'});
+                if(p!=='beginner-navigation.js'&&!allow.has(p))return route.fulfill({status:200,contentType:'application/javascript',body:'/* q1c pair isolate stub */'});
                 if(p!=='beginner-navigation.js')real.push(p);
               }
               return route.continue();
@@ -63,20 +67,23 @@ jobs:
               await page.waitForFunction(()=>!!window.HD20_NAV,{},{timeout:2500});stage='nav-api';
               await page.waitForFunction(()=>window.HD20_NAV.ready(),{},{timeout:2500});stage='nav-ready';
             }catch(e){stage+='-timeout'}
-            console.log('ISOLATE_RESULT',mode,stage,'ms='+String(Date.now()-started),'real='+real.length);
+            console.log('PAIR_RESULT',mode,stage,'ms='+String(Date.now()-started),'real='+real.length);
             await Promise.race([browser.close().catch(()=>{}),new Promise(r=>setTimeout(r,500))]);
           })().catch(e=>{console.error(e);process.exitCode=1});
           NODE
-          modes=(
-            performance-conversion-analysis.js+q2 performance-conversion-analysis.js+q3
-            activity-workflow.js+q2 activity-workflow.js+q3
-            activity-excel-preview-import.js+q2 activity-excel-preview-import.js+q3
-            activity-import-analysis-mail-preview.js+q2 activity-import-analysis-mail-preview.js+q3
-            activity-import-db-readiness-guard.js+q2 activity-import-db-readiness-guard.js+q3
+          mapfile -t modes < <(node - <<'NODE'
+          const fs=require('fs');
+          const html=fs.readFileSync('index.html','utf8');
+          const scripts=[...html.matchAll(/<script[^>]+src=["']([^"']+)["']/gi)].map(x=>x[1].split('?')[0]).filter(x=>!/^https?:\/\//i.test(x));
+          const c=scripts.slice(0,16).filter(x=>x!=='beginner-navigation.js').slice(10);
+          for(let i=0;i<c.length;i++) for(let j=i+1;j<c.length;j++){
+            console.log(c[i]+'+'+c[j]+'+q2');
+            console.log(c[i]+'+'+c[j]+'+q3');
+          }
+          NODE
           )
+          echo "PAIR_MODE_COUNT=${#modes[@]}"
           for mode in "${modes[@]}"; do
-            echo "=== MODE $mode ==="
-            timeout --kill-after=2s 14s node trace-one.cjs "$mode" || echo "ISOLATE_HARD_TIMEOUT $mode exit=$?"
-            pkill -9 -f 'chromium.*headless' || true
-            pkill -9 -f 'headless_shell' || true
+            echo "=== PAIR MODE $mode ==="
+            timeout --kill-after=2s 14s node trace-one.cjs "$mode" || echo "PAIR_HARD_TIMEOUT $mode exit=$?"
           done
