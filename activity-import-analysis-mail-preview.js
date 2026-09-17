@@ -1,6 +1,6 @@
 (()=>{'use strict';
 const ID='hd20ImportAnalysis',KEY='hd20GMES5SAutoImproveRawV1',TEAM_KEY='hd20TeamLeaderMasterV1';let pending=[];
-const txt=v=>String(v??'').trim(),esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[m]));
+const txt=v=>String(v??'').trim(),esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 function rows(){try{const v=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(v)?v.filter(x=>window.HD20KPIData?.isNonProdRow?.(x)!==true):[]}catch{return[]}}
 function leaders(){try{const v=JSON.parse(localStorage.getItem(TEAM_KEY)||'[]');return Array.isArray(v)?v:[]}catch{return[]}}
 function dateOf(x){return txt(x.date||x.regDate||x.createdAt||x.importedAt)}function monthOf(x){const m=dateOf(x).match(/^(20\d{2})-(\d{2})/);return m?`${m[1]}-${m[2]}`:''}function imported(x){return txt(x.source).toLowerCase()==='excel-import'}function evidenceId(x){return txt(x.id||x.sourceCaseId||x.auditDrawId)||'—'}
