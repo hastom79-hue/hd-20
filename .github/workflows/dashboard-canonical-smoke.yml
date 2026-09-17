@@ -55,10 +55,14 @@ jobs:
             const browser=await chromium.launch({headless:true});
             try{
               for(const viewport of [{width:1440,height:1000},{width:375,height:812}]){
-                const page=await browser.newPage({viewport}),errors=[];page.on('pageerror',e=>errors.push(e.message));
+                const page=await browser.newPage({viewport}),errors=[];
+                page.on('pageerror',e=>errors.push(e.message));
+                page.on('response',r=>{if(/beginner-navigation\.js/.test(r.url()))console.log('NAV_RESPONSE',r.status(),r.url())});
+                await page.addInitScript(()=>{window.__HD20_CANONICAL_INIT=true});
                 await page.route('**/*',route=>{const req=route.request(),u=new URL(req.url());if(u.hostname==='127.0.0.1'||u.hostname==='localhost')return route.continue();if(req.resourceType()==='script')return route.fulfill({status:200,contentType:'application/javascript',body:''});return route.abort('blockedbyclient')});
                 await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'commit',timeout:30000});
-                const wait=async(label,fn)=>{try{await page.waitForFunction(fn,{},{timeout:15000})}catch(e){throw new Error(`boot stage ${label} timeout; pageErrors=${errors.join(' | ')}`)}};
+                const wait=async(label,fn)=>{try{await page.waitForFunction(fn,{},{timeout:15000})}catch(e){console.log('BOOT_TIMEOUT',label,'url='+page.url(),'closed='+page.isClosed(),'errors='+errors.join(' | '));throw new Error(`boot stage ${label} timeout; pageErrors=${errors.join(' | ')}`)}};
+                await wait('execution-context',()=>window.__HD20_CANONICAL_INIT===true);
                 await wait('beginnerNav',()=>!!document.querySelector('.beginnerNav'));
                 await wait('HD20_NAV',()=>!!window.HD20_NAV);
                 await wait('HD20_DASHBOARD_TABS',()=>!!window.HD20_DASHBOARD_TABS);
@@ -73,8 +77,6 @@ jobs:
                 await page.evaluate(()=>window.HD20_NAV.go('activity'));await page.waitForTimeout(150);await page.evaluate(()=>window.HD20_NAV.go('dashboard'));await page.waitForTimeout(150);assert((await page.evaluate(()=>window.HD20_DASHBOARD_TABS.active()))==='summary','dashboard return did not reset summary');
                 await page.close();
               }
-            } finally {
-              await browser.close();
-            }
+            } finally {await browser.close();}
           })().catch(e=>{console.error(e);process.exitCode=1});
           JS
