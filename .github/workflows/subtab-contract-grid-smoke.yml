@@ -64,7 +64,8 @@ jobs:
             const dashKeys=await page.locator('#hd20DashboardSectionTabs button[data-dashboard-section]').evaluateAll(xs=>xs.map(x=>x.dataset.dashboardSection));
             assert(JSON.stringify(dashKeys)===JSON.stringify(['summary','execution','maturity','standard','field']),'dashboard groups mismatch: '+dashKeys.join(','));
             await page.evaluate(()=>document.querySelector('#hd20DashboardSectionTabs button[data-dashboard-section="maturity"]')?.click()); await page.waitForTimeout(150);
-            assert(window.HD20_DASHBOARD_TABS.active()==='maturity','dashboard maturity panel not active');
+            const maturityActive=await page.evaluate(()=>window.HD20_DASHBOARD_TABS?.active?.());
+            assert(maturityActive==='maturity','dashboard maturity panel not active: '+maturityActive);
             const areas={activity:['활동관리','실적분석'],advancement:['후보·판정','확정·수평전개'],audit:['Audit 관리','유지관리'],action:['개선조치','효과·재발관리']};
             let count=0;
             for(const [area,subs] of Object.entries(areas)){
