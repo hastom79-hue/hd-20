@@ -34,7 +34,7 @@ jobs:
           (async()=>{
             const browser=await chromium.launch({headless:true});
             const page=await browser.newPage({viewport:{width:1440,height:1000}});
-            const errs=[]; page.on('pageerror',e=>errs.push(String(e)));
+            const errs=[]; page.on('pageerror',e=>errs.push(e.stack||String(e)));
             page.on('dialog',d=>d.accept());
             await page.route('**/*',route=>{
               const req=route.request(),u=new URL(req.url());
@@ -84,7 +84,7 @@ jobs:
               }
             }
             assert(count===8,'not all operational subtabs checked');
-            assert(errs.length===0,'page errors: '+errs.join(' | '));
+            assert(errs.length===0,'page errors:\n'+errs.join('\n---\n'));
             await page.setViewportSize({width:390,height:844});
             await page.evaluate(()=>document.querySelector('.beginnerNav button[data-key="activity"]')?.click()); await page.waitForTimeout(100);
             await page.getByRole('button',{name:'활동관리',exact:true}).click();
