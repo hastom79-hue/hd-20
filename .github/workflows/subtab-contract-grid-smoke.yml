@@ -42,7 +42,7 @@ jobs:
               if(req.resourceType()==='script')return route.fulfill({status:200,contentType:'application/javascript',body:'/* HD20 CI external script stub */'});
               return route.abort('blockedbyclient');
             });
-            const waitReady=()=>page.waitForFunction(()=>window.HD20_NAV&&window.HD20_SUBNAV&&window.HD20_DASHBOARD_TABS&&document.querySelector('#hd20PurposePanel'),{},{timeout:20000});
+            const waitReady=()=>page.waitForFunction(()=>window.HD20_NAV&&window.HD20_SUBNAV&&window.HD20_DASHBOARD_TABS&&document.querySelector('#hd20DashboardSectionTabs'),{},{timeout:20000});
             const waitBoot=async()=>{
               await page.waitForFunction(()=>!!document.querySelector('.beginnerNav'),{},{timeout:10000});
               await page.waitForFunction(()=>!!window.HD20_NAV,{},{timeout:20000});
@@ -69,6 +69,7 @@ jobs:
             let count=0;
             for(const [area,subs] of Object.entries(areas)){
               await page.evaluate(a=>document.querySelector(`.beginnerNav button[data-key="${a}"]`)?.click(),area); await page.waitForTimeout(150);
+              await page.waitForFunction(()=>!!document.querySelector('#hd20PurposePanel'),{},{timeout:10000});
               for(const sub of subs){
                 await page.getByRole('button',{name:sub,exact:true}).click(); await page.waitForTimeout(100);
                 const c=await page.locator('#hd20PurposePanel').getAttribute('data-contract');
