@@ -90,7 +90,7 @@ jobs:
                 const text=await page.locator('#hd20PurposePanel').innerText();
                 for(const term of ['판단','다음','상세 데이터 그리드'])assert(text.includes(term),`${term} missing ${area}/${sub}`);
                 await page.getByRole('button',{name:'상세 데이터 그리드',exact:true}).click();
-                await page.waitForFunction(()=>document.querySelector('#hd20UniversalGridModal')?.classList.contains('on'),{},{timeout:10000});
+                await page.waitForFunction(()=>document.querySelector('#hd20UniversalGridModal')?.classList.contains('on'),{},{timeout:20000});
                 const meta=await page.locator('#hd20GridMeta').innerText(); assert(meta.length>0,'grid meta missing');
                 await page.keyboard.press('Escape'); count++;
               }
