@@ -29,29 +29,36 @@ jobs:
           (async()=>{
             const browser=await chromium.launch({headless:true});
             try{
-              const page=await browser.newPage();
-              const cdp=await page.context().newCDPSession(page), req=new Map();
-              await cdp.send('Network.enable');
-              cdp.on('Network.requestWillBeSent',e=>req.set(e.requestId,{url:e.request.url,initiator:e.initiator,type:e.type}));
-              cdp.on('Network.responseReceived',e=>{
-                const x=req.get(e.requestId),u=x?.url||e.response.url;
-                if((x?.type==='Script'||/\.js(?:\?|$)/.test(u))&&(u.includes('127.0.0.1')||u.includes('localhost'))) console.log('LOCAL_SCRIPT_RESPONSE',e.response.status,u);
-                if(e.response.status===404){console.log('404',u);console.log(JSON.stringify(x?.initiator||{},null,2))}
-              });
-              page.on('pageerror',e=>console.log('PAGE_ERROR',e.message));
-              await page.route('**/*',route=>{
-                const r=route.request(),u=new URL(r.url());
-                if(u.hostname==='127.0.0.1'||u.hostname==='localhost')return route.continue();
-                if(r.resourceType()==='script')return route.fulfill({status:200,contentType:'application/javascript',body:'/* HD20 CI external script stub */'});
-                return route.abort('blockedbyclient');
-              });
-              await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'commit',timeout:30000});
-              await page.waitForFunction(()=>!!document.querySelector('.beginnerNav'),{},{timeout:10000});
-              await page.waitForFunction(()=>!!window.HD20_NAV,{},{timeout:20000});
-              await page.waitForTimeout(1000);
-            } finally {
-              await browser.close();
-            }
+              for(const mode of ['nav-only','first-half','second-half','all']){
+                const page=await browser.newPage();
+                const local=[];
+                page.on('response',r=>{if(/\.js(?:\?|$)/.test(r.url())&&r.url().includes('127.0.0.1'))local.push(r.url().split('/').pop())});
+                page.on('pageerror',e=>console.log('PAGE_ERROR',mode,e.message));
+                await page.route('**/*',async route=>{
+                  const r=route.request(),u=new URL(r.url());
+                  if(u.hostname!=='127.0.0.1'&&u.hostname!=='localhost'){
+                    if(r.resourceType()==='script')return route.fulfill({status:200,contentType:'application/javascript',body:'/* HD20 CI external script stub */'});
+                    return route.abort('blockedbyclient');
+                  }
+                  if(r.resourceType()==='script'){
+                    const p=u.pathname.split('/').pop();
+                    if(p!=='beginner-navigation.js'){
+                      const scripts=[...require('fs').readFileSync('index.html','utf8').matchAll(/<script src="([^"?]+)(?:\?[^"}]*)?"/g)].map(x=>x[1]).filter(x=>!x.startsWith('http'));
+                      const i=scripts.indexOf(p),mid=Math.ceil(scripts.length/2);
+                      const allow=mode==='all'||(mode==='first-half'&&i>=0&&i<mid)||(mode==='second-half'&&i>=mid);
+                      if(!allow)return route.fulfill({status:200,contentType:'application/javascript',body:'/* bisect stub */'});
+                    }
+                  }
+                  return route.continue();
+                });
+                await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'commit',timeout:30000});
+                const started=Date.now();
+                let stage='none';
+                try{await page.waitForFunction(()=>!!document.querySelector('.beginnerNav'),{},{timeout:8000});stage='nav-dom';await page.waitForFunction(()=>!!window.HD20_NAV,{},{timeout:8000});stage='nav-api';await page.waitForFunction(()=>window.HD20_NAV.ready(),{},{timeout:8000});stage='nav-ready'}catch(e){stage+='-timeout'}
+                console.log('BISECT_RESULT',mode,stage,'ms='+String(Date.now()-started),'scripts='+local.length,'last='+String(local.slice(-5)));
+                await page.close().catch(()=>{});
+              }
+            } finally {await browser.close();}
           })().catch(e=>{console.error(e);process.exitCode=1});
           NODE
-          timeout 45s node trace.cjs
+          timeout 90s node trace.cjs
