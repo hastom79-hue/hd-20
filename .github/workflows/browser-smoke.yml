@@ -35,9 +35,9 @@ jobs:
           const fs = require('fs');
           (async()=>{
             const browser=await chromium.launch({headless:true});
-            const evidence={localRequests:[],finished:[]}; let failure=null;
+            const evidence={localRequests:[],finished:[]}; let failure=null,errors=[];
             try{
-              const page=await browser.newPage({viewport:{width:1440,height:1000}}),errors=[];
+              const page=await browser.newPage({viewport:{width:1440,height:1000}});
               page.on('pageerror',e=>{const detail={message:String(e),stack:e?.stack||'',name:e?.name||''};errors.push(detail);console.error('PAGE_ERROR_DETAIL',JSON.stringify(detail));});
               page.on('dialog',d=>d.accept());
               page.on('request',r=>{const u=new URL(r.url());if(u.hostname==='127.0.0.1'||u.hostname==='localhost')evidence.localRequests.push(u.pathname)});
