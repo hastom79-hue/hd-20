@@ -52,12 +52,24 @@ jobs:
             await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'commit',timeout:30000});
             await waitBoot();
             await page.evaluate(()=>{
-              localStorage.setItem('hd20GMES5SAutoImproveRawV1',JSON.stringify([{id:'GRID-A',date:'2026-09-10',type:'정리',team:'성능팀',workplace:'Grid 작업장',problem:'Grid 문제',improvement:'Grid 개선',status:'완료'}]));
-              localStorage.setItem('hd20AuditRandomDrawsV1',JSON.stringify([{id:'GRID-U',date:'2026-09-10',team:'성능팀',auditDate:'2026-09-10',auditResult:'적합',status:'6개월 관리중'}]));
-              localStorage.setItem('hd20ActionCasesV2',JSON.stringify([{id:'GRID-C',registeredAt:'2026-09-10',team:'성능팀',problem:'Grid 조치',action:'Grid 완료',status:'완료',effectVerified:true,effectState:'유효',recurrence:false}]));
+              const teams=window.HD20ProductionTeamMaster?.teamNames?.()||[];
+              if(teams.length!==16)throw new Error('canonical team master count mismatch: '+teams.length);
+              const cats=['정리','정돈','청소','시각화','위험구역관리','5S 고도화'];
+              const photoRefs=[
+                'https://images.unsplash.com/photo-1565793298595-6a879b1d9492',
+                'https://images.unsplash.com/photo-1581092160562-40aa08e78837',
+                'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789'
+              ];
+              const activities=Array.from({length:192},(_,i)=>{const advanced=i%6===5,candidate=advanced&&i%3!==0,confirmed=advanced&&i%4===1;return{id:'LOAD-A-'+String(i+1).padStart(3,'0'),date:`2026-${String(1+(i%9)).padStart(2,'0')}-${String(1+(i%27)).padStart(2,'0')}`,regDate:`2026-${String(1+(i%9)).padStart(2,'0')}-${String(1+(i%27)).padStart(2,'0')}`,type:cats[i%cats.length],team:teams[i%teams.length],workplace:`검증 작업장 ${1+(i%48)}`,problem:`검증용 현상 ${i+1}`,improvement:`검증용 개선 ${i+1}`,candidate,isCandidate:candidate,judgeState:confirmed?'확정':candidate?(i%5===0?'보완요청':'판정대기'):'미확정',confirmed,status:confirmed?(i%10===1?'유지관리':'확정'):(candidate?'판정대기':'완료'),maintainState:confirmed&&i%10===1?'미흡':'정상',valid:!(confirmed&&i%10===1),before:photoRefs[i%photoRefs.length],after:photoRefs[(i+1)%photoRefs.length],source:'ci-load-fixture'}});
+              const audits=Array.from({length:96},(_,i)=>({id:'LOAD-U-'+String(i+1).padStart(3,'0'),date:`2026-${String(1+(i%9)).padStart(2,'0')}-${String(1+(i%27)).padStart(2,'0')}`,auditDate:`2026-${String(1+(i%9)).padStart(2,'0')}-${String(1+(i%27)).padStart(2,'0')}`,team:teams[i%teams.length],workplace:`검증 Audit 구역 ${1+(i%32)}`,auditResult:i%7===0?'미흡':'적합',finalEvaluation:i%11===0?'미흡':'적합',status:i%7===0?'개선요청':'6개월 관리중',source:'ci-load-fixture'}));
+              const actions=Array.from({length:128},(_,i)=>{const done=i%4!==0,overdue=!done&&i%3===0;return{id:'LOAD-C-'+String(i+1).padStart(3,'0'),registeredAt:`2026-${String(1+(i%9)).padStart(2,'0')}-${String(1+(i%27)).padStart(2,'0')}`,date:`2026-${String(1+(i%9)).padStart(2,'0')}-${String(1+(i%27)).padStart(2,'0')}`,team:teams[i%teams.length],workplace:`검증 조치 구역 ${1+(i%40)}`,problem:`검증 개선요청 ${i+1}`,action:done?`검증 완료조치 ${i+1}`:'',status:done?'완료':'조치대기',due:overdue?'2026-01-15':'2026-12-15',doneDate:done?'2026-09-12':'',effectVerified:done&&i%6!==0,effectState:done&&i%6!==0?'유효':'미검증',recurrence:done&&i%17===0,before:photoRefs[(i+1)%photoRefs.length],after:done?photoRefs[(i+2)%photoRefs.length]:'',source:'ci-load-fixture'}});
+              localStorage.setItem('hd20GMES5SAutoImproveRawV1',JSON.stringify(activities));
+              localStorage.setItem('hd20AuditRandomDrawsV1',JSON.stringify(audits));
+              localStorage.setItem('hd20ActionCasesV2',JSON.stringify(actions));
             });
             await page.reload({waitUntil:'commit',timeout:30000});
             await waitBoot();
+            const fixtureCounts=await page.evaluate(()=>({activities:JSON.parse(localStorage.getItem('hd20GMES5SAutoImproveRawV1')||'[]').length,audits:JSON.parse(localStorage.getItem('hd20AuditRandomDrawsV1')||'[]').length,actions:JSON.parse(localStorage.getItem('hd20ActionCasesV2')||'[]').length})); assert(fixtureCounts.activities===192&&fixtureCounts.audits===96&&fixtureCounts.actions===128,'load fixture count mismatch: '+JSON.stringify(fixtureCounts));
             const expectedMain=['dashboard','activity','advancement','audit','action'];
             const mainKeys=await page.locator('.beginnerNav button[data-key]').evaluateAll(xs=>xs.map(x=>x.dataset.key));
             assert(JSON.stringify(mainKeys)===JSON.stringify(expectedMain),'canonical five-area nav mismatch: '+mainKeys.join(','));
