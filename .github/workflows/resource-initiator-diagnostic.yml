@@ -28,21 +28,35 @@ jobs:
           const { chromium }=require('playwright');
           const fs=require('fs');
           const html=fs.readFileSync('index.html','utf8');
-          const scripts=[...html.matchAll(/<script src="([^"?]+)(?:\?[^"}]*)?"/g)].map(x=>x[1]).filter(x=>!x.startsWith('http'));
-          const mid=Math.ceil(scripts.length/2), q1=Math.ceil(mid/2);
+          const scripts=[...html.matchAll(/<script[^>]+src=["']([^"']+)["']/gi)]
+            .map(x=>x[1].split('?')[0])
+            .filter(x=>!/^https?:\/\//i.test(x));
+          const total=scripts.length;
+          const q=Math.ceil(total/4);
+          const ranges=[0,q,Math.min(q*2,total),Math.min(q*3,total),total];
+          const inQ=(i,n)=>i>=ranges[n-1]&&i<ranges[n];
           const modes=[
             {name:'nav-only',allow:i=>false},
-            {name:'first-quarter',allow:i=>i>=0&&i<q1},
-            {name:'second-quarter',allow:i=>i>=q1&&i<mid}
+            {name:'q1',allow:i=>inQ(i,1)},
+            {name:'q2',allow:i=>inQ(i,2)},
+            {name:'q3',allow:i=>inQ(i,3)},
+            {name:'q4',allow:i=>inQ(i,4)},
+            {name:'q1+q2',allow:i=>inQ(i,1)||inQ(i,2)},
+            {name:'q1+q3',allow:i=>inQ(i,1)||inQ(i,3)},
+            {name:'q1+q4',allow:i=>inQ(i,1)||inQ(i,4)},
+            {name:'q2+q3',allow:i=>inQ(i,2)||inQ(i,3)},
+            {name:'q2+q4',allow:i=>inQ(i,2)||inQ(i,4)},
+            {name:'q3+q4',allow:i=>inQ(i,3)||inQ(i,4)},
+            {name:'all',allow:i=>i>=0}
           ];
-          console.log('SCRIPT_PARTITIONS','total='+scripts.length,'mid='+mid,'q1='+q1,'q1Last='+scripts[q1-1],'q2First='+scripts[q1],'q2Last='+scripts[mid-1]);
+          console.log('SCRIPT_PARTITIONS','total='+total,'ranges='+ranges.join(','));
+          for(let n=1;n<=4;n++) console.log('QUARTER',n,'first='+scripts[ranges[n-1]],'last='+scripts[ranges[n]-1]);
           (async()=>{
             for(const mode of modes){
               const browser=await chromium.launch({headless:true});
               try{
                 const page=await browser.newPage();
-                const local=[];
-                page.on('response',r=>{if(/\.js(?:\?|$)/.test(r.url())&&r.url().includes('127.0.0.1'))local.push(r.url().split('/').pop())});
+                const real=[];
                 page.on('pageerror',e=>console.log('PAGE_ERROR',mode.name,e.message));
                 await page.route('**/*',async route=>{
                   const r=route.request(),u=new URL(r.url());
@@ -54,7 +68,8 @@ jobs:
                     const p=u.pathname.split('/').pop();
                     if(p!=='beginner-navigation.js'){
                       const i=scripts.indexOf(p);
-                      if(!mode.allow(i))return route.fulfill({status:200,contentType:'application/javascript',body:'/* quarter bisect stub */'});
+                      if(!mode.allow(i))return route.fulfill({status:200,contentType:'application/javascript',body:'/* cross bisect stub */'});
+                      real.push(p);
                     }
                   }
                   return route.continue();
@@ -62,11 +77,15 @@ jobs:
                 await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'commit',timeout:15000});
                 const started=Date.now();
                 let stage='none';
-                try{await page.waitForFunction(()=>!!document.querySelector('.beginnerNav'),{},{timeout:4000});stage='nav-dom';await page.waitForFunction(()=>!!window.HD20_NAV,{},{timeout:4000});stage='nav-api';await page.waitForFunction(()=>window.HD20_NAV.ready(),{},{timeout:4000});stage='nav-ready'}catch(e){stage+='-timeout'}
-                console.log('BISECT_RESULT',mode.name,stage,'ms='+String(Date.now()-started),'scripts='+local.length,'last='+String(local.slice(-8)));
+                try{
+                  await page.waitForFunction(()=>!!document.querySelector('.beginnerNav'),{},{timeout:5000});stage='nav-dom';
+                  await page.waitForFunction(()=>!!window.HD20_NAV,{},{timeout:5000});stage='nav-api';
+                  await page.waitForFunction(()=>window.HD20_NAV.ready(),{},{timeout:5000});stage='nav-ready';
+                }catch(e){stage+='-timeout'}
+                console.log('BISECT_RESULT',mode.name,stage,'ms='+String(Date.now()-started),'real='+real.length,'last='+String(real.slice(-6)));
                 await page.close().catch(()=>{});
               } finally {await Promise.race([browser.close().catch(()=>{}),new Promise(r=>setTimeout(r,2000))]);}
             }
           })().catch(e=>{console.error(e);process.exitCode=1});
           NODE
-          timeout 55s node trace.cjs
+          timeout 110s node trace.cjs
