@@ -1,5 +1,5 @@
 (()=>{'use strict';
-const $=(s,r=document)=>r?.querySelector?.(s)||null,$=(s,r=document)=>r?.querySelectorAll?[...r.querySelectorAll(s)]:[];
+const $=(s,r=document)=>r?.querySelector?.(s)||null,$$=(s,r=document)=>r?.querySelectorAll?[...r.querySelectorAll(s)]:[];
 const ACTION_STORE='hd20ActionCasesV2',ACTIVITY_STORE='hd20GMES5SAutoImproveRawV1',AUDIT_STORE='hd20AuditRandomDrawsV1';
 let scheduled=false,running=false;
 function readStore(k){try{const v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[]}catch{return[]}}
