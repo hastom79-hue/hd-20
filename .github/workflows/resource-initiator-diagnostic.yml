@@ -35,14 +35,14 @@ jobs:
           const q2=scripts.slice(16,32), q3=scripts.slice(32,48);
           const c=q1.slice(10);
           const groups={};
-          for(let i=0;i<c.length;i++) for(let j=i+1;j<c.length;j++){
-            const pair=c[i]+'+'+c[j];
-            groups[pair+'+q2']=new Set([c[i],c[j],...q2]);
-            groups[pair+'+q3']=new Set([c[i],c[j],...q3]);
+          for(let i=0;i<c.length;i++) for(let j=i+1;j<c.length;j++) for(let k=j+1;k<c.length;k++){
+            const triple=c[i]+'+'+c[j]+'+'+c[k];
+            groups[triple+'+q2']=new Set([c[i],c[j],c[k],...q2]);
+            groups[triple+'+q3']=new Set([c[i],c[j],c[k],...q3]);
           }
           const allow=groups[mode];
           if(!allow) throw new Error('unknown mode '+mode);
-          console.log('PAIR_ALLOW',mode,'q1c='+c.filter(x=>allow.has(x)).join(','),'count='+allow.size);
+          console.log('TRIPLE_ALLOW',mode,'q1c='+c.filter(x=>allow.has(x)).join(','),'count='+allow.size);
           (async()=>{
             const browser=await chromium.launch({headless:true});
             const page=await browser.newPage(); const real=[];
@@ -55,7 +55,7 @@ jobs:
               }
               if(r.resourceType()==='script'){
                 const p=u.pathname.split('/').pop();
-                if(p!=='beginner-navigation.js'&&!allow.has(p))return route.fulfill({status:200,contentType:'application/javascript',body:'/* q1c pair isolate stub */'});
+                if(p!=='beginner-navigation.js'&&!allow.has(p))return route.fulfill({status:200,contentType:'application/javascript',body:'/* q1c triple isolate stub */'});
                 if(p!=='beginner-navigation.js')real.push(p);
               }
               return route.continue();
@@ -67,7 +67,7 @@ jobs:
               await page.waitForFunction(()=>!!window.HD20_NAV,{},{timeout:2500});stage='nav-api';
               await page.waitForFunction(()=>window.HD20_NAV.ready(),{},{timeout:2500});stage='nav-ready';
             }catch(e){stage+='-timeout'}
-            console.log('PAIR_RESULT',mode,stage,'ms='+String(Date.now()-started),'real='+real.length);
+            console.log('TRIPLE_RESULT',mode,stage,'ms='+String(Date.now()-started),'real='+real.length);
             await Promise.race([browser.close().catch(()=>{}),new Promise(r=>setTimeout(r,500))]);
           })().catch(e=>{console.error(e);process.exitCode=1});
           NODE
@@ -76,14 +76,14 @@ jobs:
           const html=fs.readFileSync('index.html','utf8');
           const scripts=[...html.matchAll(/<script[^>]+src=["']([^"']+)["']/gi)].map(x=>x[1].split('?')[0]).filter(x=>!/^https?:\/\//i.test(x));
           const c=scripts.slice(0,16).filter(x=>x!=='beginner-navigation.js').slice(10);
-          for(let i=0;i<c.length;i++) for(let j=i+1;j<c.length;j++){
-            console.log(c[i]+'+'+c[j]+'+q2');
-            console.log(c[i]+'+'+c[j]+'+q3');
+          for(let i=0;i<c.length;i++) for(let j=i+1;j<c.length;j++) for(let k=j+1;k<c.length;k++){
+            console.log(c[i]+'+'+c[j]+'+'+c[k]+'+q2');
+            console.log(c[i]+'+'+c[j]+'+'+c[k]+'+q3');
           }
           NODE
           )
-          echo "PAIR_MODE_COUNT=${#modes[@]}"
+          echo "TRIPLE_MODE_COUNT=${#modes[@]}"
           for mode in "${modes[@]}"; do
-            echo "=== PAIR MODE $mode ==="
-            timeout --kill-after=2s 14s node trace-one.cjs "$mode" || echo "PAIR_HARD_TIMEOUT $mode exit=$?"
+            echo "=== TRIPLE MODE $mode ==="
+            timeout --kill-after=2s 14s node trace-one.cjs "$mode" || echo "TRIPLE_HARD_TIMEOUT $mode exit=$?"
           done
