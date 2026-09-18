@@ -82,20 +82,22 @@ jobs:
             const areas={activity:['활동관리','실적분석'],advancement:['후보·판정','확정·수평전개'],audit:['Audit 관리','유지관리'],action:['개선조치','효과·재발관리']};
             let count=0;
             for(const [area,subs] of Object.entries(areas)){
-              console.log('LOAD_STAGE area-start',area);
+              const areaStart=Date.now(); console.log('LOAD_STAGE area-start',area);
               await page.evaluate(a=>document.querySelector(`.beginnerNav button[data-key="${a}"]`)?.click(),area); await page.waitForTimeout(150);
               await page.waitForFunction(()=>!!document.querySelector('#hd20PurposePanel'),{},{timeout:20000});
-              console.log('LOAD_STAGE area-ready',area);
+              const areaMs=Date.now()-areaStart; console.log('LOAD_STAGE area-ready',area,areaMs);
+              if(area==='activity')assert(areaMs<12000,'dense activity first-entry regression: '+areaMs+'ms');
+              else assert(areaMs<5000,`dense ${area} entry regression: ${areaMs}ms`);
               for(const sub of subs){
                 await page.getByRole('button',{name:sub,exact:true}).click(); await page.waitForTimeout(100);
                 const c=await page.locator('#hd20PurposePanel').getAttribute('data-contract');
                 assert(c&&c.startsWith(area+'.'),`contract missing for ${area}/${sub}: ${c}`);
                 const text=await page.locator('#hd20PurposePanel').innerText();
                 for(const term of ['판단','다음','상세 데이터 그리드'])assert(text.includes(term),`${term} missing ${area}/${sub}`);
-                console.log('LOAD_STAGE sub-start',area,sub);
+                const gridStart=Date.now(); console.log('LOAD_STAGE sub-start',area,sub);
                 await page.getByRole('button',{name:'상세 데이터 그리드',exact:true}).click();
                 await page.waitForFunction(()=>document.querySelector('#hd20UniversalGridModal')?.classList.contains('on'),{},{timeout:20000});
-                const meta=await page.locator('#hd20GridMeta').innerText(); assert(meta.length>0,'grid meta missing'); console.log('LOAD_STAGE grid-ready',area,sub,meta);
+                const meta=await page.locator('#hd20GridMeta').innerText(); assert(meta.length>0,'grid meta missing'); const gridMs=Date.now()-gridStart; console.log('LOAD_STAGE grid-ready',area,sub,gridMs,meta); assert(gridMs<5000,`dense grid regression ${area}/${sub}: ${gridMs}ms`);
                 await page.keyboard.press('Escape'); count++;
               }
             }
