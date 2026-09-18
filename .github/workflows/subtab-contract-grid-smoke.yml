@@ -108,6 +108,7 @@ jobs:
             await page.getByRole('button',{name:'활동관리',exact:true}).click();
             await page.getByRole('button',{name:'상세 데이터 그리드',exact:true}).click();
             const box=await page.locator('.hd20GridBox').boundingBox(); assert(box&&box.width<=390.5,'mobile grid overflow');
+            const mobile=await page.evaluate(()=>{const de=document.documentElement,b=document.body,modal=document.querySelector('#hd20UniversalGridModal'),grid=document.querySelector('.hd20GridBox'),purpose=document.querySelector('#hd20PurposePanel');const rect=e=>{if(!e)return null;const r=e.getBoundingClientRect();return {left:r.left,right:r.right,width:r.width,height:r.height}};return {scrollWidth:Math.max(de.scrollWidth,b.scrollWidth),clientWidth:de.clientWidth,modal:rect(modal),grid:rect(grid),purpose:rect(purpose)}}); assert(mobile.scrollWidth<=mobile.clientWidth+2,`dense mobile page overflow ${mobile.scrollWidth}>${mobile.clientWidth}`); for(const [name,r] of Object.entries({grid:mobile.grid,purpose:mobile.purpose}))if(r)assert(r.left>=-2&&r.right<=392,`dense mobile ${name} out of viewport: ${JSON.stringify(r)}`);
             console.log('PASS: canonical five areas + 5 dashboard groups + 8 operational subtab contracts + dashboard maturity portfolio + mobile grid');
             await browser.close();
           })().catch(e=>{console.error(e.stack||e);process.exit(1)});
