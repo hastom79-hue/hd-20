@@ -136,3 +136,12 @@ HD-20 전면개편 이후 남아 있는 브라우저 초기 구동 불안정과 
 
 ## 현재 상태
 초기 구동/브라우저/Canonical Dashboard/Subtab/Grid/Layout/Pages의 핵심 회귀검증은 전체 PASS. 남은 성능 관찰 포인트는 416건 기준 Activity 최초 진입이 다른 영역보다 무거운 점이며, 현재 설정한 <12초 회귀 예산 안에서 관리한다. 운영 Supabase/Auth/KPI/Data-save 계약은 이번 밀집데이터 검증을 위해 변경하지 않았다.
+
+
+## 2026-09-18 성능 안정화 후속 검증
+- `b297479` table enhancement의 300ms×40 반복 scan 제거. 테이블별 MutationObserver와 실제 갱신 이벤트 scan은 유지. 416건 dense 기준 Activity 최초 진입 8350ms → 7246ms. exact-head 10/10 PASS.
+- `f40f1e1` KPI modal bootstrap의 250ms 반복 ensure polling 제거, 최초 singleton ensure만 유지. Activity 7246ms → 6231ms. exact-head 10/10 PASS.
+- `580d642` Activity/Workplace가 한 render cycle에서 KPI snapshot을 중복 계산하던 부분을 1회 snapshot 공유로 정리. Activity 6453ms(직전 6231ms 대비 CI 편차 범위), 기능 회귀 없음. exact-head 10/10 PASS.
+- `6bf063e` 최초 boot에서 숨겨진 Advancement/Audit 데이터까지 즉시 render하던 구조를 정리. DOM 골격은 즉시 생성해 의존 모듈 호환성을 유지하고, Advancement/Audit 데이터 render는 해당 영역 진입 시 수행. Activity 6322ms, Advancement 309ms, Audit 374ms, Action 335ms. 상세 Grid 최대 1008ms. exact-head 10/10 + Pages PASS.
+- 성능 판단: 8350ms 기준 현재 6322ms로 약 24% 감소. 마지막 두 변경의 수백 ms 차이는 CI 변동 가능성이 있어 과대해석하지 않음. 반복 polling 제거가 가장 명확한 개선 근거.
+- 잔여 원칙: 추가 추측성 micro-optimization은 중단. 실제 실패/회귀 또는 재현 가능한 병목이 확인될 때만 최소 수정.
