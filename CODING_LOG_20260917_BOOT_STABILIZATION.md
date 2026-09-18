@@ -115,3 +115,30 @@
 ### 잔여 기술 관찰점
 - 416건 fixture에서 Activity 최초 진입이 약 7.5초로 다른 영역보다 느림. 기능 정지는 아니며 현재 <12초 성능 회귀 예산으로 감시.
 - KPI/Supabase/Auth/Data-save semantics는 위 CI/성능 작업에서 변경하지 않음.
+
+
+## 2026-09-18 후속 코딩 기록
+### b297479 — perf: remove redundant table enhancement polling
+- `table-enhance-suite.js`의 300ms 간격 40회 전역 table scan 제거.
+- 초기 1회 scan + 데이터/Navigation 이벤트 기반 scan + 기존 tbody MutationObserver 유지.
+- dense Activity 8350ms → 7246ms, exact-head 10/10 PASS.
+
+### f40f1e1 — perf: remove redundant KPI modal polling
+- `kpi-modal-bootstrap.js`의 singleton modal 생성 후 250ms 반복 `ensure()` 제거.
+- `boot(){ensure()}`로 단순화.
+- dense Activity 7246ms → 6231ms, exact-head 10/10 PASS.
+
+### 580d642 — perf: share activity workflow KPI snapshot
+- `renderActivity(s=snap())`, `renderWorkplace(s=snap())`로 standalone 호환 유지.
+- 통합 `render()`는 `const s=snap()` 1회 후 공유.
+- dense Activity 6453ms. 직전 6231ms와 차이는 CI noise 범위로 판단. exact-head 10/10 PASS.
+
+### 6bf063e — perf: defer hidden workflow data rendering
+- `build()`의 DOM 골격 생성 계약은 유지.
+- 최초 boot는 Activity 데이터만 render.
+- `hd20-subtab-changed`에서 Advancement/Audit 진입 시 해당 데이터 render.
+- 일반 데이터 갱신 이벤트는 기존 전체 render 의미 유지.
+- dense: Activity 6322ms; Advancement 309ms; Audit 374ms; Action 335ms.
+- Grid: Activity 590/445ms, Advancement 419/362ms, Audit 1008/717ms, Action 778/716ms.
+- exact-head 10/10 + Pages PASS.
+- KPI 정의/source filtering/localStorage write/Supabase/auth/layout 구조 변경 없음.
