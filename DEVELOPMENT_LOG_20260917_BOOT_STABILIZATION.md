@@ -93,3 +93,46 @@ HD-20 전면개편 이후 남아 있는 브라우저 초기 구동 불안정과 
 
 ## 미완료 상태
 2026-09-17 현재 전체 PASS 아님. 브라우저 초기화 및 일부 layout/subtab 계열 workflow failure가 남아 있다.
+
+
+## 2026-09-18 최종 안정화·밀집데이터 회귀검증 추가 기록
+- 초기 구동 원인은 단순 API/observer 제거나 DOMContentLoaded 조정만으로 해결되지 않았으며, 구간 격리 결과 Activity import preview 계열의 MutationObserver → mount/render → innerHTML → MutationObserver feedback loop와 Maturity showcase의 동일 유형 feedback loop를 각각 특정했다.
+- Activity import preview feedback loop는 이전 커밋 `85731df`에서 idempotent mount 방향으로 제거했다. 이후 quarter/Q1C/triple isolation 진단으로 boot stall 범위를 축소했다.
+- `7537b16`: subtab CI에서 Node context의 `window` 참조 오류를 browser context 평가로 정정.
+- `5f3ea2e`: canonical dashboard boot stage를 노출하여 Maturity 단계가 `maturity-start`에서 정지함을 확인.
+- `7b16ab5`: `hd20-maturity-map-showcase.js`의 render/innerHTML/MutationObserver feedback loop 제거. 이미 mount된 showcase는 재렌더하지 않도록 idempotent 처리.
+- `e82ba24`: Maturity 실행은 완료됐으나 `visible:false`였던 별도 가시성 결함을 수정. maturity panel 선택 시 hidden 상태를 해제.
+- `204076a`: maturity filter selector를 null-safe로 보강했으나 해당 HEAD에서 반복 page error는 해소되지 않음. 원인 확정 전 시도였으며 단독 해결책으로 채택하지 않음.
+- `577ef2e`: subtab browser error를 문자열만이 아니라 stack까지 수집하도록 진단 강화.
+- `8c79191`: `hd20-trace-exact.js` selector를 null-safe로 수정. 이후 stack에서 trace-exact 오류는 사라지고 남은 최초 오류가 operational-integrity로 이동함을 확인. Browser/Runtime/Package 성공.
+- `068531b`: operational-integrity null-safe 보강 시도 중 실수로 `$` 중복 선언을 만들어 syntax error를 유발. 실패 커밋으로 기록.
+- `5ccdc49`: 위 선언 수정 시도였으나 실제 파일 내용이 여전히 잘못된 상태였으므로 폐기.
+- `9f4fab3`: `$`/ `$$` helper 선언을 실제 파일 재조회까지 포함해 정상 복구. 동일 HEAD에서 9/10 성공, Design Layout만 stale Master modal 가정으로 실패. Standard desktop 1440px에서 좌/우 카드 폭 668/668로 균형 확인.
+- `3335a3b`: 현재 DOM에 존재하지 않는 Master modal을 필수로 요구하던 stale layout CI를 현재 surface와 정합화. Design Layout 성공. 이후 Browser Smoke의 diagnostic `errors` scope 결함만 남음.
+- `3e04c896`: Browser Smoke diagnostic scope 수정. 동일 HEAD에서 10개 workflow 전체 성공을 최초 확정.
+- `8cfa50f`: 운영 Supabase가 아닌 CI localStorage에 Activity 192 + Audit 96 + Action 128 = 총 416건의 결정론적 밀집데이터 fixture 추가. 현재 canonical 16개 생산팀을 순환 적용하고 판정대기/보완요청/확정/유지미흡/기한경과/효과미검증/재발 등 예외상태 포함. BEFORE/AFTER에는 검증용 제조현장 참고사진 URL 필드를 포함하며 실제 HD현장 사진으로 주장하지 않는다.
+- `a42289f`: 대량데이터 그리드의 정상 렌더링과 정지를 구분하기 위해 CI render wait window 조정.
+- `f666bdb`: area/subtab/grid 단계 진단 추가. 416건에서 Activity 최초 진입 약 7.5초, 이후 영역 전환 약 0.3~0.4초, 상세 grid 약 0.4~1.1초 수준을 확인. 전체 10개 workflow 성공.
+- `d08671f`: 밀집데이터 성능 회귀 예산 추가. Activity 최초 진입 <12초, 기타 영역 <5초, 상세 grid <5초. Subtab 성능 검증 성공.
+- `f6bd500`: Browser Smoke의 full-page screenshot이 30초 timeout으로 기능검증을 오염시키는 문제를 제거. viewport evidence capture로 축소하고 evidence capture 실패는 warning으로 분리.
+
+### 레이아웃 검증 원칙 및 결과
+- Desktop 1440x1000, 1152x800, 900x900과 Mobile 375x812/390x844를 기준으로 전체 폭 활용, 불필요한 여백, 좌우 쏠림, 카드 균형, horizontal overflow를 검증한다.
+- 특히 기준·추이/Standard 영역처럼 콘텐츠가 좌측에 몰리고 우측이 비는 레이아웃을 금지한다. Standard desktop은 1440px에서 668/668 균형 카드로 검증됐다.
+- 밀집데이터 상태에서도 8개 operational subtab, 상세 grid, Maturity, 모바일 grid overflow 검증을 통과했다.
+
+### 최종 동일 HEAD 검증
+최종 검증 HEAD `f6bd5007511270109bcadefb9d29201cf7c4dcae`에서 다음 10개가 모두 `completed/success`임을 확인했다.
+- Package HD20 source — 35289962102
+- HD20 runtime smoke — 35289962262
+- HD20 nav scroll smoke — 35289962133
+- HD20 current IA smoke — 35289962213
+- HD20 design layout smoke — 35289962242
+- HD20 browser smoke — 35289962221
+- HD20 dashboard canonical smoke — 35289962127
+- HD20 resource initiator diagnostic — 35289962128
+- HD20 subtab contract grid smoke — 35289962141
+- pages build and deployment — 35289960860
+
+## 현재 상태
+초기 구동/브라우저/Canonical Dashboard/Subtab/Grid/Layout/Pages의 핵심 회귀검증은 전체 PASS. 남은 성능 관찰 포인트는 416건 기준 Activity 최초 진입이 다른 영역보다 무거운 점이며, 현재 설정한 <12초 회귀 예산 안에서 관리한다. 운영 Supabase/Auth/KPI/Data-save 계약은 이번 밀집데이터 검증을 위해 변경하지 않았다.
