@@ -73,3 +73,45 @@
 
 ## 종료조건
 동일 HEAD에서 핵심 browser/runtime/source/Pages workflow가 모두 completed/success이고 PC/mobile canonical UI 계약이 검증되어야 종료한다.
+
+
+## 2026-09-18 후속 코딩·검증 기록
+### Boot feedback-loop 및 Maturity
+- `85731df`: Activity import preview의 MutationObserver → mount/render → innerHTML 재변경 loop를 idempotent mount로 차단. quarter/Q1C/triple isolation 진단으로 초기 stall 범위를 축소.
+- `7537b16`: CI Node context의 `window` 참조를 browser evaluate로 이동.
+- `5f3ea2e`: canonical boot stage marker로 `maturity-start` hard stall 증거 확보.
+- `7b16ab5`: maturity showcase render가 이미 존재하면 즉시 반환하여 MutationObserver feedback loop 제거.
+- `e82ba24`: maturity 선택 시 `#hd20MaturityMapTab.hidden=false`를 보장해 실행완료 후 visible:false 결함 수정.
+
+### Null selector 진단과 실패/폐기 기록
+- `204076a`: maturity filter selector null-safe 보강. 반복 page error는 잔존하여 단독 원인 아님.
+- `577ef2e`: subtab workflow에 pageerror stack capture 추가.
+- `8c79191`: `hd20-trace-exact.js`의 `$`/`$$` helper 및 fallback traversal null-safe 보강. 이후 오류 stack이 operational-integrity로 이동.
+- `068531b`: operational-integrity 수정 중 `$` 중복 선언 syntax error를 만든 실패 커밋.
+- `5ccdc49`: correction 시도였으나 실제 content가 수정되지 않아 폐기.
+- `9f4fab3`: 파일을 다시 읽어 `const $=..., $$=...` 선언을 실제로 복구. Runtime/Browser/Subtab/Canonical 정상화.
+
+### CI 계약 정합화
+- `3335a3b`: 현재 index에 없는 Master modal을 무조건 요구하던 Design Layout smoke를 surface 존재 시에만 geometry 검증하도록 수정. production modal을 임의 복원하지 않음.
+- `3e04c896`: Browser Smoke의 `errors` 배열 scope를 try 바깥으로 이동하여 failure diagnostic 자체의 ReferenceError 제거. 이 HEAD에서 10/10 PASS.
+- `f6bd500`: 기능 검증 후 full-page screenshot timeout이 workflow를 실패시키지 않도록 viewport screenshot + warning 처리. evidence capture와 기능 판정을 분리.
+
+### 416건 밀집데이터 회귀
+- `8cfa50f`: CI localStorage 전용 fixture 생성. Activity 192, Audit 96, Action 128. canonical 16팀 순환. source=`ci-load-fixture`. 운영 Supabase write 없음.
+- edge states: 후보/판정대기/보완요청/확정/유지미흡/기한경과/효과 미검증/재발.
+- photo fields: BEFORE/AFTER에 외부 제조현장 참고사진 URL을 넣어 이미지 필드가 존재하는 데이터 계약을 함께 운동시킴. 실제 사업장 사진으로 표기하지 않음.
+- `a42289f`: dense grid render wait를 20초까지 관찰하여 slow와 stall을 구분.
+- `f666bdb`: LOAD_STAGE instrumentation으로 Activity/Advancement/Audit/Action 및 8개 grid 단계 측정. 전체 PASS.
+- `d08671f`: Activity first entry <12000ms, other area entry <5000ms, each grid <5000ms 성능 회귀 assertion 추가. dense subtab smoke PASS.
+
+### Layout 계약
+- Desktop: 1440x1000 / 1152x800 / 900x900. Mobile: 375x812 및 dense grid 390x844.
+- horizontal overflow <=2px 계약, Standard desktop 2-card 폭 균형, 모바일 single-column/grid viewport 폭 계약 유지.
+- 1440px Standard 측정: 좌/우 668px / 668px. 한쪽 몰림과 과도한 우측 공백을 허용하지 않음.
+
+### 최종 검증 HEAD
+`f6bd5007511270109bcadefb9d29201cf7c4dcae`: Package, Runtime, Nav Scroll, Current IA, Design Layout, Browser, Dashboard Canonical, Resource Initiator, Subtab Contract Grid, Pages build/deploy 전부 completed/success.
+
+### 잔여 기술 관찰점
+- 416건 fixture에서 Activity 최초 진입이 약 7.5초로 다른 영역보다 느림. 기능 정지는 아니며 현재 <12초 성능 회귀 예산으로 감시.
+- KPI/Supabase/Auth/Data-save semantics는 위 CI/성능 작업에서 변경하지 않음.
