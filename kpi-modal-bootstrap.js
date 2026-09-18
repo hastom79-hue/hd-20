@@ -15,6 +15,6 @@ function ensure(){
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&m.classList.contains('on'))close()});
   return true;
 }
-function boot(){ensure();let n=0;const t=setInterval(()=>{ensure();if(++n>20)clearInterval(t)},250)}
+function boot(){ensure()}
 document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot,{once:true}):boot();
 })();
