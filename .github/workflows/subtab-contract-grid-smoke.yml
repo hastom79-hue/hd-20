@@ -80,6 +80,9 @@ jobs:
             await page.evaluate(()=>document.querySelector('#hd20DashboardSectionTabs button[data-dashboard-section="maturity"]')?.click()); await page.waitForTimeout(150);
             const maturityActive=await page.evaluate(()=>window.HD20_DASHBOARD_TABS?.active?.());
             assert(maturityActive==='maturity','dashboard maturity panel not active: '+maturityActive);
+            await page.waitForFunction(()=>{const tab=document.querySelector('#hd20MaturityMapTab'),map=tab?.querySelector('.mmtMap');return !!(tab?.classList.contains('on')&&map&&map.getBoundingClientRect().height>300)},{},{timeout:10000});
+            const maturityState=await page.evaluate(()=>({dots:document.querySelectorAll('#hd20MaturityMapTab .mmtDot').length,teams:document.querySelectorAll('#hd20MaturityMapTab .mmtTeam').length,visible:document.querySelector('#hd20MaturityMapTab')?.getBoundingClientRect().height>0}));
+            assert(maturityState.visible&&maturityState.dots>0&&maturityState.teams>0,'maturity map not rendered from dense data: '+JSON.stringify(maturityState));
             const areas={activity:['활동관리','실적분석'],advancement:['후보·판정','확정·수평전개'],audit:['Audit 관리','유지관리'],action:['개선조치','효과·재발관리']};
             let count=0;
             for(const [area,subs] of Object.entries(areas)){
