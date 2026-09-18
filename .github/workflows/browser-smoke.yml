@@ -73,7 +73,7 @@ jobs:
               const maturity=await page.evaluate(()=>{const el=document.getElementById('hd20MaturityMapTab');return {active:window.HD20_DASHBOARD_TABS?.active?.(),navActive:window.HD20_NAV?.active?.(),mapVisible:!!el&&!el.hidden&&getComputedStyle(el).display!=='none',standaloneNav:!!document.querySelector('.beginnerNav button[data-key="maturitymap"]'),urlTab:new URL(location.href).searchParams.get('tab')}});
               if(maturity.active!=='maturity'||maturity.navActive!=='dashboard'||!maturity.mapVisible||maturity.standaloneNav||maturity.urlTab==='maturitymap')throw new Error('Maturity bridge mismatch '+JSON.stringify(maturity));
               evidence.main={readyState:main.readyState,nav:main.nav,bodyVisible:main.bodyVisible,authPending:main.authPending,priority:main.priority,bridge:main.bridge,kpi:main.kpi,metric:main.metric,legacyLanding:main.legacyLanding};evidence.maturity=maturity;evidence.pageErrors=errors;
-              await page.screenshot({path:'artifacts/main-dashboard.png',fullPage:true});
+              await page.screenshot({path:'artifacts/main-dashboard.png',fullPage:false,timeout:10000}).catch(e=>{evidence.screenshotWarning=String(e);console.warn('SCREENSHOT_WARNING',String(e))});
               fs.writeFileSync('artifacts/diagnostics.json',JSON.stringify(evidence,null,2));
               console.log('HD20 BROWSER BOOT/FIVE-AREA PASS',evidence);
             }catch(e){failure=e;evidence.failure=String(e);evidence.pageErrors=errors;fs.writeFileSync('artifacts/diagnostics.json',JSON.stringify(evidence,null,2));console.error('BOOT TRACE',JSON.stringify({requested:evidence.localRequests.slice(-12),finished:evidence.finished.slice(-12)},null,2));console.error(e)}finally{await browser.close()}
