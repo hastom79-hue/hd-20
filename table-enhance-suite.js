@@ -44,6 +44,6 @@ function enhanceTable(table){
   apply();new MutationObserver(()=>{if(table.dataset.teReflow==='1')return;table.dataset.teReflow='1';pageSize=Math.max(pageSize,PAGE_SIZE);apply();table.dataset.teReflow='0'}).observe(tbody,{childList:true});
 }
 function scan(){document.querySelectorAll('.awTable, .amCases').forEach(enhanceTable)}
-function boot(){let n=0;const run=()=>{scan();if(++n<40)setTimeout(run,300)};run();['hd20-gmes-5s-imported','hd20-gmes-5s-judged','hd20-followup-updated','hd20-action-updated'].forEach(ev=>window.addEventListener(ev,()=>setTimeout(scan,150)));document.addEventListener('click',e=>{if(e.target.closest('.beginnerNav'))setTimeout(scan,200)})}
+function boot(){scan();['hd20-gmes-5s-imported','hd20-gmes-5s-judged','hd20-followup-updated','hd20-action-updated'].forEach(ev=>window.addEventListener(ev,()=>setTimeout(scan,150)));document.addEventListener('click',e=>{if(e.target.closest('.beginnerNav'))setTimeout(scan,200)})}
 document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot,{once:true}):boot();
 })();
