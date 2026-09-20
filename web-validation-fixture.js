@@ -1,7 +1,7 @@
 (()=>{'use strict';
 const Q='validation';
 const teams=['대형메인팀','휠로더Front팀','대형Att.팀','휠로더리어팀','중형상부1팀','중형메인팀','중형Att팀','대형상부팀','프레임제작팀','휠로더메인팀','중형상부2팀','중형하부팀','Boom제작팀','초대형조립팀','성능팀','트러블슈팅팀'];
-const cats=['정리','정돈','청소','청결','습관화','개선'];
+const cats=['정리','정돈','청소','청결','습관화','5S 고도화'];
 const photos=['https://images.unsplash.com/photo-1565793298595-6a879b1d9492','https://images.unsplash.com/photo-1581092160562-40aa08e78837','https://images.unsplash.com/photo-1581092918056-0c4c3acd3789'];
 const key={a:'hd20GMES5SAutoImproveRawV1',u:'hd20AuditRandomDrawsV1',x:'hd20ActionCasesV2'};
 function enabled(){return new URL(location.href).searchParams.get(Q)==='1'}
