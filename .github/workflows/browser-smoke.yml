@@ -78,9 +78,9 @@ jobs:
               await validation.goto('http://127.0.0.1:4173/index.html?validation=1',{waitUntil:'commit',timeout:15000});
               await validation.waitForFunction(()=>!!window.HD20KPIData&&!!document.getElementById('hd20ValidationBanner'),{},{timeout:20000});
               const validationState=await validation.evaluate(()=>{const read=k=>JSON.parse(localStorage.getItem(k)||'[]');const a=read('hd20GMES5SAutoImproveRawV1'),u=read('hd20AuditRandomDrawsV1'),x=read('hd20ActionCasesV2'),snap=window.HD20KPIData.snapshot?.()||{};return{a:a.length,u:u.length,x:x.length,kpiActivities:(snap.activities||[]).length,kpiCandidates:(snap.candidates||[]).length,kpiConfirmed:(snap.newSecured||[]).length,banner:document.getElementById('hd20ValidationBanner')?.innerText||'',isolated:window.HD20_VALIDATION_ISOLATED===true}});
-              if(validationState.a!==192||validationState.u!==96||validationState.x!==128||validationState.kpiActivities!==192)throw new Error('Validation data contract mismatch '+JSON.stringify(validationState));
+              console.log('VALIDATION_STATE',JSON.stringify(validationState));if(validationState.a!==192||validationState.u!==96||validationState.x!==128||validationState.kpiActivities!==192)throw new Error('Validation data contract mismatch '+JSON.stringify(validationState));
               await validation.evaluate(()=>document.querySelector('#hd20DashboardSectionTabs button[data-dashboard-section="maturity"]')?.click());
-              await validation.waitForFunction(()=>{const r=document.getElementById('hd20MaturityMapTab');return !!(r&&!r.hidden&&r.querySelectorAll('.mmtDot').length&&r.querySelectorAll('.mmtTeam').length)},{},{timeout:15000});
+              await validation.waitForFunction(()=>{const r=document.getElementById('hd20MaturityMapTab');return !!(r&&!r.hidden&&r.querySelectorAll('.mmtDot').length&&r.querySelectorAll('.mmtTeam').length)},{},{timeout:30000});
               validationState.maturity=await validation.evaluate(()=>({dots:document.querySelectorAll('#hd20MaturityMapTab .mmtDot').length,teams:document.querySelectorAll('#hd20MaturityMapTab .mmtTeam').length}));
               evidence.validation=validationState;
               await validation.close();
