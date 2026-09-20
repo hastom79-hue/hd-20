@@ -16,5 +16,5 @@ function seed(){
  localStorage.setItem(key.a,JSON.stringify(a));localStorage.setItem(key.u,JSON.stringify(u));localStorage.setItem(key.x,JSON.stringify(x));return true;
 }
 function banner(){if(!enabled())return;const b=document.createElement('div');b.id='hd20ValidationBanner';b.textContent='검증 데이터 모드 · Activity 192 / Audit 96 / Action 128 · 브라우저 로컬 전용';b.style.cssText='position:sticky;top:0;z-index:10050;padding:7px 12px;text-align:center;background:#fff3cd;border-bottom:1px solid #e3c66a;color:#664d03;font:800 12px/1.3 sans-serif';document.body.prepend(b)}
-const changed=seed();if(changed)location.reload();else if(enabled()){if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',banner,{once:true});else banner()}
+seed();if(enabled()){window.HD20_VALIDATION_MODE=true;if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',banner,{once:true});else banner()}
 })();
