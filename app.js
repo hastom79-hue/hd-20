@@ -1,12 +1,22 @@
 (()=>{'use strict';
-const CANONICAL_TEAMS=['대형메인팀','휠로더Front팀','대형Att.팀','휠로더리어팀','중형상부1팀','중형메인팀','중형Att팀','대형상부팀','프레임제작팀','휠로더메인팀','중형상부2팀','중형하부팀','Boom제작팀','초대형조립팀','성능팀','트러블슈팅팀'];
-const TEAM_MASTER=window.HD20ProductionTeamMaster||Object.freeze({teamNames:()=>[...CANONICAL_TEAMS],has:team=>CANONICAL_TEAMS.includes(String(team||'').trim()),count:()=>CANONICAL_TEAMS.length});
+/* 생산팀 마스터 (표시 순서 = 배열 순서, 소속 = 조립1팀/조립2팀) */
+const TEAM_DEFS=Object.freeze([
+['대형Att.팀','조립1팀'],['대형메인팀','조립1팀'],['대형상부팀','조립1팀'],
+['프레임제작팀','조립2팀'],['Boom제작팀','조립2팀'],
+['중형상부1팀','조립1팀'],['중형상부2팀','조립1팀'],['중형하부팀','조립1팀'],['중형Att팀','조립1팀'],['중형메인팀','조립1팀'],
+['휠로더Front팀','조립2팀'],['휠로더리어팀','조립2팀'],['휠로더메인팀','조립2팀'],['초대형조립팀','조립2팀'],
+['성능팀','조립1팀'],['트러블슈팅팀','조립1팀']
+]);
+const CANONICAL_TEAMS=TEAM_DEFS.map(d=>d[0]);
+const TEAM_GROUP=new Map(TEAM_DEFS);
+const TEAM_GROUPS=[...new Set(TEAM_DEFS.map(d=>d[1]))];
+const TEAM_MASTER=window.HD20ProductionTeamMaster||Object.freeze({teamNames:()=>[...CANONICAL_TEAMS],has:team=>CANONICAL_TEAMS.includes(String(team||'').trim()),count:()=>CANONICAL_TEAMS.length,groupNames:()=>[...TEAM_GROUPS],groupOf:team=>TEAM_GROUP.get(String(team||'').trim())||null,teamsOf:group=>TEAM_DEFS.filter(d=>d[1]===group).map(d=>d[0])});
 window.HD20ProductionTeamMaster=TEAM_MASTER;
 const TEAMS=TEAM_MASTER.teamNames();
 const ORDER_KEY='gmes5s_team_display_order',TARGET_KEY='gmes5s_quarter_perperson_targets';
 let teamOrder=[...TEAMS],targetMaster={Q1:null,Q2:null,Q3:null,Q4:null};
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
-function loadSettings(){try{const v=JSON.parse(localStorage.getItem(ORDER_KEY)||'null');if(Array.isArray(v)&&v.length===TEAMS.length&&TEAMS.every(t=>v.includes(t)))teamOrder=v}catch{}try{const v=JSON.parse(localStorage.getItem(TARGET_KEY)||'null');if(v&&typeof v==='object'){['Q1','Q2','Q3','Q4'].forEach(q=>{const n=Number(v[q]);targetMaster[q]=Number.isFinite(n)&&n>0?n:null})}}catch{}}
+function loadSettings(){try{const SIG_KEY='gmes5s_team_master_sig',sig=TEAMS.join('|');if(localStorage.getItem(SIG_KEY)!==sig){localStorage.removeItem(ORDER_KEY);localStorage.setItem(SIG_KEY,sig)}}catch{}try{const v=JSON.parse(localStorage.getItem(ORDER_KEY)||'null');if(Array.isArray(v)&&v.length===TEAMS.length&&TEAMS.every(t=>v.includes(t)))teamOrder=v}catch{}try{const v=JSON.parse(localStorage.getItem(TARGET_KEY)||'null');if(v&&typeof v==='object'){['Q1','Q2','Q3','Q4'].forEach(q=>{const n=Number(v[q]);targetMaster[q]=Number.isFinite(n)&&n>0?n:null})}}catch{}}
 function snapshot(){if(window.HD20KPIData?.snapshot)return window.HD20KPIData.snapshot();try{const rows=JSON.parse(localStorage.getItem('hd20GMES5SAutoImproveRawV1')||'[]');return{activities:Array.isArray(rows)?rows:[],candidates:[],newSecured:[]}}catch{return{activities:[],candidates:[],newSecured:[]}}}
 function teamOf(x){return String(x?.team||'').trim()}
 function counts(){const s=snapshot(),out=new Map(TEAMS.map(t=>[t,{activity:0,candidate:0,secured:0}]));(s.activities||[]).forEach(x=>{const d=out.get(teamOf(x));if(d)d.activity++});(s.candidates||[]).forEach(x=>{const d=out.get(teamOf(x));if(d)d.candidate++});(s.newSecured||[]).forEach(x=>{const d=out.get(teamOf(x));if(d)d.secured++});return out}
