@@ -49,7 +49,7 @@ jobs:
               await page.waitForFunction(()=>!!document.querySelector('.beginnerNav button[data-key="dashboard"]'),{},{timeout:10000});
               await waitReady();
             };
-            await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'commit',timeout:30000});
+            await page.goto('http://127.0.0.1:4173/index.html?ci_subtab_contract=1',{waitUntil:'commit',timeout:30000});
             await waitBoot();
             await page.evaluate(()=>{
               const teams=window.HD20ProductionTeamMaster?.teamNames?.()||[];
