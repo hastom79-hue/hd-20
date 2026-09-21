@@ -87,7 +87,7 @@ jobs:
             let count=0;
             for(const [area,subs] of Object.entries(areas)){
               const areaStart=Date.now(); console.log('LOAD_STAGE area-start',area);
-              await page.evaluate(a=>window.HD20_NAV?.go?.(a),area); await page.waitForTimeout(150);
+              await page.evaluate(a=>{window.HD20_SUBNAV?.render?.(a);window.HD20_NAV?.go?.(a)},area); await page.waitForTimeout(150);
               await page.waitForFunction(a=>document.querySelector('#hd20PurposePanel')?.dataset.contract?.startsWith(a+'.'),area,{timeout:45000});
               const areaMs=Date.now()-areaStart; console.log('LOAD_STAGE area-ready',area,areaMs);
               if(area==='activity')assert(areaMs<30000,'dense activity first-entry regression: '+areaMs+'ms');
