@@ -145,3 +145,14 @@ HD-20 전면개편 이후 남아 있는 브라우저 초기 구동 불안정과 
 - `6bf063e` 최초 boot에서 숨겨진 Advancement/Audit 데이터까지 즉시 render하던 구조를 정리. DOM 골격은 즉시 생성해 의존 모듈 호환성을 유지하고, Advancement/Audit 데이터 render는 해당 영역 진입 시 수행. Activity 6322ms, Advancement 309ms, Audit 374ms, Action 335ms. 상세 Grid 최대 1008ms. exact-head 10/10 + Pages PASS.
 - 성능 판단: 8350ms 기준 현재 6322ms로 약 24% 감소. 마지막 두 변경의 수백 ms 차이는 CI 변동 가능성이 있어 과대해석하지 않음. 반복 polling 제거가 가장 명확한 개선 근거.
 - 잔여 원칙: 추가 추측성 micro-optimization은 중단. 실제 실패/회귀 또는 재현 가능한 병목이 확인될 때만 최소 수정.
+
+
+## 2026-09-21 전수 검증·Validation 격리 마감
+- 레이아웃/밀집데이터 계약 강화: `a1cbf80`, `276a65b`, `a17c39e`. Desktop 한쪽 쏠림 방지, dense mobile viewport/overflow, 16팀·6종 활동·후보/확정/Audit/Action/사진 필드 품질을 CI에서 강제.
+- Maturity 안정화: `8bb8791`, `30e18b9`, `9744521`, `3addd65`, `90806c4`. 로딩 순서 결정화, dense data map 가시성 검증, 불필요한 body observer 및 비활성 탭 재렌더 제거.
+- Validation 모드: `eb990b8`~`dae42de`에서 ?validation=1 로컬 전용 416건(Activity 192/Audit 96/Action 128) fixture, app 선행 로드, remote sync 차단, KPI validation source 노출, reload loop 제거. `cd699ed`에서 고도화 판정 타입을 KPI 계약과 일치시켜 후보 32/확정 16을 확인.
+- 전체 페이지 검증: `0da68bd`, `1735b92`, `6095381`, `81a8899`. Dashboard 5개 섹션과 operational 8개 subtab을 실제 브라우저에서 순회. 운영 subtab은 visible data 존재를 강제하고 Dashboard는 섹션별 실제 content model + overflow를 검증.
+- Subtab CI 장기 실패 원인은 제품 렌더가 아니라 진단 코드의 area 전달 누락(`c9a55a1`)과 대기/진단 계약 혼선이었다. `8ae23fe`에서 render 결과를 동기 판정하도록 정리 후 8개 subtab + grid 전체 PASS. 이 과정의 accessor/cache 진단 커밋들은 원인 추적 기록으로 유지.
+- Validation 누출 방어: `8c66180`에서 일반 KPI 모드가 source=web-validation-fixture 및 VALID-* ID/sourceCaseId를 non-prod로 제외. `6aea1e2`로 배포 cache version 갱신. `e3d3438`에서 같은 브라우저로 validation→normal 전환 후 validationRows=0을 실제 검증.
+- `81a8899` exact-head 측정: Dashboard summary visible 6/text 1187/overflow 0, execution 9/2416/0, maturity 4/data 16/text 1310/0, standard 3/811/0, field 1/data 6/text 1025/0. Validation 416건, 후보 32, 확정 16, 일반모드 validationRows 0.
+- `81a8899` 기준 Package/Runtime/Dashboard Canonical/Current IA/Nav/Design/Subtab/Resource/Browser/Pages 전부 completed/success. 로그 갱신 후 새 HEAD에서 다시 최종 회귀한다.
