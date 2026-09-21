@@ -82,7 +82,8 @@ jobs:
             let count=0;
             for(const [area,subs] of Object.entries(areas)){
               const areaStart=Date.now(); console.log('LOAD_STAGE area-start',area);
-              await page.evaluate(a=>window.HD20_SUBNAV?.render?.(a),area);
+              const subDiag=await page.evaluate(a=>{const api=window.HD20_SUBNAV;return {api:!!api,area:a,map:api?.map?.[a]||null,contractKeys:Object.keys(api?.contracts||{}).filter(k=>k.startsWith(a+'.')),purpose:document.querySelector('#hd20PurposePanel')?.dataset.contract||null,subnav:!!document.querySelector('#hd20Subnav')}});console.log('LOAD_STAGE subtab-pre',JSON.stringify(subDiag));assert(subDiag.api&&subDiag.map?.length&&subDiag.contractKeys.length,'subtab API contract missing: '+JSON.stringify(subDiag));
+              await page.evaluate(a=>window.HD20_SUBNAV.render(a),area);
               await page.waitForFunction(a=>document.querySelector('#hd20PurposePanel')?.dataset.contract?.startsWith(a+'.'),area,{timeout:10000});
               await page.evaluate(a=>window.HD20_NAV?.go?.(a),area); await page.waitForTimeout(150);
               const areaMs=Date.now()-areaStart; console.log('LOAD_STAGE area-ready',area,areaMs);
