@@ -142,3 +142,16 @@
 - Grid: Activity 590/445ms, Advancement 419/362ms, Audit 1008/717ms, Action 778/716ms.
 - exact-head 10/10 + Pages PASS.
 - KPI 정의/source filtering/localStorage write/Supabase/auth/layout 구조 변경 없음.
+
+
+## 2026-09-21 Validation / Subtab / Full-page 코딩 마감 기록
+- `a1cbf80`, `276a65b`, `a17c39e`: desktop content span, dense mobile overflow/bounds, 416건 fixture quality assertions 추가.
+- `8bb8791`~`90806c4`: Maturity script 순서 고정, visible map assertion, global observer churn 제거, 비활성 탭/무관 subtab에서 maturity refresh 억제.
+- `eb990b8`, `e6f9f1d`, `ced1ff2`, `f4adde0`, `a00b074`, `dae42de`: validation fixture 선행 seed, empty storage reseed, Supabase sync 격리, validation KPI loader, reload loop 제거.
+- `cd699ed`: fixture category '개선'을 KPI가 인식하는 '5S 고도화'로 정합화. Browser에서 activities 192/candidates 32/confirmed 16 확인.
+- `0da68bd`: Dashboard 5 sections + 8 operational subtabs browser traversal 추가. 이후 `1735b92`에서 operational visible data, `6095381`/ `81a8899`에서 Dashboard content/overflow를 실제 content model에 맞게 강화.
+- Subtab 진단: 여러 진단/accessor/cache 커밋을 거쳐 `c9a55a1`에서 page.evaluate의 누락된 area 인자를 확인. `8ae23fe`에서 synchronous render diagnostic/assertion으로 CI 자체 대기 혼선을 제거하고 8 subtab/grid PASS.
+- `8c66180`: normal mode non-prod filter에 web-validation-fixture, VALID-* id/sourceCaseId 추가. `6aea1e2`: dashboard-kpi-source cache version publish.
+- `e3d3438`: validation page에서 416건을 읽은 동일 browser page가 normal URL로 이동한 뒤 KPI snapshot validationRows===0인지 자동 검증. 실제 로그 activities/candidates/confirmed=0, validationRows=0, isolated=false.
+- `81a8899` exact-head 전체 회귀 PASS. Dashboard coverage: summary 6/1187/overflow0, execution 9/2416/0, maturity 4/data16/1310/0, standard 3/811/0, field 1/data6/1025/0.
+- 운영 데이터 저장/Supabase write 계약은 validation fixture가 직접 쓰지 않으며, validation mode에서는 remote sync를 차단한다. 일반 KPI 화면은 validation fixture를 non-prod로 제외한다.
