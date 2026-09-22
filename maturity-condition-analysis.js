@@ -35,7 +35,7 @@ function render(){const host=document.getElementById('performanceConversionAnaly
  <section class="mcaInsight"><div class="mcaSectionTitle"><div><small>ANALYSIS</small><b>현상 / 분석결과</b></div></div><p>${esc(analysisText(s))}</p></section>
 </div>
 <div class="mcaJudge"><div><small>OFFICIAL JUDGEMENT</small><b>공식판정은 별도 관리</b><p>조건 충족수만으로 공식 성과를 확정하지 않습니다.</p></div><div class="mcaJudgeStats"><span>판정기재 <b>${s.judged}</b></span><span>확정 <b>${s.confirmed}</b></span><span>보완요청 <b>${s.supplement}</b></span><span>미확정 <b>${s.unconfirmed}</b></span></div></div>
-<div class="mcaTableWrap"><table class="mcaTable"><thead><tr><th>생산팀</th><th>라인</th><th>작업장/사례</th>${CRITERIA.map(c=>`<th>${c.label}</th>`).join('')}<th>충족수</th><th>공식판정</th></tr></thead><tbody>${detailRows([...s.three,...s.two,...s.one])}</tbody></table></div>
+<div class="mcaTableWrap"><table class="mcaTable awTable"><thead><tr><th>생산팀</th><th>라인</th><th>작업장/사례</th>${CRITERIA.map(c=>`<th>${c.label}</th>`).join('')}<th>충족수</th><th>공식판정</th></tr></thead><tbody>${detailRows([...s.three,...s.two,...s.one])}</tbody></table></div>
 <p class="mcaFoot">※ 성과 구간은 1개 조건 / 2개 이상 / 3개 모두 충족으로 표시합니다. 상세 집계는 정확히 1·2·3개 충족을 유지하며, 2개 이상은 2개+3개 누적값입니다. 0개 충족은 성과에서 제외합니다. 라인은 원천데이터의 구조화 필드만 사용하며 작업장명으로 라인을 추정하지 않습니다.</p>`}
 function init(){render();['hd20-kpi-source-updated','hd20-gmes-5s-imported','hd20-gmes-5s-judged'].forEach(e=>window.addEventListener(e,render));document.addEventListener('hd20-open-performance-conversion',()=>setTimeout(render,0))}
 window.HD20MaturityConditionAnalysis={criteriaState,summary,render};document.readyState==='loading'?document.addEventListener('DOMContentLoaded',init,{once:true}):init();

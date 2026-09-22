@@ -3,14 +3,22 @@ const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelecto
 function apply(detail){
   if(detail?.area!=='advancement')return;
   const root=$('#performanceConversionAnalysis');if(!root)return;
-  const sub=detail.sub==='analysis'||detail.sub==='standard'?detail.sub:'judge';
-  root.dataset.canonicalSubview=sub==='standard'?'confirmed-rollout':sub==='analysis'?'three-criteria-analysis':'candidate-judge';
+  const sub=['analysis','detail','standard'].includes(detail.sub)?detail.sub:'judge';
+  root.dataset.canonicalSubview=sub==='standard'?'confirmed-rollout':sub==='analysis'?'three-criteria-summary':sub==='detail'?'three-criteria-detail':'candidate-judge';
   const mca=document.getElementById('hd20MaturityConditionAnalysis');
   const work=document.getElementById('awWorkplace');
   const stages=$$('.pcStage',root),types=$('.pcTypes',root),criteria=$('.pcCriteriaBanner',root),insight=$('#pcInsight',root);
-  if(mca)mca.classList.toggle('hd20SubHidden',sub!=='analysis');
-  if(work)work.classList.toggle('hd20SubHidden',sub==='analysis');
-  if(sub==='analysis'){
+  const mcaHeavy=sub==='analysis'||sub==='detail';
+  if(mca)mca.classList.toggle('hd20SubHidden',!mcaHeavy);
+  if(work)work.classList.toggle('hd20SubHidden',mcaHeavy);
+  if(mca){
+    /* mca 내부: analysis=요약 위젯만, detail=상세표만 */
+    const summaryParts=[$('.mcaHead',mca),$('.mcaLevelRail',mca),$('.mcaCriteria',mca),$('.mcaBodyGrid',mca),$('.mcaJudge',mca)];
+    const detailParts=[$('.mcaTableWrap',mca),$('.mcaFoot',mca)];
+    summaryParts.forEach(el=>el&&el.classList.toggle('hd20SubHidden',sub!=='analysis'));
+    detailParts.forEach(el=>el&&el.classList.toggle('hd20SubHidden',sub!=='detail'));
+  }
+  if(mcaHeavy){
     stages.forEach(stage=>stage.classList.add('hd20SubHidden'));
     if(criteria)criteria.classList.add('hd20SubHidden');
     if(types)types.classList.add('hd20SubHidden');
