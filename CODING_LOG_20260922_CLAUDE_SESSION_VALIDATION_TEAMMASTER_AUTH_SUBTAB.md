@@ -315,6 +315,48 @@
     → 파라미터 없는 URL 그대로 배너·KPI 정상 표시.
   - `?validation=1&edge=1` 기존 엣지 모드 하위 호환 확인.
 
+### `e535a26` — fix: distinguish active subtab visually; remove duplicate metrics
+- file: `hd20-subtabs.css`
+  - `.hd20Subnav button.on{background:#fff;...}` → `background:var(--hd-primary)`
+    (또는 `#0b5b83` 직접 지정), `color:#fff`, `font-weight:900`,
+    `::after` 삼각 포인터(`border-color:#0b5b83 transparent transparent`) 추가.
+  - hover 상태 색상도 `#0b5b83` 계열로 통일.
+- file: `hd20-ops-v2.js` — `metrics()` 4개 항목 재설계(모두 count 기반):
+  - `'audit.inspect'`: 실시 대상(`!x.auditDate`) / 결과 입력대기
+    (`x.auditDate&&!txt(x.auditResult||x.result)`) / 최근 7일 실시
+    (`today()` 기준 0~7일 이내 `auditDate`) / 부적합 등록(기존과 동일).
+  - `'advancement.detail'`: 표시 라인(`new Set(candidates.map(line)).size`) /
+    표시 작업장(workplace 동일) / 공식확정 사례(`advancementConfirmed`) /
+    최근 7일 갱신(`judgedAt||date` 기준).
+  - `'action.leadtime'`: 계획대비 지연(`dd>d`) / 계획대비 조기완료(`dd<d`) /
+    7일 이상 지연(`(dd-d)/86400000>=7`) / 정시완료·당일(`dd===d`).
+  - `'action.master'`: `read('hd20TeamLeaderMasterV1')`를 직접 읽어 생산팀
+    총원 / 이메일 등록 수 / 팀장 지정 수 / 미지정 수.
+- file: `hd20-kpi-evidence-drill.js`
+  - 위 4개의 `evidence()` case를 `hd20-ops-v2.js`와 동일한 필터 로직으로
+    동기화(안 하면 `hd20-kpi-parity-guard.js`가 옛 값으로 되돌림).
+  - `case'action.master.0'~'action.master.3'`: 기존에 이 case 자체가 없어
+    그리드 버튼이 "0개 데이터셋"으로 항상 비어 있던 것을 발견, 팀 리더
+    마스터 배열을 직접 조회해 `title/headers/rows`를 구성하는 케이스를
+    신규 추가(기존 `setA/setU/setV/setX` 프리셋이 팀 리더 행 구조에 맞지
+    않아 인라인으로 직접 작성).
+- file: `index.html`: 4개 변경 파일 캐시 버전 갱신(`dedup-fix-1`→`-3` 단계적
+  적용, 중간에 leadtime 로직을 평균값→count로 다시 설계하며 2회 추가 bump).
+- 디버깅 메모: `action.leadtime`을 처음에 "평균 처리일수"(일 단위 평균)로
+  설계했을 때 브라우저 실측에서 "399일"(완료 건수 399와 동일한 값)이 찍히는
+  것을 발견. `hd20-kpi-parity-guard.js`가 매 렌더마다 각 메트릭 버튼의
+  숫자를 `evidence(area,sub,index).rows.length`(단순 행 개수)로 강제
+  덮어쓰기 때문에, 평균·최댓값처럼 "개수가 아닌" 지표는 애초에 이 메트릭
+  스트립 구조와 맞지 않음을 확인하고 전부 count 기반으로 재설계.
+- verification (Chromium, 파라미터 없이 기본 로드):
+  - 8개 인접 탭 쌍의 메트릭 스트립을 전수 대조: 이전에 3~4개 겹쳤던 4개 쌍
+    모두 더 이상 겹치지 않음을 확인.
+  - "평균 처리일수 399일" 버그를 재설계 후 "계획대비 지연 182건 / 조기완료
+    208건 / 7일 이상 지연 123건 / 정시완료 9건"으로 정정 확인.
+  - 16개 탭 전체 순회 + 각 탭 "상세 데이터 그리드" 버튼(팀장 기준정보 포함
+    전부 "4개 데이터셋") + scrollHeight: 콘솔 오류 0건.
+  - 활성 탭 스크린샷: 진한 파란 배경 + 흰 글씨 + 하단 포인터로 명확히 구분됨.
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.

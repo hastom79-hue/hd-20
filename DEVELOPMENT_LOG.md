@@ -439,15 +439,25 @@ Canonical Store는 다음을 기준으로 한다.
   클릭 후 즉시 재시딩되지 않도록 리다이렉트 대상도 수정. 이제
   `hastom79-hue.github.io/hd-20/`에 파라미터 없이 접속해도 검증 데이터가
   자동으로 보이고, 끄려면 `?validation=0`.
+- 추가 요구사항(같은 날 5차, 실사용 피드백): "1) 세부탭 구분 명확히 어렵고,
+  2) 탭별 중복정보 있는거 같음". 스크린샷으로 직접 재현해 둘 다 확인.
+  탭 구분은 활성 탭 배경색을 앱 공통 강조색(#0b5b83)의 진한 배경+하단
+  포인터로 강화. 중복정보는 4개 탭 쌍(audit.draw/inspect 4/4, advancement.
+  analysis/detail 3/4, action.manage/leadtime 3/4, action.manage/master 3/4)
+  에서 확인해 각 탭 고유 지표로 재설계. 재설계 중 parity guard가 메트릭을
+  "근거 행 개수"로 강제 일치시킨다는 제약을 다시 확인해 평균값 지표 시도가
+  실패하는 것을 실측으로 잡아내고 count 기반으로 재작성. action.master의
+  그리드 버튼이 항상 비어 있던 것(evidence case 누락)도 함께 발견·수정.
 - Commit: `8c5129c`(Audit 오분류·isNonProdRow·팀마스터·fixture v10),
   `260b0a4`(FOUC 가드 복원), `67826a5`(비밀번호 로그인 제거),
   `f253916`(서브탭 3-way 분리·페이지네이션 버그 2건 수정),
   `4aee88b`(advancement 4-way 추가 분리·페이지네이션 버그 1건 수정),
   `57e264c`(action/audit 4-way 추가 분리·지표 계산 버그 1건 수정),
   `c7b499e`(KPI 근거 그리드 전면 회귀 수정),
-  `0e74799`(가상데이터 기본값 ON 전환·KPI 표시 회귀 수정).
+  `0e74799`(가상데이터 기본값 ON 전환·KPI 표시 회귀 수정),
+  `e535a26`(탭 구분 강화·중복 지표 4건 재설계).
 - 상세: `DEVELOPMENT_LOG_20260922_CLAUDE_SESSION_VALIDATION_TEAMMASTER_AUTH_SUBTAB.md`,
   `CODING_LOG_20260922_CLAUDE_SESSION_VALIDATION_TEAMMASTER_AUTH_SUBTAB.md`.
 - 잔여사항: `scale=3` 대용량에서 일부 뷰 8~33초 소요(성능 후속 과제), 외부 뉴스
-  이미지 리소스 2건 실사용 브라우저 미확인, 추가 세분화 필요 여부는 사용자 피드백
-  대기.
+  이미지 리소스 2건 실사용 브라우저 미확인, 대시보드 내부 "고도화 맵" 복잡도
+  개선 요청 접수(다음 항목에서 조사).
