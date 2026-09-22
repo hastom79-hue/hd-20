@@ -5,7 +5,7 @@ const LEGACY_TEST_IDS=new Set('DRAW-1788010755791,DRAW-1788010759290,DRAW-178801
    (supabase-sync.js 는 자체 isNonProdRow 를 쓰므로 DB 반입 차단은 그대로 유지됨) */
 function isNonProdRow(x){if(x&&typeof x==='object'&&validationMode()&&x.source==='web-validation-fixture')return false;return isNonProdRowBase(x)}
 function isNonProdRowBase(x){if(!x||typeof x!=='object')return false;const source=String(x.source||'').toLowerCase(),id=String(x.id||'').toUpperCase(),sourceCaseId=String(x.sourceCaseId||'').toUpperCase(),email=String(x.email||'').toLowerCase(),legacySeedEmail=/^teamlead\d+@example\.com$/i.test(email);return x.isDemo===true||x.isTest===true||source==='demo-seed'||source==='e2e-fixture'||source==='web-validation-fixture'||id.startsWith('DEMO-')||id.startsWith('E2E-')||id.startsWith('VALID-')||id.includes('AUTO-DEMO-')||sourceCaseId.startsWith('DEMO-')||sourceCaseId.startsWith('E2E-')||sourceCaseId.startsWith('VALID-')||email.endsWith('@hd-hyundai-demo.co.kr')||legacySeedEmail||LEGACY_TEST_IDS.has(id)}
-function validationMode(){return new URL(location.href).searchParams.get('validation')==='1'}
+function validationMode(){const v=new URL(location.href).searchParams.get('validation');return v!=='0'&&v!=='off'}
 function load(){try{const v=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(v)?(validationMode()?v.filter(x=>x?.source==='web-validation-fixture'):v.filter(x=>!isNonProdRow(x))):[]}catch{return[]}}
 function yearOf(v){const m=String(v??'').match(/(20\d{2})/);return m?Number(m[1]):null}
 function selectedYear(){const txt=document.querySelector('.controls select')?.textContent||'';const y=yearOf(txt);return y||new Date().getFullYear()}

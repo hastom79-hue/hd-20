@@ -14,7 +14,7 @@
  *   - 팀장 마스터(이메일)는 건드리지 않음.
  */
 (()=>{'use strict';
-const V=10,SRC='web-validation-fixture';
+const V=11,SRC='web-validation-fixture';
 const P=new URL(location.href).searchParams;
 const MODE=P.get('validation'),EDGE=P.get('edge')==='1';
 const SCALE=Math.min(5,Math.max(1,parseInt(P.get('scale')||'1',10)||1));
@@ -41,8 +41,10 @@ function restore(){
 }
 function cleanUrl(extra){const u=new URL(location.href);['validation','edge','scale'].forEach(p=>u.searchParams.delete(p));Object.entries(extra||{}).forEach(([k,v])=>u.searchParams.set(k,v));return u.toString()}
 
-if(MODE==='reset'){try{restore()}catch(e){console.error('[validation-fixture] restore failed',e)}location.replace(cleanUrl());return}
-if(MODE!=='1'){try{if(ls.getItem(META)||ls.getItem(BACKUP))restore()}catch(e){console.error('[validation-fixture] auto-restore failed',e)}return}
+if(MODE==='reset'){try{restore()}catch(e){console.error('[validation-fixture] restore failed',e)}location.replace(cleanUrl({validation:'0'}));return}
+/* 기본값: 파라미터 없이 접속해도 검증 데이터가 자동으로 보임. 끄려면 ?validation=0 (또는 off) */
+const OFF=MODE==='0'||MODE==='off';
+if(OFF){try{if(ls.getItem(META)||ls.getItem(BACKUP))restore()}catch(e){console.error('[validation-fixture] auto-restore failed',e)}return}
 
 window.HD20_VALIDATION_MODE=true;window.HD20_VALIDATION_ISOLATED=true;
 
@@ -270,7 +272,7 @@ function banner(){
   link(EDGE?'엣지 끄기':'엣지 켜기',cleanUrl({validation:'1',...(EDGE?{}:{edge:'1'}),...(SCALE>1?{scale:SCALE}:{})}));
   if(SCALE===1)link('×3',cleanUrl({validation:'1',scale:'3',...(EDGE?{edge:'1'}:{})}));
   else link('×1',cleanUrl({validation:'1',...(EDGE?{edge:'1'}:{})}));
-  link('원본 복구',cleanUrl({validation:'reset'}));
+  link('가상데이터 끄기(원본 복구)',cleanUrl({validation:'reset'}));
   document.body.prepend(b);
 }
 document.readyState==='loading'?document.addEventListener('DOMContentLoaded',banner,{once:true}):banner();
