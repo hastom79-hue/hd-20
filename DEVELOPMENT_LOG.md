@@ -383,3 +383,40 @@ Canonical Store는 다음을 기준으로 한다.
   - 이후 모든 변경은 코드 구현/검증/문서 기록을 한 세트로 관리.
 - README Commit: `11d5b13d75aa156061b1fbfeaf52f444f073434b`.
 - 잔여사항: 정적 `index.html` 원본의 7탭/구형 Lifecycle 마크업 자체를 안전하게 5개 영역 기준으로 정리한 뒤 Runtime/Browser Smoke 재검증.
+
+### 2026-09-22 / 가상데이터 검증 파이프라인·팀마스터 개편·인증 간소화·서브탭 세분화
+- 요구사항: 오프라인 검증용 가상데이터 제공, 실제 화면오류 재현·수정, 사용자 지정
+  순서로 팀 마스터 재구성, Supabase 비밀번호 로그인 단계 삭제(사내메일 인증은 유지),
+  정보과잉으로 지목된 서브탭 세분화.
+- 변경 파일: `web-validation-fixture.js`, `hd20-native-production-guard.js`,
+  `dashboard-kpi-source.js`, `app.js`, `index.html`, `supabase-auth.js`,
+  `hd20-overhaul.css`, `hd20-subtabs.js`, `hd20-ops-v2.js`,
+  `{audit,advancement,action}-subtab-dedupe-guard.js`, `audit-close-evaluation.js`,
+  `action-leadtime-grid.js`, `table-enhance-suite.js`, `final-layout-polish.js`.
+- 구현 내용:
+  - `?validation=1`(960/320/640건, `&scale=1~5`, `&edge=1`) 가상데이터, 원본
+    자동 백업/복구, Supabase 동기화 격리.
+  - Audit 실시일 없는 건이 "관리중"으로 오분류되던 버그와, 검증데이터가
+    `isNonProdRow` 필터에 걸려 화면에 안 보이던 버그 수정.
+  - `<html>`의 `hd20-auth-pending` 클래스 누락으로 로그인 게이트가 대시보드를
+    뒤늦게 덮던 FOUC 버그 수정.
+  - 팀 마스터를 순서+조립1팀/2팀 그룹 구조로 재정의(`groupNames/groupOf/teamsOf`
+    API 추가). 팀 이름 불변이라 기존 데이터 마이그레이션 불필요.
+  - Supabase 비밀번호 로그인 제거, 사내메일 인증 통과 시 기존 localhost 우회와
+    동일한 `HD20_AUTH_BYPASS` 경로로 즉시 진입. DB 동기화는 세션이 생기지
+    않으므로 자동 비활성.
+  - ③④⑤ 영역을 2서브탭→3서브탭으로 재구성(3조건 분석/실시·점검 입력/팀장
+    기준정보 신설). 근본 원인은 서브탭 분리 로직 미배정 위젯 1건과 페이지네이션
+    누락 2건(CSS 선택자 누락, 클래스 누락)이었음. 개선조치 탭 80,544→8,768px,
+    유지관리 21,138→8,025px.
+- 검증: Playwright(Chromium)로 15개 서브탭 전체 클릭 순회 + edge/scale 스트레스
+  모드에서 콘솔 오류 0건. Node harness로 KPI 스냅샷·팀 마스터 API 단정 통과.
+  가짜 프로덕션 도메인(`--host-resolver-rules`)으로 non-localhost 인증/FOUC
+  시나리오 재현·검증.
+- Commit: `8c5129c`(Audit 오분류·isNonProdRow·팀마스터·fixture v10),
+  `260b0a4`(FOUC 가드 복원), `67826a5`(비밀번호 로그인 제거),
+  `f253916`(서브탭 3-way 분리·페이지네이션 버그 2건 수정).
+- 상세: `DEVELOPMENT_LOG_20260922_CLAUDE_SESSION_VALIDATION_TEAMMASTER_AUTH_SUBTAB.md`,
+  `CODING_LOG_20260922_CLAUDE_SESSION_VALIDATION_TEAMMASTER_AUTH_SUBTAB.md`.
+- 잔여사항: `scale=3` 대용량에서 일부 뷰 7~26초 소요(성능 후속 과제), 외부 뉴스
+  이미지 리소스 2건 실사용 브라우저 미확인.
