@@ -276,6 +276,45 @@
     JS로 직접 호출하면 즉시 정상 동작(모달 정상 오픈)하는 것을 확인해
     애플리케이션 결함이 아닌 자동화-타이밍 특이사항으로 결론.
 
+### `0e74799` — feat: virtual data now shows by default, no ?validation=1 needed
+- file: `web-validation-fixture.js`
+  - `const OFF=MODE==='0'||MODE==='off';if(OFF){...restore...return}` —
+    기존 `if(MODE!=='1'){...restore...return}`을 대체. 시드 조건이 반전됨.
+  - `MODE==='reset'` 분기의 `location.replace(cleanUrl())` →
+    `location.replace(cleanUrl({validation:'0'}))`로 변경(리다이렉트 후
+    기본값-on 로직에 의해 즉시 재시딩되는 것을 방지).
+  - 배너 "원본 복구" 링크 라벨을 "가상데이터 끄기(원본 복구)"로 변경.
+  - `V`를 10→11로 bump.
+- file: `supabase-sync.js`
+  - `boot()`의 `if(new URL(location.href).searchParams.get('validation')
+    ==='1'){...return}` → `if(__v!=='0'&&__v!=='off'){...return}`로 동일
+    규칙 적용. Supabase 클라이언트 생성 코드가 이미 제거된 상태(커밋
+    `67826a5`)라 실질적 동작 변화는 없음 — 방어적 일관성 수정.
+- file: `dashboard-kpi-source.js`
+  - `validationMode()`: `return ...==='1'` → `const v=...;return
+    v!=='0'&&v!=='off'`. 파라미터 없이 접속 시 fixture는 정상 시딩했지만
+    이 함수가 여전히 false를 반환해 `isNonProdRow()`가 방금 시딩된 행을
+    다시 "비운영 데이터"로 걸러내는 바람에 KPI 카드가 0건으로 보이는 회귀를
+    로컬 테스트에서 직접 발견(`activity_count=960`인데 `고도화 후보 발굴
+    0건`으로 나오는 불일치를 스크립트로 포착) 후 즉시 수정.
+- file: `index.html`: 위 3개 스크립트 캐시 버전 `20260922-default-on-1`로 갱신.
+- 회귀 재발 방지 차원에서 전수 검색:
+  `grep -rn "searchParams\\.get\\('validation'\\)\\s*===\\s*'1'" *.js` —
+  위 3개 파일 외 추가 매치 없음을 확인 후 커밋.
+- verification (Chromium):
+  - 4가지 URL(파라미터 없음 / `?validation=0` / `?validation=1` /
+    `?validation=1&scale=3`)에서 배너·activity count·KPI 표시값을 모두
+    대조: 파라미터 없음과 `validation=1`이 완전히 동일한 결과(Activity 960,
+    KPI 154건)를 내고, `validation=0`만 진짜 빈 상태(0건)임을 확인.
+  - 파라미터 없이 접속 후 16개 서브탭 전체 순회: 콘솔 오류 0건, scrollHeight
+    수치가 기존 `?validation=1` 테스트와 완전히 동일.
+  - "가상데이터 끄기" 배너 링크 클릭 → 빈 상태 전환 → `reload()` → 여전히
+    빈 상태 유지(수정 전이었다면 이 지점에서 즉시 재시딩되어 실패했을
+    시나리오).
+  - 가짜 프로덕션 도메인(`--host-resolver-rules`)에서 `tester@hd.com` 로그인
+    → 파라미터 없는 URL 그대로 배너·KPI 정상 표시.
+  - `?validation=1&edge=1` 기존 엣지 모드 하위 호환 확인.
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.

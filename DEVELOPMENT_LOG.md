@@ -431,12 +431,21 @@ Canonical Store는 다음을 기준으로 한다.
   조합 문자열 switch-case로 그리드 데이터를 별도 제공하고 있었는데, 이 패턴은
   기존 `sub===` 전수검색으로 걸리지 않는 사각지대였음. 6개 서브탭 전부에
   case를 추가해 정상화(외부 참조가 있는 기존 case는 변경하지 않음).
+- 추가 요구사항(같은 날 4차): "벨리데이션 접속말고 내 깃허브에 직접 반영해라"
+  → "파라미터 없이 그냥 사이트에 들어가만 해도 자동으로 가상데이터가 보이게"로
+  확정. web-validation-fixture.js의 시드 조건을 반전(`validation=0`/`off`일
+  때만 끄고 그 외엔 기본 시드)하고, 같은 규칙 불일치로 재발한 KPI 표시 회귀
+  (dashboard-kpi-source.js의 validationMode())를 함께 발견·수정. "원본 복구"
+  클릭 후 즉시 재시딩되지 않도록 리다이렉트 대상도 수정. 이제
+  `hastom79-hue.github.io/hd-20/`에 파라미터 없이 접속해도 검증 데이터가
+  자동으로 보이고, 끄려면 `?validation=0`.
 - Commit: `8c5129c`(Audit 오분류·isNonProdRow·팀마스터·fixture v10),
   `260b0a4`(FOUC 가드 복원), `67826a5`(비밀번호 로그인 제거),
   `f253916`(서브탭 3-way 분리·페이지네이션 버그 2건 수정),
   `4aee88b`(advancement 4-way 추가 분리·페이지네이션 버그 1건 수정),
   `57e264c`(action/audit 4-way 추가 분리·지표 계산 버그 1건 수정),
-  `c7b499e`(KPI 근거 그리드 전면 회귀 수정).
+  `c7b499e`(KPI 근거 그리드 전면 회귀 수정),
+  `0e74799`(가상데이터 기본값 ON 전환·KPI 표시 회귀 수정).
 - 상세: `DEVELOPMENT_LOG_20260922_CLAUDE_SESSION_VALIDATION_TEAMMASTER_AUTH_SUBTAB.md`,
   `CODING_LOG_20260922_CLAUDE_SESSION_VALIDATION_TEAMMASTER_AUTH_SUBTAB.md`.
 - 잔여사항: `scale=3` 대용량에서 일부 뷰 8~33초 소요(성능 후속 과제), 외부 뉴스
