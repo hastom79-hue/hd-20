@@ -45,5 +45,6 @@ function enhanceTable(table){
 }
 function scan(){document.querySelectorAll('.awTable, .amCases').forEach(enhanceTable)}
 function boot(){scan();['hd20-gmes-5s-imported','hd20-gmes-5s-judged','hd20-followup-updated','hd20-action-updated'].forEach(ev=>window.addEventListener(ev,()=>setTimeout(scan,150)));document.addEventListener('click',e=>{if(e.target.closest('.beginnerNav'))setTimeout(scan,200)})}
+window.addEventListener('hd20-subtab-changed',()=>setTimeout(scan,60));
 document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot,{once:true}):boot();
 })();
