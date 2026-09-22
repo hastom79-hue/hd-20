@@ -418,12 +418,19 @@ Canonical Store는 다음을 기준으로 한다.
   상세표(라인·작업장 상세, 신규)로 재분리. 원인은 동일 패턴의 페이지네이션 클래스
   누락. 11,141→3,523px(요약)+3,246px(상세). advancement 3탭→4탭, 전체 서브탭
   5영역 16개로 확장, 전부 8,768px 이하로 수렴.
+- 추가 요구사항(같은 날 3차): "더 나눠줘" → 최대치였던 action.manage(조치 목록,
+  8,768px)와 audit.retention(유지관리, 내부적으로 진행중+종료평가 혼재)을 재분리.
+  'retention'/'manage' 키 자체는 외부 4개 파일이 참조하므로 유지하고, 새로
+  분리해낸 콘텐츠만 신규 키('ongoing','leadtime')로 이동. audit 3탭→4탭,
+  action 3탭→4탭. 조치 목록 8,768→7,728px. 구현 중 발견한 계산 버그(기한 내
+  완료 지표가 완료와 동일 값)도 같은 커밋에서 수정.
 - Commit: `8c5129c`(Audit 오분류·isNonProdRow·팀마스터·fixture v10),
   `260b0a4`(FOUC 가드 복원), `67826a5`(비밀번호 로그인 제거),
   `f253916`(서브탭 3-way 분리·페이지네이션 버그 2건 수정),
-  `4aee88b`(advancement 4-way 추가 분리·페이지네이션 버그 1건 수정).
+  `4aee88b`(advancement 4-way 추가 분리·페이지네이션 버그 1건 수정),
+  `57e264c`(action/audit 4-way 추가 분리·지표 계산 버그 1건 수정).
 - 상세: `DEVELOPMENT_LOG_20260922_CLAUDE_SESSION_VALIDATION_TEAMMASTER_AUTH_SUBTAB.md`,
   `CODING_LOG_20260922_CLAUDE_SESSION_VALIDATION_TEAMMASTER_AUTH_SUBTAB.md`.
-- 잔여사항: `scale=3` 대용량에서 일부 뷰 7~30초 소요(성능 후속 과제), 외부 뉴스
+- 잔여사항: `scale=3` 대용량에서 일부 뷰 8~31초 소요(성능 후속 과제), 외부 뉴스
   이미지 리소스 2건 실사용 브라우저 미확인, 추가 세분화 필요 여부는 사용자 피드백
   대기.

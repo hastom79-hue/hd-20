@@ -183,6 +183,58 @@
   - 스크린샷으로 서브탭 버튼 4개 노출, 각 화면의 WORK PURPOSE 패널 문구가
     올바른 서브탭에 매칭됨을 육안 확인.
 
+### `57e264c` — feat: split action '조치 목록' + audit '유지관리', keep legacy sub-keys intact
+- file: `hd20-subtabs.js`
+  - `MAP.audit`: `[...,['retention','유지관리']]` →
+    `[...,['ongoing','6개월 관리중'],['retention','종료평가']]`.
+  - `MAP.action`: `[['manage',...],['master',...],['verify',...]]` →
+    `[['manage',...],['leadtime','처리기간 분석'],['master',...],['verify',...]]`.
+  - `CONTRACT['audit.ongoing']` 신규, `CONTRACT['audit.retention']` 문구를
+    "종료평가" 중심으로 축소(6개월 추적 전체 설명 제거).
+  - `CONTRACT['action.leadtime']` 신규.
+  - `applyAudit(sub)`: 기존에는 `.audit6m`만 `retention` 변수로 참조하고
+    `#hd20AuditCloseEvaluation`은 이 함수에서 전혀 다루지 않았음(dedupe guard
+    단독 관리). `ongoing=$('.audit6m',root)`, `closeEval=document.getElementById(...)`
+    로 분리해 `show(ongoing,sub==='ongoing')`, `show(closeEval,sub==='retention')`
+    명시.
+  - 첫 시도에서 `s.replace()` 대상 문자열의 줄바꿈 뒤 공백 1칸을 빠뜨려
+    `assert count==1`이 실패하며 스크립트가 파일 write 전에 중단된 것을
+    `repr()`로 원문 대조해 확인 후 재시도(디스크에 반영 안 된 상태로
+    "syntax OK"만 출력되는 것을 먼저 잡아냄 — 실제 파일 내용을 다시 읽어
+    검증하는 습관으로 조기 발견).
+- file: `audit-subtab-dedupe-guard.js` (전체 재작성)
+  - `classify()`: `.audit6m`→`'ongoing'`, `#hd20AuditCloseEvaluation`→`'retention'`
+    (기존에는 이 두 role이 합쳐진 하나의 boolean이었음).
+  - `apply()`: `['draw','inspect','ongoing','retention'].includes(...)` 4-way.
+- file: `action-subtab-dedupe-guard.js` (전체 재작성)
+  - `classify()`: `.hd20LtWrap`→`'leadtime'` 신규(기존에는 `'manage'` 그룹에
+    속해 있었음).
+  - `apply()`: `['leadtime','master','verify'].includes(...)` 4-way,
+    `:scope > .hd20LtWrap` 개별 토글 추가.
+- file: `hd20-ops-v2.js`
+  - `metrics()`에 `audit.ongoing`(관리중/재발 징후/Action 연계/월별 확인),
+    `action.leadtime`(전체/완료/기한경과/기한 내 완료) 추가.
+  - 버그: `action.leadtime`의 "기한 내 완료"를 최초
+    `doneActions.filter(x=>!overdue(x)).length`로 작성 → `overdue()`가
+    `!isDone(x)`를 전제 조건으로 삼는 함수라 done 건에는 항상 `false`를
+    반환, 결과적으로 `doneActions.length`(완료)와 완전히 같은 값(399)이
+    나오는 것을 브라우저 실측으로 발견. `doneActions.filter(x=>{const
+    d=txt(x.due||x.targetDate).slice(0,10),dd=txt(x.doneDate).slice(0,10);
+    return !!d&&!!dd&&dd<=d})`로 직접 비교하도록 수정, 217건으로 정정 확인
+    후 같은 커밋에 포함.
+- file: `index.html`, `final-layout-polish.js`
+  - change: 4개 변경 파일 캐시 버전 `20260922-subtab-split-3`로 갱신.
+- 참고: pull 시 저장소 소유자가 별도로 커밋한
+  `test: align regression contracts with current HD20 IA`
+  (`.github/workflows/runtime-smoke.yml`만 변경)가 먼저 들어와 있었음. 내
+  변경 파일과 겹치지 않음을 diff로 확인 후 진행.
+- verification:
+  - `④ 진단·유지` 4탭 scrollHeight: 대상추출 6,965 / 실시점검입력 7,483 /
+    6개월관리중 5,651 / 종료평가 6,512px. metrics 스트립 4탭 모두 정상.
+  - `⑤ 개선실행` 4탭 scrollHeight: 조치목록 7,728(최대치 8,768→7,728) /
+    처리기간분석 5,295 / 팀장기준정보 5,435 / 효과재발관리 4,285px.
+  - 전체 16개 탭 순회 + edge=1 + scale=3&edge=1: 콘솔 오류 0건, dialog 0건.
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
