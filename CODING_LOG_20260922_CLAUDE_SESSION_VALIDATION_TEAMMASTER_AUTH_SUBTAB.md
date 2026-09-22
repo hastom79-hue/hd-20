@@ -151,6 +151,38 @@
   - change: 위 9개 변경 파일의 `?v=` 캐시 버전을 `20260922-subtab-split-1`로 통일
     갱신(`final-layout-polish.js`는 동적 주입 스크립트 4개의 버전 문자열 포함).
 
+### `4aee88b` — feat: split advancement '3조건 분석' into summary + detail
+- file: `maturity-condition-analysis.js`
+  - change: `<table class="mcaTable">` → `<table class="mcaTable awTable">`.
+  - root cause: 어제 고친 `.amCases`/`.hd20Lt`와 동일 패턴 — 라인·작업장별
+    상세표(7,528px)가 `awTable`/`amCases` 어느 클래스도 없어 스캔 대상에서
+    제외되어 있었음.
+- file: `hd20-subtabs.js`
+  - `MAP.advancement`: `[['judge',...],['analysis',...],['standard',...]]` →
+    `[['judge',...],['analysis',...],['detail','라인·작업장 상세'],['standard',...]]`.
+  - `CONTRACT['advancement.analysis']`: 목적문을 "요약"으로 축소, features에서
+    "라인·작업장 상세표" 제거.
+  - `CONTRACT['advancement.detail']` 신규 추가.
+- file: `advancement-subtab-dedupe-guard.js`
+  - `apply()`: `sub` 판정을 `['analysis','detail','standard'].includes(...)`
+    기준 4-way로 확장. `mcaHeavy = sub==='analysis'||sub==='detail'`로
+    mca 패널 전체 노출 여부를 먼저 정하고, 그 안에서 다시
+    `summaryParts`(mcaHead/mcaLevelRail/mcaCriteria/mcaBodyGrid/mcaJudge)는
+    `sub==='analysis'`, `detailParts`(mcaTableWrap/mcaFoot)는 `sub==='detail'`
+    에서만 노출하도록 내부 분기 추가.
+- file: `hd20-ops-v2.js`
+  - `metrics()`에 `advancement.detail` 항목 추가(누락 시 대시보드 기본값
+    오표시 방지 — 어제와 동일 이유).
+- file: `index.html`, `final-layout-polish.js`
+  - change: 4개 변경 파일 캐시 버전 `20260922-subtab-split-2`로 갱신.
+- verification:
+  - `③ 고도화·표준화`의 4개 서브탭(후보 목록/3조건 분석/라인·작업장 상세/
+    확정·수평전개) 전체 클릭, scrollHeight 실측: 6,886 / 3,523 / 3,246 / 3,923px.
+  - 16개 탭(5영역×2~4서브탭) 전체 재순회 + edge=1 + scale=3&edge=1 스트레스
+    모드: 콘솔 오류 0건, dialog(팝업) 0건.
+  - 스크린샷으로 서브탭 버튼 4개 노출, 각 화면의 WORK PURPOSE 패널 문구가
+    올바른 서브탭에 매칭됨을 육안 확인.
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.

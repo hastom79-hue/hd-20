@@ -413,10 +413,17 @@ Canonical Store는 다음을 기준으로 한다.
   모드에서 콘솔 오류 0건. Node harness로 KPI 스냅샷·팀 마스터 API 단정 통과.
   가짜 프로덕션 도메인(`--host-resolver-rules`)으로 non-localhost 인증/FOUC
   시나리오 재현·검증.
+- 추가 요구사항(같은 날 후속): "조금 더 세분화 해도 된다" → 16개 서브탭 실측 중
+  최대치였던 advancement.analysis(3조건 분석, 11,141px)를 요약(3조건 분석)과
+  상세표(라인·작업장 상세, 신규)로 재분리. 원인은 동일 패턴의 페이지네이션 클래스
+  누락. 11,141→3,523px(요약)+3,246px(상세). advancement 3탭→4탭, 전체 서브탭
+  5영역 16개로 확장, 전부 8,768px 이하로 수렴.
 - Commit: `8c5129c`(Audit 오분류·isNonProdRow·팀마스터·fixture v10),
   `260b0a4`(FOUC 가드 복원), `67826a5`(비밀번호 로그인 제거),
-  `f253916`(서브탭 3-way 분리·페이지네이션 버그 2건 수정).
+  `f253916`(서브탭 3-way 분리·페이지네이션 버그 2건 수정),
+  `4aee88b`(advancement 4-way 추가 분리·페이지네이션 버그 1건 수정).
 - 상세: `DEVELOPMENT_LOG_20260922_CLAUDE_SESSION_VALIDATION_TEAMMASTER_AUTH_SUBTAB.md`,
   `CODING_LOG_20260922_CLAUDE_SESSION_VALIDATION_TEAMMASTER_AUTH_SUBTAB.md`.
-- 잔여사항: `scale=3` 대용량에서 일부 뷰 7~26초 소요(성능 후속 과제), 외부 뉴스
-  이미지 리소스 2건 실사용 브라우저 미확인.
+- 잔여사항: `scale=3` 대용량에서 일부 뷰 7~30초 소요(성능 후속 과제), 외부 뉴스
+  이미지 리소스 2건 실사용 브라우저 미확인, 추가 세분화 필요 여부는 사용자 피드백
+  대기.
