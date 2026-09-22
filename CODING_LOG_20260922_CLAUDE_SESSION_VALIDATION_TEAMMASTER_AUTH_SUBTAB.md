@@ -357,6 +357,34 @@
     전부 "4개 데이터셋") + scrollHeight: 콘솔 오류 0건.
   - 활성 탭 스크린샷: 진한 파란 배경 + 흰 글씨 + 하단 포인터로 명확히 구분됨.
 
+### `44a5c3f` — fix: reduce bubble overlap in dashboard maturity map
+- 진단 도구 메모: Playwright의 표준 `page.screenshot()`이 이 페이지에서
+  15초 이상 타임아웃되는 현상을 발견(`getAnimations()`는 0, CSS 애니메이션
+  없음 확인 — 원인 미상이나 페이지 전체 DOM 노드 수가 약 29,910개로 매우
+  많은 것과 연관 추정). `context.new_cdp_session(page)` +
+  `Page.captureScreenshot`(CDP 직접 호출)로 우회해 캡처 성공.
+- file: `hd20-maturity-map-tab.js`
+  - 충돌 회피 로직: 기존 `used.forEach(p=>{if(겹침)한번만 ±4px 넛지})` →
+    `for(let pass=0;pass<8;pass++){겹침 있으면 각도(i*47+pass*67°)·거리
+    (5+pass*1.5px)로 밀어내고 재검사}`로 교체. 겹침 판정 임계값도
+    `Math.abs(dx)<4&&Math.abs(dy)<5` → `<7&&<8`로 넓혀 더 적극적으로 회피.
+  - 버블 크기: `40+min(22,confirmed*5)`px(최대 62px) →
+    `34+min(14,confirmed*3)`px(최대 48px)로 축소.
+  - `@media(max-width:700px)`의 `.mmtMap{min-height:430px}` →
+    `620px`(데스크톱 500px보다 크게 — 좁은 폭을 세로 공간으로 보완).
+- file: `index.html`: 캐시 버전 갱신. `final-layout-polish.js`에 동일 id
+  (`hd20MaturityMapTabScript`)의 또 다른 버전 문자열이 있으나, index.html의
+  정적 `<script id="hd20MaturityMapTabScript">`가 이미 같은 id를 선점해
+  동적 로더가 스킵하는 죽은 설정임을 확인(이번 세션에서 만든 문제 아님,
+  손대지 않음).
+- verification (Chromium, CDP 캡처):
+  - 수정 전/후 스크린샷 대조: 수정 전 여러 버블이 직접 겹쳐 숫자가 완전히
+    가려짐 → 수정 후 16개 버블 전부 숫자 식별 가능(가장 밀집된 구간의 팀
+    이름 라벨만 일부 인접).
+  - 16개 서브탭 전체 재순회(scrollHeight, 그리드 데이터셋 수): 수정 전과
+    완전히 동일한 수치, 콘솔 오류 0건 — 이 파일 변경이 다른 화면에 영향
+    없음을 확인.
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
