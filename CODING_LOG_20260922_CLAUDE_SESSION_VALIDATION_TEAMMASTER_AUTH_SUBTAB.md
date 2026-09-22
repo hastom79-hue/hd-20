@@ -235,6 +235,47 @@
     처리기간분석 5,295 / 팀장기준정보 5,435 / 효과재발관리 4,285px.
   - 전체 16개 탭 순회 + edge=1 + scale=3&edge=1: 콘솔 오류 0건, dialog 0건.
 
+### `c7b499e` — fix: KPI evidence grid was empty for all 6 subtabs split today/yesterday
+- 발견 경위: "계속 실행 검증" 반복 요청에 따라, 이전까지 테스트하지 않았던
+  각 서브탭의 "상세 데이터 그리드" 버튼을 처음으로 전수 클릭 검증.
+- file: `hd20-kpi-evidence-drill.js`
+  - `evidence(area,sub,index)` 함수의 `switch(`${area}.${sub}.${index}`)`에
+    다음 case 추가:
+    - `'audit.draw.0'~'audit.draw.3'`: 기존 `'audit.audit.0~3'`(Audit 원천/
+      실시대기/완료/부적합)과 완전히 동일한 로직 재사용.
+    - `'audit.inspect.0'~'audit.inspect.3'`: 위와 동일(실시·점검 입력도
+      같은 Audit 원천 데이터를 다루므로).
+    - `'audit.ongoing.0'~'audit.ongoing.3'`: 관리중 / 재발 징후(종료평가
+      미기재 중 retentionRisk) / Audit 연계 Action / 월별 확인 대상.
+    - `'action.leadtime.0'~'action.leadtime.3'`: 전체 개선요청 / 완료 /
+      기한경과 / 기한 내 완료(`doneDate<=due` 직접 비교, 어제 커밋 `57e264c`와
+      동일 계산식 재사용).
+    - `'advancement.analysis.0'~'advancement.analysis.3'`,
+      `'advancement.detail.0'~'advancement.detail.3'`: 둘 다 고도화 후보 /
+      1개 조건 / 2개 이상 / 3조건 충족(`advancement.judge`와 동일 데이터
+      재사용 — 화면은 요약/상세로 나뉘어도 근거 데이터는 같은 후보 집합).
+  - 변경하지 않음: `'audit.retention.*'`(외부 `hd20-retention-evidence-guard.js`,
+    `hd20-retention-evidence-trace-bridge.js`가 index 0, 2, 3을 특정 의미로
+    참조), `'action.manage.*'`, `'action.verify.*'`,
+    `'advancement.judge.*'`, `'advancement.standard.*'` — 모두 기존 의미
+    그대로 유지.
+  - file: `index.html`: 캐시 버전 `20260922-subtab-split-4`로 갱신.
+- root cause 분석: 어제·오늘의 "전수 검색으로 확인" 작업은 `sub==='...'`
+  직접 비교 패턴만 grep했음. 이 파일은 `${area}.${sub}.${index}` 템플릿
+  리터럴을 조합해 만든 문자열을 switch-case로 매칭하는 방식이라 동일한
+  검색어로 걸리지 않았음 — 검색 방법론 자체의 사각지대였고, 앞으로 sub-key
+  영향 분석 시 `case'${area}.` 형태의 조합 문자열 패턴도 함께 검색해야 함.
+- 부가 확인 (코드 수정 없음):
+  - 사내메일 인증(mail-only auth) 흐름을 가짜 프로덕션 도메인
+    (`--host-resolver-rules`)에서 오늘 변경분 포함 최종 HEAD로 재검증:
+    게이트 진입/새로고침 세션유지/검증모드 병행 모두 정상.
+  - "연계 흐름" 버튼의 Playwright 실클릭이 멈추는 현상을 발견·격리:
+    `nav-scroll-stability.js`가 탭 전환 후 0/40/140/320ms 지연 스크롤
+    재조정을 하는데, 그 직후 곧바로 다른 요소를 Playwright로 실클릭하면
+    "요소 안정성 대기"와 충돌해 자동화 클릭이 멈춤. `button.onclick()`을
+    JS로 직접 호출하면 즉시 정상 동작(모달 정상 오픈)하는 것을 확인해
+    애플리케이션 결함이 아닌 자동화-타이밍 특이사항으로 결론.
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.

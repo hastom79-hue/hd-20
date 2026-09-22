@@ -424,13 +424,21 @@ Canonical Store는 다음을 기준으로 한다.
   분리해낸 콘텐츠만 신규 키('ongoing','leadtime')로 이동. audit 3탭→4탭,
   action 3탭→4탭. 조치 목록 8,768→7,728px. 구현 중 발견한 계산 버그(기한 내
   완료 지표가 완료와 동일 값)도 같은 커밋에서 수정.
+- 추가 발견(같은 날 "계속 실행 검증" 반복 요청 중): 어제·오늘 새로 만든 6개
+  서브탭(audit.draw/inspect/ongoing, action.leadtime, advancement.analysis/
+  detail) 모두 "상세 데이터 그리드" 버튼이 빈 화면("0개 데이터셋")을 표시하는
+  회귀를 발견. 원인은 hd20-kpi-evidence-drill.js가 `${area}.${sub}.${index}`
+  조합 문자열 switch-case로 그리드 데이터를 별도 제공하고 있었는데, 이 패턴은
+  기존 `sub===` 전수검색으로 걸리지 않는 사각지대였음. 6개 서브탭 전부에
+  case를 추가해 정상화(외부 참조가 있는 기존 case는 변경하지 않음).
 - Commit: `8c5129c`(Audit 오분류·isNonProdRow·팀마스터·fixture v10),
   `260b0a4`(FOUC 가드 복원), `67826a5`(비밀번호 로그인 제거),
   `f253916`(서브탭 3-way 분리·페이지네이션 버그 2건 수정),
   `4aee88b`(advancement 4-way 추가 분리·페이지네이션 버그 1건 수정),
-  `57e264c`(action/audit 4-way 추가 분리·지표 계산 버그 1건 수정).
+  `57e264c`(action/audit 4-way 추가 분리·지표 계산 버그 1건 수정),
+  `c7b499e`(KPI 근거 그리드 전면 회귀 수정).
 - 상세: `DEVELOPMENT_LOG_20260922_CLAUDE_SESSION_VALIDATION_TEAMMASTER_AUTH_SUBTAB.md`,
   `CODING_LOG_20260922_CLAUDE_SESSION_VALIDATION_TEAMMASTER_AUTH_SUBTAB.md`.
-- 잔여사항: `scale=3` 대용량에서 일부 뷰 8~31초 소요(성능 후속 과제), 외부 뉴스
+- 잔여사항: `scale=3` 대용량에서 일부 뷰 8~33초 소요(성능 후속 과제), 외부 뉴스
   이미지 리소스 2건 실사용 브라우저 미확인, 추가 세분화 필요 여부는 사용자 피드백
   대기.
