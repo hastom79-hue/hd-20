@@ -76,7 +76,8 @@ jobs:
           ! grep -q '<html[^>]*hd20-auth-pending' index.html
           grep -q 'function showBootError' supabase-auth.js
           grep -q '접속 초기화 오류' supabase-auth.js
-          grep -q 'startSupabase().catch(showBootError)' supabase-auth.js
+          grep -q 'async function boot()' supabase-auth.js
+          grep -q 'showBootError(e)' supabase-auth.js
 
       - name: Verify canonical stores and KPI bridge
         run: |
