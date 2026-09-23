@@ -474,6 +474,48 @@
   - 16개 탭 전체 재순회: 콘솔 오류 0건, scrollHeight 전부 직전 검증치와
     일치(종료평가의 기존 문서화된 간헐적 race 제외).
 
+### `80b1fd2` — fix: reorder 확정·수평전개 summary-before-detail; fix missing 효과·재발관리 panel
+- 조사 방법론: `inspect_all_tabs.py`로 15개 탭의 `#awActivity`/
+  `#awWorkplace`/`#hd20MaturityConditionAnalysis`/`#performanceConversion
+  Analysis`/`#awAudit`/`#awAction`(탭별로 맞는 루트) 직계 자식들의
+  높이·제목을 일괄 실측. 이후 `inspect_opaque.py`로 한 덩어리로 보이는
+  블록(`.hd20AdvancementIntegrated`, `.auditDraw`, `#hd20AuditCloseEvaluation`,
+  `#awAction`)의 내부 3단계까지 재귀 실측.
+- file: `activity-workflow.js`
+  - `.awSplit` 내부 두 `${card(...)}` 호출의 순서를 반전:
+    `card('고도화 후보 / 공식판정', <table class="awTable">...)` +
+    `card('운영상태', <div class="awAuditLane">...)` →
+    `card('운영상태',...)` + `card('고도화 후보 / 공식판정',...)`.
+    (변수/함수 로직은 그대로, 템플릿 리터럴 내 두 조각의 등장 순서만 교체.)
+- file: `hd20-subtabs.js`
+  - `ensureActionVerify(root)`: `const anchor=$('.awKpis',root)||
+    $('.awFlow',root)` → `...||$('.awHero',root)`.
+  - 진단 과정: `document.getElementById('hd20ActionVerifyStatus')`가
+    "효과·재발관리" 직행/`조치 목록` 경유 등 4가지 네비게이션 경로 모두에서
+    100% `null` 재현. `#awAction`의 실제 `directChildrenClasses`를
+    조회해 `.awKpis`/`.awFlow`가 존재하지 않고 `.awHero`/`.awActions`만
+    존재함을 확인 → `ensureActionVerify`가 찾던 앵커가 애초에 이 마크업
+    버전에서 존재한 적이 없었거나 리네임 시 갱신이 누락된 것으로 추정.
+- file: `index.html`: 위 2개 파일 캐시 버전 갱신.
+- 보류(수정하지 않음): `④ 6개월 관리중`의 "awAuditLane" 요약 라인이
+  `audit6m`(상세 표) 뒤에 오는 것도 동일 패턴으로 의심되었으나,
+  `activity-workflow.js`에서 `awAuditLane`을 생성하는 코드 조각의 주변
+  텍스트가 "⑤ 진단·유지"로 표기되어 있어(현재 영역 번호는 "④") 레거시/
+  불일치 코드 경로일 가능성이 있음. 실제 라이브 DOM에서 `awAuditLane`이
+  `awHero` 직후가 아니라 `audit6m` 이후에 위치하는 이유를 완전히 규명하지
+  못한 상태로 성급히 수정하면 다른 화면에 영향을 줄 위험이 있어 별도
+  조사 과제로 남김(문서에 기록).
+- verification (Chromium, 모바일 430px):
+  - 확정·수평전개: `inspect_opaque2.py`로 `.awSplit` 자식 순서가
+    `awCard(운영상태,420px) → awCard(고도화 후보/공식판정,1200px)`로
+    바뀐 것을 확인. 스크린샷으로도 대조.
+  - 효과·재발관리: 수정 전후 `getElementById` 결과 대조
+    (`null` → `{display:'block',hidden:false,h:255,text:'효과·재발
+    검증현황...전체 개선요청640건...'}`). 스크린샷으로 패널이 실제
+    렌더링됨을 확인.
+  - 16개 탭 전체 재순회: 콘솔 오류 0건. scrollHeight는 효과·재발관리만
+    4,588→4,850px 증가(정상), 나머지 15개는 직전 검증치와 완전 동일.
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
