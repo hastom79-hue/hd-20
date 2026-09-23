@@ -13,3 +13,25 @@
 .awScreen[data-area] .awKpi span,.awScreen[data-area] .awAuditLane span{font-size:11.5px!important}
 .awScreen[data-area] .awHead{font-size:14px!important}.awScreen[data-area] .awTable{font-size:13.5px!important}
 .awScreen[data-area] .awTable th,.awScreen[data-area] .awTable td{padding:9px 10px!important}
+
+
+/* 2026-09-23 final responsive balance pass after full-green regression */
+@media(max-width:1280px) and (min-width:701px){
+  .hd20DashboardPriorityHead,.hd20AreaHeader{gap:12px}
+  #hd20OperationalBridge .dobGrid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  #hd20OperationalBridge article:nth-child(n+4){min-height:70px}
+  .awScreen[data-area] .awFlow{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+@media(max-width:700px){
+  .top{padding:10px 12px}.title h1{font-size:20px}
+  .beginnerNav{grid-template-columns:repeat(2,minmax(0,1fr))!important;position:relative!important}
+  .beginnerNav button{min-height:54px!important}
+  .beginnerNav button:last-child{grid-column:1/-1}
+  .beginnerNav small{font-size:11px}
+  .hd20DashboardPriorityHead,.hd20AreaHeader{display:block;padding:12px 13px}
+  .hd20DashboardPriorityHead h2,.hd20AreaHeader h2{font-size:18px}
+  #hd20OperationalBridge .dobHead{display:block}
+  #hd20OperationalBridge .dobHead>span{display:block;margin-top:5px;text-align:left}
+  #hd20OperationalBridge .dobGrid{grid-template-columns:1fr 1fr}
+  .awScreen[data-area] .awFlow,.awScreen[data-area] .awKpis{grid-template-columns:1fr!important}
+}
