@@ -435,6 +435,45 @@
   - 16개 탭 전체 순회: 콘솔 오류 0건, scrollHeight 전부 정상 범위.
   - 소유자의 최근 2개 커밋과 diff 대조로 충돌 없이 병합됐음을 확인.
 
+### `d4ca925` — feat: prioritize headline KPI cards above OPERATION HEALTH
+- file: `dashboard-priority-layout.js`
+  - `ensure()`: PERFORMANCE FLOW 라벨 삽입 체크를 OPERATION HEALTH(`root`)
+    생성보다 앞으로 이동(원래는 root 생성 → label 체크 순서였음. 둘 다
+    `cards.insertAdjacentElement('beforebegin',...)`를 쓰므로 이론상으로는
+    "나중에 호출된 쪽이 .cards에 더 가깝게 붙는" 것이 정상이라 순서 자체가
+    최종 DOM 배치에 영향은 없지만, 코드 가독성과 한 곳에서 "라벨 먼저,
+    그 다음 메인 블록" 순서로 명확히 하기 위해 재배치).
+  - `root`(OPERATION HEALTH) 삽입: `cards.insertAdjacentElement
+    ('beforebegin',root)` → `cards.insertAdjacentElement('afterend',root)`.
+    이 한 줄이 실질적인 순서 반전의 핵심.
+  - PERFORMANCE FLOW 라벨의 `<span>` 부제: "보조지표로 확인" →
+    "핵심지표로 확인"(문구도 실제 우선순위에 맞게 수정).
+- file: `final-layout-polish.js`: `dashboard-priority-layout.js` 캐시 버전
+  `20260902-1` → `20260923-kpi-first-1`.
+- 디버깅 메모(잘못된 회귀 의심 기록): 수정 직후
+  `document.getElementById('hd20Subnav'/'hd20PurposePanel'/'hd20OpsMetrics')`
+  가 모두 `null`로 나와 처음엔 이 변경이 원인인 회귀로 의심. 원인 규명
+  절차: (1) `ensure()`/`ensurePurpose()`/`renderMetrics()`의 anchor 의존성을
+  코드로 추적했으나 `.cards`/`#hd20DashboardPriority`와 무관하게
+  `.beginnerHint` 기준으로 삽입되는 것을 확인, (2) 그런데도 사라지는 것을
+  실측했기에 **동일 테스트 스크립트를 원본(미수정) 파일에도 돌려봄** →
+  원본에서도 동일하게 `purposePanel:false, subnav:false`가 재현됨을 확인,
+  (3) 대기시간을 6초로 늘려 수정본·원본 각 3회씩 비교 → 두 파일이 완전히
+  동일한 패턴(항상 subnav/purposePanel은 false, opsMetrics만 간헐적으로
+  true/false)을 보임을 확인해 "내 변경과 무관한, 애초에 대시보드 영역에서는
+  쓰이지 않는 요소들"이라는 결론에 도달. 잘못된 회귀 의심 → 반증까지의
+  과정을 기록으로 남겨, 이후 유사한 착시를 겪을 때 "원본과 대조 먼저"라는
+  절차를 상기시키기 위함.
+- verification (Chromium):
+  - `inspect_dashboard.py`로 `.app` 직계 자식 순서 확인: `top → beginnerNav
+    → beginnerHint → hd20DashboardSectionLabel(PERFORMANCE FLOW) → cards
+    → hd20DashboardSectionTabs → hd20DashboardPriority(OPERATION HEALTH)
+    → card(트렌드 차트)`.
+  - 데스크톱(1440px)·모바일(430px) 스크린샷으로 헤드라인 지표 5개 카드가
+    워크플로 안내 직후 바로 보임을 확인.
+  - 16개 탭 전체 재순회: 콘솔 오류 0건, scrollHeight 전부 직전 검증치와
+    일치(종료평가의 기존 문서화된 간헐적 race 제외).
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
