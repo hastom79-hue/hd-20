@@ -65,3 +65,13 @@ body{background:var(--hd-bg);color:var(--hd-text);font-size:15px;line-height:1.5
 .awForm input,.awForm select,.awForm textarea,.targetGrid input{min-height:38px;font-size:14px}
 @media(max-width:1200px){.app{width:calc(100% - 32px);margin:0 16px}}
 @media(max-width:700px){.app{width:calc(100% - 20px);margin:0 10px}.beginnerNav{border-radius:8px}.beginnerNav button{min-height:58px}}
+
+
+/* 2026-09-23 HD-22 benchmark: final interaction/readability polish */
+button,input,select,textarea{transition:border-color .14s ease,box-shadow .14s ease,background-color .14s ease}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid rgba(44,95,138,.22);outline-offset:2px}
+input:focus,select:focus,textarea:focus{border-color:#7EA3C2!important;box-shadow:0 0 0 3px rgba(44,95,138,.10)!important}
+.awBtn:hover,.tools button:hover,.controls button:hover{border-color:#AFC2D1;background:#F4F7FA}
+.awTable tbody tr:hover td{background:#F8FAFB}
+.cardHead h2,.awHead,.hd20GridHead b{letter-spacing:-.01em}
+@media(prefers-reduced-motion:reduce){button,input,select,textarea{transition:none}}
