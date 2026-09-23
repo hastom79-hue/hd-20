@@ -27,7 +27,9 @@ function stabilize(){
   requestAnimationFrame(()=>requestAnimationFrame(()=>resetTop(id)));
   setTimeout(()=>resetTop(id),40);
   setTimeout(()=>resetTop(id),140);
-  setTimeout(()=>{resetTop(id);if(id===token)document.documentElement.classList.remove('hd20-nav-switching')},320);
+  setTimeout(()=>resetTop(id),320);
+  setTimeout(()=>resetTop(id),520);
+  setTimeout(()=>{resetTop(id);if(id===token)document.documentElement.classList.remove('hd20-nav-switching')},760);
 }
 function onNav(e){
   const b=e.target.closest?.(NAV);if(!b)return;
