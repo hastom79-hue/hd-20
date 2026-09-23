@@ -13,3 +13,18 @@
 .hd20GridToolbar input{min-height:40px;font-size:14px}.hd20GridToolbar button{min-height:40px;font-size:13px}
 .hd20GridSection table{font-size:13.5px}.hd20GridSection th{padding:11px 10px;background:#EAF1F7;font-size:13px}.hd20GridSection td{padding:10px;font-size:13.5px}
 @media(max-width:900px){.hd20PurposePanel{grid-template-columns:1fr}}
+
+
+/* 2026-09-23 HD-22 benchmark: make screen purpose and active context unmistakable */
+.hd20SubTabs{position:sticky;top:0;z-index:18;background:#fff;border:1px solid #DFE6EC;border-radius:9px;padding:0 12px;box-shadow:0 2px 8px rgba(20,48,76,.06)}
+.hd20SubTabs button{min-height:46px;padding:0 14px;font-size:13px;font-weight:700;color:#5C6B7A;background:transparent;border:0;border-bottom:3px solid transparent;border-radius:0}
+.hd20SubTabs button:hover{color:#14304C;background:#F7F9FB}
+.hd20SubTabs button.active,.hd20SubTabs button[aria-selected="true"]{color:#14304C;border-bottom-color:#2C5F8A;background:#F8FAFC}
+.hd20PurposePanel{margin:10px 0 14px;padding:12px 15px;border:1px solid #DFE6EC;border-left:4px solid #2C5F8A;border-radius:8px;background:#F8FAFC}
+.hd20PurposePanel b,.hd20PurposePanel strong{font-size:14px;color:#14304C}
+.hd20PurposePanel p,.hd20PurposePanel span{line-height:1.55}
+@media(max-width:700px){
+  .hd20SubTabs{position:relative;display:flex;overflow-x:auto;padding:0 8px;scrollbar-width:thin}
+  .hd20SubTabs button{flex:0 0 auto;min-height:44px;padding:0 12px}
+  .hd20PurposePanel{margin-top:8px;padding:11px 12px}
+}
