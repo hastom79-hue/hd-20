@@ -49,3 +49,17 @@
 #awAudit .awTable th{background:#EAF1F7!important;color:#294A66!important;font-size:13px!important}
 #awAudit .awTable td{font-size:13.5px!important}
 @media(max-width:700px){#awAudit>.awAuditLane{padding-top:34px}}
+
+
+/* 2026-09-23 HD-22 benchmark: action closed-loop workspace */
+#awAction>.awHero{padding:13px 15px!important}
+#awAction>.amHeroNote{padding:34px 14px 12px!important;border-radius:10px!important;border-color:#DFE6EC!important}
+#awAction>.amHeroNote:before{top:10px;left:14px;font-size:11.5px;letter-spacing:-.01em}
+#awAction>.amGrid{grid-template-columns:minmax(360px,.76fr) minmax(0,1.24fr)!important;gap:10px!important}
+#awAction>.amGrid>.amCard:first-child{top:82px}
+#awAction .amCard{border-color:#DFE6EC!important;border-radius:10px!important;box-shadow:0 1px 3px rgba(20,48,76,.06)!important}
+#awAction .amCard .amHead,#awAction .awHead{background:#F8FAFB!important;color:#14304C!important}
+#awAction input,#awAction select,#awAction textarea{min-height:40px;font-size:14px}
+#awAction .awTable th{background:#EAF1F7!important;color:#294A66!important;font-size:13px!important}
+#awAction .awTable td{font-size:13.5px!important}
+@media(max-width:1100px){#awAction>.amGrid{grid-template-columns:1fr!important}#awAction>.amGrid>.amCard:first-child{position:static!important}}
