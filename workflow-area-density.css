@@ -11,3 +11,15 @@
 #awAction>.awHero{border-left-width:4px!important;background:linear-gradient(90deg,#fff6f5 0,#fff 42%)!important}#awAction>.amHeroNote{position:relative;padding-top:28px!important;border-left:3px solid #b34e47!important;background:#fffafa!important}#awAction>.amHeroNote:before{content:'BEFORE → 문제정의 → 담당팀·팀장 → 개선조치 → AFTER → 효과검증 → 재발관리';position:absolute;left:12px;top:8px;color:#9b4540;font-size:10px;font-weight:950}#awAction>.amGrid{grid-template-columns:minmax(320px,.82fr) minmax(0,1.18fr)!important;align-items:start}#awAction>.amGrid>.amCard:first-child{position:sticky;top:86px;border-top:2px solid #b34e47!important}
 @media(max-width:1100px){#awActivity>.awGrid,.awScreen[data-area] .awGrid,.awScreen[data-area] .awSplit,#awAction>.amGrid{grid-template-columns:1fr!important}#awActivity>.awGrid>.awCard:first-child,#awAction>.amGrid>.amCard:first-child{position:static!important}#awWorkplace .awSplit{grid-template-columns:1fr!important}}
 @media(max-width:700px){#awActivity .awForm{grid-template-columns:1fr!important}#awActivity .awForm label{grid-column:1!important}#awAudit>.awAuditLane{grid-template-columns:1fr!important;padding-top:30px}.awScreen[data-area] .awTable{width:max(100%,680px)}}
+
+/* 2026-09-23 HD-22 benchmark: activity workspace balance */
+#awActivity>.awGrid{grid-template-columns:minmax(360px,.78fr) minmax(0,1.22fr)!important;gap:10px!important}
+#awActivity>.awGrid>.awCard:first-child{top:82px}
+#awActivity .awForm label{font-size:12.5px;color:#4f6372}
+#awActivity .awForm input,#awActivity .awForm select,#awActivity .awForm textarea{min-height:40px;font-size:14px}
+#awActivity .awDrop{min-height:78px!important;border-color:#DFE6EC!important;background:#F8FAFB!important}
+#awActivity .awKpis{gap:8px!important}
+#awActivity .awKpi{min-height:84px!important}
+#awActivity .awTable th{background:#EAF1F7!important;color:#294A66!important;font-size:13px!important}
+#awActivity .awTable td{font-size:13.5px!important}
+@media(max-width:1100px){#awActivity>.awGrid{grid-template-columns:1fr!important}}
