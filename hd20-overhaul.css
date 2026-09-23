@@ -99,3 +99,15 @@ input:focus,select:focus,textarea:focus{border-color:#7EA3C2!important;box-shado
 .beginnerHint i{font-style:normal;color:#8BA0B2}
 .beginnerHint em{font-style:normal;margin-left:auto;color:#5C6B7A}
 @media(max-width:700px){.beginnerHint{gap:5px;padding:9px 10px}.beginnerHint em{width:100%;margin-left:0;padding-top:4px;border-top:1px solid #E4EAF0}}
+
+
+/* 2026-09-23 compact vertical rhythm: preserve hierarchy, reduce dead space */
+.hd20PurposePanel+.awCard,.hd20PurposePanel+.card{margin-top:10px}
+.awScreen[data-area]>.awHero{margin-bottom:10px}
+.awScreen[data-area] .awCard+.awCard{margin-top:12px}
+.cardHead,.awHead{margin-bottom:8px}
+.awTable{margin-top:8px}
+@media(min-width:1180px){
+  .hd20AreaHeader{margin-bottom:10px}
+  .beginnerHint{margin-bottom:10px}
+}
