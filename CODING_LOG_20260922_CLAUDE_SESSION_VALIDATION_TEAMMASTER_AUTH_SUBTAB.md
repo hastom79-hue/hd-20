@@ -516,6 +516,36 @@
   - 16개 탭 전체 재순회: 콘솔 오류 0건. scrollHeight는 효과·재발관리만
     4,588→4,850px 증가(정상), 나머지 15개는 직전 검증치와 완전 동일.
 
+### `abc91fc` — fix: reserve scrollbar-gutter to stop content leaning/margin shift
+- file: `styles.css`
+  - `html,body{min-width:0}` 앞에 `html{scrollbar-gutter:stable both-edges}`
+    추가.
+  - 진단: `styles.css`에서 `.app{max-width:1680px;margin:auto;padding:18px
+    22px 30px}`를 확인 — `margin:auto`가 `body`의 가용 폭 기준으로
+    가운데 정렬되는데, 클래식 스크롤바 브라우저에서는 세로 스크롤바
+    등장 시 `document.documentElement.clientWidth`가 스크롤바 두께만큼
+    줄어들어, 탭마다 콘텐츠 길이(스크롤 유무)가 달라지면 `.app`의 중심
+    기준 폭도 함께 바뀌어 좌우 여백이 들쭉날쭉해짐.
+  - 재현: 헤드리스 Chromium 기본값은 오버레이 스크롤바(폭을 줄이지 않음)
+    라 그대로는 재현되지 않아, `chromium.launch(args=['--disable-features
+    =OverlayScrollbar'])`로 클래식 스크롤바를 강제해 실측.
+  - 1차 시도(`scrollbar-gutter:stable`만): 클라이언트 폭 자체는
+    고정(`scrollbarWidth:0`, 즉 `innerWidth===clientWidth`가 항상 유지)
+    되어 탭 전환에 따른 흔들림은 해소됐으나, `.app`의 leftGap/rightGap이
+    16px/31px로 15px 고정 비대칭이 남는 것을 실측(스크롤바가 다시 오른쪽
+    한 곳에만 공간을 예약하기 때문).
+  - 최종: `both-edges` 키워드 추가 — 좌우 양쪽에 동일하게 공간을
+    예약해 스크롤바 유무와 무관하게 항상 대칭이 되도록 확정.
+  - file: `index.html`: 캐시 버전 갱신.
+- verification (Chromium, `--disable-features=OverlayScrollbar`):
+  - 데스크톱(1440px) 짧은 탭(대시보드)과 긴 탭(조치목록, 8,139px) 모두
+    `leftGap=rightGap=31, diff=0`으로 완전 동일.
+  - 모바일(430px): `leftGap=rightGap=25, diff=0`, 가로 스크롤 없음.
+  - 16개 탭 전체 재순회(기본 오버레이 스크롤바 환경): 콘솔 오류 0건,
+    scrollHeight 전부 정상 범위(종료평가의 기존 문서화된 간헐적 race
+    제외).
+  - 데스크톱 전체 스크린샷으로 레이아웃 깨짐 없음을 육안 확인.
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
