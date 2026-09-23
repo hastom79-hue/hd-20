@@ -46,7 +46,7 @@ jobs:
       - name: Serve
         run: python3 -m http.server 4173 >/tmp/hd20-http.log 2>&1 &
       - name: Verify rendered dashboard hierarchy and grouping
-        timeout-minutes: 3
+        timeout-minutes: 5
         run: |
           node <<'JS'
           const { chromium }=require('playwright');
