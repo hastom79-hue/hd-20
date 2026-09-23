@@ -32,7 +32,7 @@ function apply(detail){
   const nativeRecent=$(':scope > .amRecentList',root);if(nativeRecent)nativeRecent.classList.toggle('hd20SubHidden',sub!=='manage');
   const nativeCases=$(':scope > .amCasesScroll',root);if(nativeCases)nativeCases.classList.toggle('hd20SubHidden',sub!=='manage');
 }
-window.addEventListener('hd20-subtab-changed',e=>setTimeout(()=>apply(e.detail),0));
+window.addEventListener('hd20-subtab-changed',e=>Promise.resolve().then(()=>apply(e.detail)));
 function sync(){const s=window.HD20_SUBNAV?.state?.();if(s)apply(s)}
 document.readyState==='loading'?document.addEventListener('DOMContentLoaded',()=>setTimeout(sync,500),{once:true}):setTimeout(sync,500);
 ['hd20-action-updated','hd20-audit-updated','hd20-refresh-requested'].forEach(ev=>window.addEventListener(ev,()=>setTimeout(sync,30)));

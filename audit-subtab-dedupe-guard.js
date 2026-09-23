@@ -26,7 +26,7 @@ function apply(detail){
     el.classList.toggle('hd20SubHidden',role!==sub);
   });
 }
-window.addEventListener('hd20-subtab-changed',e=>setTimeout(()=>apply(e.detail),0));
+window.addEventListener('hd20-subtab-changed',e=>Promise.resolve().then(()=>apply(e.detail)));
 function sync(){const s=window.HD20_SUBNAV?.state?.();if(s)apply(s)}
 document.readyState==='loading'?document.addEventListener('DOMContentLoaded',()=>setTimeout(sync,450),{once:true}):setTimeout(sync,450);
 ['hd20-audit-draw','hd20-audit-updated','hd20-action-updated'].forEach(ev=>window.addEventListener(ev,()=>setTimeout(sync,30)));
