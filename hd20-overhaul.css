@@ -27,3 +27,41 @@ body{font-size:14px}
 .awTable{font-size:12.5px}
 .awTable th,.awTable td{padding:8px 9px}
 @media(max-width:1100px){.app{width:calc(100% - 20px)}.mainGrid,.bottomGrid{grid-template-columns:1fr}}
+
+
+/* 2026-09-23: HD-22 benchmark visual system */
+:root{--hd-bg:#F4F6F8;--hd-panel:#fff;--hd-soft:#F8FAFB;--hd-line:#DFE6EC;--hd-line-strong:#C9D5DF;--hd-text:#22303F;--hd-muted:#5C6B7A;--hd-primary:#2C5F8A;--hd-primary-dark:#14304C;--hd-success:#3F8F5F;--hd-warn:#E8A23D;--hd-danger:#C0392B;--hd-r-sm:7px;--hd-r:10px;--hd-r-lg:10px;--hd-shadow:0 1px 3px rgba(20,48,76,.06),0 1px 2px rgba(20,48,76,.04)}
+body{background:var(--hd-bg);color:var(--hd-text);font-size:15px;line-height:1.55}
+.app{width:calc(100% - 48px);max-width:none;margin:0 24px;padding:12px 0 40px}
+.top{border-radius:10px;border-color:var(--hd-line);box-shadow:var(--hd-shadow);padding:13px 16px;background:#fff}
+.title h1{color:var(--hd-primary-dark);font-size:24px}
+.controls button,.controls select,.controls a,.hd20HeaderLink,.tools button,.tools select,.awBtn{min-height:38px;height:auto;border-radius:7px;font-size:13px;font-weight:700;color:var(--hd-primary-dark)}
+.beginnerNav{position:sticky;top:0;border-radius:0;border-left:0;border-right:0;border-color:var(--hd-line);box-shadow:none;background:var(--hd-primary-dark);padding:7px;gap:5px}
+.beginnerNav button{min-height:64px;border-radius:7px;color:#eaf1f7;border-color:transparent;background:transparent}
+.beginnerNav button:hover{background:rgba(255,255,255,.12);border-color:transparent}
+.beginnerNav button.active{background:#fff;border-color:#fff;color:var(--hd-primary-dark);box-shadow:0 3px 10px rgba(0,0,0,.18)}
+.beginnerNav .navTop{font-size:14px}
+.beginnerNav small{font-size:11.5px;color:#c9d7e3}
+.beginnerNav button.active small{color:#5c6b7a}
+.beginnerHint{border-left:0;border:1px solid var(--hd-line);border-radius:7px;background:#fff;color:var(--hd-muted);padding:8px 12px}
+.kpi,.card,.awCard{border-color:var(--hd-line);border-radius:10px;box-shadow:var(--hd-shadow)}
+.kpi{border-left:4px solid var(--hd-primary);min-height:100px}
+.kpi:nth-child(2){border-left-color:var(--hd-warn)}.kpi:nth-child(3){border-left-color:var(--hd-success)}.kpi:nth-child(4){border-left-color:var(--hd-primary-dark)}.kpi:nth-child(5){border-left-color:#6556b8}
+.kpi small{font-size:13px;color:var(--hd-muted)}.kpi b{font-size:30px;color:var(--hd-primary-dark)}
+.cardHead,.awHead{background:#F8FAFB;border-bottom-color:var(--hd-line);padding:11px 15px}
+.cardHead h2,.awHead{font-size:16px;color:var(--hd-primary-dark)}
+.cardBody,.awBody{padding:15px}
+.awHero{border-radius:10px;border-color:var(--hd-line);background:#fff;box-shadow:var(--hd-shadow);padding:16px 18px}
+.awHero h2{color:var(--hd-primary-dark);font-size:22px}.awHero p{color:var(--hd-muted);font-size:14px}
+.hd20Subnav{border-radius:0;border-left:0;border-right:0;background:#fff;border-color:var(--hd-line);padding:0 8px;gap:2px}
+.hd20Subnav button{min-height:46px;border-radius:0;padding:0 14px;font-size:13px;color:var(--hd-muted);border-bottom:3px solid transparent}
+.hd20Subnav button:hover{background:#fff;color:var(--hd-primary-dark)}
+.hd20Subnav button.on{background:#fff;color:var(--hd-primary-dark);box-shadow:none;border-bottom-color:var(--hd-primary)}
+.hd20Subnav button.on::after{display:none}
+.hd20PurposePanel{border-radius:10px;border-color:var(--hd-line);box-shadow:var(--hd-shadow);background:#fff}
+.hd20PurposeMain h2{color:var(--hd-primary-dark);font-size:20px}.hd20PurposeMain p{font-size:13.5px;color:var(--hd-muted)}
+.hd20PurposeLogic span{background:#F4F7FA;border:1px solid #E5EBF0;font-size:12px}
+.awTable{font-size:14px}.awTable th{padding:11px 10px;background:#EAF1F7;color:#294A66;font-size:13px}.awTable td{padding:11px 10px;font-size:14px}
+.awForm input,.awForm select,.awForm textarea,.targetGrid input{min-height:38px;font-size:14px}
+@media(max-width:1200px){.app{width:calc(100% - 32px);margin:0 16px}}
+@media(max-width:700px){.app{width:calc(100% - 20px);margin:0 10px}.beginnerNav{border-radius:8px}.beginnerNav button{min-height:58px}}
