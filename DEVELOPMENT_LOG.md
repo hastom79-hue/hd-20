@@ -456,10 +456,11 @@ Canonical Store는 다음을 기준으로 한다.
   `c7b499e`(KPI 근거 그리드 전면 회귀 수정),
   `0e74799`(가상데이터 기본값 ON 전환·KPI 표시 회귀 수정),
   `e535a26`(탭 구분 강화·중복 지표 4건 재설계),
-  `44a5c3f`(고도화 맵 버블 겹침 개선).
+  `44a5c3f`(고도화 맵 버블 겹침 개선),
+  `b8f75bc`(고도화 맵 DOM 삽입 배치화·종료평가 race 완화).
 - 상세: `DEVELOPMENT_LOG_20260922_CLAUDE_SESSION_VALIDATION_TEAMMASTER_AUTH_SUBTAB.md`,
   `CODING_LOG_20260922_CLAUDE_SESSION_VALIDATION_TEAMMASTER_AUTH_SUBTAB.md`.
-- 잔여사항: `scale=3` 대용량에서 일부 뷰 8~33초 소요(성능 후속 과제), 외부 뉴스
-  이미지 리소스 2건 실사용 브라우저 미확인, 페이지 전체 DOM 노드가 항상 약
-  3만 개(비활성 영역도 DOM 유지)인 구조적 특성은 이번 세션 범위 밖으로 기록만
-  남김.
+- 잔여사항: `scale=3` 대용량에서 일부 뷰 8~33초 소요, 고도화 맵 버블 클릭 반응
+  속도(28개 MutationObserver 전수 감사 필요), 종료평가 탭 간헐적 race(빈도는
+  낮췄으나 완전 제거는 아님) — 모두 성능 후속 과제로 이월. 외부 뉴스 이미지
+  리소스 2건 실사용 브라우저 미확인.

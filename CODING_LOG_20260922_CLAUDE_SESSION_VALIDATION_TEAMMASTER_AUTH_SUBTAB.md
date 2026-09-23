@@ -385,6 +385,56 @@
     완전히 동일한 수치, 콘솔 오류 0건 — 이 파일 변경이 다른 화면에 영향
     없음을 확인.
 
+### `b8f75bc` — perf: batch maturity-map DOM insertion; harden pagination re-scan timing
+- file: `hd20-maturity-map-tab.js`
+  - `render()` 루프: `map.appendChild(dot)`/`cases.appendChild(row)`(팀당
+    개별 호출, 총 32회) → `dotFrag`/`rowFrag`(DocumentFragment)에 누적,
+    루프 종료 후 `map.appendChild(dotFrag);cases.appendChild(rowFrag)`
+    2회로 축소.
+  - 진단 근거: `document.querySelectorAll(':scope>*')` 반복으로 28개 파일의
+    `.observe(document.body|documentElement,{subtree:true,...})` 호출을
+    확인(action-effect-recurrence-integrity.js, hd20-kpi-parity-guard.js,
+    hd20-canonical-grid-guard.js 등). 원본 파일(수정 전 `hd20-maturity-map-
+    tab.orig.js`)로도 `document.querySelectorAll('*').length`가 동일하게
+    4.55s 걸리는 것을 대조해 이 파일의 로직 문제가 아니라 앱 전역의
+    관찰자 수 문제임을 확인 후, 그래도 "내가 발생시키는 mutation 횟수"를
+    줄이는 것이 유일하게 안전하고 국지적인 개선 지점이라 판단.
+- file: `table-enhance-suite.js`
+  - `window.addEventListener('hd20-subtab-changed',()=>setTimeout(scan,60))`
+    → `setTimeout(scan,0);setTimeout(scan,60);setTimeout(scan,250)` 3회
+    재시도로 보강(관찰자 폭주로 인한 타이머 지연에 대비, 첫 시도로는
+    race를 완전히 못 막았음을 뒤이어 발견).
+- file: `audit-subtab-dedupe-guard.js`, `action-subtab-dedupe-guard.js`
+  - `window.addEventListener('hd20-subtab-changed',e=>setTimeout(()=>apply
+    (e.detail),0))` → `e=>Promise.resolve().then(()=>apply(e.detail))`.
+  - 진단 과정: `deep_repro2.py`~`deep_repro5.py` 5단계로 좁혀감 —
+    (1) 종료평가 표 자체의 rows/hidden 수가 정상(133/108)임을 먼저 배제,
+    (2) `document.body` 자식 중 800px 초과 요소를 걸었을 때 `.app`이
+    4,453px로 정상이었으나 `scrollHeight`는 12,745px로 불일치 발견,
+    (3) `bottom>6000`인 요소를 전수 검색했으나 없음 → 절대위치 요소가
+    아님을 확인, (4) 버그 상태를 잡은 직후 곧바로 재조회하면 이미 정상
+    (4504)으로 돌아와 있는 것을 발견해 "일시적으로만 존재하는 겹침"으로
+    결론, (5) `audit-subtab-dedupe-guard.js`만 `setTimeout(fn,0)`을 쓰고
+    `advancement-subtab-dedupe-guard.js`는 이미 동기 호출이었던 것을
+    grep으로 대조해 원인 파일 특정.
+- file: `final-layout-polish.js`, `index.html`: 4개 변경 파일 캐시 버전 갱신.
+- 병합 메모: 로컬에 6개 파일 미커밋 변경분이 쌓인 상태에서 레포 소유자의
+  커밋 2건(`5035395`,`500eb92`, CSS 폭/여백 조정)이 먼저 push됨 → `git pull`
+  이 `index.html`(한 줄짜리 minified 파일)에서 자동 병합 실패 →
+  `git show origin/main:index.html`로 원격 최신본을 받아 그 위에 내 2개
+  캐시 버전 문자열 교체만 재적용하는 방식으로 정확히 해소(다른 5개 파일은
+  소유자가 손대지 않아 `git log --oneline -- <file>`로 사전 확인 후 그대로
+  적용).
+- verification (Chromium, 모바일 430px):
+  - 고도화 맵 탭 최초 클릭→렌더 완료: 0.35s(수정 전 수 초, 최대 관측
+    4.91s+).
+  - 버블 직접 클릭(`onclick()` 직접 호출) 반응: 여전히 초 단위 소요 —
+    28개 관찰자 각각의 감사가 필요한 별도 과제로 남김.
+  - 종료평가 race: 단일 시퀀스 10회 반복 재현 시도 결과 수정 전 대비 빈도
+    감소(완전 제거는 아님, 개발일지에 잔여 리스크로 기록).
+  - 16개 탭 전체 순회: 콘솔 오류 0건, scrollHeight 전부 정상 범위.
+  - 소유자의 최근 2개 커밋과 diff 대조로 충돌 없이 병합됐음을 확인.
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
