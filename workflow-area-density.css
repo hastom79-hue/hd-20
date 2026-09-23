@@ -23,3 +23,17 @@
 #awActivity .awTable th{background:#EAF1F7!important;color:#294A66!important;font-size:13px!important}
 #awActivity .awTable td{font-size:13.5px!important}
 @media(max-width:1100px){#awActivity>.awGrid{grid-template-columns:1fr!important}}
+
+
+/* 2026-09-23 HD-22 benchmark: advancement and standardization balance */
+#performanceConversionAnalysis[data-area="advancement"]{margin-bottom:10px}
+#performanceConversionAnalysis .pcHeader{padding:14px 16px;border-radius:10px;box-shadow:0 2px 8px rgba(20,48,76,.08)}
+#performanceConversionAnalysis .pcHeader h2{font-size:18px}#performanceConversionAnalysis .pcHeader p{font-size:12.5px;line-height:1.5}
+#performanceConversionAnalysis .pcFlow{gap:8px}#performanceConversionAnalysis .pcStage{min-height:90px;padding:11px 12px}
+#performanceConversionAnalysis .pcStage small{font-size:11.5px}#performanceConversionAnalysis .pcStage b{font-size:21px}#performanceConversionAnalysis .pcStage p{font-size:11.5px;line-height:1.45}
+#awWorkplace .awSplit{grid-template-columns:minmax(0,1.35fr) minmax(320px,.65fr)!important;gap:10px!important}
+#awWorkplace .awSplit>.awCard:last-child{min-width:0}
+#awWorkplace .awCriteriaBanner{padding:12px 14px!important;background:#F8FAFB!important;border-color:#DFE6EC!important}
+#awWorkplace .awTable th{background:#EAF1F7!important;color:#294A66!important;font-size:13px!important}
+#awWorkplace .awTable td{font-size:13.5px!important}
+@media(max-width:1100px){#awWorkplace .awSplit{grid-template-columns:1fr!important}}
