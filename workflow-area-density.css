@@ -37,3 +37,15 @@
 #awWorkplace .awTable th{background:#EAF1F7!important;color:#294A66!important;font-size:13px!important}
 #awWorkplace .awTable td{font-size:13.5px!important}
 @media(max-width:1100px){#awWorkplace .awSplit{grid-template-columns:1fr!important}}
+
+
+/* 2026-09-23 HD-22 benchmark: audit lifecycle readability */
+#awAudit>.awHero{padding:13px 15px!important}
+#awAudit>.awAuditLane{gap:8px!important;padding-top:24px}
+#awAudit>.awAuditLane:before{font-size:11px;color:#735A2A}
+#awAudit>.awAuditLane>div{min-height:88px!important;padding:12px 13px!important;background:#fff!important}
+#awAudit>.awAuditLane b{font-size:18px!important}#awAudit>.awAuditLane span{font-size:11.5px!important;line-height:1.45!important}
+#awAudit .awCard .awHead{background:#F8FAFB!important;color:#14304C!important}
+#awAudit .awTable th{background:#EAF1F7!important;color:#294A66!important;font-size:13px!important}
+#awAudit .awTable td{font-size:13.5px!important}
+@media(max-width:700px){#awAudit>.awAuditLane{padding-top:34px}}
