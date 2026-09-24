@@ -583,6 +583,56 @@
     완전 동일.
   - 16개 탭 전체 재순회: 콘솔 오류 0건.
 
+### `7b70f79` — feat: replace English jargon eyebrow-labels and dense descriptions with plain Korean
+- 조사: `grep -oh "WORK PURPOSE\|FIELD EXECUTION\|..."`로 전체 JS에서
+  영어 소제목 7종의 출현 횟수·소속 파일을 먼저 전수 파악(각 1회씩만
+  하드코딩되어 있고 재사용 함수를 통해 여러 화면에 뿌려지는 구조임을
+  확인 — 예: `workflow-crud.js`의 "Canonical Source" 한 곳만 고치면
+  이 배지를 쓰는 모든 화면에 반영됨).
+- file: `hd20-subtabs.js` — `renderPurpose()`의
+  `<small>WORK PURPOSE · ${...}</small>` → `<small>화면 안내 · ${...}</small>`.
+  16개 탭 전체가 공유하는 `ensurePurpose()`/`CONTRACT` 시스템의 템플릿
+  1곳만 수정하면 전체 반영됨.
+- file: `hd20-five-area-integration.js`
+  - `addAreaHeader(activity,'FIELD EXECUTION',...)` →
+    `addAreaHeader(activity,'현장 활동',...)`.
+  - `addAreaHeader(conversion,'ADVANCEMENT CONTROL','고도화·판정',
+    '성과전환 분석, 고도화 후보, GMES 원천데이터, 공식판정, 확정사례와
+    고도화 수준을 하나의 화면으로 연결합니다.')` →
+    `addAreaHeader(conversion,'고도화 관리','고도화·판정','등록된 고도화
+    후보가 조건을 얼마나 충족했는지 확인하고, 공식 확정 여부를
+    판정합니다.')` — 라벨과 설명문을 함께 재작성.
+- file: `dashboard-priority-layout.js`
+  - `<small>OPERATION HEALTH</small>` → `<small>운영 상태</small>`.
+  - PERFORMANCE FLOW 라벨 `innerHTML` 리터럴 내 `<small>PERFORMANCE
+    FLOW</small>` → `<small>핵심 지표</small>`.
+- file: `hd20-maturity-map-tab.js`
+  - `<small>ADVANCEMENT PORTFOLIO</small>` → `<small>고도화 현황</small>`.
+- file: `workflow-crud.js`
+  - `<span class="wfCanonicalNote">Canonical Source</span>` →
+    `<span class="wfCanonicalNote">실제 데이터 기준</span>`.
+- file: `index.html`(정적 로드 3개: hd20-subtabs.js/hd20-maturity-map-tab.js/
+  workflow-crud.js), `final-layout-polish.js`(동적 로드 2개:
+  dashboard-priority-layout.js/hd20-five-area-integration.js) 캐시 버전
+  갱신.
+- 조사했지만 이번엔 손대지 않은 것: `performance-conversion-analysis.js`의
+  `build()`가 만드는 5단계 퍼널(`①활동등록/②고도화후보/③공식확정/
+  ④현재유지/⑤고도화수준`, `.pcStage[data-stage=...]`)에서 "②고도화후보"/
+  "③공식확정"이 상단 metric 카드와 값이 겹침을 재확인. 이 markup은
+  `advancement-subtab-dedupe-guard.js`가 `sub==='standard'`일 때
+  `key==='confirmed'||key==='maintained'`로 stage를 필터링하는 데
+  그대로 재사용 중이라, `judge` 서브탭에서만 두 항목을 골라 숨기려면
+  가드 로직을 서브탭별로 정밀하게 분기해야 함 — 성급히 markup을 잘라내면
+  `확정·수평전개` 탭이 깨질 수 있어 이번 커밋에서는 보류하고 별도 과제로
+  기록.
+- verification (Chromium, 모바일 430px):
+  - `document.body.innerText.includes(term)`을 7개 용어 전부에 대해
+    확인 — 수정 전 true, 수정 후 전부 false.
+  - `document.querySelector('#hd20PurposePanel small')?.textContent`
+    → `"화면 안내 · 활동관리"`로 정상 대체 확인.
+  - 16개 탭 전체 재순회: 콘솔 오류 0건. 설명문이 짧아진 만큼 관련 탭
+    scrollHeight가 수~수십 px 감소(정상), 구조적 변화는 없음.
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
