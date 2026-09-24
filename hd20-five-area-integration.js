@@ -34,4 +34,16 @@ function refresh(){markOperationalScreens();masterUtility();integrateAdvancement
 ['hd20-open-performance-conversion','hd20-kpi-source-updated','hd20-gmes-5s-imported','hd20-gmes-5s-judged','hd20-action-updated'].forEach(ev=>window.addEventListener(ev,()=>setTimeout(refresh,0)));
 document.readyState==='loading'?document.addEventListener('DOMContentLoaded',()=>{refresh();setTimeout(refresh,250)},{once:true}):(()=>{refresh();setTimeout(refresh,250)})();
 window.HD20_FIVE_AREA={refresh,areas:['dashboard','activity','advancement','audit','action']};
+/* 고도화 작업장 추이 차트는 ③ 고도화·표준화 전용 지표인데, 영역 전환
+   로직(closeScreens/openScreen)의 관리 대상 밖에 있어 어느 영역에서도
+   항상 표시되고 있었음(사용자 피드백: "여러 탭에서 중복처럼 보인다").
+   삭제 대신, 고도화 영역에서만 보이도록 자기 영역을 찾아줌. */
+function syncTrendChartVisibility(){
+  const card=document.querySelector('.trendBox')?.closest('.card');
+  if(!card)return;
+  const area=window.HD20_NAV?.active?.()||'dashboard';
+  card.classList.toggle('hd20SubHidden',area!=='advancement');
+}
+window.addEventListener('hd20-nav-area-changed',()=>setTimeout(syncTrendChartVisibility,0));
+document.readyState==='loading'?document.addEventListener('DOMContentLoaded',()=>setTimeout(syncTrendChartVisibility,300),{once:true}):setTimeout(syncTrendChartVisibility,300);
 })();
