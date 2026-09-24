@@ -9,7 +9,7 @@ function markOperationalScreens(){
   const activity=document.getElementById('awActivity');
   const audit=document.getElementById('awAudit');
   const action=document.getElementById('awAction');
-  addAreaHeader(activity,'FIELD EXECUTION','5S 활동','6개 5S 유형의 현장 활동 등록·증빙·실행현황을 관리합니다. 현장 등록은 공식 고도화 확정과 분리됩니다.');
+  addAreaHeader(activity,'현장 활동','5S 활동','6개 5S 유형의 현장 활동 등록·증빙·실행현황을 관리합니다. 현장 등록은 공식 고도화 확정과 분리됩니다.');
   normalizeAuditArea(audit);
   normalizeActionArea(action);
   if(activity)activity.dataset.area='activity';
@@ -18,7 +18,7 @@ function integrateAdvancement(){
   const conversion=document.getElementById('performanceConversionAnalysis');
   const workplace=document.getElementById('awWorkplace');
   if(!conversion)return;
-  addAreaHeader(conversion,'ADVANCEMENT CONTROL','고도화·판정','성과전환 분석, 고도화 후보, GMES 원천데이터, 공식판정, 확정사례와 고도화 수준을 하나의 화면으로 연결합니다.');
+  addAreaHeader(conversion,'고도화 관리','고도화·판정','등록된 고도화 후보가 조건을 얼마나 충족했는지 확인하고, 공식 확정 여부를 판정합니다.');
   conversion.dataset.area='advancement';
   let host=conversion.querySelector('.hd20AdvancementIntegrated');
   if(!host){host=document.createElement('section');host.className='hd20AdvancementIntegrated';conversion.appendChild(host)}
