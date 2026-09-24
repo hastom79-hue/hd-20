@@ -633,6 +633,38 @@
   - 16개 탭 전체 재순회: 콘솔 오류 0건. 설명문이 짧아진 만큼 관련 탭
     scrollHeight가 수~수십 px 감소(정상), 구조적 변화는 없음.
 
+### `03ec959` — feat: regroup 활동관리 sections by topic (context -> input -> data -> analysis)
+- 조사: `walk_activity_dom.py`로 `#awActivity`의 실제 자식 요소 순서를
+  class/id/높이/제목까지 정확히 조회(스크린샷 육안 판단이 아니라 DOM
+  쿼리로 확정). "② 활동관리" 카드가 두 번 나오는 것처럼 보였던 이전
+  판단은 착시였음도 함께 확인 — 실제로는 `workflow-crud.js`의
+  `toolbar()`가 `.awHero .awActions`에 버튼을 병합해 넣을 뿐, 별도
+  카드를 만들지 않음.
+- 발견: `activity-excel-preview-import.js`의 `mount()`가
+  `hero.insertAdjacentElement('afterend',bar)`(`hero=root.querySelector
+  ('.awHero')`)로 항상 `.awHero` 직후에 꽂히도록 하드코딩되어 있어,
+  소스 템플릿상 `.awHero` 바로 다음에 있어야 할 `.awFlow`(4단계 흐름
+  가이드, 정적 템플릿에 이미 그 위치로 정의됨)를 밀어내고 있었음.
+  `#hd20ImportAnalysis`(activity-import-analysis-mail-preview.js)는
+  `document.getElementById('hd20ActivityExcelImport')`(=axBar) 기준
+  `afterend`로 스스로 따라붙게 구현되어 있어, axBar만 옮기면 자동으로
+  같이 이동함(추가 수정 불필요).
+- file: `activity-excel-preview-import.js`
+  - `const hero=root.querySelector('.awHero');...hero.insertAdjacentElement
+    ('afterend',bar)` → `const hero=root.querySelector('.awFlow')||
+    root.querySelector('.awHero');...`(동일 삽입 호출, 앵커만 교체).
+- file: `index.html`: 캐시 버전 갱신.
+- verification (Chromium, 모바일 430px):
+  - `walk_activity_dom.py` 재실행으로 새 순서 확인:
+    `hd20AreaHeader→awHero→awFlow→axBar→hd20ImportAnalysis→awGrid→adcCard`.
+  - 기능 테스트: `[data-ax-template]` 클릭 → `5S_운영실적_업로드양식.csv`
+    다운로드 정상. `.axBar .primary`(Excel 검증 버튼)의 `onclick`
+    핸들러가 앵커 변경 후에도 정상 연결됨을 확인.
+  - scrollHeight: 활동관리 4,898px, 수정 전과 완전히 동일(콘텐츠 삭제
+    없이 DOM 순서만 바뀌었으므로 총 높이는 불변 — 의도한 결과와 일치).
+  - 16개 탭 전체 재순회: 콘솔 오류 0건, 나머지 15개 탭 scrollHeight도
+    직전 검증치와 동일.
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
