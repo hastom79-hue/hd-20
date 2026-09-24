@@ -665,6 +665,35 @@
   - 16개 탭 전체 재순회: 콘솔 오류 0건, 나머지 15개 탭 scrollHeight도
     직전 검증치와 동일.
 
+### `7de480a` — feat: regroup 고도화·표준화 - candidate list right after progress funnel
+- 조사: `walk_advancement_dom.py`로 `#performanceConversionAnalysis`와
+  `#awWorkplace`의 실제 자식 순서를 정확히 조회.
+- file: `hd20-five-area-integration.js`
+  - `integrateAdvancement()`: `let host=conversion.querySelector
+    ('.hd20AdvancementIntegrated');if(!host){host=document.createElement
+    ('section');host.className='hd20AdvancementIntegrated';conversion.
+    appendChild(host)}` → `appendChild(host)` 대신
+    `const anchor=conversion.querySelector('.pcInsight')||conversion.
+    querySelector('.pcFlow');if(anchor)anchor.insertAdjacentElement
+    ('afterend',host);else conversion.appendChild(host)`로 변경.
+    `.pcInsight`/`.pcFlow` 둘 다 없는 극단적 경우에만 기존 동작(끝에
+    追加)으로 폴백.
+- file: `final-layout-polish.js`: 캐시 버전 갱신.
+- verification (Chromium, 모바일 430px):
+  - `walk_advancement_dom.py` 재실행: 새 순서
+    `hd20AreaHeader→pcHeader→pcFlow→pcInsight→hd20AdvancementIntegrated
+    (154행표)→pcGrid(pcTypes+pcCriteriaBanner)` 확인.
+  - 공유 컴포넌트 영향 검사: `#performanceConversionAnalysis`/
+    `#awWorkplace`는 `advancement-subtab-dedupe-guard.js`의 `mcaHeavy`
+    로직으로 다른 3개 서브탭에서도 표시/숨김이 제어되는데, 이 로직은
+    이번 커밋에서 전혀 건드리지 않았으므로 "3조건 분석"·"라인·작업장
+    상세"에서는 여전히 154행 표가 올바르게 숨겨지고(`work.classList
+    .toggle('hd20SubHidden',mcaHeavy)`가 대상 요소 자체를 토글하는
+    방식이라 DOM 위치 이동과 무관), "확정·수평전개"에서는 기존과 동일
+    하게 보임을 각 서브탭 스크린샷으로 직접 대조 확인.
+  - 16개 탭 전체 재순회: 콘솔 오류 0건. 후보 목록 scrollHeight
+    6,499→6,490px(순서 변경에 따른 미세 리플로우, 콘텐츠 변화 없음).
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
