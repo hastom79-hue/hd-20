@@ -813,6 +813,33 @@
   - 스크린샷으로 "활동관리" 탭이 차트 없이 정상적으로 끝나는 것을
     육안 확인.
 
+### `b0d8911` — fix: clarify "진행중" label ambiguity on 조치 목록 (relabel, not delete)
+- 조사: `audit_all_areas.py`로 5개 영역 각각의 `.app` 직계 자식을 스냅샷
+  → id/class 기준으로 "5개 영역 모두에서 보이는 것"과 "일부에서만
+  보이는 것"을 집합 연산으로 분류. 트렌드차트 수정 후 재실행 결과
+  5개 영역 공통 요소는 `top`/`beginnerNav`/`beginnerHint`(정상 공유
+  내비게이션)뿐이고, 4개 영역 공통 요소(`hd20Subnav`/`hd20PurposePanel`/
+  `hd20OpsMetrics`)는 대시보드를 제외한 나머지 4개 영역에서 정상적으로
+  쓰이는 것으로 이미 알고 있던 의도된 구조 — 추가로 "새는" 요소 없음을
+  확인.
+- 16개 탭 스크린샷 재검토 중 ⑤ 조치 목록에서 상단 지표 "진행/대기
+  241건"과 `.amSummary`의 "진행중 162건"을 발견, 계산 검증:
+  `action-mail-workflow.js`의 `wait=rows.filter(c=>c.status!=='완료'&&
+  !over.includes(c))`(기한경과 제외) vs `hd20-ops-v2.js`의
+  `'진행/대기':actions.filter(x=>!isDone(x))`(기한경과 포함) — 162+79
+  (기한경과)=241로 계산 정확, 데이터 불일치 아님을 확인.
+- file: `action-mail-workflow.js`
+  - `<small>진행중</small>` → `<small>기한내 진행중</small>`(라벨만
+    수정, `data-am-sum="wait"` 집계 로직·변수명은 그대로 유지).
+- file: `index.html`: 캐시 버전 갱신.
+- verification (Chromium, 모바일 430px):
+  - `.amSummary` 텍스트: "전체 요청 640건 완료 399건 기한내 진행중
+    162건 기한경과 79건" 정상 확인.
+  - 스크린샷으로 4열 그리드에서 2줄 줄바꿈이 자연스럽게 되어 레이아웃
+    깨짐 없음을 확인.
+  - 16개 탭 전체 재순회: 콘솔 오류 0건, scrollHeight 전부 수정 전과
+    동일(텍스트만 변경, 구조 변경 없음).
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
