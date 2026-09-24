@@ -712,6 +712,49 @@
     서브탭(후보 목록/3조건 분석/라인·작업장 상세)만 텍스트 길이만큼
     scrollHeight 37~38px 증가(정상), 나머지 13개는 직전 검증치와 동일.
 
+### `a60d61d` — feat: regroup 6개월 관리중 - status summary before detail table
+- 조사: `walk_audit_dom.py`로 `#awAudit`의 4개 서브탭별 실제 자식 순서를
+  전수 조회. "6개월 관리중"에서만 `.awAuditLane`(410px)이
+  `.awCard.audit6m`(1744px) **뒤**에 위치함을 확인.
+- 원인 체인 추적: `grep -n "insertAdjacentElement"`로 관련 5개 파일
+  (activity-workflow.js/audit-random-draw.js/audit-six-month-control.js/
+  audit-canonical-execution.js/audit-close-evaluation.js/audit-action-
+  case-trace.js)의 앵커 로직을 모두 대조:
+  - `audit-random-draw.js`(auditDraw): `(a.querySelector('.awHero')||
+    a.firstElementChild).insertAdjacentElement('afterend',host)`
+  - `audit-six-month-control.js`(audit6m): `(host.querySelector
+    ('.auditDraw')||host.querySelector('.awHero')||host.firstElementChild)
+    ?.insertAdjacentElement('afterend',box)`
+  - `audit-canonical-execution.js`(auditClosedLoop): 위와 동일한
+    `.auditDraw` 우선 앵커.
+  - `audit-close-evaluation.js`(hd20AuditCloseEvaluation): `.audit6m`
+    우선, 없으면 `.auditClosedLoop`, 없으면 `host.lastElementChild`.
+  - `audit-action-case-trace.js`: `.audit6m`→`.auditClosedLoop`→
+    `.awHero`→`firstElementChild` 순으로 폴백.
+  모든 카드가 ".auditDraw가 있으면 그 뒤" 패턴을 공유하고, auditDraw
+  자신은 항상 `.awHero` 바로 뒤에 꽂히므로, "awHero→auditDraw→(나머지
+  전부 체인)"이 고정되고 원래 awHero 바로 다음에 있어야 했던
+  awAuditLane이 이 체인 전체 뒤로 밀려나는 구조였음을 규명.
+- file: `audit-random-draw.js`
+  - `(a.querySelector('.awHero')||a.firstElementChild).insertAdjacentElement
+    ('afterend',host)` → `(a.querySelector('.awAuditLane')||a.querySelector
+    ('.awHero')||a.firstElementChild).insertAdjacentElement('afterend',host)`.
+  - 안전성 근거: `.awHero`와 `.awAuditLane`은 `activity-workflow.js`의
+    단일 `w.innerHTML=` 호출로 원자적으로 함께 생성되므로, `#awAudit`이
+    존재하는 시점에는 항상 `.awAuditLane`도 이미 존재함 — 타이밍 경합
+    없음.
+- file: `index.html`: 캐시 버전 갱신.
+- verification (Chromium, 모바일 430px):
+  - `walk_audit_dom.py` 4개 서브탭 전체 재조회: "6개월 관리중"만
+    `awHero→awAuditLane→audit6m`으로 순서 변경, 나머지 3개(대상추출/
+    실시점검입력/종료평가)는 완전히 동일(awAuditLane이 그 서브탭에서는
+    애초에 숨김 처리되어 영향 없음).
+  - 스크린샷으로 "④ 진단·유지" 제목 바로 다음에 4개 요약 카드
+    (관리중 200건/재발징후 29건/Action연계 546건/월별확인 200건)가
+    표시되고 그 다음에 상세 표가 이어짐을 확인.
+  - 16개 탭 전체 재순회: 콘솔 오류 0건. scrollHeight 16개 전부 수정
+    전과 완전히 동일(콘텐츠 삭제 없이 순서만 조정 — 의도한 결과와 일치).
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.

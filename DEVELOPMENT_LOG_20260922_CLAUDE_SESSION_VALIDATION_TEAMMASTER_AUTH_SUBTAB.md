@@ -372,8 +372,26 @@
   명확히 함.
 - 검증: 설명문 정상 반영, 16개 탭 콘솔 오류 0건.
 
+### 23. 6개월 관리중 요약카드 재배치(어제 보류했던 건 해결) (커밋 `a60d61d`)
+- 요구사항: "④ 진단·유지도 같은 방식으로". 어제 "레거시 경로라 위험하다"며
+  보류했던 `awAuditLane` 순서 문제를 오늘 확보한 재배치 패턴으로
+  재조사·해결.
+- 4개 서브탭 전체 DOM을 직접 쿼리해 원인 체인 규명: `auditDraw`/`audit6m`/
+  `auditClosedLoop`/`hd20AuditCloseEvaluation` 카드들이 전부
+  ".auditDraw 기준"으로 줄줄이 삽입되는 구조였고, `auditDraw` 자신은
+  `.awHero` 바로 뒤에 꽂혀서, 원래 awHero 바로 다음에 있어야 했던
+  `.awAuditLane`(요약 4카드)이 이 체인 전체보다 뒤로 밀려나 있었음.
+- `audit-random-draw.js`의 `auditDraw` 삽입 앵커 한 곳만
+  `.awHero`→`.awAuditLane`(폴백 awHero)로 변경. awHero/awAuditLane이
+  원자적으로 함께 생성되어 타이밍 경합 없음을 확인. 이 한 줄로 체인
+  전체가 자동으로 뒤따라 이동.
+- 결과: "6개월 관리중"에서 요약 4카드(관리중/재발징후/Action연계/
+  월별확인)가 상세 표보다 먼저 표시. 다른 3개 서브탭은 영향 없음.
+- 검증: 4개 서브탭 DOM 재조회, 스크린샷, 16개 탭 콘솔 오류 0건,
+  scrollHeight 전부 불변(삭제 없음 재확인).
+
 ## 현재 상태
-- 총 22개 commit 모두 `main`에 push, GitHub Pages 재배포 확인.
+- 총 23개 commit 모두 `main`에 push, GitHub Pages 재배포 확인.
 - 가상데이터 파이프라인, 팀 마스터, 인증 흐름, 서브탭 구조 모두 실제 Chromium
   검증을 거쳤으며 알려진 콘솔 오류는 없음.
 
