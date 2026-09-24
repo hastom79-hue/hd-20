@@ -21,7 +21,7 @@ function integrateAdvancement(){
   addAreaHeader(conversion,'고도화 관리','고도화·판정','등록된 고도화 후보가 조건을 얼마나 충족했는지 확인하고, 공식 확정 여부를 판정합니다.');
   conversion.dataset.area='advancement';
   let host=conversion.querySelector('.hd20AdvancementIntegrated');
-  if(!host){host=document.createElement('section');host.className='hd20AdvancementIntegrated';conversion.appendChild(host)}
+  if(!host){host=document.createElement('section');host.className='hd20AdvancementIntegrated';const anchor=conversion.querySelector('.pcInsight')||conversion.querySelector('.pcFlow');if(anchor)anchor.insertAdjacentElement('afterend',host);else conversion.appendChild(host)}
   if(workplace&&workplace.parentElement!==host){host.appendChild(workplace);workplace.classList.add('hd20IntegratedSubscreen');workplace.dataset.area='advancement'}
   if(workplace)workplace.classList.add('on');
 }
