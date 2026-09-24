@@ -694,6 +694,24 @@
   - 16개 탭 전체 재순회: 콘솔 오류 0건. 후보 목록 scrollHeight
     6,499→6,490px(순서 변경에 따른 미세 리플로우, 콘텐츠 변화 없음).
 
+### `29f702c` — feat: clarify funnel connects to top metric cards (reframe, not delete)
+- file: `performance-conversion-analysis.js`
+  - `.pcHeader`의 `<p>` 설명문 뒤에 문장 추가: "후보·공식 확정 건수는
+    위 핵심지표 카드와 같은 값을, 단계별 흐름으로 다시 보여드립니다."
+  - 이전에 시도했던 "퍼널에서 중복 항목 제거" 방식은
+    `advancement-subtab-dedupe-guard.js`가 `.pcStage` 마크업을
+    `확정·수평전개` 탭의 stage 필터링(`key==='confirmed'||key===
+    'maintained'`)에 그대로 재사용하고 있어 위험하다고 이미 판단했던
+    것을 재확인하고, "삭제" 대신 "설명 추가"로 방향 전환.
+- file: `index.html`: 캐시 버전 갱신.
+- verification (Chromium, 모바일 430px):
+  - `document.querySelector('.pcHeader p')?.textContent`로 새 문장이
+    포함된 것을 확인.
+  - 스크린샷으로 실제 렌더링 확인.
+  - 16개 탭 전체 재순회: 콘솔 오류 0건. 이 설명문을 공유하는 3개
+    서브탭(후보 목록/3조건 분석/라인·작업장 상세)만 텍스트 길이만큼
+    scrollHeight 37~38px 증가(정상), 나머지 13개는 직전 검증치와 동일.
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
