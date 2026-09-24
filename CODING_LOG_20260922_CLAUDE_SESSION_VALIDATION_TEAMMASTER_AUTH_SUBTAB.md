@@ -755,6 +755,29 @@
   - 16개 탭 전체 재순회: 콘솔 오류 0건. scrollHeight 16개 전부 수정
     전과 완전히 동일(콘텐츠 삭제 없이 순서만 조정 — 의도한 결과와 일치).
 
+### `19d2f5e` — fix: restore amHeroNote position on 효과·재발관리
+- 조사: `walk_action_dom.py`로 `#awAction`의 4개 서브탭별 실제 자식 순서를
+  전수 조회. "효과·재발관리"만 `.amHeroNote`(160px)가
+  `#hd20ActionVerifyStatus`(273px) 뒤로 밀려나 있음을 확인.
+- 원인 규명: `action-mail-workflow.js`의 `build()`가 `awHero`+`amHeroNote`
+  를 단일 `a.innerHTML=` 호출로 원자적으로 생성(`amHeroNote`가 항상
+  awHero 바로 다음). 그런데 오늘 세션 초반(효과·재발관리 검증패널 미표시
+  버그 수정 시) `ensureActionVerify`에 `.awHero` 폴백을 추가하면서,
+  `#hd20ActionVerifyStatus`가 `.awHero` 바로 뒤에 꽂혀 이미 그 자리에
+  있던 `.amHeroNote`를 밀어낸 것으로 확인 — 그 수정 자체(패널을 보이게
+  만든 것)는 올바랐으나 부수적으로 순서가 어긋남.
+- file: `hd20-subtabs.js`
+  - `ensureActionVerify(root)`: `const anchor=$('.awKpis',root)||
+    $('.awFlow',root)||$('.awHero',root)` → `...||$('.amHeroNote',root)||
+    $('.awHero',root)`(amHeroNote를 awHero보다 우선 앵커로 추가).
+- file: `index.html`: 캐시 버전 갱신.
+- verification (Chromium, 모바일 430px):
+  - `walk_action_dom.py` 재실행: "효과·재발관리"가
+    `awHero→amHeroNote→hd20ActionVerifyStatus`로 다른 3개 서브탭과
+    동일한 순서가 됨을 확인.
+  - 16개 탭 전체 재순회: 콘솔 오류 0건. 효과·재발관리만 +3px(무시 가능한
+    리플로우), 나머지 15개는 직전 검증치와 동일.
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
