@@ -778,6 +778,41 @@
   - 16개 탭 전체 재순회: 콘솔 오류 0건. 효과·재발관리만 +3px(무시 가능한
     리플로우), 나머지 15개는 직전 검증치와 동일.
 
+### `b4d45e1` — fix: show "고도화 작업장 추이" chart only on 고도화·표준화 area
+- 조사 순서: `grep -c "trendBox" index.html` → 1(정적 중복 아님 확인) →
+  `check_trendbox.py`로 5개 영역 전환마다 `.trendBox`의 상위 `.card`가
+  `visible`/`hidden`/`parentPath`를 추적 → 5개 영역 전부 `visible:True,
+  hidden:False, parentPath:['DIV.card','DIV.app(...)']`로 동일 —
+  `.app`의 직계 자식이라 영역 전환과 무관하게 항상 보임을 확정.
+- 근본 원인: `beginner-navigation.js`의 `closeScreens()`가
+  `document.querySelectorAll('.awScreen')`만 순회해 `.on` 클래스를
+  떼는데, 이 트렌드 카드는 `.awScreen` 클래스가 없어 애초에 이 순회
+  대상에 포함되지 않음. `openAdvancement()`도 `#performanceConversion
+  Analysis`만 토글할 뿐 이 카드는 건드리지 않음.
+- file: `hd20-five-area-integration.js`
+  - `syncTrendChartVisibility()` 신규: `document.querySelector
+    ('.trendBox')?.closest('.card')`로 카드 참조, `window.HD20_NAV
+    ?.active?.()||'dashboard'`로 현재 영역 조회,
+    `card.classList.toggle('hd20SubHidden',area!=='advancement')`.
+  - `window.addEventListener('hd20-nav-area-changed',()=>setTimeout
+    (syncTrendChartVisibility,0))` — `beginner-navigation.js`의
+    `syncNav()`가 이미 매 영역 전환마다 발생시키는 이벤트를 그대로 재사용
+    (신규 이벤트 추가 없음, 기존 인프라 재사용으로 저위험).
+  - 최초 로드 시에도 `DOMContentLoaded` 또는 즉시 실행 후 300ms 뒤
+    1회 동기화(다른 sync 패턴과 동일한 타이밍 보수 처리).
+- file: `final-layout-polish.js`: 캐시 버전 갱신.
+- verification (Chromium, 모바일 430px):
+  - `check_trendbox.py`: ①②④⑤ 전부 `visible:False,hidden:True`, ③만
+    `visible:True,hidden:False`로 전환.
+  - `verify_trendbox_subtabs.py`: ③ 내부 4개 서브탭(후보목록/3조건분석/
+    라인작업장상세/확정수평전개) 전부 `visible:True`, ③→①로 복귀 시
+    다시 `visible:False`로 정상 전환(양방향 확인).
+  - 16개 탭 전체 재순회: 콘솔 오류 0건. scrollHeight가 ③의 4개
+    서브탭만 수정 전과 동일, 나머지 12개는 차트 높이(약 369px)만큼
+    정확히 감소 — 콘텐츠 삭제 없이 가시성만 바뀐 결과와 정확히 일치.
+  - 스크린샷으로 "활동관리" 탭이 차트 없이 정상적으로 끝나는 것을
+    육안 확인.
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
