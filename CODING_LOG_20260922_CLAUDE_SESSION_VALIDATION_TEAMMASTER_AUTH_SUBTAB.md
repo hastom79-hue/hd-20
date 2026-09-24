@@ -840,6 +840,36 @@
   - 16개 탭 전체 재순회: 콘솔 오류 0건, scrollHeight 전부 수정 전과
     동일(텍스트만 변경, 구조 변경 없음).
 
+### `f151a99` — fix: remove 3 duplicate metric cards from 효과·재발 검증현황 panel
+- 조사: 16개 탭 스크린샷 재검토 중 ⑤ 효과·재발관리에서 상단
+  `#hd20OpsMetrics`(검증대상399/효과검증완료323/검증대기76/재발40)와
+  `#hd20ActionVerifyStatus`의 `.awKpis`(전체개선요청640/조치진행
+  대기241/완료·효과검증대상399/효과검증완료323/재발확인40, 5개)를
+  나란히 대조. `grep -o "'action.verify':\[...\]" hd20-ops-v2.js`로
+  상단 스트립 계산식을, `grep -n "function renderActionVerify"`로
+  패널 계산식을 각각 확인 — "효과검증 완료"는 라벨까지 완전히 동일,
+  "완료·효과검증 대상"="검증 대상", "재발 확인"="재발"도 값이 정확히
+  일치함을 확인(서로 다른 함수가 `hd20ActionCasesV2`의 같은 원본
+  데이터를 각자 필터링해 중복 산출).
+- file: `hd20-subtabs.js`
+  - `renderActionVerify(root)`의 `.awKpis` innerHTML에서
+    `<div><small>완료·효과검증 대상</small>...</div><div><small>효과검증
+    완료</small>...</div>` ~ `<div><small>재발 확인</small>...</div>`
+    3개 블록 제거, `전체 개선요청`/`조치 진행·대기` 2개 블록만 유지.
+  - `.awHint`(검증대기 76건 안내 문장)는 그대로 유지 — 별도 손실 방지
+    조치 불필요(이미 문장 형태로 같은 정보를 담고 있었음).
+- file: `index.html`: 캐시 버전 갱신.
+- CSS 확인: `.awKpis{grid-template-columns:1fr!important}`(hd20-five-
+  area.css) — 단일 열 레이아웃이라 5→2개로 줄어도 그리드가 비어
+  보이거나 어색해지는 문제 없음을 사전 확인 후 진행.
+- verification (Chromium, 모바일 430px):
+  - 패널 텍스트: "전체 개선요청640건 조치 진행·대기241건 완료 399건
+    중 효과검증 미입력 76건은 검증 대기 상태입니다."로 정상 축소.
+  - 스크린샷으로 실제 레이아웃 확인(2개 카드 + 안내문, 어색함 없음).
+  - 16개 탭 전체 재순회: 콘솔 오류 0건. 효과·재발관리만
+    3,801→3,707px(제거된 3개 카드 높이만큼 정확히 감소), 나머지
+    15개는 직전 검증치와 완전히 동일.
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
