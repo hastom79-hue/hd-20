@@ -870,6 +870,38 @@
     3,801→3,707px(제거된 3개 카드 높이만큼 정확히 감소), 나머지
     15개는 직전 검증치와 완전히 동일.
 
+### `d21fc0f` — fix: remove amSummary card on 조치 목록 (3/4 items duplicated top strip)
+- 조사 방법론 고도화: `find_remaining_dupes.py`로 16개 탭 전체를 자동
+  순회하며 `#hd20OpsMetrics`의 값 집합과 `.awKpi/.amKpi/.amSummary>div/
+  .awKpis>div/.pcStage` 각 항목의 값을 대조, 값이 겹치는 항목을 자동
+  리스트업. 결과: ③후보목록(퍼널, 이미 처리됨)과 ⑤조치목록
+  (`.amSummary`, 지난 커밋에서 라벨만 고치고 값 중복은 미처리)
+  2곳만 잔존.
+- file: `action-mail-workflow.js`
+  - `build()` 템플릿에서 `<div class="amSummary">...</div>`
+    (전체요청/완료/기한내진행중/기한경과 4카드) 블록 전체 삭제.
+  - 안전성 확인: `renderCases()`의 `sumEls={total:$('[data-am-sum=
+    "total"]',a),...}` → `if(sumEls.total){...}` 가드가 이미 있어
+    대상 요소 소실 시 조용히 스킵(에러 없음).
+  - `action-subtab-dedupe-guard.js`의 `.amSummary` 관련 선택자
+    (`classify()`, `:scope > .amSummary`)도 대상이 없으면 단순히
+    매치 0건으로 안전.
+- file: `index.html`: 캐시 버전 갱신.
+- 판단 근거(왜 라벨 수정이 아닌 완전 삭제로 전환했는지): `.amSummary`
+  는 `grid-template-columns:repeat(4,1fr)` 고정 4열이라, 중복 3개만
+  제거하고 고유 1개("기한내 진행중")만 남기면 그리드 3/4이 빈 채로
+  남아 시각적으로 어색함. "기한내 진행중"의 정보 가치도 같은 영역의
+  "처리기간 분석" 탭이 계획대비 지연/조기완료/7일이상지연/정시완료로
+  이미 더 상세히 다루고 있어, 카드 전체를 삭제해도 실질적 정보 손실이
+  낮다고 판단.
+- verification (Chromium, 모바일 430px):
+  - `document.querySelector('.amSummary')` → `null`.
+  - `.amCases tbody tr` 640행 정상(표 렌더링에 영향 없음 확인).
+  - 스크린샷으로 레이아웃 확인.
+  - 16개 탭 전체 재순회: 콘솔 오류 0건. 조치 목록만
+    7,090→6,974px(제거분만큼 정확히 감소), 나머지 15개는 직전
+    검증치와 완전히 동일.
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
