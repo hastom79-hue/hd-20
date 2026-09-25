@@ -902,6 +902,31 @@
     7,090→6,974px(제거분만큼 정확히 감소), 나머지 15개는 직전
     검증치와 완전히 동일.
 
+### `2bbdcfa` — feat: differentiate 실적분석 from 활동관리
+- 조사: 16개 탭 풀페이지 스크린샷을 완성도 관점(WORK PURPOSE 안내와
+  실제 콘텐츠가 일치하는지)에서 재검토. "실적분석"의 WORK PURPOSE는
+  "팀별 활동 편차, 편차 원인, 최근 추이, 후보 전환 분석의 의사방향
+  확인"을 명시하지만 실제 화면은 "활동관리"와 완전히 동일(같은 Excel
+  Import, 같은 등록 버튼, 같은 흐름가이드)했음.
+- 원인 규명: `applyActivity(sub)`의 유일한 분기(`const form=$('.awRegisterFormCard',root);if(form)show(form,sub==='manage')`)
+  대상 요소가 `check_registerform.py`로 직접 확인한 결과 두 서브탭
+  모두에서 `h:0`(내용이 항상 비어있음 — 등록 폼은 `#awRegisterModal`
+  모달로 실제 위치가 옮겨져 있어 정적 카드 자리는 빈 채로 남음)이라,
+  toggle이 시각적으로 전혀 효과가 없었음을 확인.
+- file: `hd20-subtabs.js`
+  - `applyActivity(sub)`에 `isAnalysis=sub==='analysis'` 분기를 추가해
+    다음 4개 요소를 실적분석에서 숨김: `.awFlow`(등록 흐름가이드),
+    `.awActions`(+5S 신규등록 버튼), `#hd20ActivityExcelImport`(Excel
+    Import 도구), `#hd20ImportAnalysis`(Excel Import 분석). `.awGrid`
+    (실적 표)와 `.adcCard`(팀별 차트)는 두 서브탭 모두 유지.
+- file: `index.html`: 캐시 버전 갱신.
+- verification (Chromium, 모바일 430px):
+  - scrollHeight: 활동관리 4,529px(불변), 실적분석 3,027→2,323px.
+  - 스크린샷으로 실적분석이 "화면안내→상단지표→표→팀별차트"의
+    조회·분석 전용 화면으로 정리됨을 확인.
+  - 16개 탭 전체 재순회: 콘솔 오류 0건. 나머지 14개 탭은 직전
+    검증치와 완전히 동일.
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
