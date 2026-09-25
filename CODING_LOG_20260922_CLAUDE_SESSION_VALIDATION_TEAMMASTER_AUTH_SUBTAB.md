@@ -927,6 +927,58 @@
   - 16개 탭 전체 재순회: 콘솔 오류 0건. 나머지 14개 탭은 직전
     검증치와 완전히 동일.
 
+### `2322352` — feat: implement dashboard "성과·운영분석" section
+- 조사: `hd20-subtabs.js`의 CONTRACT를 grep으로 전수 추출해 각 항목의
+  title/purpose를 실제 화면 내용과 대조하던 중, "dashboard.analysis"로
+  가는 UI 버튼이 어디에도 없음을 발견(`check_dashboard_analysis.py`로
+  `window.HD20_SUBNAV.state()`가 항상 `{area:'dashboard',sub:'summary'}`
+  로 고정되어 있음을 확인). 이어서 `grep -rn "dashboard.*analysis"`로
+  이 키가 hd20-ops-v2.js/hd20-kpi-evidence-drill.js/hd20-ops-production-
+  filter-guard.js/hd20-operational-integrity.js 등 다수 파일에서 실제로
+  참조되는 살아있는 키임을 확인(죽은 코드 아님) — 특히 `hd20-subtabs.js`
+  의 `applyDashboard(sub)`에 `sub==='analysis'` 분기가 이미 완전히
+  구현되어 있음을 발견: `.cards` 숨김, `#hd20DashboardPriority` 유지,
+  `#hd20OperationalBridge` 노출, `.bottomGrid` 노출.
+- 1차 시도(되돌림): `dashboard-section-tabs.js`의 `apply(key)`에
+  `window.HD20_SUBNAV?.select?.('dashboard','analysis')`를 추가해
+  `applyDashboard`를 그대로 트리거하려 했음. 이 과정에서 Playwright
+  테스트 환경이 완전히 hang되는 현상을 겪음 — `pg.evaluate()`가 응답
+  없이 멈춤. 단계별 `flush=True` 프린트로 격리한 결과 `goto`/최초
+  `wait_for_timeout`까지는 성공하고 그 다음 `evaluate()` 호출에서
+  멈추는 것을 확인, 페이지 메인 스레드 자체가 무한 루프에 빠졌다고
+  판단. `select()`가 내부에서 `hd20-subtab-changed` CustomEvent를
+  발생시키고, 이 이벤트가 문서 전역에 걸린 다수의 MutationObserver
+  (오늘 세션에서 이미 28개 확인)와 상호작용해 재귀적 갱신 루프를
+  유발한 것으로 추정 — 원인을 100% 특정하기보다, 원본 파일로 되돌리고
+  더 안전한 경로로 재설계.
+- 2차 구현(채택): `dashboard-section-tabs.js`만 수정, `HD20_SUBNAV`나
+  다른 파일은 전혀 건드리지 않음. TABS 배열에 6번째 항목만 추가:
+  `{key:'analysis',label:'성과·운영분석',desc:'Lead Time·유지율·
+  재발률',targets:['#hd20DashboardPriority','#hd20OperationalBridge',
+  '.bottomGrid']}`. 기존 `apply(key)` 함수(다른 5개 섹션이 이미
+  안전하게 쓰고 있는, cross-file 이벤트를 발생시키지 않는 targets
+  기반 표시 전환 로직)를 그대로 재사용 — 신규 함수·이벤트 없음, 배열
+  항목 1건 추가가 변경의 전부.
+- file: `final-layout-polish.js`: 캐시 버전 갱신.
+- verification (Chromium, `--no-sandbox`, `wait_until='domcontentloaded'`
+  — 이 세션의 헤드리스 환경이 외부 CDN 차단으로 `'load'` 이벤트가
+  끝나지 않는 기존 특성이 있어 테스트 방식만 전환, 앱 자체와는 무관):
+  - 6개 섹션 버튼 생성 확인: `1.종합현황 ~ 6.성과·운영분석`.
+  - 6개 섹션을 매번 새 페이지 로드에서 독립적으로 클릭 → 전부 정상
+    전환, 콘솔 오류 0건.
+  - "고도화맵→기준·추이" 연속 전환 시의 자동화 느림을, 원본 미수정
+    파일로도 동일 재현해 이번 변경과 무관함을 대조 확인(사전 존재
+    특성).
+  - 스크린샷으로 "성과·운영분석" 진입 시 "운영 건전성 KPI"(공식판정
+    완료율 62.4%, 평균판정 Lead Time 12.6일, 고도화수준 Lv.3.1,
+    Audit 후 6개월 유지율 33.1%, Audit 부적합 재발률 22.9%, 기한 내
+    개선조치 완료율 54.4%), "6개월 종료평가 결과", "5S 고도화 판정
+    기준"이 CONTRACT의 약속대로 정상 표시됨을 확인.
+  - 16개 탭 전체 재순회: 콘솔 오류 0건. "① 대시보드/성과·운영분석"의
+    버튼 클릭이 오늘 세션 전체를 통틀어 처음으로 성공(이전까지는
+    도달 경로 자체가 없어 매번 click=False였음), h=3,026px. 나머지
+    15개 탭은 직전 검증치와 완전히 동일.
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.

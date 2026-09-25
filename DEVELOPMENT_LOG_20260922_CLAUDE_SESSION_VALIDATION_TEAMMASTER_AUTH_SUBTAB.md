@@ -473,8 +473,32 @@
 - 검증: 실적분석 3,027→2,323px로 실질적 구분 확인, 활동관리는 불변,
   16개 탭 콘솔 오류 0건.
 
+### 30. 대시보드 "성과·운영분석" 완성 — 정의만 있고 진입 불가했던 기능 연결 (커밋 `2322352`)
+- 요구사항: "지금 준비된 로직을 연결해서 실제로 만들어달라"(미완성 기능을
+  실제로 완성해달라는 확인).
+- 배경: `dashboard.analysis`(성과·운영분석)는 CONTRACT 정의와 여러 파일의
+  계산 로직(hd20-ops-v2.js, hd20-kpi-evidence-drill.js 등)이 이미 있었지만,
+  대시보드가 자체 5단계 섹션 시스템만 써서 진입 버튼이 전혀 없었음.
+  `applyDashboard(sub)`에도 sub==='analysis' 전용 표시 로직이 이미 완성
+  되어 있었으나 호출 경로가 없었음.
+- 시행착오: 처음엔 `HD20_SUBNAV.select('dashboard','analysis')`로 기존
+  로직을 재사용하려 했으나, 이 호출이 'hd20-subtab-changed' 이벤트를
+  발생시켜 문서 전역 MutationObserver들과 얽혀 **브라우저 탭이 완전히
+  멈추는 무한루프성 문제**를 실측으로 발견, 즉시 되돌림. 대신 이미
+  검증된 안전한 targets 방식(cross-file 이벤트 없이 DOM 표시만 전환)
+  으로 재구현.
+- `dashboard-section-tabs.js`의 TABS 배열에 6번째 섹션 추가:
+  `targets:['#hd20DashboardPriority','#hd20OperationalBridge',
+  '.bottomGrid']` — 이미 존재하는 "운영 상태"(Lead Time·유지율·재발률·
+  조치완료율), "6개월 종료평가 결과", "판정기준·고도화 추이" 콘텐츠를
+  재사용해 CONTRACT의 약속을 충족.
+- 검증: 6개 섹션 독립 전환 전부 정상(콘솔 오류 0건), 16개 탭 전체
+  재순회에서 "성과·운영분석" 버튼 클릭이 **오늘 세션 최초로 성공**
+  (click=True, h=3,026px — 이전까지 항상 click=False였음), 나머지 15개
+  탭은 직전 검증치와 완전히 동일.
+
 ## 현재 상태
-- 총 29개 commit 모두 `main`에 push, GitHub Pages 재배포 확인.
+- 총 30개 commit 모두 `main`에 push, GitHub Pages 재배포 확인.
 - 가상데이터 파이프라인, 팀 마스터, 인증 흐름, 서브탭 구조 모두 실제 Chromium
   검증을 거쳤으며 알려진 콘솔 오류는 없음.
 
