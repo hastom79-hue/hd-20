@@ -53,7 +53,16 @@ function downloadGridCsv(){const tables=$$('#hd20GridBody table');if(!tables.len
 function render(area){const bar=ensure(),items=MAP[area]||[];state.area=area;if(!items.some(x=>x[0]===state.sub))state.sub=items[0]?.[0]||'';bar.innerHTML=items.map(([k,n])=>`<button type="button" data-sub="${k}" class="${k===state.sub?'on':''}">${n}</button>`).join('');$$('button',bar).forEach(b=>b.onclick=()=>select(area,b.dataset.sub));renderPurpose(area,state.sub);requestAnimationFrame(()=>apply(area,state.sub))}
 function show(el,on){if(el)el.classList.toggle('hd20SubHidden',!on)}function showAll(root,sel='.awCard'){if(root)$$(sel,root).forEach(el=>show(el,true))}
 function applyDashboard(sub){const cards=$('.cards'),main=$('.mainGrid'),bottom=$('.bottomGrid'),priority=$('#hd20DashboardPriority'),bridge=$('#hd20OperationalBridge');if(sub==='summary'){show(cards,true);show(main,true);show(priority,true);show(bridge,false);show(bottom,false);if(main){show(main.children?.[0],true);show($('.sideStack',main),true)}}else{show(cards,false);show(main,true);show(priority,true);show(bridge,true);show(bottom,true);if(main){show(main.children?.[0],false);show($('.sideStack',main),true)}}}
-function applyActivity(sub){const root=$('#awActivity');if(!root)return;root.dataset.subview=sub;showAll(root);show($('.awFlow',root),true);show($('.awGrid',root),true);const form=$('.awRegisterFormCard',root);if(form)show(form,sub==='manage')}
+function applyActivity(sub){const root=$('#awActivity');if(!root)return;root.dataset.subview=sub;showAll(root);show($('.awGrid',root),true);const form=$('.awRegisterFormCard',root);if(form)show(form,sub==='manage');
+  /* 실적분석: 등록/가져오기 도구를 숨기고 팀별 분석 콘텐츠 위주로 구성해
+     활동관리(등록·조회)와 실질적으로 구분되도록 함(내용 삭제가 아니라
+     서브탭별 표시 범위 재구성). */
+  const isAnalysis=sub==='analysis';
+  show($('.awFlow',root),!isAnalysis);
+  show($('.awActions',root),!isAnalysis);
+  show(document.getElementById('hd20ActivityExcelImport'),!isAnalysis);
+  show(document.getElementById('hd20ImportAnalysis'),!isAnalysis);
+}
 function applyAdvancement(sub){const conversion=$('#performanceConversionAnalysis'),work=$('#awWorkplace');document.querySelector('.app')?.classList.add('awFocused');if(conversion){conversion.classList.add('on');show(conversion,true);conversion.classList.toggle('hd20AdvancementStandard',sub==='standard');conversion.dataset.subview=sub}if(work){work.classList.add('on');show(work,true);work.dataset.subview=sub;showAll(work);show($('.awFlow',work),true);show($('.awGrid',work),true)}}
 function applyAudit(sub){const root=$('#awAudit');if(!root)return;root.dataset.subview=sub;showAll(root);show($('.awFlow',root),true);show($('.awAuditLane',root),true);const draw=$('.auditDraw',root),batch=$('#hd20AuditBatchExecution',root),closed=$('.auditClosedLoop',root),ongoing=$('.audit6m',root),closeEval=document.getElementById('hd20AuditCloseEvaluation');show(draw,sub==='draw');show(batch,sub==='draw');show(closed,sub==='inspect');show(ongoing,sub==='ongoing');show(closeEval,sub==='retention')}
 function ensureActionVerify(root){let host=$('#hd20ActionVerifyStatus',root);if(!host){host=document.createElement('section');host.id='hd20ActionVerifyStatus';host.className='awCard';const anchor=$('.awKpis',root)||$('.awFlow',root)||$('.amHeroNote',root)||$('.awHero',root);anchor?.insertAdjacentElement('afterend',host)}return host}
