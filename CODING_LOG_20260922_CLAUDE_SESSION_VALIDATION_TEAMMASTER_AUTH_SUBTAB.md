@@ -979,6 +979,73 @@
     도달 경로 자체가 없어 매번 click=False였음), h=3,026px. 나머지
     15개 탭은 직전 검증치와 완전히 동일.
 
+### `4d7cfa0` — fix: restore missing "통합기준정보" modal (#masterModal never existed)
+- 조사 경로: `document.getElementById('openMaster').onclick` 직접 호출 →
+  예외 없이 종료, `document.body.children.length` 변화 없음(77→77) →
+  body 직속 자식 전체 나열해 `masterModal`이라는 id의 요소가 존재하지
+  않음을 확인 → `grep -c 'id="masterModal"' index.html`로 정적 마크업
+  에도 없음을 확인 → `grep -rln "masterModal|masterOrderPanel|...`로
+  관련 4개 파일(app.js/master-context-final.js/operating-policy-
+  master.js/modal-safety.js)을 특정.
+- 각 파일 전체 소스를 읽어 필요한 셀렉터를 전수 정리:
+  - app.js `initMaster()`: `#masterModal`(`.on` 클래스로 표시/숨김),
+    `#closeMaster`/`#cancelOrder`/`#saveOrder`, `[data-master-tab]`,
+    `#masterOrderPanel`/`#masterTargetPanel`, `#orderList`(
+    `renderOrderEditor()`가 팀 순서를 ▲▼ 버튼과 함께 렌더링),
+    `#q1Target`~`#q4Target`(`loadTargets()`/`readTargetInput()`).
+  - master-context-final.js `mount()`: `#masterModal .modalBox`의
+    `.masterTabs` 바로 뒤에 `.hd20MasterContext`(고정정보 카드 4개:
+    판정주체/5S활동유형6종/고도화3대판정기준/Audit유지관리) 삽입.
+  - operating-policy-master.js `ensure()`: 마찬가지로 `.masterTabs`
+    뒤에 "운영정책" 탭 버튼 + `#hd20OperatingPolicyPanel`(개선요청
+    자동 Deadline, Audit Risk 가중 랜덤 폼) 삽입.
+  - modal-safety.js: `#masterModal .modalBox/.modalHead/.masterTabs/
+    .orderList/.modalFoot`에 대한 반응형 sticky 보정 CSS(이미 존재,
+    기본 골격이 있다는 전제 하의 오버라이드일 뿐 골격 자체는 안 만듦).
+  - `#cols`/`#targetLine`/`#targetLabel`(app.js의 `renderChart()`/
+    `renderTargetInfo()` 대상)은 `grep -c`로 index.html에 이미 정상
+    존재함을 확인해 모달 문제와 무관함으로 범위에서 제외.
+- 신규 파일: `master-info-modal.js`
+  - 기존 `activity-register-modal.js`의 모달 CSS 패턴
+    (`position:fixed;inset:0;z-index:...;display:none` +
+    `.on{display:flex}`)을 그대로 따라 일관성 유지.
+  - `#masterModal > .modalBox`에 `.modalHead`(제목+`#closeMaster`),
+    `.masterTabs`(초기 2개 탭: 표시순서/인당목표), `#masterOrderPanel`
+    (`#orderList` 컨테이너 포함), `#masterTargetPanel`(Q1~Q4 input,
+    기본 `display:none`), `.modalFoot`(`#cancelOrder`/`#saveOrder`)
+    구조를 문자열 템플릿으로 작성해 `document.body`에 삽입.
+  - `master-context-final.js`가 삽입할 `.hd20MasterContext`용 CSS와
+    `operating-policy-master.js`가 재사용할 `.masterTabs button`류
+    스타일도 함께 정의(두 파일 모두 자체 스타일을 안 만들고 공용
+    클래스에 의존하는 구조였으므로).
+- file: `index.html`: `master-info-modal.js` 스크립트 태그를 `app.js`
+  바로 앞에 삽입 — `initMaster()`(app.js의 `boot()`가 `DOMContentLoaded`
+  또는 즉시 실행) 시점에 `#masterModal`이 이미 DOM에 존재하도록 순서
+  보장. `master-context-final.js`/`operating-policy-master.js`는
+  로드 순서상 더 뒤에 있고 각자 `if(!modal||!tabs)return false`류
+  가드가 있어 순서 문제 없음을 확인.
+- verification (Chromium, 모바일 430px):
+  - 클릭 → `document.getElementById('masterModal').classList.contains
+    ('on')` true, `h:932`(전체 오버레이) 확인.
+  - "표시순서" 탭: `#orderList .orderRow` 16개(전체 생산팀 수와 일치)
+    정상 렌더링.
+  - `.hd20MasterContext`(고정정보 카드) 존재 확인 — master-context-
+    final.js가 정상적으로 자기 콘텐츠를 삽입했음을 의미.
+  - "인당 목표" 탭 전환 → `#masterTargetPanel` `display:block`,
+    Q1~Q4 입력란에 기존 `localStorage`(`gmes5s_quarter_perperson_
+    targets`) 값 2/3/4/5가 정상 로드됨을 스크린샷으로 확인.
+  - "운영정책" 탭(operating-policy-master.js가 동적으로 추가) 클릭 →
+    `#hd20OperatingPolicyPanel` `display:block`, "개선요청 자동
+    Deadline"·"Audit Risk 가중 랜덤" 콘텐츠 정상 표시 스크린샷 확인.
+  - E2E 저장 흐름: `[data-act="down"][data-i="0"]` 클릭으로 1·2번째
+    팀 순서 실제 교체(대형Att.팀→대형메인팀) 확인 → `#saveOrder` 클릭
+    → 모달 자동 닫힘 확인 → `localStorage.getItem('gmes5s_team_
+    display_order')`에 변경된 순서가 정확히 저장됨을 확인.
+  - `#closeMaster`(×버튼) 클릭으로도 정상적으로 닫힘을 별도 확인.
+  - 16개 탭 전체 재순회: 콘솔 오류 0건. 모달이 기본 `display:none`
+    상태라 열지 않는 한 페이지 레이아웃에 전혀 영향 없음 — scrollHeight
+    16개 전부 수정 전과 완전히 동일.
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
