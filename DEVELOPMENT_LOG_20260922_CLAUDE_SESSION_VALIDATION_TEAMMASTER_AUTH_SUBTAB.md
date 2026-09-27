@@ -542,8 +542,28 @@
 - 검증: 4개 서브탭 전체 확인, 조치목록은 불변, 나머지 3개는 약 130px씩
   감소, 16개 탭 콘솔 오류 0건.
 
+### 34. 조치 목록 데스크톱 빈 여백 버그 (사용자 스크린샷 리포트) 수정 (커밋 `a189e3f`)
+- 요구사항: 사용자가 데스크톱 화면 스크린샷 첨부 — "⑤ 개선실행 > 조치
+  목록"의 표가 화면 왼쪽 절반만 쓰고 오른쪽에 큰 빈 공간이 생기는 문제
+  리포트.
+- 원인: `.amGrid`(2열 그리드, 원래 "신규등록 폼"+"현황 표" 나란히 배치용)
+  에서, `action-register-modal.js`가 신규등록 폼 카드를 별도 모달로
+  이동시키면서(정상 설계, "+개선요청 등록" 버튼으로 여는 팝업) 남은
+  그리드 열 구성을 전혀 조정하지 않아 카드 1개만 남은 채 2열 틀이
+  유지되어 오른쪽 열이 통째로 빈 공간이 됨.
+- 디버깅: DOM 트리 덤프로 `.amGrid` 자식이 1개뿐임을 확인 →
+  `getElementById('amDate')`의 부모 체인 추적으로 폼이
+  `#hd20ActionRegisterModal`(모달)로 이동해 있음을 확인 → 1차 CSS 수정
+  시도가 `workflow-area-density.css`의 ID 셀렉터+`!important` 규칙에
+  명시도로 밀려 실패 → 동일 명시도로 재수정.
+- `action-register-modal.js`에 `#awAction>.amGrid.hd20AmGridSingle{grid-
+  template-columns:1fr!important}` 추가, 폼 이동 직후 이 클래스 부여.
+- 검증: 데스크톱 gridTemplateColumns가 2열(540px+881px)→단일열(1432px)
+  로 정확히 변경, 모달 기능은 그대로 유지, 모바일 16개 탭은 이미
+  1100px 이하에서 1열 강제되어 있어 영향 없음(콘솔 오류 0건).
+
 ## 현재 상태
-- 총 33개 commit 모두 `main`에 push, GitHub Pages 재배포 확인.
+- 총 34개 commit 모두 `main`에 push, GitHub Pages 재배포 확인.
 - 가상데이터 파이프라인, 팀 마스터, 인증 흐름, 서브탭 구조 모두 실제 Chromium
   검증을 거쳤으며 알려진 콘솔 오류는 없음.
 

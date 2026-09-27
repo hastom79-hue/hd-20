@@ -1114,6 +1114,50 @@
     나머지 3개 서브탭은 각 약 130px 감소, 다른 12개 탭은 직전
     검증치와 동일(종료평가는 기존에 문서화된 간헐적 race, 무관).
 
+### `a189e3f` — fix: 조치 목록 데스크톱 와이드 화면 빈 여백 제거
+- 조사 경로: 사용자 스크린샷(1792px 폭 추정)에서 표 오른쪽 넓은 빈
+  공간 확인 → `check_wide_table.py`로 동일 폭(1792px) 재현, `.amGrid`
+  w=1432px인데 내부 `.amCases`(실제로는 `<table>` 태그)는 732px만
+  차지함을 확인 → `.amCases`가 `width:100%`가 있는데도 `min-width:
+  560px`+콘텐츠 크기로만 렌더링되는 것을 보고, 표 자체보다 부모
+  `.amGrid`를 의심 → `debug_amgrid.py`로 `.amGrid`의 실제 자식이
+  1개(`.amCard`, 헤드="개선요청 현황")뿐임을 확인, `gridTemplateColumns:
+  '540.359px 881.641px'`(2열 유지)도 함께 확인.
+- `dump_dom_tree.py`로 `#awAction .amGrid`의 렌더링된 DOM 트리를 재귀
+  덤프해 구조를 정밀 확인. `check_final.py`로 `.amHead` 텍스트가
+  "개선요청 현황"이면서도 `#amDate`/`#amTeam`/`#amRegister`/`.amForm`
+  등 신규등록 폼 필드가 `!!exists` true로 나오는 모순을 발견 →
+  `trace_amdate.py`로 `#amDate`의 정확한 부모 체인을 추적해
+  `INPUT#amDate → LABEL → .amForm → .amBody → .amCard.amRegisterFormCard
+  → .armBody → .armBox → #hd20ActionRegisterModal`임을 확인 — 폼 카드
+  전체가 모달로 이동해 있었음(삭제된 게 아니라 정상적인 모달 전환).
+- file: `action-register-modal.js`
+  - `setup()` 소스를 읽어 `$('.armBody',modal).appendChild(card)`가
+    이 이동을 수행하는 지점임을 특정.
+  - CSS에 `.amGrid.hd20AmGridSingle{grid-template-columns:1fr!important}`
+    추가, 카드 이동 직후 `root.querySelector('.amGrid')`에 이 클래스
+    부여 — **1차 시도**.
+  - 검증 결과 `check_grid_css.py`로 클래스는 정상 부여됐으나
+    computed `gridTemplateColumns`가 여전히 `'540.359px 881.641px'`
+    (2열)로 안 바뀜을 확인 → `grep`으로 `workflow-area-density.css`에
+    `#awAction>.amGrid{grid-template-columns:minmax(360px,.76fr)
+    minmax(0,1.24fr)!important}`(ID 셀렉터 포함, 명시도 1-1-0)가 있어
+    내 규칙(클래스만, 명시도 0-2-0)보다 우선함을 특정.
+  - **2차 수정(최종)**: 셀렉터를 `#awAction>.amGrid.hd20AmGridSingle
+    {grid-template-columns:1fr!important}`로 변경해 ID 포함, 명시도
+    1-2-0으로 기존 규칙(1-1-0)을 확실히 상회하도록 함.
+- file: `index.html`: 캐시 버전 갱신.
+- verification (Chromium):
+  - 데스크톱(1792px): `check_grid_css.py` 재실행 →
+    `gridTemplateColumns:'1432px'`(전체 폭 단일 열) 확인. 스크린샷
+    (`final_fixed.png`)으로 빈 공간 해소 육안 확인.
+  - `test_modal_still_works.py`: "+ 개선요청 등록" 클릭 → 모달
+    `classList.contains('on')` true, `#amDate`/`#amTeam` 정상 존재 —
+    모달 자체 기능은 이번 수정으로 전혀 영향받지 않음을 확인.
+  - 모바일(430px) 16개 탭 전체 재순회: 콘솔 오류 0건, scrollHeight
+    전부 수정 전과 완전히 동일(이미 `@media(max-width:1100px)`에서
+    1열 강제되어 있어 애초에 영향 없던 범위였음을 재확인).
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
