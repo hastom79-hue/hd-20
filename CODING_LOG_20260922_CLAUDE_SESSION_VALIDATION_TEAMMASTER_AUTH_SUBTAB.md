@@ -1093,6 +1093,27 @@
   개별 실행 버튼 일부는 이번 1차 작업 범위에 포함하지 않음(핵심
   내비게이션·도구모음 제거를 우선했음) — 필요 시 후속 과제.
 
+### `1c27f32` — feat: hide "+개선요청 등록" action on non-조치목록 subtabs
+- 조사: `walk_remaining.py`로 종료평가/팀장기준정보/처리기간분석 3개
+  화면의 DOM 구조를 재점검한 뒤 스크린샷을 정밀 재검토. "팀장 기준정보"
+  화면에서 "+ 개선요청 등록" 버튼이 눈에 띔 → `check_awflow.py`로
+  `#awAction .awActions`의 실제 내용을 조회해 "+ 개선요청 등록⇩ 현재
+  Grid 추출⎙ 출력실제 데이터 기준"임을 확인, `check_amheronote.py`로
+  `.awHero`의 설명문("BEFORE→...폐쇄루프로 추적합니다")은 영역 전체
+  수준 컨텍스트라 문제 없음을 별도 확인(혼동 방지차 함께 검증).
+- file: `hd20-subtabs.js`
+  - `applyAction(sub)` 끝에 `show($('.awActions',root),sub==='manage')`
+    추가(1줄). `.amRegisterFormCard`/`ensureActionVerify`는 이미
+    서브탭별 조건화가 있었으나 `.awActions`만 예외적으로 빠져 있던 것.
+- file: `index.html`: 캐시 버전 갱신.
+- verification (Chromium, 모바일 430px):
+  - 4개 서브탭 전체 확인: 조치목록 `{hidden:false,h:118}`, 처리기간
+    분석/팀장기준정보/효과재발관리 전부 `{hidden:true,h:0}`.
+  - 스크린샷으로 "팀장 기준정보" 화면이 버튼 없이 정리됨을 확인.
+  - 16개 탭 전체 재순회: 콘솔 오류 0건. 조치 목록 6,974px(불변),
+    나머지 3개 서브탭은 각 약 130px 감소, 다른 12개 탭은 직전
+    검증치와 동일(종료평가는 기존에 문서화된 간헐적 race, 무관).
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
