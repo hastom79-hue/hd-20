@@ -1046,6 +1046,53 @@
     상태라 열지 않는 한 페이지 레이아웃에 전혀 영향 없음 — scrollHeight
     16개 전부 수정 전과 완전히 동일.
 
+### `42d606a` — feat: add print-optimized CSS (@media print) - hide chrome, keep data only
+- 조사: `grep -l "@media print" *.css` → 매치 없음(0건)으로 인쇄 전용
+  스타일이 코드베이스에 전혀 존재하지 않음을 확인. Playwright의
+  `page.emulate_media(media='print')`로 실제 인쇄 결과를 스크린샷 촬영,
+  화면과 완전히 동일하게 배너·버튼·내비게이션까지 다 나오는 것을 실증.
+- file(신규): `print-styles.css`
+  - `@media print{...}` 블록 안에 다음을 `display:none!important`:
+    `#hd20ValidationBanner`, `.top .controls`, `.beginnerNav`,
+    `.beginnerHint`, `#hd20Subnav`, `#hd20DashboardSectionTabs`,
+    `.hd20PurposePanel`, `.hd20AreaHeader`, `.awActions`, `.awFlow`,
+    `#hd20ActivityExcelImport`, `#hd20ImportAnalysis`, `.teToolbar`,
+    `.teMore`, `.wfToolbar`, 모달 계열(`.masterModal`,
+    `.awRegisterModal`, `#hd20UniversalGridModal`, `[class$="Modal"]`,
+    `[id$="Modal"]`).
+  - AI 챗봇 버튼 숨김: 처음 `#hd20ChatLauncher`/`[class*="ChatLauncher"]`
+    로 추측했으나 스크린샷에서 여전히 노출됨을 확인 →
+    `expert-chatbot-final.js` 소스를 직접 읽어 실제 클래스명이
+    `.hd20AiFab`(버튼)/`.hd20AiPanel`(패널)임을 확인 후 정확히 수정.
+  - `#hd20OpsMetrics button`은 `hd20-ops-v2.js`에서
+    `<button type="button" data-metric="${i}">`로 만들어지는 것을
+    사전에 grep으로 확인해 위 "모달/버튼 숨김" 규칙에서 의도적으로
+    제외 — 테두리·커서만 인쇄용으로 단순화(`border`, `cursor:default`)
+    해 지표 숫자 자체는 그대로 유지.
+  - 표 관련: `thead{display:table-header-group}`,
+    `tr{page-break-inside:avoid}`로 페이지 넘김 시 헤더 유지.
+    `.app{max-width:100%;padding:0}`으로 용지 폭 활용.
+- file: `index.html`: `<link rel="stylesheet" href="print-styles.css"
+  media="print">` 추가(기존 스타일시트 링크들 마지막). `media="print"`
+  속성 덕분에 일반 화면 렌더링 시에는 이 CSS 파일 자체가 로드되지 않음.
+- verification (Chromium, 모바일 430px,
+  `page.emulate_media(media='print')`):
+  - 활동관리: 4,529px(화면) → 2,476px(인쇄). 핵심지표 4개 + "②활동관리"
+    배지 + "활동 실적·개선이력" 표(검색창 없이 전체 400건) + 팀별
+    차트만 남음을 스크린샷으로 확인.
+  - AI 버튼 수정 전/후 스크린샷 대조로 실제로 사라졌음을 육안 확인.
+  - 대시보드/후보 목록/대상 추출/조치 목록 4개 화면 추가 스크린샷:
+    154행/320건/640건 표가 전부 정상 인쇄되고 내비게이션은 제거됨.
+  - `[...document.querySelectorAll('[class$=Modal],[id$=Modal]')].some(m
+    =>getComputedStyle(m).display!=='none'&&...)`로 3개 화면 전부에서
+    모달 비노출을 코드로 재확인(false).
+  - 16개 탭을 `media='screen'` 기준으로 전체 재순회: 콘솔 오류 0건,
+    scrollHeight 16개 전부 수정 전과 완전히 동일 — 일반 화면에는
+    이 변경이 전혀 영향을 주지 않음을 확인.
+- 잔여사항: Audit 대상 추출의 "즉시발송"·"메일"·"Outlook" 등 행 단위
+  개별 실행 버튼 일부는 이번 1차 작업 범위에 포함하지 않음(핵심
+  내비게이션·도구모음 제거를 우선했음) — 필요 시 후속 과제.
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
