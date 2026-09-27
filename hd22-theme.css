@@ -1,0 +1,90 @@
+/* hd-22 디자인 벤치마킹 테마
+   - 진한 남색 헤더 + 알약형 대메뉴 한 줄
+   - 칩형 하위 탭
+   - 화면 안내: "사용자가 할 일 / 관리자가 관리할 것" 2카드 + 핵심 버튼
+   - 큰 숫자 지표 카드
+   화면 표시 전용(기능 로직 변경 없음). 인쇄에는 적용하지 않음. */
+@media screen {
+:root{--h22-navy:#14304C;--h22-navy2:#1E4468;--h22-steel:#2C5F8A;--h22-steel-l:#EAF1F7;--h22-amber:#E8A23D;--h22-amber-l:#FDF3E3;--h22-green:#3F8F5F;--h22-red:#C0392B;--h22-bg:#F4F6F8;--h22-line:#DFE6EC;--h22-ink:#22303F;--h22-soft:#5C6B7A}
+html,body{background:var(--h22-bg)!important}
+
+/* ── 1. 헤더: 남색 바 ── */
+.app>.top{margin-left:0!important;margin-right:0!important;background:var(--h22-navy)!important;color:#fff!important;border:0!important;border-radius:14px 14px 0 0!important;box-shadow:none!important;padding:14px 20px!important;margin-bottom:0!important}
+.app>.top h1{color:#fff!important;font-size:22px!important;letter-spacing:-.01em}
+.app>.top .title p,.app>.top .title small{color:#b9cde0!important}
+.app>.top .controls{gap:8px!important}
+.app>.top .controls button{background:rgba(255,255,255,.08)!important;color:#fff!important;border:1px solid rgba(255,255,255,.3)!important;border-radius:9px!important;font-weight:800!important;box-shadow:none!important;min-height:36px}
+.app>.top .controls button:hover{background:rgba(255,255,255,.18)!important}
+.app>.top .controls #openMaster{background:var(--h22-steel)!important;border-color:var(--h22-steel)!important}
+
+/* ── 2. 대메뉴: 알약형 한 줄 (설명 문구 제거) ── */
+.app>.beginnerNav{display:flex!important;flex-wrap:nowrap!important;gap:8px!important;overflow-x:auto;background:var(--h22-navy)!important;border:0!important;border-radius:0 0 14px 14px!important;padding:4px 16px 14px!important;margin:0 0 14px!important;box-shadow:0 6px 16px rgba(20,48,76,.14)!important}
+.app>.beginnerNav button{flex:0 0 auto!important;width:auto!important;min-height:42px!important;padding:8px 18px!important;border-radius:999px!important;background:rgba(255,255,255,.08)!important;color:#dbe8f4!important;border:1px solid rgba(255,255,255,.2)!important;box-shadow:none!important;transform:none!important;text-align:left}
+.app>.beginnerNav button small{display:none!important}
+.app>.beginnerNav .navTop{display:flex!important;align-items:center;gap:8px;font-size:15px!important;font-weight:850!important;color:inherit!important;margin:0!important}
+.app>.beginnerNav .navIcon{background:transparent!important;color:inherit!important;width:auto!important;height:auto!important;font-size:14px}
+.app>.beginnerNav button.active{background:#fff!important;color:var(--h22-navy)!important;border-color:#fff!important;box-shadow:0 4px 12px rgba(0,0,0,.18)!important}
+.app>.beginnerNav button:not(.active):hover{background:rgba(255,255,255,.18)!important}
+/* 선택된 메뉴의 아이콘도 보이도록 */
+.app>.beginnerNav button.active .navIcon{color:var(--h22-navy)!important}
+/* 업무 흐름 배너: 대시보드에서만 표시 */
+.app>.beginnerNav:not(:has(button[data-key="dashboard"].active))+.beginnerHint{display:none!important}
+
+/* ── 3. 하위 탭: 칩 ── */
+.app>.hd20Subnav{background:transparent!important;border:0!important;box-shadow:none!important;padding:2px 0 12px!important;gap:8px!important;overflow-x:auto;flex-wrap:nowrap!important}
+.app>.hd20Subnav button{flex:0 0 auto;border-radius:999px!important;background:#fff!important;color:var(--h22-ink)!important;border:1px solid var(--h22-line)!important;font-weight:800!important;padding:9px 18px!important;box-shadow:var(--h22-sh,0 1px 3px rgba(20,48,76,.06))!important}
+.app>.hd20Subnav button.on{background:var(--h22-navy)!important;color:#fff!important;border-color:var(--h22-navy)!important}
+
+/* ── 4. 화면 안내: 사용자 / 관리자 카드 ── */
+.app>.hd20PurposePanel{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;gap:16px 24px!important;background:#fff!important;border:1px solid var(--h22-line)!important;border-left:5px solid var(--h22-navy)!important;border-radius:14px!important;padding:18px 22px!important;box-shadow:0 1px 3px rgba(20,48,76,.06)!important}
+.hd20PurposeMain>small{color:var(--h22-soft)!important;font-weight:800!important;letter-spacing:.02em}
+.hd20PurposeMain>h2{color:var(--h22-navy)!important;font-size:26px!important;margin:2px 0 4px!important}
+.hd20PurposeMain>p{color:var(--h22-ink)!important;font-size:15px!important;font-weight:700!important;margin:0 0 12px!important}
+.hd20RoleGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.hd20Role{border-radius:12px;padding:12px 15px;border:1px solid var(--h22-line)}
+.hd20Role.user{background:var(--h22-steel-l);border-color:#c9dbe9}
+.hd20Role.admin{background:var(--h22-amber-l);border-color:#f0dcb7}
+.hd20Role b{display:block;font-size:13px;font-weight:900;margin-bottom:5px}
+.hd20Role.user b{color:var(--h22-steel)}
+.hd20Role.admin b{color:#a86a10}
+.hd20Role span{display:block;font-size:15.5px;font-weight:750;line-height:1.55;color:var(--h22-ink)}
+.hd20PurposeMore{margin-top:10px}
+.hd20PurposeMore summary{cursor:pointer;font-size:13px;font-weight:800;color:var(--h22-soft);list-style:none}
+.hd20PurposeMore summary::before{content:'▸ '}
+.hd20PurposeMore[open] summary::before{content:'▾ '}
+.hd20PurposeMore .hd20PurposeLogic{display:grid;gap:6px;margin-top:8px}
+.hd20PurposeSide{display:flex!important;align-items:flex-start;justify-content:flex-end}
+.hd20PurposeActions{display:flex!important;flex-direction:column!important;gap:8px!important;min-width:190px}
+.hd20PurposeActions button{border-radius:10px!important;font-weight:850!important;min-height:40px;border:1px solid var(--h22-line)!important;background:#fff!important;color:var(--h22-navy)!important}
+.hd20PurposeActions button.hd20Cta{background:var(--h22-steel)!important;color:#fff!important;border-color:var(--h22-steel)!important;font-size:15.5px!important;min-height:46px;box-shadow:0 4px 12px rgba(44,95,138,.3)}
+.hd20PurposeActions button.hd20Cta:hover{background:var(--h22-navy2)!important}
+
+/* ── 5. 중복되던 화면 제목류는 정리(핵심 버튼은 유지) ── */
+.awScreen>.hd20AreaHeader{display:none!important}
+.awScreen>.awHero{padding:10px 16px!important;min-height:0!important;background:#fff!important;border:1px solid var(--h22-line)!important;border-radius:12px!important;box-shadow:none!important;display:flex!important;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+.awScreen>.awHero>div:first-child{display:none!important}
+.awScreen>.awHero .awActions{margin:0!important}
+#awActivity>.awHero,#awAudit>.awHero,#awAction>.awHero{background:#fff!important;border-left-width:1px!important;border-left-color:var(--h22-line)!important;padding:8px 14px!important}
+/* 핵심 등록 버튼은 '화면 안내' 카드의 큰 버튼으로 통일(중복 제거, 클릭 동작은 그대로 연결됨) */
+.awScreen>.awHero [data-aw="new"],.awScreen>.awHero #hd20ActionRegisterBtn{display:none!important}
+
+/* ── 6. 지표: 큰 숫자 카드 (대시보드 제외) ── */
+.app:not(:has(.beginnerNav button[data-key="dashboard"].active)) #hd20OpsMetrics{gap:12px!important}
+.app:not(:has(.beginnerNav button[data-key="dashboard"].active)) #hd20OpsMetrics button{background:#fff!important;border:1px solid var(--h22-line)!important;border-left:6px solid var(--h22-steel)!important;border-radius:12px!important;padding:14px 18px!important;text-align:left!important;box-shadow:0 1px 3px rgba(20,48,76,.06)!important}
+.app:not(:has(.beginnerNav button[data-key="dashboard"].active)) #hd20OpsMetrics button:nth-child(2){border-left-color:var(--h22-green)!important}
+.app:not(:has(.beginnerNav button[data-key="dashboard"].active)) #hd20OpsMetrics button:nth-child(3){border-left-color:var(--h22-amber)!important}
+.app:not(:has(.beginnerNav button[data-key="dashboard"].active)) #hd20OpsMetrics button:nth-child(4){border-left-color:var(--h22-red)!important}
+.app:not(:has(.beginnerNav button[data-key="dashboard"].active)) #hd20OpsMetrics button small{color:var(--h22-soft)!important;font-size:13.5px!important;font-weight:850!important}
+.app:not(:has(.beginnerNav button[data-key="dashboard"].active)) #hd20OpsMetrics button b{color:var(--h22-navy)!important;font-size:34px!important;line-height:1.15;letter-spacing:-.02em}
+.app:not(:has(.beginnerNav button[data-key="dashboard"].active)) #hd20OpsMetrics button b small,#hd20OpsMetrics button b em{font-size:14px!important;color:var(--h22-soft)!important;font-style:normal;margin-left:3px}
+
+@media(max-width:900px){
+  .app>.top{padding:12px 14px!important}
+  .app>.top h1{font-size:19px!important}
+  .hd20RoleGrid{grid-template-columns:1fr}
+  .app>.hd20PurposePanel{grid-template-columns:1fr!important;padding:16px!important}
+  .hd20PurposeActions{flex-direction:row!important;flex-wrap:wrap;min-width:0}
+  .hd20PurposeActions button{flex:1 1 auto}
+  .app:not(:has(.beginnerNav button[data-key="dashboard"].active)) #hd20OpsMetrics button b{font-size:28px!important}
+}
+}
