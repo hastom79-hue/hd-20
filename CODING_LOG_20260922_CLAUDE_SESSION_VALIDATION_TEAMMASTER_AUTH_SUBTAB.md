@@ -1158,6 +1158,40 @@
     전부 수정 전과 완전히 동일(이미 `@media(max-width:1100px)`에서
     1열 강제되어 있어 애초에 영향 없던 범위였음을 재확인).
 
+### `e74dd3e` — fix: 활동관리 데스크톱 와이드 화면도 동일한 빈 여백 버그 수정
+- 조사: `scan_wide_layout.py`로 ②③④⑤ 영역 14개 서브탭 전체를 1792px
+  폭에서 자동 순회, `.awGrid/.amGrid/.awSplit/.pcGrid` 각각의 컨테이너
+  폭과 마지막 자식 끝 위치를 비교해 100px 이상 차이나는 것을 자동
+  플래그. 결과: "② 활동관리"의 "활동관리"·"실적분석"에서만
+  `{'cls':'awGrid','containerW':1432,'containerRight':1612,
+  'childCount':1,'lastChildRight':735}` 발견, 나머지 12개는 "없음".
+- 원인: `activity-register-modal.js`의 `enhance()`가 조치목록
+  (`action-register-modal.js`)과 동일한 패턴으로 등록 폼 카드를 모달로
+  이동시키되 남은 그리드 구성을 미조정. `grep`으로 `workflow-area-
+  density.css`에서 `#awActivity>.awGrid{grid-template-columns:minmax
+  (360px,.78fr) minmax(0,1.22fr)!important}`(ID 포함, 명시도 1-1-0)를
+  확인 — 조치목록 수정 때와 동일한 명시도 문제가 재발할 것을 예상하고
+  처음부터 ID 포함 셀렉터로 작성.
+- file: `activity-register-modal.js`
+  - `@media(max-width:700px){...}` 블록 뒤에
+    `#awActivity>.awGrid.hd20AwGridSingle{grid-template-columns:1fr!
+    important}` 추가.
+  - `enhance()`의 `overlay.querySelector('.awRegisterContent').append
+    Child(formCard);formCard.classList.add('awRegisterFormCard');` 직후
+    `grid.classList.add('hd20AwGridSingle');` 추가.
+- file: `index.html`: 캐시 버전 갱신.
+- verification (Chromium):
+  - 데스크톱(1792px): `getComputedStyle(grid).gridTemplateColumns`가
+    수정 전 2열 추정치 → 수정 후 `'1432px'`(전체 폭 단일 열) 확인.
+  - `[data-aw="new"]`(+ 5S 신규등록) 클릭 → `#awRegisterModal`
+    `classList.contains('on')` true, 폼 필드 정상 — 모달 기능 영향
+    없음 확인.
+  - `scroll_into_view_if_needed()`로 표 카드까지 스크롤 후 스크린샷 —
+    일자/구분/생산팀/문제점/개선내용/상태 6개 컬럼이 전체 폭을 활용해
+    여유 있게 표시됨을 확인.
+  - 모바일(430px) 16개 탭 전체 재순회: 콘솔 오류 0건, scrollHeight
+    전부 수정 전과 완전히 동일.
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
