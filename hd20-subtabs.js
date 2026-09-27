@@ -62,6 +62,9 @@ function applyActivity(sub){const root=$('#awActivity');if(!root)return;root.dat
   show($('.awActions',root),!isAnalysis);
   show(document.getElementById('hd20ActivityExcelImport'),!isAnalysis);
   show(document.getElementById('hd20ImportAnalysis'),!isAnalysis);
+  /* 팀별 5S 유형 활동현황 차트는 분석 화면(실적분석)에만 표시 —
+     활동관리(등록·조회)와 같은 차트가 두 탭에 중복 노출되던 문제 정리 */
+  show($('.adcCard',root),isAnalysis);
 }
 function applyAdvancement(sub){const conversion=$('#performanceConversionAnalysis'),work=$('#awWorkplace');document.querySelector('.app')?.classList.add('awFocused');if(conversion){conversion.classList.add('on');show(conversion,true);conversion.classList.toggle('hd20AdvancementStandard',sub==='standard');conversion.dataset.subview=sub}if(work){work.classList.add('on');show(work,true);work.dataset.subview=sub;showAll(work);show($('.awFlow',work),true);show($('.awGrid',work),true)}}
 function applyAudit(sub){const root=$('#awAudit');if(!root)return;root.dataset.subview=sub;showAll(root);show($('.awFlow',root),true);show($('.awAuditLane',root),true);const draw=$('.auditDraw',root),batch=$('#hd20AuditBatchExecution',root),closed=$('.auditClosedLoop',root),ongoing=$('.audit6m',root),closeEval=document.getElementById('hd20AuditCloseEvaluation');show(draw,sub==='draw');show(batch,sub==='draw');show(closed,sub==='inspect');show(ongoing,sub==='ongoing');show(closeEval,sub==='retention')}
