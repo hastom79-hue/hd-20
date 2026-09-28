@@ -1481,6 +1481,11 @@
   CSV는 `rowsM`(현재 필터) 조건에 맞는 전체 건을 내려받음(화면은 300건 제한과 별개). 안내문(`.rqCaveat`)에 요청출처 추정 방식과 완료(*) 정의 한계를 명시. `.app.awFocused` 숨김 유지.
 - 검증(`rb2_check.py`/`rb2_check2.py`): 요청출처=5S모듈 필터 시 상세내용 전 행이 '5S모듈'과 일치, 조치대응부서=대형Att.팀 필터 시 그리드 2행(합계+해당 팀), 합계 행 수치(94건→60건 63.8%·24건 25.5%·10건 10.6%) 그리드 표시와 일치, CSV 42행. 16개 탭 회귀 오류 0건.
 
+### `c8fbe43` — fix: 리더십 출처 판별(팀장 기준정보 이름 일치) (2026-09-29)
+- 변경 파일: `hd20-request-board.js`(+11/-2), `index.html`(+1/-1)
+- `hd20-request-board.js`: `leaderNames()`(localStorage `hd20TeamLeaderMasterV1`의 `leader!=='미지정'` 이름 Set, `render()` 진입 시 `LEADER_NAMES=null`로 매번 무효화해 팀장 기준정보 변경을 즉시 반영) 추가. `sourceOf(c)`에 `if(c.owner&&leaderNames().has(c.owner))return '리더십'`를 Audit 연계 추정보다 먼저 적용.
+- 검증(`leader_check.py`): 등록자별 건수 확인 후 최다(박지훈 82건)를 `hd20TeamLeaderMasterV1[0].leader`에 실제 저장 → 새로고침 → 요청출처=리더십 필터 시 `.rqDetail` 69행(현재 연도·상태 필터 조건에 맞는 건) 전부 출처 열이 '리더십'. 16개 탭 회귀 오류 0건.
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
@@ -1544,8 +1549,8 @@
 ## (2026-09-28 갱신) 종료조건
 16개 탭 순회·기능 회귀 세트 콘솔 오류 0건, 최신 GitHub Pages 빌드 `built` 확인, 실제 사이트 확인 결과 반영 후 종료.
 
-## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 54건)
-> 커밋 시각은 저장소 표기 기준. 아래 54건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
+## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 55건)
+> 커밋 시각은 저장소 표기 기준. 아래 55건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
 > (`e182f66`은 이 대화 밖의 다른 Claude 세션이 같은 계정으로 push한 커밋이라 포함됨. 대장은 `git log --since`가 날짜가 뒤섞인 이력에서 일부를 건너뛰는 것을 발견해, 커밋 날짜를 직접 비교해 생성)
 
 | 커밋 | 시각 | 제목 | 변경 파일 |
@@ -1604,8 +1609,9 @@
 | `ddd8454` | 2026-09-28 21:49 | feat: 후보 목록에 hd-22식 구조 필터 바(생산팀·조건 충족수·공식판정) 추가 | `activity-workflow.js`, `index.html` |
 | `cc8d318` | 2026-09-28 22:24 | feat+fix: 대상 추출 필터 바 추가 + 가드 스크립트 충돌로 필터가 자동 원복되던 결함 수정 | `audit-random-draw.js`, `hd20-native-production-guard.js`, `index.html` |
 | `59465cf` | 2026-09-28 22:27 | feat: 5S 개선요청 종합 대시보드를 실제 VTB(HD-HiHR) 화면 구성에 맞춰 전면 재구성 | `hd20-request-board.js`, `index.html` |
+| `c8fbe43` | 2026-09-28 23:19 | fix: 개선요청 출처 '리더십'을 정의대로(경영진·팀장) 판별 — 등록자=생산팀장 기준정보 이름 일치로 분류 | `hd20-request-board.js`, `index.html` |
 
-### 문서 커밋(44건, 로그 갱신용)
+### 문서 커밋(45건, 로그 갱신용)
 - `c661242` docs: development/coding log for validation fixture, team master, auth, subtab split (2026-09-22)
 - `da246aa` docs: log advancement 4-way subtab split (4aee88b) in dev/coding logs
 - `015b9b3` docs: log action/audit 4-way subtab split + metric bugfix (57e264c) in dev/coding logs
@@ -1650,3 +1656,4 @@
 - `f9d46c2` docs: ⑤ 차트 대체 팩터 검토·확정(49ed539) 개발일지/상세 개발일지/코딩일지 반영, 커밋 대장 재생성
 - `0d1b234` docs: 조치 목록 필터 바(e675362) 개발일지/상세 개발일지/코딩일지 반영, 커밋 대장 재생성
 - `dfc7e8b` docs: 후보 목록 필터 바(ddd8454) 개발일지/상세 개발일지/코딩일지 반영, 커밋 대장 재생성
+- `c47461f` docs: 대상 추출 필터+가드 수정(cc8d318), 개선요청 종합 VTB 재구성(59465cf) 로그 반영, 커밋 대장 재생성
