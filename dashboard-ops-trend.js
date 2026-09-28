@@ -29,6 +29,7 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
 #${ID} .otFoot{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:10px}#${ID} .otFoot span{font-size:11.5px;color:#7a8a97;line-height:1.4}
 #${ID} .otFoot button{flex:0 0 auto;border:1px solid #cfd9e2;background:#fff;color:#14304c;border-radius:9px;padding:6px 10px;font-weight:850;font-size:12px;cursor:pointer}
 #${ID} .otNote{margin:12px 2px 0;font-size:12px;color:#7a8a97}
+.app.awFocused #${ID}{display:none!important}
 @media(max-width:1100px){#${ID} .otGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:700px){#${ID} .otGrid{grid-template-columns:1fr}}`;document.head.appendChild(s)}
 const fmt=(v,u)=>v===null||v===undefined?'-':(u==='일'?v.toFixed(1):(u==='%'?v.toFixed(1):v.toFixed(1)));
 function card(m,data,overall){
