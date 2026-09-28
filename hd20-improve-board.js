@@ -20,7 +20,7 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
 #${ID} .ibRow{display:grid;gap:12px;margin-top:12px}#${ID} .r1{grid-template-columns:minmax(0,4fr) minmax(0,6fr)}#${ID} .r3{grid-template-columns:repeat(2,minmax(0,1fr))}
 #${ID} .ibPanel{border:1px solid #e3eaf0;border-radius:10px;background:#fff;overflow:hidden}
 #${ID} .ibHead{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 12px;background:#f1f5f8;border-bottom:1px solid #e3eaf0;font-size:13.5px;font-weight:900;color:#22303f}
-#${ID} .ibHead em{font-style:normal;font-size:12.5px;color:#14304c}#${ID} .ibHead em.pt{color:#1f6f6b}
+#${ID} .ibHead .ibEv{margin-left:auto;height:26px;border:1px solid #cfd9e2;border-radius:6px;background:#fff;color:#2c5f8a;font-size:12px;font-weight:850;padding:0 9px;cursor:pointer}#${ID} .ibHead .ibEv+em{margin-left:0}#${ID} .ibHead em{font-style:normal;font-size:12.5px;color:#14304c}#${ID} .ibHead em.pt{color:#1f6f6b}
 #${ID} .ibBody{padding:8px 8px 4px;overflow-x:auto}
 #${ID} .ibLeg{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;font-size:11.5px;color:#5c6b7a;font-weight:800;padding:2px 0 6px}#${ID} .ibLeg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
 #${ID} svg text{font-family:inherit}#${ID} .hit{cursor:pointer}#${ID} .hit:hover{opacity:.85}
@@ -42,12 +42,12 @@ function filt(D,{ignoreMonth=false}={}){
 const monthOf=r=>+String(r.date||r.regDate||'').slice(5,7);
 function axis(v){const raw=v/4,p=Math.pow(10,Math.floor(Math.log10(raw))),f=raw/p,n=f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10,step=n*p;return{step,max:Math.ceil(v/step-1e-9)*step}}
 const tk=v=>String(Number(v.toFixed(3)));
-function chart({w,h=240,cats,series,stack=false,per=false,rotate=false,sel=null,colorOf=null,minSlot=36,fmt=null}){
+function chart({w,h=240,cats,series,stack=false,per=false,rotate=false,sel=null,colorOf=null,minSlot=36,fmt=null,hline=null}){
   const F=v=>fmt?fmt(v):fx(v,per);
   const W0=Math.max(w,cats.length*minSlot+56),slot0=(W0-56)/Math.max(1,cats.length);rotate=rotate||(slot0<58&&cats.some(c=>String(c).length>3));
   const m={l:46,r:10,t:20,b:rotate?84:30},W=W0,iw=W-m.l-m.r,ih=h-m.t-m.b;
   const tot=cats.map((_,i)=>stack?series.reduce((a,s)=>a+(s.vals[i]||0),0):Math.max(...series.map(s=>s.vals[i]||0)));
-  const ax=axis(Math.max(0.0001,...tot)),max=ax.max,yv=v=>m.t+ih-(v/max)*ih,slot=iw/Math.max(1,cats.length);
+  const ax=axis(Math.max(0.0001,...tot,hline?hline.value*1.05:0)),max=ax.max,yv=v=>m.t+ih-(v/max)*ih,slot=iw/Math.max(1,cats.length);
   let g='';for(let i=0;i<=Math.round(max/ax.step);i++){const v=ax.step*i,y=yv(v);g+=`<line x1="${m.l}" x2="${W-m.r}" y1="${y}" y2="${y}" stroke="${C.grid}"/><text x="${m.l-6}" y="${y+4}" text-anchor="end" font-size="11" fill="${C.soft}">${tk(v)}</text>`}
   let b='';cats.forEach((c,i)=>{const cx=m.l+slot*i+slot/2,n=series.length,bw=stack?Math.min(40,slot*.6):Math.min(24,slot*.72/n);
     let acc=0;series.forEach((s,k)=>{const v=s.vals[i]||0;if(v<=0)return;const hh=Math.max(2,(v/max)*ih);const x=stack?cx-bw/2:cx-(bw*n)/2+bw*k;const y=stack?yv(acc+v):yv(v);const col=colorOf?colorOf(c,i,k):s.color;
@@ -55,7 +55,7 @@ function chart({w,h=240,cats,series,stack=false,per=false,rotate=false,sel=null,
       if(!stack)b+=`<text x="${x+bw/2}" y="${y-4}" text-anchor="middle" font-size="10.5" font-weight="800" fill="${C.ink}">${F(v)}</text>`;acc+=v});
     if(stack&&tot[i]>0)b+=`<text x="${cx}" y="${yv(tot[i])-4}" text-anchor="middle" font-size="10.5" font-weight="800" fill="${C.ink}">${F(tot[i])}</text>`;
     const ly=m.t+ih+15;b+=rotate?`<text transform="translate(${cx+4},${ly}) rotate(-45)" text-anchor="end" font-size="11" fill="${(sel!==null&&c===sel)?'#14304c':C.soft}" font-weight="${(sel!==null&&c===sel)?900:600}">${esc(c)}</text>`:`<text x="${cx}" y="${ly}" text-anchor="middle" font-size="11.5" fill="${C.soft}">${esc(c)}</text>`});
-  return `<svg width="${W}" height="${h}" viewBox="0 0 ${W} ${h}" role="img">${g}<line x1="${m.l}" x2="${W-m.r}" y1="${m.t+ih}" y2="${m.t+ih}" stroke="#b7c6d1"/>${b}</svg>`}
+  return `<svg width="${W}" height="${h}" viewBox="0 0 ${W} ${h}" role="img">${g}<line x1="${m.l}" x2="${W-m.r}" y1="${m.t+ih}" y2="${m.t+ih}" stroke="#b7c6d1"/>${b}${hline?`<line x1="${m.l}" x2="${W-m.r}" y1="${yv(hline.value)}" y2="${yv(hline.value)}" stroke="#c0392b" stroke-width="1.6" stroke-dasharray="6 4"/><text x="${W-m.r}" y="${yv(hline.value)-5}" text-anchor="end" font-size="11" font-weight="800" fill="#c0392b">${esc(hline.label)}</text>`:''}</svg>`}
 const leg=a=>`<div class="ibLeg">${a.map(x=>`<span><i style="background:${x[1]}"></i>${esc(x[0])}</span>`).join('')}</div>`;
 function render(box){
   const D=data();if(!D.rows.length&&!window.HD20KPIData)return;
@@ -73,7 +73,8 @@ function render(box){
   const tv=teamsAll.map(t=>{const c=rowsM.filter(r=>r.team===t).length,h=D.hcOf(t);return{t,c,h,v:per?(h?c/h:0):c}}).sort((a,b)=>b.v-a.v);
   if(!S.team||!tv.some(x=>x.t===S.team))S.team=tv[0]?.t||'';
   const totC=tv.reduce((a,x)=>a+x.c,0),avg=per?totC/hcAll:totC/Math.max(1,tv.length);
-  const Cc=chart({w:W-8,h:290,cats:tv.map(x=>x.t),per,rotate:true,sel:S.team,minSlot:46,series:[{name:per?'5S 활동/총원':'5S 활동 건수',vals:tv.map(x=>x.v),color:C.dark}],colorOf:(c,i)=>tv[i].v>=avg?C.dark:C.amber});
+  const QT=quarterTarget(),useT=per&&!S.month&&QT.v!==null,okN=tv.filter(x=>x.v>=QT.v).length,thr=useT?QT.v:avg;
+  const Cc=chart({w:W-8,h:290,cats:tv.map(x=>x.t),per,rotate:true,sel:S.team,minSlot:46,hline:useT?{value:QT.v,label:`${QT.q} 누적 인당 목표 ${QT.v}건/인`}:null,series:[{name:per?'5S 활동/총원':'5S 활동 건수',vals:tv.map(x=>x.v),color:C.dark}],colorOf:(c,i)=>tv[i].v>=thr?C.dark:C.amber});
   const owners=new Set(D.rows.filter(r=>String(r.date||r.regDate||'').slice(0,4)===S.year&&monthOf(r)===mm&&teamsAll.includes(r.team)&&(!S.type||r.type===S.type)).map(r=>r.owner).filter(Boolean)).size,part=(owners/hcAll*100);
   // d,e) 선택 팀 월별
   const th=D.hcOf(S.team)||1,tr=rowsY.filter(r=>r.team===S.team),tm=(pred)=>Array.from({length:12},(_,i)=>{const c=tr.filter(r=>monthOf(r)===i+1&&pred(r)).length;return per?c/th:c});
@@ -88,12 +89,15 @@ function render(box){
 <label>부서 <select data-f="group">${opt(D.groups,S.group)}</select></label><label>5S 유형 <select data-f="type">${opt(TYPES,S.type)}</select></label>
 <label>수평전개 <select data-f="roll"><option value="">ALL</option><option value="Y"${S.roll==='Y'?' selected':''}>적용대상</option><option value="N"${S.roll==='N'?' selected':''}>비대상</option></select></label>
 <span class="sp"></span><button type="button" class="alt" data-ib="print">프린트</button><button type="button" class="alt" data-ib="csv">엑셀다운로드</button></div>
-<div class="ibRow r1"><div class="ibPanel"><div class="ibHead">5S 유형별 등록 및 진행현황<em>${S.month?S.month.replace(/^0/,'')+'월':'연간누적'} · ${unit}</em></div><div class="ibBody">${A}${leg([['완료·확정',C.dark],['진행·등록',C.light]])}</div></div>
-<div class="ibPanel"><div class="ibHead">월별 등록 및 진행현황<em>${S.year}년 · ${unit}</em></div><div class="ibBody">${B}${leg([['5S 활동 완료건수',C.dark],['고도화 후보 건수',C.amber],['수평전개 적용대상건수',C.grey]])}</div></div></div>
-<div class="ibRow"><div class="ibPanel"><div class="ibHead">현장조직 팀에 대한 개선활동 현황${per?'(인당 개선건수)':'(총 건수)'}<em class="pt">당월(${String(mm).padStart(2,'0')}월) 현재 참여율 ${part.toFixed(1)}% (등록자 ${owners}명 / 총원 ${hcAll}명)</em></div><div class="ibBody">${Cc}${leg([[per?'전체 평균 이상 (평균 '+avg.toFixed(2)+'건/인)':'평균 이상',C.dark],['평균 미만',C.amber]])}</div></div></div>
-<div class="ibRow r3"><div class="ibPanel"><div class="ibHead">단일 팀에 대한 연간/월별 누적 활동 실적${per?'(인당 개선건수)':''}<em>[ ${esc(S.team)} ] 연간 ${fx(dCum,per)}${unit}</em></div><div class="ibBody">${Dd}</div></div>
-<div class="ibPanel"><div class="ibHead">단일 팀에 대한 수평전개/고도화 후보 ${per?'인당 개선건수':'건수'}<em>[ ${esc(S.team)} ]</em></div><div class="ibBody">${E}${leg([['수평전개 적용대상',C.dark],['고도화 후보',C.amber]])}</div></div></div>
+<div class="ibRow r1"><div class="ibPanel"><div class="ibHead">5S 유형별 등록 및 진행현황<button type="button" class="ibEv" data-evk="a">근거 데이터</button><em>${S.month?S.month.replace(/^0/,'')+'월':'연간누적'} · ${unit}</em></div><div class="ibBody">${A}${leg([['완료·확정',C.dark],['진행·등록',C.light]])}</div></div>
+<div class="ibPanel"><div class="ibHead">월별 등록 및 진행현황<button type="button" class="ibEv" data-evk="b">근거 데이터</button><em>${S.year}년 · ${unit}</em></div><div class="ibBody">${B}${leg([['5S 활동 완료건수',C.dark],['고도화 후보 건수',C.amber],['수평전개 적용대상건수',C.grey]])}</div></div></div>
+<div class="ibRow"><div class="ibPanel"><div class="ibHead">현장조직 팀에 대한 개선활동 현황${per?'(인당 개선건수)':'(총 건수)'}<button type="button" class="ibEv" data-evk="c">근거 데이터</button><em class="pt">당월(${String(mm).padStart(2,'0')}월) 현재 참여율 ${part.toFixed(1)}% (등록자 ${owners}명 / 총원 ${hcAll}명)</em></div><div class="ibBody">${Cc}${useT?leg([['목표 달성 (≥ '+QT.v+'건/인)',C.dark],['목표 미달',C.amber]])+`<div class="ibLeg"><span>목표 달성 ${okN}/${tv.length}팀 · 전체 평균 ${avg.toFixed(2)}건/인 · 목표는 통합기준정보의 ${QT.q} 인당 목표(해당 분기까지 누적 기준)</span></div>`:leg([[per?'전체 평균 이상 (평균 '+avg.toFixed(2)+'건/인)':'평균 이상',C.dark],['평균 미만',C.amber]])+(per&&!S.month?'<div class="ibLeg"><span>분기별 인당 목표가 설정되지 않아 전체 평균 기준으로 표시합니다 (통합기준정보에서 설정)</span></div>':'')}</div></div></div>
+<div class="ibRow r3"><div class="ibPanel"><div class="ibHead">단일 팀에 대한 연간/월별 누적 활동 실적${per?'(인당 개선건수)':''}<button type="button" class="ibEv" data-evk="d">근거 데이터</button><em>[ ${esc(S.team)} ] 연간 ${fx(dCum,per)}${unit}</em></div><div class="ibBody">${Dd}</div></div>
+<div class="ibPanel"><div class="ibHead">단일 팀에 대한 수평전개/고도화 후보 ${per?'인당 개선건수':'건수'}<button type="button" class="ibEv" data-evk="e">근거 데이터</button><em>[ ${esc(S.team)} ]</em></div><div class="ibBody">${E}${leg([['수평전개 적용대상',C.dark],['고도화 후보',C.amber]])}</div></div></div>
 <p class="ibFoot">※ 5S 활동 = GMES 원천 5S 활동 등록(상단 지표와 같은 데이터). 완료·확정 = 상태가 완료 또는 확정. 인당 = 건수 ÷ 팀 인원(팀 인원 마스터). 참여율 = 당월 5S 활동을 1건 이상 등록한 사람 수 ÷ 총원(${hcAll}명). 팀 막대를 누르면 아래 두 그래프가 그 팀으로 바뀝니다.</p>`;
+  const cols=['등록일','팀','5S 유형','등록자','문제점','개선내용','상태','고도화 후보','수평전개'],mapR=r=>[String(r.date||r.regDate||'').slice(0,10),r.team,r.type,r.owner,r.problem,r.improvement,r.status,r.candidate===true?'후보':'',r.horizontalRollout===true?'대상':''],sortT=a=>[...a].sort((x,y)=>String(x.team).localeCompare(String(y.team),'ko')||String(y.date).localeCompare(String(x.date)));
+  const EV={a:['5S 유형별 근거 데이터 ('+(S.month?+S.month+'월':'연간누적')+')',rowsM],b:['월별 근거 데이터 ('+S.year+'년)',rowsY],c:['팀별 근거 데이터 ('+(S.month?+S.month+'월':'연간누적')+')',sortT(rowsM)],d:['선택 팀 근거 데이터 · '+S.team,tr],e:['선택 팀 수평전개·고도화 후보 · '+S.team,tr.filter(r=>r.candidate===true||r.horizontalRollout===true)]};
+  box.querySelectorAll('[data-evk]').forEach(b=>b.onclick=()=>{const [t,a]=EV[b.dataset.evk];openRows({title:t,cols,rows:a.map(mapR),file:'5S_자율개선_근거_'+b.dataset.evk})});
   box.querySelectorAll('[data-f]').forEach(el=>el.onchange=()=>{S[el.dataset.f]=el.value;if(el.dataset.f==='group')S.team='';render(box)});
   box.querySelector('[data-ib="go"]').onclick=()=>render(box);box.querySelector('[data-ib="print"]').onclick=()=>window.print();
   box.querySelector('[data-ib="csv"]').onclick=()=>exportCsv({D,S,tv,A:{TYPES,allT,doneT},ML,dVals,per,hcAll});
@@ -115,6 +119,29 @@ let tries=0;(function boot(){if(!ensure()&&tries++<80)setTimeout(boot,150)})();
 document.addEventListener('click',e=>{if(e.target.closest?.('#hd20DashboardSectionTabs button[data-dashboard-section="improve"]'))setTimeout(()=>{const b=document.getElementById(ID);if(b)render(b)},80)},true);
 ['hd20-kpi-source-updated','hd20-gmes-5s-imported','hd20-gmes-5s-judged'].forEach(ev=>window.addEventListener(ev,()=>setTimeout(()=>{const b=document.getElementById(ID);if(b&&b.offsetParent!==null)render(b)},80)));
 let rz;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>{const b=document.getElementById(ID);if(b&&b.offsetParent!==null)render(b)},250)});
-window.HD20_BOARD_KIT={chart,leg,esc,fx,C,axis};
+
+/* 통합기준정보의 분기별 인당 목표(해당 분기까지의 누적 인당 목표로 해석). 미설정이면 v=null */
+function quarterTarget(){try{const t=JSON.parse(localStorage.getItem('gmes5s_quarter_perperson_targets')||'{}'),q='Q'+(Math.floor(new Date().getMonth()/3)+1),v=Number(t[q]);return{q,v:Number.isFinite(v)&&v>0?v:null}}catch{return{q:'Q'+(Math.floor(new Date().getMonth()/3)+1),v:null}}}
+/* 차트가 쓴 원천 행을 그대로 보여주는 공용 '근거 데이터' 창(검색·CSV) */
+function openRows({title,cols,rows,file}){
+  const ID2='hd20BoardEvidence';let m=document.getElementById(ID2);
+  if(!document.getElementById(ID2+'Style')){const st=document.createElement('style');st.id=ID2+'Style';st.textContent=`#${ID2}{position:fixed;inset:0;z-index:99991;display:none;align-items:center;justify-content:center;background:rgba(12,35,51,.5);padding:16px}#${ID2}.on{display:flex}
+#${ID2} .evBox{width:min(1180px,96vw);max-height:88vh;background:#fff;border-radius:14px;display:flex;flex-direction:column;box-shadow:0 24px 70px rgba(6,31,49,.35);overflow:hidden}
+#${ID2} .evHead{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 16px;border-bottom:1px solid #e3eaf0}#${ID2} .evHead b{font-size:16px;color:#14304c}#${ID2} .evHead span{font-size:12.5px;color:#5c6b7a;font-weight:800}
+#${ID2} .evHead input{margin-left:auto;height:32px;border:1px solid #cfd9e2;border-radius:7px;padding:0 10px;width:220px;font-size:13px}#${ID2} .evHead button{height:32px;border-radius:7px;border:1px solid #cfd9e2;background:#fff;color:#14304c;font-weight:850;padding:0 12px;cursor:pointer}#${ID2} .evHead button.pr{background:#14304c;color:#fff;border-color:#14304c}
+#${ID2} .evBody{overflow:auto}#${ID2} table{width:100%;border-collapse:collapse;font-size:13px}#${ID2} th{position:sticky;top:0;background:#f1f5f8;color:#3b5163;text-align:left;padding:8px 10px;font-size:12px;white-space:nowrap}#${ID2} td{padding:7px 10px;border-top:1px solid #edf1f4;color:#22303f;vertical-align:top}
+#${ID2} .evMore{display:block;width:100%;border:0;border-top:1px solid #e3eaf0;background:#fafbfc;color:#14304c;font-weight:850;padding:10px;cursor:pointer}
+@media print{#${ID2}{display:none!important}}`;document.head.appendChild(st)}
+  if(!m){m=document.createElement('div');m.id=ID2;m.innerHTML='<div class="evBox"><div class="evHead"><b></b><span></span><input type="search" placeholder="검색 (전체 컬럼)"><button type="button" class="pr" data-ev="csv">CSV 내려받기</button><button type="button" data-ev="close">닫기</button></div><div class="evBody"></div></div>';document.body.appendChild(m);
+    m.addEventListener('click',e=>{if(e.target===m||e.target.closest('[data-ev="close"]'))m.classList.remove('on')});document.addEventListener('keydown',e=>{if(e.key==='Escape'&&m.classList.contains('on'))m.classList.remove('on')})}
+  const body=m.querySelector('.evBody'),head=m.querySelector('.evHead'),inp=head.querySelector('input');let limit=200,q='';
+  const txt=r=>r.map(v=>String(v??'')).join(' ').toLowerCase(),view=()=>q?rows.filter(r=>txt(r).includes(q)):rows;
+  const draw=()=>{const v=view(),shown=v.slice(0,limit);head.querySelector('b').textContent=title;head.querySelector('span').textContent=`${v.length.toLocaleString()}건${q?` (전체 ${rows.length.toLocaleString()}건 중 검색)`:''}`;
+    body.innerHTML=`<table><thead><tr>${cols.map(c=>`<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>${shown.map(r=>`<tr>${r.map(v=>`<td>${esc(v)}</td>`).join('')}</tr>`).join('')||`<tr><td colspan="${cols.length}" style="color:#7a8a97;padding:18px">조건에 해당하는 데이터가 없습니다.</td></tr>`}</tbody></table>${v.length>limit?`<button type="button" class="evMore">나머지 ${(v.length-limit).toLocaleString()}건 더 보기 ▾</button>`:''}`;
+    body.querySelector('.evMore')?.addEventListener('click',()=>{limit+=300;draw()})};
+  inp.value='';inp.oninput=()=>{q=inp.value.trim().toLowerCase();limit=200;draw()};
+  head.querySelector('[data-ev="csv"]').onclick=()=>{const v=view(),t='\ufeff'+[cols,...v].map(r=>r.map(x=>'"'+String(x??'').replace(/"/g,'""')+'"').join(',')).join('\r\n'),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'text/csv;charset=utf-8'}));a.download=(file||title)+'.csv';document.body.appendChild(a);a.click();a.remove()};
+  draw();m.classList.add('on')}
+window.HD20_BOARD_KIT={chart,leg,esc,fx,C,axis,quarterTarget,openRows};
 window.HD20_IMPROVE_BOARD={render:()=>{const b=document.getElementById(ID);if(b)render(b)},state:S};
 })();

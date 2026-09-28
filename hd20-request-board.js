@@ -16,7 +16,7 @@ function prep(){
 }
 const mo=d=>+String(d||'').slice(5,7);
 function render(box){
-  const KIT=window.HD20_BOARD_KIT;if(!KIT||!window.HD20KPIData?.actionCases)return;const {chart,leg,esc,fx,C}=KIT,D=prep();
+  const KIT=window.HD20_BOARD_KIT;if(!KIT||!window.HD20KPIData?.actionCases)return;const {chart,leg,esc,fx,C,openRows}=KIT,D=prep();
   if(!S.year)S.year=D.years.includes(String(new Date().getFullYear()))?String(new Date().getFullYear()):(D.years[D.years.length-1]||String(new Date().getFullYear()));
   const per=S.metric==='per',unit=per?'건/인':'건',mm=S.month?+S.month:(+S.year===new Date().getFullYear()?new Date().getMonth()+1:12);
   const teamsAll=D.teams.filter(t=>!S.group||D.groupOf(t)===S.group),hcAll=teamsAll.reduce((a,t)=>a+D.hcOf(t),0)||1,div=v=>per?v/hcAll:v;
@@ -52,12 +52,15 @@ function render(box){
 <label>처리상태 <select data-f="status"><option value="">ALL</option>${['조치대기','진행중','완료'].map(x=>`<option${S.status===x?' selected':''}>${x}</option>`).join('')}</select></label>
 <label>등록경로 <select data-f="src"><option value="">ALL</option><option value="audit"${S.src==='audit'?' selected':''}>Audit 연계</option><option value="field"${S.src==='field'?' selected':''}>현장 직접 등록</option></select></label>
 <span class="sp"></span><button type="button" class="alt" data-ib="print">프린트</button><button type="button" class="alt" data-ib="csv">엑셀다운로드</button></div>
-<div class="ibRow r1"><div class="ibPanel"><div class="ibHead">처리 단계별 등록 및 진행현황<em>${S.month?+S.month+'월':'연간누적'} · ${unit}</em></div><div class="ibBody">${A}<div class="ibLeg"><span>※ 기한경과는 진행중·조치대기 건 중 기한이 지난 건(진행중·조치대기에 포함)</span></div></div></div>
-<div class="ibPanel"><div class="ibHead">월별 등록 및 진행현황<em>${S.year}년 · ${unit}</em></div><div class="ibBody">${B}${leg([['등록 건수','#8fa3b3'],['완료 건수',C.dark],['기한경과(미완료)',C.amber]])}</div></div></div>
-<div class="ibRow"><div class="ibPanel"><div class="ibHead">현장조직 팀에 대한 개선요청 처리 현황${per?'(인당 개선요청)':'(건수)'}<em class="pt">${S.month?+S.month+'월':'누적'} 완료율 ${rate.toFixed(1)}% (완료 ${totDone} / 등록 ${totN}) · 기한경과 ${totOd}건</em></div><div class="ibBody">${Cc}${leg([['완료',C.dark],['진행·대기',C.light],['기한경과(미완료)',C.amber]])}</div></div></div>
-<div class="ibRow r3"><div class="ibPanel"><div class="ibHead">단일 팀에 대한 연간/월별 개선요청 등록·완료 실적${per?'(인당)':''}<em>[ ${esc(S.team)} ]</em></div><div class="ibBody">${Dd}${leg([['등록','#8fa3b3'],['완료',C.dark]])}</div></div>
-<div class="ibPanel"><div class="ibHead">단일 팀에 대한 월별 평균 처리일수 (등록→완료)<em>[ ${esc(S.team)} ] 기한 내 완료율 ${tTimed?(tOn/tTimed*100).toFixed(1)+'%':'-'} (${tOn}/${tTimed})</em></div><div class="ibBody">${E}</div></div></div>
+<div class="ibRow r1"><div class="ibPanel"><div class="ibHead">처리 단계별 등록 및 진행현황<button type="button" class="ibEv" data-evk="a">근거 데이터</button><em>${S.month?+S.month+'월':'연간누적'} · ${unit}</em></div><div class="ibBody">${A}<div class="ibLeg"><span>※ 기한경과는 진행중·조치대기 건 중 기한이 지난 건(진행중·조치대기에 포함)</span></div></div></div>
+<div class="ibPanel"><div class="ibHead">월별 등록 및 진행현황<button type="button" class="ibEv" data-evk="b">근거 데이터</button><em>${S.year}년 · ${unit}</em></div><div class="ibBody">${B}${leg([['등록 건수','#8fa3b3'],['완료 건수',C.dark],['기한경과(미완료)',C.amber]])}</div></div></div>
+<div class="ibRow"><div class="ibPanel"><div class="ibHead">현장조직 팀에 대한 개선요청 처리 현황${per?'(인당 개선요청)':'(건수)'}<button type="button" class="ibEv" data-evk="c">근거 데이터</button><em class="pt">${S.month?+S.month+'월':'누적'} 완료율 ${rate.toFixed(1)}% (완료 ${totDone} / 등록 ${totN}) · 기한경과 ${totOd}건</em></div><div class="ibBody">${Cc}${leg([['완료',C.dark],['진행·대기',C.light],['기한경과(미완료)',C.amber]])}</div></div></div>
+<div class="ibRow r3"><div class="ibPanel"><div class="ibHead">단일 팀에 대한 연간/월별 개선요청 등록·완료 실적${per?'(인당)':''}<button type="button" class="ibEv" data-evk="d">근거 데이터</button><em>[ ${esc(S.team)} ]</em></div><div class="ibBody">${Dd}${leg([['등록','#8fa3b3'],['완료',C.dark]])}</div></div>
+<div class="ibPanel"><div class="ibHead">단일 팀에 대한 월별 평균 처리일수 (등록→완료)<button type="button" class="ibEv" data-evk="e">근거 데이터</button><em>[ ${esc(S.team)} ] 기한 내 완료율 ${tTimed?(tOn/tTimed*100).toFixed(1)+'%':'-'} (${tOn}/${tTimed})</em></div><div class="ibBody">${E}</div></div></div>
 <p class="ibFoot">※ 개선요청 = Audit 부적합 등에서 발생해 담당 팀에 배정된 조치 건(조치 목록과 같은 데이터). 완료 = 상태 '완료', 기한경과 = 미완료이면서 조치기한이 오늘 이전. 처리일수 = 완료일 − 등록일(완료월 기준). 인당 = 건수 ÷ 팀 인원(총원 ${hcAll}명). 팀 막대를 누르면 아래 두 그래프가 그 팀으로 바뀝니다.</p>`;
+  const cols=['요청번호','등록일','팀','작업장','문제점','상태','조치기한','완료일','처리일수','기한경과','효과검증','Audit 연계'],mapR=r=>[r.c.id,r.reg,r.team,r.c.workplace,r.c.problem,r.status,r.due,r.dn,r.days===null?'':r.days,r.overdue?'기한경과':'',r.verified?'완료':'',r.audit?'연계':''],sortT=a=>[...a].sort((x,y)=>String(x.team).localeCompare(String(y.team),'ko')||String(y.reg).localeCompare(String(x.reg)));
+  const EV={a:['처리 단계별 근거 데이터 ('+(S.month?+S.month+'월':'연간누적')+')',rowsM],b:['월별 근거 데이터 ('+S.year+'년)',rowsY],c:['팀별 근거 데이터 ('+(S.month?+S.month+'월':'연간누적')+')',sortT(rowsM)],d:['선택 팀 근거 데이터 · '+S.team,tr.filter(r=>yr(r.reg)||yr(r.dn))],e:['선택 팀 처리일수 근거 · '+S.team,tr.filter(r=>r.days!==null&&yr(r.dn))]};
+  box.querySelectorAll('[data-evk]').forEach(b=>b.onclick=()=>{const [t,a]=EV[b.dataset.evk];openRows({title:t,cols,rows:a.map(mapR),file:'5S_개선요청_근거_'+b.dataset.evk})});
   box.querySelectorAll('[data-f]').forEach(el=>el.onchange=()=>{S[el.dataset.f]=el.value;if(el.dataset.f==='group')S.team='';render(box)});
   box.querySelector('[data-ib="go"]').onclick=()=>render(box);box.querySelector('[data-ib="print"]').onclick=()=>window.print();
   box.querySelector('[data-ib="csv"]').onclick=()=>{const out=[['5S 개선요청 종합 대시보드',S.year+'년',S.month?S.month+'월':'연간누적'],[],['[처리 단계별]','건수']];cats.forEach((c,i)=>out.push([c,val[i]]));
