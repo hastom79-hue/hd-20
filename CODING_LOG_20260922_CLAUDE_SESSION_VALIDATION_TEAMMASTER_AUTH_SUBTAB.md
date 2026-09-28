@@ -1389,6 +1389,20 @@
 - `ci-tab-keys.patch` 재생성(40줄, `git apply --check` 통과): 3개 워크플로의 탭 키 기대값을 `['summary','improve','execution','maturity','standard','analysis']`로.
 - 검증(`ib_interact.py`): 초기 선택 팀 대형Att.팀→6번째 막대 클릭 시 중형상부1팀, 월=9월 참여율 패널, 차트집계=총 건수 전환, 유형=정리, 부서 선택 시 팀 막대 6개, CSV 35행, 프린트 호출. 섹션 격리(`reg_dash2.py`) 7개 섹션 통과, 16개 탭 회귀 오류 0건.
 
+### `9d5f65a` — feat: 5S 개선요청 종합 대시보드 (2026-09-28)
+- 변경 파일: `ci-tab-keys.patch`(+6/-6), `dashboard-kpi-source.js`(+1/-1), `dashboard-section-tabs.js`(+1/-0), `final-layout-polish.js`(+1/-1), `hd20-improve-board.js`(+6/-4), `hd20-request-board.js`(+81/-0), `index.html`(+1/-1)
+- `hd20-request-board.js`(신규): `#hd20RequestBoard`(`#hd20ImproveBoard` 뒤 삽입). 상태 `S={year,month,metric,group,status,src,team}`. `prep()`: `HD20KPIData.actionCases()` → `{reg,due,dn,done,status,overdue,late,ontime,verified,audit,days}`
+  (`overdue=!done&&due<seoulDateKey()`, `ontime=done&&doneDate<=due`, `audit=!!auditDrawId`, `days=doneDate-reg`). 패널: ① 처리 단계별(등록 합계/조치대기/진행중/기한경과/완료/효과검증 완료, `colorOf`),
+  ② 월별(등록=등록월, 완료=완료월, 기한경과=기한 도래월·미완료), ③ 팀별 누적 막대(완료·진행·대기·기한경과, 인당은 팀 인원으로 나눔, 정렬 내림차순, `.hit` 클릭 선택),
+  ④ 선택 팀 월별 등록·완료, ⑤ 선택 팀 월별 평균 처리일수(`fmt:v=>v.toFixed(1)`). CSV: `5S_개선요청종합_YYYY[MM].csv`(처리 단계별·팀별·단일 팀 월별). 스타일은 `#hd20ImproveBoardStyle` 텍스트를 ID 치환해 재사용.
+  `.app.awFocused #hd20RequestBoard` 숨김은 복제 스타일에 포함, resize 250ms 재렌더, 탭 클릭 시 재렌더.
+- `dashboard-kpi-source.js`: `window.HD20KPIData`에 `actionCases` 읽기 전용 노출(`seoulDateKey`는 기존 노출). `?v=20260928-monthly-2`.
+- `hd20-improve-board.js`: `window.HD20_BOARD_KIT={chart,leg,esc,fx,C,axis}` 노출, `chart({...,fmt})` 옵션(`F=v=>fmt?fmt(v):fx(v,per)`), `?v=20260928-5`.
+- `dashboard-section-tabs.js`: `{key:'request',label:'5S 개선요청 종합',targets:['#hd20RequestBoard']}`를 improve 다음에 추가(`?v=20260928-request-1`), `index.html`에 `hd20-request-board.js?v=20260928-2`.
+- `ci-tab-keys.patch` 재생성(40줄, `git apply --check` 통과): 탭 키 `['summary','improve','request','execution','maturity','standard','analysis']`.
+- 검증(`rb_check.py`): 기한경과 정의 검증(79=66+13), 팀 막대 클릭(휠로더리어팀→대형Att.팀), 년=2025(완료율 48.1%·기한경과 13), 월=9월(64.9%·12), 인당 모드, 처리상태·등록경로 필터, CSV 41행.
+  섹션 격리(`reg_dash3.py`) 8개 통과, 16개 탭 회귀 오류 0건.
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
@@ -1452,8 +1466,8 @@
 ## (2026-09-28 갱신) 종료조건
 16개 탭 순회·기능 회귀 세트 콘솔 오류 0건, 최신 GitHub Pages 빌드 `built` 확인, 실제 사이트 확인 결과 반영 후 종료.
 
-## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 44건)
-> 커밋 시각은 저장소 표기 기준. 아래 44건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
+## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 45건)
+> 커밋 시각은 저장소 표기 기준. 아래 45건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
 > (`e182f66`은 이 대화 밖의 다른 Claude 세션이 같은 계정으로 push한 커밋이라 포함됨. 대장은 `git log --since`가 날짜가 뒤섞인 이력에서 일부를 건너뛰는 것을 발견해, 커밋 날짜를 직접 비교해 생성)
 
 | 커밋 | 시각 | 제목 | 변경 파일 |
@@ -1502,8 +1516,9 @@
 | `a45a372` | 2026-09-28 04:43 | ui: 첫인상 정리 - 시험용처럼 보이던 배너·상태 버튼·좁은 KPI 카드 개선 | `hd22-theme.css`, `index.html` |
 | `96a7f6f` | 2026-09-28 09:44 | perf: 표 행 가상화(현재 페이지 행만 DOM 유지) + 증빙 썸네일 지연 로딩 — 화면 요소 32,171 → 8,206 | `action-field-photo-gallery.js`, `index.html`, `table-enhance-suite.js`, `workflow-crud.js` |
 | `faf554e` | 2026-09-28 09:49 | feat: 5S 자율개선 종합 대시보드 신설 (기존 MES 'VTB 자율개선 종합 대시보드' 구성 반영) | `ci-tab-keys.patch`, `dashboard-section-tabs.js`, `final-layout-polish.js`, `hd20-improve-board.js`, `index.html` |
+| `9d5f65a` | 2026-09-28 10:00 | feat: 5S 개선요청 종합 대시보드 신설 (5S 자율개선 종합과 같은 뼈대) | `ci-tab-keys.patch`, `dashboard-kpi-source.js`, `dashboard-section-tabs.js`, `final-layout-polish.js`, `hd20-improve-board.js`, `hd20-request-board.js`, `index.html` |
 
-### 문서 커밋(35건, 로그 갱신용)
+### 문서 커밋(36건, 로그 갱신용)
 - `c661242` docs: development/coding log for validation fixture, team master, auth, subtab split (2026-09-22)
 - `da246aa` docs: log advancement 4-way subtab split (4aee88b) in dev/coding logs
 - `015b9b3` docs: log action/audit 4-way subtab split + metric bugfix (57e264c) in dev/coding logs
@@ -1539,3 +1554,4 @@
 - `a5f4659` docs: 개발일지·상세 개발일지·코딩일지 전수 보완 (누락 커밋·정정·배포 상태·잔여 과제)
 - `a630b4c` docs: 빈 공간 제거(e182f66) 개발일지·상세 개발일지·코딩일지 반영, 커밋 대장 36건 재생성
 - `5600a85` docs: 탭 정리·3조건 분석·효율 병기·CI 실패 발견 개발일지/상세 개발일지/코딩일지 반영, 커밋 대장 40건 재생성
+- `4236808` docs: 웹 완성도 측정·첫인상 정리·지연 렌더링·5S 자율개선 종합 대시보드 로그 반영, 커밋 대장 44건 재생성
