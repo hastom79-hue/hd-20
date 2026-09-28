@@ -726,6 +726,9 @@
 ### 52. 종합 대시보드 보강 — 근거 데이터·목표선 (커밋 `dd8f90d`)
 - 개발일지 참조. 공용 근거 데이터 창, 분기별 인당 목표선(해석 명시), 근거 건수 검증.
 
+### 53. 종합 대시보드 프린트 결과 개선 (커밋 `1d22c89`)
+- 개발일지 참조. A4 세로/가로 인쇄 잘림·버튼 노출·차트 크기 불균일 수정.
+
 ## 정정·발견 사항 추가 (2026-09-28 저녁)
 1. 웹 완성도 평가에 대해 인상이 아닌 측정으로 원인(구조: 화면 전체 선렌더링·스타일 다층)을 확인. CSS 수정만으로는 격차가 줄지 않음을 사용자에게 명시.
 2. 헤더 클릭 정렬 미동작은 원본에서도 동일(회귀 아님). 별도 확인 필요.
@@ -737,8 +740,8 @@
 - 5S 자율개선 종합: 참여율 정의(등록자/총원) 사용자 확인, 목표선(분기별 인당 목표) 표시 여부, 실제 .xlsx 내보내기 여부.
 - 표 헤더 정렬 미동작 원인 조사.
 
-## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 46건)
-> 커밋 시각은 저장소 표기 기준. 아래 46건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
+## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 47건)
+> 커밋 시각은 저장소 표기 기준. 아래 47건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
 > (`e182f66`은 이 대화 밖의 다른 Claude 세션이 같은 계정으로 push한 커밋이라 포함됨. 대장은 `git log --since`가 날짜가 뒤섞인 이력에서 일부를 건너뛰는 것을 발견해, 커밋 날짜를 직접 비교해 생성)
 
 | 커밋 | 시각 | 제목 | 변경 파일 |
@@ -789,8 +792,9 @@
 | `faf554e` | 2026-09-28 09:49 | feat: 5S 자율개선 종합 대시보드 신설 (기존 MES 'VTB 자율개선 종합 대시보드' 구성 반영) | `ci-tab-keys.patch`, `dashboard-section-tabs.js`, `final-layout-polish.js`, `hd20-improve-board.js`, `index.html` |
 | `9d5f65a` | 2026-09-28 10:00 | feat: 5S 개선요청 종합 대시보드 신설 (5S 자율개선 종합과 같은 뼈대) | `ci-tab-keys.patch`, `dashboard-kpi-source.js`, `dashboard-section-tabs.js`, `final-layout-polish.js`, `hd20-improve-board.js`, `hd20-request-board.js`, `index.html` |
 | `dd8f90d` | 2026-09-28 10:19 | feat: 종합 대시보드 - 근거 데이터 보기 + 분기별 인당 목표선(목표 달성/미달) | `hd20-improve-board.js`, `hd20-request-board.js`, `index.html` |
+| `1d22c89` | 2026-09-28 10:24 | fix: 종합 대시보드 [프린트] 결과 개선 — 잘림 제거·용지 폭 기준 재그리기·버튼 숨김 | `hd20-improve-board.js`, `hd20-request-board.js`, `index.html` |
 
-### 문서 커밋(37건, 로그 갱신용)
+### 문서 커밋(38건, 로그 갱신용)
 - `c661242` docs: development/coding log for validation fixture, team master, auth, subtab split (2026-09-22)
 - `da246aa` docs: log advancement 4-way subtab split (4aee88b) in dev/coding logs
 - `015b9b3` docs: log action/audit 4-way subtab split + metric bugfix (57e264c) in dev/coding logs
@@ -828,3 +832,4 @@
 - `5600a85` docs: 탭 정리·3조건 분석·효율 병기·CI 실패 발견 개발일지/상세 개발일지/코딩일지 반영, 커밋 대장 40건 재생성
 - `4236808` docs: 웹 완성도 측정·첫인상 정리·지연 렌더링·5S 자율개선 종합 대시보드 로그 반영, 커밋 대장 44건 재생성
 - `ac875bb` docs: 5S 개선요청 종합 대시보드(9d5f65a) 개발일지/상세 개발일지/코딩일지 반영, 커밋 대장 재생성
+- `75f125d` docs: 종합 대시보드 근거 데이터·목표선(dd8f90d) 개발일지/상세 개발일지/코딩일지 반영, 커밋 대장 재생성

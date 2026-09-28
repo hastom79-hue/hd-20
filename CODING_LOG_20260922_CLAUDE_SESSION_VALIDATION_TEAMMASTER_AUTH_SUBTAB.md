@@ -1412,6 +1412,13 @@
 - `hd20-request-board.js`: 5개 패널 근거 버튼, 열 12개(요청번호·등록일·팀·작업장·문제점·상태·조치기한·완료일·처리일수·기한경과·효과검증·Audit 연계). `?v=20260928-3`.
 - 검증(`ev_check.py`): 저장된 목표 `{"Q1":2,"Q2":3,"Q3":4,"Q4":5}`, 인당 모드 목표선 존재·"목표 달성 0/16팀 · 전체 평균 1.28건/인", 근거창 868건(200행 표시)·검색(정리 219건)·CSV 220행·Esc 닫힘, 월별 근거 868=기준 868, 개선요청 근거 563=기준 563. 섹션 격리·16개 탭 회귀 오류 0건.
 
+### `1d22c89` — fix: 종합 대시보드 프린트 결과 개선 (2026-09-28)
+- 변경 파일: `hd20-improve-board.js`(+7/-6), `hd20-request-board.js`(+6/-5), `index.html`(+1/-1)
+- 재현(`print_board.py`→`print_board3.py`): `emulate_media('print')`+뷰포트 794/1123px. 수정 전 A4 세로 `svg_넘침 1`, 근거 버튼 표시. `@media print`: `.ibBar,.ibEv{display:none!important}`, `.ibBody{overflow:visible}`, `svg{width:100%!important;height:auto!important}`, `.ibPanel{break-inside:avoid}`, `.ibRow{grid-template-columns:1fr!important}`.
+- 두 파일 `render()`: `W=window.__hd20BoardPrint?680:Math.max(320,clientWidth-36)`, 패널 폭 `w:(window.__hd20BoardPrint?W-8:Math.floor(W*.4)-8)` 등 5곳 치환. `beforeprint`에서 플래그 on+재렌더, `afterprint`에서 off+재렌더.
+- 버전: `hd20-improve-board.js?v=20260928-8`, `hd20-request-board.js?v=20260928-4`.
+- 검증(`print_board3.py`/`print_board4.py`): A4 세로·가로에서 넘침 0, 차트 폭 92~95%, 글자 크기 [11.1,11.1,9.4,11.1,11.1]px, 인쇄 후 차트 5개 복원·플래그 false. 16개 탭 회귀 오류 0건.
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
@@ -1475,8 +1482,8 @@
 ## (2026-09-28 갱신) 종료조건
 16개 탭 순회·기능 회귀 세트 콘솔 오류 0건, 최신 GitHub Pages 빌드 `built` 확인, 실제 사이트 확인 결과 반영 후 종료.
 
-## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 46건)
-> 커밋 시각은 저장소 표기 기준. 아래 46건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
+## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 47건)
+> 커밋 시각은 저장소 표기 기준. 아래 47건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
 > (`e182f66`은 이 대화 밖의 다른 Claude 세션이 같은 계정으로 push한 커밋이라 포함됨. 대장은 `git log --since`가 날짜가 뒤섞인 이력에서 일부를 건너뛰는 것을 발견해, 커밋 날짜를 직접 비교해 생성)
 
 | 커밋 | 시각 | 제목 | 변경 파일 |
@@ -1527,8 +1534,9 @@
 | `faf554e` | 2026-09-28 09:49 | feat: 5S 자율개선 종합 대시보드 신설 (기존 MES 'VTB 자율개선 종합 대시보드' 구성 반영) | `ci-tab-keys.patch`, `dashboard-section-tabs.js`, `final-layout-polish.js`, `hd20-improve-board.js`, `index.html` |
 | `9d5f65a` | 2026-09-28 10:00 | feat: 5S 개선요청 종합 대시보드 신설 (5S 자율개선 종합과 같은 뼈대) | `ci-tab-keys.patch`, `dashboard-kpi-source.js`, `dashboard-section-tabs.js`, `final-layout-polish.js`, `hd20-improve-board.js`, `hd20-request-board.js`, `index.html` |
 | `dd8f90d` | 2026-09-28 10:19 | feat: 종합 대시보드 - 근거 데이터 보기 + 분기별 인당 목표선(목표 달성/미달) | `hd20-improve-board.js`, `hd20-request-board.js`, `index.html` |
+| `1d22c89` | 2026-09-28 10:24 | fix: 종합 대시보드 [프린트] 결과 개선 — 잘림 제거·용지 폭 기준 재그리기·버튼 숨김 | `hd20-improve-board.js`, `hd20-request-board.js`, `index.html` |
 
-### 문서 커밋(37건, 로그 갱신용)
+### 문서 커밋(38건, 로그 갱신용)
 - `c661242` docs: development/coding log for validation fixture, team master, auth, subtab split (2026-09-22)
 - `da246aa` docs: log advancement 4-way subtab split (4aee88b) in dev/coding logs
 - `015b9b3` docs: log action/audit 4-way subtab split + metric bugfix (57e264c) in dev/coding logs
@@ -1566,3 +1574,4 @@
 - `5600a85` docs: 탭 정리·3조건 분석·효율 병기·CI 실패 발견 개발일지/상세 개발일지/코딩일지 반영, 커밋 대장 40건 재생성
 - `4236808` docs: 웹 완성도 측정·첫인상 정리·지연 렌더링·5S 자율개선 종합 대시보드 로그 반영, 커밋 대장 44건 재생성
 - `ac875bb` docs: 5S 개선요청 종합 대시보드(9d5f65a) 개발일지/상세 개발일지/코딩일지 반영, 커밋 대장 재생성
+- `75f125d` docs: 종합 대시보드 근거 데이터·목표선(dd8f90d) 개발일지/상세 개발일지/코딩일지 반영, 커밋 대장 재생성
