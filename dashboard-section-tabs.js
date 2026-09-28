@@ -3,6 +3,7 @@ const ID='hd20DashboardSectionTabs';
 const TABS=[
  {key:'summary',label:'종합현황',desc:'핵심 지표 · 운영 건전성 현재값',targets:['#hd20DashboardPriority','.cards']},
  {key:'improve',label:'5S 자율개선 종합',desc:'유형·월별·팀별 인당 개선건수',targets:['#hd20ImproveBoard']},
+ {key:'request',label:'5S 개선요청 종합',desc:'처리 단계·팀별 완료율·처리일수',targets:['#hd20RequestBoard']},
  {key:'execution',label:'실행·유지',desc:'팀별 실행·Audit·Action',targets:['.mainGrid','#hd20OperationalBridge']},
  {key:'maturity',label:'고도화 맵',desc:'Portfolio·공식확정 Case',targets:['#hd20MaturityMapTab']},
  {key:'standard',label:'기준·추이',desc:'판정기준·월별 변화',targets:['.bottomGrid']},
