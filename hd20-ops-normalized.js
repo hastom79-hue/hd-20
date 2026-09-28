@@ -4,9 +4,9 @@
 (()=>{'use strict';
 const pc=(a,b)=>b>0?`${(a/b*100).toFixed(1)}%`:'-',f2=(a,b)=>b>0?(a/b).toFixed(2):'-',f1=(a,b)=>b>0?(a/b).toFixed(1):'-';
 const R={
- 'dashboard.summary':[(v,H)=>H?`인당 ${f2(v[0],H)}건`:'',(v)=>`활동 대비 ${pc(v[1],v[0])}`,null,null],
- 'activity.manage':[(v,H)=>H?`인당 ${f2(v[0],H)}건 · ${H}명 기준`:'',v=>`완료율 ${pc(v[1],v[0])}`,v=>`진행 비중 ${pc(v[2],v[0])}`,v=>`고도화 전환율 ${pc(v[3],v[0])}`],
- 'activity.analysis':[(v,H)=>H?`인당 ${f2(v[0],H)}건`:'',v=>`팀당 평균 ${f1(v[0],v[1])}건`,v=>`전환율 ${pc(v[2],v[0])}`,(v,H)=>H?`최근 30일 인당 ${f2(v[3],H)}건`:''],
+ 'dashboard.summary':[(v,H)=>H?`인당 ${f2(v[0],H)}건`:'',null,null,null],
+ 'activity.manage':[(v,H)=>H?`인당 ${f2(v[0],H)}건 · ${H}명 기준`:'',v=>`완료율 ${pc(v[1],v[0])}`,v=>`진행 비중 ${pc(v[2],v[0])}`,v=>`고도화 확정률 ${pc(v[3],v[0])}`],
+ 'activity.analysis':[(v,H)=>H?`인당 ${f2(v[0],H)}건`:'',v=>`팀당 평균 ${f1(v[0],v[1])}건`,v=>`활동 대비 확정률 ${pc(v[2],v[0])}`,(v,H)=>H?`최근 30일 인당 ${f2(v[3],H)}건`:''],
  'advancement.judge':[null,v=>`후보 대비 ${pc(v[1],v[0])}`,v=>`확정률 ${pc(v[2],v[0])}`,v=>`3조건 충족률 ${pc(v[3],v[0])}`],
  'advancement.detail':[null,null,v=>`작업장 대비 확정 ${pc(v[2],v[1])}`,null],
  'advancement.standard':[null,v=>`유지율 ${pc(v[1],v[0])}`,v=>`미흡률 ${pc(v[2],v[0])}`,v=>`수평전개율 ${pc(v[3],v[0])}`],

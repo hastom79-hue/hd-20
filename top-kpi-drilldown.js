@@ -1,8 +1,9 @@
 (()=>{'use strict';
 const HEAD=['생산팀','작업장/공정','활동유형','활동명','등록일','판정상태','판정일','판정자','유지상태'];
 function source(){return window.HD20KPIData?.snapshot?.()||{activities:[],candidates:[],newSecured:[],confirmed:[],maintained:[],headcount:null,perPerson:null}}
-function sets(s){return[s.activities||[],s.candidates||[],s.newSecured||[],s.confirmed||[],s.maintained||[]]}
-function cardValues(s){return[s.perPerson==null?null:Number(s.perPerson.toFixed(2)),(s.candidates||[]).length,(s.newSecured||[]).length,(s.confirmed||[]).length,(s.maintained||[]).length]}
+function monthConfirmed(s){const K=window.HD20KPIData,ym=String(K?.seoulDateKey?.()||'').slice(0,7);return(s.confirmed||[]).filter(x=>String(K?.confirmedDate?.(x)||'').slice(0,7)===ym)}
+ function sets(s){return[s.activities||[],monthConfirmed(s),s.newSecured||[],s.confirmed||[],s.maintained||[]]}
+function cardValues(s){return[s.perPerson==null?null:Number(s.perPerson.toFixed(2)),monthConfirmed(s).length,(s.newSecured||[]).length,(s.confirmed||[]).length,(s.maintained||[]).length]}
 function esc(v){return String(v??'-').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function value(x,...keys){for(const k of keys){if(x?.[k]!==undefined&&x[k]!==null&&String(x[k]).trim()!=='')return x[k]}return'-'}
 function row(x){return[value(x,'team'),value(x,'workplace','work','line'),value(x,'type'),value(x,'title','activityName','improveTitle'),value(x,'date','regDate','createdAt'),value(x,'judgeState','status'),value(x,'judgedAt','confirmedAt','judgeDate'),value(x,'judgeOwner','judgeBy','judgeUser','confirmedBy'),value(x,'maintainState','auditState')]}

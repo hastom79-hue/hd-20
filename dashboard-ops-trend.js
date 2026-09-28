@@ -3,7 +3,7 @@
 (()=>{'use strict';
 const ID='hd20OpsTrend',N=6;
 const M=[
- {k:'judgmentRate',t:'공식 판정 완료율',u:'%',good:'up',max:100,route:'advancement',note:'그 달에 등록된 후보 중 판정까지 끝난 비율'},
+ {k:'judgmentRate',t:'공식 판정 완료율',u:'%',good:'up',max:100,route:'advancement',note:'그 달에 등록된 판정 대상 중 판정까지 끝난 비율'},
  {k:'avgLead',t:'평균 판정 Lead Time',u:'일',good:'down',route:'advancement',note:'그 달에 판정된 건의 등록→판정 평균 소요일'},
  {k:'maturity',t:'고도화 수준 (평균 Lv.)',u:'',good:'up',max:5,route:'advancement',note:'그 달 공식 확정된 사례의 평균 Level'},
  {k:'sixRetention',t:'Audit 후 6개월 유지율',u:'%',good:'up',max:100,route:'audit',note:'6개월이 끝난 달 기준, 유지에 성공한 비율'},
