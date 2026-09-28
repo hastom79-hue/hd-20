@@ -1466,6 +1466,21 @@
 - 검증(`wp_final.py`): 조건=3개 필터 117건 전부 실측 열 값 '3개' 일치, +판정=확정 51건 전부 '확정' 배지 일치, 팀=대형Att.팀 6건 전부 일치, 초기화 154건 복원. 첫 시도(`wp_check.py`)에서 `table:first-of-type` 선택자가 같은 화면의 두 표 모두에 매칭돼(각 표가 서로 다른 부모의 첫 자식) false 판정이 났던 것을 카드 단위 선택자로 교정.
 - 5S 등록 E2E(960→961), 16개 탭 회귀 오류 0건. 회귀 높이가 무관 화면들에서도 동반 상승(`leak_effect.py`로 최상위 블록 목록에 낯선 블록 없음 확인) → 날짜 의존(기한경과 등) 값의 자연 증가로 판단, 코드 수정 없음.
 
+### `cc8d318` — feat+fix: 대상 추출 필터 바 + 가드 충돌 수정 (2026-09-28)
+- 변경 파일: `audit-random-draw.js`(+9/-2), `hd20-native-production-guard.js`(+3/-1), `index.html`(+1/-1)
+- `audit-random-draw.js`: `DF={team,policy,notified}`, `historyFiltered()`(=`prodDraws().filter(팀·정책·알림)`). `renderHistory(host)`를 `all=historyFiltered(),draws=all.slice(0,30)`으로, `#adFilterCount`에 `최근 N건 표시 (조건 일치 M건 / 전체 K건)`. 마크업은 `.auditDrawHint` 뒤 `.amFilterBar`(생산팀 select는 `render()`에서 `[...new Set(prodDraws().map(d=>d.team))].sort()`로 1회만 채움). 이벤트는 `render()` 끝 `repaint();renderHistory(host)` 직전에 바인딩. 버전 `?v=20260928-filter-1`.
+- 결함 재현·특정(`ad_trap.py`): `Element.prototype.innerHTML` setter를 오버라이드해 `.auditDrawHistory` 대상 쓰기의 콜스택을 기록 → `renderHistory`(정상) 직후 `hd20-native-production-guard.js:patchAuditDraw`가 동일 대상에 재기록(3회 연속, MutationObserver→patch()의 재귀적 자기 트리거로 추정).
+- `hd20-native-production-guard.js`: `patchAuditDraw()`의 `const wrap=$('.auditDrawHistory',host);if(wrap){...}` 블록 전체를 주석으로 교체(다른 동작인 삭제된 추첨 버튼 정리·빈 상태 처리는 유지). 편집 중 블록 삭제 시 함수의 닫는 `}`까지 같이 지워 문법 오류가 났던 것을 `node -e "new Function(...)"` 구문 검사로 발견해 `}` 보강. 버전 `?v=20260928-fix-1`.
+- 검증(`ad_timeline3.py`): 필터 적용 후 0~800ms 각 시점에서 값이 되돌아가지 않고 유지됨(수정 전엔 50ms 시점부터 원복). 5S 등록 E2E, 16개 탭 회귀 오류 0건.
+
+### `59465cf` — feat: 5S 개선요청 종합 대시보드 VTB 사진 기반 재구성 (2026-09-29)
+- 변경 파일: `hd20-request-board.js`(+93/-65), `index.html`(+1/-1)
+- 원천 필드 재확인(`act_probe2/3.py`): `hd20ActionCasesV2` 640건 키 목록에 `source`가 있으나 값이 전부 `"web-validation-fixture"`(검증 마커)라 요청출처로 쓸 수 없음. 기각 상태 0건. 연도 분포 2025=77·2026=563.
+- `hd20-request-board.js` 전면 재작성: `SOURCES=['5S모듈','생산혁신팀 HDPS파트','리더십']`, `sourceOf(c)`=실제 필드 `c.requestSource` 우선, 없으면 `auditDrawId` 유무로 추정(리더십은 추정 불가라 상시 0). `S={year,month,source,team,status,roll}`.
+  ① `chart()`로 요청출처 3종 × 등록/완료 그룹 막대. ② 월별 등록/진행/완료 3계열 + `openRate`(전체 기간 `D.cases` 기준)·`yearRate`(연도 필터 `rowsY` 기준). ③ `teamRows`(팀별 합계·완료·진행/대기·기한경과, `isOverdue=(c,today)=>c.status!=='완료'&&c.due&&c.due<today`) → `.rqGrid` 표(합계 행 우선 표시), `.rqScroll`로 세로 스크롤(그리드 340px/상세 420px). ④ `detailRows`(최신순 300건 슬라이스) → `.rqDetail` 표.
+  CSV는 `rowsM`(현재 필터) 조건에 맞는 전체 건을 내려받음(화면은 300건 제한과 별개). 안내문(`.rqCaveat`)에 요청출처 추정 방식과 완료(*) 정의 한계를 명시. `.app.awFocused` 숨김 유지.
+- 검증(`rb2_check.py`/`rb2_check2.py`): 요청출처=5S모듈 필터 시 상세내용 전 행이 '5S모듈'과 일치, 조치대응부서=대형Att.팀 필터 시 그리드 2행(합계+해당 팀), 합계 행 수치(94건→60건 63.8%·24건 25.5%·10건 10.6%) 그리드 표시와 일치, CSV 42행. 16개 탭 회귀 오류 0건.
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
@@ -1529,8 +1544,8 @@
 ## (2026-09-28 갱신) 종료조건
 16개 탭 순회·기능 회귀 세트 콘솔 오류 0건, 최신 GitHub Pages 빌드 `built` 확인, 실제 사이트 확인 결과 반영 후 종료.
 
-## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 52건)
-> 커밋 시각은 저장소 표기 기준. 아래 52건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
+## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 54건)
+> 커밋 시각은 저장소 표기 기준. 아래 54건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
 > (`e182f66`은 이 대화 밖의 다른 Claude 세션이 같은 계정으로 push한 커밋이라 포함됨. 대장은 `git log --since`가 날짜가 뒤섞인 이력에서 일부를 건너뛰는 것을 발견해, 커밋 날짜를 직접 비교해 생성)
 
 | 커밋 | 시각 | 제목 | 변경 파일 |
@@ -1587,8 +1602,10 @@
 | `49ed539` | 2026-09-28 21:29 | feat: 자율개선 종합 ⑤ 차트를 '고도화 확보 누적 추이'(기존 유지+신규)로 교체 | `hd20-improve-board.js`, `index.html` |
 | `e675362` | 2026-09-28 21:38 | feat: 조치 목록에 hd-22식 구조 필터 바(생산팀·상태·등록일) 추가 — 2순위 착수 | `action-mail-workflow.js`, `index.html` |
 | `ddd8454` | 2026-09-28 21:49 | feat: 후보 목록에 hd-22식 구조 필터 바(생산팀·조건 충족수·공식판정) 추가 | `activity-workflow.js`, `index.html` |
+| `cc8d318` | 2026-09-28 22:24 | feat+fix: 대상 추출 필터 바 추가 + 가드 스크립트 충돌로 필터가 자동 원복되던 결함 수정 | `audit-random-draw.js`, `hd20-native-production-guard.js`, `index.html` |
+| `59465cf` | 2026-09-28 22:27 | feat: 5S 개선요청 종합 대시보드를 실제 VTB(HD-HiHR) 화면 구성에 맞춰 전면 재구성 | `hd20-request-board.js`, `index.html` |
 
-### 문서 커밋(43건, 로그 갱신용)
+### 문서 커밋(44건, 로그 갱신용)
 - `c661242` docs: development/coding log for validation fixture, team master, auth, subtab split (2026-09-22)
 - `da246aa` docs: log advancement 4-way subtab split (4aee88b) in dev/coding logs
 - `015b9b3` docs: log action/audit 4-way subtab split + metric bugfix (57e264c) in dev/coding logs
@@ -1632,3 +1649,4 @@
 - `82d67c8` docs: 고도화 확정 결과 기준 전환(89ef6a8) 개발일지/상세 개발일지/코딩일지 반영, 커밋 대장 재생성
 - `f9d46c2` docs: ⑤ 차트 대체 팩터 검토·확정(49ed539) 개발일지/상세 개발일지/코딩일지 반영, 커밋 대장 재생성
 - `0d1b234` docs: 조치 목록 필터 바(e675362) 개발일지/상세 개발일지/코딩일지 반영, 커밋 대장 재생성
+- `dfc7e8b` docs: 후보 목록 필터 바(ddd8454) 개발일지/상세 개발일지/코딩일지 반영, 커밋 대장 재생성
