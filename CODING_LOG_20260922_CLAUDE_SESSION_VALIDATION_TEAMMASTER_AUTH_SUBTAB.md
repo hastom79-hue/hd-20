@@ -1419,6 +1419,13 @@
 - 버전: `hd20-improve-board.js?v=20260928-8`, `hd20-request-board.js?v=20260928-4`.
 - 검증(`print_board3.py`/`print_board4.py`): A4 세로·가로에서 넘침 0, 차트 폭 92~95%, 글자 크기 [11.1,11.1,9.4,11.1,11.1]px, 인쇄 후 차트 5개 복원·플래그 false. 16개 탭 회귀 오류 0건.
 
+### `64d07c1` — feat: 자율개선 종합 Fool Proof 대체 지표(고도화 확정) + 고도화 판정 필터 (2026-09-28)
+- 변경 파일: `hd20-improve-board.js`(+15/-13), `index.html`(+1/-1)
+- `hd20-improve-board.js`: `S.judge` 추가, `JUDGES=['확정','판정대기','보완요청','후보','검토중','미확정']`. `cdOf(r)`=`HD20KPIData.confirmedDate(r)||confirmedAt||judgedAt||date`. `filt(D,{ignoreMonth,ignoreYear})`에 `ignoreYear`·`judge` 조건.
+  ② 월별: `rowsC=filt(D,{ignoreYear:true,ignoreMonth:true}).filter(inTeams)`, `confM(a)`=확정일의 연도가 `S.year`이고 `judgeState==='확정'`인 건을 확정월별로(인당 모드는 총원으로 나눔). 시리즈 '고도화 후보 건수'→'고도화 확정 건수'.
+  ⑤: 시리즈 '고도화 후보'→'고도화 확정'(선택 팀·확정일 기준), 제목 '수평전개/고도화 확정'. 조회 바 `<select data-f="judge">`. 근거 열 `['등록일','팀','5S 유형','등록자','문제점','개선내용','상태','고도화 판정','확정일','수평전개']`. `?v=20260928-9`.
+- 검증(`factor_check2.py`): 월별 확정 툴팁 합 51·`snapshot().newSecured` 51·확정 판정(2026) 51, 판정 필터 근거 건수 확정 51/판정대기 31/보완요청 30, ⑤ 제목·근거 열 확인, 16개 탭 회귀 오류 0건.
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
@@ -1482,8 +1489,8 @@
 ## (2026-09-28 갱신) 종료조건
 16개 탭 순회·기능 회귀 세트 콘솔 오류 0건, 최신 GitHub Pages 빌드 `built` 확인, 실제 사이트 확인 결과 반영 후 종료.
 
-## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 47건)
-> 커밋 시각은 저장소 표기 기준. 아래 47건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
+## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 48건)
+> 커밋 시각은 저장소 표기 기준. 아래 48건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
 > (`e182f66`은 이 대화 밖의 다른 Claude 세션이 같은 계정으로 push한 커밋이라 포함됨. 대장은 `git log --since`가 날짜가 뒤섞인 이력에서 일부를 건너뛰는 것을 발견해, 커밋 날짜를 직접 비교해 생성)
 
 | 커밋 | 시각 | 제목 | 변경 파일 |
@@ -1535,8 +1542,9 @@
 | `9d5f65a` | 2026-09-28 10:00 | feat: 5S 개선요청 종합 대시보드 신설 (5S 자율개선 종합과 같은 뼈대) | `ci-tab-keys.patch`, `dashboard-kpi-source.js`, `dashboard-section-tabs.js`, `final-layout-polish.js`, `hd20-improve-board.js`, `hd20-request-board.js`, `index.html` |
 | `dd8f90d` | 2026-09-28 10:19 | feat: 종합 대시보드 - 근거 데이터 보기 + 분기별 인당 목표선(목표 달성/미달) | `hd20-improve-board.js`, `hd20-request-board.js`, `index.html` |
 | `1d22c89` | 2026-09-28 10:24 | fix: 종합 대시보드 [프린트] 결과 개선 — 잘림 제거·용지 폭 기준 재그리기·버튼 숨김 | `hd20-improve-board.js`, `hd20-request-board.js`, `index.html` |
+| `64d07c1` | 2026-09-28 10:33 | feat: 자율개선 종합 - Fool Proof 대체 지표를 원천 데이터에서 선정(고도화 공식 확정 건수) + '고도화 판정' 필터 | `hd20-improve-board.js`, `index.html` |
 
-### 문서 커밋(38건, 로그 갱신용)
+### 문서 커밋(39건, 로그 갱신용)
 - `c661242` docs: development/coding log for validation fixture, team master, auth, subtab split (2026-09-22)
 - `da246aa` docs: log advancement 4-way subtab split (4aee88b) in dev/coding logs
 - `015b9b3` docs: log action/audit 4-way subtab split + metric bugfix (57e264c) in dev/coding logs
@@ -1575,3 +1583,4 @@
 - `4236808` docs: 웹 완성도 측정·첫인상 정리·지연 렌더링·5S 자율개선 종합 대시보드 로그 반영, 커밋 대장 44건 재생성
 - `ac875bb` docs: 5S 개선요청 종합 대시보드(9d5f65a) 개발일지/상세 개발일지/코딩일지 반영, 커밋 대장 재생성
 - `75f125d` docs: 종합 대시보드 근거 데이터·목표선(dd8f90d) 개발일지/상세 개발일지/코딩일지 반영, 커밋 대장 재생성
+- `8af7ae6` docs: 종합 대시보드 프린트 개선(1d22c89) 개발일지/상세 개발일지/코딩일지 반영, 커밋 대장 재생성
