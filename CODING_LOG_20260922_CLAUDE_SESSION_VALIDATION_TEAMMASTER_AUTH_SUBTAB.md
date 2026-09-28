@@ -1302,6 +1302,22 @@
 - `index.html`: `dashboard-actions.js?v=20260928-stackbar-3`.
 - 검증: 16개 탭 오류 0건(`final_regress15.py`), 데스크톱/모바일 스크린샷, 상세 표 수치 확인(`test_trend.py`).
 
+### `e182f66` — fix: 옆 카드 높이에 맞춰 늘어나 생기던 불필요한 빈 공간 제거 (2026-09-28)
+- 변경 파일: `dashboard-section-tabs.js`(+1/-1), `final-layout-polish.js`(+1/-1), `hd22-theme.css`(+7/-0), `index.html`(+1/-1)
+- 검출 스크립트 `scan_blank.py`: 화면별로 `.card/.awCard/.amCard/.pcPanel/.adcCard`(높이 150px↑, 폭 200px↑)의 마지막 콘텐츠 요소 하단과 카드 하단의 차이가 120px를 넘는 항목을 출력.
+  대시보드 6개 섹션 + 14개 서브탭(1440px) 스캔 → `③/후보 목록`의 `5S 고도화 3대 조건`(h 875, gap 679)만 검출, 판정 기준 카드는 별도 `probe_blank.py`로 측정
+  (1440px: 판정 기준 카드 내용 220px vs 카드 490px, 추이 카드 490px). `.bottomGrid` `align-items:stretch`, `.pcGrid` `align-items:normal(stretch)`가 원인.
+- `dashboard-section-tabs.js`(주입 CSS에 추가): `@media(min-width:1101px){body.hd20DashboardStandardActive .bottomGrid .card:has(.criteria){display:flex!important;flex-direction:column}
+  body.hd20DashboardStandardActive .bottomGrid .card:has(.criteria)>.cardBody{flex:1;display:flex;flex-direction:column}
+  body.hd20DashboardStandardActive .bottomGrid .criteria{grid-template-columns:1fr!important;grid-auto-rows:1fr;flex:1}
+  body.hd20DashboardStandardActive .bottomGrid .crit{align-items:center!important}}` — 기존 `repeat(3,minmax(0,1fr))!important` 규칙과 같은 명시도라 뒤에 오는 미디어 규칙이 이김.
+- `hd22-theme.css`(7번 섹션 신설): `@media(min-width:1101px){.pcGrid{align-items:start!important} .pcGrid>.pcPanel:last-child{position:sticky;top:84px}}`.
+  처음 `top:12px`로 두었다가 고정 메뉴 바(`.beginnerNav` sticky)에 가려져 `top:84px`로 수정.
+- 캐시 버전: `dashboard-section-tabs.js?v=20260928-blank-1`(`final-layout-polish.js`), `hd22-theme.css?v=20260928-h22-4`(`index.html`).
+- 검증: 판정 기준 카드 내용 474/490px(1440·1900px), `.pcGrid` 오른쪽 패널 875→218px, 1100px 이하는 미변경, 16개 탭 회귀(`final_regress16.py`) 오류 0건.
+  ③ 탭 모바일 높이 후보 목록 6,108→6,290 / 3조건 3,364→3,545 / 라인 3,154→3,335 / 확정 2,993→3,174(+181px, 추이 차트 개편 영향).
+  종료평가 13,534px는 기존 간헐 현상(`probe_closeeval.py`: 새로 불러오면 6/6회 3,705px, 직전 빌드 4,160px).
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
@@ -1365,8 +1381,8 @@
 ## (2026-09-28 갱신) 종료조건
 16개 탭 순회·기능 회귀 세트 콘솔 오류 0건, 최신 GitHub Pages 빌드 `built` 확인, 실제 사이트 확인 결과 반영 후 종료.
 
-## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 35건)
-> 커밋 시각은 저장소 표기 기준. 아래 35건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
+## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 36건)
+> 커밋 시각은 저장소 표기 기준. 아래 36건이 세 로그(개발일지·상세 개발일지·코딩일지) 본문에 모두 등장하는지 스크립트로 검증함.
 
 | 커밋 | 시각 | 제목 | 변경 파일 |
 |---|---|---|---|
@@ -1405,37 +1421,39 @@
 | `dc2c7c2` | 2026-09-28 00:10 | fix: 대시보드 하위 탭 위치 고정 + 섹션 전환 13~30초 지연 해소 | `dashboard-section-tabs.js`, `final-layout-polish.js`, `index.html`, `mo-throttle.js` |
 | `62d520b` | 2026-09-28 00:30 | feat: 고도화 작업장 추이를 누적 막대(기존 유지 + 신규)로 변경 | `dashboard-actions.js`, `index.html` |
 | `55f4705` | 2026-09-28 00:37 | fix: 고도화 작업장 추이 - 유지 이탈을 반영한 누적 막대(기존 유지+신규)로 재계산 | `dashboard-actions.js`, `index.html` |
+| `e182f66` | 2026-09-28 00:50 | fix: 옆 카드 높이에 맞춰 늘어나 생기던 불필요한 빈 공간 제거 | `dashboard-section-tabs.js`, `final-layout-polish.js`, `hd22-theme.css`, `index.html` |
 
-### 문서 커밋(32건, 로그 갱신용)
-- `2f08c0d` docs: log tab-position + observer throttle
-- `f16ef68` docs: log hd-22 benchmark phase 1 (876ad6a)
-- `32878fd` docs: log chart de-dup (c390ffe)
-- `a7370f5` docs: log activity grid fix (e74dd3e) in dev/coding logs
-- `4c4aa78` docs: log 조치목록 desktop empty-space fix (a189e3f) in dev/coding logs
-- `d1d2762` docs: log action-flow subtab fix (1c27f32) in dev/coding logs
-- `1796456` docs: log print CSS feature (42d606a) in dev/coding logs
-- `0b84e18` docs: log master info modal restoration (4d7cfa0) in dev/coding logs
-- `3af0f4a` docs: log 성과운영분석 implementation (2322352) in dev/coding logs
-- `3e80cb8` docs: log 실적분석 differentiation (2bbdcfa) in dev/coding logs
-- `a84c0ea` docs: log amSummary removal (d21fc0f) in dev/coding logs
-- `6c99a5b` docs: log verify panel dedup (f151a99) in dev/coding logs
-- `5589520` docs: log cross-area audit + label clarity fix (b0d8911) in dev/coding logs
-- `51135a5` docs: log trend chart area-gating fix (b4d45e1) in dev/coding logs
-- `a847276` docs: log amHeroNote position fix (19d2f5e) in dev/coding logs
-- `e91c7c5` docs: log 6개월관리중 regrouping (a60d61d) in dev/coding logs
-- `1e8f1ef` docs: log funnel connecting-note fix (29f702c) in dev/coding logs
-- `1b18b1f` docs: log advancement regrouping (7de480a) in dev/coding logs
-- `33c59ef` docs: log topic-based regrouping (03ec959) in dev/coding logs
-- `a6d5c0f` docs: log 2/3-area overhaul + plain-language conversion (cf11419, 7b70f79) in dev/coding logs
-- `e0c1ac7` docs: log duplicate-intro cleanup (3f6be0f) in dev/coding logs
-- `3db7954` docs: log scrollbar-gutter symmetry fix (abc91fc) in dev/coding logs
-- `50bed25` docs: log subtab priority reorder + verify-panel fix (80b1fd2) in dev/coding logs
-- `fcd6d2e` docs: log dashboard KPI-priority reorder (d4ca925) in dev/coding logs
-- `bbed270` docs: log maturity-map perf fix + closure-eval race mitigation (b8f75bc) in dev/coding logs
-- `7a7910e` docs: log maturity map bubble decluttering fix (44a5c3f) in dev/coding logs
-- `3c39e09` docs: log tab-contrast and duplicate-metrics fix (e535a26) in dev/coding logs
-- `20480c3` docs: log default-on virtual data change (0e74799) in dev/coding logs
-- `5cfa2e2` docs: log KPI evidence grid regression + fix (c7b499e) in dev/coding logs
-- `015b9b3` docs: log action/audit 4-way subtab split + metric bugfix (57e264c) in dev/coding logs
-- `da246aa` docs: log advancement 4-way subtab split (4aee88b) in dev/coding logs
+### 문서 커밋(33건 + 이번 로그 갱신 커밋, 로그 갱신용)
 - `c661242` docs: development/coding log for validation fixture, team master, auth, subtab split (2026-09-22)
+- `da246aa` docs: log advancement 4-way subtab split (4aee88b) in dev/coding logs
+- `015b9b3` docs: log action/audit 4-way subtab split + metric bugfix (57e264c) in dev/coding logs
+- `5cfa2e2` docs: log KPI evidence grid regression + fix (c7b499e) in dev/coding logs
+- `20480c3` docs: log default-on virtual data change (0e74799) in dev/coding logs
+- `3c39e09` docs: log tab-contrast and duplicate-metrics fix (e535a26) in dev/coding logs
+- `7a7910e` docs: log maturity map bubble decluttering fix (44a5c3f) in dev/coding logs
+- `bbed270` docs: log maturity-map perf fix + closure-eval race mitigation (b8f75bc) in dev/coding logs
+- `fcd6d2e` docs: log dashboard KPI-priority reorder (d4ca925) in dev/coding logs
+- `50bed25` docs: log subtab priority reorder + verify-panel fix (80b1fd2) in dev/coding logs
+- `3db7954` docs: log scrollbar-gutter symmetry fix (abc91fc) in dev/coding logs
+- `e0c1ac7` docs: log duplicate-intro cleanup (3f6be0f) in dev/coding logs
+- `a6d5c0f` docs: log 2/3-area overhaul + plain-language conversion (cf11419, 7b70f79) in dev/coding logs
+- `33c59ef` docs: log topic-based regrouping (03ec959) in dev/coding logs
+- `1b18b1f` docs: log advancement regrouping (7de480a) in dev/coding logs
+- `1e8f1ef` docs: log funnel connecting-note fix (29f702c) in dev/coding logs
+- `e91c7c5` docs: log 6개월관리중 regrouping (a60d61d) in dev/coding logs
+- `a847276` docs: log amHeroNote position fix (19d2f5e) in dev/coding logs
+- `51135a5` docs: log trend chart area-gating fix (b4d45e1) in dev/coding logs
+- `5589520` docs: log cross-area audit + label clarity fix (b0d8911) in dev/coding logs
+- `6c99a5b` docs: log verify panel dedup (f151a99) in dev/coding logs
+- `a84c0ea` docs: log amSummary removal (d21fc0f) in dev/coding logs
+- `3e80cb8` docs: log 실적분석 differentiation (2bbdcfa) in dev/coding logs
+- `3af0f4a` docs: log 성과운영분석 implementation (2322352) in dev/coding logs
+- `0b84e18` docs: log master info modal restoration (4d7cfa0) in dev/coding logs
+- `1796456` docs: log print CSS feature (42d606a) in dev/coding logs
+- `d1d2762` docs: log action-flow subtab fix (1c27f32) in dev/coding logs
+- `4c4aa78` docs: log 조치목록 desktop empty-space fix (a189e3f) in dev/coding logs
+- `a7370f5` docs: log activity grid fix (e74dd3e) in dev/coding logs
+- `32878fd` docs: log chart de-dup (c390ffe)
+- `f16ef68` docs: log hd-22 benchmark phase 1 (876ad6a)
+- `2f08c0d` docs: log tab-position + observer throttle
+- `a5f4659` docs: 개발일지·상세 개발일지·코딩일지 전수 보완 (누락 커밋·정정·배포 상태·잔여 과제)

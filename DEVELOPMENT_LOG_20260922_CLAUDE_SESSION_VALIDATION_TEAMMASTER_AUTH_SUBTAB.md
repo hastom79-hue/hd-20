@@ -646,6 +646,15 @@
 - 세 로그의 누락(55f4705·62d520b·dc2c7c2 전무, 876ad6a·c390ffe·cf11419 부분 누락) 보완, 정정 사항·배포 상태(errored 3건)·
   다른 작업자 커밋 52건·검증 환경 메모 기재, 부록에 Claude 코드 커밋 35건 대장 수록.
 
+### 43. 옆 카드 높이에 맞춰 늘어나 생기던 빈 공간 제거 (커밋 `e182f66`, 2026-09-28)
+- 요구사항(사용자 스크린샷): "불필요한 여백이 너무 많다"(5S 고도화 판정 기준 카드 하단 빈 공간).
+- 원인: 하단 2열 그리드 stretch — 옆 추이 카드가 차트 개편으로 커진 것이 원인이므로 직전 수정(40·41번)의 부작용. 측정 1440px: 카드 내용 220px / 카드 490px.
+- 전수 스캔으로 ③ 후보 목록 `.pcGrid` '3대 조건' 패널(875px 중 679px 빈 공간)까지 추가 발견·수정. 나머지 18개 화면은 빈 공간 없음.
+- 조치: 판정 기준 세로 1열로 카드 높이 채움, `.pcGrid` 패널은 sticky·내용 높이(자세한 값은 코딩일지 `e182f66`).
+- 검증: 회귀 16개 탭 오류 0건, ③ 모바일 +181px(차트 개편 영향), 종료평가 13,534px는 기존 간헐 현상(새로 불러오면 3,705px 일정).
+- 배운 점: 차트처럼 높이가 바뀌는 요소를 수정하면 옆 카드가 늘어나는 파급을 함께 점검해야 함(`scan_blank.py` 방식으로 재발 확인 가능).
+- 로그 작성 중 실수: 얕은 복제본(`--depth 3`)에서 커밋 대장을 생성해 3건만 담기는 오류가 났으나 push 전에 검증에서 발견해 되돌리고 전체 이력으로 재생성함.
+
 ## 정정 사항 (대화 중 부정확했던 발언 → 바로잡은 내용)
 1. "타이밍/캐시 문제"(직전 스크린샷 건): 실제 사이트 미확인 상태의 추정이었음. 배포 시각(22:42·22:48)은 스크린샷(22:37~38)보다 뒤이나 사이트 확인은 사용자 몫.
 2. "고도화 맵→기준·추이 정체는 자동화 도구 특성": 사용자 체감 지연이었음(항목 39).
@@ -659,8 +668,7 @@
 - 상세 내용은 Claude가 검토하지 않았고, 이번 로그는 커밋 메타데이터에 근거한 사실만 기록.
 
 ## 현재 상태 (2026-09-28 갱신)
-- 이 세션(09-22~09-28) Claude 커밋: 코드 35건 + 문서 32건 = 67건, 모두 `main`에 push. 최신 빌드 `55f4705` built(09-28 00:38 UTC).
-  (이 로그 보완 커밋이 추가됨)
+- 이 세션(09-22~09-28) Claude 커밋: 코드 36건 + 문서 34건 = 70건, 모두 `main`에 push(이 로그 갱신 커밋 포함). 최신 코드 커밋 `e182f66`.
 - 대시보드 외 탭: hd-22 스타일 1차 적용, 서브탭별 사용자/관리자 안내, 핵심 버튼 3종. 대시보드 하위 탭 위치 고정, 섹션 전환 0.5~0.6초.
 - 고도화 작업장 추이: 이탈 반영 누적 막대(추정 표시). 인쇄 전용 CSS, 통합기준정보 모달 복원, 성과·운영분석 섹션 구현 유지.
 - 회귀(모바일 430px, 테마 적용 후 기준치): 종합현황 2,341 / 성과·운영분석 2,567 / 활동관리 3,472 / 실적분석 1,933 / 후보 목록 6,108 / 3조건 3,364 /
@@ -683,8 +691,8 @@
 (참고) 이전 잔여 과제 4번 '최대 서브탭 8,768px'은 현재 최대 조치 목록 6,420px(모바일 430px, 테마 적용 후)로 대체됨.
 11. 참고: 로컬로 띄운 hd-22에서 `Unexpected token 'catch'` 콘솔 오류가 관찰됨(hd-22 저장소, 이번 작업 범위 아님·미수정).
 
-## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 35건)
-> 커밋 시각은 저장소 표기 기준. 아래 35건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
+## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 36건)
+> 커밋 시각은 저장소 표기 기준. 아래 36건이 세 로그(개발일지·상세 개발일지·코딩일지) 본문에 모두 등장하는지 스크립트로 검증함.
 
 | 커밋 | 시각 | 제목 | 변경 파일 |
 |---|---|---|---|
@@ -723,37 +731,39 @@
 | `dc2c7c2` | 2026-09-28 00:10 | fix: 대시보드 하위 탭 위치 고정 + 섹션 전환 13~30초 지연 해소 | `dashboard-section-tabs.js`, `final-layout-polish.js`, `index.html`, `mo-throttle.js` |
 | `62d520b` | 2026-09-28 00:30 | feat: 고도화 작업장 추이를 누적 막대(기존 유지 + 신규)로 변경 | `dashboard-actions.js`, `index.html` |
 | `55f4705` | 2026-09-28 00:37 | fix: 고도화 작업장 추이 - 유지 이탈을 반영한 누적 막대(기존 유지+신규)로 재계산 | `dashboard-actions.js`, `index.html` |
+| `e182f66` | 2026-09-28 00:50 | fix: 옆 카드 높이에 맞춰 늘어나 생기던 불필요한 빈 공간 제거 | `dashboard-section-tabs.js`, `final-layout-polish.js`, `hd22-theme.css`, `index.html` |
 
-### 문서 커밋(32건, 로그 갱신용)
-- `2f08c0d` docs: log tab-position + observer throttle
-- `f16ef68` docs: log hd-22 benchmark phase 1 (876ad6a)
-- `32878fd` docs: log chart de-dup (c390ffe)
-- `a7370f5` docs: log activity grid fix (e74dd3e) in dev/coding logs
-- `4c4aa78` docs: log 조치목록 desktop empty-space fix (a189e3f) in dev/coding logs
-- `d1d2762` docs: log action-flow subtab fix (1c27f32) in dev/coding logs
-- `1796456` docs: log print CSS feature (42d606a) in dev/coding logs
-- `0b84e18` docs: log master info modal restoration (4d7cfa0) in dev/coding logs
-- `3af0f4a` docs: log 성과운영분석 implementation (2322352) in dev/coding logs
-- `3e80cb8` docs: log 실적분석 differentiation (2bbdcfa) in dev/coding logs
-- `a84c0ea` docs: log amSummary removal (d21fc0f) in dev/coding logs
-- `6c99a5b` docs: log verify panel dedup (f151a99) in dev/coding logs
-- `5589520` docs: log cross-area audit + label clarity fix (b0d8911) in dev/coding logs
-- `51135a5` docs: log trend chart area-gating fix (b4d45e1) in dev/coding logs
-- `a847276` docs: log amHeroNote position fix (19d2f5e) in dev/coding logs
-- `e91c7c5` docs: log 6개월관리중 regrouping (a60d61d) in dev/coding logs
-- `1e8f1ef` docs: log funnel connecting-note fix (29f702c) in dev/coding logs
-- `1b18b1f` docs: log advancement regrouping (7de480a) in dev/coding logs
-- `33c59ef` docs: log topic-based regrouping (03ec959) in dev/coding logs
-- `a6d5c0f` docs: log 2/3-area overhaul + plain-language conversion (cf11419, 7b70f79) in dev/coding logs
-- `e0c1ac7` docs: log duplicate-intro cleanup (3f6be0f) in dev/coding logs
-- `3db7954` docs: log scrollbar-gutter symmetry fix (abc91fc) in dev/coding logs
-- `50bed25` docs: log subtab priority reorder + verify-panel fix (80b1fd2) in dev/coding logs
-- `fcd6d2e` docs: log dashboard KPI-priority reorder (d4ca925) in dev/coding logs
-- `bbed270` docs: log maturity-map perf fix + closure-eval race mitigation (b8f75bc) in dev/coding logs
-- `7a7910e` docs: log maturity map bubble decluttering fix (44a5c3f) in dev/coding logs
-- `3c39e09` docs: log tab-contrast and duplicate-metrics fix (e535a26) in dev/coding logs
-- `20480c3` docs: log default-on virtual data change (0e74799) in dev/coding logs
-- `5cfa2e2` docs: log KPI evidence grid regression + fix (c7b499e) in dev/coding logs
-- `015b9b3` docs: log action/audit 4-way subtab split + metric bugfix (57e264c) in dev/coding logs
-- `da246aa` docs: log advancement 4-way subtab split (4aee88b) in dev/coding logs
+### 문서 커밋(33건 + 이번 로그 갱신 커밋, 로그 갱신용)
 - `c661242` docs: development/coding log for validation fixture, team master, auth, subtab split (2026-09-22)
+- `da246aa` docs: log advancement 4-way subtab split (4aee88b) in dev/coding logs
+- `015b9b3` docs: log action/audit 4-way subtab split + metric bugfix (57e264c) in dev/coding logs
+- `5cfa2e2` docs: log KPI evidence grid regression + fix (c7b499e) in dev/coding logs
+- `20480c3` docs: log default-on virtual data change (0e74799) in dev/coding logs
+- `3c39e09` docs: log tab-contrast and duplicate-metrics fix (e535a26) in dev/coding logs
+- `7a7910e` docs: log maturity map bubble decluttering fix (44a5c3f) in dev/coding logs
+- `bbed270` docs: log maturity-map perf fix + closure-eval race mitigation (b8f75bc) in dev/coding logs
+- `fcd6d2e` docs: log dashboard KPI-priority reorder (d4ca925) in dev/coding logs
+- `50bed25` docs: log subtab priority reorder + verify-panel fix (80b1fd2) in dev/coding logs
+- `3db7954` docs: log scrollbar-gutter symmetry fix (abc91fc) in dev/coding logs
+- `e0c1ac7` docs: log duplicate-intro cleanup (3f6be0f) in dev/coding logs
+- `a6d5c0f` docs: log 2/3-area overhaul + plain-language conversion (cf11419, 7b70f79) in dev/coding logs
+- `33c59ef` docs: log topic-based regrouping (03ec959) in dev/coding logs
+- `1b18b1f` docs: log advancement regrouping (7de480a) in dev/coding logs
+- `1e8f1ef` docs: log funnel connecting-note fix (29f702c) in dev/coding logs
+- `e91c7c5` docs: log 6개월관리중 regrouping (a60d61d) in dev/coding logs
+- `a847276` docs: log amHeroNote position fix (19d2f5e) in dev/coding logs
+- `51135a5` docs: log trend chart area-gating fix (b4d45e1) in dev/coding logs
+- `5589520` docs: log cross-area audit + label clarity fix (b0d8911) in dev/coding logs
+- `6c99a5b` docs: log verify panel dedup (f151a99) in dev/coding logs
+- `a84c0ea` docs: log amSummary removal (d21fc0f) in dev/coding logs
+- `3e80cb8` docs: log 실적분석 differentiation (2bbdcfa) in dev/coding logs
+- `3af0f4a` docs: log 성과운영분석 implementation (2322352) in dev/coding logs
+- `0b84e18` docs: log master info modal restoration (4d7cfa0) in dev/coding logs
+- `1796456` docs: log print CSS feature (42d606a) in dev/coding logs
+- `d1d2762` docs: log action-flow subtab fix (1c27f32) in dev/coding logs
+- `4c4aa78` docs: log 조치목록 desktop empty-space fix (a189e3f) in dev/coding logs
+- `a7370f5` docs: log activity grid fix (e74dd3e) in dev/coding logs
+- `32878fd` docs: log chart de-dup (c390ffe)
+- `f16ef68` docs: log hd-22 benchmark phase 1 (876ad6a)
+- `2f08c0d` docs: log tab-position + observer throttle
+- `a5f4659` docs: 개발일지·상세 개발일지·코딩일지 전수 보완 (누락 커밋·정정·배포 상태·잔여 과제)
