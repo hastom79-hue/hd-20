@@ -4,7 +4,8 @@
 (()=>{'use strict';
 const ID='hd20ImproveBoard',TYPES=['정리','정돈','청소','시각화','위험구역관리','5S 고도화'],DONE=['완료','확정'];
 const C={dark:'#1f6f6b',amber:'#e0b03c',light:'#a8c7c4',grey:'#8fa3b3',ink:'#22303f',soft:'#5c6b7a',grid:'#e6ecf0'};
-const S={year:null,month:'',metric:'per',group:'',type:'',roll:'',team:''};
+const S={year:null,month:'',metric:'per',group:'',type:'',roll:'',judge:'',team:''};
+const JUDGES=['확정','판정대기','보완요청','후보','검토중','미확정'];
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fx=(v,per)=>per?(v>=10?v.toFixed(1):v.toFixed(2)):String(Math.round(v));
 function css(){if(document.getElementById(ID+'Style'))return;const s=document.createElement('style');s.id=ID+'Style';s.textContent=`
@@ -35,9 +36,10 @@ function data(){
   const years=[...new Set(rows.map(r=>String(r.date||r.regDate||'').slice(0,4)).filter(Boolean))].sort();
   return{rows,teams,hcOf,groupOf,groups:M?.groupNames?.()||[],years,snapYear:String(snap.year||years[years.length-1]||new Date().getFullYear())};
 }
-function filt(D,{ignoreMonth=false}={}){
-  return D.rows.filter(r=>{const d=String(r.date||r.regDate||'');if(d.slice(0,4)!==S.year)return false;if(!ignoreMonth&&S.month&&d.slice(5,7)!==S.month)return false;
-    if(S.type&&r.type!==S.type)return false;if(S.group&&D.groupOf(r.team)!==S.group)return false;
+const cdOf=r=>String((window.HD20KPIData?.confirmedDate?.(r))||r.confirmedAt||r.judgedAt||r.date||'').slice(0,10);
+function filt(D,{ignoreMonth=false,ignoreYear=false}={}){
+  return D.rows.filter(r=>{const d=String(r.date||r.regDate||'');if(!ignoreYear&&d.slice(0,4)!==S.year)return false;if(!ignoreMonth&&S.month&&d.slice(5,7)!==S.month)return false;
+    if(S.judge&&r.judgeState!==S.judge)return false;if(S.type&&r.type!==S.type)return false;if(S.group&&D.groupOf(r.team)!==S.group)return false;
     if(S.roll==='Y'&&r.horizontalRollout!==true)return false;if(S.roll==='N'&&r.horizontalRollout===true)return false;return true})}
 const monthOf=r=>+String(r.date||r.regDate||'').slice(5,7);
 function axis(v){const raw=v/4,p=Math.pow(10,Math.floor(Math.log10(raw))),f=raw/p,n=f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10,step=n*p;return{step,max:Math.ceil(v/step-1e-9)*step}}
@@ -67,8 +69,8 @@ function render(box){
   const doneT=TYPES.map(t=>rowsM.filter(r=>r.type===t&&DONE.includes(r.status)).length),allT=TYPES.map(t=>rowsM.filter(r=>r.type===t).length);
   const A=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W*.4)-8),cats:TYPES,stack:true,per,series:[{name:'완료·확정',vals:doneT.map(div),color:C.dark},{name:'진행·등록',vals:allT.map((v,i)=>div(v-doneT[i])),color:C.light}]});
   // b) 월별
-  const mo=(pred)=>Array.from({length:12},(_,i)=>div(rowsY.filter(r=>monthOf(r)===i+1&&pred(r)).length)),ML=Array.from({length:12},(_,i)=>String(i+1).padStart(2,'0')+'월');
-  const B=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W*.6)-8),cats:ML,per,series:[{name:'5S 활동 완료건수',vals:mo(r=>DONE.includes(r.status)),color:C.dark},{name:'고도화 후보 건수',vals:mo(r=>r.candidate===true),color:C.amber},{name:'수평전개 적용대상건수',vals:mo(r=>r.horizontalRollout===true),color:C.grey}]});
+  const mo=(pred)=>Array.from({length:12},(_,i)=>div(rowsY.filter(r=>monthOf(r)===i+1&&pred(r)).length)),rowsC=filt(D,{ignoreYear:true,ignoreMonth:true}).filter(inTeams),cy=r=>cdOf(r).slice(0,4),cm=r=>+cdOf(r).slice(5,7),confM=(a)=>Array.from({length:12},(_,i)=>div(a.filter(r=>r.judgeState==='확정'&&cy(r)===S.year&&cm(r)===i+1).length)),ML=Array.from({length:12},(_,i)=>String(i+1).padStart(2,'0')+'월');
+  const B=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W*.6)-8),cats:ML,per,series:[{name:'5S 활동 완료건수',vals:mo(r=>DONE.includes(r.status)),color:C.dark},{name:'고도화 확정 건수',vals:confM(rowsC),color:C.amber},{name:'수평전개 적용대상건수',vals:mo(r=>r.horizontalRollout===true),color:C.grey}]});
   // c) 팀별 인당
   const tv=teamsAll.map(t=>{const c=rowsM.filter(r=>r.team===t).length,h=D.hcOf(t);return{t,c,h,v:per?(h?c/h:0):c}}).sort((a,b)=>b.v-a.v);
   if(!S.team||!tv.some(x=>x.t===S.team))S.team=tv[0]?.t||'';
@@ -80,23 +82,23 @@ function render(box){
   const th=D.hcOf(S.team)||1,tr=rowsY.filter(r=>r.team===S.team),tm=(pred)=>Array.from({length:12},(_,i)=>{const c=tr.filter(r=>monthOf(r)===i+1&&pred(r)).length;return per?c/th:c});
   const dVals=tm(()=>true),dCum=dVals.reduce((a,b)=>a+b,0);
   const Dd=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W/2)-8),cats:ML,per,series:[{name:per?'5S 활동/총원':'5S 활동 건수',vals:dVals,color:C.dark}]});
-  const E=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W/2)-8),cats:ML,per,series:[{name:'수평전개 적용대상',vals:tm(r=>r.horizontalRollout===true),color:C.dark},{name:'고도화 후보',vals:tm(r=>r.candidate===true),color:C.amber}]});
+  const E=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W/2)-8),cats:ML,per,series:[{name:'수평전개 적용대상',vals:tm(r=>r.horizontalRollout===true),color:C.dark},{name:'고도화 확정',vals:Array.from({length:12},(_,i)=>{const c=rowsC.filter(r=>r.team===S.team&&r.judgeState==='확정'&&cy(r)===S.year&&cm(r)===i+1).length;return per?c/th:c}),color:C.amber}]});
   const opt=(a,cur,all='ALL')=>`<option value="">${all}</option>`+a.map(x=>`<option value="${esc(x)}"${x===cur?' selected':''}>${esc(x)}</option>`).join('');
   box.innerHTML=`<div class="ibTitle"><h2>5S 자율개선 종합 대시보드</h2></div><p class="ibNote">기본 조회조건은 당해년도 연간누적 데이터입니다 (월간 데이터 조회 시, 해당 월을 선택하세요)</p>
 <div class="ibBar"><label>공장 <select disabled><option>[울산] 울산캠퍼스</option></select></label><label>년 <select data-f="year">${D.years.map(y=>`<option${y===S.year?' selected':''}>${y}</option>`).join('')}</select></label>
 <label>월 <select data-f="month"><option value="">전체</option>${Array.from({length:12},(_,i)=>{const v=String(i+1).padStart(2,'0');return `<option value="${v}"${v===S.month?' selected':''}>${i+1}월</option>`}).join('')}</select></label><button type="button" data-ib="go">조회</button>
 <label>차트집계 <select data-f="metric"><option value="per"${per?' selected':''}>5S 활동/총원 (인당)</option><option value="total"${!per?' selected':''}>총 건수</option></select></label>
 <label>부서 <select data-f="group">${opt(D.groups,S.group)}</select></label><label>5S 유형 <select data-f="type">${opt(TYPES,S.type)}</select></label>
-<label>수평전개 <select data-f="roll"><option value="">ALL</option><option value="Y"${S.roll==='Y'?' selected':''}>적용대상</option><option value="N"${S.roll==='N'?' selected':''}>비대상</option></select></label>
+<label>고도화 판정 <select data-f="judge">${opt(JUDGES,S.judge)}</select></label><label>수평전개 <select data-f="roll"><option value="">ALL</option><option value="Y"${S.roll==='Y'?' selected':''}>적용대상</option><option value="N"${S.roll==='N'?' selected':''}>비대상</option></select></label>
 <span class="sp"></span><button type="button" class="alt" data-ib="print">프린트</button><button type="button" class="alt" data-ib="csv">엑셀다운로드</button></div>
 <div class="ibRow r1"><div class="ibPanel"><div class="ibHead">5S 유형별 등록 및 진행현황<button type="button" class="ibEv" data-evk="a">근거 데이터</button><em>${S.month?S.month.replace(/^0/,'')+'월':'연간누적'} · ${unit}</em></div><div class="ibBody">${A}${leg([['완료·확정',C.dark],['진행·등록',C.light]])}</div></div>
-<div class="ibPanel"><div class="ibHead">월별 등록 및 진행현황<button type="button" class="ibEv" data-evk="b">근거 데이터</button><em>${S.year}년 · ${unit}</em></div><div class="ibBody">${B}${leg([['5S 활동 완료건수',C.dark],['고도화 후보 건수',C.amber],['수평전개 적용대상건수',C.grey]])}</div></div></div>
+<div class="ibPanel"><div class="ibHead">월별 등록 및 진행현황<button type="button" class="ibEv" data-evk="b">근거 데이터</button><em>${S.year}년 · ${unit}</em></div><div class="ibBody">${B}${leg([['5S 활동 완료건수',C.dark],['고도화 확정 건수',C.amber],['수평전개 적용대상건수',C.grey]])}</div></div></div>
 <div class="ibRow"><div class="ibPanel"><div class="ibHead">현장조직 팀에 대한 개선활동 현황${per?'(인당 개선건수)':'(총 건수)'}<button type="button" class="ibEv" data-evk="c">근거 데이터</button><em class="pt">당월(${String(mm).padStart(2,'0')}월) 현재 참여율 ${part.toFixed(1)}% (등록자 ${owners}명 / 총원 ${hcAll}명)</em></div><div class="ibBody">${Cc}${useT?leg([['목표 달성 (≥ '+QT.v+'건/인)',C.dark],['목표 미달',C.amber]])+`<div class="ibLeg"><span>목표 달성 ${okN}/${tv.length}팀 · 전체 평균 ${avg.toFixed(2)}건/인 · 목표는 통합기준정보의 ${QT.q} 인당 목표(해당 분기까지 누적 기준)</span></div>`:leg([[per?'전체 평균 이상 (평균 '+avg.toFixed(2)+'건/인)':'평균 이상',C.dark],['평균 미만',C.amber]])+(per&&!S.month?'<div class="ibLeg"><span>분기별 인당 목표가 설정되지 않아 전체 평균 기준으로 표시합니다 (통합기준정보에서 설정)</span></div>':'')}</div></div></div>
 <div class="ibRow r3"><div class="ibPanel"><div class="ibHead">단일 팀에 대한 연간/월별 누적 활동 실적${per?'(인당 개선건수)':''}<button type="button" class="ibEv" data-evk="d">근거 데이터</button><em>[ ${esc(S.team)} ] 연간 ${fx(dCum,per)}${unit}</em></div><div class="ibBody">${Dd}</div></div>
-<div class="ibPanel"><div class="ibHead">단일 팀에 대한 수평전개/고도화 후보 ${per?'인당 개선건수':'건수'}<button type="button" class="ibEv" data-evk="e">근거 데이터</button><em>[ ${esc(S.team)} ]</em></div><div class="ibBody">${E}${leg([['수평전개 적용대상',C.dark],['고도화 후보',C.amber]])}</div></div></div>
-<p class="ibFoot">※ 5S 활동 = GMES 원천 5S 활동 등록(상단 지표와 같은 데이터). 완료·확정 = 상태가 완료 또는 확정. 인당 = 건수 ÷ 팀 인원(팀 인원 마스터). 참여율 = 당월 5S 활동을 1건 이상 등록한 사람 수 ÷ 총원(${hcAll}명). 팀 막대를 누르면 아래 두 그래프가 그 팀으로 바뀝니다.</p>`;
-  const cols=['등록일','팀','5S 유형','등록자','문제점','개선내용','상태','고도화 후보','수평전개'],mapR=r=>[String(r.date||r.regDate||'').slice(0,10),r.team,r.type,r.owner,r.problem,r.improvement,r.status,r.candidate===true?'후보':'',r.horizontalRollout===true?'대상':''],sortT=a=>[...a].sort((x,y)=>String(x.team).localeCompare(String(y.team),'ko')||String(y.date).localeCompare(String(x.date)));
-  const EV={a:['5S 유형별 근거 데이터 ('+(S.month?+S.month+'월':'연간누적')+')',rowsM],b:['월별 근거 데이터 ('+S.year+'년)',rowsY],c:['팀별 근거 데이터 ('+(S.month?+S.month+'월':'연간누적')+')',sortT(rowsM)],d:['선택 팀 근거 데이터 · '+S.team,tr],e:['선택 팀 수평전개·고도화 후보 · '+S.team,tr.filter(r=>r.candidate===true||r.horizontalRollout===true)]};
+<div class="ibPanel"><div class="ibHead">단일 팀에 대한 수평전개/고도화 확정 ${per?'인당 개선건수':'건수'}<button type="button" class="ibEv" data-evk="e">근거 데이터</button><em>[ ${esc(S.team)} ]</em></div><div class="ibBody">${E}${leg([['수평전개 적용대상',C.dark],['고도화 확정',C.amber]])}</div></div></div>
+<p class="ibFoot">※ 5S 활동 = GMES 원천 5S 활동 등록(상단 지표와 같은 데이터). 완료·확정 = 상태가 완료 또는 확정. 고도화 확정 = 5S 고도화 공식 판정이 '확정'인 건(확정일 기준, 상단 '신규 확보'와 같은 기준). 인당 = 건수 ÷ 팀 인원(팀 인원 마스터). 참여율 = 당월 5S 활동을 1건 이상 등록한 사람 수 ÷ 총원(${hcAll}명). 팀 막대를 누르면 아래 두 그래프가 그 팀으로 바뀝니다.</p>`;
+  const cols=['등록일','팀','5S 유형','등록자','문제점','개선내용','상태','고도화 판정','확정일','수평전개'],mapR=r=>[String(r.date||r.regDate||'').slice(0,10),r.team,r.type,r.owner,r.problem,r.improvement,r.status,r.judgeState||'',r.judgeState==='확정'?cdOf(r):'',r.horizontalRollout===true?'대상':''],sortT=a=>[...a].sort((x,y)=>String(x.team).localeCompare(String(y.team),'ko')||String(y.date).localeCompare(String(x.date)));
+  const EV={a:['5S 유형별 근거 데이터 ('+(S.month?+S.month+'월':'연간누적')+')',rowsM],b:['월별 근거 데이터 ('+S.year+'년)',rowsY],c:['팀별 근거 데이터 ('+(S.month?+S.month+'월':'연간누적')+')',sortT(rowsM)],d:['선택 팀 근거 데이터 · '+S.team,tr],e:['선택 팀 수평전개·고도화 확정 · '+S.team,[...rowsC.filter(r=>r.team===S.team&&r.judgeState==='확정'&&cy(r)===S.year),...tr.filter(r=>r.horizontalRollout===true&&r.judgeState!=='확정')]]};
   box.querySelectorAll('[data-evk]').forEach(b=>b.onclick=()=>{const [t,a]=EV[b.dataset.evk];openRows({title:t,cols,rows:a.map(mapR),file:'5S_자율개선_근거_'+b.dataset.evk})});
   box.querySelectorAll('[data-f]').forEach(el=>el.onchange=()=>{S[el.dataset.f]=el.value;if(el.dataset.f==='group')S.team='';render(box)});
   box.querySelector('[data-ib="go"]').onclick=()=>render(box);box.querySelector('[data-ib="print"]').onclick=()=>window.print();
