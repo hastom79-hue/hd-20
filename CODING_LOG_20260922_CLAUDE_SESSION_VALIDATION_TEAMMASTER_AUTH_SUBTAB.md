@@ -1318,6 +1318,50 @@
   ③ 탭 모바일 높이 후보 목록 6,108→6,290 / 3조건 3,364→3,545 / 라인 3,154→3,335 / 확정 2,993→3,174(+181px, 추이 차트 개편 영향).
   종료평가 13,534px는 기존 간헐 현상(`probe_closeeval.py`: 새로 불러오면 6/6회 3,705px, 직전 빌드 4,160px).
 
+### `08cd94d` — feat: 대시보드 탭 정리 - 성과·운영분석을 월별 추이로 재정의, 현장참고 메뉴 숨김 (2026-09-28)
+- 변경 파일: `ci-tab-keys.patch`(+39/-0), `dashboard-kpi-source.js`(+29/-1), `dashboard-ops-trend.js`(+62/-0), `dashboard-section-tabs.js`(+5/-4), `final-layout-polish.js`(+1/-1), `index.html`(+1/-1)
+- 조사: `sec_cmp.py`로 섹션별 표시 블록 높이 비교 → 6번 = `#hd20DashboardPriority`(394)+`#hd20OperationalBridge`(188)+`.bottomGrid`(506). 5번 = `#hd20FieldShowcaseBootstrap`(321, 샘플 6건+외부 사진).
+- `dashboard-kpi-source.js`: `monthlyOperational(n=6)` 추가(`window.HD20KPIData`에 노출, 기존 `operational()` 미변경). 월별 값+표본 수: 판정완료율(등록월 기준, 판정 범위 대비), 평균 Lead Time(판정월 기준),
+  고도화 수준(확정월 기준 평균 Level), 6개월 유지율(Audit 종료월=auditDate+6개월 기준, `sixMonthRetention()`과 동일한 통과 조건), 재발률(조치 완료·효과검증 건 중 재발, 완료월 기준), 기한 내 완료율(완료월 기준).
+  9월 예: 판정완료율 57.9(n=19)·Lead Time 8.2일(n=13)·수준 3.6(n=9)·유지율 34.4(n=32)·재발률 27.8(n=36)·기한 내 완료율 65.8(n=76).
+- `dashboard-ops-trend.js`(신규): `#hd20OpsTrend` 6카드(현재값·전월 대비 ▲▼ 개선/악화 색·6개월 막대·월/표본 수·전체 누적값·원인 확인 → `HD20_NAV.go(route)`), 악화 지표 수 요약.
+  삽입 위치 `#hd20DashboardPriority` 뒤, 삽입 후 `HD20_DASHBOARD_TABS.apply(active,{scroll:false})`. `HD20KPIData` 준비 전 렌더로 빈 화면(38px)이던 것을 `ensure()`에서 준비 여부 확인 후 재시도(150ms×80)로 수정,
+  분석 탭 클릭 시 재렌더.
+- `dashboard-section-tabs.js`: TABS 재정의 — analysis targets `['#hd20OpsTrend']`, field `hidden:true`, 버튼은 `TABS.filter(x=>!x.hidden)`로 번호 1~5. `final-layout-polish.js` 버전 `20260928-tabs5-1`.
+- `index.html`: `dashboard-ops-trend.js?v=20260928-3`, `dashboard-kpi-source.js?v=20260928-monthly-1` 추가/갱신.
+- CI(`.github/workflows`)는 push 불가(토큰에 `workflow` 권한 없음)라 `ci-tab-keys.patch`로 보관: `current-ia-smoke.yml`·`subtab-contract-grid-smoke.yml`·`browser-smoke.yml`의
+  `['summary','execution','maturity','standard','field']` → `[...,'analysis']`(각 1줄, 총 39줄 패치). `dashboard-canonical-smoke`·`current-ia-smoke`의 `apply('field')` 격리 검사는 hidden 탭에도 유지되어 그대로 통과 예상.
+- 검증: 탭 버튼 5개, 섹션별 표시 격리(execution/maturity/standard/analysis/field/summary) 확인, CI 기대 키 목록 일치 확인(`reg_dash.py`).
+
+### `b76f198` — fix: 성과·운영분석 추이 영역 유출 수정 (2026-09-28)
+- 변경 파일: `dashboard-ops-trend.js`(+1/-0), `index.html`(+1/-1)
+- 재현: 대시보드 '성과·운영분석' 클릭 → ② 활동관리 이동 시 `.app` 자식에 `hd20OpsTrend:2314`(모바일) 표시(`leak_check3.py`). 방문 순서 없는 직접 진입은 재현 안 됨(`leak_check.py` 3,472px).
+- 수정: 스타일에 `.app.awFocused #hd20OpsTrend{display:none!important}` 추가, `dashboard-ops-trend.js?v=20260928-3`. 회귀 기준치 복귀(활동관리 3,472 등).
+
+### `40a0d33` — feat: 3조건 분석 라인·작업장 목록 재구성 (2026-09-28)
+- 변경 파일: `hd20-condition-groups.js`(+61/-0), `hd20-subtabs.js`(+2/-1), `index.html`(+1/-1)
+- `hd20-condition-groups.js`: `#hd20ConditionGroups`를 `#hd20MaturityConditionAnalysis` 앞에 삽입. `window.HD20MaturityConditionAnalysis.summary()`의 `one/two/three` 행(`_unit`{team,line,workplace}, `_criteria.values[3]`, `_judge`)을 작업장 키(`팀|라인|작업장`)로 중복 제거·정렬.
+  비율 막대(flex 비율, 15% 미만 구간은 % 만 표시), 그룹 헤더(작업장 수·라인 수·전체 대비 %), "부족한 조건" 칩(1·2개 그룹), 표(생산팀·라인·작업장·①②③ 충족/미충족·공식판정), 8행 초과분은 `<tbody class="cgRest" hidden>` + "나머지 N곳 더 보기".
+  표시 조건: `#performanceConversionAnalysis[data-subview="analysis"] #hd20ConditionGroups{display:block}`.
+- 이 탭 전용 숨김 CSS: `.app[data-hd-view="advancement.analysis"] #hd20OpsMetrics`, `#performanceConversionAnalysis[data-subview="analysis|detail"]>.pcHeader`, `[data-subview="analysis"] .pcGrid`, `… #hd20MaturityConditionAnalysis .mcaLevelRail,.mcaBodyGrid`.
+- `hd20-subtabs.js` `apply(area,sub)` 첫 줄: `document.querySelector('.app')?.setAttribute('data-hd-view',area+'.'+sub)`(CSS 훅).
+- 모바일: `#hd20ConditionGroups tbody[hidden]{display:none!important}` 추가(카드형 표 스타일이 `[hidden]`을 덮어 183행 전개 → 영역 39,866px→5,540px). 배지에 ①②③, 팀·라인·작업장 한 줄, 배지 인라인.
+- 결과 수치(시험 데이터): 1개 23곳(13%, 라인 20)/2개 19곳(10%, 라인 20)/3개 141곳(77%, 라인 48), 조건 확인 작업장 183곳, 부족한 조건 예: ①·③ 각 17곳, ② 12곳(1개 그룹).
+- 검증: 데스크톱/모바일 스크린샷, 그룹 행 수 23/19/141, 16개 탭 회귀 오류 0건.
+
+### `955d40f` — feat: 효율 병기(인당·비율 보조값) + 팀별 차트 인당 순위 (2026-09-28)
+- 변경 파일: `activity-dynamic-chart.js`(+34/-2), `hd20-ops-normalized.js`(+34/-0), `index.html`(+1/-1)
+- `hd20-ops-normalized.js`(신규): `#hd20OpsMetrics[data-contract]`별 규칙표 `R`(14개 화면). 각 버튼의 `<b>` 숫자를 읽어 `v[]`로 만들고 `pc(a,b)`/`f2`/`f1` 계산 → `<span class="opsSub">` 병기. 인당 분모 `HD20KPIData.headcount(rows)`(=680, 마스터 합계).
+  갱신: `setInterval(700ms)`+이벤트, 값이 같으면 DOM을 쓰지 않아 깜빡임·재생성 0회(시간 샘플링으로 확인). 제외 규칙: 라인당 평균, 최근 7일 실시 %(의미 모호).
+  주요 규칙: activity.manage(인당·완료율·진행 비중·고도화 전환율), action.manage(인당·전체의 %·완료율·진행 중 기한경과 %), advancement.judge(후보 대비·확정률·3조건 충족률), advancement.standard(유지율·미흡률·수평전개율),
+  audit.draw(실시 대기·실시율·부적합률), audit.ongoing/retention, action.leadtime(지연/조기/정시 비중), action.master(등록·지정·미지정률), action.verify(검증률·대기·재발률).
+- `activity-dynamic-chart.js` `render()` 팀 비교 분기 교체: `HD20_HEADCOUNT_MASTER`([{team,headcount}] 16팀)로 팀별 인당 계산, 내림차순, 전체 평균 기준선(`u` 요소), 평균 미만 `.low`, 토글 `window.__adcMode`(per|total),
+  5S 유형 선택 시 해당 유형만. 팀 선택(else) 분기는 `adcRankMode` 해제 후 기존 6개월 추이. 스타일은 `#adcRankStyle`로 주입. 부제 문구 변경.
+  결함: 행의 막대 클래스를 `.bar`로 썼다가 전역 `.bar`(폭 12px 고정)와 충돌 → `.hbar`로 변경, `.adcChart` 눈금 배경 `background:none`(랭크 모드).
+- 결과(시험 데이터): 전체 평균 1.41건/인(960건÷680명), 1위 대형Att.팀 3.00건/인(60건·20명) … 16위 트러블슈팅팀 0.92건/인(60건·65명). 시험 데이터가 팀당 60건으로 균일해 인원 차이만 반영.
+- 버전: `hd20-ops-normalized.js?v=20260928-2`, `activity-dynamic-chart.js?v=20260928-rank-2`, `hd20-condition-groups.js?v=20260928-5`.
+- 검증: 14개 화면 보조값 출력 확인, 16개 탭 회귀 오류 0건(활동관리 3,530 / 조치 목록 6,420 등).
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
@@ -1381,8 +1425,9 @@
 ## (2026-09-28 갱신) 종료조건
 16개 탭 순회·기능 회귀 세트 콘솔 오류 0건, 최신 GitHub Pages 빌드 `built` 확인, 실제 사이트 확인 결과 반영 후 종료.
 
-## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 36건)
-> 커밋 시각은 저장소 표기 기준. 아래 36건이 세 로그(개발일지·상세 개발일지·코딩일지) 본문에 모두 등장하는지 스크립트로 검증함.
+## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 40건)
+> 커밋 시각은 저장소 표기 기준. 아래 40건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
+> (`e182f66`은 이 대화 밖의 다른 Claude 세션이 같은 계정으로 push한 커밋이라 포함됨)
 
 | 커밋 | 시각 | 제목 | 변경 파일 |
 |---|---|---|---|
@@ -1422,8 +1467,12 @@
 | `62d520b` | 2026-09-28 00:30 | feat: 고도화 작업장 추이를 누적 막대(기존 유지 + 신규)로 변경 | `dashboard-actions.js`, `index.html` |
 | `55f4705` | 2026-09-28 00:37 | fix: 고도화 작업장 추이 - 유지 이탈을 반영한 누적 막대(기존 유지+신규)로 재계산 | `dashboard-actions.js`, `index.html` |
 | `e182f66` | 2026-09-28 00:50 | fix: 옆 카드 높이에 맞춰 늘어나 생기던 불필요한 빈 공간 제거 | `dashboard-section-tabs.js`, `final-layout-polish.js`, `hd22-theme.css`, `index.html` |
+| `08cd94d` | 2026-09-28 04:24 | feat: 대시보드 탭 정리 - 성과·운영분석을 월별 추이로 재정의, 현장참고 메뉴 숨김 | `ci-tab-keys.patch`, `dashboard-kpi-source.js`, `dashboard-ops-trend.js`, `dashboard-section-tabs.js`, `final-layout-polish.js`, `index.html` |
+| `b76f198` | 2026-09-28 04:26 | fix: 성과·운영분석 추이 영역이 다른 영역(활동관리 등)에서도 보이던 문제 수정 | `dashboard-ops-trend.js`, `index.html` |
+| `40a0d33` | 2026-09-28 04:31 | feat: 3조건 분석 - 총 건수 대신 "어느 라인·작업장이 몇 개를 충족했나" 목록으로 재구성 | `hd20-condition-groups.js`, `hd20-subtabs.js`, `index.html` |
+| `955d40f` | 2026-09-28 04:38 | feat: 총 건수 대신 효율 병기 - 지표 카드에 인당·비율 보조값, 팀별 차트를 인당 개선건수 순위로 재설계 | `activity-dynamic-chart.js`, `hd20-ops-normalized.js`, `index.html` |
 
-### 문서 커밋(33건 + 이번 로그 갱신 커밋, 로그 갱신용)
+### 문서 커밋(34건, 로그 갱신용)
 - `c661242` docs: development/coding log for validation fixture, team master, auth, subtab split (2026-09-22)
 - `da246aa` docs: log advancement 4-way subtab split (4aee88b) in dev/coding logs
 - `015b9b3` docs: log action/audit 4-way subtab split + metric bugfix (57e264c) in dev/coding logs
@@ -1457,3 +1506,4 @@
 - `f16ef68` docs: log hd-22 benchmark phase 1 (876ad6a)
 - `2f08c0d` docs: log tab-position + observer throttle
 - `a5f4659` docs: 개발일지·상세 개발일지·코딩일지 전수 보완 (누락 커밋·정정·배포 상태·잔여 과제)
+- `a630b4c` docs: 빈 공간 제거(e182f66) 개발일지·상세 개발일지·코딩일지 반영, 커밋 대장 36건 재생성
