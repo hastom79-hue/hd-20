@@ -1449,6 +1449,15 @@
 - 검증(`panel5_check.py`): 대형Att.팀 근거 3건, 머리글 '현재 4곳 유지', 팀 전환(프레임제작팀→'현재 2곳 유지') 정상 갱신, 최종 막대값 0.20=4/20 일치,
   16개 탭 회귀 오류 0건, 섹션 격리(`reg_dash3.py`) 통과.
 
+### `e675362` — feat: 조치 목록 구조 필터 바 추가 (2026-09-28)
+- 변경 파일: `action-mail-workflow.js`(+9/-3), `index.html`(+1/-1)
+- 모듈 확인: 정적 코드만으로 activity-workflow.js의 build()를 조치 목록 렌더러로 착각(다른 #awAction 빌더가 여럿 존재: action-mail-workflow.js·action-leadtime-grid.js 등 여러 모듈이 같은 컨테이너에 다른 서브뷰를 그림) →
+  `dom_action.py`로 실제 렌더된 DOM을 조회해 `.amCases`(카드 "개선요청 현황", `action-mail-workflow.js`, `a.dataset.amReady`)가 진짜 조치 목록임을 확인.
+- `action-mail-workflow.js`: 상태 `F={team,status,from,to}`, `filtered(rows)` 필터 함수. `renderCases(a)` 시작부에서 `cases()` → `filtered(cases())`로 교체, `#amFilterCount`에 `N건 (전체 M건)` 표시.
+  마크업: "개선요청 현황" 카드 안 `.amCasesScroll` 앞에 `.amFilterBar`(생산팀 select+상태 select+등록일 from/to+조회/초기화 버튼+카운트). `build()` 끝에서 이벤트 바인딩(`go()`가 F 갱신 후 `renderCases(a)` 재호출, 팀·상태는 `onchange`, 날짜는 `[조회]` 클릭, `[초기화]`는 값 비우고 재조회).
+  CSS `.amFilterBar`(flex 배치, hd22 톤). 버전 `action-mail-workflow.js?v=20260928-filter-1`.
+- 검증(`filter_check.py`~`filter_final.py`, 여러 차례 재작성): 팀 필터 40건(팀 열 전부 일치), +상태=완료 24건, 초기화 640건 복원. 구조 필터+자유 검색 조합에서 "25/25건"이 나와 버그로 의심 → 직접 상태 열을 세어보니 중형Att팀 40건 중 '완료' 정확히 25건으로 일치(정상). 개선요청 임시저장 E2E(640→641), 16개 탭 회귀 오류 0건.
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
@@ -1512,8 +1521,8 @@
 ## (2026-09-28 갱신) 종료조건
 16개 탭 순회·기능 회귀 세트 콘솔 오류 0건, 최신 GitHub Pages 빌드 `built` 확인, 실제 사이트 확인 결과 반영 후 종료.
 
-## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 50건)
-> 커밋 시각은 저장소 표기 기준. 아래 50건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
+## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 51건)
+> 커밋 시각은 저장소 표기 기준. 아래 51건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
 > (`e182f66`은 이 대화 밖의 다른 Claude 세션이 같은 계정으로 push한 커밋이라 포함됨. 대장은 `git log --since`가 날짜가 뒤섞인 이력에서 일부를 건너뛰는 것을 발견해, 커밋 날짜를 직접 비교해 생성)
 
 | 커밋 | 시각 | 제목 | 변경 파일 |
@@ -1568,8 +1577,9 @@
 | `64d07c1` | 2026-09-28 10:33 | feat: 자율개선 종합 - Fool Proof 대체 지표를 원천 데이터에서 선정(고도화 공식 확정 건수) + '고도화 판정' 필터 | `hd20-improve-board.js`, `index.html` |
 | `89ef6a8` | 2026-09-28 10:46 | feat: 고도화 성과는 '확정 결과'만 표시 — 후보 건수를 성과 화면에서 제거 | `conversion-chart.js`, `dashboard-actions.js`, `dashboard-grid-drilldown.js`, `dashboard-ops-trend.js`, `final-layout-polish.js`, `hd20-improve-board.js`, `hd20-kpi-evidence-drill.js`, `hd20-maturity-map-tab.js`, `hd20-ops-normalized.js`, `hd20-ops-v2.js`, `index.html`, `integrated-performance-map.js`, `top-kpi-drilldown.js` |
 | `49ed539` | 2026-09-28 21:29 | feat: 자율개선 종합 ⑤ 차트를 '고도화 확보 누적 추이'(기존 유지+신규)로 교체 | `hd20-improve-board.js`, `index.html` |
+| `e675362` | 2026-09-28 21:38 | feat: 조치 목록에 hd-22식 구조 필터 바(생산팀·상태·등록일) 추가 — 2순위 착수 | `action-mail-workflow.js`, `index.html` |
 
-### 문서 커밋(41건, 로그 갱신용)
+### 문서 커밋(42건, 로그 갱신용)
 - `c661242` docs: development/coding log for validation fixture, team master, auth, subtab split (2026-09-22)
 - `da246aa` docs: log advancement 4-way subtab split (4aee88b) in dev/coding logs
 - `015b9b3` docs: log action/audit 4-way subtab split + metric bugfix (57e264c) in dev/coding logs
@@ -1611,3 +1621,4 @@
 - `8af7ae6` docs: 종합 대시보드 프린트 개선(1d22c89) 개발일지/상세 개발일지/코딩일지 반영, 커밋 대장 재생성
 - `c5bcdc0` docs: Fool Proof 대체 지표 선정(64d07c1) 개발일지/상세 개발일지/코딩일지 반영, 커밋 대장 재생성
 - `82d67c8` docs: 고도화 확정 결과 기준 전환(89ef6a8) 개발일지/상세 개발일지/코딩일지 반영, 커밋 대장 재생성
+- `f9d46c2` docs: ⑤ 차트 대체 팩터 검토·확정(49ed539) 개발일지/상세 개발일지/코딩일지 반영, 커밋 대장 재생성
