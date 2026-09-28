@@ -87,4 +87,11 @@ html,body{background:var(--h22-bg)!important}
   .hd20PurposeActions button{flex:1 1 auto}
   .app:not(:has(.beginnerNav button[data-key="dashboard"].active)) #hd20OpsMetrics button b{font-size:28px!important}
 }
+
+/* ── 7. 옆 카드에 맞춰 늘어나 생기던 빈 공간 정리 ── */
+@media(min-width:1101px){
+  /* ③ 후보 목록: 팀별 현황(긴 목록) 옆의 '3대 조건'은 내용 높이만 차지하고 스크롤 시 따라옴 */
+  .pcGrid{align-items:start!important}
+  .pcGrid>.pcPanel:last-child{position:sticky;top:84px}
+}
 }
