@@ -578,16 +578,182 @@
   컬럼이 훨씬 여유있게 표시됨을 스크린샷 확인, 모바일 16개 탭 콘솔
   오류 0건.
 
-## 현재 상태
-- 총 35개 commit 모두 `main`에 push, GitHub Pages 재배포 확인.
-- 가상데이터 파이프라인, 팀 마스터, 인증 흐름, 서브탭 구조 모두 실제 Chromium
-  검증을 거쳤으며 알려진 콘솔 오류는 없음.
+### 36. (소급 기록) ③ 후보 목록·② 활동관리 중복 블록 제거 (커밋 `cf11419`, 2026-09-24 00:40)
+- 요구사항: "②활동관리, ③고도화 표준화 탭 전체적으로 혼재되어 있어 눈에 들어오지 않는다 전면 개편하라" → "좀더 파보자".
+- 시간순으로는 `7b70f79`(쉬운말 전환) 직전. 이전 로그에는 개발일지에만 있고 상세·코딩 일지에서 누락되어 이번에 소급.
+- ③ 후보 목록: `#awWorkplace`가 WORK PURPOSE 패널·상단 지표와 겹치는 자체 소개문(`<h2>③ 고도화·표준화</h2><p>…`),
+  `awCriteriaBanner`, "운영상태" 요약카드를 154행 표 앞에 다시 그리던 것 제거. 남긴 것: 154행 표(고도화 후보/공식판정)와
+  3행 표(조건 충족×적용범위). `renderWorkplace()`의 `.awBadge`/`.awAuditLane b` 참조는 `if(el)` 가드로 오류 없음 확인.
+- ② 활동관리: "활동 실적·개선이력" 카드 안 `.awKpis`(전체활동/완료확정/등록진행/고도화후보 4개 숫자)가 상단
+  `#hd20OpsMetrics`와 100% 동일해 제거. `renderActivity()`의 `.awKpi b` 갱신 코드는 `if(ks[i])` 가드로 안전.
+- 삭제 기준: 값·라벨이 완전히 같은 경우만(순수 중복). 기준 scrollHeight(모바일 430px) 기록: 종합현황 3,023 / 활동관리 4,898 /
+  실적분석 3,396 / 후보 목록 6,519 / 3조건 3,752 / 라인·작업장 3,541 / 확정·수평전개 3,432 / 대상 추출 6,755 / 실시·점검 7,179 /
+  6개월 5,912 / 종료평가 6,259 / 조치 목록 7,478 / 처리기간 5,063 / 팀장 5,186 / 효과·재발 4,186.
 
-## 잔여 과제
-1. `?validation=1&scale=3`(활동 2,905건) 대용량에서 Advancement/Audit 팀별 집계
-   위젯 등 일부 화면이 7~30초 소요. 기능 정지는 아니나 성능 개선 여지가 있음.
-2. 외부 리소스 2건(뉴스 이미지 링크)은 작업 환경 네트워크 정책상 실사용 브라우저에서
-   최종 확인하지 못함.
-3. `중형Att팀`/`대형Att.팀`의 마침표 표기 불일치는 사용자 확인 대기 중(의도적 유지).
-4. 현재 최대 서브탭은 ⑤ 개선실행/조치 목록 8,768px. 추가 세분화 필요 여부는
-   사용자 피드백에 따라 결정.
+### 37. 활동관리·실적분석 차트 중복 제거 + 차트 결함 수정 (커밋 `c390ffe`, 2026-09-27 23:27)
+- 요구사항(사용자 스크린샷 2장): "활동관리 탭에 중복차트가 보인다" → 재현 못 하고 후보를 제시 → 스크린샷으로
+  "하위 두 개 탭(활동관리·실적분석)에 모두 차트가 있다"로 확정. 조사 시 활동관리의 `.adcCard`는 1개뿐이었고 탭 이동·갱신
+  이벤트로 늘어나지 않음을 확인(진짜 원인은 두 탭 공유).
+- 조치: `.adcCard`(생산팀별 5S 유형 활동현황)를 분석 화면인 실적분석에서만 표시(`applyActivity`). 활동관리(등록·조회)에서는 숨김.
+- 사용자가 첨부한 차트 스크린샷에서 함께 확인된 결함 4건 수정: ① 막대 높이 215px 고정 vs 눈금은 영역 전체 기준(불일치)
+  ② 팀 이름이 막대 위로 올라와 겹침 ③ 숫자 라벨 겹침 ④ 긴 팀 이름 하단 잘림(2차 수정으로 하단 여백 100px).
+- 결과: 활동관리 차트 0개/실적분석 1개(재진입 포함), 활동관리 4,529→3,907px, 실적분석 2,323→2,357px, 16개 탭 콘솔 오류 0건.
+- 정직성 메모: 직전 턴에서 사용자 지적을 "타이밍 문제"라고 답한 것은 실제 사이트 확인 없이 한 추정이었음(정정은 개발일지 참조).
+
+### 38. hd-22 벤치마킹 1차 — 대시보드 외 탭을 "할 일/관리 포인트" 중심으로 (커밋 `876ad6a`, 2026-09-27 23:38)
+- 요구사항: "대시보드 제외 다른 모든 탭이 눈에 안 들어오고, 사용자가 무엇을 하고 관리자가 무엇을 관리하는지 불명확.
+  반복해서 말했다. hd-22 웹 디자인을 벤치마킹하라."
+- hd-22(`hastom79-hue/hd-22`, "GMES 문제해결과제 관리시스템") 분석: 로컬 렌더링(로그인 오버레이·블러는 화면 확인용으로만 로컬 제거).
+  구성 = 진한 남색 헤더+핵심 CTA(+신규 과제 등록) / 알약형 대메뉴 4개 / 칩형 하위 탭 / 작업 툴바(조회·신규·저장·삭제·출력) /
+  필터 바 / 클릭 가능한 큰 숫자 KPI 카드 / 그룹 목록. 토큰: `--navy #14304C`, `--bg #F4F6F8`, `--steel #2C5F8A`, `--amber #E8A23D`.
+- 적용(1차): 남색 헤더+알약 대메뉴 한 줄(설명 문구 제거, 업무 흐름 배너는 대시보드에서만), 칩형 하위 탭, "화면 안내" 패널을
+  👤 사용자 할 일 / 🛠 관리자 관리할 것 2카드 + 핵심 버튼으로 개편, 큰 숫자 지표 카드(대시보드 제외), 중복 영역배너 정리.
+  14개 서브탭 문구를 새로 작성(활동관리·실적분석, 후보 목록·3조건·라인·확정, 대상 추출·실시·6개월·종료평가, 조치 목록·처리기간·팀장·효과).
+  기존 판단 기준·다음 단계·기능 칩은 삭제하지 않고 "판단 기준 · 다음 단계 보기"(접힘)로 보존.
+- 핵심 버튼 연결: 활동관리 "+ 5S 신규등록"(`[data-aw="new"]`), 조치 목록 "+ 개선요청 등록"(`#hd20ActionRegisterBtn`), 대상 추출 "🎯 대상 추출 실행"
+  (텍스트 '대상 일괄추출' 버튼). 히어로 안 중복 등록 버튼은 화면에서만 숨김(클릭 연결은 유지).
+- 검증 중 발견한 결함: "실시·점검 입력"의 핵심 버튼을 **저장 버튼**('Audit 실시결과 등록')에 연결했더니 폼 입력 전에 결과가 즉시 등록됨
+  (시험용 localStorage에서) → 해당 핵심 버튼 제거(저장 버튼은 상단 CTA로 두지 않는다는 원칙).
+- 대시보드 본문은 유지하되 공통 헤더·대메뉴는 새 톤이 적용됨. 상단 지표 카드 스타일은 `:has()`로 대시보드 제외 범위 한정(대시보드에서 66→94px로
+  커졌던 것을 원복). 헤더 `.top`의 좌우 음수 여백(-24px)으로 폭이 어긋나던 것 정리.
+- 미완(2차 후보): 표 위 필터 바, 그룹 목록, 진단·유지/개선실행 본문 카드 정리, 모바일 헤더 버튼 2줄 → 잔여 과제.
+
+### 39. 하위 탭 위치 고정 + 섹션 전환 13~30초 지연 해소 (커밋 `dc2c7c2`, 2026-09-28 00:10)
+- 요구사항(사용자 스크린샷): "사진의 하위 탭(1.종합현황~6.성과·운영분석) 위치가 계속 바뀐다".
+- 측정(Playwright, 1440px): 섹션을 바꿀 때 탭 바 문서 위치 488→333→1208→333, scrollY 110→333→0→17.
+  원인 ① 바가 '핵심 지표 카드' 앞에 삽입되어 섹션마다 켜지고 꺼지는 요소(핵심 지표 카드, 고도화 맵 패널 856px)가 바 위에 있음
+  ② 클릭마다 `scrollIntoView({block:'start'})` 강제 스크롤. 조치: 바를 `.beginnerHint` 바로 아래 고정 삽입, 스크롤은 바보다 아래로
+  내려가 있을 때만 바 위치로 복귀. 결과: 모든 섹션에서 바 문서 위치 데스크톱 258px / 모바일 409px, scrollY 0.
+- 부수 발견(실제 사용자 체감 문제): 고도화 맵을 본 뒤 섹션 전환 시 렌더 완료까지 종합현황 13.9초·기준·추이 29.6초(테마 전 빌드도 동일).
+  집계 결과 전환 1회당 DOM 변경 약 179,447건, MutationObserver 콜백 1,479회. 레이아웃 0.05초 vs 스크립트 13.5초. 상위 소비 스크립트:
+  team-leader-excel-import 5.3s / audit-id-integrity-guard 1.9s / dashboard-subnav-single-owner-guard 1.9s /
+  action-effect-recurrence-integrity 1.8s / gmes-5s-judge-flow-polish 0.5s / table-enhance-suite 0.4s …
+  → `mo-throttle.js` 신설: `document/body` 전체를 감시하는 observer만 80ms 단위로 묶어 1회 실행(좁은 범위 observer는 즉시). 결과 종합현황 0.5~1.2초·기준·추이 0.6초(측정 조건별).
+- 이전에 "자동화 도구만의 지연"으로 넘겼던 판단은 오류였음(정정).
+- 기능 회귀: 16개 탭 오류 0건, 5S 등록(960→961), 개선요청 임시저장(640→641), 통합기준정보 저장, 핵심 버튼 모달, 표 검색(400→92건),
+  엑셀 양식·그리드 CSV 다운로드 모두 정상.
+
+### 40. 고도화 작업장 추이 누적 막대 1차 (커밋 `62d520b`, 2026-09-28 00:30)
+- 요구사항: 월별 신규 단일 막대 → 누적 막대(기존 유지+신규). 구현·수치는 개발일지 항목 참조. 대시보드 5개 섹션/③ 영역의 `.trendBox` 공용 사용.
+- 이 1차는 이탈 미반영(선형 증가)이라 사용자 지적으로 41번에서 재계산.
+
+### 41. 고도화 작업장 추이 — 유지 이탈 반영 재계산 (커밋 `55f4705`, 2026-09-28 00:37)
+- 사용자 지적: "3대 조건 지속 유지가 어려워 기존 유지가 선형 증가할 수 없다." 데이터에 이탈일이 없음을 확인하고 3안 제시 후 사용자가
+  "확정일+6개월 추정, 화면에 추정 표시"를 선택. 월별 7→15→20→28→32→35→39→45→47, 9월 = 현재 유지 47곳(KPI 일치).
+  이탈일 필드가 생기면 실제 값이 추정을 자동 대체. 한계: 6개월 미도래 건이 이번 달로 몰림(9월 ▼7).
+
+### 42. 로그 전수 보완·정정 (이 커밋)
+- 세 로그의 누락(55f4705·62d520b·dc2c7c2 전무, 876ad6a·c390ffe·cf11419 부분 누락) 보완, 정정 사항·배포 상태(errored 3건)·
+  다른 작업자 커밋 52건·검증 환경 메모 기재, 부록에 Claude 코드 커밋 35건 대장 수록.
+
+## 정정 사항 (대화 중 부정확했던 발언 → 바로잡은 내용)
+1. "타이밍/캐시 문제"(직전 스크린샷 건): 실제 사이트 미확인 상태의 추정이었음. 배포 시각(22:42·22:48)은 스크린샷(22:37~38)보다 뒤이나 사이트 확인은 사용자 몫.
+2. "고도화 맵→기준·추이 정체는 자동화 도구 특성": 사용자 체감 지연이었음(항목 39).
+3. "코드 커밋 배포 완료": 3건은 자체 빌드가 `errored`(소요 0초, 직후 push로 대체된 빌드로 추정)였고 확인한 것은 뒤따른 문서 커밋의 `built`였음.
+4. "누적 막대 1차": 이탈 미반영 계산 오류(항목 40→41).
+
+## 다른 작업자 커밋(참고, Claude 작성 아님 — `hastom79-hue` 52건, 09-22~09-23)
+- `test:` 11건(회귀 계약·서브탭 IA 정렬), `ui:`/`chore: publish`/`fix:` 다수("HD-22 benchmark design pass" 포함), `ci:` 3건.
+- 변경 파일: `index.html`, `hd20-overhaul.css`, `workflow-area-density.css`, `hd20-five-area.css`, `hd20-subtabs.css`, `dashboard-priority-groups.css`,
+  `beginner-navigation.js`, `nav-scroll-stability.js`, `.github/workflows/{browser-smoke,subtab-contract-grid-smoke,design-layout-smoke,runtime-smoke,dashboard-canonical-smoke}.yml`.
+- 상세 내용은 Claude가 검토하지 않았고, 이번 로그는 커밋 메타데이터에 근거한 사실만 기록.
+
+## 현재 상태 (2026-09-28 갱신)
+- 이 세션(09-22~09-28) Claude 커밋: 코드 35건 + 문서 32건 = 67건, 모두 `main`에 push. 최신 빌드 `55f4705` built(09-28 00:38 UTC).
+  (이 로그 보완 커밋이 추가됨)
+- 대시보드 외 탭: hd-22 스타일 1차 적용, 서브탭별 사용자/관리자 안내, 핵심 버튼 3종. 대시보드 하위 탭 위치 고정, 섹션 전환 0.5~0.6초.
+- 고도화 작업장 추이: 이탈 반영 누적 막대(추정 표시). 인쇄 전용 CSS, 통합기준정보 모달 복원, 성과·운영분석 섹션 구현 유지.
+- 회귀(모바일 430px, 테마 적용 후 기준치): 종합현황 2,341 / 성과·운영분석 2,567 / 활동관리 3,472 / 실적분석 1,933 / 후보 목록 6,108 / 3조건 3,364 /
+  라인·작업장 3,154 / 확정·수평전개 2,993 / 대상 추출 5,842 / 실시·점검 6,266 / 6개월 4,945 / 종료평가 5,292 / 조치 목록 6,420 /
+  처리기간 4,005 / 팀장 4,110 / 효과·재발 3,020. 콘솔 오류 0건.
+- **실제 사이트(github.io)에서의 확인은 아직 하지 못함**(샌드박스 네트워크 정책). 활동관리·조치 목록 빈 여백, 차트 중복, 하위 탭 위치, 누적 막대는 사용자 확인 대기.
+
+## 잔여 과제 (2026-09-28 갱신)
+1. **실제 사이트 확인 대기**: 활동관리/조치 목록 우측 빈 여백 해소, 활동관리 차트 제거, 하위 탭 고정, 섹션 전환 속도, 누적 막대, hd-22 1차.
+2. **유지 이탈일 데이터 원천**: `maintainLostAt` 등 이탈일 필드를 GMES/Excel 등에서 받을 수 있는지 사용자 확인 필요. 그 전까지 추정(확정일+6개월).
+3. **hd-22 2차**: 표 위 필터 바(공장·작업장·팀·기간), 그룹 목록, 툴바(조회/신규/저장/출력), 진단·유지/개선실행 본문 카드 정리, 모바일 헤더 버튼 2줄 축약.
+4. **벤치마킹 층 겹침 점검**: 09-23 다른 작업자의 HD-22 UI 커밋(`hd20-overhaul.css` 등)과 `hd22-theme.css`(`!important`)의 시각 충돌 여부.
+5. **`mo-throttle.js` 부작용 관찰**: 80ms 지연으로 보호(guard)류 보정이 늦게 적용될 수 있음. 기능 회귀는 통과했으나 실사용 관찰 필요.
+6. **종료평가 간헐 렌더링(race)**: 이전 회귀에서 14,112px 수치가 가끔 관측됨, mo-throttle 이후 재측정 미실시.
+7. **인쇄**: Audit 대상 추출의 행 단위 "즉시발송/메일/Outlook", 대시보드 "업무화면 →" 버튼은 인쇄 시 아직 표시됨.
+8. **죽은 코드/이중 관리**: `applyAction`의 `show($('.awKpis',root),true)`(대상 없음, 무해), `applyAudit`의 `.awAuditLane`이 레거시 로직과
+   `audit-subtab-dedupe-guard.js` 두 곳에서 제어됨(현재 정상이라 미수정).
+9. `?validation=1&scale=3`(활동 2,905건) 대용량 일부 화면 7~30초 — mo-throttle 이후 재측정 필요.
+10. 외부 리소스 2건(뉴스 이미지 링크)은 네트워크 정책상 실사용 브라우저 확인 불가. `중형Att팀`/`대형Att.팀` 마침표 표기 불일치는 사용자 확인 대기(의도적 유지).
+(참고) 이전 잔여 과제 4번 '최대 서브탭 8,768px'은 현재 최대 조치 목록 6,420px(모바일 430px, 테마 적용 후)로 대체됨.
+11. 참고: 로컬로 띄운 hd-22에서 `Unexpected token 'catch'` 콘솔 오류가 관찰됨(hd-22 저장소, 이번 작업 범위 아님·미수정).
+
+## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 35건)
+> 커밋 시각은 저장소 표기 기준. 아래 35건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
+
+| 커밋 | 시각 | 제목 | 변경 파일 |
+|---|---|---|---|
+| `f253916` | 2026-09-22 05:56 | feat: split ③④⑤ overloaded subtabs into 3 each; fix pagination bugs | `action-leadtime-grid.js`, `action-subtab-dedupe-guard.js`, `advancement-subtab-dedupe-guard.js`, `audit-close-evaluation.js`, `audit-subtab-dedupe-guard.js`, `final-layout-polish.js`, `hd20-ops-v2.js`, `hd20-overhaul.css`, `hd20-subtabs.js`, `index.html`, `table-enhance-suite.js` |
+| `4aee88b` | 2026-09-22 06:17 | feat: split advancement '3조건 분석' into summary + detail (라인·작업장 상세) | `advancement-subtab-dedupe-guard.js`, `final-layout-polish.js`, `hd20-ops-v2.js`, `hd20-subtabs.js`, `index.html`, `maturity-condition-analysis.js` |
+| `57e264c` | 2026-09-22 06:37 | feat: split action '조치 목록' + audit '유지관리', keep legacy sub-keys intact | `action-subtab-dedupe-guard.js`, `audit-subtab-dedupe-guard.js`, `final-layout-polish.js`, `hd20-ops-v2.js`, `hd20-subtabs.js`, `index.html` |
+| `c7b499e` | 2026-09-22 07:02 | fix: KPI evidence grid was empty for all 6 subtabs split today/yesterday | `hd20-kpi-evidence-drill.js`, `index.html` |
+| `0e74799` | 2026-09-22 13:20 | feat: virtual data now shows by default, no ?validation=1 needed | `dashboard-kpi-source.js`, `index.html`, `supabase-sync.js`, `web-validation-fixture.js` |
+| `e535a26` | 2026-09-22 23:32 | fix: distinguish active subtab visually; remove duplicate metrics across tabs | `hd20-kpi-evidence-drill.js`, `hd20-ops-v2.js`, `hd20-subtabs.css`, `index.html` |
+| `44a5c3f` | 2026-09-22 23:56 | fix: reduce bubble overlap in dashboard maturity map (고도화 맵) | `hd20-maturity-map-tab.js`, `index.html` |
+| `b8f75bc` | 2026-09-23 12:08 | perf: batch maturity-map DOM insertion; harden pagination re-scan timing | `action-subtab-dedupe-guard.js`, `audit-subtab-dedupe-guard.js`, `final-layout-polish.js`, `hd20-maturity-map-tab.js`, `index.html`, `table-enhance-suite.js` |
+| `d4ca925` | 2026-09-23 12:27 | feat: prioritize headline KPI cards above OPERATION HEALTH on dashboard tab | `dashboard-priority-layout.js`, `final-layout-polish.js` |
+| `80b1fd2` | 2026-09-23 18:33 | fix: reorder 확정·수평전개 summary-before-detail; fix missing 효과·재발관리 panel | `activity-workflow.js`, `hd20-subtabs.js`, `index.html` |
+| `abc91fc` | 2026-09-23 21:41 | fix: reserve scrollbar-gutter to stop content leaning/margin shift on scroll | `index.html`, `styles.css` |
+| `3f6be0f` | 2026-09-23 22:18 | fix: remove duplicate intro paragraph on 활동관리 (activity.manage) tab | `activity-workflow.js`, `index.html` |
+| `cf11419` | 2026-09-24 00:40 | fix: remove duplicated intro/summary blocks on 후보 목록 and 활동관리 | `activity-workflow.js`, `index.html` |
+| `7b70f79` | 2026-09-24 01:10 | feat: replace English jargon eyebrow-labels and dense descriptions with plain Korean | `dashboard-priority-layout.js`, `final-layout-polish.js`, `hd20-five-area-integration.js`, `hd20-maturity-map-tab.js`, `hd20-subtabs.js`, `index.html`, `workflow-crud.js` |
+| `03ec959` | 2026-09-24 05:38 | feat: regroup 활동관리 sections by topic (context -> input -> data -> analysis) | `activity-excel-preview-import.js`, `index.html` |
+| `7de480a` | 2026-09-24 07:48 | feat: regroup 고도화·표준화 - candidate list right after progress funnel | `final-layout-polish.js`, `hd20-five-area-integration.js` |
+| `29f702c` | 2026-09-24 07:53 | feat: clarify funnel connects to top metric cards (reframe, not delete) | `index.html`, `performance-conversion-analysis.js` |
+| `a60d61d` | 2026-09-24 08:00 | feat: regroup 6개월 관리중 - status summary before detail table | `audit-random-draw.js`, `index.html` |
+| `19d2f5e` | 2026-09-24 08:04 | fix: restore amHeroNote position on 효과·재발관리 (side-effect of earlier fix) | `hd20-subtabs.js`, `index.html` |
+| `b4d45e1` | 2026-09-24 10:46 | fix: show "고도화 작업장 추이" chart only on 고도화·표준화 area | `final-layout-polish.js`, `hd20-five-area-integration.js` |
+| `b0d8911` | 2026-09-24 11:52 | fix: clarify "진행중" label ambiguity on 조치 목록 (relabel, not delete) | `action-mail-workflow.js`, `index.html` |
+| `f151a99` | 2026-09-24 12:05 | fix: remove 3 duplicate metric cards from 효과·재발 검증현황 panel | `hd20-subtabs.js`, `index.html` |
+| `d21fc0f` | 2026-09-25 00:21 | fix: remove amSummary card on 조치 목록 (3/4 items duplicated top strip) | `action-mail-workflow.js`, `index.html` |
+| `2bbdcfa` | 2026-09-25 00:36 | feat: differentiate 실적분석 from 활동관리 (was showing identical content) | `hd20-subtabs.js`, `index.html` |
+| `2322352` | 2026-09-25 07:29 | feat: implement dashboard "성과·운영분석" section (was defined but unreachable) | `dashboard-section-tabs.js`, `final-layout-polish.js` |
+| `4d7cfa0` | 2026-09-25 08:15 | fix: restore missing "통합기준정보" modal (#masterModal never existed) | `index.html`, `master-info-modal.js` |
+| `42d606a` | 2026-09-27 12:01 | feat: add print-optimized CSS (@media print) - hide chrome, keep data only | `index.html`, `print-styles.css` |
+| `1c27f32` | 2026-09-27 12:42 | feat: hide "+개선요청 등록" action on non-조치목록 subtabs (info flow fix) | `hd20-subtabs.js`, `index.html` |
+| `a189e3f` | 2026-09-27 22:41 | fix: 조치 목록 데스크톱 와이드 화면 - 등록카드가 모달로 빠진 뒤 남은 빈 여백 제거 | `action-register-modal.js`, `index.html` |
+| `e74dd3e` | 2026-09-27 22:47 | fix: 활동관리 데스크톱 와이드 화면도 동일한 빈 여백 버그 수정 | `activity-register-modal.js`, `index.html` |
+| `c390ffe` | 2026-09-27 23:27 | fix: 팀별 5S 유형 차트 중복 노출 제거 + 차트 겹침/잘림 수정 | `activity-dynamic-chart.js`, `hd20-subtabs.js`, `index.html` |
+| `876ad6a` | 2026-09-27 23:38 | feat: hd-22 디자인 벤치마킹 - 대시보드 외 탭을 "할 일/관리 포인트" 중심으로 재구성 | `hd20-subtabs.js`, `hd22-theme.css`, `index.html` |
+| `dc2c7c2` | 2026-09-28 00:10 | fix: 대시보드 하위 탭 위치 고정 + 섹션 전환 13~30초 지연 해소 | `dashboard-section-tabs.js`, `final-layout-polish.js`, `index.html`, `mo-throttle.js` |
+| `62d520b` | 2026-09-28 00:30 | feat: 고도화 작업장 추이를 누적 막대(기존 유지 + 신규)로 변경 | `dashboard-actions.js`, `index.html` |
+| `55f4705` | 2026-09-28 00:37 | fix: 고도화 작업장 추이 - 유지 이탈을 반영한 누적 막대(기존 유지+신규)로 재계산 | `dashboard-actions.js`, `index.html` |
+
+### 문서 커밋(32건, 로그 갱신용)
+- `2f08c0d` docs: log tab-position + observer throttle
+- `f16ef68` docs: log hd-22 benchmark phase 1 (876ad6a)
+- `32878fd` docs: log chart de-dup (c390ffe)
+- `a7370f5` docs: log activity grid fix (e74dd3e) in dev/coding logs
+- `4c4aa78` docs: log 조치목록 desktop empty-space fix (a189e3f) in dev/coding logs
+- `d1d2762` docs: log action-flow subtab fix (1c27f32) in dev/coding logs
+- `1796456` docs: log print CSS feature (42d606a) in dev/coding logs
+- `0b84e18` docs: log master info modal restoration (4d7cfa0) in dev/coding logs
+- `3af0f4a` docs: log 성과운영분석 implementation (2322352) in dev/coding logs
+- `3e80cb8` docs: log 실적분석 differentiation (2bbdcfa) in dev/coding logs
+- `a84c0ea` docs: log amSummary removal (d21fc0f) in dev/coding logs
+- `6c99a5b` docs: log verify panel dedup (f151a99) in dev/coding logs
+- `5589520` docs: log cross-area audit + label clarity fix (b0d8911) in dev/coding logs
+- `51135a5` docs: log trend chart area-gating fix (b4d45e1) in dev/coding logs
+- `a847276` docs: log amHeroNote position fix (19d2f5e) in dev/coding logs
+- `e91c7c5` docs: log 6개월관리중 regrouping (a60d61d) in dev/coding logs
+- `1e8f1ef` docs: log funnel connecting-note fix (29f702c) in dev/coding logs
+- `1b18b1f` docs: log advancement regrouping (7de480a) in dev/coding logs
+- `33c59ef` docs: log topic-based regrouping (03ec959) in dev/coding logs
+- `a6d5c0f` docs: log 2/3-area overhaul + plain-language conversion (cf11419, 7b70f79) in dev/coding logs
+- `e0c1ac7` docs: log duplicate-intro cleanup (3f6be0f) in dev/coding logs
+- `3db7954` docs: log scrollbar-gutter symmetry fix (abc91fc) in dev/coding logs
+- `50bed25` docs: log subtab priority reorder + verify-panel fix (80b1fd2) in dev/coding logs
+- `fcd6d2e` docs: log dashboard KPI-priority reorder (d4ca925) in dev/coding logs
+- `bbed270` docs: log maturity-map perf fix + closure-eval race mitigation (b8f75bc) in dev/coding logs
+- `7a7910e` docs: log maturity map bubble decluttering fix (44a5c3f) in dev/coding logs
+- `3c39e09` docs: log tab-contrast and duplicate-metrics fix (e535a26) in dev/coding logs
+- `20480c3` docs: log default-on virtual data change (0e74799) in dev/coding logs
+- `5cfa2e2` docs: log KPI evidence grid regression + fix (c7b499e) in dev/coding logs
+- `015b9b3` docs: log action/audit 4-way subtab split + metric bugfix (57e264c) in dev/coding logs
+- `da246aa` docs: log advancement 4-way subtab split (4aee88b) in dev/coding logs
+- `c661242` docs: development/coding log for validation fixture, team master, auth, subtab split (2026-09-22)
