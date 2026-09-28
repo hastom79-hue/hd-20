@@ -664,6 +664,13 @@
 ### 47. 총 건수 대신 효율 병기 (커밋 `955d40f`)
 - 개발일지 항목 참조. 지표 카드 인당·비율 보조값, 팀별 차트 인당 순위 재설계.
 
+### 48. 첫인상 정리 (커밋 `a45a372`)
+- 개발일지 참조(배너·DB 상태 표시·KPI 카드). 측정 표: 스크립트 118/62, 스타일시트 64/15, DOM 32,060/3,180, 로드 0.71/0.37s.
+### 49. 지연 렌더링 — 표 행 가상화 (커밋 `96a7f6f`)
+- 개발일지 참조. 화면 요소 32,171→8,206, 표 행 2,471→425, 이미지 649→34, CSV 행 수 전/후 동일, E2E(5S 등록 960→961·개선요청 640→641) 통과.
+### 50. 5S 자율개선 종합 대시보드 (커밋 `faf554e`)
+- 개발일지 참조. 사진 구성을 5S에 맞게 재구성한 새 탭(조회 바·5개 패널·프린트·CSV), CI 탭 키 패치 갱신.
+
 ## 정정 사항 (대화 중 부정확했던 발언 → 바로잡은 내용)
 1. "타이밍/캐시 문제"(직전 스크린샷 건): 실제 사이트 미확인 상태의 추정이었음. 배포 시각(22:42·22:48)은 스크린샷(22:37~38)보다 뒤이나 사이트 확인은 사용자 몫.
 2. "고도화 맵→기준·추이 정체는 자동화 도구 특성": 사용자 체감 지연이었음(항목 39).
@@ -713,12 +720,24 @@
 - 현장참고 탭 복원/재정의 여부(실제 BEFORE·AFTER 우수사례 갤러리로 바꿀지) 사용자 결정 대기.
 - 인당 계산의 분모(팀 인원 마스터 680명)가 실제 인원과 맞는지 사용자 확인 필요.
 
-## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 40건)
-> 커밋 시각은 저장소 표기 기준. 아래 40건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
-> (`e182f66`은 이 대화 밖의 다른 Claude 세션이 같은 계정으로 push한 커밋이라 포함됨)
+## 정정·발견 사항 추가 (2026-09-28 저녁)
+1. 웹 완성도 평가에 대해 인상이 아닌 측정으로 원인(구조: 화면 전체 선렌더링·스타일 다층)을 확인. CSS 수정만으로는 격차가 줄지 않음을 사용자에게 명시.
+2. 헤더 클릭 정렬 미동작은 원본에서도 동일(회귀 아님). 별도 확인 필요.
+3. 지연 렌더링은 우선순위 1순위(사용자 지정)로 완료, 2~4순위는 미착수.
+
+## 잔여 과제 추가 (2026-09-28 저녁)
+- 우선순위 2: hd-22식 화면 구성 2차(표 위 필터 바, 그룹 목록, 조회·신규·저장·출력 툴바). 3: 스타일·스크립트 정리(카드·간격·글자 크기 통일). 4: 화면별 hd-22 나란히 비교 수정.
+- 지연 렌더링 후속: 화면(영역) 단위 지연 생성(현재는 표 행만 가상화, 요소 8천 개), 대시보드 첫 로드 시 다른 영역 표 생성 자체를 미루기.
+- 5S 자율개선 종합: 참여율 정의(등록자/총원) 사용자 확인, 목표선(분기별 인당 목표) 표시 여부, 실제 .xlsx 내보내기 여부.
+- 표 헤더 정렬 미동작 원인 조사.
+
+## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 44건)
+> 커밋 시각은 저장소 표기 기준. 아래 44건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
+> (`e182f66`은 이 대화 밖의 다른 Claude 세션이 같은 계정으로 push한 커밋이라 포함됨. 대장은 `git log --since`가 날짜가 뒤섞인 이력에서 일부를 건너뛰는 것을 발견해, 커밋 날짜를 직접 비교해 생성)
 
 | 커밋 | 시각 | 제목 | 변경 파일 |
 |---|---|---|---|
+| `67826a5` | 2026-09-22 00:02 | feat: remove Supabase password login step, keep company-mail gate | `index.html`, `supabase-auth.js` |
 | `f253916` | 2026-09-22 05:56 | feat: split ③④⑤ overloaded subtabs into 3 each; fix pagination bugs | `action-leadtime-grid.js`, `action-subtab-dedupe-guard.js`, `advancement-subtab-dedupe-guard.js`, `audit-close-evaluation.js`, `audit-subtab-dedupe-guard.js`, `final-layout-polish.js`, `hd20-ops-v2.js`, `hd20-overhaul.css`, `hd20-subtabs.js`, `index.html`, `table-enhance-suite.js` |
 | `4aee88b` | 2026-09-22 06:17 | feat: split advancement '3조건 분석' into summary + detail (라인·작업장 상세) | `advancement-subtab-dedupe-guard.js`, `final-layout-polish.js`, `hd20-ops-v2.js`, `hd20-subtabs.js`, `index.html`, `maturity-condition-analysis.js` |
 | `57e264c` | 2026-09-22 06:37 | feat: split action '조치 목록' + audit '유지관리', keep legacy sub-keys intact | `action-subtab-dedupe-guard.js`, `audit-subtab-dedupe-guard.js`, `final-layout-polish.js`, `hd20-ops-v2.js`, `hd20-subtabs.js`, `index.html` |
@@ -759,8 +778,11 @@
 | `b76f198` | 2026-09-28 04:26 | fix: 성과·운영분석 추이 영역이 다른 영역(활동관리 등)에서도 보이던 문제 수정 | `dashboard-ops-trend.js`, `index.html` |
 | `40a0d33` | 2026-09-28 04:31 | feat: 3조건 분석 - 총 건수 대신 "어느 라인·작업장이 몇 개를 충족했나" 목록으로 재구성 | `hd20-condition-groups.js`, `hd20-subtabs.js`, `index.html` |
 | `955d40f` | 2026-09-28 04:38 | feat: 총 건수 대신 효율 병기 - 지표 카드에 인당·비율 보조값, 팀별 차트를 인당 개선건수 순위로 재설계 | `activity-dynamic-chart.js`, `hd20-ops-normalized.js`, `index.html` |
+| `a45a372` | 2026-09-28 04:43 | ui: 첫인상 정리 - 시험용처럼 보이던 배너·상태 버튼·좁은 KPI 카드 개선 | `hd22-theme.css`, `index.html` |
+| `96a7f6f` | 2026-09-28 09:44 | perf: 표 행 가상화(현재 페이지 행만 DOM 유지) + 증빙 썸네일 지연 로딩 — 화면 요소 32,171 → 8,206 | `action-field-photo-gallery.js`, `index.html`, `table-enhance-suite.js`, `workflow-crud.js` |
+| `faf554e` | 2026-09-28 09:49 | feat: 5S 자율개선 종합 대시보드 신설 (기존 MES 'VTB 자율개선 종합 대시보드' 구성 반영) | `ci-tab-keys.patch`, `dashboard-section-tabs.js`, `final-layout-polish.js`, `hd20-improve-board.js`, `index.html` |
 
-### 문서 커밋(34건, 로그 갱신용)
+### 문서 커밋(35건, 로그 갱신용)
 - `c661242` docs: development/coding log for validation fixture, team master, auth, subtab split (2026-09-22)
 - `da246aa` docs: log advancement 4-way subtab split (4aee88b) in dev/coding logs
 - `015b9b3` docs: log action/audit 4-way subtab split + metric bugfix (57e264c) in dev/coding logs
@@ -795,3 +817,4 @@
 - `2f08c0d` docs: log tab-position + observer throttle
 - `a5f4659` docs: 개발일지·상세 개발일지·코딩일지 전수 보완 (누락 커밋·정정·배포 상태·잔여 과제)
 - `a630b4c` docs: 빈 공간 제거(e182f66) 개발일지·상세 개발일지·코딩일지 반영, 커밋 대장 36건 재생성
+- `5600a85` docs: 탭 정리·3조건 분석·효율 병기·CI 실패 발견 개발일지/상세 개발일지/코딩일지 반영, 커밋 대장 40건 재생성

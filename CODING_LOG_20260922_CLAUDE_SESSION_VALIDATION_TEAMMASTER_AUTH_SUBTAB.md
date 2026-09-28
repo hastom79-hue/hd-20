@@ -1362,6 +1362,33 @@
 - 버전: `hd20-ops-normalized.js?v=20260928-2`, `activity-dynamic-chart.js?v=20260928-rank-2`, `hd20-condition-groups.js?v=20260928-5`.
 - 검증: 14개 화면 보조값 출력 확인, 16개 탭 회귀 오류 0건(활동관리 3,530 / 조치 목록 6,420 등).
 
+### `a45a372` — ui: 첫인상 정리 (2026-09-28)
+- 변경 파일: `hd22-theme.css`(+14/-0), `index.html`(+1/-1)
+- `#hd20ValidationBanner`(인라인 스타일 노란 배너) → `hd22-theme.css`에서 `!important`로 차분한 색·작은 글자, `.hd20DbProdHealth`(상태 표시 버튼) → 투명 배경+점(::before), `.hd20HealthGroupGrid`·`.hd20HealthKpi` 1열 목록형, `.hd20HealthKpiBody b{white-space:nowrap}`.
+- `hd22-theme.css?v=20260928-h22-5`. 회귀 16개 탭 오류 0건.
+
+### `96a7f6f` — perf: 표 행 가상화 + 썸네일 지연 로딩 (2026-09-28)
+- 변경 파일: `action-field-photo-gallery.js`(+1/-1), `index.html`(+1/-1), `table-enhance-suite.js`(+19/-6), `workflow-crud.js`(+1/-1)
+- 조사: `dom_why.py` — 첫 로드 시 `#awAction` 16,907·`.amCases` 8,970·`.hd20Lt` 7,703 요소, 표 행 2,471(숨김 2,046), 이미지 649·`loading=lazy` 2. `lazy_measure.py`로 전/후 기준값(DOM·행·이미지·내보내기 CSV 행 수·`.teCount`) 측정.
+- `table-enhance-suite.js`: 상수 `VMIN=60`. `enhanceTable`에 `store/mo/noVirtual`(`.gmesImport,.hd20CaseTrace,.hd20ExactTable,[id$="Modal"],.modalBox` 제외) 추가, `domRows()/allRows()/updateMore()` 분리.
+  `apply()`: 행이 60개 초과면 `store=rows.slice(); table.__teStore=store`, 검색 일치 행(`tr.__teT` 캐시)에서 `pageSize`만큼 `tbody.replaceChildren(...shown)`, 카운트 문구·"더 보기" 갱신, `mo.takeRecords()`로 자기 변경 기록 제거.
+  정렬: 가상화 중에는 `store`만 정렬하고 전체 재부착 금지(`if(!store)rows.forEach(...)`). MutationObserver: 외부 재렌더 시 새 행이 전부 새것이면 `store=null`(재캡처), 일부만이면 병합·제거 반영. 공용 `window.HD20_TABLE_ROWS.all(table)`.
+- `workflow-crud.js` `csv(screen)`: `(window.HD20_TABLE_ROWS?.all(table)||[...table.querySelectorAll('tbody tr')])`로 전체 행 내보내기 유지.
+- `action-field-photo-gallery.js` `evidenceCell()`: `img.loading='lazy';img.decoding='async'`를 `src` 지정 전에 설정(640행 썸네일 즉시 요청 방지).
+- 버전: `table-enhance-suite.js?v=20260928-virt-1`, `workflow-crud.js?v=20260928-virt-1`, `action-field-photo-gallery.js?v=20260928-lazy-1`.
+- 결과: DOM 32,171→8,206, 행 2,471→425, 이미지 649→34, CSV 행 수 402/540/414/1,304 동일. E2E: 5S 등록 960→961, 개선요청 임시저장 640→641, 통합기준정보 저장, 핵심 버튼, 검색 92건, 더 보기 25→50→75, 16개 탭 오류 0건.
+- 비교 검증(`sort_cmp.py`): 헤더 클릭 정렬은 변경 전 원본(`repo22_base`)에서도 상위 행이 바뀌지 않음 → 기존 동작.
+
+### `faf554e` — feat: 5S 자율개선 종합 대시보드 (2026-09-28)
+- 변경 파일: `ci-tab-keys.patch`(+6/-6), `dashboard-section-tabs.js`(+1/-0), `final-layout-polish.js`(+1/-1), `hd20-improve-board.js`(+118/-0), `index.html`(+1/-1)
+- `hd20-improve-board.js`(신규): `#hd20ImproveBoard`(`#hd20DashboardPriority` 뒤 삽입). 상태 `S={year,month,metric,group,type,roll,team}`. 데이터 `HD20KPIData.snapshot().rows`(연도·월·유형·부서·수평전개 필터), 팀 인원 `HD20_HEADCOUNT_MASTER`, 부서 `HD20ProductionTeamMaster.groupOf/groupNames`.
+  `chart()` SVG 막대 함수(그룹/누적, 축 `axis()` 눈금 1·2·2.5·5, 값 라벨, 좁은 폭 자동 회전, `data-cat` 클릭). 완료 = 상태 `완료|확정`(활동관리 카드 '완료/확정 658'과 동일 정의).
+  ③ 팀 패널: 정렬(내림차순), 평균 이상 `#1f6f6b`/미만 `#e0b03c`, 당월 참여율=`Set(owner).size / 총원`. ④⑤: 선택 팀 월별(인당 또는 총 건수). 프린트=`window.print()`, 엑셀다운로드=CSV(`5S_자율개선종합_YYYY[MM].csv`, BOM 포함, 유형별·팀별·단일 팀 월별 3개 표).
+  `.app.awFocused #hd20ImproveBoard{display:none!important}`, resize 250ms 디바운스 재렌더, 탭 클릭 시 재렌더.
+- `dashboard-section-tabs.js`: TABS에 `{key:'improve',label:'5S 자율개선 종합',targets:['#hd20ImproveBoard']}`를 summary 다음에 추가. `final-layout-polish.js` 버전 `20260928-improve-1`, `index.html`에 `hd20-improve-board.js?v=20260928-3`.
+- `ci-tab-keys.patch` 재생성(40줄, `git apply --check` 통과): 3개 워크플로의 탭 키 기대값을 `['summary','improve','execution','maturity','standard','analysis']`로.
+- 검증(`ib_interact.py`): 초기 선택 팀 대형Att.팀→6번째 막대 클릭 시 중형상부1팀, 월=9월 참여율 패널, 차트집계=총 건수 전환, 유형=정리, 부서 선택 시 팀 막대 6개, CSV 35행, 프린트 호출. 섹션 격리(`reg_dash2.py`) 7개 섹션 통과, 16개 탭 회귀 오류 0건.
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
@@ -1425,12 +1452,13 @@
 ## (2026-09-28 갱신) 종료조건
 16개 탭 순회·기능 회귀 세트 콘솔 오류 0건, 최신 GitHub Pages 빌드 `built` 확인, 실제 사이트 확인 결과 반영 후 종료.
 
-## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 40건)
-> 커밋 시각은 저장소 표기 기준. 아래 40건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
-> (`e182f66`은 이 대화 밖의 다른 Claude 세션이 같은 계정으로 push한 커밋이라 포함됨)
+## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 44건)
+> 커밋 시각은 저장소 표기 기준. 아래 44건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
+> (`e182f66`은 이 대화 밖의 다른 Claude 세션이 같은 계정으로 push한 커밋이라 포함됨. 대장은 `git log --since`가 날짜가 뒤섞인 이력에서 일부를 건너뛰는 것을 발견해, 커밋 날짜를 직접 비교해 생성)
 
 | 커밋 | 시각 | 제목 | 변경 파일 |
 |---|---|---|---|
+| `67826a5` | 2026-09-22 00:02 | feat: remove Supabase password login step, keep company-mail gate | `index.html`, `supabase-auth.js` |
 | `f253916` | 2026-09-22 05:56 | feat: split ③④⑤ overloaded subtabs into 3 each; fix pagination bugs | `action-leadtime-grid.js`, `action-subtab-dedupe-guard.js`, `advancement-subtab-dedupe-guard.js`, `audit-close-evaluation.js`, `audit-subtab-dedupe-guard.js`, `final-layout-polish.js`, `hd20-ops-v2.js`, `hd20-overhaul.css`, `hd20-subtabs.js`, `index.html`, `table-enhance-suite.js` |
 | `4aee88b` | 2026-09-22 06:17 | feat: split advancement '3조건 분석' into summary + detail (라인·작업장 상세) | `advancement-subtab-dedupe-guard.js`, `final-layout-polish.js`, `hd20-ops-v2.js`, `hd20-subtabs.js`, `index.html`, `maturity-condition-analysis.js` |
 | `57e264c` | 2026-09-22 06:37 | feat: split action '조치 목록' + audit '유지관리', keep legacy sub-keys intact | `action-subtab-dedupe-guard.js`, `audit-subtab-dedupe-guard.js`, `final-layout-polish.js`, `hd20-ops-v2.js`, `hd20-subtabs.js`, `index.html` |
@@ -1471,8 +1499,11 @@
 | `b76f198` | 2026-09-28 04:26 | fix: 성과·운영분석 추이 영역이 다른 영역(활동관리 등)에서도 보이던 문제 수정 | `dashboard-ops-trend.js`, `index.html` |
 | `40a0d33` | 2026-09-28 04:31 | feat: 3조건 분석 - 총 건수 대신 "어느 라인·작업장이 몇 개를 충족했나" 목록으로 재구성 | `hd20-condition-groups.js`, `hd20-subtabs.js`, `index.html` |
 | `955d40f` | 2026-09-28 04:38 | feat: 총 건수 대신 효율 병기 - 지표 카드에 인당·비율 보조값, 팀별 차트를 인당 개선건수 순위로 재설계 | `activity-dynamic-chart.js`, `hd20-ops-normalized.js`, `index.html` |
+| `a45a372` | 2026-09-28 04:43 | ui: 첫인상 정리 - 시험용처럼 보이던 배너·상태 버튼·좁은 KPI 카드 개선 | `hd22-theme.css`, `index.html` |
+| `96a7f6f` | 2026-09-28 09:44 | perf: 표 행 가상화(현재 페이지 행만 DOM 유지) + 증빙 썸네일 지연 로딩 — 화면 요소 32,171 → 8,206 | `action-field-photo-gallery.js`, `index.html`, `table-enhance-suite.js`, `workflow-crud.js` |
+| `faf554e` | 2026-09-28 09:49 | feat: 5S 자율개선 종합 대시보드 신설 (기존 MES 'VTB 자율개선 종합 대시보드' 구성 반영) | `ci-tab-keys.patch`, `dashboard-section-tabs.js`, `final-layout-polish.js`, `hd20-improve-board.js`, `index.html` |
 
-### 문서 커밋(34건, 로그 갱신용)
+### 문서 커밋(35건, 로그 갱신용)
 - `c661242` docs: development/coding log for validation fixture, team master, auth, subtab split (2026-09-22)
 - `da246aa` docs: log advancement 4-way subtab split (4aee88b) in dev/coding logs
 - `015b9b3` docs: log action/audit 4-way subtab split + metric bugfix (57e264c) in dev/coding logs
@@ -1507,3 +1538,4 @@
 - `2f08c0d` docs: log tab-position + observer throttle
 - `a5f4659` docs: 개발일지·상세 개발일지·코딩일지 전수 보완 (누락 커밋·정정·배포 상태·잔여 과제)
 - `a630b4c` docs: 빈 공간 제거(e182f66) 개발일지·상세 개발일지·코딩일지 반영, 커밋 대장 36건 재생성
+- `5600a85` docs: 탭 정리·3조건 분석·효율 병기·CI 실패 발견 개발일지/상세 개발일지/코딩일지 반영, 커밋 대장 40건 재생성
