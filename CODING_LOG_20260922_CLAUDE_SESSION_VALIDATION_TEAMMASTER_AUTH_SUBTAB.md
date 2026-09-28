@@ -1403,6 +1403,15 @@
 - 검증(`rb_check.py`): 기한경과 정의 검증(79=66+13), 팀 막대 클릭(휠로더리어팀→대형Att.팀), 년=2025(완료율 48.1%·기한경과 13), 월=9월(64.9%·12), 인당 모드, 처리상태·등록경로 필터, CSV 41행.
   섹션 격리(`reg_dash3.py`) 8개 통과, 16개 탭 회귀 오류 0건.
 
+### `dd8f90d` — feat: 종합 대시보드 근거 데이터 보기 + 분기별 인당 목표선 (2026-09-28)
+- 변경 파일: `hd20-improve-board.js`(+38/-11), `hd20-request-board.js`(+9/-6), `index.html`(+1/-1)
+- `hd20-improve-board.js`: `chart({...,hline})` 옵션(축 최대값 `max(tot, hline.value*1.05)`, 빨간 점선 `stroke-dasharray="6 4"`+라벨). `quarterTarget()`: `localStorage['gmes5s_quarter_perperson_targets']`의 현재 분기(`Q1~Q4`) 값(양수만).
+  `openRows({title,cols,rows,file})`: `#hd20BoardEvidence`(z-index 99991) 공용 창 — 검색(전체 컬럼)·CSV(BOM)·Esc/배경 클릭 닫기, 200건 표시 후 300건씩 더 보기, `@media print` 숨김. `window.HD20_BOARD_KIT`에 `quarterTarget,openRows` 추가.
+  자율개선 ③ 팀 차트: `useT=per&&!S.month&&QT.v!==null` 일 때 목표선·`colorOf`(≥목표 진한색/미만 황색)·"목표 달성 n/N팀" 범례, 아니면 기존 평균 기준+안내 문구. 5개 패널 머리글에 `.ibEv[data-evk=a..e]` 버튼, `EV` 맵으로 패널별 원천 행 연결(팀별=팀·최신순 정렬, 선택 팀=`tr`).
+  `?v=20260928-6`.
+- `hd20-request-board.js`: 5개 패널 근거 버튼, 열 12개(요청번호·등록일·팀·작업장·문제점·상태·조치기한·완료일·처리일수·기한경과·효과검증·Audit 연계). `?v=20260928-3`.
+- 검증(`ev_check.py`): 저장된 목표 `{"Q1":2,"Q2":3,"Q3":4,"Q4":5}`, 인당 모드 목표선 존재·"목표 달성 0/16팀 · 전체 평균 1.28건/인", 근거창 868건(200행 표시)·검색(정리 219건)·CSV 220행·Esc 닫힘, 월별 근거 868=기준 868, 개선요청 근거 563=기준 563. 섹션 격리·16개 탭 회귀 오류 0건.
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
@@ -1466,8 +1475,8 @@
 ## (2026-09-28 갱신) 종료조건
 16개 탭 순회·기능 회귀 세트 콘솔 오류 0건, 최신 GitHub Pages 빌드 `built` 확인, 실제 사이트 확인 결과 반영 후 종료.
 
-## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 45건)
-> 커밋 시각은 저장소 표기 기준. 아래 45건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
+## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 46건)
+> 커밋 시각은 저장소 표기 기준. 아래 46건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
 > (`e182f66`은 이 대화 밖의 다른 Claude 세션이 같은 계정으로 push한 커밋이라 포함됨. 대장은 `git log --since`가 날짜가 뒤섞인 이력에서 일부를 건너뛰는 것을 발견해, 커밋 날짜를 직접 비교해 생성)
 
 | 커밋 | 시각 | 제목 | 변경 파일 |
@@ -1517,8 +1526,9 @@
 | `96a7f6f` | 2026-09-28 09:44 | perf: 표 행 가상화(현재 페이지 행만 DOM 유지) + 증빙 썸네일 지연 로딩 — 화면 요소 32,171 → 8,206 | `action-field-photo-gallery.js`, `index.html`, `table-enhance-suite.js`, `workflow-crud.js` |
 | `faf554e` | 2026-09-28 09:49 | feat: 5S 자율개선 종합 대시보드 신설 (기존 MES 'VTB 자율개선 종합 대시보드' 구성 반영) | `ci-tab-keys.patch`, `dashboard-section-tabs.js`, `final-layout-polish.js`, `hd20-improve-board.js`, `index.html` |
 | `9d5f65a` | 2026-09-28 10:00 | feat: 5S 개선요청 종합 대시보드 신설 (5S 자율개선 종합과 같은 뼈대) | `ci-tab-keys.patch`, `dashboard-kpi-source.js`, `dashboard-section-tabs.js`, `final-layout-polish.js`, `hd20-improve-board.js`, `hd20-request-board.js`, `index.html` |
+| `dd8f90d` | 2026-09-28 10:19 | feat: 종합 대시보드 - 근거 데이터 보기 + 분기별 인당 목표선(목표 달성/미달) | `hd20-improve-board.js`, `hd20-request-board.js`, `index.html` |
 
-### 문서 커밋(36건, 로그 갱신용)
+### 문서 커밋(37건, 로그 갱신용)
 - `c661242` docs: development/coding log for validation fixture, team master, auth, subtab split (2026-09-22)
 - `da246aa` docs: log advancement 4-way subtab split (4aee88b) in dev/coding logs
 - `015b9b3` docs: log action/audit 4-way subtab split + metric bugfix (57e264c) in dev/coding logs
@@ -1555,3 +1565,4 @@
 - `a630b4c` docs: 빈 공간 제거(e182f66) 개발일지·상세 개발일지·코딩일지 반영, 커밋 대장 36건 재생성
 - `5600a85` docs: 탭 정리·3조건 분석·효율 병기·CI 실패 발견 개발일지/상세 개발일지/코딩일지 반영, 커밋 대장 40건 재생성
 - `4236808` docs: 웹 완성도 측정·첫인상 정리·지연 렌더링·5S 자율개선 종합 대시보드 로그 반영, 커밋 대장 44건 재생성
+- `ac875bb` docs: 5S 개선요청 종합 대시보드(9d5f65a) 개발일지/상세 개발일지/코딩일지 반영, 커밋 대장 재생성
