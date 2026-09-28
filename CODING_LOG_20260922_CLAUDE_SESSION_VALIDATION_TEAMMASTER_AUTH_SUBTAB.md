@@ -1426,6 +1426,18 @@
   ⑤: 시리즈 '고도화 후보'→'고도화 확정'(선택 팀·확정일 기준), 제목 '수평전개/고도화 확정'. 조회 바 `<select data-f="judge">`. 근거 열 `['등록일','팀','5S 유형','등록자','문제점','개선내용','상태','고도화 판정','확정일','수평전개']`. `?v=20260928-9`.
 - 검증(`factor_check2.py`): 월별 확정 툴팁 합 51·`snapshot().newSecured` 51·확정 판정(2026) 51, 판정 필터 근거 건수 확정 51/판정대기 31/보완요청 30, ⑤ 제목·근거 열 확인, 16개 탭 회귀 오류 0건.
 
+### `89ef6a8` — feat: 고도화 성과는 확정 결과만 표시 (2026-09-28)
+- 변경 파일: `conversion-chart.js`(+2/-2), `dashboard-actions.js`(+1/-1), `dashboard-grid-drilldown.js`(+1/-1), `dashboard-ops-trend.js`(+1/-1), `final-layout-polish.js`(+1/-1), `hd20-improve-board.js`(+2/-2), `hd20-kpi-evidence-drill.js`(+3/-3), `hd20-maturity-map-tab.js`(+3/-3), `hd20-ops-normalized.js`(+3/-3), `hd20-ops-v2.js`(+3/-3), `index.html`(+1/-1), `integrated-performance-map.js`(+2/-2), `top-kpi-drilldown.js`(+3/-2)
+- 조사: `cand_scan.py` — 화면별로 보이는 텍스트 노드에서 '후보'를 수집(숫자 동반), 그 뒤 원인 코드 파일 특정(`dashboard-grid-drilldown.js`, `integrated-performance-map.js`, `hd20-maturity-map-tab.js`, `performance-conversion-analysis.js`, `hd20-kpi-evidence-drill.js`, `hd20-ops-v2.js`, `conversion-chart.js` 등).
+- `top-kpi-drilldown.js`: `monthConfirmed(s)`(=`snapshot().confirmed` 중 `HD20KPIData.confirmedDate`의 연-월이 `seoulDateKey()`와 같은 것) 추가, `sets()[1]`·`cardValues()[1]`을 후보→이번 달 확정으로. parity(`audit()`의 `countParity[1]`) 유지를 위해 비율(%)이 아닌 건수로. `dashboard-grid-drilldown.js` `titles[0]`·`index.html` 카드 라벨 '이번 달 고도화 확정'.
+- `hd20-ops-v2.js`(strip 정의): dashboard.summary[1] `판정 대기`(`candidates.filter(!advancementConfirmed)`), activity.manage[3]·activity.analysis[2] `고도화 확정`(`confirmed.length`). `hd20-kpi-evidence-drill.js`: `dashboard.summary.1`·`activity.manage.3`·`activity.analysis.2` 근거 행을 같은 정의로(`confirmedRows`). `hd20-ops-normalized.js`: 활동 전환율→확정률(5.9%), dashboard.summary 보조값 제거.
+- `integrated-performance-map.js`: `collect().rate`=유지÷확정, 칩 4개(5S 활동·누적 공식확정·현재 유지·유지율), 표 머리 `생산팀|5S 활동|공식확정|현재유지|유지율`(`maturity-map-official-case-link.js`가 4번째 셀·마지막 앞에 열을 삽입하므로 열 수·순서 유지), 최다팀 카드 '5S 활동 최다팀', 점 클래스에서 candidate 제거, 툴팁 문구.
+- `hd20-maturity-map-tab.js`: `teamStats().rate`=유지÷확정, KPI [올해 신규 공식확정(`newSecured`)·누적 공식확정·현재 유지·유지율], 팀 행 `확정|유지|유지율`, 축 라벨, 안내 문구.
+- `conversion-chart.js`: 요약·표를 확정/인당/확보율 기준으로 재작성했으나, `getData()`의 `dataMap` 미정의로 데이터가 항상 비어 있음을 확인(`conv_cmp.py`로 변경 전·후 동일하게 0) → `if(!data.length||(!ti&&!ts))return;` 가드로 빈 패널 미표시. (재작성한 표는 데이터가 오는 경로가 없어 화면 검증 불가 — 죽은 경로.) 로더 `dashboard-actions.js`의 `conversion-chart.js?v=20260928-confirmed-1`.
+- 그 밖: `dashboard-ops-trend.js` 판정 완료율 설명에서 '후보' 제거, `hd20-improve-board.js` 판정 필터 `S.judge`='Y'|'N'.
+- 버전: `top-kpi-drilldown.js`·`hd20-ops-v2.js`·`hd20-kpi-evidence-drill.js`·`dashboard-grid-drilldown.js`·`integrated-performance-map.js`·`hd20-maturity-map-tab.js` `?v=20260928-confirmed-1`, `hd20-ops-normalized.js?v=20260928-3`, `dashboard-ops-trend.js?v=20260928-4`, `hd20-improve-board.js?v=20260928-10`, `dashboard-actions.js?v=20260928-confirmed-1`.
+- 검증(`conf_check.py`): 카드 5개 `[인당 1.28, 이번 달 확정 9, 신규 51, 누적 57, 유지 47]`, `dataset.hd20KpiGridParity==='1'`, 2번 카드 클릭 근거 9행, 고도화 맵 KPI `[51,57,47,82.5%]`·팀 행, 실행·유지 칩·표 머리, 활동관리 지표 `[960,658,302,57]`+보조값, 잔여 '후보' 문구 0(안내문 제외), 5S 등록 E2E, 섹션 격리, 16개 탭 회귀 오류 0건.
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
@@ -1489,8 +1501,8 @@
 ## (2026-09-28 갱신) 종료조건
 16개 탭 순회·기능 회귀 세트 콘솔 오류 0건, 최신 GitHub Pages 빌드 `built` 확인, 실제 사이트 확인 결과 반영 후 종료.
 
-## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 48건)
-> 커밋 시각은 저장소 표기 기준. 아래 48건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
+## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 49건)
+> 커밋 시각은 저장소 표기 기준. 아래 49건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
 > (`e182f66`은 이 대화 밖의 다른 Claude 세션이 같은 계정으로 push한 커밋이라 포함됨. 대장은 `git log --since`가 날짜가 뒤섞인 이력에서 일부를 건너뛰는 것을 발견해, 커밋 날짜를 직접 비교해 생성)
 
 | 커밋 | 시각 | 제목 | 변경 파일 |
@@ -1543,8 +1555,9 @@
 | `dd8f90d` | 2026-09-28 10:19 | feat: 종합 대시보드 - 근거 데이터 보기 + 분기별 인당 목표선(목표 달성/미달) | `hd20-improve-board.js`, `hd20-request-board.js`, `index.html` |
 | `1d22c89` | 2026-09-28 10:24 | fix: 종합 대시보드 [프린트] 결과 개선 — 잘림 제거·용지 폭 기준 재그리기·버튼 숨김 | `hd20-improve-board.js`, `hd20-request-board.js`, `index.html` |
 | `64d07c1` | 2026-09-28 10:33 | feat: 자율개선 종합 - Fool Proof 대체 지표를 원천 데이터에서 선정(고도화 공식 확정 건수) + '고도화 판정' 필터 | `hd20-improve-board.js`, `index.html` |
+| `89ef6a8` | 2026-09-28 10:46 | feat: 고도화 성과는 '확정 결과'만 표시 — 후보 건수를 성과 화면에서 제거 | `conversion-chart.js`, `dashboard-actions.js`, `dashboard-grid-drilldown.js`, `dashboard-ops-trend.js`, `final-layout-polish.js`, `hd20-improve-board.js`, `hd20-kpi-evidence-drill.js`, `hd20-maturity-map-tab.js`, `hd20-ops-normalized.js`, `hd20-ops-v2.js`, `index.html`, `integrated-performance-map.js`, `top-kpi-drilldown.js` |
 
-### 문서 커밋(39건, 로그 갱신용)
+### 문서 커밋(40건, 로그 갱신용)
 - `c661242` docs: development/coding log for validation fixture, team master, auth, subtab split (2026-09-22)
 - `da246aa` docs: log advancement 4-way subtab split (4aee88b) in dev/coding logs
 - `015b9b3` docs: log action/audit 4-way subtab split + metric bugfix (57e264c) in dev/coding logs
@@ -1584,3 +1597,4 @@
 - `ac875bb` docs: 5S 개선요청 종합 대시보드(9d5f65a) 개발일지/상세 개발일지/코딩일지 반영, 커밋 대장 재생성
 - `75f125d` docs: 종합 대시보드 근거 데이터·목표선(dd8f90d) 개발일지/상세 개발일지/코딩일지 반영, 커밋 대장 재생성
 - `8af7ae6` docs: 종합 대시보드 프린트 개선(1d22c89) 개발일지/상세 개발일지/코딩일지 반영, 커밋 대장 재생성
+- `c5bcdc0` docs: Fool Proof 대체 지표 선정(64d07c1) 개발일지/상세 개발일지/코딩일지 반영, 커밋 대장 재생성
