@@ -1,85 +1,113 @@
-/* 5S 개선요청 종합 대시보드 — '5S 자율개선 종합'과 같은 뼈대(조회 조건 바 → 단계별/월별 현황 → 팀별 현황 → 선택 팀 상세)로
-   개선요청(Action) 데이터를 보여줌. 읽기 전용: HD20KPIData.actionCases()/seoulDateKey(), HD20_HEADCOUNT_MASTER, HD20ProductionTeamMaster.
-   차트 엔진은 hd20-improve-board.js의 HD20_BOARD_KIT 재사용. */
+/* 5S 개선요청 종합 대시보드 — 사용자가 첨부한 'VTB 개선요청 종합 대시보드'(HD-HiHR/DELMIA Apriso) 구성을 5S 데이터에 맞게 재구성.
+   VTB와의 차이(사용자 지시): 개선요청부서 그리드는 따로 두지 않고 '조치대응부서'에 집중. 개선요청 출처는 5S모듈·생산혁신팀 HDPS파트·리더십 3종만 존재.
+   데이터: HD20KPIData.actionCases()/seoulDateKey(), HD20ProductionTeamMaster, HD20_HEADCOUNT_MASTER. 차트 엔진은 HD20_BOARD_KIT(hd20-improve-board.js) 재사용.
+   주의(데이터 한계, 화면에도 안내): 현재 원천에는 '요청출처' 실제 필드가 없어 auditDrawId 유무로 5S모듈/생산혁신팀 HDPS파트를 추정 표기(리더십 항목은 실제 필드 연결 전까지 0). */
 (()=>{'use strict';
 const ID='hd20RequestBoard';
-const S={year:null,month:'',metric:'total',group:'',status:'',src:'',team:''};
-function num(v){return Number.isFinite(v)?v:0}
-function prep(){
-  const K=window.HD20KPIData,M=window.HD20ProductionTeamMaster,HC=window.HD20_HEADCOUNT_MASTER||[],today=K.seoulDateKey();
-  const hcOf=t=>{const v=Number(HC.find(h=>h.team===t)?.headcount);return Number.isFinite(v)&&v>0?v:0};
-  const rows=(K.actionCases()||[]).map(c=>{const reg=String(c.date||c.registeredAt||'').slice(0,10),due=String(c.targetDate||c.due||'').slice(0,10),dn=String(c.doneDate||'').slice(0,10),done=c.status==='완료';
-    return{c,team:c.team,reg,due,dn,done,status:c.status||'',overdue:!done&&!!due&&due<today,late:done&&!!due&&!!dn&&dn>due,ontime:done&&!!due&&!!dn&&dn<=due,verified:c.effectVerified===true,audit:!!c.auditDrawId,
-      days:(done&&reg&&dn)?Math.max(0,Math.round((new Date(dn)-new Date(reg))/86400000)):null}});
-  const years=[...new Set(rows.map(r=>r.reg.slice(0,4)).filter(Boolean))].sort();
-  return{rows,years,today,hcOf,groupOf:t=>M?.groupOf?.(t)||'',groups:M?.groupNames?.()||[],teams:M?.teamNames?.()||[]};
+const SOURCES=['5S모듈','생산혁신팀 HDPS파트','리더십'];
+const S={year:null,month:'',source:'',team:'',status:'',roll:''};
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function sourceOf(c){
+  if(c.requestSource&&SOURCES.includes(c.requestSource))return c.requestSource; // 실제 필드가 들어오면 그대로 사용
+  return c.auditDrawId?'생산혁신팀 HDPS파트':'5S모듈'; // 실제 필드가 없을 때의 추정(감사 연계=생산혁신팀, 현장 자체 등록=5S모듈)
 }
-const mo=d=>+String(d||'').slice(5,7);
+function css(){if(document.getElementById(ID+'Style'))return;const s=document.createElement('style');s.id=ID+'Style';s.textContent=`
+#${ID}{background:#fff;border:1px solid #dfe6ec;border-radius:14px;padding:16px 18px;box-shadow:0 1px 3px rgba(20,48,76,.06)}
+#${ID} .ibTitle{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}#${ID} h2{margin:0;font-size:21px;color:#14304c}
+#${ID} .ibNote{margin:4px 0 12px;font-size:13px;font-weight:800;color:#22303f}
+#${ID} .rqCaveat{margin:0 0 12px;padding:8px 12px;background:#fdf6e3;border:1px solid #f0dfae;border-radius:8px;color:#8a6d1f;font-size:12.5px;line-height:1.55}
+#${ID} .ibBar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:10px 12px;background:#f4f7f9;border:1px solid #e3eaf0;border-radius:10px}
+#${ID} .ibBar label{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:850;color:#3b5163}
+#${ID} .ibBar select,#${ID} .ibBar input{height:32px;border:1px solid #cfd9e2;border-radius:7px;background:#fff;padding:0 8px;font-size:13px;color:#22303f}
+#${ID} .ibBar .sp{flex:1}
+#${ID} .ibBar button{height:32px;border-radius:7px;border:1px solid #14304c;background:#14304c;color:#fff;font-weight:850;font-size:13px;padding:0 14px;cursor:pointer}
+#${ID} .ibBar button.alt{background:#2c5f8a;border-color:#2c5f8a}
+#${ID} .ibRow{display:grid;gap:12px;margin-top:12px}#${ID} .r1{grid-template-columns:minmax(0,4fr) minmax(0,6fr)}
+#${ID} .ibPanel{border:1px solid #e3eaf0;border-radius:10px;background:#fff;overflow:hidden}
+#${ID} .ibHead{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 12px;background:#f1f5f8;border-bottom:1px solid #e3eaf0;font-size:13.5px;font-weight:900;color:#22303f}
+#${ID} .ibHead em{font-style:normal;font-size:12.5px;color:#14304c}
+#${ID} .ibBody{padding:8px 8px 4px;overflow-x:auto}
+#${ID} .ibLeg{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;font-size:11.5px;color:#5c6b7a;font-weight:800;padding:2px 0 6px}#${ID} .ibLeg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+#${ID} .rqGrid{width:100%;border-collapse:collapse;font-size:13px}#${ID} .rqGrid th{position:sticky;top:0;background:#edf4f8;text-align:center;padding:8px;font-size:12px;color:#3b5163;white-space:nowrap}
+#${ID} .rqGrid td{padding:7px 8px;border-top:1px solid #edf1f4;text-align:center;color:#22303f;white-space:nowrap}
+#${ID} .rqGrid tbody tr:first-child td{font-weight:900;background:#f8fafb}#${ID} .rqGrid tbody tr:first-child td:first-child{text-align:left}
+#${ID} .rqGrid td:first-child{text-align:left;font-weight:800}
+#${ID} .rqScroll{overflow:auto;border:1px solid #edf1f4;border-radius:8px}#${ID} .ibPanel:has(.rqDetail) .rqScroll{max-height:420px}#${ID} .ibPanel:has(.rqGrid:not(.rqDetail)) .rqScroll{max-height:340px}
+#${ID} .rqDetail th{white-space:nowrap}#${ID} .rqDetail td{white-space:nowrap;text-align:left}
+#${ID} .ibFoot{margin:10px 2px 0;font-size:12px;color:#7a8a97}
+.app.awFocused #${ID}{display:none!important}
+@media print{#${ID} .ibBar{display:none}}
+@media(max-width:1100px){#${ID} .r1{grid-template-columns:1fr}}`;document.head.appendChild(s)}
+function data(){
+  const K=window.HD20KPIData,cases=K?.actionCases?.()||[],M=window.HD20ProductionTeamMaster,teams=M?.teamNames?.()||[];
+  const years=[...new Set(cases.map(c=>String(c.date||'').slice(0,4)))].filter(Boolean).sort();
+  return{cases,teams,years,today:K?.seoulDateKey?.()||new Date().toISOString().slice(0,10)};
+}
+const mo=c=>+String(c.date||'').slice(5,7),isOverdue=(c,today)=>c.status!=='완료'&&c.due&&c.due<today,isDone=c=>c.status==='완료';
+function filt(D,{ignoreYear=false,ignoreMonth=false}={}){
+  return D.cases.filter(c=>{if(!ignoreYear&&String(c.date||'').slice(0,4)!==S.year)return false;if(!ignoreMonth&&S.month&&mo(c)!==+S.month)return false;
+    if(S.source&&sourceOf(c)!==S.source)return false;if(S.team&&c.team!==S.team)return false;
+    if(S.status&&(S.status==='기한경과'?!isOverdue(c,D.today):c.status!==S.status))return false;
+    if(S.roll==='Y'&&!c.recurrence)return false;if(S.roll==='N'&&c.recurrence)return false;return true})}
 function render(box){
-  const KIT=window.HD20_BOARD_KIT;if(!KIT||!window.HD20KPIData?.actionCases)return;const {chart,leg,esc,fx,C,openRows}=KIT,D=prep();
+  const KIT=window.HD20_BOARD_KIT;if(!KIT||!window.HD20KPIData?.actionCases)return;const {chart,leg}=KIT,D=data();
   if(!S.year)S.year=D.years.includes(String(new Date().getFullYear()))?String(new Date().getFullYear()):(D.years[D.years.length-1]||String(new Date().getFullYear()));
-  const per=S.metric==='per',unit=per?'건/인':'건',mm=S.month?+S.month:(+S.year===new Date().getFullYear()?new Date().getMonth()+1:12);
-  const teamsAll=D.teams.filter(t=>!S.group||D.groupOf(t)===S.group),hcAll=teamsAll.reduce((a,t)=>a+D.hcOf(t),0)||1,div=v=>per?v/hcAll:v;
-  const base=D.rows.filter(r=>r.reg.slice(0,4)===S.year&&teamsAll.includes(r.team)&&(!S.status||(S.status==='진행중'?r.status==='진행중':r.status===S.status))&&(!S.src||(S.src==='audit'?r.audit:!r.audit)));
-  const rowsM=S.month?base.filter(r=>mo(r.reg)===+S.month):base,rowsY=base,W=window.__hd20BoardPrint?680:Math.max(320,(box.clientWidth||900)-36);
-  const cnt=(a,f)=>a.filter(f).length;
-  // ① 처리 단계별
-  const cats=['등록 합계','조치대기','진행중','기한경과(미완료)','완료','효과검증 완료'],val=[rowsM.length,cnt(rowsM,r=>r.status==='조치대기'),cnt(rowsM,r=>r.status==='진행중'),cnt(rowsM,r=>r.overdue),cnt(rowsM,r=>r.done),cnt(rowsM,r=>r.done&&r.verified)];
-  const colorCat=['#8fa3b3','#c4d3dc','#a8c7c4',C.amber,C.dark,'#134f4c'];
-  const A=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W*.4)-8),cats,per,series:[{name:'건수',vals:val.map(div),color:C.dark}],colorOf:(c,i)=>colorCat[i],minSlot:52});
+  const teamsAll=D.teams.filter(t=>!S.team||t===S.team),rowsY=filt(D,{ignoreMonth:true}).filter(c=>teamsAll.includes(c.team)),rowsM=S.month?rowsY.filter(c=>mo(c)===+S.month):rowsY;
+  const allEver=D.cases.filter(c=>teamsAll.includes(c.team)),doneEver=allEver.filter(isDone),openRate=allEver.length?Math.round(doneEver.length/allEver.length*1000)/10:0;
+  const doneYear=rowsY.filter(isDone),yearRate=rowsY.length?Math.round(doneYear.length/rowsY.length*1000)/10:0;
+  // ① 요청출처별
+  const srcCats=SOURCES,srcReg=srcCats.map(s=>rowsM.filter(c=>sourceOf(c)===s).length),srcDone=srcCats.map(s=>rowsM.filter(c=>sourceOf(c)===s&&isDone(c)).length);
+  const A=chart({w:Math.floor((box.clientWidth-36)*.4)-8,cats:srcCats,series:[{name:'등록',vals:srcReg,color:'#5c6b7a'},{name:'완료',vals:srcDone,color:'#1f6f6b'}],minSlot:70});
   // ② 월별
-  const ML=Array.from({length:12},(_,i)=>String(i+1).padStart(2,'0')+'월'),by=(f)=>Array.from({length:12},(_,i)=>div(rowsY.filter(r=>f(r,i+1)).length));
-  const yr=d=>String(d||'').slice(0,4)===S.year;
-  const B=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W*.6)-8),cats:ML,per,series:[{name:'등록 건수',vals:by((r,m)=>mo(r.reg)===m),color:'#8fa3b3'},{name:'완료 건수',vals:Array.from({length:12},(_,i)=>div(D.rows.filter(r=>r.done&&yr(r.dn)&&mo(r.dn)===i+1&&teamsAll.includes(r.team)&&(!S.src||(S.src==='audit'?r.audit:!r.audit))).length)),color:C.dark},{name:'기한경과(미완료)',vals:by((r,m)=>r.overdue&&yr(r.due)&&mo(r.due)===m),color:C.amber}]});
-  // ③ 팀별(누적 막대: 완료 / 진행·대기 / 기한경과)
-  const tv=teamsAll.map(t=>{const a=rowsM.filter(r=>r.team===t),h=D.hcOf(t),dn=a.filter(r=>r.done).length,od=a.filter(r=>r.overdue).length,op=a.length-dn-od;return{t,n:a.length,dn,od,op,h,v:per?(h?a.length/h:0):a.length}}).sort((x,y)=>y.v-x.v);
-  if(!S.team||!tv.some(x=>x.t===S.team))S.team=tv[0]?.t||'';
-  const dv=x=>per?(x.h?x.dn/x.h:0):x.dn,ov=x=>per?(x.h?x.od/x.h:0):x.od,pv=x=>per?(x.h?x.op/x.h:0):x.op;
-  const Cc=chart({w:W-8,h:290,cats:tv.map(x=>x.t),per,stack:true,rotate:true,sel:S.team,minSlot:46,series:[{name:'완료',vals:tv.map(dv),color:C.dark},{name:'진행·대기',vals:tv.map(pv),color:C.light},{name:'기한경과(미완료)',vals:tv.map(ov),color:C.amber}]});
-  const totN=rowsM.length,totDone=cnt(rowsM,r=>r.done),totOd=cnt(rowsM,r=>r.overdue),rate=totN?totDone/totN*100:0;
-  // ④ 선택 팀 월별 등록·완료, ⑤ 처리일수
-  const th=D.hcOf(S.team)||1,tr=D.rows.filter(r=>r.team===S.team&&(!S.src||(S.src==='audit'?r.audit:!r.audit))),tdiv=v=>per?v/th:v;
-  const Dd=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W/2)-8),cats:ML,per,series:[{name:'등록',vals:Array.from({length:12},(_,i)=>tdiv(tr.filter(r=>yr(r.reg)&&mo(r.reg)===i+1).length)),color:'#8fa3b3'},{name:'완료',vals:Array.from({length:12},(_,i)=>tdiv(tr.filter(r=>r.done&&yr(r.dn)&&mo(r.dn)===i+1).length)),color:C.dark}]});
-  const dAvg=Array.from({length:12},(_,i)=>{const a=tr.filter(r=>r.days!==null&&yr(r.dn)&&mo(r.dn)===i+1).map(r=>r.days);return a.length?a.reduce((x,y)=>x+y,0)/a.length:0});
-  const tDone=tr.filter(r=>r.done&&yr(r.dn)),tOn=tDone.filter(r=>r.ontime).length,tTimed=tDone.filter(r=>r.due).length;
-  const E=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W/2)-8),cats:ML,per:true,fmt:v=>v.toFixed(1),series:[{name:'평균 처리일수',vals:dAvg,color:C.dark}]});
+  const ML=Array.from({length:12},(_,i)=>String(i+1).padStart(2,'0')+'월');
+  const regM=Array.from({length:12},(_,i)=>rowsY.filter(c=>mo(c)===i+1).length);
+  const openM=Array.from({length:12},(_,i)=>rowsY.filter(c=>mo(c)===i+1&&c.status==='진행중').length);
+  const doneM=Array.from({length:12},(_,i)=>rowsY.filter(c=>mo(c)===i+1&&isDone(c)).length);
+  const B=chart({w:Math.floor((box.clientWidth-36)*.6)-8,cats:ML,series:[{name:'등록',vals:regM,color:'#8fa3b3'},{name:'진행',vals:openM,color:'#e0b03c'},{name:'완료',vals:doneM,color:'#1f6f6b'}]});
+  // ③ 조치대응부서 진행현황
+  const teamRows=teamsAll.map(t=>{const a=rowsM.filter(c=>c.team===t),done=a.filter(isDone).length,over=a.filter(c=>isOverdue(c,D.today)).length,open=a.length-done-over,pct=n=>a.length?Math.round(n/a.length*1000)/10:0;
+    return{team:t,total:a.length,done,open,over,pct}}).filter(r=>r.total>0).sort((a,b)=>b.total-a.total);
+  const sum={total:teamRows.reduce((a,r)=>a+r.total,0),done:teamRows.reduce((a,r)=>a+r.done,0),open:teamRows.reduce((a,r)=>a+r.open,0),over:teamRows.reduce((a,r)=>a+r.over,0)};
+  const pctS=n=>sum.total?Math.round(n/sum.total*1000)/10:0;
+  const gridRow=r=>`<tr><td>${esc(r.team)}</td><td>${r.total}</td><td>${r.done}건 (${sum.total?Math.round(r.done/(r.total||1)*1000)/10:0}%)</td><td>${r.open}건</td><td>${r.over}건</td></tr>`;
+  const teamGrid=`<table class="rqGrid"><thead><tr><th>조치대응부서</th><th>합계</th><th>개선완료</th><th>개선진행/대기</th><th>기한경과</th></tr></thead><tbody>
+    <tr><td>합계</td><td>${sum.total}</td><td>${sum.done}건 (${pctS(sum.done)}%)</td><td>${sum.open}건 (${pctS(sum.open)}%)</td><td>${sum.over}건 (${pctS(sum.over)}%)</td></tr>
+    ${teamRows.map(gridRow).join('')}</tbody></table>`;
+  // ④ 상세내용
+  const detailRows=[...rowsM].sort((a,b)=>String(b.date).localeCompare(String(a.date))).slice(0,300);
+  const detail=`<table class="rqGrid rqDetail"><thead><tr><th>요청번호</th><th>요청출처</th><th>조치대응부서</th><th>작업장</th><th>진행현황</th><th>요청일</th><th>완료예정일</th><th>완료일</th></tr></thead><tbody>
+    ${detailRows.length?detailRows.map(c=>`<tr><td>${esc(c.id)}</td><td>${esc(sourceOf(c))}</td><td>${esc(c.team)}</td><td>${esc(c.workplace||'—')}</td><td>${isOverdue(c,D.today)?'<b style="color:#c0392b">기한경과</b>':esc(c.status)}</td><td>${esc(c.date||'—')}</td><td>${esc(c.due||'—')}</td><td>${esc(c.doneDate||'—')}</td></tr>`).join(''):`<tr><td colspan="8" style="text-align:center;color:#8a99a6;padding:16px">조건에 해당하는 개선요청이 없습니다.</td></tr>`}
+    </tbody></table>`;
   const opt=(a,cur,all='ALL')=>`<option value="">${all}</option>`+a.map(x=>`<option value="${esc(x)}"${x===cur?' selected':''}>${esc(x)}</option>`).join('');
   box.innerHTML=`<div class="ibTitle"><h2>5S 개선요청 종합 대시보드</h2></div><p class="ibNote">기본 조회조건은 당해년도 연간누적 데이터입니다 (월간 데이터 조회 시, 해당 월을 선택하세요)</p>
+<p class="rqCaveat">※ 참고 VTB 화면의 요청부서 그리드는 5S에서는 생략하고 조치대응부서에 집중했습니다. 개선요청 출처는 5S모듈·생산혁신팀 HDPS파트·리더십 3종이며, 현재 원천에는 출처 필드가 없어 Audit 연계 여부로 5S모듈/생산혁신팀 HDPS파트를 추정 표기합니다(리더십은 실제 필드 연결 전까지 0). ‘완료(*)’는 원천에 기각 상태가 없어 완료 단독 기준입니다.</p>
 <div class="ibBar"><label>공장 <select disabled><option>[울산] 울산캠퍼스</option></select></label><label>년 <select data-f="year">${D.years.map(y=>`<option${y===S.year?' selected':''}>${y}</option>`).join('')}</select></label>
-<label>월 <select data-f="month"><option value="">전체</option>${Array.from({length:12},(_,i)=>{const v=String(i+1).padStart(2,'0');return `<option value="${v}"${v===S.month?' selected':''}>${i+1}월</option>`}).join('')}</select></label><button type="button" data-ib="go">조회</button>
-<label>차트집계 <select data-f="metric"><option value="total"${!per?' selected':''}>개선요청 건수</option><option value="per"${per?' selected':''}>개선요청/총원 (인당)</option></select></label>
-<label>부서 <select data-f="group">${opt(D.groups,S.group)}</select></label>
-<label>처리상태 <select data-f="status"><option value="">ALL</option>${['조치대기','진행중','완료'].map(x=>`<option${S.status===x?' selected':''}>${x}</option>`).join('')}</select></label>
-<label>등록경로 <select data-f="src"><option value="">ALL</option><option value="audit"${S.src==='audit'?' selected':''}>Audit 연계</option><option value="field"${S.src==='field'?' selected':''}>현장 직접 등록</option></select></label>
-<span class="sp"></span><button type="button" class="alt" data-ib="print">프린트</button><button type="button" class="alt" data-ib="csv">엑셀다운로드</button></div>
-<div class="ibRow r1"><div class="ibPanel"><div class="ibHead">처리 단계별 등록 및 진행현황<button type="button" class="ibEv" data-evk="a">근거 데이터</button><em>${S.month?+S.month+'월':'연간누적'} · ${unit}</em></div><div class="ibBody">${A}<div class="ibLeg"><span>※ 기한경과는 진행중·조치대기 건 중 기한이 지난 건(진행중·조치대기에 포함)</span></div></div></div>
-<div class="ibPanel"><div class="ibHead">월별 등록 및 진행현황<button type="button" class="ibEv" data-evk="b">근거 데이터</button><em>${S.year}년 · ${unit}</em></div><div class="ibBody">${B}${leg([['등록 건수','#8fa3b3'],['완료 건수',C.dark],['기한경과(미완료)',C.amber]])}</div></div></div>
-<div class="ibRow"><div class="ibPanel"><div class="ibHead">현장조직 팀에 대한 개선요청 처리 현황${per?'(인당 개선요청)':'(건수)'}<button type="button" class="ibEv" data-evk="c">근거 데이터</button><em class="pt">${S.month?+S.month+'월':'누적'} 완료율 ${rate.toFixed(1)}% (완료 ${totDone} / 등록 ${totN}) · 기한경과 ${totOd}건</em></div><div class="ibBody">${Cc}${leg([['완료',C.dark],['진행·대기',C.light],['기한경과(미완료)',C.amber]])}</div></div></div>
-<div class="ibRow r3"><div class="ibPanel"><div class="ibHead">단일 팀에 대한 연간/월별 개선요청 등록·완료 실적${per?'(인당)':''}<button type="button" class="ibEv" data-evk="d">근거 데이터</button><em>[ ${esc(S.team)} ]</em></div><div class="ibBody">${Dd}${leg([['등록','#8fa3b3'],['완료',C.dark]])}</div></div>
-<div class="ibPanel"><div class="ibHead">단일 팀에 대한 월별 평균 처리일수 (등록→완료)<button type="button" class="ibEv" data-evk="e">근거 데이터</button><em>[ ${esc(S.team)} ] 기한 내 완료율 ${tTimed?(tOn/tTimed*100).toFixed(1)+'%':'-'} (${tOn}/${tTimed})</em></div><div class="ibBody">${E}</div></div></div>
-<p class="ibFoot">※ 개선요청 = Audit 부적합 등에서 발생해 담당 팀에 배정된 조치 건(조치 목록과 같은 데이터). 완료 = 상태 '완료', 기한경과 = 미완료이면서 조치기한이 오늘 이전. 처리일수 = 완료일 − 등록일(완료월 기준). 인당 = 건수 ÷ 팀 인원(총원 ${hcAll}명). 팀 막대를 누르면 아래 두 그래프가 그 팀으로 바뀝니다.</p>`;
-  const cols=['요청번호','등록일','팀','작업장','문제점','상태','조치기한','완료일','처리일수','기한경과','효과검증','Audit 연계'],mapR=r=>[r.c.id,r.reg,r.team,r.c.workplace,r.c.problem,r.status,r.due,r.dn,r.days===null?'':r.days,r.overdue?'기한경과':'',r.verified?'완료':'',r.audit?'연계':''],sortT=a=>[...a].sort((x,y)=>String(x.team).localeCompare(String(y.team),'ko')||String(y.reg).localeCompare(String(x.reg)));
-  const EV={a:['처리 단계별 근거 데이터 ('+(S.month?+S.month+'월':'연간누적')+')',rowsM],b:['월별 근거 데이터 ('+S.year+'년)',rowsY],c:['팀별 근거 데이터 ('+(S.month?+S.month+'월':'연간누적')+')',sortT(rowsM)],d:['선택 팀 근거 데이터 · '+S.team,tr.filter(r=>yr(r.reg)||yr(r.dn))],e:['선택 팀 처리일수 근거 · '+S.team,tr.filter(r=>r.days!==null&&yr(r.dn))]};
-  box.querySelectorAll('[data-evk]').forEach(b=>b.onclick=()=>{const [t,a]=EV[b.dataset.evk];openRows({title:t,cols,rows:a.map(mapR),file:'5S_개선요청_근거_'+b.dataset.evk})});
-  box.querySelectorAll('[data-f]').forEach(el=>el.onchange=()=>{S[el.dataset.f]=el.value;if(el.dataset.f==='group')S.team='';render(box)});
-  box.querySelector('[data-ib="go"]').onclick=()=>render(box);box.querySelector('[data-ib="print"]').onclick=()=>window.print();
-  box.querySelector('[data-ib="csv"]').onclick=()=>{const out=[['5S 개선요청 종합 대시보드',S.year+'년',S.month?S.month+'월':'연간누적'],[],['[처리 단계별]','건수']];cats.forEach((c,i)=>out.push([c,val[i]]));
-    out.push([],['[팀별]','등록','완료','진행·대기','기한경과','팀 인원','인당 등록']);tv.forEach(x=>out.push([x.t,x.n,x.dn,x.op,x.od,x.h,x.h?(x.n/x.h).toFixed(3):'']));
-    out.push([],[`[단일 팀: ${S.team}] 월별`,'평균 처리일수']);ML.forEach((m,i)=>out.push([m,dAvg[i].toFixed(1)]));
+<label>월 <select data-f="month"><option value="">전체</option>${Array.from({length:12},(_,i)=>{const v=String(i+1).padStart(2,'0');return `<option value="${v}"${v===S.month?' selected':''}>${i+1}월</option>`}).join('')}</select></label><button type="button" data-rq="go">조회</button>
+<label>요청출처 <select data-f="source">${opt(SOURCES,S.source)}</select></label><label>조치대응부서 <select data-f="team">${opt(D.teams,S.team)}</select></label>
+<label>처리상태 <select data-f="status"><option value="">ALL</option><option>조치대기</option><option>진행중</option><option>완료</option><option>기한경과</option></select></label>
+<label>재발 <select data-f="roll"><option value="">ALL</option><option value="Y">재발 있음</option><option value="N">재발 없음</option></select></label>
+<span class="sp"></span><button type="button" class="alt" data-rq="print">프린트</button><button type="button" class="alt" data-rq="csv">엑셀다운로드(상세내용)</button></div>
+<div class="ibRow r1"><div class="ibPanel"><div class="ibHead">요청출처별 등록 및 진행(*)현황<em>${S.month?+S.month+'월':'연간누적'} · 건 · 완료(*)=완료</em></div><div class="ibBody">${A}${leg([['등록','#5c6b7a'],['완료','#1f6f6b']])}</div></div>
+<div class="ibPanel"><div class="ibHead">월별 등록 및 진행현황<em>누적완료율(오픈 이후) ${openRate}% · ${S.year}년 누적완료율 ${yearRate}%</em></div><div class="ibBody">${B}${leg([['등록','#8fa3b3'],['진행','#e0b03c'],['완료','#1f6f6b']])}</div></div></div>
+<div class="ibRow"><div class="ibPanel"><div class="ibHead">조치대응부서 진행현황<em>${S.month?+S.month+'월':'연간누적'} · 합계 ${sum.total}건</em></div><div class="ibBody"><div class="rqScroll">${teamGrid}</div></div></div></div>
+<div class="ibRow"><div class="ibPanel"><div class="ibHead">상세내용<em>표시 ${detailRows.length}건 / 조건 일치 ${rowsM.length}건</em></div><div class="ibBody"><div class="rqScroll">${detail}</div></div></div></div>
+<p class="ibFoot">※ 개선요청 = Audit 부적합·현장 5S 점검에서 발생해 담당 팀(조치대응부서)에 배정된 조치 건. 완료 = 상태 '완료'. 기한경과 = 미완료이면서 조치기한이 오늘 이전. 재발 = 효과검증 후 재발이 기록된 건. 상세내용은 최근 300건까지 표시하며 엑셀다운로드는 조건에 맞는 전체 건을 내려받습니다.</p>`;
+  box.querySelectorAll('[data-f]').forEach(el=>el.onchange=()=>{S[el.dataset.f]=el.value;render(box)});
+  box.querySelector('[data-rq="go"]').onclick=()=>render(box);box.querySelector('[data-rq="print"]').onclick=()=>window.print();
+  box.querySelector('[data-rq="csv"]').onclick=()=>{
+    const out=[['5S 개선요청 종합 대시보드',S.year+'년',S.month?S.month+'월':'연간누적'],[],['요청번호','요청출처','조치대응부서','작업장','진행현황','요청일','완료예정일','완료일']];
+    rowsM.forEach(c=>out.push([c.id,sourceOf(c),c.team,c.workplace||'',isOverdue(c,D.today)?'기한경과':c.status,c.date||'',c.due||'',c.doneDate||'']));
     const text='\ufeff'+out.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n'),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:'text/csv;charset=utf-8'}));a.download=`5S_개선요청종합_${S.year}${S.month||''}.csv`;document.body.appendChild(a);a.click();a.remove()};
-  box.querySelectorAll('svg')[2]?.querySelectorAll('.hit').forEach(el=>el.onclick=()=>{S.team=el.dataset.cat;render(box)});
 }
 function ensure(){
   if(!window.HD20_BOARD_KIT||!window.HD20KPIData?.actionCases||!window.HD20ProductionTeamMaster)return false;
-  let box=document.getElementById(ID);
-  if(!box){const anchor=document.getElementById('hd20ImproveBoard')||document.getElementById('hd20DashboardPriority')||document.querySelector('.cards');if(!anchor)return false;
-    const st=document.getElementById('hd20ImproveBoardStyle');if(st&&!document.getElementById(ID+'Style')){const s=document.createElement('style');s.id=ID+'Style';s.textContent=st.textContent.replace(/hd20ImproveBoard/g,ID);document.head.appendChild(s)}
-    box=document.createElement('section');box.id=ID;anchor.insertAdjacentElement('afterend',box);const T=window.HD20_DASHBOARD_TABS;if(T?.apply)T.apply(T.active?.()||'summary',{scroll:false})}
+  css();let box=document.getElementById(ID);
+  if(!box){const anchor=document.getElementById('hd20ImproveBoard')||document.getElementById('hd20DashboardPriority')||document.querySelector('.cards');if(!anchor)return false;box=document.createElement('section');box.id=ID;anchor.insertAdjacentElement('afterend',box);
+    const T=window.HD20_DASHBOARD_TABS;if(T?.apply)T.apply(T.active?.()||'summary',{scroll:false})}
   render(box);return true}
 let tries=0;(function boot(){if(!ensure()&&tries++<80)setTimeout(boot,150)})();
 document.addEventListener('click',e=>{if(e.target.closest?.('#hd20DashboardSectionTabs button[data-dashboard-section="request"]'))setTimeout(()=>{const b=document.getElementById(ID);if(b)render(b)},80)},true);
 ['hd20-kpi-source-updated','hd20-action-updated'].forEach(ev=>window.addEventListener(ev,()=>setTimeout(()=>{const b=document.getElementById(ID);if(b&&b.offsetParent!==null)render(b)},80)));
-const rerender=()=>{const b=document.getElementById('hd20RequestBoard');if(b)render(b)};window.addEventListener('beforeprint',()=>{window.__hd20BoardPrint=true;rerender()});window.addEventListener('afterprint',()=>{window.__hd20BoardPrint=false;rerender()});
 let rz;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>{const b=document.getElementById(ID);if(b&&b.offsetParent!==null)render(b)},250)});
 window.HD20_REQUEST_BOARD={render:()=>{const b=document.getElementById(ID);if(b)render(b)},state:S};
 })();
