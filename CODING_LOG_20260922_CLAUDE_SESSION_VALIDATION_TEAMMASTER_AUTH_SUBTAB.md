@@ -1438,6 +1438,17 @@
 - 버전: `top-kpi-drilldown.js`·`hd20-ops-v2.js`·`hd20-kpi-evidence-drill.js`·`dashboard-grid-drilldown.js`·`integrated-performance-map.js`·`hd20-maturity-map-tab.js` `?v=20260928-confirmed-1`, `hd20-ops-normalized.js?v=20260928-3`, `dashboard-ops-trend.js?v=20260928-4`, `hd20-improve-board.js?v=20260928-10`, `dashboard-actions.js?v=20260928-confirmed-1`.
 - 검증(`conf_check.py`): 카드 5개 `[인당 1.28, 이번 달 확정 9, 신규 51, 누적 57, 유지 47]`, `dataset.hd20KpiGridParity==='1'`, 2번 카드 클릭 근거 9행, 고도화 맵 KPI `[51,57,47,82.5%]`·팀 행, 실행·유지 칩·표 머리, 활동관리 지표 `[960,658,302,57]`+보조값, 잔여 '후보' 문구 0(안내문 제외), 5S 등록 E2E, 섹션 격리, 16개 탭 회귀 오류 0건.
 
+### `49ed539` — feat: 자율개선 종합 ⑤ 차트를 '고도화 확보 누적 추이'로 교체 (2026-09-28)
+- 변경 파일: `hd20-improve-board.js`(+11/-3), `index.html`(+1/-1)
+- 검토 산출물(배포 안 함, 참고용 PNG 제공): `mock_line.py`(팀×라인 매트릭스, 시안 A/B), `render_panel5.py`(현재 ⑤ 포함 차트 후보 4종 비교, `chart()` 로직을 독립 복제해 HTML 렌더).
+  조사(`line_probe.py`): 확정 57건 전부 `line` 필드 있음, 활동 기준 라인 종류 48개 중 확정 1건 이상 33개(69%), 라인당 확정 분포 {1:16,2:12,3:4,5:1}.
+- `hd20-improve-board.js`: `keepSet=new Set(snapshot().maintained.map(r=>r.id))`(참조 대신 id). `teamConf=rowsC.filter(team&&judgeState==='확정')`, 행별 `{ci,li}`(확정월 인덱스·이탈월 인덱스;
+  이탈일 필드 있으면 그 값, 없으면 `ci+6`(추정, `est++`), 현재 월 초과 시 clamp). 월별 `exArr`(기존 유지)·`nwArr`(신규)·`cumArr`. `E=chart({stack:true,series:[기존 유지,신규 확정]})`.
+  머리글 '단일 팀에 대한 고도화 확보 누적 추이(인당) · 현재 {curKeep}곳 유지', 추정 건수 있으면 안내문(수평전개는 근거 데이터 참조 안내).
+  `EV.e`=해당 팀의 올해 확정 전체(열에 수평전개 여부 포함이라 정보 유지). 버전 `?v=20260928-12`.
+- 검증(`panel5_check.py`): 대형Att.팀 근거 3건, 머리글 '현재 4곳 유지', 팀 전환(프레임제작팀→'현재 2곳 유지') 정상 갱신, 최종 막대값 0.20=4/20 일치,
+  16개 탭 회귀 오류 0건, 섹션 격리(`reg_dash3.py`) 통과.
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
@@ -1501,8 +1512,8 @@
 ## (2026-09-28 갱신) 종료조건
 16개 탭 순회·기능 회귀 세트 콘솔 오류 0건, 최신 GitHub Pages 빌드 `built` 확인, 실제 사이트 확인 결과 반영 후 종료.
 
-## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 49건)
-> 커밋 시각은 저장소 표기 기준. 아래 49건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
+## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 50건)
+> 커밋 시각은 저장소 표기 기준. 아래 50건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
 > (`e182f66`은 이 대화 밖의 다른 Claude 세션이 같은 계정으로 push한 커밋이라 포함됨. 대장은 `git log --since`가 날짜가 뒤섞인 이력에서 일부를 건너뛰는 것을 발견해, 커밋 날짜를 직접 비교해 생성)
 
 | 커밋 | 시각 | 제목 | 변경 파일 |
@@ -1556,8 +1567,9 @@
 | `1d22c89` | 2026-09-28 10:24 | fix: 종합 대시보드 [프린트] 결과 개선 — 잘림 제거·용지 폭 기준 재그리기·버튼 숨김 | `hd20-improve-board.js`, `hd20-request-board.js`, `index.html` |
 | `64d07c1` | 2026-09-28 10:33 | feat: 자율개선 종합 - Fool Proof 대체 지표를 원천 데이터에서 선정(고도화 공식 확정 건수) + '고도화 판정' 필터 | `hd20-improve-board.js`, `index.html` |
 | `89ef6a8` | 2026-09-28 10:46 | feat: 고도화 성과는 '확정 결과'만 표시 — 후보 건수를 성과 화면에서 제거 | `conversion-chart.js`, `dashboard-actions.js`, `dashboard-grid-drilldown.js`, `dashboard-ops-trend.js`, `final-layout-polish.js`, `hd20-improve-board.js`, `hd20-kpi-evidence-drill.js`, `hd20-maturity-map-tab.js`, `hd20-ops-normalized.js`, `hd20-ops-v2.js`, `index.html`, `integrated-performance-map.js`, `top-kpi-drilldown.js` |
+| `49ed539` | 2026-09-28 21:29 | feat: 자율개선 종합 ⑤ 차트를 '고도화 확보 누적 추이'(기존 유지+신규)로 교체 | `hd20-improve-board.js`, `index.html` |
 
-### 문서 커밋(40건, 로그 갱신용)
+### 문서 커밋(41건, 로그 갱신용)
 - `c661242` docs: development/coding log for validation fixture, team master, auth, subtab split (2026-09-22)
 - `da246aa` docs: log advancement 4-way subtab split (4aee88b) in dev/coding logs
 - `015b9b3` docs: log action/audit 4-way subtab split + metric bugfix (57e264c) in dev/coding logs
@@ -1598,3 +1610,4 @@
 - `75f125d` docs: 종합 대시보드 근거 데이터·목표선(dd8f90d) 개발일지/상세 개발일지/코딩일지 반영, 커밋 대장 재생성
 - `8af7ae6` docs: 종합 대시보드 프린트 개선(1d22c89) 개발일지/상세 개발일지/코딩일지 반영, 커밋 대장 재생성
 - `c5bcdc0` docs: Fool Proof 대체 지표 선정(64d07c1) 개발일지/상세 개발일지/코딩일지 반영, 커밋 대장 재생성
+- `82d67c8` docs: 고도화 확정 결과 기준 전환(89ef6a8) 개발일지/상세 개발일지/코딩일지 반영, 커밋 대장 재생성
