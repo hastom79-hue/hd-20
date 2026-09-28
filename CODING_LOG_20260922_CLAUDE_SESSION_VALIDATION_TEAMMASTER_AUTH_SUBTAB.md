@@ -1458,6 +1458,14 @@
   CSS `.amFilterBar`(flex 배치, hd22 톤). 버전 `action-mail-workflow.js?v=20260928-filter-1`.
 - 검증(`filter_check.py`~`filter_final.py`, 여러 차례 재작성): 팀 필터 40건(팀 열 전부 일치), +상태=완료 24건, 초기화 640건 복원. 구조 필터+자유 검색 조합에서 "25/25건"이 나와 버그로 의심 → 직접 상태 열을 세어보니 중형Att팀 40건 중 '완료' 정확히 25건으로 일치(정상). 개선요청 임시저장 E2E(640→641), 16개 탭 회귀 오류 0건.
 
+### `ddd8454` — feat: 후보 목록 구조 필터 바 추가 (2026-09-28)
+- 변경 파일: `activity-workflow.js`(+6/-2), `index.html`(+1/-1)
+- 모듈 확인: `dom_workplace.py`로 실제 DOM 조회 → "고도화 후보 / 공식판정" 카드(`activity-workflow.js`의 `renderWorkplace()`, `#awWorkplace [data-live-workplace]`)가 진짜 후보 목록(154건)임을 확인.
+- `activity-workflow.js`: `WPF={team,crit,judge}` 상태. `renderWorkplace(s)`에서 `all=s.candidates`, `rows=all.filter(팀·criteriaCount·isConfirmed 조건)`으로 교체(기존 정렬·400건 슬라이스는 필터 뒤에 그대로 적용), `#wpFilterCount`에 `N건 (전체 M건)`.
+  마크업은 `card('고도화 후보 / 공식판정', ...)` 본문 앞에 `.amFilterBar`(action-mail-workflow.js가 정의한 클래스 재사용, 이 파일엔 별도 css() 함수가 없어 새 CSS를 추가하지 않고 기존 전역 클래스에 편승) 삽입. 이벤트는 `w.insertAdjacentElement('afterend',u)` 직후 바인딩. 버전 `activity-workflow.js?v=20260928-filter-1`.
+- 검증(`wp_final.py`): 조건=3개 필터 117건 전부 실측 열 값 '3개' 일치, +판정=확정 51건 전부 '확정' 배지 일치, 팀=대형Att.팀 6건 전부 일치, 초기화 154건 복원. 첫 시도(`wp_check.py`)에서 `table:first-of-type` 선택자가 같은 화면의 두 표 모두에 매칭돼(각 표가 서로 다른 부모의 첫 자식) false 판정이 났던 것을 카드 단위 선택자로 교정.
+- 5S 등록 E2E(960→961), 16개 탭 회귀 오류 0건. 회귀 높이가 무관 화면들에서도 동반 상승(`leak_effect.py`로 최상위 블록 목록에 낯선 블록 없음 확인) → 날짜 의존(기한경과 등) 값의 자연 증가로 판단, 코드 수정 없음.
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
@@ -1521,8 +1529,8 @@
 ## (2026-09-28 갱신) 종료조건
 16개 탭 순회·기능 회귀 세트 콘솔 오류 0건, 최신 GitHub Pages 빌드 `built` 확인, 실제 사이트 확인 결과 반영 후 종료.
 
-## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 51건)
-> 커밋 시각은 저장소 표기 기준. 아래 51건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
+## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 52건)
+> 커밋 시각은 저장소 표기 기준. 아래 52건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
 > (`e182f66`은 이 대화 밖의 다른 Claude 세션이 같은 계정으로 push한 커밋이라 포함됨. 대장은 `git log --since`가 날짜가 뒤섞인 이력에서 일부를 건너뛰는 것을 발견해, 커밋 날짜를 직접 비교해 생성)
 
 | 커밋 | 시각 | 제목 | 변경 파일 |
@@ -1578,8 +1586,9 @@
 | `89ef6a8` | 2026-09-28 10:46 | feat: 고도화 성과는 '확정 결과'만 표시 — 후보 건수를 성과 화면에서 제거 | `conversion-chart.js`, `dashboard-actions.js`, `dashboard-grid-drilldown.js`, `dashboard-ops-trend.js`, `final-layout-polish.js`, `hd20-improve-board.js`, `hd20-kpi-evidence-drill.js`, `hd20-maturity-map-tab.js`, `hd20-ops-normalized.js`, `hd20-ops-v2.js`, `index.html`, `integrated-performance-map.js`, `top-kpi-drilldown.js` |
 | `49ed539` | 2026-09-28 21:29 | feat: 자율개선 종합 ⑤ 차트를 '고도화 확보 누적 추이'(기존 유지+신규)로 교체 | `hd20-improve-board.js`, `index.html` |
 | `e675362` | 2026-09-28 21:38 | feat: 조치 목록에 hd-22식 구조 필터 바(생산팀·상태·등록일) 추가 — 2순위 착수 | `action-mail-workflow.js`, `index.html` |
+| `ddd8454` | 2026-09-28 21:49 | feat: 후보 목록에 hd-22식 구조 필터 바(생산팀·조건 충족수·공식판정) 추가 | `activity-workflow.js`, `index.html` |
 
-### 문서 커밋(42건, 로그 갱신용)
+### 문서 커밋(43건, 로그 갱신용)
 - `c661242` docs: development/coding log for validation fixture, team master, auth, subtab split (2026-09-22)
 - `da246aa` docs: log advancement 4-way subtab split (4aee88b) in dev/coding logs
 - `015b9b3` docs: log action/audit 4-way subtab split + metric bugfix (57e264c) in dev/coding logs
@@ -1622,3 +1631,4 @@
 - `c5bcdc0` docs: Fool Proof 대체 지표 선정(64d07c1) 개발일지/상세 개발일지/코딩일지 반영, 커밋 대장 재생성
 - `82d67c8` docs: 고도화 확정 결과 기준 전환(89ef6a8) 개발일지/상세 개발일지/코딩일지 반영, 커밋 대장 재생성
 - `f9d46c2` docs: ⑤ 차트 대체 팩터 검토·확정(49ed539) 개발일지/상세 개발일지/코딩일지 반영, 커밋 대장 재생성
+- `0d1b234` docs: 조치 목록 필터 바(e675362) 개발일지/상세 개발일지/코딩일지 반영, 커밋 대장 재생성

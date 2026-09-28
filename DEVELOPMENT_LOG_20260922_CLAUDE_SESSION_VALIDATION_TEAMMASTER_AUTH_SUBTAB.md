@@ -741,6 +741,9 @@
 ### 57. hd-22식 화면 구성 2차 착수 — 조치 목록 필터 바 (커밋 `e675362`)
 - 개발일지 참조. 실제 렌더 모듈 오인 정정 과정, 필터·자유검색 조합 실측 검증.
 
+### 58. hd-22식 화면 구성 2차 — 후보 목록 필터 바 (커밋 `ddd8454`)
+- 개발일지 참조. table:first-of-type 검증 함정, 무관 화면 높이 동반 증가 조사(날짜 의존 값으로 결론, 누수 아님).
+
 ## 정정·발견 사항 추가 (2026-09-28 저녁)
 1. 웹 완성도 평가에 대해 인상이 아닌 측정으로 원인(구조: 화면 전체 선렌더링·스타일 다층)을 확인. CSS 수정만으로는 격차가 줄지 않음을 사용자에게 명시.
 2. 헤더 클릭 정렬 미동작은 원본에서도 동일(회귀 아님). 별도 확인 필요.
@@ -752,8 +755,8 @@
 - 5S 자율개선 종합: 참여율 정의(등록자/총원) 사용자 확인, 목표선(분기별 인당 목표) 표시 여부, 실제 .xlsx 내보내기 여부.
 - 표 헤더 정렬 미동작 원인 조사.
 
-## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 51건)
-> 커밋 시각은 저장소 표기 기준. 아래 51건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
+## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 52건)
+> 커밋 시각은 저장소 표기 기준. 아래 52건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
 > (`e182f66`은 이 대화 밖의 다른 Claude 세션이 같은 계정으로 push한 커밋이라 포함됨. 대장은 `git log --since`가 날짜가 뒤섞인 이력에서 일부를 건너뛰는 것을 발견해, 커밋 날짜를 직접 비교해 생성)
 
 | 커밋 | 시각 | 제목 | 변경 파일 |
@@ -809,8 +812,9 @@
 | `89ef6a8` | 2026-09-28 10:46 | feat: 고도화 성과는 '확정 결과'만 표시 — 후보 건수를 성과 화면에서 제거 | `conversion-chart.js`, `dashboard-actions.js`, `dashboard-grid-drilldown.js`, `dashboard-ops-trend.js`, `final-layout-polish.js`, `hd20-improve-board.js`, `hd20-kpi-evidence-drill.js`, `hd20-maturity-map-tab.js`, `hd20-ops-normalized.js`, `hd20-ops-v2.js`, `index.html`, `integrated-performance-map.js`, `top-kpi-drilldown.js` |
 | `49ed539` | 2026-09-28 21:29 | feat: 자율개선 종합 ⑤ 차트를 '고도화 확보 누적 추이'(기존 유지+신규)로 교체 | `hd20-improve-board.js`, `index.html` |
 | `e675362` | 2026-09-28 21:38 | feat: 조치 목록에 hd-22식 구조 필터 바(생산팀·상태·등록일) 추가 — 2순위 착수 | `action-mail-workflow.js`, `index.html` |
+| `ddd8454` | 2026-09-28 21:49 | feat: 후보 목록에 hd-22식 구조 필터 바(생산팀·조건 충족수·공식판정) 추가 | `activity-workflow.js`, `index.html` |
 
-### 문서 커밋(42건, 로그 갱신용)
+### 문서 커밋(43건, 로그 갱신용)
 - `c661242` docs: development/coding log for validation fixture, team master, auth, subtab split (2026-09-22)
 - `da246aa` docs: log advancement 4-way subtab split (4aee88b) in dev/coding logs
 - `015b9b3` docs: log action/audit 4-way subtab split + metric bugfix (57e264c) in dev/coding logs
@@ -853,3 +857,4 @@
 - `c5bcdc0` docs: Fool Proof 대체 지표 선정(64d07c1) 개발일지/상세 개발일지/코딩일지 반영, 커밋 대장 재생성
 - `82d67c8` docs: 고도화 확정 결과 기준 전환(89ef6a8) 개발일지/상세 개발일지/코딩일지 반영, 커밋 대장 재생성
 - `f9d46c2` docs: ⑤ 차트 대체 팩터 검토·확정(49ed539) 개발일지/상세 개발일지/코딩일지 반영, 커밋 대장 재생성
+- `0d1b234` docs: 조치 목록 필터 바(e675362) 개발일지/상세 개발일지/코딩일지 반영, 커밋 대장 재생성
