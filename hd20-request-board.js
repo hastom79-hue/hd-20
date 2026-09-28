@@ -21,16 +21,16 @@ function render(box){
   const per=S.metric==='per',unit=per?'건/인':'건',mm=S.month?+S.month:(+S.year===new Date().getFullYear()?new Date().getMonth()+1:12);
   const teamsAll=D.teams.filter(t=>!S.group||D.groupOf(t)===S.group),hcAll=teamsAll.reduce((a,t)=>a+D.hcOf(t),0)||1,div=v=>per?v/hcAll:v;
   const base=D.rows.filter(r=>r.reg.slice(0,4)===S.year&&teamsAll.includes(r.team)&&(!S.status||(S.status==='진행중'?r.status==='진행중':r.status===S.status))&&(!S.src||(S.src==='audit'?r.audit:!r.audit)));
-  const rowsM=S.month?base.filter(r=>mo(r.reg)===+S.month):base,rowsY=base,W=Math.max(320,(box.clientWidth||900)-36);
+  const rowsM=S.month?base.filter(r=>mo(r.reg)===+S.month):base,rowsY=base,W=window.__hd20BoardPrint?680:Math.max(320,(box.clientWidth||900)-36);
   const cnt=(a,f)=>a.filter(f).length;
   // ① 처리 단계별
   const cats=['등록 합계','조치대기','진행중','기한경과(미완료)','완료','효과검증 완료'],val=[rowsM.length,cnt(rowsM,r=>r.status==='조치대기'),cnt(rowsM,r=>r.status==='진행중'),cnt(rowsM,r=>r.overdue),cnt(rowsM,r=>r.done),cnt(rowsM,r=>r.done&&r.verified)];
   const colorCat=['#8fa3b3','#c4d3dc','#a8c7c4',C.amber,C.dark,'#134f4c'];
-  const A=chart({w:Math.floor(W*.4)-8,cats,per,series:[{name:'건수',vals:val.map(div),color:C.dark}],colorOf:(c,i)=>colorCat[i],minSlot:52});
+  const A=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W*.4)-8),cats,per,series:[{name:'건수',vals:val.map(div),color:C.dark}],colorOf:(c,i)=>colorCat[i],minSlot:52});
   // ② 월별
   const ML=Array.from({length:12},(_,i)=>String(i+1).padStart(2,'0')+'월'),by=(f)=>Array.from({length:12},(_,i)=>div(rowsY.filter(r=>f(r,i+1)).length));
   const yr=d=>String(d||'').slice(0,4)===S.year;
-  const B=chart({w:Math.floor(W*.6)-8,cats:ML,per,series:[{name:'등록 건수',vals:by((r,m)=>mo(r.reg)===m),color:'#8fa3b3'},{name:'완료 건수',vals:Array.from({length:12},(_,i)=>div(D.rows.filter(r=>r.done&&yr(r.dn)&&mo(r.dn)===i+1&&teamsAll.includes(r.team)&&(!S.src||(S.src==='audit'?r.audit:!r.audit))).length)),color:C.dark},{name:'기한경과(미완료)',vals:by((r,m)=>r.overdue&&yr(r.due)&&mo(r.due)===m),color:C.amber}]});
+  const B=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W*.6)-8),cats:ML,per,series:[{name:'등록 건수',vals:by((r,m)=>mo(r.reg)===m),color:'#8fa3b3'},{name:'완료 건수',vals:Array.from({length:12},(_,i)=>div(D.rows.filter(r=>r.done&&yr(r.dn)&&mo(r.dn)===i+1&&teamsAll.includes(r.team)&&(!S.src||(S.src==='audit'?r.audit:!r.audit))).length)),color:C.dark},{name:'기한경과(미완료)',vals:by((r,m)=>r.overdue&&yr(r.due)&&mo(r.due)===m),color:C.amber}]});
   // ③ 팀별(누적 막대: 완료 / 진행·대기 / 기한경과)
   const tv=teamsAll.map(t=>{const a=rowsM.filter(r=>r.team===t),h=D.hcOf(t),dn=a.filter(r=>r.done).length,od=a.filter(r=>r.overdue).length,op=a.length-dn-od;return{t,n:a.length,dn,od,op,h,v:per?(h?a.length/h:0):a.length}}).sort((x,y)=>y.v-x.v);
   if(!S.team||!tv.some(x=>x.t===S.team))S.team=tv[0]?.t||'';
@@ -39,10 +39,10 @@ function render(box){
   const totN=rowsM.length,totDone=cnt(rowsM,r=>r.done),totOd=cnt(rowsM,r=>r.overdue),rate=totN?totDone/totN*100:0;
   // ④ 선택 팀 월별 등록·완료, ⑤ 처리일수
   const th=D.hcOf(S.team)||1,tr=D.rows.filter(r=>r.team===S.team&&(!S.src||(S.src==='audit'?r.audit:!r.audit))),tdiv=v=>per?v/th:v;
-  const Dd=chart({w:Math.floor(W/2)-8,cats:ML,per,series:[{name:'등록',vals:Array.from({length:12},(_,i)=>tdiv(tr.filter(r=>yr(r.reg)&&mo(r.reg)===i+1).length)),color:'#8fa3b3'},{name:'완료',vals:Array.from({length:12},(_,i)=>tdiv(tr.filter(r=>r.done&&yr(r.dn)&&mo(r.dn)===i+1).length)),color:C.dark}]});
+  const Dd=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W/2)-8),cats:ML,per,series:[{name:'등록',vals:Array.from({length:12},(_,i)=>tdiv(tr.filter(r=>yr(r.reg)&&mo(r.reg)===i+1).length)),color:'#8fa3b3'},{name:'완료',vals:Array.from({length:12},(_,i)=>tdiv(tr.filter(r=>r.done&&yr(r.dn)&&mo(r.dn)===i+1).length)),color:C.dark}]});
   const dAvg=Array.from({length:12},(_,i)=>{const a=tr.filter(r=>r.days!==null&&yr(r.dn)&&mo(r.dn)===i+1).map(r=>r.days);return a.length?a.reduce((x,y)=>x+y,0)/a.length:0});
   const tDone=tr.filter(r=>r.done&&yr(r.dn)),tOn=tDone.filter(r=>r.ontime).length,tTimed=tDone.filter(r=>r.due).length;
-  const E=chart({w:Math.floor(W/2)-8,cats:ML,per:true,fmt:v=>v.toFixed(1),series:[{name:'평균 처리일수',vals:dAvg,color:C.dark}]});
+  const E=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W/2)-8),cats:ML,per:true,fmt:v=>v.toFixed(1),series:[{name:'평균 처리일수',vals:dAvg,color:C.dark}]});
   const opt=(a,cur,all='ALL')=>`<option value="">${all}</option>`+a.map(x=>`<option value="${esc(x)}"${x===cur?' selected':''}>${esc(x)}</option>`).join('');
   box.innerHTML=`<div class="ibTitle"><h2>5S 개선요청 종합 대시보드</h2></div><p class="ibNote">기본 조회조건은 당해년도 연간누적 데이터입니다 (월간 데이터 조회 시, 해당 월을 선택하세요)</p>
 <div class="ibBar"><label>공장 <select disabled><option>[울산] 울산캠퍼스</option></select></label><label>년 <select data-f="year">${D.years.map(y=>`<option${y===S.year?' selected':''}>${y}</option>`).join('')}</select></label>
@@ -79,6 +79,7 @@ function ensure(){
 let tries=0;(function boot(){if(!ensure()&&tries++<80)setTimeout(boot,150)})();
 document.addEventListener('click',e=>{if(e.target.closest?.('#hd20DashboardSectionTabs button[data-dashboard-section="request"]'))setTimeout(()=>{const b=document.getElementById(ID);if(b)render(b)},80)},true);
 ['hd20-kpi-source-updated','hd20-action-updated'].forEach(ev=>window.addEventListener(ev,()=>setTimeout(()=>{const b=document.getElementById(ID);if(b&&b.offsetParent!==null)render(b)},80)));
+const rerender=()=>{const b=document.getElementById('hd20RequestBoard');if(b)render(b)};window.addEventListener('beforeprint',()=>{window.__hd20BoardPrint=true;rerender()});window.addEventListener('afterprint',()=>{window.__hd20BoardPrint=false;rerender()});
 let rz;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>{const b=document.getElementById(ID);if(b&&b.offsetParent!==null)render(b)},250)});
 window.HD20_REQUEST_BOARD={render:()=>{const b=document.getElementById(ID);if(b)render(b)},state:S};
 })();

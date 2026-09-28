@@ -27,7 +27,7 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
 #${ID} .ibFoot{margin:10px 2px 0;font-size:12px;color:#7a8a97}
 @media(max-width:1100px){#${ID} .r1,#${ID} .r3{grid-template-columns:1fr}}
 .app.awFocused #${ID}{display:none!important}
-@media print{#${ID} .ibBar{display:none}}`;document.head.appendChild(s)}
+@media print{#${ID} .ibBar,#${ID} .ibEv{display:none!important}#${ID} .ibBody{overflow:visible!important}#${ID} svg{width:100%!important;height:auto!important;max-width:100%}#${ID} .ibPanel{break-inside:avoid;page-break-inside:avoid}#${ID} .ibRow{grid-template-columns:1fr!important}}`;document.head.appendChild(s)}
 function data(){
   const K=window.HD20KPIData,snap=K?.snapshot?.()||{},rows=snap.rows||[],M=window.HD20ProductionTeamMaster,teams=M?.teamNames?.()||[],HC=window.HD20_HEADCOUNT_MASTER||[];
   const hcOf=t=>{const v=Number(HC.find(h=>h.team===t)?.headcount);return Number.isFinite(v)&&v>0?v:0};
@@ -61,14 +61,14 @@ function render(box){
   const D=data();if(!D.rows.length&&!window.HD20KPIData)return;
   if(!S.year)S.year=D.snapYear;const per=S.metric==='per',unit=per?'건/인':'건',mm=S.month?+S.month:(+S.year===new Date().getFullYear()?new Date().getMonth()+1:12);
   const teamsAll=D.teams.filter(t=>!S.group||D.groupOf(t)===S.group),hcAll=teamsAll.reduce((a,t)=>a+D.hcOf(t),0)||1,inTeams=r=>teamsAll.includes(r.team);
-  const rowsM=filt(D).filter(inTeams),rowsY=filt(D,{ignoreMonth:true}).filter(inTeams),W=Math.max(320,(box.clientWidth||900)-36);
+  const rowsM=filt(D).filter(inTeams),rowsY=filt(D,{ignoreMonth:true}).filter(inTeams),W=window.__hd20BoardPrint?680:Math.max(320,(box.clientWidth||900)-36);
   const div=v=>per?v/hcAll:v;
   // a) 유형별 등록·진행
   const doneT=TYPES.map(t=>rowsM.filter(r=>r.type===t&&DONE.includes(r.status)).length),allT=TYPES.map(t=>rowsM.filter(r=>r.type===t).length);
-  const A=chart({w:Math.floor(W*.4)-8,cats:TYPES,stack:true,per,series:[{name:'완료·확정',vals:doneT.map(div),color:C.dark},{name:'진행·등록',vals:allT.map((v,i)=>div(v-doneT[i])),color:C.light}]});
+  const A=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W*.4)-8),cats:TYPES,stack:true,per,series:[{name:'완료·확정',vals:doneT.map(div),color:C.dark},{name:'진행·등록',vals:allT.map((v,i)=>div(v-doneT[i])),color:C.light}]});
   // b) 월별
   const mo=(pred)=>Array.from({length:12},(_,i)=>div(rowsY.filter(r=>monthOf(r)===i+1&&pred(r)).length)),ML=Array.from({length:12},(_,i)=>String(i+1).padStart(2,'0')+'월');
-  const B=chart({w:Math.floor(W*.6)-8,cats:ML,per,series:[{name:'5S 활동 완료건수',vals:mo(r=>DONE.includes(r.status)),color:C.dark},{name:'고도화 후보 건수',vals:mo(r=>r.candidate===true),color:C.amber},{name:'수평전개 적용대상건수',vals:mo(r=>r.horizontalRollout===true),color:C.grey}]});
+  const B=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W*.6)-8),cats:ML,per,series:[{name:'5S 활동 완료건수',vals:mo(r=>DONE.includes(r.status)),color:C.dark},{name:'고도화 후보 건수',vals:mo(r=>r.candidate===true),color:C.amber},{name:'수평전개 적용대상건수',vals:mo(r=>r.horizontalRollout===true),color:C.grey}]});
   // c) 팀별 인당
   const tv=teamsAll.map(t=>{const c=rowsM.filter(r=>r.team===t).length,h=D.hcOf(t);return{t,c,h,v:per?(h?c/h:0):c}}).sort((a,b)=>b.v-a.v);
   if(!S.team||!tv.some(x=>x.t===S.team))S.team=tv[0]?.t||'';
@@ -79,8 +79,8 @@ function render(box){
   // d,e) 선택 팀 월별
   const th=D.hcOf(S.team)||1,tr=rowsY.filter(r=>r.team===S.team),tm=(pred)=>Array.from({length:12},(_,i)=>{const c=tr.filter(r=>monthOf(r)===i+1&&pred(r)).length;return per?c/th:c});
   const dVals=tm(()=>true),dCum=dVals.reduce((a,b)=>a+b,0);
-  const Dd=chart({w:Math.floor(W/2)-8,cats:ML,per,series:[{name:per?'5S 활동/총원':'5S 활동 건수',vals:dVals,color:C.dark}]});
-  const E=chart({w:Math.floor(W/2)-8,cats:ML,per,series:[{name:'수평전개 적용대상',vals:tm(r=>r.horizontalRollout===true),color:C.dark},{name:'고도화 후보',vals:tm(r=>r.candidate===true),color:C.amber}]});
+  const Dd=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W/2)-8),cats:ML,per,series:[{name:per?'5S 활동/총원':'5S 활동 건수',vals:dVals,color:C.dark}]});
+  const E=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W/2)-8),cats:ML,per,series:[{name:'수평전개 적용대상',vals:tm(r=>r.horizontalRollout===true),color:C.dark},{name:'고도화 후보',vals:tm(r=>r.candidate===true),color:C.amber}]});
   const opt=(a,cur,all='ALL')=>`<option value="">${all}</option>`+a.map(x=>`<option value="${esc(x)}"${x===cur?' selected':''}>${esc(x)}</option>`).join('');
   box.innerHTML=`<div class="ibTitle"><h2>5S 자율개선 종합 대시보드</h2></div><p class="ibNote">기본 조회조건은 당해년도 연간누적 데이터입니다 (월간 데이터 조회 시, 해당 월을 선택하세요)</p>
 <div class="ibBar"><label>공장 <select disabled><option>[울산] 울산캠퍼스</option></select></label><label>년 <select data-f="year">${D.years.map(y=>`<option${y===S.year?' selected':''}>${y}</option>`).join('')}</select></label>
@@ -118,6 +118,7 @@ function ensure(){
 let tries=0;(function boot(){if(!ensure()&&tries++<80)setTimeout(boot,150)})();
 document.addEventListener('click',e=>{if(e.target.closest?.('#hd20DashboardSectionTabs button[data-dashboard-section="improve"]'))setTimeout(()=>{const b=document.getElementById(ID);if(b)render(b)},80)},true);
 ['hd20-kpi-source-updated','hd20-gmes-5s-imported','hd20-gmes-5s-judged'].forEach(ev=>window.addEventListener(ev,()=>setTimeout(()=>{const b=document.getElementById(ID);if(b&&b.offsetParent!==null)render(b)},80)));
+const rerender=()=>{const b=document.getElementById('hd20ImproveBoard');if(b)render(b)};window.addEventListener('beforeprint',()=>{window.__hd20BoardPrint=true;rerender()});window.addEventListener('afterprint',()=>{window.__hd20BoardPrint=false;rerender()});
 let rz;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>{const b=document.getElementById(ID);if(b&&b.offsetParent!==null)render(b)},250)});
 
 /* 통합기준정보의 분기별 인당 목표(해당 분기까지의 누적 인당 목표로 해석). 미설정이면 v=null */
