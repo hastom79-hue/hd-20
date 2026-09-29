@@ -44,7 +44,7 @@ function filt(D,{ignoreMonth=false,ignoreYear=false}={}){
 const monthOf=r=>+String(r.date||r.regDate||'').slice(5,7);
 function axis(v){const raw=v/4,p=Math.pow(10,Math.floor(Math.log10(raw))),f=raw/p,n=f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10,step=n*p;return{step,max:Math.ceil(v/step-1e-9)*step}}
 const tk=v=>String(Number(v.toFixed(3)));
-function chart({w,h=240,cats,series,stack=false,per=false,rotate=false,sel=null,colorOf=null,minSlot=36,fmt=null,hline=null}){
+function chart({w,h=240,cats,series,stack=false,per=false,rotate=false,sel=null,colorOf=null,minSlot=36,fmt=null,hline=null,linkX=false}){
   const F=v=>fmt?fmt(v):fx(v,per);
   const W0=Math.max(w,cats.length*minSlot+56),slot0=(W0-56)/Math.max(1,cats.length);rotate=rotate||(slot0<58&&cats.some(c=>String(c).length>3));
   const m={l:46,r:10,t:20,b:rotate?84:30},W=W0,iw=W-m.l-m.r,ih=h-m.t-m.b;
@@ -56,7 +56,8 @@ function chart({w,h=240,cats,series,stack=false,per=false,rotate=false,sel=null,
       b+=`<rect ${(sel!==null&&c===sel)?'stroke="#14304c" stroke-width="2"':''} x="${x}" y="${y}" width="${bw}" height="${hh}" rx="2" fill="${col}" class="hit" data-cat="${esc(c)}"><title>${esc(c)} · ${esc(s.name)}: ${F(v)}</title></rect>`;
       if(!stack)b+=`<text x="${x+bw/2}" y="${y-4}" text-anchor="middle" font-size="10.5" font-weight="800" fill="${C.ink}">${F(v)}</text>`;acc+=v});
     if(stack&&tot[i]>0)b+=`<text x="${cx}" y="${yv(tot[i])-4}" text-anchor="middle" font-size="10.5" font-weight="800" fill="${C.ink}">${F(tot[i])}</text>`;
-    const ly=m.t+ih+15;b+=rotate?`<text transform="translate(${cx+4},${ly}) rotate(-45)" text-anchor="end" font-size="11" fill="${(sel!==null&&c===sel)?'#14304c':C.soft}" font-weight="${(sel!==null&&c===sel)?900:600}">${esc(c)}</text>`:`<text x="${cx}" y="${ly}" text-anchor="middle" font-size="11.5" fill="${C.soft}">${esc(c)}</text>`});
+    const ly=m.t+ih+15,isSel=sel!==null&&c===sel,lblCls=linkX?' class="hit xlbl"':'',lblAttr=linkX?` data-cat="${esc(c)}"`:'',lblFill=linkX?'#2c5f8a':(isSel?'#14304c':C.soft),lblDeco=linkX?' text-decoration="underline"':'';
+    b+=rotate?`<text transform="translate(${cx+4},${ly}) rotate(-45)"${lblCls}${lblAttr} text-anchor="end" font-size="11" fill="${lblFill}"${lblDeco} font-weight="${isSel?900:600}">${esc(c)}</text>`:`<text x="${cx}" y="${ly}"${lblCls}${lblAttr} text-anchor="middle" font-size="11.5" fill="${lblFill}"${lblDeco}>${esc(c)}</text>`});
   return `<svg width="${W}" height="${h}" viewBox="0 0 ${W} ${h}" role="img">${g}<line x1="${m.l}" x2="${W-m.r}" y1="${m.t+ih}" y2="${m.t+ih}" stroke="#b7c6d1"/>${b}${hline?`<line x1="${m.l}" x2="${W-m.r}" y1="${yv(hline.value)}" y2="${yv(hline.value)}" stroke="#c0392b" stroke-width="1.6" stroke-dasharray="6 4"/><text x="${W-m.r}" y="${yv(hline.value)-5}" text-anchor="end" font-size="11" font-weight="800" fill="#c0392b">${esc(hline.label)}</text>`:''}</svg>`}
 const leg=a=>`<div class="ibLeg">${a.map(x=>`<span><i style="background:${x[1]}"></i>${esc(x[0])}</span>`).join('')}</div>`;
 function render(box){
@@ -82,7 +83,7 @@ function render(box){
   const keepSet=new Set((window.HD20KPIData?.snapshot?.()?.maintained||[]).map(r=>r.id));
   /* 규칙(대시보드 공통): 목표선이 아니라 '현재 표시된 팀들의 평균' 기준으로 막대 색을 두 가지로만 나눔.
      진한색=평균 이상, 황색=평균 미만. 분기 목표는 활동 수준이 낮아 아직 기준으로 쓰지 않음(목표선 표시 안 함). */
-  const Cc=chart({w:W-8,h:290,cats:tv.map(x=>x.t),per,rotate:true,sel:S.team,minSlot:46,series:[{name:per?'5S 활동/총원':'5S 활동 건수',vals:tv.map(x=>x.v),color:C.dark}],colorOf:(c,i)=>tv[i].v>=avg?C.dark:C.amber});
+  const Cc=chart({w:W-8,h:290,cats:tv.map(x=>x.t),per,rotate:true,sel:S.team,minSlot:46,linkX:true,series:[{name:per?'5S 활동/총원':'5S 활동 건수',vals:tv.map(x=>x.v),color:C.dark}],colorOf:(c,i)=>tv[i].v>=avg?C.dark:C.amber});
   const owners=new Set(D.rows.filter(r=>String(r.date||r.regDate||'').slice(0,4)===S.year&&monthOf(r)===mm&&teamsAll.includes(r.team)&&(!S.type||r.type===S.type)).map(r=>r.owner).filter(Boolean)).size,part=(owners/hcAll*100);
   // d,e) 선택 팀 월별
   const th=D.hcOf(S.team)||1,tr=rowsY.filter(r=>r.team===S.team),tm=(pred)=>Array.from({length:12},(_,i)=>{const c=tr.filter(r=>monthOf(r)===i+1&&pred(r)).length;return per?c/th:c});
