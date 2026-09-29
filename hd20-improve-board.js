@@ -23,7 +23,12 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
 #${ID} .ibHead{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 12px;background:#f1f5f8;border-bottom:1px solid #e3eaf0;font-size:13.5px;font-weight:900;color:#22303f}
 #${ID} .ibHead .ibEv{margin-left:auto;height:26px;border:1px solid #cfd9e2;border-radius:6px;background:#fff;color:#2c5f8a;font-size:12px;font-weight:850;padding:0 9px;cursor:pointer}#${ID} .ibHead .ibEv+em{margin-left:0}#${ID} .ibHead em{font-style:normal;font-size:12.5px;color:#14304c}#${ID} .ibHead em.pt{color:#1f6f6b}
 #${ID} .ibBody{padding:8px 8px 4px;overflow-x:auto}
-#${ID} .ibLeg{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;font-size:11.5px;color:#5c6b7a;font-weight:800;padding:2px 0 6px}#${ID} .ibLeg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+#${ID} .ibLeg{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;font-size:11.5px;color:#5c6b7a;font-weight:800;padding:2px 0 6px}#${ID} .ibLossWrap{margin-top:8px;padding:8px 10px 4px;background:#fbfafa;border:1px solid #f0e4e4;border-radius:8px}
+#${ID} .ibLossLabel{display:flex;justify-content:space-between;font-size:11px;font-weight:850;color:#a0453a;margin-bottom:4px}#${ID} .ibLossLabel em{font-style:normal;color:#7a8a97;font-weight:800}
+#${ID} .ibLossRow{display:flex;align-items:flex-end;gap:3px;height:38px}
+#${ID} .ibLossCol{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:2px;min-width:0}
+#${ID} .ibLossBar{width:60%;background:#c0392b;border-radius:2px 2px 0 0;min-height:2px}
+#${ID} .ibLossCol b{font-size:10px;color:#a0453a;font-weight:850;height:12px}#${ID} .ibLeg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
 #${ID} svg text{font-family:inherit}#${ID} .hit{cursor:pointer}#${ID} .hit:hover{opacity:.85}
 #${ID} .ibFoot{margin:10px 2px 0;font-size:12px;color:#7a8a97}
 @media(max-width:1100px){#${ID} .r1,#${ID} .r3{grid-template-columns:1fr}}
@@ -103,9 +108,12 @@ function render(box){
      이탈일 기록이 없으면 확정일+6개월(5S 종료평가 시점)로 추정, 아직 6개월 미도래면 이번 달로 봄. */
   const teamConf=rowsC.filter(r=>r.team===S.team&&r.judgeState==='확정'),now=new Date(),nowIdx=now.getFullYear()*12+now.getMonth();
   let est=0;const teamRows=teamConf.map(r=>{const c=cdOf(r),ci=+c.slice(0,4)*12+(+c.slice(5,7)-1);let li=null;if(!keepSet.has(r.id)){const lc=r.maintainLostAt||r.maintainEndedAt||r.maintainStoppedAt||r.lostAt||r.invalidatedAt;if(lc){const d=new Date(lc);li=d.getFullYear()*12+d.getMonth()}else{li=ci+6;est++}if(li>nowIdx)li=nowIdx}return{ci,li}});
-  const cyy=+S.year,exArr=[],nwArr=[],cumArr=[];for(let m=0;m<12;m++){const mi=cyy*12+m;exArr.push(teamRows.filter(r=>r.ci<mi&&!(r.li!==null&&r.li<=mi)).length);nwArr.push(teamRows.filter(r=>r.ci===mi&&!(r.li!==null&&r.li<=mi)).length);cumArr.push(exArr[m]+nwArr[m])}
+  const cyy=+S.year,exArr=[],nwArr=[],cumArr=[],lossArr=[];for(let m=0;m<12;m++){const mi=cyy*12+m;exArr.push(teamRows.filter(r=>r.ci<mi&&!(r.li!==null&&r.li<=mi)).length);nwArr.push(teamRows.filter(r=>r.ci===mi&&!(r.li!==null&&r.li<=mi)).length);cumArr.push(exArr[m]+nwArr[m]);lossArr.push(teamRows.filter(r=>r.li!==null&&r.li===mi&&r.ci<mi).length)}
   const divE=v=>per?v/th:v,curKeep=teamConf.filter(r=>keepSet.has(r.id)).length;
   const E=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W/2)-8),cats:ML,per,stack:true,series:[{name:'기존 유지',vals:exArr.map(divE),color:'#a8c7c4'},{name:'신규 확정',vals:nwArr.map(divE),color:C.dark}]});
+  const lossMax=Math.max(1,...lossArr),lossTot=lossArr.reduce((a,b)=>a+b,0);
+  const lossRow=ML.map((m,i)=>{const v=lossArr[i],h=Math.round(v/lossMax*26);return `<div class="ibLossCol" title="${m} 이탈 ${v}건"><div class="ibLossBar" style="height:${h}px;opacity:${v?1:0}"></div><b>${v||''}</b></div>`}).join('');
+  const lossChart=`<div class="ibLossWrap"><div class="ibLossLabel">이탈(그 달에 유지 종료됨)<em>연간 ${lossTot}건</em></div><div class="ibLossRow">${lossRow}</div></div>`;
   const opt=(a,cur,all='ALL')=>`<option value="">${all}</option>`+a.map(x=>`<option value="${esc(x)}"${x===cur?' selected':''}>${esc(x)}</option>`).join('');
   box.innerHTML=`<div class="ibTitle"><h2>5S 자율개선 종합 대시보드</h2></div><p class="ibNote">기본 조회조건은 당해년도 연간누적 데이터입니다 (월간 데이터 조회 시, 해당 월을 선택하세요)</p>
 <div class="ibBar"><label>공장 <select disabled><option>[울산] 울산캠퍼스</option></select></label><label>년 <select data-f="year">${D.years.map(y=>`<option${y===S.year?' selected':''}>${y}</option>`).join('')}</select></label>
@@ -118,7 +126,7 @@ function render(box){
 <div class="ibPanel"><div class="ibHead">월별 등록 및 진행현황<button type="button" class="ibEv" data-evk="b">근거 데이터</button><em>${S.year}년 · 건 · 수평전개=그 달 완료건수 대비 %</em></div><div class="ibBody">${B}${leg([['5S 활동 완료건수',C.dark],['고도화 확정 건수',C.amber],['수평전개 적용대상건수',C.grey]])}</div></div></div>
 <div class="ibRow"><div class="ibPanel"><div class="ibHead">현장조직 팀에 대한 개선활동 현황${per?'(인당 개선건수)':'(총 건수)'}<button type="button" class="ibEv" data-evk="c">근거 데이터</button><em class="pt">당월(${String(mm).padStart(2,'0')}월) 현재 참여율 ${part.toFixed(1)}% (등록자 ${owners}명 / 총원 ${hcAll}명)</em></div><div class="ibBody">${Cc}${leg([['평균 이상 (평균 '+avg.toFixed(2)+(per?'건/인)':'건)'),C.dark],['평균 미만',C.amber]])}</div></div></div>
 <div class="ibRow r3"><div class="ibPanel"><div class="ibHead">단일 팀에 대한 연간/월별 누적 활동 실적${per?'(인당 개선건수)':''}<button type="button" class="ibEv" data-evk="d">근거 데이터</button><em>[ ${esc(S.team)} ] 연간 ${fx(dCum,per)}${unit}</em></div><div class="ibBody">${Dd}</div></div>
-<div class="ibPanel"><div class="ibHead">단일 팀에 대한 고도화 확보 누적 추이${per?'(인당)':''}<button type="button" class="ibEv" data-evk="e">근거 데이터</button><em>[ ${esc(S.team)} ] 현재 ${curKeep}곳 유지</em></div><div class="ibBody">${E}${leg([['기존 유지','#a8c7c4'],['신규 확정',C.dark]])}${est?`<div class="ibLeg"><span>※ 유지 이탈 시점 기록이 없어 확정일+6개월(종료평가 시점)로 추정한 값이 ${est}건 포함됩니다. 수평전개 적용대상은 [근거 데이터]에서 확인하세요.</span></div>`:''}</div></div></div>
+<div class="ibPanel"><div class="ibHead">단일 팀에 대한 고도화 확보 누적 추이${per?'(인당)':''}<button type="button" class="ibEv" data-evk="e">근거 데이터</button><em>[ ${esc(S.team)} ] 현재 ${curKeep}곳 유지</em></div><div class="ibBody">${E}${leg([['기존 유지','#a8c7c4'],['신규 확정',C.dark]])}${lossChart}${est?`<div class="ibLeg"><span>※ 유지 이탈 시점 기록이 없어 확정일+6개월(종료평가 시점)로 추정한 값이 ${est}건 포함됩니다. 수평전개 적용대상은 [근거 데이터]에서 확인하세요.</span></div>`:''}</div></div></div>
 <p class="ibFoot">※ 5S 활동 = GMES 원천 5S 활동 등록(상단 지표와 같은 데이터). 완료·확정 = 상태가 완료 또는 확정. 고도화 확정 = 5S 고도화 공식 판정이 '확정'인 건(확정일 기준, 상단 '신규 확보'와 같은 기준). 인당 = 건수 ÷ 팀 인원(팀 인원 마스터). 참여율 = 당월 5S 활동을 1건 이상 등록한 사람 수 ÷ 총원(${hcAll}명). 팀 막대를 누르면 아래 두 그래프가 그 팀으로 바뀝니다.</p>`;
   const cols=['등록일','팀','5S 유형','등록자','문제점','개선내용','상태','고도화 판정','확정일','수평전개'],mapR=r=>[String(r.date||r.regDate||'').slice(0,10),r.team,r.type,r.owner,r.problem,r.improvement,r.status,r.judgeState||'',r.judgeState==='확정'?cdOf(r):'',r.horizontalRollout===true?'대상':''],sortT=a=>[...a].sort((x,y)=>String(x.team).localeCompare(String(y.team),'ko')||String(y.date).localeCompare(String(x.date)));
   const EV={a:['5S 유형별 근거 데이터 ('+(S.month?+S.month+'월':'연간누적')+')',rowsM],b:['월별 근거 데이터 ('+S.year+'년)',rowsY],c:['팀별 근거 데이터 ('+(S.month?+S.month+'월':'연간누적')+')',sortT(rowsM)],d:['선택 팀 근거 데이터 · '+S.team,tr],e:['선택 팀 고도화 확정·수평전개 근거 · '+S.team,teamConf.filter(r=>cy(r)===S.year)]};
