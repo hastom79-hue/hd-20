@@ -66,8 +66,8 @@ function render(box){
   const teamsAll=D.teams.filter(t=>!S.team||t===S.team),rowsY=filt(D,{ignoreMonth:true}).filter(c=>teamsAll.includes(c.team)),rowsM=S.month?rowsY.filter(c=>mo(c)===+S.month):rowsY;
   const allEver=D.cases.filter(c=>teamsAll.includes(c.team)),doneEver=allEver.filter(isDone),openRate=allEver.length?Math.round(doneEver.length/allEver.length*1000)/10:0;
   const doneYear=rowsY.filter(isDone),yearRate=rowsY.length?Math.round(doneYear.length/rowsY.length*1000)/10:0;
-  // ① 요청출처별
-  const srcCats=SOURCES,srcReg=srcCats.map(s=>rowsM.filter(c=>sourceOf(c)===s).length),srcDone=srcCats.map(s=>rowsM.filter(c=>sourceOf(c)===s&&isDone(c)).length);
+  // ① 요청출처별 — 표시 순서는 통합기준정보('요청출처 순서')에서 관리, 기본값 리더십>5S모듈>생산혁신팀 HDPS파트
+  const srcCats=window.HD20_REQUEST_SOURCE_ORDER?.get?.()||SOURCES,srcReg=srcCats.map(s=>rowsM.filter(c=>sourceOf(c)===s).length),srcDone=srcCats.map(s=>rowsM.filter(c=>sourceOf(c)===s&&isDone(c)).length);
   const A=chart({w:Math.floor((box.clientWidth-36)*.4)-8,cats:srcCats,series:[{name:'등록',vals:srcReg,color:'#5c6b7a'},{name:'완료',vals:srcDone,color:'#1f6f6b'}],minSlot:70});
   // ② 월별
   const ML=Array.from({length:12},(_,i)=>String(i+1).padStart(2,'0')+'월');

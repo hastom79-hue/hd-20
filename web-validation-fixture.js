@@ -70,6 +70,9 @@ function addMonths(s,n){const[y,m,d]=s.split('-').map(Number),t=y*12+(m-1)+n,ny=
 function rng(seed){let a=seed>>>0;return()=>{a=(a+0x6D2B79F5)>>>0;let t=a;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}}
 const R=rng(20260921);
 const ri=(a,b)=>a+Math.floor(R()*(b-a+1)),pick=a=>a[Math.floor(R()*a.length)],chance=p=>R()<p;
+/* 요청출처(5S모듈/생산혁신팀 HDPS파트/리더십) 실제 필드를 현실적 비율로 직접 부여.
+   현장 자체 등록(5S모듈)이 다수, Audit을 운영하는 생산혁신팀 HDPS파트가 그다음, 경영진·팀장(리더십)이 소수지만 0은 아니게. */
+const pickSource=()=>{const r=R();return r<.55?'5S모듈':r<.85?'생산혁신팀 HDPS파트':'리더십'};
 /* 고정 횟수만 난수를 소비하는 셔플 (sort(()=>R()-.5)는 엔진마다 호출 횟수가 달라 재현성이 깨짐) */
 const shuffle=arr=>{const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(R()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 const pad=(n,w)=>String(n).padStart(w,'0');
@@ -143,7 +146,7 @@ function makeActions(audits){
       const linkedAudit=chance(.85)&&byTeam.get(team).length?pick(byTeam.get(team)):null;
       let regDay=linkedAudit?minDay(T0,dayNum(linkedAudit.auditDate)+ri(0,20)):Y0+ri(0,Math.max(0,T0-Y0));
       const reg=fromDay(regDay);
-      const row={id:'VALID-C-'+pad(seq,5),registeredAt:reg,date:reg,team,group:GROUP.get(team),workplace:`조치 구역 ${1+m%AREAS.length} (${AREAS[m%AREAS.length]})`,owner:pick(NAMES),problem:`${pick(PROB)} 개선요청 (검증 ${seq})`,before:pick(PHOTOS),auditDrawId:linkedAudit?linkedAudit.id:'',source:SRC};
+      const row={id:'VALID-C-'+pad(seq,5),registeredAt:reg,date:reg,team,group:GROUP.get(team),workplace:`조치 구역 ${1+m%AREAS.length} (${AREAS[m%AREAS.length]})`,owner:pick(NAMES),problem:`${pick(PROB)} 개선요청 (검증 ${seq})`,before:pick(PHOTOS),auditDrawId:linkedAudit?linkedAudit.id:'',requestSource:pickSource(),source:SRC};
       if(chance(.62)){
         const due=regDay+ri(7,40),done=minDay(T0,regDay+ri(1,45)),verified=chance(.8),rr=R();
         Object.assign(row,{action:`${pick(IMP)} 완료 (검증 ${seq})`,status:'완료',due:fromDay(due),targetDate:fromDay(due),doneDate:fromDay(done),after:pick(PHOTOS),effectVerified:verified,effectState:verified?'유효':pick(['미검증','효과확인대기'])});
