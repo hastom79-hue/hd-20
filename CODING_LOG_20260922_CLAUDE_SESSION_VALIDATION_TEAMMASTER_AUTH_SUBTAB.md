@@ -1584,6 +1584,15 @@
 - 버전 `activity-workflow.js?v=20260929-stuck-1`.
 - 검증(`stuck_check.py`): 최상단 8행이 633/585/565/559/489/463/428/427일째 순으로 정체일수 내림차순 정확히 정렬, 최상단 행이 2025-01-04(직전 감사에서 특정한 VALID-A-00170)와 날짜 일치. 카운트 170건 유지. 5S 등록 E2E, 16개 탭 회귀 오류 0건.
 
+### `1abd399` — fix: 새로고침 시 콘텐츠 깜빡임 제거 (2026-09-29)
+- 변경 파일: `hd20-five-area-integration.js`(+4/-1), `index.html`(+1/-1)
+- 진단(`refresh_probe.py`~`find_all_leaks.py`): 새로고침 직후 `scrollHeight`를 100~3200ms 여러 체크포인트에서 추적, 10회 반복 실행으로 어떤 요소가 큰 상태로 떴다가 사라지는지 `getBoundingClientRect().height>80` 필터로 수집.
+- 원인 1: `.mainGrid`/`.bottomGrid`가 index.html 정적 마크업에 그대로 존재, `dashboard-section-tabs.js`가 로드·`ensure()`·`apply()`를 완료해야 `hd20DashboardSectionHidden` 클래스가 붙음 — 그 전까지 두 그리드가 전체 노출(최대 ~900px 기여).
+- 원인 2: `.trendBox`를 담은 카드는 `hd20-five-area-integration.js`의 `syncTrendChartVisibility()`가 `hd20SubHidden` 토글로 관리하는데, 최초 호출이 `setTimeout(syncTrendChartVisibility,300)`로 지연되어 그 300ms 동안 노출(~475px). 코드 주석에 이미 "여러 탭에서 중복처럼 보인다" 피드백을 반영해 만든 로직이라 적혀 있었음 — 지연 실행이 남아 있던 잔여 결함.
+- 수정: `index.html`에서 `class="mainGrid"`→`"mainGrid hd20DashboardSectionHidden"`, `class="bottomGrid"`→`"bottomGrid hd20DashboardSectionHidden"`, 트렌드 카드 `class="card"`→`"card hd20SubHidden"`로 정적 마크업 자체를 기본 숨김 상태로 변경. `mo-throttle.js` 직후 `<style>.hd20DashboardSectionHidden{display:none!important}</style>` 인라인 추가(스크립트가 자신의 `css()`를 실행하기 전에도 안전망 역할). `hd20-five-area-integration.js`: `setTimeout(syncTrendChartVisibility,300)` 제거, `syncTrendChartVisibility()` 동기 즉시 호출 + `DOMContentLoaded`에서도 지연 없이 재호출(함수 역할을 '숨기기'에서 '③ 영역일 때만 보여주기'로 재정의).
+- 검증(`tab_still_works.py`): 실행·유지 탭에서 `.mainGrid` 정상 표시, 기준·추이 탭에서 `.bottomGrid` 정상 표시+트렌드 카드가 `.bottomGrid`로 정상 편입(`normalizeStandardStructure`), ③ 고도화 영역에서 트렌드 카드 표시·② 활동관리에서 숨김 확인. `find_all_leaks.py` 10회 반복에서 대형 깜빡임(900px·475px대) 재현 0건, 잔여 약 330px는 KPI 숫자 로딩에 따른 통상적 reflow로 판단. 5S 등록 E2E, 16개 탭 회귀 오류 0건.
+- 별도 확인(수정 안 함): 매 로드 시 `cdn.jsdelivr.net/npm/@emailjs/browser` 403 발생 — 이 환경(샌드박스)의 아웃바운드 도메인 제한 때문으로, jsdelivr.net이 허용 목록에 없어 실제 배포 사이트에서는 재현되지 않을 가능성이 높음. 코드는 `!window.emailjs` 가드가 있어 실패해도 안전하게 처리됨.
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
@@ -1647,8 +1656,8 @@
 ## (2026-09-28 갱신) 종료조건
 16개 탭 순회·기능 회귀 세트 콘솔 오류 0건, 최신 GitHub Pages 빌드 `built` 확인, 실제 사이트 확인 결과 반영 후 종료.
 
-## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 68건)
-> 커밋 시각은 저장소 표기 기준. 아래 68건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
+## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 69건)
+> 커밋 시각은 저장소 표기 기준. 아래 69건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
 > (`e182f66`은 이 대화 밖의 다른 Claude 세션이 같은 계정으로 push한 커밋이라 포함됨. 대장은 `git log --since`가 날짜가 뒤섞인 이력에서 일부를 건너뛰는 것을 발견해, 커밋 날짜를 직접 비교해 생성)
 
 | 커밋 | 시각 | 제목 | 변경 파일 |
@@ -1721,8 +1730,9 @@
 | `9b1b9aa` | 2026-09-29 10:06 | feat: ③ 고도화·표준화에 '심사 프로세스' 서브탭 신설 — 후보→판정→확정 단계별 흐름 시각화 | `hd20-judge-process.js`, `hd20-subtabs.js`, `index.html` |
 | `94a749b` | 2026-09-29 10:53 | fix: [전수 감사] 고도화 후보 수가 화면마다 154/170으로 어긋나던 결함 발견·수정 | `dashboard-kpi-source.js`, `index.html` |
 | `8e2f55a` | 2026-09-29 11:18 | feat: 후보 목록 - 정체일수 표시 + 오래 정체된 미확정 건 우선 노출로 보정 | `activity-workflow.js`, `index.html` |
+| `1abd399` | 2026-09-29 22:00 | fix: 새로고침 시 대시보드 콘텐츠가 잠깐 전부 보였다 접히는 깜빡임 제거 | `hd20-five-area-integration.js`, `index.html` |
 
-### 문서 커밋(57건, 로그 갱신용)
+### 문서 커밋(58건, 로그 갱신용)
 - `c661242` docs: development/coding log for validation fixture, team master, auth, subtab split (2026-09-22)
 - `da246aa` docs: log advancement 4-way subtab split (4aee88b) in dev/coding logs
 - `015b9b3` docs: log action/audit 4-way subtab split + metric bugfix (57e264c) in dev/coding logs
@@ -1780,3 +1790,4 @@
 - `a3227e1` docs: 활동관리 KPI 카드 재정의(41dec5d) 로그 반영, 커밋 대장 재생성
 - `7c0ddf0` docs: 심사 프로세스 서브탭(9b1b9aa) 로그 반영, 커밋 대장 재생성
 - `37c514c` docs: 전수 감사·candidates 연도 필터 수정(94a749b) 로그 반영, 커밋 대장 재생성
+- `e29ca3e` docs: 후보 목록 정체일수 보정(8e2f55a) 로그 반영, 커밋 대장 재생성
