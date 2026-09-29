@@ -1620,6 +1620,14 @@
 - 버전 `hd20-request-board.js?v=20260930-teamchart-1`.
 - 검증(`team_chart_check.py`): 패널 5개로 증가, 초기 선택 팀(대형Att.팀)→클릭 후 Boom제작팀으로 정확히 전환, 추이 값(01월 8/4·07월 8/4 등) 확인. 16개 탭 회귀 오류 0건.
 
+### `023b7b0` — feat: ⑤번 차트 월별 이탈 표시 (2026-09-30)
+- 변경 파일: `hd20-improve-board.js`(+11/-3), `index.html`(+1/-1)
+- `lossArr` 추가: 기존 `teamRows`(각 행 `{ci,li}`) 계산 루프에서 `lossArr.push(teamRows.filter(r=>r.li!==null&&r.li===mi&&r.ci<mi).length)`(그 달에 확정 이후 이탈 확정된 건수).
+- `lossRow`/`lossChart`: 순수 HTML(비-SVG) 미니 막대 줄. `.ibLossCol`(월별 칸)마다 `.ibLossBar`(높이=값/최대값*26px, 값 0이면 opacity:0으로 숨김) + 건수 숫자. 헤더에 연간 합계.
+- 마크업: 기존 `${E}${leg(...)}` 뒤에 `${lossChart}` 삽입(기존 '유지 이탈 시점 추정' 안내문 앞). CSS `.ibLossWrap/.ibLossLabel/.ibLossRow/.ibLossCol/.ibLossBar` 추가(연한 빨강 배경, 적색 텍스트로 시각적으로 구분).
+- 버전 `hd20-improve-board.js?v=20260930-loss-1`.
+- 검증(`loss_check.py`~`loss_verify_real.py`): 이탈이 2025-11로 추정되는 대형Att.팀은 2026년 화면에서 0건(연도 경계 정상 처리), 대형메인팀 2026-08 1건·중형상부1팀 2026-09 1건·중형상부2팀 2026-09 2건 모두 실제 confirmedDate+6개월 추정과 정확히 일치. 대형메인팀 스크린샷에서 주 막대 0.13(07월)→0.09(08월) 하락과 이탈 표시(08월 1건) 정합 확인. 16개 탭 회귀 오류 0건.
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
@@ -1683,8 +1691,8 @@
 ## (2026-09-28 갱신) 종료조건
 16개 탭 순회·기능 회귀 세트 콘솔 오류 0건, 최신 GitHub Pages 빌드 `built` 확인, 실제 사이트 확인 결과 반영 후 종료.
 
-## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 73건)
-> 커밋 시각은 저장소 표기 기준. 아래 73건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
+## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 74건)
+> 커밋 시각은 저장소 표기 기준. 아래 74건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
 > (`e182f66`은 이 대화 밖의 다른 Claude 세션이 같은 계정으로 push한 커밋이라 포함됨. 대장은 `git log --since`가 날짜가 뒤섞인 이력에서 일부를 건너뛰는 것을 발견해, 커밋 날짜를 직접 비교해 생성)
 
 | 커밋 | 시각 | 제목 | 변경 파일 |
@@ -1762,8 +1770,9 @@
 | `63c351f` | 2026-09-29 22:08 | feat: 개선요청 종합 좌우 패널 비율 30:70으로 조정 + 월별 완료 막대 폭·완료율(%) 표기 | `hd20-request-board.js`, `index.html` |
 | `75c1e44` | 2026-09-29 22:18 | feat: 자율개선 종합 좌우 패널 비율 30:70으로 조정 — 수평전개 라벨 겹침 보정 | `hd20-improve-board.js`, `index.html` |
 | `2866aca` | 2026-09-29 22:21 | feat: 개선요청 종합에 자율개선 종합과 같은 '팀 단위 차트 + 클릭 상세' 구조 보강 | `hd20-request-board.js`, `index.html` |
+| `023b7b0` | 2026-09-29 22:26 | feat: 자율개선 종합 ⑤번 차트에 월별 이탈 건수 표시 추가 | `hd20-improve-board.js`, `index.html` |
 
-### 문서 커밋(62건, 로그 갱신용)
+### 문서 커밋(63건, 로그 갱신용)
 - `c661242` docs: development/coding log for validation fixture, team master, auth, subtab split (2026-09-22)
 - `da246aa` docs: log advancement 4-way subtab split (4aee88b) in dev/coding logs
 - `015b9b3` docs: log action/audit 4-way subtab split + metric bugfix (57e264c) in dev/coding logs
@@ -1826,3 +1835,4 @@
 - `cfa5b3f` docs: 개선요청 완료율 표기(9e9a372) 로그 반영, 커밋 대장 재생성
 - `8a9df86` docs: 좌우 비율·월별 완료율(63c351f) 로그 반영, 커밋 대장 재생성
 - `d8791b6` docs: 자율개선 좌우 비율 조정(75c1e44) 로그 반영, 커밋 대장 재생성
+- `45eabef` docs: 개선요청 팀 차트 보강(2866aca) 로그 반영, 커밋 대장 재생성
