@@ -18,7 +18,7 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
 #${ID} .ibBar input{width:70px}#${ID} .ibBar .sp{flex:1}
 #${ID} .ibBar button{height:32px;border-radius:7px;border:1px solid #14304c;background:#14304c;color:#fff;font-weight:850;font-size:13px;padding:0 14px;cursor:pointer}
 #${ID} .ibBar button.alt{background:#2c5f8a;border-color:#2c5f8a}
-#${ID} .ibRow{display:grid;gap:12px;margin-top:12px}#${ID} .r1{grid-template-columns:minmax(0,4fr) minmax(0,6fr)}#${ID} .r3{grid-template-columns:repeat(2,minmax(0,1fr))}
+#${ID} .ibRow{display:grid;gap:12px;margin-top:12px}#${ID} .r1{grid-template-columns:minmax(0,3fr) minmax(0,7fr)}#${ID} .r3{grid-template-columns:repeat(2,minmax(0,1fr))}
 #${ID} .ibPanel{border:1px solid #e3eaf0;border-radius:10px;background:#fff;overflow:hidden}
 #${ID} .ibHead{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 12px;background:#f1f5f8;border-bottom:1px solid #e3eaf0;font-size:13.5px;font-weight:900;color:#22303f}
 #${ID} .ibHead .ibEv{margin-left:auto;height:26px;border:1px solid #cfd9e2;border-radius:6px;background:#fff;color:#2c5f8a;font-size:12px;font-weight:850;padding:0 9px;cursor:pointer}#${ID} .ibHead .ibEv+em{margin-left:0}#${ID} .ibHead em{font-style:normal;font-size:12.5px;color:#14304c}#${ID} .ibHead em.pt{color:#1f6f6b}
@@ -77,11 +77,11 @@ function render(box){
   /* 자율개선 사례는 이미 완료된 건만 등록하는 것이 원칙이라(등록 시점=완료 시점), '완료 vs 진행'으로 나누는 것은
      맞지 않음(검증 데이터에는 진행중 등 상태가 섞여 있으나 이는 실제 운영 규칙과 다른 시험 데이터의 한계).
      유형별 등록 건수(=완료된 사례 수) 하나만 표시. */
-  const A=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W*.4)-8),cats:TYPES,per:false,minSlot:70,series:[{name:'등록 건수',vals:allT,color:C.dark}]});
+  const A=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W*.3)-8),cats:TYPES,per:false,minSlot:70,series:[{name:'등록 건수',vals:allT,color:C.dark}]});
   // b) 월별 — 건수로 고정 표시. 수평전개 적용대상건수는 그 달 5S 활동 완료건수 대비 비율(%)을 값 옆에 병기하고 막대를 넓혀 값이 겹치지 않게 함
   const mo=(pred)=>Array.from({length:12},(_,i)=>rowsY.filter(r=>monthOf(r)===i+1&&pred(r)).length),rowsC=filt(D,{ignoreYear:true,ignoreMonth:true}).filter(inTeams),cy=r=>cdOf(r).slice(0,4),cm=r=>+cdOf(r).slice(5,7),confM=(a)=>Array.from({length:12},(_,i)=>a.filter(r=>r.judgeState==='확정'&&cy(r)===S.year&&cm(r)===i+1).length),ML=Array.from({length:12},(_,i)=>String(i+1).padStart(2,'0')+'월');
   const doneM=mo(r=>DONE.includes(r.status)),rollM=mo(r=>r.horizontalRollout===true),rollPct=rollM.map((v,i)=>doneM[i]?Math.round(v/doneM[i]*1000)/10:null);
-  const B=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W*.6)-8),cats:ML,per:false,minSlot:74,series:[{name:'5S 활동 완료건수',vals:doneM,color:C.dark},{name:'고도화 확정 건수',vals:confM(rowsC),color:C.amber},{name:'수평전개 적용대상건수',vals:rollM,color:C.grey,widthScale:1.5,pct:rollPct}]});
+  const B=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W*.7)-8),cats:ML,per:false,minSlot:88,series:[{name:'5S 활동 완료건수',vals:doneM,color:C.dark},{name:'고도화 확정 건수',vals:confM(rowsC),color:C.amber},{name:'수평전개 적용대상건수',vals:rollM,color:C.grey,widthScale:1.5,pct:rollPct}]});
   // c) 팀별 인당
   /* 가로축 정렬: 값(인당 건수) 기준 정렬을 쓰지 않고, 통합기준정보(표시순서) 탭에서 관리하는 생산팀 표시순서를 그대로 따름 */
   const teamOrder=(()=>{try{const v=JSON.parse(localStorage.getItem('gmes5s_team_display_order')||'null');if(Array.isArray(v)&&v.length)return v}catch{}return window.HD20ProductionTeamMaster?.teamNames?.()||null})();
