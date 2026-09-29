@@ -5,7 +5,7 @@
 (()=>{'use strict';
 const ID='hd20RequestBoard';
 const SOURCES=['5S모듈','생산혁신팀 HDPS파트','리더십'];
-const S={year:null,month:'',source:'',team:'',status:'',roll:''};
+const S={year:null,month:'',source:'',team:'',status:'',roll:'',selTeam:''};
 function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 let LEADER_NAMES=null;
 function leaderNames(){
@@ -85,6 +85,12 @@ function render(box){
     return{team:t,total:a.length,done,open,over,pct}}).filter(r=>r.total>0).sort((a,b)=>orderIdx(a.team)-orderIdx(b.team)||a.team.localeCompare(b.team,'ko'));
   const sum={total:teamRows.reduce((a,r)=>a+r.total,0),done:teamRows.reduce((a,r)=>a+r.done,0),open:teamRows.reduce((a,r)=>a+r.open,0),over:teamRows.reduce((a,r)=>a+r.over,0)};
   const pctS=n=>sum.total?Math.round(n/sum.total*1000)/10:0;
+  if(!S.selTeam||!teamRows.some(r=>r.team===S.selTeam))S.selTeam=teamRows[0]?.team||'';
+  const teamChart=chart({w:box.clientWidth-40,h:280,cats:teamRows.map(r=>r.team),stack:true,rotate:true,sel:S.selTeam,linkX:true,minSlot:60,
+    series:[{name:'완료',vals:teamRows.map(r=>r.done),color:'#1f6f6b'},{name:'진행·대기',vals:teamRows.map(r=>r.open),color:'#a8c7c4'},{name:'기한경과',vals:teamRows.map(r=>r.over),color:'#e0b03c'}]});
+  const selRows=D.cases.filter(c=>c.team===S.selTeam&&(!S.source||sourceOf(c)===S.source)),selYearRows=selRows.filter(c=>String(c.date||'').slice(0,4)===S.year);
+  const selRegM=Array.from({length:12},(_,i)=>selYearRows.filter(c=>mo(c)===i+1).length),selDoneM=Array.from({length:12},(_,i)=>selYearRows.filter(c=>mo(c)===i+1&&isDone(c)).length);
+  const teamTrend=chart({w:box.clientWidth-40,h:230,cats:ML,per:false,series:[{name:'등록',vals:selRegM,color:'#8fa3b3'},{name:'완료',vals:selDoneM,color:'#1f6f6b'}]});
   const gridRow=r=>`<tr><td>${esc(r.team)}</td><td>${r.total}</td><td>${r.done}건 (${sum.total?Math.round(r.done/(r.total||1)*1000)/10:0}%)</td><td>${r.open}건</td><td>${r.over}건</td></tr>`;
   const teamGrid=`<table class="rqGrid"><thead><tr><th>조치대응부서</th><th>합계</th><th>개선완료</th><th>개선진행/대기</th><th>기한경과</th></tr></thead><tbody>
     <tr><td>합계</td><td>${sum.total}</td><td>${sum.done}건 (${pctS(sum.done)}%)</td><td>${sum.open}건 (${pctS(sum.open)}%)</td><td>${sum.over}건 (${pctS(sum.over)}%)</td></tr>
@@ -105,10 +111,12 @@ function render(box){
 <span class="sp"></span><button type="button" class="alt" data-rq="print">프린트</button><button type="button" class="alt" data-rq="csv">엑셀다운로드(상세내용)</button></div>
 <div class="ibRow r1"><div class="ibPanel"><div class="ibHead">요청출처별 등록 및 진행(*)현황<em>${S.month?+S.month+'월':'연간누적'} · 건 · 완료(*)=완료</em></div><div class="ibBody">${A}${leg([['등록','#5c6b7a'],['완료','#1f6f6b']])}</div></div>
 <div class="ibPanel"><div class="ibHead">월별 등록 및 진행현황<em>누적완료율(오픈 이후) ${openRate}% · ${S.year}년 누적완료율 ${yearRate}%</em></div><div class="ibBody">${B}${leg([['등록','#8fa3b3'],['진행','#e0b03c'],['완료','#1f6f6b']])}</div></div></div>
-<div class="ibRow"><div class="ibPanel"><div class="ibHead">조치대응부서 진행현황<em>${S.month?+S.month+'월':'연간누적'} · 합계 ${sum.total}건</em></div><div class="ibBody"><div class="rqScroll">${teamGrid}</div></div></div></div>
+<div class="ibRow"><div class="ibPanel"><div class="ibHead">조치대응부서 진행현황<em>${S.month?+S.month+'월':'연간누적'} · 합계 ${sum.total}건 · 팀명을 클릭하면 아래 상세 추이가 바뀝니다</em></div><div class="ibBody">${teamChart}${leg([['완료','#1f6f6b'],['진행·대기','#a8c7c4'],['기한경과','#e0b03c']])}<div class="rqScroll" style="margin-top:10px">${teamGrid}</div></div></div></div>
+<div class="ibRow"><div class="ibPanel"><div class="ibHead">선택 팀 월별 등록·완료 추이<em>[ ${esc(S.selTeam)} ] ${S.year}년</em></div><div class="ibBody">${teamTrend}${leg([['등록','#8fa3b3'],['완료','#1f6f6b']])}</div></div></div>
 <div class="ibRow"><div class="ibPanel"><div class="ibHead">상세내용<em>표시 ${detailRows.length}건 / 조건 일치 ${rowsM.length}건</em></div><div class="ibBody"><div class="rqScroll">${detail}</div></div></div></div>
 <p class="ibFoot">※ 개선요청 = Audit 부적합·현장 5S 점검에서 발생해 담당 팀(조치대응부서)에 배정된 조치 건. 완료 = 상태 '완료'. 기한경과 = 미완료이면서 조치기한이 오늘 이전. 재발 = 효과검증 후 재발이 기록된 건. 상세내용은 최근 300건까지 표시하며 엑셀다운로드는 조건에 맞는 전체 건을 내려받습니다.</p>`;
   box.querySelectorAll('[data-f]').forEach(el=>el.onchange=()=>{S[el.dataset.f]=el.value;render(box)});
+  box.querySelectorAll('svg')[2]?.querySelectorAll('.hit').forEach(el=>el.onclick=()=>{S.selTeam=el.dataset.cat;render(box)});
   box.querySelector('[data-rq="go"]').onclick=()=>render(box);box.querySelector('[data-rq="print"]').onclick=()=>window.print();
   box.querySelector('[data-rq="csv"]').onclick=()=>{
     const out=[['5S 개선요청 종합 대시보드',S.year+'년',S.month?S.month+'월':'연간누적'],[],['요청번호','요청출처','조치대응부서','작업장','진행현황','요청일','완료예정일','완료일']];
