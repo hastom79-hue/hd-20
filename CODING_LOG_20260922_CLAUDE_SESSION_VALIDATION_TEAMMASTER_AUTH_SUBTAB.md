@@ -1560,6 +1560,14 @@
 - `hd20-ops-normalized.js`: `'activity.manage'` 보조문구를 `완료율/진행 비중`→`활동 대비/후보 대비`로.
 - 검증(`parity_final.py`, 정확한 모달 선택자 `#hd20UniversalGridModal` 확인 후 재측정): 카드1=170/근거170, 카드2=113/근거113, 카드3=57/근거57 전부 일치. 16개 탭 회귀 오류 0건.
 
+### `9b1b9aa` — feat: 심사 프로세스 서브탭 신설 (2026-09-29)
+- 변경 파일: `hd20-judge-process.js`(+74/-0), `hd20-subtabs.js`(+3/-1), `index.html`(+1/-1)
+- `hd20-subtabs.js`: `MAP.advancement`에 `['process','심사 프로세스']` 삽입(detail과 standard 사이), `ROLES['advancement.process']`·`CONTRACT['advancement.process']`(purpose/judge/next/features) 추가.
+- `hd20-judge-process.js`(신규): `data()`가 `HD20KPIData.snapshot().rows`에서 `isType`(5S 고도화 유형)·`isCandidate`·`isConfirmed`(hd20-ops-v2.js의 advancementCandidate/advancementConfirmed와 동일 로직 재구현)로 4단계 계산. `pending`(판정대기·미확정)·`review`(검토중·후보)·`supplement`(보완요청)·`other`(분류 안 되는 나머지, 안전망)로 세분. 팀별 표는 `gmes5s_team_display_order` 순서를 따름(ff7a603과 동일 패턴).
+  표시 전환: CSS `.app[data-hd-view="advancement.process"] #${ID}{display:block}` + 같은 선택자로 `#performanceConversionAnalysis,#awWorkplace{display:none!important}`(hd20-subtabs.js의 `apply()`가 세팅하는 `data-hd-view` 훅, 40a0d33에서 도입한 것과 동일 메커니즘 재사용). 컨테이너는 `#performanceConversionAnalysis` 앞에 삽입.
+- 버그 수정(배포 전 자체 발견): `s.pct!==undefined?...(i===2?'후보':'전체')...` → 확정 단계(i===3)도 후보 대비 계산인데 라벨이 '전체 대비'로 나옴 → `i>=2?'후보':'전체'`로 수정.
+- 검증(`process_check.py`): 서브탭 목록에 정상 노출, 단계 수치 960/170(17.7%)/113(66.5%)/57(33.5% 후보 대비) 전부 일치, 판정대기 52+검토중 30+보완요청 31=113 합계 일치, 팀 표 16행, 다른 서브탭 이동 시 기존 화면 정상 복원(격리 확인). 기존 '고도화 작업장 추이' 카드는 ③ 영역 전체에 공통으로 붙는 기존 요소(후보 목록 탭에도 동일 존재)임을 확인해 그대로 둠. 16개 탭 회귀 오류 0건.
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
@@ -1623,8 +1631,8 @@
 ## (2026-09-28 갱신) 종료조건
 16개 탭 순회·기능 회귀 세트 콘솔 오류 0건, 최신 GitHub Pages 빌드 `built` 확인, 실제 사이트 확인 결과 반영 후 종료.
 
-## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 65건)
-> 커밋 시각은 저장소 표기 기준. 아래 65건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
+## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 66건)
+> 커밋 시각은 저장소 표기 기준. 아래 66건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
 > (`e182f66`은 이 대화 밖의 다른 Claude 세션이 같은 계정으로 push한 커밋이라 포함됨. 대장은 `git log --since`가 날짜가 뒤섞인 이력에서 일부를 건너뛰는 것을 발견해, 커밋 날짜를 직접 비교해 생성)
 
 | 커밋 | 시각 | 제목 | 변경 파일 |
@@ -1694,8 +1702,9 @@
 | `247a47e` | 2026-09-29 04:57 | feat: ①번 차트에 완료율 표시로 목적 명확화 + ②번 막대 간격 조정(월 안은 붙이고 월 사이만 벌림) | `hd20-improve-board.js`, `index.html` |
 | `086e17e` | 2026-09-29 05:02 | fix: ①번 차트 재검토 - "완료 vs 진행" 구분 제거(자율개선 사례는 완료된 건만 등록) | `hd20-improve-board.js`, `index.html` |
 | `41dec5d` | 2026-09-29 09:47 | fix: 활동관리 KPI 카드에도 "등록=완료" 원칙 확산 — 완료/진행 구분을 고도화 판정 단계로 교체 | `hd20-kpi-evidence-drill.js`, `hd20-ops-normalized.js`, `hd20-ops-v2.js` |
+| `9b1b9aa` | 2026-09-29 10:06 | feat: ③ 고도화·표준화에 '심사 프로세스' 서브탭 신설 — 후보→판정→확정 단계별 흐름 시각화 | `hd20-judge-process.js`, `hd20-subtabs.js`, `index.html` |
 
-### 문서 커밋(54건, 로그 갱신용)
+### 문서 커밋(55건, 로그 갱신용)
 - `c661242` docs: development/coding log for validation fixture, team master, auth, subtab split (2026-09-22)
 - `da246aa` docs: log advancement 4-way subtab split (4aee88b) in dev/coding logs
 - `015b9b3` docs: log action/audit 4-way subtab split + metric bugfix (57e264c) in dev/coding logs
@@ -1750,3 +1759,4 @@
 - `8c8f655` docs: 건수 고정·비율 라벨·0값 숨김(0a65d13) 로그 반영, 커밋 대장 재생성
 - `6be4a8c` docs: 완료율 라벨·간격 재조정(247a47e) 로그 반영, 커밋 대장 재생성
 - `a1d7263` docs: 등록=완료 원칙 반영(086e17e) 로그 반영, 커밋 대장 재생성
+- `a3227e1` docs: 활동관리 KPI 카드 재정의(41dec5d) 로그 반영, 커밋 대장 재생성
