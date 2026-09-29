@@ -1500,6 +1500,16 @@
 - 버전 `hd20-improve-board.js?v=20260929-avgcolor-1`.
 - 검증(`avgcolor_check.py`): `line[stroke-dasharray]`(목표선) 없음 확인, 범례 텍스트 확인, 스크린샷으로 대형Att.팀(2.50)~중형Att팀(1.34) 진한색·중형메인팀(1.15) 이하 황색으로 평균(1.28) 기준 정확히 분리. 16개 탭 회귀 오류 0건.
 
+### `2e23eb6` — feat: 요청출처 현실화 + 통합기준정보 표시 순서 관리 (2026-09-29)
+- 변경 파일: `final-layout-polish.js`(+1/-1), `hd20-request-board.js`(+2/-2), `index.html`(+1/-1), `request-source-order-master.js`(+32/-0), `web-validation-fixture.js`(+4/-1)
+- 조사: `web-validation-fixture.js`의 `makeActions()`가 `linkedAudit=chance(.85)`로 Audit 연계를 85% 확률로 생성 → 이전 `sourceOf()` 폴백(auditDrawId 유무)이 이 85%를 그대로 반영해 생산혁신팀이 구조적 다수가 됨.
+- `web-validation-fixture.js`: `pickSource()`(가중 난수, 리더십<.15, 5S모듈<.55 나머지, 생산혁신팀 HDPS파트)를 각 개선요청 행 생성 시 `requestSource` 필드로 직접 부여(결정론적 시드 `R(20260921)` 유지로 재현 가능). `auditDrawId`는 기존대로 유지(다른 지표에 영향 없음).
+- `request-source-order-master.js`(신규): `KEY='gmes5s_request_source_order'`, 기본값 `['리더십','5S모듈','생산혁신팀 HDPS파트']`. `#masterModal .modalBox`의 `.masterTabs`에 `data-master-tab="sourceOrder"` 버튼을 동적 추가(operating-policy-master.js와 동일하게 `addEventListener` 사용해 app.js의 `tabs.forEach(onclick=)` 바인딩 시점과 충돌 없음). ▲▼로 `cur` 배열 재정렬 후 저장 시 localStorage+`hd20-policy-updated` 이벤트.
+- `hd20-request-board.js`: ① 패널 `srcCats`를 `window.HD20_REQUEST_SOURCE_ORDER?.get?.()||SOURCES`로 교체(하드코딩된 `SOURCES` 상수는 필터 드롭다운 등 다른 용도에 계속 사용).
+- `final-layout-polish.js`: 동적 로더 배열에 `['hd20RequestSourceOrderScript','request-source-order-master.js?v=20260929-1']` 추가.
+- 폐기: `team-master-safety.js`의 미커밋 '검증 모드 팀장 자동 배정'(`seedDemoLeaders`) — owner 이름 10종이 16개 팀에 중복 배정되어 한 사람이 여러 팀 리더가 되는 부작용 확인, git checkout으로 원복.
+- 검증(`source_dist_check.py`/`order_check.py`): 분포 리더십 106/5S모듈 334/생산혁신팀 200(연간 전체), 필터 조건별 예시 92/297/179. 순서 탭 기본값 정확히 리더십>5S모듈>생산혁신팀, UI에서 순서 변경 후 저장 시 저장값과 ①차트 라벨 순서가 즉시 일치. 개선요청 임시저장 E2E(640→641), 16개 탭 회귀 오류 0건.
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
@@ -1563,8 +1573,8 @@
 ## (2026-09-28 갱신) 종료조건
 16개 탭 순회·기능 회귀 세트 콘솔 오류 0건, 최신 GitHub Pages 빌드 `built` 확인, 실제 사이트 확인 결과 반영 후 종료.
 
-## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 57건)
-> 커밋 시각은 저장소 표기 기준. 아래 57건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
+## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 58건)
+> 커밋 시각은 저장소 표기 기준. 아래 58건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
 > (`e182f66`은 이 대화 밖의 다른 Claude 세션이 같은 계정으로 push한 커밋이라 포함됨. 대장은 `git log --since`가 날짜가 뒤섞인 이력에서 일부를 건너뛰는 것을 발견해, 커밋 날짜를 직접 비교해 생성)
 
 | 커밋 | 시각 | 제목 | 변경 파일 |
@@ -1626,8 +1636,9 @@
 | `c8fbe43` | 2026-09-28 23:19 | fix: 개선요청 출처 '리더십'을 정의대로(경영진·팀장) 판별 — 등록자=생산팀장 기준정보 이름 일치로 분류 | `hd20-request-board.js`, `index.html` |
 | `6ed0ff4` | 2026-09-29 04:18 | feat: 공장장(경영진)도 리더십에 포함 — 통합기준정보에 '리더십 판별 명단' 신설 | `final-layout-polish.js`, `hd20-request-board.js`, `operating-policy-master.js` |
 | `c659c3c` | 2026-09-29 04:20 | fix: 자율개선 종합 팀 차트 목표선 제거 — 평균 이상/미만 색상 구분으로 원복(대시보드 공통 규칙) | `hd20-improve-board.js`, `index.html` |
+| `2e23eb6` | 2026-09-29 04:29 | feat: 요청출처 데이터 현실화(5S모듈 다수·리더십 비어있지 않게) + 표시 순서를 통합기준정보에서 관리 | `final-layout-polish.js`, `hd20-request-board.js`, `index.html`, `request-source-order-master.js`, `web-validation-fixture.js` |
 
-### 문서 커밋(47건, 로그 갱신용)
+### 문서 커밋(48건, 로그 갱신용)
 - `c661242` docs: development/coding log for validation fixture, team master, auth, subtab split (2026-09-22)
 - `da246aa` docs: log advancement 4-way subtab split (4aee88b) in dev/coding logs
 - `015b9b3` docs: log action/audit 4-way subtab split + metric bugfix (57e264c) in dev/coding logs
@@ -1675,3 +1686,4 @@
 - `c47461f` docs: 대상 추출 필터+가드 수정(cc8d318), 개선요청 종합 VTB 재구성(59465cf) 로그 반영, 커밋 대장 재생성
 - `520f01e` docs: 리더십 출처 판별(c8fbe43) 로그 반영, 커밋 대장 재생성
 - `d5a49cf` docs: 공장장(경영진) 리더십 명단(6ed0ff4) 로그 반영, 커밋 대장 재생성
+- `8368e1e` docs: 팀 차트 목표선 제거·평균 색상 원복(c659c3c) 로그 반영, 커밋 대장 재생성
