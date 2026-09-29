@@ -1510,6 +1510,19 @@
 - 폐기: `team-master-safety.js`의 미커밋 '검증 모드 팀장 자동 배정'(`seedDemoLeaders`) — owner 이름 10종이 16개 팀에 중복 배정되어 한 사람이 여러 팀 리더가 되는 부작용 확인, git checkout으로 원복.
 - 검증(`source_dist_check.py`/`order_check.py`): 분포 리더십 106/5S모듈 334/생산혁신팀 200(연간 전체), 필터 조건별 예시 92/297/179. 순서 탭 기본값 정확히 리더십>5S모듈>생산혁신팀, UI에서 순서 변경 후 저장 시 저장값과 ①차트 라벨 순서가 즉시 일치. 개선요청 임시저장 E2E(640→641), 16개 탭 회귀 오류 0건.
 
+### `57e196b` — feat: 리더십 실명 5인 반영 + 중복 버블맵 제거 (2026-09-29)
+- 변경 파일: `final-layout-polish.js`(+1/-1), `index.html`(+1/-1), `integrated-performance-map.js`(+2/-2), `operating-policy-master.js`(+10/-1)
+- `operating-policy-master.js`: `DEFAULT_LEADERSHIP=['박진규','김동철','김태현','임동열','임근명']`, `execNames()`에서 `localStorage.getItem('gmes5s_leadership_names')===null`일 때만(키 자체가 없을 때) 기본값을 채워 저장, 이미 값이 있으면(빈 배열이라도) 손대지 않음.
+- `integrated-performance-map.js`: CSS에 `.ipMap,.ipInsight{display:none!important}`(주석으로 '⑤ 고도화 맵'과 중복이라 숨김 명시), 카드 제목 '고도화 작업장 Portfolio Map'→'고도화 작업장 팀별 현황', 본문 제목 '팀별 고도화 현상 Map'→'팀별 고도화 현황', 안내문에 지도는 5번 탭 참조 문구 추가.
+- 검증(`final_check.py`): 새로고침 시 `localStorage['gmes5s_leadership_names']==="[\"박진규\",...]"`, 통합기준정보 화면 textarea·상태문구 확인, 4번 탭 `.ipMap` `display:none` 확인(표 16행은 유지), 5번 탭 무변화. `leader_match_check.py`로 검증 데이터 등록자 10명과 5명 실명이 전혀 겹치지 않음을 확인(가짜 기록 생성 안 함). 16개 탭 회귀 오류 0건.
+- 병행 세션 확인: `git log`에서 예상 밖의 `2e23eb6`(요청출처 데이터 현실화+표시순서 관리, `request-source-order-master.js` 신규)을 발견 → 커밋 로그로 내용 확인, 파일 충돌 없음 확인 후 이어서 작업.
+
+### `ff7a603` — fix: 팀 차트 정렬을 표시순서 기준으로 (2026-09-29)
+- 변경 파일: `hd20-improve-board.js`(+4/-1), `hd20-request-board.js`(+4/-1), `index.html`(+1/-1)
+- 두 파일 동일 패턴: `teamOrder=JSON.parse(localStorage['gmes5s_team_display_order'])`가 배열이고 길이가 있으면 그대로, 아니면 `HD20ProductionTeamMaster.teamNames()`로 폴백. `orderIdx(t)=teamOrder.indexOf(t)`(없으면 999). `.sort((a,b)=>b.v-a.v)`/`.sort((a,b)=>b.total-a.total)` → `.sort((a,b)=>orderIdx(a.t)-orderIdx(b.t)||a.t.localeCompare(b.t,'ko'))`.
+- 결함(1차 구현, 미배포 상태에서 자체 발견): 폴백을 `null`로 두면 순서 미설정 시 `orderIdx`가 전부 999로 동률이 되어 2차 기준(가나다순 `localeCompare`)으로 떨어짐 → `order_check2.py`로 팀 마스터 기본 순서(`대형Att.팀,대형메인팀,...`)와 실제 렌더 순서(`대형메인팀,대형상부팀,대형Att.팀,...`)가 다름을 확인 → 폴백을 `teamNames()`로 수정.
+- 검증(`order_check2.py`): 미설정 시 자율개선 차트 순서가 팀 마스터 순서와 정확히 일치, 표시순서를 임의(역순)로 저장 후 새로고침하면 자율개선 차트·개선요청 그리드 모두 그 순서 그대로 반영. 16개 탭 회귀 오류 0건.
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
@@ -1573,8 +1586,8 @@
 ## (2026-09-28 갱신) 종료조건
 16개 탭 순회·기능 회귀 세트 콘솔 오류 0건, 최신 GitHub Pages 빌드 `built` 확인, 실제 사이트 확인 결과 반영 후 종료.
 
-## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 58건)
-> 커밋 시각은 저장소 표기 기준. 아래 58건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
+## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 60건)
+> 커밋 시각은 저장소 표기 기준. 아래 60건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
 > (`e182f66`은 이 대화 밖의 다른 Claude 세션이 같은 계정으로 push한 커밋이라 포함됨. 대장은 `git log --since`가 날짜가 뒤섞인 이력에서 일부를 건너뛰는 것을 발견해, 커밋 날짜를 직접 비교해 생성)
 
 | 커밋 | 시각 | 제목 | 변경 파일 |
@@ -1637,8 +1650,10 @@
 | `6ed0ff4` | 2026-09-29 04:18 | feat: 공장장(경영진)도 리더십에 포함 — 통합기준정보에 '리더십 판별 명단' 신설 | `final-layout-polish.js`, `hd20-request-board.js`, `operating-policy-master.js` |
 | `c659c3c` | 2026-09-29 04:20 | fix: 자율개선 종합 팀 차트 목표선 제거 — 평균 이상/미만 색상 구분으로 원복(대시보드 공통 규칙) | `hd20-improve-board.js`, `index.html` |
 | `2e23eb6` | 2026-09-29 04:29 | feat: 요청출처 데이터 현실화(5S모듈 다수·리더십 비어있지 않게) + 표시 순서를 통합기준정보에서 관리 | `final-layout-polish.js`, `hd20-request-board.js`, `index.html`, `request-source-order-master.js`, `web-validation-fixture.js` |
+| `57e196b` | 2026-09-29 04:36 | feat: 리더십 명단에 실제 5명 기본값 반영 + 실행·유지/고도화 맵 탭 중복 버블맵 제거 | `final-layout-polish.js`, `index.html`, `integrated-performance-map.js`, `operating-policy-master.js` |
+| `ff7a603` | 2026-09-29 04:42 | fix: 팀별 차트 가로축을 값 기준 정렬 대신 통합기준정보 표시순서로 고정 | `hd20-improve-board.js`, `hd20-request-board.js`, `index.html` |
 
-### 문서 커밋(48건, 로그 갱신용)
+### 문서 커밋(49건, 로그 갱신용)
 - `c661242` docs: development/coding log for validation fixture, team master, auth, subtab split (2026-09-22)
 - `da246aa` docs: log advancement 4-way subtab split (4aee88b) in dev/coding logs
 - `015b9b3` docs: log action/audit 4-way subtab split + metric bugfix (57e264c) in dev/coding logs
@@ -1687,3 +1702,4 @@
 - `520f01e` docs: 리더십 출처 판별(c8fbe43) 로그 반영, 커밋 대장 재생성
 - `d5a49cf` docs: 공장장(경영진) 리더십 명단(6ed0ff4) 로그 반영, 커밋 대장 재생성
 - `8368e1e` docs: 팀 차트 목표선 제거·평균 색상 원복(c659c3c) 로그 반영, 커밋 대장 재생성
+- `fdd0e47` docs: 요청출처 현실화·표시순서 관리(2e23eb6) 로그 반영, 커밋 대장 재생성
