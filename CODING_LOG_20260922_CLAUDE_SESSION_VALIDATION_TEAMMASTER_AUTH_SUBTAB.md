@@ -1598,6 +1598,13 @@
 - `hd20-request-board.js`: `srcPct=srcCats.map((s,i)=>srcReg[i]?round(srcDone[i]/srcReg[i]*1000)/10:null)`. `A=chart({...,minSlot:78,series:[등록,{name:'완료',...,widthScale:1.5,pct:srcPct}]})`(minSlot 70→78로 소폭 확대). 버전 `hd20-request-board.js?v=20260930-pctwidth-1`.
 - 검증(`req_pct_check.py`): 라벨 `['92','61 (66.3%)','297','185 (62.3%)','179','97 (54.2%)']`, SVG bounding box 겹침 0건. 16개 탭 회귀 오류 0건.
 
+### `63c351f` — feat: 좌우 30:70 + 월별 완료율(%) (2026-09-30)
+- 변경 파일: `hd20-request-board.js`(+4/-3), `index.html`(+1/-1)
+- `.r1{grid-template-columns:minmax(0,4fr) minmax(0,6fr)}`→`minmax(0,3fr) minmax(0,7fr)`(실제 패널 폭을 결정하는 CSS. 직전 커밋 9e9a372는 chart() 호출의 `w:(box.clientWidth-36)*.4/.6` 계산식만 `.3/.7`로 바꿨으나 이 그리드 자체는 안 바꿔 실제 렌더 폭은 그대로 40:60이었음 — 이번에 함께 수정).
+- ② 월별: `donePct=doneM.map((v,i)=>regM[i]?round(v/regM[i]*1000)/10:null)`, `B=chart({...,minSlot:86,series:[...,{name:'완료',...,widthScale:1.5,pct:donePct}]})`.
+- 버전 `hd20-request-board.js?v=20260930-splitwide-2`.
+- 검증(`req_b_check.py`): 패널 실측 `getBoundingClientRect().width` 비율 384:896=30.0:70.0. 월별 완료율 라벨 9개(55.8%~76.7%) 확인, SVG bounding box 겹침 0건. 16개 탭 회귀 오류 0건.
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
@@ -1661,8 +1668,8 @@
 ## (2026-09-28 갱신) 종료조건
 16개 탭 순회·기능 회귀 세트 콘솔 오류 0건, 최신 GitHub Pages 빌드 `built` 확인, 실제 사이트 확인 결과 반영 후 종료.
 
-## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 70건)
-> 커밋 시각은 저장소 표기 기준. 아래 70건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
+## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 71건)
+> 커밋 시각은 저장소 표기 기준. 아래 71건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
 > (`e182f66`은 이 대화 밖의 다른 Claude 세션이 같은 계정으로 push한 커밋이라 포함됨. 대장은 `git log --since`가 날짜가 뒤섞인 이력에서 일부를 건너뛰는 것을 발견해, 커밋 날짜를 직접 비교해 생성)
 
 | 커밋 | 시각 | 제목 | 변경 파일 |
@@ -1737,8 +1744,9 @@
 | `8e2f55a` | 2026-09-29 11:18 | feat: 후보 목록 - 정체일수 표시 + 오래 정체된 미확정 건 우선 노출로 보정 | `activity-workflow.js`, `index.html` |
 | `1abd399` | 2026-09-29 22:00 | fix: 새로고침 시 대시보드 콘텐츠가 잠깐 전부 보였다 접히는 깜빡임 제거 | `hd20-five-area-integration.js`, `index.html` |
 | `9e9a372` | 2026-09-29 22:03 | feat: 개선요청 종합 ①번 차트 완료 막대 폭 확대 + 완료율(%) 표기 | `hd20-request-board.js`, `index.html` |
+| `63c351f` | 2026-09-29 22:08 | feat: 개선요청 종합 좌우 패널 비율 30:70으로 조정 + 월별 완료 막대 폭·완료율(%) 표기 | `hd20-request-board.js`, `index.html` |
 
-### 문서 커밋(59건, 로그 갱신용)
+### 문서 커밋(60건, 로그 갱신용)
 - `c661242` docs: development/coding log for validation fixture, team master, auth, subtab split (2026-09-22)
 - `da246aa` docs: log advancement 4-way subtab split (4aee88b) in dev/coding logs
 - `015b9b3` docs: log action/audit 4-way subtab split + metric bugfix (57e264c) in dev/coding logs
@@ -1798,3 +1806,4 @@
 - `37c514c` docs: 전수 감사·candidates 연도 필터 수정(94a749b) 로그 반영, 커밋 대장 재생성
 - `e29ca3e` docs: 후보 목록 정체일수 보정(8e2f55a) 로그 반영, 커밋 대장 재생성
 - `56e457f` docs: 새로고침 깜빡임 제거(1abd399) 로그 반영, 커밋 대장 재생성
+- `cfa5b3f` docs: 개선요청 완료율 표기(9e9a372) 로그 반영, 커밋 대장 재생성
