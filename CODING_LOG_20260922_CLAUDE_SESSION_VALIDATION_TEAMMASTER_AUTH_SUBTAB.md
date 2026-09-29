@@ -1552,6 +1552,14 @@
 - 검증(`simplify_check.py`): CSV `[5S 유형별] 등록(=완료 사례 수)` 헤더와 `정리:138` 등 값 확인, 스크린샷으로 단일 막대 렌더 확인. 16개 탭 회귀 오류 0건.
 - 범위 판단: `doneT`/`DONE` 정의 자체는 다른 화면(종합현황·활동관리 KPI 카드 등)이 계속 참조하므로 그대로 두고, 이 패널의 차트·안내문·CSV만 수정. 시스템 전체 확산은 사용자 결정 필요로 남김(범위 확대 자제).
 
+### `41dec5d` — fix: activity.manage 카드 재정의 (2026-09-29)
+- 변경 파일: `hd20-kpi-evidence-drill.js`(+1/-1), `hd20-ops-normalized.js`(+1/-1), `hd20-ops-v2.js`(+2/-1)
+- 조사(`status_vs_judge.py`): `status`×`candidate`×`judgeState` 교차표로 확정/판정대기/보완요청/유지관리/검토중이 전부 `candidate=true`와 대응함을 확인(고도화 판정 파이프라인), '완료'/'진행중'만 `candidate=false`(790건, 이 중 '진행중' 185건이 등록=완료 원칙과 불일치하는 시험 데이터 결함).
+- `hd20-ops-v2.js`: `'activity.manage'` 스트립을 `['전체 활동',acts.length],['고도화 후보 지정',candidates.length],['고도화 판정대기',candidates.filter(x=>!advancementConfirmed(x)).length],['고도화 확정',confirmed.length]`로 교체(`isDone` 참조 제거, `action.manage`의 `isDone` 사용은 그대로 유지).
+- `hd20-kpi-evidence-drill.js`: `case'activity.manage.1'`→`setA('고도화 후보 지정',candidates)`, `case'activity.manage.2'`→`setA('고도화 판정대기',candidates.filter(x=>!confirmed(x)))`(기존 `done`/`acts.filter(!done)` 대체).
+- `hd20-ops-normalized.js`: `'activity.manage'` 보조문구를 `완료율/진행 비중`→`활동 대비/후보 대비`로.
+- 검증(`parity_final.py`, 정확한 모달 선택자 `#hd20UniversalGridModal` 확인 후 재측정): 카드1=170/근거170, 카드2=113/근거113, 카드3=57/근거57 전부 일치. 16개 탭 회귀 오류 0건.
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
@@ -1615,8 +1623,8 @@
 ## (2026-09-28 갱신) 종료조건
 16개 탭 순회·기능 회귀 세트 콘솔 오류 0건, 최신 GitHub Pages 빌드 `built` 확인, 실제 사이트 확인 결과 반영 후 종료.
 
-## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 64건)
-> 커밋 시각은 저장소 표기 기준. 아래 64건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
+## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 65건)
+> 커밋 시각은 저장소 표기 기준. 아래 65건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
 > (`e182f66`은 이 대화 밖의 다른 Claude 세션이 같은 계정으로 push한 커밋이라 포함됨. 대장은 `git log --since`가 날짜가 뒤섞인 이력에서 일부를 건너뛰는 것을 발견해, 커밋 날짜를 직접 비교해 생성)
 
 | 커밋 | 시각 | 제목 | 변경 파일 |
@@ -1685,8 +1693,9 @@
 | `0a65d13` | 2026-09-29 04:52 | feat: ①②번 차트 건수 고정 표시 + 수평전개 막대 폭 확대·비율(%) 라벨 + 0값 숨김 | `hd20-improve-board.js`, `index.html` |
 | `247a47e` | 2026-09-29 04:57 | feat: ①번 차트에 완료율 표시로 목적 명확화 + ②번 막대 간격 조정(월 안은 붙이고 월 사이만 벌림) | `hd20-improve-board.js`, `index.html` |
 | `086e17e` | 2026-09-29 05:02 | fix: ①번 차트 재검토 - "완료 vs 진행" 구분 제거(자율개선 사례는 완료된 건만 등록) | `hd20-improve-board.js`, `index.html` |
+| `41dec5d` | 2026-09-29 09:47 | fix: 활동관리 KPI 카드에도 "등록=완료" 원칙 확산 — 완료/진행 구분을 고도화 판정 단계로 교체 | `hd20-kpi-evidence-drill.js`, `hd20-ops-normalized.js`, `hd20-ops-v2.js` |
 
-### 문서 커밋(53건, 로그 갱신용)
+### 문서 커밋(54건, 로그 갱신용)
 - `c661242` docs: development/coding log for validation fixture, team master, auth, subtab split (2026-09-22)
 - `da246aa` docs: log advancement 4-way subtab split (4aee88b) in dev/coding logs
 - `015b9b3` docs: log action/audit 4-way subtab split + metric bugfix (57e264c) in dev/coding logs
@@ -1740,3 +1749,4 @@
 - `866ced9` docs: 팀명 라벨 클릭 연동(a96d01c) 로그 반영, 커밋 대장 재생성
 - `8c8f655` docs: 건수 고정·비율 라벨·0값 숨김(0a65d13) 로그 반영, 커밋 대장 재생성
 - `6be4a8c` docs: 완료율 라벨·간격 재조정(247a47e) 로그 반영, 커밋 대장 재생성
+- `a1d7263` docs: 등록=완료 원칙 반영(086e17e) 로그 반영, 커밋 대장 재생성
