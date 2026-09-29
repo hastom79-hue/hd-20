@@ -10,13 +10,15 @@ function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&l
 let LEADER_NAMES=null;
 function leaderNames(){
   if(LEADER_NAMES)return LEADER_NAMES;
-  try{const v=JSON.parse(localStorage.getItem('hd20TeamLeaderMasterV1')||'[]');LEADER_NAMES=new Set(Array.isArray(v)?v.map(x=>x.leader).filter(x=>x&&x!=='미지정'):[])}catch{LEADER_NAMES=new Set()}
-  return LEADER_NAMES;
+  const set=new Set();
+  try{const v=JSON.parse(localStorage.getItem('hd20TeamLeaderMasterV1')||'[]');(Array.isArray(v)?v:[]).forEach(x=>{if(x.leader&&x.leader!=='미지정')set.add(x.leader)})}catch{}
+  try{const v=JSON.parse(localStorage.getItem('gmes5s_leadership_names')||'[]');(Array.isArray(v)?v:[]).forEach(n=>{if(n)set.add(n)})}catch{}
+  LEADER_NAMES=set;return LEADER_NAMES;
 }
 function sourceOf(c){
   if(c.requestSource&&SOURCES.includes(c.requestSource))return c.requestSource; // 실제 필드가 들어오면 그대로 사용
   // 리더십 = 경영진·팀장(부서장). 등록자(owner)가 생산팀장 기준정보에 등록된 팀장 이름과 일치하면 리더십으로 분류.
-  if(c.owner&&leaderNames().has(c.owner))return '리더십';
+  if(c.owner&&leaderNames().has(c.owner))return '리더십'; // 팀장 기준정보 + 통합기준정보(운영정책)에 등록된 경영진·공장장 명단
   return c.auditDrawId?'생산혁신팀 HDPS파트':'5S모듈'; // 그 외엔 감사 연계=생산혁신팀, 현장 자체 등록=5S모듈로 추정
 }
 function css(){if(document.getElementById(ID+'Style'))return;const s=document.createElement('style');s.id=ID+'Style';s.textContent=`
@@ -89,7 +91,7 @@ function render(box){
     </tbody></table>`;
   const opt=(a,cur,all='ALL')=>`<option value="">${all}</option>`+a.map(x=>`<option value="${esc(x)}"${x===cur?' selected':''}>${esc(x)}</option>`).join('');
   box.innerHTML=`<div class="ibTitle"><h2>5S 개선요청 종합 대시보드</h2></div><p class="ibNote">기본 조회조건은 당해년도 연간누적 데이터입니다 (월간 데이터 조회 시, 해당 월을 선택하세요)</p>
-<p class="rqCaveat">※ 참고 VTB 화면의 요청부서 그리드는 5S에서는 생략하고 조치대응부서에 집중했습니다. 개선요청 출처는 5S모듈·생산혁신팀 HDPS파트·리더십(경영진·팀장/부서장) 3종이며, 현재 원천에는 출처 필드가 없어 등록자가 생산팀장 기준정보의 팀장과 일치하면 리더십, 그 외엔 Audit 연계 여부로 5S모듈/생산혁신팀 HDPS파트를 추정 표기합니다(생산팀장 기준정보가 비어 있으면 리더십은 0). ‘완료(*)’는 원천에 기각 상태가 없어 완료 단독 기준입니다.</p>
+<p class="rqCaveat">※ 참고 VTB 화면의 요청부서 그리드는 5S에서는 생략하고 조치대응부서에 집중했습니다. 개선요청 출처는 5S모듈·생산혁신팀 HDPS파트·리더십(경영진·팀장/부서장) 3종이며, 현재 원천에는 출처 필드가 없어 등록자가 생산팀장 기준정보의 팀장 또는 통합기준정보(운영정책)에 등록한 경영진·공장장 명단과 일치하면 리더십, 그 외엔 Audit 연계 여부로 5S모듈/생산혁신팀 HDPS파트를 추정 표기합니다(둘 다 비어 있으면 리더십은 0). ‘완료(*)’는 원천에 기각 상태가 없어 완료 단독 기준입니다.</p>
 <div class="ibBar"><label>공장 <select disabled><option>[울산] 울산캠퍼스</option></select></label><label>년 <select data-f="year">${D.years.map(y=>`<option${y===S.year?' selected':''}>${y}</option>`).join('')}</select></label>
 <label>월 <select data-f="month"><option value="">전체</option>${Array.from({length:12},(_,i)=>{const v=String(i+1).padStart(2,'0');return `<option value="${v}"${v===S.month?' selected':''}>${i+1}월</option>`}).join('')}</select></label><button type="button" data-rq="go">조회</button>
 <label>요청출처 <select data-f="source">${opt(SOURCES,S.source)}</select></label><label>조치대응부서 <select data-f="team">${opt(D.teams,S.team)}</select></label>
@@ -116,7 +118,7 @@ function ensure(){
   render(box);return true}
 let tries=0;(function boot(){if(!ensure()&&tries++<80)setTimeout(boot,150)})();
 document.addEventListener('click',e=>{if(e.target.closest?.('#hd20DashboardSectionTabs button[data-dashboard-section="request"]'))setTimeout(()=>{const b=document.getElementById(ID);if(b)render(b)},80)},true);
-['hd20-kpi-source-updated','hd20-action-updated'].forEach(ev=>window.addEventListener(ev,()=>setTimeout(()=>{const b=document.getElementById(ID);if(b&&b.offsetParent!==null)render(b)},80)));
+['hd20-kpi-source-updated','hd20-action-updated','hd20-policy-updated'].forEach(ev=>window.addEventListener(ev,()=>setTimeout(()=>{const b=document.getElementById(ID);if(b&&b.offsetParent!==null)render(b)},80)));
 let rz;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>{const b=document.getElementById(ID);if(b&&b.offsetParent!==null)render(b)},250)});
 window.HD20_REQUEST_BOARD={render:()=>{const b=document.getElementById(ID);if(b)render(b)},state:S};
 })();
