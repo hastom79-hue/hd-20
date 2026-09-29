@@ -1544,6 +1544,14 @@
 - 버전 `hd20-improve-board.js?v=20260929-counts-5`.
 - 검증: ①에서 5S 고도화 완료율만 39.4%로 확연히 낮게 표시 확인(다른 유형 71~84%), ② SVG 좌표 라벨 39개 전수 겹침 재검사 0건, 스크린샷으로 월 내 밀착·월 간 여백 확인. 16개 탭 회귀 오류 0건.
 
+### `086e17e` — fix: ①번 차트를 등록=완료 원칙에 맞게 단순화 (2026-09-29)
+- 변경 파일: `hd20-improve-board.js`(+7/-5), `index.html`(+1/-1)
+- 조사(`status_probe.py`): `HD20KPIData.snapshot().rows` 960건의 `status` 분포 — 완료 605·진행중 185·확정 53·판정대기 52·보완요청 31·검토중 30·유지관리 4. 완료 아닌 표본 확인(`VALID-A-00003`, status:'진행중', candidate:false, judgeState:'').
+- `hd20-improve-board.js`: `A=chart({...})` 호출을 `stack:true, series:[완료·확정, 진행·등록], topPct`에서 `series:[{name:'등록 건수',vals:allT,color:C.dark}]`(단일 계열, `stack`/`topPct` 제거, `minSlot:70`)로 교체. 헤더 '5S 유형별 등록 및 진행현황'→'5S 유형별 등록 현황', 안내문 전면 교체. CSV `exportCsv()` 호출에서 `doneT` 제거, 헤더 행 `['등록(=완료 사례 수)']`로 단순화.
+- 버전 `hd20-improve-board.js?v=20260929-simplify-1`.
+- 검증(`simplify_check.py`): CSV `[5S 유형별] 등록(=완료 사례 수)` 헤더와 `정리:138` 등 값 확인, 스크린샷으로 단일 막대 렌더 확인. 16개 탭 회귀 오류 0건.
+- 범위 판단: `doneT`/`DONE` 정의 자체는 다른 화면(종합현황·활동관리 KPI 카드 등)이 계속 참조하므로 그대로 두고, 이 패널의 차트·안내문·CSV만 수정. 시스템 전체 확산은 사용자 결정 필요로 남김(범위 확대 자제).
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
@@ -1607,8 +1615,8 @@
 ## (2026-09-28 갱신) 종료조건
 16개 탭 순회·기능 회귀 세트 콘솔 오류 0건, 최신 GitHub Pages 빌드 `built` 확인, 실제 사이트 확인 결과 반영 후 종료.
 
-## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 63건)
-> 커밋 시각은 저장소 표기 기준. 아래 63건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
+## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 64건)
+> 커밋 시각은 저장소 표기 기준. 아래 64건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
 > (`e182f66`은 이 대화 밖의 다른 Claude 세션이 같은 계정으로 push한 커밋이라 포함됨. 대장은 `git log --since`가 날짜가 뒤섞인 이력에서 일부를 건너뛰는 것을 발견해, 커밋 날짜를 직접 비교해 생성)
 
 | 커밋 | 시각 | 제목 | 변경 파일 |
@@ -1676,8 +1684,9 @@
 | `a96d01c` | 2026-09-29 04:45 | feat: 자율개선 종합 팀 차트 - 가로축 팀명 클릭으로도 하단 단일팀 차트 전환 | `hd20-improve-board.js`, `index.html` |
 | `0a65d13` | 2026-09-29 04:52 | feat: ①②번 차트 건수 고정 표시 + 수평전개 막대 폭 확대·비율(%) 라벨 + 0값 숨김 | `hd20-improve-board.js`, `index.html` |
 | `247a47e` | 2026-09-29 04:57 | feat: ①번 차트에 완료율 표시로 목적 명확화 + ②번 막대 간격 조정(월 안은 붙이고 월 사이만 벌림) | `hd20-improve-board.js`, `index.html` |
+| `086e17e` | 2026-09-29 05:02 | fix: ①번 차트 재검토 - "완료 vs 진행" 구분 제거(자율개선 사례는 완료된 건만 등록) | `hd20-improve-board.js`, `index.html` |
 
-### 문서 커밋(52건, 로그 갱신용)
+### 문서 커밋(53건, 로그 갱신용)
 - `c661242` docs: development/coding log for validation fixture, team master, auth, subtab split (2026-09-22)
 - `da246aa` docs: log advancement 4-way subtab split (4aee88b) in dev/coding logs
 - `015b9b3` docs: log action/audit 4-way subtab split + metric bugfix (57e264c) in dev/coding logs
@@ -1730,3 +1739,4 @@
 - `55c077e` docs: 리더십 실명 반영·중복 지도 제거(57e196b), 표시순서 정렬(ff7a603) 로그 반영, 커밋 대장 재생성
 - `866ced9` docs: 팀명 라벨 클릭 연동(a96d01c) 로그 반영, 커밋 대장 재생성
 - `8c8f655` docs: 건수 고정·비율 라벨·0값 숨김(0a65d13) 로그 반영, 커밋 대장 재생성
+- `6be4a8c` docs: 완료율 라벨·간격 재조정(247a47e) 로그 반영, 커밋 대장 재생성
