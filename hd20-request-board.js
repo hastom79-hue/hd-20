@@ -32,7 +32,7 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
 #${ID} .ibBar .sp{flex:1}
 #${ID} .ibBar button{height:32px;border-radius:7px;border:1px solid #14304c;background:#14304c;color:#fff;font-weight:850;font-size:13px;padding:0 14px;cursor:pointer}
 #${ID} .ibBar button.alt{background:#2c5f8a;border-color:#2c5f8a}
-#${ID} .ibRow{display:grid;gap:12px;margin-top:12px}#${ID} .r1{grid-template-columns:minmax(0,4fr) minmax(0,6fr)}
+#${ID} .ibRow{display:grid;gap:12px;margin-top:12px}#${ID} .r1{grid-template-columns:minmax(0,3fr) minmax(0,7fr)}
 #${ID} .ibPanel{border:1px solid #e3eaf0;border-radius:10px;background:#fff;overflow:hidden}
 #${ID} .ibHead{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 12px;background:#f1f5f8;border-bottom:1px solid #e3eaf0;font-size:13.5px;font-weight:900;color:#22303f}
 #${ID} .ibHead em{font-style:normal;font-size:12.5px;color:#14304c}
@@ -69,13 +69,14 @@ function render(box){
   // ① 요청출처별 — 표시 순서는 통합기준정보('요청출처 순서')에서 관리, 기본값 리더십>5S모듈>생산혁신팀 HDPS파트
   const srcCats=window.HD20_REQUEST_SOURCE_ORDER?.get?.()||SOURCES,srcReg=srcCats.map(s=>rowsM.filter(c=>sourceOf(c)===s).length),srcDone=srcCats.map(s=>rowsM.filter(c=>sourceOf(c)===s&&isDone(c)).length);
   const srcPct=srcCats.map((s,i)=>srcReg[i]?Math.round(srcDone[i]/srcReg[i]*1000)/10:null);
-  const A=chart({w:Math.floor((box.clientWidth-36)*.4)-8,cats:srcCats,minSlot:78,series:[{name:'등록',vals:srcReg,color:'#5c6b7a'},{name:'완료',vals:srcDone,color:'#1f6f6b',widthScale:1.5,pct:srcPct}]});
+  const A=chart({w:Math.floor((box.clientWidth-36)*.3)-8,cats:srcCats,minSlot:78,series:[{name:'등록',vals:srcReg,color:'#5c6b7a'},{name:'완료',vals:srcDone,color:'#1f6f6b',widthScale:1.5,pct:srcPct}]});
   // ② 월별
   const ML=Array.from({length:12},(_,i)=>String(i+1).padStart(2,'0')+'월');
   const regM=Array.from({length:12},(_,i)=>rowsY.filter(c=>mo(c)===i+1).length);
   const openM=Array.from({length:12},(_,i)=>rowsY.filter(c=>mo(c)===i+1&&c.status==='진행중').length);
   const doneM=Array.from({length:12},(_,i)=>rowsY.filter(c=>mo(c)===i+1&&isDone(c)).length);
-  const B=chart({w:Math.floor((box.clientWidth-36)*.6)-8,cats:ML,series:[{name:'등록',vals:regM,color:'#8fa3b3'},{name:'진행',vals:openM,color:'#e0b03c'},{name:'완료',vals:doneM,color:'#1f6f6b'}]});
+  const donePct=doneM.map((v,i)=>regM[i]?Math.round(v/regM[i]*1000)/10:null);
+  const B=chart({w:Math.floor((box.clientWidth-36)*.7)-8,cats:ML,minSlot:86,series:[{name:'등록',vals:regM,color:'#8fa3b3'},{name:'진행',vals:openM,color:'#e0b03c'},{name:'완료',vals:doneM,color:'#1f6f6b',widthScale:1.5,pct:donePct}]});
   // ③ 조치대응부서 진행현황
   /* 가로축 정렬: 통합기준정보(표시순서)에서 관리하는 생산팀 순서를 그대로 따름(값 기준 정렬 안 함) */
   const teamOrder=(()=>{try{const v=JSON.parse(localStorage.getItem('gmes5s_team_display_order')||'null');if(Array.isArray(v)&&v.length)return v}catch{}return window.HD20ProductionTeamMaster?.teamNames?.()||null})();
