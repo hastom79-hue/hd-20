@@ -51,10 +51,14 @@ function chart({w,h=240,cats,series,stack=false,per=false,rotate=false,sel=null,
   const tot=cats.map((_,i)=>stack?series.reduce((a,s)=>a+(s.vals[i]||0),0):Math.max(...series.map(s=>s.vals[i]||0)));
   const ax=axis(Math.max(0.0001,...tot,hline?hline.value*1.05:0)),max=ax.max,yv=v=>m.t+ih-(v/max)*ih,slot=iw/Math.max(1,cats.length);
   let g='';for(let i=0;i<=Math.round(max/ax.step);i++){const v=ax.step*i,y=yv(v);g+=`<line x1="${m.l}" x2="${W-m.r}" y1="${y}" y2="${y}" stroke="${C.grid}"/><text x="${m.l-6}" y="${y+4}" text-anchor="end" font-size="11" fill="${C.soft}">${tk(v)}</text>`}
-  let b='';cats.forEach((c,i)=>{const cx=m.l+slot*i+slot/2,n=series.length,bw=stack?Math.min(40,slot*.6):Math.min(24,slot*.72/n);
-    let acc=0;series.forEach((s,k)=>{const v=s.vals[i]||0;if(v<=0)return;const hh=Math.max(2,(v/max)*ih);const x=stack?cx-bw/2:cx-(bw*n)/2+bw*k;const y=stack?yv(acc+v):yv(v);const col=colorOf?colorOf(c,i,k):s.color;
-      b+=`<rect ${(sel!==null&&c===sel)?'stroke="#14304c" stroke-width="2"':''} x="${x}" y="${y}" width="${bw}" height="${hh}" rx="2" fill="${col}" class="hit" data-cat="${esc(c)}"><title>${esc(c)} · ${esc(s.name)}: ${F(v)}</title></rect>`;
-      if(!stack)b+=`<text x="${x+bw/2}" y="${y-4}" text-anchor="middle" font-size="10.5" font-weight="800" fill="${C.ink}">${F(v)}</text>`;acc+=v});
+  let b='';const n0=series.length,bw0=stack?Math.min(40,slot*.6):Math.min(24,slot*.72/n0);
+  const scales=series.map(s=>s.widthScale||1),bws=scales.map(sc=>bw0*sc),gap=stack?0:Math.max(2,bw0*.32),groupW=bws.reduce((a,w)=>a+w,0)+gap*(n0-1);
+  cats.forEach((c,i)=>{const cx=m.l+slot*i+slot/2,n=n0,bw=bw0;let startX=cx-groupW/2,acc=0;
+    series.forEach((s,k)=>{const v=s.vals[i]||0;const bwK=bws[k];if(v<=0){startX+=bwK+gap;return}const hh=Math.max(2,(v/max)*ih);const x=stack?cx-bwK/2:startX;const y=stack?yv(acc+v):yv(v);const col=colorOf?colorOf(c,i,k):s.color;
+      b+=`<rect ${(sel!==null&&c===sel)?'stroke="#14304c" stroke-width="2"':''} x="${x}" y="${y}" width="${bwK}" height="${hh}" rx="2" fill="${col}" class="hit" data-cat="${esc(c)}"><title>${esc(c)} · ${esc(s.name)}: ${F(v)}</title></rect>`;
+      if(!stack){const hasPct=s.pct&&Number.isFinite(s.pct[i]);const pctTxt=hasPct?` (${s.pct[i]}%)`:'';
+        b+=hasPct?`<text x="${x}" y="${y-4}" text-anchor="start" font-size="10.5" font-weight="800" fill="${C.ink}">${F(v)}${pctTxt}</text>`:`<text x="${x+bwK/2}" y="${y-4}" text-anchor="middle" font-size="10.5" font-weight="800" fill="${C.ink}">${F(v)}</text>`}
+      acc+=v;startX+=bwK+gap});
     if(stack&&tot[i]>0)b+=`<text x="${cx}" y="${yv(tot[i])-4}" text-anchor="middle" font-size="10.5" font-weight="800" fill="${C.ink}">${F(tot[i])}</text>`;
     const ly=m.t+ih+15,isSel=sel!==null&&c===sel,lblCls=linkX?' class="hit xlbl"':'',lblAttr=linkX?` data-cat="${esc(c)}"`:'',lblFill=linkX?'#2c5f8a':(isSel?'#14304c':C.soft),lblDeco=linkX?' text-decoration="underline"':'';
     b+=rotate?`<text transform="translate(${cx+4},${ly}) rotate(-45)"${lblCls}${lblAttr} text-anchor="end" font-size="11" fill="${lblFill}"${lblDeco} font-weight="${isSel?900:600}">${esc(c)}</text>`:`<text x="${cx}" y="${ly}"${lblCls}${lblAttr} text-anchor="middle" font-size="11.5" fill="${lblFill}"${lblDeco}>${esc(c)}</text>`});
@@ -66,12 +70,13 @@ function render(box){
   const teamsAll=D.teams.filter(t=>!S.group||D.groupOf(t)===S.group),hcAll=teamsAll.reduce((a,t)=>a+D.hcOf(t),0)||1,inTeams=r=>teamsAll.includes(r.team);
   const rowsM=filt(D).filter(inTeams),rowsY=filt(D,{ignoreMonth:true}).filter(inTeams),W=window.__hd20BoardPrint?680:Math.max(320,(box.clientWidth||900)-36);
   const div=v=>per?v/hcAll:v;
-  // a) 유형별 등록·진행
+  // a) 유형별 등록·진행 — 건수로 고정 표시(인당/총 건수 선택과 무관)
   const doneT=TYPES.map(t=>rowsM.filter(r=>r.type===t&&DONE.includes(r.status)).length),allT=TYPES.map(t=>rowsM.filter(r=>r.type===t).length);
-  const A=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W*.4)-8),cats:TYPES,stack:true,per,series:[{name:'완료·확정',vals:doneT.map(div),color:C.dark},{name:'진행·등록',vals:allT.map((v,i)=>div(v-doneT[i])),color:C.light}]});
-  // b) 월별
-  const mo=(pred)=>Array.from({length:12},(_,i)=>div(rowsY.filter(r=>monthOf(r)===i+1&&pred(r)).length)),rowsC=filt(D,{ignoreYear:true,ignoreMonth:true}).filter(inTeams),cy=r=>cdOf(r).slice(0,4),cm=r=>+cdOf(r).slice(5,7),confM=(a)=>Array.from({length:12},(_,i)=>div(a.filter(r=>r.judgeState==='확정'&&cy(r)===S.year&&cm(r)===i+1).length)),ML=Array.from({length:12},(_,i)=>String(i+1).padStart(2,'0')+'월');
-  const B=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W*.6)-8),cats:ML,per,series:[{name:'5S 활동 완료건수',vals:mo(r=>DONE.includes(r.status)),color:C.dark},{name:'고도화 확정 건수',vals:confM(rowsC),color:C.amber},{name:'수평전개 적용대상건수',vals:mo(r=>r.horizontalRollout===true),color:C.grey}]});
+  const A=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W*.4)-8),cats:TYPES,stack:true,per:false,series:[{name:'완료·확정',vals:doneT,color:C.dark},{name:'진행·등록',vals:allT.map((v,i)=>v-doneT[i]),color:C.light}]});
+  // b) 월별 — 건수로 고정 표시. 수평전개 적용대상건수는 그 달 5S 활동 완료건수 대비 비율(%)을 값 옆에 병기하고 막대를 넓혀 값이 겹치지 않게 함
+  const mo=(pred)=>Array.from({length:12},(_,i)=>rowsY.filter(r=>monthOf(r)===i+1&&pred(r)).length),rowsC=filt(D,{ignoreYear:true,ignoreMonth:true}).filter(inTeams),cy=r=>cdOf(r).slice(0,4),cm=r=>+cdOf(r).slice(5,7),confM=(a)=>Array.from({length:12},(_,i)=>a.filter(r=>r.judgeState==='확정'&&cy(r)===S.year&&cm(r)===i+1).length),ML=Array.from({length:12},(_,i)=>String(i+1).padStart(2,'0')+'월');
+  const doneM=mo(r=>DONE.includes(r.status)),rollM=mo(r=>r.horizontalRollout===true),rollPct=rollM.map((v,i)=>doneM[i]?Math.round(v/doneM[i]*1000)/10:null);
+  const B=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W*.6)-8),cats:ML,per:false,minSlot:74,series:[{name:'5S 활동 완료건수',vals:doneM,color:C.dark},{name:'고도화 확정 건수',vals:confM(rowsC),color:C.amber},{name:'수평전개 적용대상건수',vals:rollM,color:C.grey,widthScale:1.5,pct:rollPct}]});
   // c) 팀별 인당
   /* 가로축 정렬: 값(인당 건수) 기준 정렬을 쓰지 않고, 통합기준정보(표시순서) 탭에서 관리하는 생산팀 표시순서를 그대로 따름 */
   const teamOrder=(()=>{try{const v=JSON.parse(localStorage.getItem('gmes5s_team_display_order')||'null');if(Array.isArray(v)&&v.length)return v}catch{}return window.HD20ProductionTeamMaster?.teamNames?.()||null})();
@@ -104,8 +109,8 @@ function render(box){
 <label>부서 <select data-f="group">${opt(D.groups,S.group)}</select></label><label>5S 유형 <select data-f="type">${opt(TYPES,S.type)}</select></label>
 <label>고도화 확정 <select data-f="judge"><option value="">ALL</option><option value="Y"${S.judge==='Y'?' selected':''}>확정 결과만</option><option value="N"${S.judge==='N'?' selected':''}>확정 외</option></select></label><label>수평전개 <select data-f="roll"><option value="">ALL</option><option value="Y"${S.roll==='Y'?' selected':''}>적용대상</option><option value="N"${S.roll==='N'?' selected':''}>비대상</option></select></label>
 <span class="sp"></span><button type="button" class="alt" data-ib="print">프린트</button><button type="button" class="alt" data-ib="csv">엑셀다운로드</button></div>
-<div class="ibRow r1"><div class="ibPanel"><div class="ibHead">5S 유형별 등록 및 진행현황<button type="button" class="ibEv" data-evk="a">근거 데이터</button><em>${S.month?S.month.replace(/^0/,'')+'월':'연간누적'} · ${unit}</em></div><div class="ibBody">${A}${leg([['완료·확정',C.dark],['진행·등록',C.light]])}</div></div>
-<div class="ibPanel"><div class="ibHead">월별 등록 및 진행현황<button type="button" class="ibEv" data-evk="b">근거 데이터</button><em>${S.year}년 · ${unit}</em></div><div class="ibBody">${B}${leg([['5S 활동 완료건수',C.dark],['고도화 확정 건수',C.amber],['수평전개 적용대상건수',C.grey]])}</div></div></div>
+<div class="ibRow r1"><div class="ibPanel"><div class="ibHead">5S 유형별 등록 및 진행현황<button type="button" class="ibEv" data-evk="a">근거 데이터</button><em>${S.month?S.month.replace(/^0/,'')+'월':'연간누적'} · 건</em></div><div class="ibBody">${A}${leg([['완료·확정',C.dark],['진행·등록',C.light]])}</div></div>
+<div class="ibPanel"><div class="ibHead">월별 등록 및 진행현황<button type="button" class="ibEv" data-evk="b">근거 데이터</button><em>${S.year}년 · 건 · 수평전개=그 달 완료건수 대비 %</em></div><div class="ibBody">${B}${leg([['5S 활동 완료건수',C.dark],['고도화 확정 건수',C.amber],['수평전개 적용대상건수',C.grey]])}</div></div></div>
 <div class="ibRow"><div class="ibPanel"><div class="ibHead">현장조직 팀에 대한 개선활동 현황${per?'(인당 개선건수)':'(총 건수)'}<button type="button" class="ibEv" data-evk="c">근거 데이터</button><em class="pt">당월(${String(mm).padStart(2,'0')}월) 현재 참여율 ${part.toFixed(1)}% (등록자 ${owners}명 / 총원 ${hcAll}명)</em></div><div class="ibBody">${Cc}${leg([['평균 이상 (평균 '+avg.toFixed(2)+(per?'건/인)':'건)'),C.dark],['평균 미만',C.amber]])}</div></div></div>
 <div class="ibRow r3"><div class="ibPanel"><div class="ibHead">단일 팀에 대한 연간/월별 누적 활동 실적${per?'(인당 개선건수)':''}<button type="button" class="ibEv" data-evk="d">근거 데이터</button><em>[ ${esc(S.team)} ] 연간 ${fx(dCum,per)}${unit}</em></div><div class="ibBody">${Dd}</div></div>
 <div class="ibPanel"><div class="ibHead">단일 팀에 대한 고도화 확보 누적 추이${per?'(인당)':''}<button type="button" class="ibEv" data-evk="e">근거 데이터</button><em>[ ${esc(S.team)} ] 현재 ${curKeep}곳 유지</em></div><div class="ibBody">${E}${leg([['기존 유지','#a8c7c4'],['신규 확정',C.dark]])}${est?`<div class="ibLeg"><span>※ 유지 이탈 시점 기록이 없어 확정일+6개월(종료평가 시점)로 추정한 값이 ${est}건 포함됩니다. 수평전개 적용대상은 [근거 데이터]에서 확인하세요.</span></div>`:''}</div></div></div>
