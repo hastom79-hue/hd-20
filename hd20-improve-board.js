@@ -72,7 +72,10 @@ function render(box){
   const mo=(pred)=>Array.from({length:12},(_,i)=>div(rowsY.filter(r=>monthOf(r)===i+1&&pred(r)).length)),rowsC=filt(D,{ignoreYear:true,ignoreMonth:true}).filter(inTeams),cy=r=>cdOf(r).slice(0,4),cm=r=>+cdOf(r).slice(5,7),confM=(a)=>Array.from({length:12},(_,i)=>div(a.filter(r=>r.judgeState==='확정'&&cy(r)===S.year&&cm(r)===i+1).length)),ML=Array.from({length:12},(_,i)=>String(i+1).padStart(2,'0')+'월');
   const B=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W*.6)-8),cats:ML,per,series:[{name:'5S 활동 완료건수',vals:mo(r=>DONE.includes(r.status)),color:C.dark},{name:'고도화 확정 건수',vals:confM(rowsC),color:C.amber},{name:'수평전개 적용대상건수',vals:mo(r=>r.horizontalRollout===true),color:C.grey}]});
   // c) 팀별 인당
-  const tv=teamsAll.map(t=>{const c=rowsM.filter(r=>r.team===t).length,h=D.hcOf(t);return{t,c,h,v:per?(h?c/h:0):c}}).sort((a,b)=>b.v-a.v);
+  /* 가로축 정렬: 값(인당 건수) 기준 정렬을 쓰지 않고, 통합기준정보(표시순서) 탭에서 관리하는 생산팀 표시순서를 그대로 따름 */
+  const teamOrder=(()=>{try{const v=JSON.parse(localStorage.getItem('gmes5s_team_display_order')||'null');if(Array.isArray(v)&&v.length)return v}catch{}return window.HD20ProductionTeamMaster?.teamNames?.()||null})();
+  const orderIdx=t=>{const i=teamOrder?teamOrder.indexOf(t):-1;return i<0?999:i};
+  const tv=teamsAll.map(t=>{const c=rowsM.filter(r=>r.team===t).length,h=D.hcOf(t);return{t,c,h,v:per?(h?c/h:0):c}}).sort((a,b)=>orderIdx(a.t)-orderIdx(b.t)||a.t.localeCompare(b.t,'ko'));
   if(!S.team||!tv.some(x=>x.t===S.team))S.team=tv[0]?.t||'';
   const totC=tv.reduce((a,x)=>a+x.c,0),avg=per?totC/hcAll:totC/Math.max(1,tv.length);
   /* snapshot()은 매번 원본을 새로 파싱해 매 호출마다 새 객체를 만들므로 참조 비교(Set.has)가 항상 실패함 — id로 비교 */
