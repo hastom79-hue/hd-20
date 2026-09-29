@@ -1528,6 +1528,14 @@
 - `chart()`에 `linkX` 매개변수 추가. true면 x축 텍스트 라벨에 `class="hit xlbl"`·`data-cat`·`fill:#2c5f8a`·`text-decoration:underline` 부여(회전 라벨·가로 라벨 두 분기 모두). 기존 `box.querySelectorAll('svg')[2]?.querySelectorAll('.hit').forEach(el=>el.onclick=...)`가 막대와 라벨을 구분하지 않고 전부 처리하므로 이벤트 배선 변경 없음. ③ 팀 차트(`Cc=chart({...})`) 호출에 `linkX:true` 추가. 버전 `hd20-improve-board.js?v=20260929-labellink-1`.
 - 검증(`labellink_check.py`): 라벨 요소 16개(`text.xlbl`) 생성 확인, 6번째 라벨(중형상부1팀) 클릭 → ④ 머리글 "[ 중형상부1팀 ] 연간 1.51건/인", ⑤ 머리글 "[ 중형상부1팀 ] 현재 3곳 유지"로 정확히 전환, 라벨 `cursor:pointer` 확인, 스크린샷으로 밑줄·선택 막대 테두리 확인. 16개 탭 회귀 오류 0건.
 
+### `0a65d13` — feat: 건수 고정 표시 + 수평전개 폭·비율 라벨 + 0값 숨김 (2026-09-29)
+- 변경 파일: `hd20-improve-board.js`(+16/-11), `index.html`(+1/-1)
+- `chart()` 공용 함수 확장: `series[k].widthScale`(막대 폭 배율, 기본 1)와 `series[k].pct`(카테고리별 비율 배열)를 지원. 그룹(비누적) 막대 레이아웃을 `bw0*scale` 개별 폭 + `gap=max(2,bw0*.32)` 순차 배치로 재작성(기존은 균등폭·균등 간격 가정). `pct`가 있는 시리즈는 값 라벨을 `text-anchor="start"`로 막대 왼쪽 기준 렌더링(중앙 정렬 대신 오른쪽 여유 공간으로 자연스럽게 펼침), 텍스트는 `${F(v)} (${pct[i]}%)`.
+- `render()`: ①`A=chart({...per:false,...})`(집계 선택 무시, 값 그대로 doneT/allT), ②`doneM/rollM/confM`도 `div()` 대신 원본 카운트 사용, `rollPct=rollM.map((v,i)=>doneM[i]?round(v/doneM[i]*1000)/10:null)`, `B=chart({...per:false,minSlot:74,series:[...,{...color:C.grey,widthScale:1.5,pct:rollPct}]})`. 머리글 단위 문구를 '건/인'→'건' 고정 문자열로.
+- 겹침 대응 2단계: 1차(`gap` 확대만)는 스크린샷에서 라벨이 다음 달 첫 막대와 겹침 재현 → 2차로 `minSlot` 36→74 확대(카테고리 슬롯 자체를 넓힘)로 해결. `overlap_measure.py`로 모든 텍스트 요소의 `getBBox()`를 상호 비교해 겹침 0건 실측 확인(39개 라벨).
+- 버전: `hd20-improve-board.js?v=20260929-counts-3`.
+- 검증: 인당 모드 전환해도 ①②는 건수 유지, 01월 예시 2÷64=3.1% 등 비율 계산 확인, 회색 막대 폭(22.75px)이 다른 색(14.22px)의 1.5배, y축 '0' 눈금 텍스트(데이터 아님)만 남고 실제 0값 데이터 라벨은 없음. 16개 탭 회귀 오류 0건.
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
@@ -1591,8 +1599,8 @@
 ## (2026-09-28 갱신) 종료조건
 16개 탭 순회·기능 회귀 세트 콘솔 오류 0건, 최신 GitHub Pages 빌드 `built` 확인, 실제 사이트 확인 결과 반영 후 종료.
 
-## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 61건)
-> 커밋 시각은 저장소 표기 기준. 아래 61건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
+## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 62건)
+> 커밋 시각은 저장소 표기 기준. 아래 62건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
 > (`e182f66`은 이 대화 밖의 다른 Claude 세션이 같은 계정으로 push한 커밋이라 포함됨. 대장은 `git log --since`가 날짜가 뒤섞인 이력에서 일부를 건너뛰는 것을 발견해, 커밋 날짜를 직접 비교해 생성)
 
 | 커밋 | 시각 | 제목 | 변경 파일 |
@@ -1658,8 +1666,9 @@
 | `57e196b` | 2026-09-29 04:36 | feat: 리더십 명단에 실제 5명 기본값 반영 + 실행·유지/고도화 맵 탭 중복 버블맵 제거 | `final-layout-polish.js`, `index.html`, `integrated-performance-map.js`, `operating-policy-master.js` |
 | `ff7a603` | 2026-09-29 04:42 | fix: 팀별 차트 가로축을 값 기준 정렬 대신 통합기준정보 표시순서로 고정 | `hd20-improve-board.js`, `hd20-request-board.js`, `index.html` |
 | `a96d01c` | 2026-09-29 04:45 | feat: 자율개선 종합 팀 차트 - 가로축 팀명 클릭으로도 하단 단일팀 차트 전환 | `hd20-improve-board.js`, `index.html` |
+| `0a65d13` | 2026-09-29 04:52 | feat: ①②번 차트 건수 고정 표시 + 수평전개 막대 폭 확대·비율(%) 라벨 + 0값 숨김 | `hd20-improve-board.js`, `index.html` |
 
-### 문서 커밋(50건, 로그 갱신용)
+### 문서 커밋(51건, 로그 갱신용)
 - `c661242` docs: development/coding log for validation fixture, team master, auth, subtab split (2026-09-22)
 - `da246aa` docs: log advancement 4-way subtab split (4aee88b) in dev/coding logs
 - `015b9b3` docs: log action/audit 4-way subtab split + metric bugfix (57e264c) in dev/coding logs
@@ -1710,3 +1719,4 @@
 - `8368e1e` docs: 팀 차트 목표선 제거·평균 색상 원복(c659c3c) 로그 반영, 커밋 대장 재생성
 - `fdd0e47` docs: 요청출처 현실화·표시순서 관리(2e23eb6) 로그 반영, 커밋 대장 재생성
 - `55c077e` docs: 리더십 실명 반영·중복 지도 제거(57e196b), 표시순서 정렬(ff7a603) 로그 반영, 커밋 대장 재생성
+- `866ced9` docs: 팀명 라벨 클릭 연동(a96d01c) 로그 반영, 커밋 대장 재생성
