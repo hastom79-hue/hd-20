@@ -1494,6 +1494,12 @@
 - 검증(`exec_check4.py`): 실제 최다 등록자("박지훈", 82건)를 정확한 이름으로 명단에 저장 → 요청출처=리더십 필터 시 상세내용 69건 전부 출처 열 '리더십' 일치. 저장값 `["박지훈","홍길동"]` 확인. 16개 탭 회귀 오류 0건.
 - 과정 중 실수 기록: 첫 시도에서 "박지훈 공장장"처럼 이름 뒤에 직함을 붙여 테스트했다가 정확 일치 실패로 0건이 나옴 → 원인이 테스트 데이터임을 확인 후 이름만으로 재시도해 해결. 이 경험을 바탕으로 화면 안내문·예시를 이름만 넣도록 보강.
 
+### `c659c3c` — fix: 목표선 제거, 평균 기준 2색 구분 원복 (2026-09-29)
+- 변경 파일: `hd20-improve-board.js`(+4/-3), `index.html`(+1/-1)
+- `hd20-improve-board.js` ③ 팀 차트: `useT/QT/thr/okN`(목표 기준 분기)와 `hline`(목표선) 인자를 제거, `colorOf:(c,i)=>tv[i].v>=avg?C.dark:C.amber`로 단순화. 범례를 `평균 이상 (평균 N건/인) / 평균 미만` 고정 문구로. `quarterTarget()`는 `HD20_BOARD_KIT`에 함수만 남기고 호출 제거.
+- 버전 `hd20-improve-board.js?v=20260929-avgcolor-1`.
+- 검증(`avgcolor_check.py`): `line[stroke-dasharray]`(목표선) 없음 확인, 범례 텍스트 확인, 스크린샷으로 대형Att.팀(2.50)~중형Att팀(1.34) 진한색·중형메인팀(1.15) 이하 황색으로 평균(1.28) 기준 정확히 분리. 16개 탭 회귀 오류 0건.
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
@@ -1557,8 +1563,8 @@
 ## (2026-09-28 갱신) 종료조건
 16개 탭 순회·기능 회귀 세트 콘솔 오류 0건, 최신 GitHub Pages 빌드 `built` 확인, 실제 사이트 확인 결과 반영 후 종료.
 
-## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 56건)
-> 커밋 시각은 저장소 표기 기준. 아래 56건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
+## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 57건)
+> 커밋 시각은 저장소 표기 기준. 아래 57건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
 > (`e182f66`은 이 대화 밖의 다른 Claude 세션이 같은 계정으로 push한 커밋이라 포함됨. 대장은 `git log --since`가 날짜가 뒤섞인 이력에서 일부를 건너뛰는 것을 발견해, 커밋 날짜를 직접 비교해 생성)
 
 | 커밋 | 시각 | 제목 | 변경 파일 |
@@ -1619,8 +1625,9 @@
 | `59465cf` | 2026-09-28 22:27 | feat: 5S 개선요청 종합 대시보드를 실제 VTB(HD-HiHR) 화면 구성에 맞춰 전면 재구성 | `hd20-request-board.js`, `index.html` |
 | `c8fbe43` | 2026-09-28 23:19 | fix: 개선요청 출처 '리더십'을 정의대로(경영진·팀장) 판별 — 등록자=생산팀장 기준정보 이름 일치로 분류 | `hd20-request-board.js`, `index.html` |
 | `6ed0ff4` | 2026-09-29 04:18 | feat: 공장장(경영진)도 리더십에 포함 — 통합기준정보에 '리더십 판별 명단' 신설 | `final-layout-polish.js`, `hd20-request-board.js`, `operating-policy-master.js` |
+| `c659c3c` | 2026-09-29 04:20 | fix: 자율개선 종합 팀 차트 목표선 제거 — 평균 이상/미만 색상 구분으로 원복(대시보드 공통 규칙) | `hd20-improve-board.js`, `index.html` |
 
-### 문서 커밋(46건, 로그 갱신용)
+### 문서 커밋(47건, 로그 갱신용)
 - `c661242` docs: development/coding log for validation fixture, team master, auth, subtab split (2026-09-22)
 - `da246aa` docs: log advancement 4-way subtab split (4aee88b) in dev/coding logs
 - `015b9b3` docs: log action/audit 4-way subtab split + metric bugfix (57e264c) in dev/coding logs
@@ -1667,3 +1674,4 @@
 - `dfc7e8b` docs: 후보 목록 필터 바(ddd8454) 개발일지/상세 개발일지/코딩일지 반영, 커밋 대장 재생성
 - `c47461f` docs: 대상 추출 필터+가드 수정(cc8d318), 개선요청 종합 VTB 재구성(59465cf) 로그 반영, 커밋 대장 재생성
 - `520f01e` docs: 리더십 출처 판별(c8fbe43) 로그 반영, 커밋 대장 재생성
+- `d5a49cf` docs: 공장장(경영진) 리더십 명단(6ed0ff4) 로그 반영, 커밋 대장 재생성
