@@ -1611,6 +1611,15 @@
 - 버전 `hd20-improve-board.js?v=20260930-splitwide-1`.
 - 검증(`imp_split_check.py`): 패널 실측 폭 384:896=30.0:70.0, SVG bounding box 겹침 0건(라벨 39개). 16개 탭 회귀 오류 0건.
 
+### `2866aca` — feat: 개선요청 종합 팀 차트·상세 추이 패널 신설 (2026-09-30)
+- 변경 파일: `hd20-request-board.js`(+10/-2), `index.html`(+1/-1)
+- `S`에 `selTeam` 추가(필터용 `team`과 분리). `teamChart=chart({stack:true,rotate:true,sel:S.selTeam,linkX:true,minSlot:60,series:[완료,진행·대기,기한경과]})`(a96d01c의 linkX 메커니즘 재사용).
+- `selRows/selYearRows`: `D.cases.filter(c=>c.team===S.selTeam&&(!S.source||sourceOf(c)===S.source))`로 요청출처 필터도 반영. `teamTrend=chart({per:false,series:[등록,완료]})`.
+- 마크업: ③ 패널에 `${teamChart}` + 범례를 표 앞에 추가(기존 `teamGrid`는 그대로 유지). 신규 ibRow에 ④ "선택 팀 월별 등록·완료 추이" 패널 추가.
+- 이벤트: `box.querySelectorAll('svg')[2]?.querySelectorAll('.hit').forEach(el=>el.onclick=()=>{S.selTeam=el.dataset.cat;render(box)})`.
+- 버전 `hd20-request-board.js?v=20260930-teamchart-1`.
+- 검증(`team_chart_check.py`): 패널 5개로 증가, 초기 선택 팀(대형Att.팀)→클릭 후 Boom제작팀으로 정확히 전환, 추이 값(01월 8/4·07월 8/4 등) 확인. 16개 탭 회귀 오류 0건.
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
@@ -1674,8 +1683,8 @@
 ## (2026-09-28 갱신) 종료조건
 16개 탭 순회·기능 회귀 세트 콘솔 오류 0건, 최신 GitHub Pages 빌드 `built` 확인, 실제 사이트 확인 결과 반영 후 종료.
 
-## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 72건)
-> 커밋 시각은 저장소 표기 기준. 아래 72건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
+## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 73건)
+> 커밋 시각은 저장소 표기 기준. 아래 73건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
 > (`e182f66`은 이 대화 밖의 다른 Claude 세션이 같은 계정으로 push한 커밋이라 포함됨. 대장은 `git log --since`가 날짜가 뒤섞인 이력에서 일부를 건너뛰는 것을 발견해, 커밋 날짜를 직접 비교해 생성)
 
 | 커밋 | 시각 | 제목 | 변경 파일 |
@@ -1752,8 +1761,9 @@
 | `9e9a372` | 2026-09-29 22:03 | feat: 개선요청 종합 ①번 차트 완료 막대 폭 확대 + 완료율(%) 표기 | `hd20-request-board.js`, `index.html` |
 | `63c351f` | 2026-09-29 22:08 | feat: 개선요청 종합 좌우 패널 비율 30:70으로 조정 + 월별 완료 막대 폭·완료율(%) 표기 | `hd20-request-board.js`, `index.html` |
 | `75c1e44` | 2026-09-29 22:18 | feat: 자율개선 종합 좌우 패널 비율 30:70으로 조정 — 수평전개 라벨 겹침 보정 | `hd20-improve-board.js`, `index.html` |
+| `2866aca` | 2026-09-29 22:21 | feat: 개선요청 종합에 자율개선 종합과 같은 '팀 단위 차트 + 클릭 상세' 구조 보강 | `hd20-request-board.js`, `index.html` |
 
-### 문서 커밋(61건, 로그 갱신용)
+### 문서 커밋(62건, 로그 갱신용)
 - `c661242` docs: development/coding log for validation fixture, team master, auth, subtab split (2026-09-22)
 - `da246aa` docs: log advancement 4-way subtab split (4aee88b) in dev/coding logs
 - `015b9b3` docs: log action/audit 4-way subtab split + metric bugfix (57e264c) in dev/coding logs
@@ -1815,3 +1825,4 @@
 - `56e457f` docs: 새로고침 깜빡임 제거(1abd399) 로그 반영, 커밋 대장 재생성
 - `cfa5b3f` docs: 개선요청 완료율 표기(9e9a372) 로그 반영, 커밋 대장 재생성
 - `8a9df86` docs: 좌우 비율·월별 완료율(63c351f) 로그 반영, 커밋 대장 재생성
+- `d8791b6` docs: 자율개선 좌우 비율 조정(75c1e44) 로그 반영, 커밋 대장 재생성
