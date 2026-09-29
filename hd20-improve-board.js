@@ -44,7 +44,7 @@ function filt(D,{ignoreMonth=false,ignoreYear=false}={}){
 const monthOf=r=>+String(r.date||r.regDate||'').slice(5,7);
 function axis(v){const raw=v/4,p=Math.pow(10,Math.floor(Math.log10(raw))),f=raw/p,n=f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10,step=n*p;return{step,max:Math.ceil(v/step-1e-9)*step}}
 const tk=v=>String(Number(v.toFixed(3)));
-function chart({w,h=240,cats,series,stack=false,per=false,rotate=false,sel=null,colorOf=null,minSlot=36,fmt=null,hline=null,linkX=false}){
+function chart({w,h=240,cats,series,stack=false,per=false,rotate=false,sel=null,colorOf=null,minSlot=36,fmt=null,hline=null,linkX=false,topPct=null}){
   const F=v=>fmt?fmt(v):fx(v,per);
   const W0=Math.max(w,cats.length*minSlot+56),slot0=(W0-56)/Math.max(1,cats.length);rotate=rotate||(slot0<58&&cats.some(c=>String(c).length>3));
   const m={l:46,r:10,t:20,b:rotate?84:30},W=W0,iw=W-m.l-m.r,ih=h-m.t-m.b;
@@ -52,14 +52,16 @@ function chart({w,h=240,cats,series,stack=false,per=false,rotate=false,sel=null,
   const ax=axis(Math.max(0.0001,...tot,hline?hline.value*1.05:0)),max=ax.max,yv=v=>m.t+ih-(v/max)*ih,slot=iw/Math.max(1,cats.length);
   let g='';for(let i=0;i<=Math.round(max/ax.step);i++){const v=ax.step*i,y=yv(v);g+=`<line x1="${m.l}" x2="${W-m.r}" y1="${y}" y2="${y}" stroke="${C.grid}"/><text x="${m.l-6}" y="${y+4}" text-anchor="end" font-size="11" fill="${C.soft}">${tk(v)}</text>`}
   let b='';const n0=series.length,bw0=stack?Math.min(40,slot*.6):Math.min(24,slot*.72/n0);
-  const scales=series.map(s=>s.widthScale||1),bws=scales.map(sc=>bw0*sc),gap=stack?0:Math.max(2,bw0*.32),groupW=bws.reduce((a,w)=>a+w,0)+gap*(n0-1);
+  const scales=series.map(s=>s.widthScale||1),bws=scales.map(sc=>bw0*sc),gap=stack?0:Math.max(1,bw0*.08),groupW=bws.reduce((a,w)=>a+w,0)+gap*(n0-1);
   cats.forEach((c,i)=>{const cx=m.l+slot*i+slot/2,n=n0,bw=bw0;let startX=cx-groupW/2,acc=0;
     series.forEach((s,k)=>{const v=s.vals[i]||0;const bwK=bws[k];if(v<=0){startX+=bwK+gap;return}const hh=Math.max(2,(v/max)*ih);const x=stack?cx-bwK/2:startX;const y=stack?yv(acc+v):yv(v);const col=colorOf?colorOf(c,i,k):s.color;
       b+=`<rect ${(sel!==null&&c===sel)?'stroke="#14304c" stroke-width="2"':''} x="${x}" y="${y}" width="${bwK}" height="${hh}" rx="2" fill="${col}" class="hit" data-cat="${esc(c)}"><title>${esc(c)} · ${esc(s.name)}: ${F(v)}</title></rect>`;
       if(!stack){const hasPct=s.pct&&Number.isFinite(s.pct[i]);const pctTxt=hasPct?` (${s.pct[i]}%)`:'';
         b+=hasPct?`<text x="${x}" y="${y-4}" text-anchor="start" font-size="10.5" font-weight="800" fill="${C.ink}">${F(v)}${pctTxt}</text>`:`<text x="${x+bwK/2}" y="${y-4}" text-anchor="middle" font-size="10.5" font-weight="800" fill="${C.ink}">${F(v)}</text>`}
       acc+=v;startX+=bwK+gap});
-    if(stack&&tot[i]>0)b+=`<text x="${cx}" y="${yv(tot[i])-4}" text-anchor="middle" font-size="10.5" font-weight="800" fill="${C.ink}">${F(tot[i])}</text>`;
+    if(stack&&tot[i]>0){const tp=topPct&&Number.isFinite(topPct[i])?topPct[i]:null;
+      b+=`<text x="${cx}" y="${yv(tot[i])-4}" text-anchor="middle" font-size="10.5" font-weight="800" fill="${C.ink}">${F(tot[i])}</text>`;
+      if(tp!==null)b+=`<text x="${cx}" y="${yv(tot[i])-17}" text-anchor="middle" font-size="9.5" font-weight="800" fill="${tp<70?'#c0392b':'#2f7a4d'}">완료 ${tp}%</text>`}
     const ly=m.t+ih+15,isSel=sel!==null&&c===sel,lblCls=linkX?' class="hit xlbl"':'',lblAttr=linkX?` data-cat="${esc(c)}"`:'',lblFill=linkX?'#2c5f8a':(isSel?'#14304c':C.soft),lblDeco=linkX?' text-decoration="underline"':'';
     b+=rotate?`<text transform="translate(${cx+4},${ly}) rotate(-45)"${lblCls}${lblAttr} text-anchor="end" font-size="11" fill="${lblFill}"${lblDeco} font-weight="${isSel?900:600}">${esc(c)}</text>`:`<text x="${cx}" y="${ly}"${lblCls}${lblAttr} text-anchor="middle" font-size="11.5" fill="${lblFill}"${lblDeco}>${esc(c)}</text>`});
   return `<svg width="${W}" height="${h}" viewBox="0 0 ${W} ${h}" role="img">${g}<line x1="${m.l}" x2="${W-m.r}" y1="${m.t+ih}" y2="${m.t+ih}" stroke="#b7c6d1"/>${b}${hline?`<line x1="${m.l}" x2="${W-m.r}" y1="${yv(hline.value)}" y2="${yv(hline.value)}" stroke="#c0392b" stroke-width="1.6" stroke-dasharray="6 4"/><text x="${W-m.r}" y="${yv(hline.value)-5}" text-anchor="end" font-size="11" font-weight="800" fill="#c0392b">${esc(hline.label)}</text>`:''}</svg>`}
@@ -72,7 +74,8 @@ function render(box){
   const div=v=>per?v/hcAll:v;
   // a) 유형별 등록·진행 — 건수로 고정 표시(인당/총 건수 선택과 무관)
   const doneT=TYPES.map(t=>rowsM.filter(r=>r.type===t&&DONE.includes(r.status)).length),allT=TYPES.map(t=>rowsM.filter(r=>r.type===t).length);
-  const A=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W*.4)-8),cats:TYPES,stack:true,per:false,series:[{name:'완료·확정',vals:doneT,color:C.dark},{name:'진행·등록',vals:allT.map((v,i)=>v-doneT[i]),color:C.light}]});
+  const typePct=TYPES.map((t,i)=>allT[i]?Math.round(doneT[i]/allT[i]*1000)/10:null);
+  const A=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W*.4)-8),cats:TYPES,stack:true,per:false,topPct:typePct,series:[{name:'완료·확정',vals:doneT,color:C.dark},{name:'진행·등록',vals:allT.map((v,i)=>v-doneT[i]),color:C.light}]});
   // b) 월별 — 건수로 고정 표시. 수평전개 적용대상건수는 그 달 5S 활동 완료건수 대비 비율(%)을 값 옆에 병기하고 막대를 넓혀 값이 겹치지 않게 함
   const mo=(pred)=>Array.from({length:12},(_,i)=>rowsY.filter(r=>monthOf(r)===i+1&&pred(r)).length),rowsC=filt(D,{ignoreYear:true,ignoreMonth:true}).filter(inTeams),cy=r=>cdOf(r).slice(0,4),cm=r=>+cdOf(r).slice(5,7),confM=(a)=>Array.from({length:12},(_,i)=>a.filter(r=>r.judgeState==='확정'&&cy(r)===S.year&&cm(r)===i+1).length),ML=Array.from({length:12},(_,i)=>String(i+1).padStart(2,'0')+'월');
   const doneM=mo(r=>DONE.includes(r.status)),rollM=mo(r=>r.horizontalRollout===true),rollPct=rollM.map((v,i)=>doneM[i]?Math.round(v/doneM[i]*1000)/10:null);
@@ -109,7 +112,7 @@ function render(box){
 <label>부서 <select data-f="group">${opt(D.groups,S.group)}</select></label><label>5S 유형 <select data-f="type">${opt(TYPES,S.type)}</select></label>
 <label>고도화 확정 <select data-f="judge"><option value="">ALL</option><option value="Y"${S.judge==='Y'?' selected':''}>확정 결과만</option><option value="N"${S.judge==='N'?' selected':''}>확정 외</option></select></label><label>수평전개 <select data-f="roll"><option value="">ALL</option><option value="Y"${S.roll==='Y'?' selected':''}>적용대상</option><option value="N"${S.roll==='N'?' selected':''}>비대상</option></select></label>
 <span class="sp"></span><button type="button" class="alt" data-ib="print">프린트</button><button type="button" class="alt" data-ib="csv">엑셀다운로드</button></div>
-<div class="ibRow r1"><div class="ibPanel"><div class="ibHead">5S 유형별 등록 및 진행현황<button type="button" class="ibEv" data-evk="a">근거 데이터</button><em>${S.month?S.month.replace(/^0/,'')+'월':'연간누적'} · 건</em></div><div class="ibBody">${A}${leg([['완료·확정',C.dark],['진행·등록',C.light]])}</div></div>
+<div class="ibRow r1"><div class="ibPanel"><div class="ibHead">5S 유형별 등록 및 진행현황<button type="button" class="ibEv" data-evk="a">근거 데이터</button><em>${S.month?S.month.replace(/^0/,'')+'월':'연간누적'} · 건</em></div><div class="ibBody">${A}${leg([['완료·확정',C.dark],['진행·등록',C.light]])}<div class="ibLeg"><span>이 유형에서 등록한 5S 활동이 얼마나 완료됐는지 봅니다. 막대 위 %가 낮을수록(빨간 글자) 그 유형에 진행·등록 건이 밀려 있다는 뜻입니다.</span></div></div></div>
 <div class="ibPanel"><div class="ibHead">월별 등록 및 진행현황<button type="button" class="ibEv" data-evk="b">근거 데이터</button><em>${S.year}년 · 건 · 수평전개=그 달 완료건수 대비 %</em></div><div class="ibBody">${B}${leg([['5S 활동 완료건수',C.dark],['고도화 확정 건수',C.amber],['수평전개 적용대상건수',C.grey]])}</div></div></div>
 <div class="ibRow"><div class="ibPanel"><div class="ibHead">현장조직 팀에 대한 개선활동 현황${per?'(인당 개선건수)':'(총 건수)'}<button type="button" class="ibEv" data-evk="c">근거 데이터</button><em class="pt">당월(${String(mm).padStart(2,'0')}월) 현재 참여율 ${part.toFixed(1)}% (등록자 ${owners}명 / 총원 ${hcAll}명)</em></div><div class="ibBody">${Cc}${leg([['평균 이상 (평균 '+avg.toFixed(2)+(per?'건/인)':'건)'),C.dark],['평균 미만',C.amber]])}</div></div></div>
 <div class="ibRow r3"><div class="ibPanel"><div class="ibHead">단일 팀에 대한 연간/월별 누적 활동 실적${per?'(인당 개선건수)':''}<button type="button" class="ibEv" data-evk="d">근거 데이터</button><em>[ ${esc(S.team)} ] 연간 ${fx(dCum,per)}${unit}</em></div><div class="ibBody">${Dd}</div></div>
