@@ -74,8 +74,10 @@ function render(box){
   const div=v=>per?v/hcAll:v;
   // a) 유형별 등록·진행 — 건수로 고정 표시(인당/총 건수 선택과 무관)
   const doneT=TYPES.map(t=>rowsM.filter(r=>r.type===t&&DONE.includes(r.status)).length),allT=TYPES.map(t=>rowsM.filter(r=>r.type===t).length);
-  const typePct=TYPES.map((t,i)=>allT[i]?Math.round(doneT[i]/allT[i]*1000)/10:null);
-  const A=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W*.4)-8),cats:TYPES,stack:true,per:false,topPct:typePct,series:[{name:'완료·확정',vals:doneT,color:C.dark},{name:'진행·등록',vals:allT.map((v,i)=>v-doneT[i]),color:C.light}]});
+  /* 자율개선 사례는 이미 완료된 건만 등록하는 것이 원칙이라(등록 시점=완료 시점), '완료 vs 진행'으로 나누는 것은
+     맞지 않음(검증 데이터에는 진행중 등 상태가 섞여 있으나 이는 실제 운영 규칙과 다른 시험 데이터의 한계).
+     유형별 등록 건수(=완료된 사례 수) 하나만 표시. */
+  const A=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W*.4)-8),cats:TYPES,per:false,minSlot:70,series:[{name:'등록 건수',vals:allT,color:C.dark}]});
   // b) 월별 — 건수로 고정 표시. 수평전개 적용대상건수는 그 달 5S 활동 완료건수 대비 비율(%)을 값 옆에 병기하고 막대를 넓혀 값이 겹치지 않게 함
   const mo=(pred)=>Array.from({length:12},(_,i)=>rowsY.filter(r=>monthOf(r)===i+1&&pred(r)).length),rowsC=filt(D,{ignoreYear:true,ignoreMonth:true}).filter(inTeams),cy=r=>cdOf(r).slice(0,4),cm=r=>+cdOf(r).slice(5,7),confM=(a)=>Array.from({length:12},(_,i)=>a.filter(r=>r.judgeState==='확정'&&cy(r)===S.year&&cm(r)===i+1).length),ML=Array.from({length:12},(_,i)=>String(i+1).padStart(2,'0')+'월');
   const doneM=mo(r=>DONE.includes(r.status)),rollM=mo(r=>r.horizontalRollout===true),rollPct=rollM.map((v,i)=>doneM[i]?Math.round(v/doneM[i]*1000)/10:null);
@@ -112,7 +114,7 @@ function render(box){
 <label>부서 <select data-f="group">${opt(D.groups,S.group)}</select></label><label>5S 유형 <select data-f="type">${opt(TYPES,S.type)}</select></label>
 <label>고도화 확정 <select data-f="judge"><option value="">ALL</option><option value="Y"${S.judge==='Y'?' selected':''}>확정 결과만</option><option value="N"${S.judge==='N'?' selected':''}>확정 외</option></select></label><label>수평전개 <select data-f="roll"><option value="">ALL</option><option value="Y"${S.roll==='Y'?' selected':''}>적용대상</option><option value="N"${S.roll==='N'?' selected':''}>비대상</option></select></label>
 <span class="sp"></span><button type="button" class="alt" data-ib="print">프린트</button><button type="button" class="alt" data-ib="csv">엑셀다운로드</button></div>
-<div class="ibRow r1"><div class="ibPanel"><div class="ibHead">5S 유형별 등록 및 진행현황<button type="button" class="ibEv" data-evk="a">근거 데이터</button><em>${S.month?S.month.replace(/^0/,'')+'월':'연간누적'} · 건</em></div><div class="ibBody">${A}${leg([['완료·확정',C.dark],['진행·등록',C.light]])}<div class="ibLeg"><span>이 유형에서 등록한 5S 활동이 얼마나 완료됐는지 봅니다. 막대 위 %가 낮을수록(빨간 글자) 그 유형에 진행·등록 건이 밀려 있다는 뜻입니다.</span></div></div></div>
+<div class="ibRow r1"><div class="ibPanel"><div class="ibHead">5S 유형별 등록 현황<button type="button" class="ibEv" data-evk="a">근거 데이터</button><em>${S.month?S.month.replace(/^0/,'')+'월':'연간누적'} · 건</em></div><div class="ibBody">${A}<div class="ibLeg"><span>자율개선 사례는 이미 완료된 건만 등록하므로(등록=완료), 유형별로 몇 건이 등록됐는지만 봅니다. 어느 유형에서 개선 활동이 가장 활발한지 확인하세요.</span></div></div></div>
 <div class="ibPanel"><div class="ibHead">월별 등록 및 진행현황<button type="button" class="ibEv" data-evk="b">근거 데이터</button><em>${S.year}년 · 건 · 수평전개=그 달 완료건수 대비 %</em></div><div class="ibBody">${B}${leg([['5S 활동 완료건수',C.dark],['고도화 확정 건수',C.amber],['수평전개 적용대상건수',C.grey]])}</div></div></div>
 <div class="ibRow"><div class="ibPanel"><div class="ibHead">현장조직 팀에 대한 개선활동 현황${per?'(인당 개선건수)':'(총 건수)'}<button type="button" class="ibEv" data-evk="c">근거 데이터</button><em class="pt">당월(${String(mm).padStart(2,'0')}월) 현재 참여율 ${part.toFixed(1)}% (등록자 ${owners}명 / 총원 ${hcAll}명)</em></div><div class="ibBody">${Cc}${leg([['평균 이상 (평균 '+avg.toFixed(2)+(per?'건/인)':'건)'),C.dark],['평균 미만',C.amber]])}</div></div></div>
 <div class="ibRow r3"><div class="ibPanel"><div class="ibHead">단일 팀에 대한 연간/월별 누적 활동 실적${per?'(인당 개선건수)':''}<button type="button" class="ibEv" data-evk="d">근거 데이터</button><em>[ ${esc(S.team)} ] 연간 ${fx(dCum,per)}${unit}</em></div><div class="ibBody">${Dd}</div></div>
@@ -123,12 +125,12 @@ function render(box){
   box.querySelectorAll('[data-evk]').forEach(b=>b.onclick=()=>{const [t,a]=EV[b.dataset.evk];openRows({title:t,cols,rows:a.map(mapR),file:'5S_자율개선_근거_'+b.dataset.evk})});
   box.querySelectorAll('[data-f]').forEach(el=>el.onchange=()=>{S[el.dataset.f]=el.value;if(el.dataset.f==='group')S.team='';render(box)});
   box.querySelector('[data-ib="go"]').onclick=()=>render(box);box.querySelector('[data-ib="print"]').onclick=()=>window.print();
-  box.querySelector('[data-ib="csv"]').onclick=()=>exportCsv({D,S,tv,A:{TYPES,allT,doneT},ML,dVals,per,hcAll});
+  box.querySelector('[data-ib="csv"]').onclick=()=>exportCsv({D,S,tv,A:{TYPES,allT},ML,dVals,per,hcAll});
   box.querySelectorAll('svg')[2]?.querySelectorAll('.hit').forEach(el=>el.onclick=()=>{S.team=el.dataset.cat;render(box)});
 }
 function exportCsv({S,tv,A,ML,dVals,per}){
   const out=[['5S 자율개선 종합 대시보드',`${S.year}년`,S.month?S.month+'월':'연간누적','집계',per?'인당(건/인)':'총 건수']],q=x=>'"'+String(x??'').replace(/"/g,'""')+'"';
-  out.push([],['[5S 유형별]','등록','완료·확정']);A.TYPES.forEach((t,i)=>out.push([t,A.allT[i],A.doneT[i]]));
+  out.push([],['[5S 유형별]','등록(=완료 사례 수)']);A.TYPES.forEach((t,i)=>out.push([t,A.allT[i]]));
   out.push([],['[팀별]','건수','팀 인원',per?'인당 개선건수':'건수']);tv.forEach(x=>out.push([x.t,x.c,x.h,per?(x.h?(x.c/x.h).toFixed(3):''):x.c]));
   out.push([],[`[단일 팀: ${S.team}] 월별`,'값']);ML.forEach((m,i)=>out.push([m,dVals[i].toFixed(3)]));
   const text='\ufeff'+out.map(r=>r.map(q).join(',')).join('\r\n'),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:'text/csv;charset=utf-8'}));a.download=`5S_자율개선종합_${S.year}${S.month||''}.csv`;document.body.appendChild(a);a.click();a.remove()}
