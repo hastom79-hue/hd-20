@@ -1568,6 +1568,15 @@
 - 버그 수정(배포 전 자체 발견): `s.pct!==undefined?...(i===2?'후보':'전체')...` → 확정 단계(i===3)도 후보 대비 계산인데 라벨이 '전체 대비'로 나옴 → `i>=2?'후보':'전체'`로 수정.
 - 검증(`process_check.py`): 서브탭 목록에 정상 노출, 단계 수치 960/170(17.7%)/113(66.5%)/57(33.5% 후보 대비) 전부 일치, 판정대기 52+검토중 30+보완요청 31=113 합계 일치, 팀 표 16행, 다른 서브탭 이동 시 기존 화면 정상 복원(격리 확인). 기존 '고도화 작업장 추이' 카드는 ③ 영역 전체에 공통으로 붙는 기존 요소(후보 목록 탭에도 동일 존재)임을 확인해 그대로 둠. 16개 탭 회귀 오류 0건.
 
+### `94a749b` — fix: 전수 감사로 발견한 candidates 연도 필터 결함 수정 (2026-09-29)
+- 변경 파일: `dashboard-kpi-source.js`(+1/-1), `index.html`(+1/-1)
+- 감사 절차: (1) `function\s+\w*[Cc]andidate\w*` 정규식으로 전 파일에서 관련 함수 정의 검색(10개 파일 검출) (2) 각 함수 본문을 텍스트로 추출해 캐노니컬(`dashboard-kpi-source.js`)과 대조 — 대부분 텍스트가 완전히 동일(복붙)하거나 `window.HD20KPIData.isCandidate` 등에 위임하는 안전한 패턴임을 확인 (3) 브라우저에서 `HD20KPIData.snapshot().candidates.length`(154)와 `rawRows.filter(x=>HD20KPIData.isCandidate(x)).length`(170, 같은 함수를 직접 적용)를 나란히 계산해 불일치 확인 (4) `연도별_후보분포` 교차표로 2025:16/2026:154 분포 확인, `judgeState!=='확정'`인 10건이 실제 정체 사례임을 확인(표본: VALID-A-00170, 2025-01-04 등록, judgeState:'검토중').
+- `dashboard-kpi-source.js`: `snapshot()`의 `candidates=rows.filter(x=>isCandidate(x)&&yearOf(rowDate(x))===year)` → `candidates=rows.filter(x=>isCandidate(x))`(연도 필터 제거, 주석으로 이유 명시). `activities`/`confirmed`/`newSecured`/`maintained` 필드는 변경하지 않음(각각 이미 올바른 스코프: activities는 전체 960건과 일치하는 값이라 원래도 문제 없었고, confirmed/newSecured/maintained는 연도별 실적 지표라 연도 스코프가 맞음).
+- 소비처 확인: `activity-workflow.js`(후보 목록 화면), `app.js`(팀별 통계) 등이 `snapshot().candidates`를 직접 사용 — 수정으로 자동 반영. `hd20-judge-process.js`(독자 재구현, 170으로 이미 일치), `hd20-ops-v2.js`(연도 무관 원본 필터, 170으로 이미 일치)는 원래도 정답이었음이 이번 감사로 확인됨.
+- 버전: `dashboard-kpi-source.js?v=20260929-candfix-1`.
+- 검증(`full_audit3.py`, `date_format_check.py`): 종합현황 5개 카드(무관, 51/57/47 불변) 확인, 활동관리 [960,170,113,57], 심사 프로세스 [960건,170건,113건,57건]+팀표 합계 170/57, 후보 목록 "170건 (전체 170건)" — 4개 화면 전부 일치. 5S 등록 E2E(960→961), 16개 탭 회귀 오류 0건.
+- 후속 조사(미수정): 후보 목록 표 DOM에 25행만 렌더(최신순), 2025-09로 시작하는 최근 날짜만 보이고 2025년 정체 건은 화면에 없음(스크롤/더보기 뒤에 있음) — 건수는 맞지만 발견성(discoverability)은 낮음. 정체 기간 강조 정렬을 다음 과제로 제안.
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
@@ -1631,8 +1640,8 @@
 ## (2026-09-28 갱신) 종료조건
 16개 탭 순회·기능 회귀 세트 콘솔 오류 0건, 최신 GitHub Pages 빌드 `built` 확인, 실제 사이트 확인 결과 반영 후 종료.
 
-## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 66건)
-> 커밋 시각은 저장소 표기 기준. 아래 66건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
+## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 67건)
+> 커밋 시각은 저장소 표기 기준. 아래 67건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
 > (`e182f66`은 이 대화 밖의 다른 Claude 세션이 같은 계정으로 push한 커밋이라 포함됨. 대장은 `git log --since`가 날짜가 뒤섞인 이력에서 일부를 건너뛰는 것을 발견해, 커밋 날짜를 직접 비교해 생성)
 
 | 커밋 | 시각 | 제목 | 변경 파일 |
@@ -1703,8 +1712,9 @@
 | `086e17e` | 2026-09-29 05:02 | fix: ①번 차트 재검토 - "완료 vs 진행" 구분 제거(자율개선 사례는 완료된 건만 등록) | `hd20-improve-board.js`, `index.html` |
 | `41dec5d` | 2026-09-29 09:47 | fix: 활동관리 KPI 카드에도 "등록=완료" 원칙 확산 — 완료/진행 구분을 고도화 판정 단계로 교체 | `hd20-kpi-evidence-drill.js`, `hd20-ops-normalized.js`, `hd20-ops-v2.js` |
 | `9b1b9aa` | 2026-09-29 10:06 | feat: ③ 고도화·표준화에 '심사 프로세스' 서브탭 신설 — 후보→판정→확정 단계별 흐름 시각화 | `hd20-judge-process.js`, `hd20-subtabs.js`, `index.html` |
+| `94a749b` | 2026-09-29 10:53 | fix: [전수 감사] 고도화 후보 수가 화면마다 154/170으로 어긋나던 결함 발견·수정 | `dashboard-kpi-source.js`, `index.html` |
 
-### 문서 커밋(55건, 로그 갱신용)
+### 문서 커밋(56건, 로그 갱신용)
 - `c661242` docs: development/coding log for validation fixture, team master, auth, subtab split (2026-09-22)
 - `da246aa` docs: log advancement 4-way subtab split (4aee88b) in dev/coding logs
 - `015b9b3` docs: log action/audit 4-way subtab split + metric bugfix (57e264c) in dev/coding logs
@@ -1760,3 +1770,4 @@
 - `6be4a8c` docs: 완료율 라벨·간격 재조정(247a47e) 로그 반영, 커밋 대장 재생성
 - `a1d7263` docs: 등록=완료 원칙 반영(086e17e) 로그 반영, 커밋 대장 재생성
 - `a3227e1` docs: 활동관리 KPI 카드 재정의(41dec5d) 로그 반영, 커밋 대장 재생성
+- `7c0ddf0` docs: 심사 프로세스 서브탭(9b1b9aa) 로그 반영, 커밋 대장 재생성
