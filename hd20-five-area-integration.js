@@ -44,6 +44,9 @@ function syncTrendChartVisibility(){
   const area=window.HD20_NAV?.active?.()||'dashboard';
   card.classList.toggle('hd20SubHidden',area!=='advancement');
 }
+/* 이 카드는 정적 HTML에서부터 hd20SubHidden(숨김)으로 시작함(초기 로드 시 잠깐 보였다 사라지는 깜빡임 방지).
+   아래는 '보여줘야 할 때(③ 고도화 영역)'만 담당 — 최초 실행도 지연 없이 즉시 수행 */
 window.addEventListener('hd20-nav-area-changed',()=>setTimeout(syncTrendChartVisibility,0));
-document.readyState==='loading'?document.addEventListener('DOMContentLoaded',()=>setTimeout(syncTrendChartVisibility,300),{once:true}):setTimeout(syncTrendChartVisibility,300);
+syncTrendChartVisibility();
+document.readyState==='loading'?document.addEventListener('DOMContentLoaded',syncTrendChartVisibility,{once:true}):null;
 })();
