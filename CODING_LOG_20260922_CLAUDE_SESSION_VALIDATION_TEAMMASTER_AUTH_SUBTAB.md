@@ -1523,6 +1523,11 @@
 - 결함(1차 구현, 미배포 상태에서 자체 발견): 폴백을 `null`로 두면 순서 미설정 시 `orderIdx`가 전부 999로 동률이 되어 2차 기준(가나다순 `localeCompare`)으로 떨어짐 → `order_check2.py`로 팀 마스터 기본 순서(`대형Att.팀,대형메인팀,...`)와 실제 렌더 순서(`대형메인팀,대형상부팀,대형Att.팀,...`)가 다름을 확인 → 폴백을 `teamNames()`로 수정.
 - 검증(`order_check2.py`): 미설정 시 자율개선 차트 순서가 팀 마스터 순서와 정확히 일치, 표시순서를 임의(역순)로 저장 후 새로고침하면 자율개선 차트·개선요청 그리드 모두 그 순서 그대로 반영. 16개 탭 회귀 오류 0건.
 
+### `a96d01c` — feat: 가로축 팀명 클릭으로 단일팀 차트 전환 (2026-09-29)
+- 변경 파일: `hd20-improve-board.js`(+4/-3), `index.html`(+1/-1)
+- `chart()`에 `linkX` 매개변수 추가. true면 x축 텍스트 라벨에 `class="hit xlbl"`·`data-cat`·`fill:#2c5f8a`·`text-decoration:underline` 부여(회전 라벨·가로 라벨 두 분기 모두). 기존 `box.querySelectorAll('svg')[2]?.querySelectorAll('.hit').forEach(el=>el.onclick=...)`가 막대와 라벨을 구분하지 않고 전부 처리하므로 이벤트 배선 변경 없음. ③ 팀 차트(`Cc=chart({...})`) 호출에 `linkX:true` 추가. 버전 `hd20-improve-board.js?v=20260929-labellink-1`.
+- 검증(`labellink_check.py`): 라벨 요소 16개(`text.xlbl`) 생성 확인, 6번째 라벨(중형상부1팀) 클릭 → ④ 머리글 "[ 중형상부1팀 ] 연간 1.51건/인", ⑤ 머리글 "[ 중형상부1팀 ] 현재 3곳 유지"로 정확히 전환, 라벨 `cursor:pointer` 확인, 스크린샷으로 밑줄·선택 막대 테두리 확인. 16개 탭 회귀 오류 0건.
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
@@ -1586,8 +1591,8 @@
 ## (2026-09-28 갱신) 종료조건
 16개 탭 순회·기능 회귀 세트 콘솔 오류 0건, 최신 GitHub Pages 빌드 `built` 확인, 실제 사이트 확인 결과 반영 후 종료.
 
-## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 60건)
-> 커밋 시각은 저장소 표기 기준. 아래 60건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
+## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 61건)
+> 커밋 시각은 저장소 표기 기준. 아래 61건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
 > (`e182f66`은 이 대화 밖의 다른 Claude 세션이 같은 계정으로 push한 커밋이라 포함됨. 대장은 `git log --since`가 날짜가 뒤섞인 이력에서 일부를 건너뛰는 것을 발견해, 커밋 날짜를 직접 비교해 생성)
 
 | 커밋 | 시각 | 제목 | 변경 파일 |
@@ -1652,8 +1657,9 @@
 | `2e23eb6` | 2026-09-29 04:29 | feat: 요청출처 데이터 현실화(5S모듈 다수·리더십 비어있지 않게) + 표시 순서를 통합기준정보에서 관리 | `final-layout-polish.js`, `hd20-request-board.js`, `index.html`, `request-source-order-master.js`, `web-validation-fixture.js` |
 | `57e196b` | 2026-09-29 04:36 | feat: 리더십 명단에 실제 5명 기본값 반영 + 실행·유지/고도화 맵 탭 중복 버블맵 제거 | `final-layout-polish.js`, `index.html`, `integrated-performance-map.js`, `operating-policy-master.js` |
 | `ff7a603` | 2026-09-29 04:42 | fix: 팀별 차트 가로축을 값 기준 정렬 대신 통합기준정보 표시순서로 고정 | `hd20-improve-board.js`, `hd20-request-board.js`, `index.html` |
+| `a96d01c` | 2026-09-29 04:45 | feat: 자율개선 종합 팀 차트 - 가로축 팀명 클릭으로도 하단 단일팀 차트 전환 | `hd20-improve-board.js`, `index.html` |
 
-### 문서 커밋(49건, 로그 갱신용)
+### 문서 커밋(50건, 로그 갱신용)
 - `c661242` docs: development/coding log for validation fixture, team master, auth, subtab split (2026-09-22)
 - `da246aa` docs: log advancement 4-way subtab split (4aee88b) in dev/coding logs
 - `015b9b3` docs: log action/audit 4-way subtab split + metric bugfix (57e264c) in dev/coding logs
@@ -1703,3 +1709,4 @@
 - `d5a49cf` docs: 공장장(경영진) 리더십 명단(6ed0ff4) 로그 반영, 커밋 대장 재생성
 - `8368e1e` docs: 팀 차트 목표선 제거·평균 색상 원복(c659c3c) 로그 반영, 커밋 대장 재생성
 - `fdd0e47` docs: 요청출처 현실화·표시순서 관리(2e23eb6) 로그 반영, 커밋 대장 재생성
+- `55c077e` docs: 리더십 실명 반영·중복 지도 제거(57e196b), 표시순서 정렬(ff7a603) 로그 반영, 커밋 대장 재생성

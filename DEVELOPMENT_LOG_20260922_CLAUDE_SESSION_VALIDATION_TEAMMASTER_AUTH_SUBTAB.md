@@ -766,6 +766,9 @@
 ### 65. 팀 차트 가로축 표시순서 고정 (커밋 `ff7a603`)
 - 개발일지 참조. 값 정렬 → 표시순서 정렬 교체, 미설정 시 팀 마스터 기본 순서 폴백 결함 발견·수정.
 
+### 66. 팀 차트 가로축 팀명 클릭 연동 (커밋 `a96d01c`)
+- 개발일지 참조. chart() 공용 함수에 linkX 옵션 추가, 라벨 클릭 시 ④⑤ 갱신 확인.
+
 ## 정정·발견 사항 추가 (2026-09-28 저녁)
 1. 웹 완성도 평가에 대해 인상이 아닌 측정으로 원인(구조: 화면 전체 선렌더링·스타일 다층)을 확인. CSS 수정만으로는 격차가 줄지 않음을 사용자에게 명시.
 2. 헤더 클릭 정렬 미동작은 원본에서도 동일(회귀 아님). 별도 확인 필요.
@@ -777,8 +780,8 @@
 - 5S 자율개선 종합: 참여율 정의(등록자/총원) 사용자 확인, 목표선(분기별 인당 목표) 표시 여부, 실제 .xlsx 내보내기 여부.
 - 표 헤더 정렬 미동작 원인 조사.
 
-## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 60건)
-> 커밋 시각은 저장소 표기 기준. 아래 60건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
+## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 61건)
+> 커밋 시각은 저장소 표기 기준. 아래 61건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
 > (`e182f66`은 이 대화 밖의 다른 Claude 세션이 같은 계정으로 push한 커밋이라 포함됨. 대장은 `git log --since`가 날짜가 뒤섞인 이력에서 일부를 건너뛰는 것을 발견해, 커밋 날짜를 직접 비교해 생성)
 
 | 커밋 | 시각 | 제목 | 변경 파일 |
@@ -843,8 +846,9 @@
 | `2e23eb6` | 2026-09-29 04:29 | feat: 요청출처 데이터 현실화(5S모듈 다수·리더십 비어있지 않게) + 표시 순서를 통합기준정보에서 관리 | `final-layout-polish.js`, `hd20-request-board.js`, `index.html`, `request-source-order-master.js`, `web-validation-fixture.js` |
 | `57e196b` | 2026-09-29 04:36 | feat: 리더십 명단에 실제 5명 기본값 반영 + 실행·유지/고도화 맵 탭 중복 버블맵 제거 | `final-layout-polish.js`, `index.html`, `integrated-performance-map.js`, `operating-policy-master.js` |
 | `ff7a603` | 2026-09-29 04:42 | fix: 팀별 차트 가로축을 값 기준 정렬 대신 통합기준정보 표시순서로 고정 | `hd20-improve-board.js`, `hd20-request-board.js`, `index.html` |
+| `a96d01c` | 2026-09-29 04:45 | feat: 자율개선 종합 팀 차트 - 가로축 팀명 클릭으로도 하단 단일팀 차트 전환 | `hd20-improve-board.js`, `index.html` |
 
-### 문서 커밋(49건, 로그 갱신용)
+### 문서 커밋(50건, 로그 갱신용)
 - `c661242` docs: development/coding log for validation fixture, team master, auth, subtab split (2026-09-22)
 - `da246aa` docs: log advancement 4-way subtab split (4aee88b) in dev/coding logs
 - `015b9b3` docs: log action/audit 4-way subtab split + metric bugfix (57e264c) in dev/coding logs
@@ -894,3 +898,4 @@
 - `d5a49cf` docs: 공장장(경영진) 리더십 명단(6ed0ff4) 로그 반영, 커밋 대장 재생성
 - `8368e1e` docs: 팀 차트 목표선 제거·평균 색상 원복(c659c3c) 로그 반영, 커밋 대장 재생성
 - `fdd0e47` docs: 요청출처 현실화·표시순서 관리(2e23eb6) 로그 반영, 커밋 대장 재생성
+- `55c077e` docs: 리더십 실명 반영·중복 지도 제거(57e196b), 표시순서 정렬(ff7a603) 로그 반영, 커밋 대장 재생성
