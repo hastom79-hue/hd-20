@@ -1,5 +1,5 @@
 (()=>{'use strict';
-const MAP={dashboard:[['summary','종합현황'],['analysis','성과·운영분석']],activity:[['manage','활동관리'],['analysis','실적분석']],advancement:[['judge','후보 목록'],['analysis','3조건 분석'],['detail','라인·작업장 상세'],['standard','확정·수평전개']],audit:[['draw','대상 추출'],['inspect','실시·점검 입력'],['ongoing','6개월 관리중'],['retention','종료평가']],action:[['manage','조치 목록'],['leadtime','처리기간 분석'],['master','팀장 기준정보'],['verify','효과·재발관리']]};
+const MAP={dashboard:[['summary','종합현황'],['analysis','성과·운영분석']],activity:[['manage','활동관리'],['analysis','실적분석']],advancement:[['judge','후보 목록'],['analysis','3조건 분석'],['detail','라인·작업장 상세'],['process','심사 프로세스'],['standard','확정·수평전개']],audit:[['draw','대상 추출'],['inspect','실시·점검 입력'],['ongoing','6개월 관리중'],['retention','종료평가']],action:[['manage','조치 목록'],['leadtime','처리기간 분석'],['master','팀장 기준정보'],['verify','효과·재발관리']]};
 const CONTRACT={
  'dashboard.summary':{title:'종합현황',purpose:'울산캠퍼스 5S 운영상태를 한 화면에서 파악하고 오늘 우선 확인할 영역을 정합니다.',judge:'목표 대비 성과, 고도화 확보, Audit 대기, 미완료·기한경과·재발을 동시에 확인',next:'이상 KPI·Risk 카드를 상세근거로 Drill-down하여 담당 업무 탭으로 이동',features:['핵심 KPI','팀별 성과','Action Summary','우선순위']},
  'dashboard.analysis':{title:'성과·운영분석',purpose:'단순 실적 건수를 넘어 판정 Lead Time, 유지율, 재발률, 조치완료율 등 운영 건전성을 분석합니다.',judge:'성과 증가가 프로세스 건전성 개선과 함께 일어나는지 확인',next:'취약 지표의 원천 데이터를 확인하고 원인 업무영역에서 조치',features:['운영 KPI','월별 추이','유지율','재발·기한']},
@@ -8,6 +8,7 @@ const CONTRACT={
  'advancement.judge':{title:'후보 목록',purpose:'5S 고도화 후보로 등록된 작업장 목록을 확인하고 판정 상태를 관리합니다.',judge:'후보 건수와 판정 진행 상태(판정대기·보완요청·확정)를 확인',next:'판정대기는 근거를 보완하고, 3대 조건 충족 여부는 별도 탭에서 상세 확인',features:['후보목록','판정상태','작업장별 현황']},
  'advancement.analysis':{title:'3조건 분석',purpose:'등록된 고도화 사례가 3대 조건(시각화·Green Zone·공간활용)을 얼마나 충족하는지 요약합니다.',judge:'1개/2개 이상/3개 모두 충족 구간별 건수와 SCOPE·ANALYSIS 현황을 확인',next:'구간별 분포를 확인한 뒤 라인·작업장별 상세는 별도 탭에서 확인',features:['3대조건 요약','SCOPE·ANALYSIS']},
  'advancement.detail':{title:'라인·작업장 상세',purpose:'3대 조건 충족 현황을 생산팀·라인·작업장 단위 개별 사례로 확인합니다.',judge:'각 사례의 조건 충족수와 공식판정 상태를 개별 행 단위로 확인',next:'조건 확장이 필요한 사례는 후보 목록에서, 공식판정은 확정·수평전개에서 이어서 관리',features:['라인·작업장별 상세표','충족수','공식판정']},
+ 'advancement.process':{title:'심사 프로세스',purpose:'등록된 5S 활동이 고도화 후보→판정→확정에 이르는 단계별로 몇 건씩 있는지 한 흐름으로 봅니다.',judge:'특정 단계에 건수가 쌓여 있지 않은지(정체) 확인',next:'정체된 단계는 후보 목록·3조건 분석에서 근거를 확인해 다음 단계로 진행',features:['심사 단계','정체 구간','단계별 건수']},
  'advancement.standard':{title:'확정·수평전개',purpose:'공식 확정된 고도화 사례를 표준화하고 유사 라인·작업장으로 재사용할 수 있게 관리합니다.',judge:'확정 자체가 아니라 적용범위, 유지상태, 재현 가능성, 수평전개 상태를 확인',next:'재현 가능한 사례는 적용 대상을 명확히 하고 유지 미흡은 Audit로 연결',features:['확정사례','표준화','적용범위','수평전개']},
  'audit.draw':{title:'대상 추출',purpose:'Risk 가중치를 반영해 이번 Audit 대상 작업장을 무작위로 추출합니다.',judge:'추출된 대상의 팀·작업장 분포가 Risk 기준에 맞는지 확인',next:'추출 완료 후 실시·점검 입력 탭에서 실제 Audit을 진행',features:['Risk 가중 추출','대상선정']},
  'audit.inspect':{title:'실시·점검 입력',purpose:'추출된 대상에 대해 실제 Audit을 실시하고 점검항목별 결과를 입력합니다.',judge:'실시 여부, Audit 결과(적합/부적합), 점검항목별 상세 입력 완결성을 확인',next:'부적합 건은 개선조치로 연결하고, 실시일은 유지관리 D-Day로 설정',features:['Audit 실시결과','점검항목 상세입력','부적합 연계']},
@@ -31,6 +32,7 @@ const ROLES={
  'advancement.judge':{user:'우리 작업장이 후보로 올라왔는지, 판정 상태(대기·보완요청·확정)를 확인하세요.',admin:'판정대기 건의 근거를 확인해 확정 또는 보완요청을 결정하세요.'},
  'advancement.analysis':{user:'우리 작업장이 3대 조건 중 몇 개를 충족했는지 확인하세요.',admin:'1개·2개·3개 충족 분포를 보고 조건 확장이 필요한 작업장을 골라내세요.'},
  'advancement.detail':{user:'라인·작업장별 충족 조건과 공식판정 상태를 확인하세요.',admin:'충족수가 부족한 사례는 후보 목록에서, 공식판정은 확정·수평전개에서 이어서 처리하세요.'},
+ 'advancement.process':{user:'우리 작업장이 고도화 심사 단계 중 어디에 있는지 확인하세요.',admin:'판정대기·검토중 건의 정체 여부를 확인하고 각 단계 담당자에게 처리를 요청하세요.'},
  'advancement.standard':{user:'확정된 우수 사례를 우리 라인에 적용할 수 있는지 확인하세요.',admin:'확정 사례의 적용범위·유지상태를 관리하고 수평전개 대상을 지정하세요.'},
  'audit.draw':{user:'추출된 대상에 내 작업장이 포함됐는지 확인하고 점검을 준비하세요.',admin:'대상 추출을 실행하고, 팀·작업장 분포가 Risk 기준에 맞는지 확인하세요.',cta:{label:'🎯 대상 추출 실행',text:'대상 일괄추출'}},
  'audit.inspect':{user:'Audit을 실시한 뒤 결과(적합/부적합)와 점검항목을 입력하세요.',admin:'결과 입력이 밀린 건이 없는지 보고, 부적합 건은 개선요청으로 연결하세요.'},
