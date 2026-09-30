@@ -1652,6 +1652,13 @@
 - **버그 수정(구현 중 발견)**: `hd20-subtabs.js`의 `syncArea(area)`와 `hd20-nav-area-changed` 리스너가 `if(!MAP[area])return`으로 조기 종료해, 'master' 진입 시 `#hd20PurposePanel`(화면 안내 카드)·`#hd20OpsMetrics`(KPI 스트립)·`#hd20Subnav`(서브탭 바)가 이전 영역 내용을 그대로 보여줌 → 두 지점 모두 `if(!MAP[area]){...hide 3 elements...return}` 분기 추가. 1차 시도(`style.display='none'`)는 `hd22-theme.css`의 `.app>.hd20PurposePanel{display:grid!important}`에 막혀 무효 → `style.setProperty('display','none','important')`로 재수정.
 - 검증(`master_leak_debug.py`~`five_area_sanity.py`): activity→advancement→audit→action→master→dashboard→activity 순회에서 안내카드/KPI스트립/서브탭바가 5개 정식 영역에서 True, master에서 False, 복귀 후 다시 True로 정확히 전환. 5S 등록 E2E, 16개 탭 회귀 오류 0건(1회 실적분석 높이 이상치는 재실행 시 미재현되어 일시적 타이밍 편차로 판정).
 
+### `bbcbbff` — feat: 기한경과 건수 병기(topExtra) (2026-09-30)
+- 변경 파일: `hd20-improve-board.js`(+4/-3), `hd20-request-board.js`(+5/-1), `index.html`(+1/-1)
+- `hd20-improve-board.js` `chart()`: `topExtra` 매개변수 추가. 스택 모드에서 `topExtra[i]`가 `{text,color}`이면 총합 라벨(`F(tot[i])`) 위에 그 문구를 그 색으로 추가 렌더(기존 `topPct`와 같은 y좌표 라인 재사용, 있으면 topPct 우선순위로 topExtra는 topPct 없는 차트에서 사용).
+- `hd20-request-board.js`: `overExtra=teamRows.map(r=>r.over>0?{text:'기한경과 '+r.over,color:'#c0392b'}:null)`, `teamChart=chart({...,topExtra:overExtra,...})`.
+- 버전 `hd20-improve-board.js?v=20260930-topextra-1`, `hd20-request-board.js?v=20260930-overbadge-1`.
+- 검증(`overbadge_check.py`): 대형메인팀 7·프레임제작팀 9 등 막대 위 표시가 표의 기한경과 열과 전부 일치, SVG bounding box 겹침 0건. 16개 탭 회귀 오류 0건.
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
@@ -1715,8 +1722,8 @@
 ## (2026-09-28 갱신) 종료조건
 16개 탭 순회·기능 회귀 세트 콘솔 오류 0건, 최신 GitHub Pages 빌드 `built` 확인, 실제 사이트 확인 결과 반영 후 종료.
 
-## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 77건)
-> 커밋 시각은 저장소 표기 기준. 아래 77건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
+## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 78건)
+> 커밋 시각은 저장소 표기 기준. 아래 78건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
 > (`e182f66`은 이 대화 밖의 다른 Claude 세션이 같은 계정으로 push한 커밋이라 포함됨. 대장은 `git log --since`가 날짜가 뒤섞인 이력에서 일부를 건너뛰는 것을 발견해, 커밋 날짜를 직접 비교해 생성)
 
 | 커밋 | 시각 | 제목 | 변경 파일 |
@@ -1798,8 +1805,9 @@
 | `8b32a21` | 2026-09-30 02:53 | feat: 생산팀 표시순서 편집을 ▲▼ 버튼에서 순서 번호 직접 입력 방식으로 변경 | `app.js`, `index.html`, `master-info-modal.js` |
 | `8f0e5b4` | 2026-09-30 03:06 | fix+feat: ③ 영역 5개 서브탭에 중복 반영되던 고도화 작업장 추이 카드 축소 + 고도화 맵 버블 지도를 정렬 막대 리스트로 재설계 | `final-layout-polish.js`, `hd20-five-area-integration.js`, `hd20-maturity-map-tab.js`, `index.html` |
 | `c587364` | 2026-09-30 03:18 | feat: 통합기준정보를 상단 배너 버튼(모달)에서 '⑥ 통합기준정보' 탭으로 이동 | `app.js`, `beginner-navigation.js`, `hd20-subtabs.js`, `index.html`, `master-info-modal.js` |
+| `bbcbbff` | 2026-09-30 03:47 | feat: 조치대응부서 누적막대에 기한경과 건수를 빨간 글자로 병기(가장 효율적인 안 채택) | `hd20-improve-board.js`, `hd20-request-board.js`, `index.html` |
 
-### 문서 커밋(66건, 로그 갱신용)
+### 문서 커밋(67건, 로그 갱신용)
 - `c661242` docs: development/coding log for validation fixture, team master, auth, subtab split (2026-09-22)
 - `da246aa` docs: log advancement 4-way subtab split (4aee88b) in dev/coding logs
 - `015b9b3` docs: log action/audit 4-way subtab split + metric bugfix (57e264c) in dev/coding logs
@@ -1866,3 +1874,4 @@
 - `d5bea56` docs: 월별 이탈 표시(023b7b0) 로그 반영, 커밋 대장 재생성
 - `f962ba7` docs: 표시순서 번호 입력 방식(8b32a21) 로그 반영, 커밋 대장 재생성
 - `64a3ab4` docs: 카드 중복 축소·고도화 맵 재설계·종합 점검(8f0e5b4) 로그 반영, 커밋 대장 재생성
+- `174f872` docs: 통합기준정보 탭 이동(c587364) 로그 반영, 커밋 대장 재생성
