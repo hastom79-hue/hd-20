@@ -41,12 +41,16 @@ window.HD20_FIVE_AREA={refresh,areas:['dashboard','activity','advancement','audi
 function syncTrendChartVisibility(){
   const card=document.querySelector('.trendBox')?.closest('.card');
   if(!card)return;
-  const area=window.HD20_NAV?.active?.()||'dashboard';
-  card.classList.toggle('hd20SubHidden',area!=='advancement');
+  /* ③ 고도화·표준화 영역 5개 서브탭(후보 목록·3조건 분석·라인·작업장 상세·심사 프로세스·확정·수평전개) 모두에
+     같은 카드가 중복 반영되던 것을 발견 → 가장 관련 있는 '확정·수평전개'(standard)에서만 보이도록 좁힘 */
+  const view=document.querySelector('.app')?.dataset.hdView||'';
+  card.classList.toggle('hd20SubHidden',view!=='advancement.standard');
 }
 /* 이 카드는 정적 HTML에서부터 hd20SubHidden(숨김)으로 시작함(초기 로드 시 잠깐 보였다 사라지는 깜빡임 방지).
    아래는 '보여줘야 할 때(③ 고도화 영역)'만 담당 — 최초 실행도 지연 없이 즉시 수행 */
 window.addEventListener('hd20-nav-area-changed',()=>setTimeout(syncTrendChartVisibility,0));
+window.addEventListener('hd20-subtab-changed',()=>setTimeout(syncTrendChartVisibility,0));
+document.addEventListener('click',e=>{if(e.target.closest?.('.hd20Subnav button'))setTimeout(syncTrendChartVisibility,80)},true);
 syncTrendChartVisibility();
 document.readyState==='loading'?document.addEventListener('DOMContentLoaded',syncTrendChartVisibility,{once:true}):null;
 })();
