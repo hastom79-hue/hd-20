@@ -1635,6 +1635,14 @@
 - 버전 `app.js?v=20260930-numinput-1`, `master-info-modal.js?v=20260930-numinput-1`.
 - 검증(`numinput_check3.py`): 4번째(프레임제작팀)에 '1' 입력 → 즉시 2번째로 재배치, 입력칸 1..5로 재갱신. `#saveOrder` 클릭 후 `localStorage['gmes5s_team_display_order']`에 `['대형Att.팀','프레임제작팀','대형메인팀',...]` 정확히 저장 확인. 16개 탭 회귀 오류 0건.
 
+### `8f0e5b4` — fix+feat: 카드 중복 축소·고도화 맵 재설계·종합 점검 (2026-09-30)
+- 변경 파일: `final-layout-polish.js`(+1/-1), `hd20-five-area-integration.js`(+6/-2), `hd20-maturity-map-tab.js`(+18/-4), `index.html`(+1/-1)
+- 조사(`trend_leak_audit.py`/`dash_trend_audit2.py`): ③ 영역 5개 서브탭(judge/analysis/detail/process/standard) 전부에서 '고도화 작업장 추이' 카드가 `offsetParent!==null&&height>0`으로 실제 렌더됨을 확인(대시보드 자체 7개 탭은 부모 hd20DashboardSectionHidden에 의해 정상 격리 — 첫 확인이 `getComputedStyle` 단독이라 부모 숨김을 못 잡아 오판할 뻔함, 실제 bounding rect로 재검증).
+- `hd20-five-area-integration.js`: `syncTrendChartVisibility()`의 조건을 `area!=='advancement'`에서 `document.querySelector('.app')?.dataset.hdView!=='advancement.standard'`로 변경. `hd20-subtab-changed` 이벤트와 `.hd20Subnav button` 클릭 리스너를 추가해 서브탭 전환 시에도 즉시 재평가.
+- `hd20-maturity-map-tab.js`: `render()`의 버블 생성 로직(8-pass 지터 충돌회피 포함)을 전부 제거하고 `teams`(이미 유지율 내림차순 정렬됨) 순서 그대로 `.mmtBarRow` 행 생성으로 교체(`wKeep`/`wLost` 폭 비율의 stacked bar). CSS에서 `.mmtMap`/`.mmtDot`(+modifiers)/`.mmtAxisX`/`.mmtAxisY` 전체 삭제, `.mmtBars`/`.mmtBarRow`/`.mmtBarTrack`/`.mmtBarKeep`/`.mmtBarLost`/`.mmtBarName`/`.mmtBarNum`/`.mmtBarPct` 신설. 팀 선택→Case 패널 연동(`activate()`)은 대상 셀렉터만 `.mmtDot`→`.mmtBarRow`로 바꿔 그대로 유지. 버전 `hd20-maturity-map-tab.js?v=20260930-barredesign-1`(index.html·final-layout-polish.js 양쪽).
+- 종합 점검(`consistency_audit.py`+`exec_iprow_check.py`): `HD20KPIData.snapshot()` 기준값(confirmed:57,maintained:47,newSecured:51,loss:10)을 ①종합현황 카드, ②활동관리 KPI, ③심사 프로세스 단계값, ③확정·수평전개 카드, ⑤고도화 맵(카드+막대 합계 `{합계유지:47,합계확정:57}`), ④실행·유지 `.ipRow` 합계(`{합계_공식확정:57,합계_현재유지:47}`) 6곳에서 실측 대조 — 전부 일치.
+- 검증: `maturity_click_check.py`류 시행착오(초기엔 텍스트 추출 실수로 불일치처럼 보였다가 `maturity_final_confirm.py`로 클릭 팀=선택 팀 일치 최종 확인). 5S 등록 E2E(960→961), 16개 탭 회귀 오류 0건, ③ 서브탭 높이 자연 감소 확인(후보 목록 6463→5871 등, 카드 제거분 반영).
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
@@ -1698,8 +1706,8 @@
 ## (2026-09-28 갱신) 종료조건
 16개 탭 순회·기능 회귀 세트 콘솔 오류 0건, 최신 GitHub Pages 빌드 `built` 확인, 실제 사이트 확인 결과 반영 후 종료.
 
-## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 75건)
-> 커밋 시각은 저장소 표기 기준. 아래 75건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
+## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 76건)
+> 커밋 시각은 저장소 표기 기준. 아래 76건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
 > (`e182f66`은 이 대화 밖의 다른 Claude 세션이 같은 계정으로 push한 커밋이라 포함됨. 대장은 `git log --since`가 날짜가 뒤섞인 이력에서 일부를 건너뛰는 것을 발견해, 커밋 날짜를 직접 비교해 생성)
 
 | 커밋 | 시각 | 제목 | 변경 파일 |
@@ -1779,8 +1787,9 @@
 | `2866aca` | 2026-09-29 22:21 | feat: 개선요청 종합에 자율개선 종합과 같은 '팀 단위 차트 + 클릭 상세' 구조 보강 | `hd20-request-board.js`, `index.html` |
 | `023b7b0` | 2026-09-29 22:26 | feat: 자율개선 종합 ⑤번 차트에 월별 이탈 건수 표시 추가 | `hd20-improve-board.js`, `index.html` |
 | `8b32a21` | 2026-09-30 02:53 | feat: 생산팀 표시순서 편집을 ▲▼ 버튼에서 순서 번호 직접 입력 방식으로 변경 | `app.js`, `index.html`, `master-info-modal.js` |
+| `8f0e5b4` | 2026-09-30 03:06 | fix+feat: ③ 영역 5개 서브탭에 중복 반영되던 고도화 작업장 추이 카드 축소 + 고도화 맵 버블 지도를 정렬 막대 리스트로 재설계 | `final-layout-polish.js`, `hd20-five-area-integration.js`, `hd20-maturity-map-tab.js`, `index.html` |
 
-### 문서 커밋(64건, 로그 갱신용)
+### 문서 커밋(65건, 로그 갱신용)
 - `c661242` docs: development/coding log for validation fixture, team master, auth, subtab split (2026-09-22)
 - `da246aa` docs: log advancement 4-way subtab split (4aee88b) in dev/coding logs
 - `015b9b3` docs: log action/audit 4-way subtab split + metric bugfix (57e264c) in dev/coding logs
@@ -1845,3 +1854,4 @@
 - `d8791b6` docs: 자율개선 좌우 비율 조정(75c1e44) 로그 반영, 커밋 대장 재생성
 - `45eabef` docs: 개선요청 팀 차트 보강(2866aca) 로그 반영, 커밋 대장 재생성
 - `d5bea56` docs: 월별 이탈 표시(023b7b0) 로그 반영, 커밋 대장 재생성
+- `f962ba7` docs: 표시순서 번호 입력 방식(8b32a21) 로그 반영, 커밋 대장 재생성
