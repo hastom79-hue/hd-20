@@ -26,6 +26,15 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
 #${ID} .jpBadge{border-radius:999px;padding:2px 9px;font-size:11px;font-weight:850;background:#f1f3f5;color:#5c6b7a}
 #${ID} .jpBadge.warn{background:#fdf3e3;color:#a86a10}
 #${ID} .jpFoot{margin:12px 2px 0;font-size:12px;color:#7a8a97}
+#${ID} .jpLossWrap{margin-top:18px;border:1px solid #f0dcdc;border-radius:10px;overflow:hidden;background:#fffaf9}
+#${ID} .jpLossHead{padding:10px 12px;background:#fdeeed;border-bottom:1px solid #f0dcdc;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+#${ID} .jpLossHead b{font-size:14px;color:#9a3a32}
+#${ID} .jpLossHead span{font-size:12px;color:#7a8a97;font-weight:800}
+#${ID} .jpLossDays{border-radius:999px;padding:2px 9px;font-size:11.5px;font-weight:850}
+#${ID} .jpLossDays.hi{background:#fdecea;color:#b03a2e}
+#${ID} .jpLossDays.mid{background:#fdf3e3;color:#a86a10}
+#${ID} .jpLossDays.lo{background:#eef3f6;color:#5c6b7a}
+#${ID} .jpLossEmpty{padding:16px;text-align:center;color:#5c8a5c;font-weight:800}
 @media(max-width:760px){#${ID} .jpFlow{flex-wrap:nowrap}}`;document.head.appendChild(s)}
 function data(){
   const K=window.HD20KPIData,snap=K?.snapshot?.()||{},rows=snap.rows||[],M=window.HD20ProductionTeamMaster,teams=M?.teamNames?.()||[];
@@ -40,7 +49,17 @@ function data(){
   const notCandidate=rows.filter(r=>!isCandidate(r));
   const maintained=new Set((snap.maintained||[]).map(r=>r.id));
   const keep=confirmed.filter(r=>maintained.has(r.id)).length;
-  return{all,candidates,confirmed,pending,review,supplement,other,notCandidate,keep,teams,rows,isCandidate,isConfirmed};
+  /* 유지 이탈 현황: 확정됐으나 현재 유지 목록에 없는 건. 실제 이탈일 기록(maintainLostAt 등)이 있으면 그 값,
+     없으면 확정일+6개월(종료평가 시점 기준 추정)을 이탈 추정일로 씀 — 자율개선 종합(023b7b0)과 같은 기준. */
+  const confirmedDateOf=r=>window.HD20KPIData?.confirmedDate?.(r)||r.date||r.regDate||'';
+  const lossRows=confirmed.filter(r=>!maintained.has(r.id)).map(r=>{
+    const lostRaw=r.maintainLostAt||r.lostAt||r.invalidatedAt||null;
+    let lostDate=lostRaw?new Date(lostRaw):null,estimated=false;
+    if(!lostDate){const cd=confirmedDateOf(r);const d=cd?new Date(cd):null;if(d&&!Number.isNaN(d.getTime())){d.setMonth(d.getMonth()+6);lostDate=d;estimated=true}}
+    const days=lostDate&&!Number.isNaN(lostDate.getTime())?Math.round((Date.now()-lostDate.getTime())/86400000):null;
+    return{team:r.team,workplace:r.workplace||r.title||r.id,confirmedDate:confirmedDateOf(r),lostDate:lostDate&&!Number.isNaN(lostDate.getTime())?lostDate.toISOString().slice(0,10):null,days,estimated,maintainState:r.maintainState||r.status||''};
+  }).sort((a,b)=>(b.days??-99999)-(a.days??-99999));
+  return{all,candidates,confirmed,pending,review,supplement,other,notCandidate,keep,teams,rows,isCandidate,isConfirmed,lossRows};
 }
 function render(box){
   const D=data();if(!D.all)return;
@@ -58,10 +77,15 @@ function render(box){
   const order=(()=>{try{const v=JSON.parse(localStorage.getItem('gmes5s_team_display_order')||'null');if(Array.isArray(v)&&v.length)return v}catch{}return D.teams})();
   teamRows.sort((a,b)=>order.indexOf(a.team)-order.indexOf(b.team));
   const rowsHtml=teamRows.map(r=>{const stuck=r.pend+r.rev+r.sup;return `<tr><td>${esc(r.team)}</td><td>${r.candidate}</td><td>${r.confirmed}</td><td>${stuck?`<span class="jpBadge warn">${stuck}건</span>`:'<span class="jpBadge">0건</span>'}</td></tr>`}).join('')||'<tr><td colspan="4" style="color:#8a99a6">고도화 후보로 지정된 팀이 없습니다.</td></tr>';
+  const lossRowsHtml=D.lossRows.map(r=>{const cls=r.days===null?'lo':r.days>=180?'hi':r.days>=90?'mid':'lo',dayLabel=r.days===null?'—':r.days<0?'곧 재평가':`${r.days}일째`;
+    return `<tr><td>${esc(r.team)}</td><td>${esc(r.workplace)}</td><td>${esc(r.confirmedDate)}</td><td>${esc(r.lostDate||'—')}${r.estimated?'<small style="color:#a0aab3">(추정)</small>':''}</td><td><span class="jpLossDays ${cls}">${dayLabel}</span></td><td>${esc(r.maintainState||'—')}</td></tr>`}).join('');
+  const lossSection=D.lossRows.length?`<div class="jpLossWrap"><div class="jpLossHead"><b>⚠ 유지 이탈 현황</b><span>확정 ${D.confirmed.length}곳 중 ${D.lossRows.length}곳 이탈 · 정체가 긴 순 정렬</span></div><table><thead><tr><th>생산팀</th><th>작업장</th><th>확정일</th><th>이탈(추정)일</th><th>정체일수</th><th>현재 상태</th></tr></thead><tbody>${lossRowsHtml}</tbody></table></div>`
+    :`<div class="jpLossWrap"><div class="jpLossEmpty">✓ 확정된 ${D.confirmed.length}곳 전부 현재 유지 중입니다. 이탈 없음.</div></div>`;
   box.innerHTML=`<h2>고도화 심사 프로세스</h2><p class="jpNote">등록된 5S 활동이 고도화 후보 → 판정 진행 → 확정에 이르기까지 각 단계에 몇 건씩 있는지 봅니다. 특정 단계에 건수가 쌓여 있으면(정체) 그 단계 담당자에게 처리를 요청하세요.</p>
   <div class="jpFlow">${flow}</div>
   <div class="jpTeamWrap"><div class="jpTeamHead">팀별 심사 진행 현황 (후보로 지정된 팀만 표시)</div><table><thead><tr><th>생산팀</th><th>고도화 후보</th><th>확정</th><th>판정 진행 중(정체 후보)</th></tr></thead><tbody>${rowsHtml}</tbody></table></div>
-  <p class="jpFoot">※ 판정 진행 중 = 후보 중 아직 확정되지 않은 건(판정대기·검토중·보완요청). 확정 기준은 활동관리 KPI 카드(고도화 후보 지정·고도화 판정대기·고도화 확정)와 동일합니다. 현재 확정 ${D.confirmed.length}곳 중 유지 중 ${D.keep}곳입니다.</p>`;
+  ${lossSection}
+  <p class="jpFoot">※ 판정 진행 중 = 후보 중 아직 확정되지 않은 건(판정대기·검토중·보완요청). 확정 기준은 활동관리 KPI 카드(고도화 후보 지정·고도화 판정대기·고도화 확정)와 동일합니다. 현재 확정 ${D.confirmed.length}곳 중 유지 중 ${D.keep}곳입니다. 이탈일은 실제 기록이 없으면 확정일+6개월(종료평가 시점)로 추정합니다.</p>`;
 }
 function ensure(){
   const host=document.getElementById('performanceConversionAnalysis')||document.getElementById('awWorkplace');
