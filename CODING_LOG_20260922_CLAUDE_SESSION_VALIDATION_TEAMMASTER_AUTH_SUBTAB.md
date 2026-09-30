@@ -1689,6 +1689,16 @@
 - `request-source-order-master.js` `renderList()`: 8b32a21과 동일 패턴(숫자 입력칸+안정 정렬)으로 교체. CSS `.soNo/.soBtns`→`.soNumWrap/.soNumInput`. 안내문 갱신. 버전 `request-source-order-master.js?v=20260930-numinput-1`.
 - 검증(`source_order_final.py`): '생산혁신팀 HDPS파트'에 '1' 입력 → 즉시 재배치(리더십·생산혁신팀 HDPS파트·5S모듈) → 저장 → localStorage 정확 반영 → 개선요청 종합 대시보드 ① 차트 `rect.hit`의 실제 `data-cat` 순서까지 동일 순서로 일치. 이후 `source_order_restore.py`로 원래 순서 복원 확인. 16개 탭 회귀·5S 등록 E2E 오류 0건.
 
+### `3305f0a` — feat: 개선요청 종합 근거 데이터 버튼 5개 (2026-09-30)
+- 변경 파일: `hd20-request-board.js`(+17/-6), `index.html`(+1/-1)
+- `const {chart,leg,openRows}=KIT`로 확장. 5개 패널 헤더에 `<button class="ibEv" data-evk="…">근거 데이터</button>` 삽입. `evCols`/`evMapR`(요청번호·요청출처·조치대응부서·작업장·진행현황·요청일·완료예정일·완료일), `d`(조치 지연)만 `evDelayCols`+지연일수 추가. `EV={a,b,c,d,e}` 매핑 후 `box.querySelectorAll('[data-evk]').forEach(...)`로 openRows 연결.
+- 검증(`request_evidence_check3.py`, `#hd20RequestBoard` 스코프로 재확인 — 최초 시도는 자율개선 종합의 동일 `data-evk` 값과 충돌해 오판했던 것을 스코프 제한으로 해결): a=568건, d=237건, e(대형Att.팀)=35건 등 화면 다른 곳 수치와 일치.
+
+### `5ee51ea` — fix: 운영건전성 KPI 드릴다운 셀렉터 복구 (2026-09-30)
+- 변경 파일: `dashboard-grid-drilldown.js`(+2/-2), `index.html`(+1/-1)
+- `dashboard-grid-drilldown.js`의 `.hd20ALMetric`(3곳: 선언부 `wireMetrics`의 `querySelectorAll`, CSS `style()`, 내부 참조)을 `.hd20HealthKpi`로 일괄 교체. `dashboard-priority-layout.js`의 `KPI` 배열 라벨 순서(공식 판정 완료율→평균 판정 Lead Time→고도화 수준→Audit 후 6개월 유지율→Audit 부적합 재발률→기한 내 개선조치 완료율)와 `dashboard-grid-drilldown.js`의 `handlers` 배열 `showCustom` 제목 순서가 정확히 일치함을 정규식으로 사전 확인 후 교체.
+- 검증(`health_kpi_check.py`, `health_kpi_all6.py`): 6장 카드 전부 `cursor:pointer`+`dataset.metricDrill==='1'`, 클릭 시 `.rgModal`이 정확한 제목·건수로 열림(170/106/57/288/168/392). `analysis` 탭에서도 동일 카드(같은 DOM)라 즉시 동작 확인. 16개 탭 회귀·5S 등록 E2E 오류 0건.
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
@@ -1752,8 +1762,8 @@
 ## (2026-09-28 갱신) 종료조건
 16개 탭 순회·기능 회귀 세트 콘솔 오류 0건, 최신 GitHub Pages 빌드 `built` 확인, 실제 사이트 확인 결과 반영 후 종료.
 
-## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 83건)
-> 커밋 시각은 저장소 표기 기준. 아래 83건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
+## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 85건)
+> 커밋 시각은 저장소 표기 기준. 아래 85건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
 > (`e182f66`은 이 대화 밖의 다른 Claude 세션이 같은 계정으로 push한 커밋이라 포함됨. 대장은 `git log --since`가 날짜가 뒤섞인 이력에서 일부를 건너뛰는 것을 발견해, 커밋 날짜를 직접 비교해 생성)
 
 | 커밋 | 시각 | 제목 | 변경 파일 |
@@ -1841,8 +1851,10 @@
 | `bbfd3c1` | 2026-09-30 09:24 | feat: 활동관리(활동 실적) 화면에 hd-22식 필터 바 추가 + 가드 스크립트 충돌 수정 | `activity-workflow.js`, `hd20-native-production-guard.js`, `index.html` |
 | `3d23f5e` | 2026-09-30 09:27 | refactor: candidate/confirmed 판정 로직 중복 정리 — 4개 파일을 원본(HD20KPIData)에 위임 | `hd20-judge-process.js`, `hd20-kpi-evidence-drill.js`, `hd20-ops-v2.js`, `hd20-subtabs.js`, `index.html` |
 | `fb98384` | 2026-09-30 09:32 | feat: 통합기준정보 최종 점검 중 발견 — 요청출처 순서 탭도 번호 입력 방식으로 통일 | `final-layout-polish.js`, `request-source-order-master.js` |
+| `3305f0a` | 2026-09-30 09:46 | feat: 개선요청 종합 6개 패널에 근거 데이터 팝업 추가 | `hd20-request-board.js`, `index.html` |
+| `5ee51ea` | 2026-09-30 09:49 | fix: 운영 건전성 KPI 6개 지표 — 죽어있던 드릴다운 팝업 연결 복구(종합현황+성과·운영분석 동시 적용) | `dashboard-grid-drilldown.js`, `index.html` |
 
-### 문서 커밋(72건, 로그 갱신용)
+### 문서 커밋(73건, 로그 갱신용)
 - `c661242` docs: development/coding log for validation fixture, team master, auth, subtab split (2026-09-22)
 - `da246aa` docs: log advancement 4-way subtab split (4aee88b) in dev/coding logs
 - `015b9b3` docs: log action/audit 4-way subtab split + metric bugfix (57e264c) in dev/coding logs
@@ -1915,3 +1927,4 @@
 - `7671097` docs: 지연 리드타임 클릭 안내 통일(b6edebf) 로그 반영, 커밋 대장 재생성
 - `cc5d4ac` docs: 활동관리 필터 바(bbfd3c1) 로그 반영, 커밋 대장 재생성
 - `ba4f601` docs: candidate/confirmed 중복 정리(3d23f5e) 로그 반영, 커밋 대장 재생성
+- `b2ced62` docs: 요청출처 순서 번호 입력 통일(fb98384) 로그 반영, 커밋 대장 재생성

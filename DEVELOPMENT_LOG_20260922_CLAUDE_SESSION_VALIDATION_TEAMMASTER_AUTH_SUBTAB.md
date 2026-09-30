@@ -835,6 +835,9 @@
 ### 88. 요청출처 순서 번호 입력 통일 (커밋 `fb98384`)
 - 개발일지 참조. 다른 세션이 만든 탭과의 UI 불일치 발견·통일, 전 구간 E2E 검증.
 
+### 89. 대시보드 상세그리드 팝업 점검 1·2단계 (커밋 `3305f0a`, `5ee51ea`)
+- 개발일지 참조. 개선요청 종합 버튼 신설, 운영건전성 죽은 셀렉터 복구.
+
 ## 정정·발견 사항 추가 (2026-09-28 저녁)
 1. 웹 완성도 평가에 대해 인상이 아닌 측정으로 원인(구조: 화면 전체 선렌더링·스타일 다층)을 확인. CSS 수정만으로는 격차가 줄지 않음을 사용자에게 명시.
 2. 헤더 클릭 정렬 미동작은 원본에서도 동일(회귀 아님). 별도 확인 필요.
@@ -846,8 +849,8 @@
 - 5S 자율개선 종합: 참여율 정의(등록자/총원) 사용자 확인, 목표선(분기별 인당 목표) 표시 여부, 실제 .xlsx 내보내기 여부.
 - 표 헤더 정렬 미동작 원인 조사.
 
-## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 83건)
-> 커밋 시각은 저장소 표기 기준. 아래 83건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
+## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 85건)
+> 커밋 시각은 저장소 표기 기준. 아래 85건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
 > (`e182f66`은 이 대화 밖의 다른 Claude 세션이 같은 계정으로 push한 커밋이라 포함됨. 대장은 `git log --since`가 날짜가 뒤섞인 이력에서 일부를 건너뛰는 것을 발견해, 커밋 날짜를 직접 비교해 생성)
 
 | 커밋 | 시각 | 제목 | 변경 파일 |
@@ -935,8 +938,10 @@
 | `bbfd3c1` | 2026-09-30 09:24 | feat: 활동관리(활동 실적) 화면에 hd-22식 필터 바 추가 + 가드 스크립트 충돌 수정 | `activity-workflow.js`, `hd20-native-production-guard.js`, `index.html` |
 | `3d23f5e` | 2026-09-30 09:27 | refactor: candidate/confirmed 판정 로직 중복 정리 — 4개 파일을 원본(HD20KPIData)에 위임 | `hd20-judge-process.js`, `hd20-kpi-evidence-drill.js`, `hd20-ops-v2.js`, `hd20-subtabs.js`, `index.html` |
 | `fb98384` | 2026-09-30 09:32 | feat: 통합기준정보 최종 점검 중 발견 — 요청출처 순서 탭도 번호 입력 방식으로 통일 | `final-layout-polish.js`, `request-source-order-master.js` |
+| `3305f0a` | 2026-09-30 09:46 | feat: 개선요청 종합 6개 패널에 근거 데이터 팝업 추가 | `hd20-request-board.js`, `index.html` |
+| `5ee51ea` | 2026-09-30 09:49 | fix: 운영 건전성 KPI 6개 지표 — 죽어있던 드릴다운 팝업 연결 복구(종합현황+성과·운영분석 동시 적용) | `dashboard-grid-drilldown.js`, `index.html` |
 
-### 문서 커밋(72건, 로그 갱신용)
+### 문서 커밋(73건, 로그 갱신용)
 - `c661242` docs: development/coding log for validation fixture, team master, auth, subtab split (2026-09-22)
 - `da246aa` docs: log advancement 4-way subtab split (4aee88b) in dev/coding logs
 - `015b9b3` docs: log action/audit 4-way subtab split + metric bugfix (57e264c) in dev/coding logs
@@ -1009,3 +1014,4 @@
 - `7671097` docs: 지연 리드타임 클릭 안내 통일(b6edebf) 로그 반영, 커밋 대장 재생성
 - `cc5d4ac` docs: 활동관리 필터 바(bbfd3c1) 로그 반영, 커밋 대장 재생성
 - `ba4f601` docs: candidate/confirmed 중복 정리(3d23f5e) 로그 반영, 커밋 대장 재생성
+- `b2ced62` docs: 요청출처 순서 번호 입력 통일(fb98384) 로그 반영, 커밋 대장 재생성
