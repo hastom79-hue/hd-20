@@ -1684,6 +1684,11 @@
 - 버전 4개 파일 모두 `?v=20260930-dedup-1`.
 - 검증(`consistency_audit.py`+`exec_iprow_check.py` 재실행): 종합현황(51/57/47)·활동관리(170/113/57)·심사 프로세스(170/113/57)·확정·수평전개(47/82.5%)·고도화 맵 막대 합계(47/57)·실행·유지 `.ipRow` 합계(57/47) 전부 리팩터링 이전과 동일. 5S 등록 E2E, 16개 탭 회귀 오류 0건.
 
+### `fb98384` — feat: 요청출처 순서 번호 입력 통일 (2026-09-30)
+- 변경 파일: `final-layout-polish.js`(+1/-1), `request-source-order-master.js`(+14/-6)
+- `request-source-order-master.js` `renderList()`: 8b32a21과 동일 패턴(숫자 입력칸+안정 정렬)으로 교체. CSS `.soNo/.soBtns`→`.soNumWrap/.soNumInput`. 안내문 갱신. 버전 `request-source-order-master.js?v=20260930-numinput-1`.
+- 검증(`source_order_final.py`): '생산혁신팀 HDPS파트'에 '1' 입력 → 즉시 재배치(리더십·생산혁신팀 HDPS파트·5S모듈) → 저장 → localStorage 정확 반영 → 개선요청 종합 대시보드 ① 차트 `rect.hit`의 실제 `data-cat` 순서까지 동일 순서로 일치. 이후 `source_order_restore.py`로 원래 순서 복원 확인. 16개 탭 회귀·5S 등록 E2E 오류 0건.
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
@@ -1747,8 +1752,8 @@
 ## (2026-09-28 갱신) 종료조건
 16개 탭 순회·기능 회귀 세트 콘솔 오류 0건, 최신 GitHub Pages 빌드 `built` 확인, 실제 사이트 확인 결과 반영 후 종료.
 
-## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 82건)
-> 커밋 시각은 저장소 표기 기준. 아래 82건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
+## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 83건)
+> 커밋 시각은 저장소 표기 기준. 아래 83건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
 > (`e182f66`은 이 대화 밖의 다른 Claude 세션이 같은 계정으로 push한 커밋이라 포함됨. 대장은 `git log --since`가 날짜가 뒤섞인 이력에서 일부를 건너뛰는 것을 발견해, 커밋 날짜를 직접 비교해 생성)
 
 | 커밋 | 시각 | 제목 | 변경 파일 |
@@ -1835,8 +1840,9 @@
 | `b6edebf` | 2026-09-30 03:56 | fix: 조치 지연 리드타임 패널에도 클릭 안내 문구 추가(조치대응부서와 통일) | `hd20-request-board.js`, `index.html` |
 | `bbfd3c1` | 2026-09-30 09:24 | feat: 활동관리(활동 실적) 화면에 hd-22식 필터 바 추가 + 가드 스크립트 충돌 수정 | `activity-workflow.js`, `hd20-native-production-guard.js`, `index.html` |
 | `3d23f5e` | 2026-09-30 09:27 | refactor: candidate/confirmed 판정 로직 중복 정리 — 4개 파일을 원본(HD20KPIData)에 위임 | `hd20-judge-process.js`, `hd20-kpi-evidence-drill.js`, `hd20-ops-v2.js`, `hd20-subtabs.js`, `index.html` |
+| `fb98384` | 2026-09-30 09:32 | feat: 통합기준정보 최종 점검 중 발견 — 요청출처 순서 탭도 번호 입력 방식으로 통일 | `final-layout-polish.js`, `request-source-order-master.js` |
 
-### 문서 커밋(71건, 로그 갱신용)
+### 문서 커밋(72건, 로그 갱신용)
 - `c661242` docs: development/coding log for validation fixture, team master, auth, subtab split (2026-09-22)
 - `da246aa` docs: log advancement 4-way subtab split (4aee88b) in dev/coding logs
 - `015b9b3` docs: log action/audit 4-way subtab split + metric bugfix (57e264c) in dev/coding logs
@@ -1908,3 +1914,4 @@
 - `2629943` docs: 조치 지연 리드타임 패널(4e3f970) 로그 반영, 커밋 대장 재생성
 - `7671097` docs: 지연 리드타임 클릭 안내 통일(b6edebf) 로그 반영, 커밋 대장 재생성
 - `cc5d4ac` docs: 활동관리 필터 바(bbfd3c1) 로그 반영, 커밋 대장 재생성
+- `ba4f601` docs: candidate/confirmed 중복 정리(3d23f5e) 로그 반영, 커밋 대장 재생성
