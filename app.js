@@ -37,7 +37,14 @@ function renderOrderEditor(){const list=$('#orderList');if(!list)return;const n=
 }
 function loadTargets(){['Q1','Q2','Q3','Q4'].forEach((q,i)=>{const e=$(`#q${i+1}Target`);if(e)e.value=targetMaster[q]??''})}
 function readTargetInput(id){const raw=String($(id)?.value??'').trim();if(!raw)return null;const n=Number(raw);return Number.isFinite(n)&&n>0?n:null}
-function initMaster(){const modal=$('#masterModal');const open=$('#openMaster'),close=$('#closeMaster'),cancel=$('#cancelOrder'),save=$('#saveOrder'),tabs=$$('[data-master-tab]');let tab='order';const setTab=t=>{tab=t;tabs.forEach(b=>b.classList.toggle('on',b.dataset.masterTab===t));const order=$('#masterOrderPanel'),target=$('#masterTargetPanel');if(order)order.style.display=t==='order'?'block':'none';if(target)target.style.display=t==='target'?'block':'none';if(t==='order')renderOrderEditor();else loadTargets()};if(open)open.onclick=()=>{modal?.classList.add('on');setTab('order')};if(close)close.onclick=()=>modal?.classList.remove('on');if(cancel)cancel.onclick=()=>modal?.classList.remove('on');tabs.forEach(b=>b.onclick=()=>setTab(b.dataset.masterTab));if(save)save.onclick=()=>{if(tab==='order')localStorage.setItem(ORDER_KEY,JSON.stringify(teamOrder));else{targetMaster={Q1:readTargetInput('#q1Target'),Q2:readTargetInput('#q2Target'),Q3:readTargetInput('#q3Target'),Q4:readTargetInput('#q4Target')};localStorage.setItem(TARGET_KEY,JSON.stringify(targetMaster))}renderChart();modal?.classList.remove('on')}}
+function initMaster(){const modal=$('#masterModal');const close=$('#closeMaster'),cancel=$('#cancelOrder'),save=$('#saveOrder'),tabs=$$('[data-master-tab]');let tab='order';const setTab=t=>{tab=t;tabs.forEach(b=>b.classList.toggle('on',b.dataset.masterTab===t));const order=$('#masterOrderPanel'),target=$('#masterTargetPanel');if(order)order.style.display=t==='order'?'block':'none';if(target)target.style.display=t==='target'?'block':'none';if(t==='order')renderOrderEditor();else loadTargets()};
+  /* 모달(오버레이)에서 '⑥ 통합기준정보' 탭(일반 화면 섹션)으로 전환 — 열기 버튼은 없어지고 상단 나비게이션이
+     대신 이 화면을 보여줌·숨김. hd20-open-master 이벤트가 탭 진입 시점을 알려줌(기본 탭으로 재설정). */
+  window.addEventListener('hd20-open-master',()=>setTab('order'));
+  if(close)close.onclick=()=>window.HD20_NAV?.go?.('dashboard');
+  if(cancel)cancel.onclick=()=>{loadSettings();setTab(tab)};
+  tabs.forEach(b=>b.onclick=()=>setTab(b.dataset.masterTab));
+  if(save)save.onclick=()=>{if(tab==='order')localStorage.setItem(ORDER_KEY,JSON.stringify(teamOrder));else{targetMaster={Q1:readTargetInput('#q1Target'),Q2:readTargetInput('#q2Target'),Q3:readTargetInput('#q3Target'),Q4:readTargetInput('#q4Target')};localStorage.setItem(TARGET_KEY,JSON.stringify(targetMaster))}renderChart();alert('저장했습니다.')}}
 function boot(){loadSettings();renderChart();initMaster()}
 window.renderChart=renderChart;window.HD20DashboardCore={renderChart,counts,teamOrder:()=>[...teamOrder],targets:()=>({...targetMaster})};
 ['hd20-kpi-source-updated','hd20-gmes-5s-imported','hd20-gmes-5s-judged'].forEach(ev=>window.addEventListener(ev,()=>setTimeout(renderChart,0)));

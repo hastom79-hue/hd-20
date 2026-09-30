@@ -103,8 +103,15 @@ function applyAction(sub){const root=$('#awAction');if(!root)return;root.dataset
 function apply(area,sub){try{document.querySelector('.app')?.setAttribute('data-hd-view',area+'.'+sub)}catch(e){}
   if(area==='dashboard')applyDashboard(sub);else if(area==='activity')applyActivity(sub);else if(area==='advancement')applyAdvancement(sub);else if(area==='audit')applyAudit(sub);else if(area==='action')applyAction(sub);window.dispatchEvent(new CustomEvent('hd20-subtab-changed',{detail:{area,sub}}))}
 function select(area,sub){state={area,sub};$$('button',ensure()).forEach(b=>b.classList.toggle('on',b.dataset.sub===sub));apply(area,sub);renderPurpose(area,sub)}
-function syncArea(area){if(!MAP[area])return;state.sub=(MAP[area]||[])[0]?.[0]||'';state.area=area;const bar=ensure(),items=MAP[area]||[];bar.innerHTML=items.map(([k,n])=>`<button type="button" data-sub="${k}" class="${k===state.sub?'on':''}">${n}</button>`).join('');$$('button',bar).forEach(b=>b.onclick=()=>select(area,b.dataset.sub));renderPurpose(area,state.sub);requestAnimationFrame(()=>apply(area,state.sub))}
-function bindMain(){const nav=$('.beginnerNav');if(!nav)return;nav.addEventListener('click',e=>{const b=e.target.closest('button[data-key]');if(!b)return;setTimeout(()=>syncArea(b.dataset.key),60)});window.addEventListener('hd20-nav-area-changed',e=>{const area=e.detail?.area;if(!MAP[area])return;if(state.area===area&&$('#hd20PurposePanel'))return;setTimeout(()=>syncArea(area),0)})}
+function syncArea(area){
+  if(!MAP[area]){
+    /* '통합기준정보' 등 이 서브탭 체계를 모르는 새 영역으로 이동한 경우: 안내 카드·서브탭 바가 이전 영역
+       내용을 그대로 보여준 채 남아있던 결함 → 둘 다 숨김(빈 화면으로 진입시 잔상 없음) */
+    [ensure(),ensurePurpose(),$('#hd20OpsMetrics')].forEach(el=>el&&el.style.setProperty('display','none','important'));return
+  }
+  [ensure(),ensurePurpose(),$('#hd20OpsMetrics')].forEach(el=>el&&el.style.removeProperty('display'));
+  state.sub=(MAP[area]||[])[0]?.[0]||'';state.area=area;const bar=ensure(),items=MAP[area]||[];bar.innerHTML=items.map(([k,n])=>`<button type="button" data-sub="${k}" class="${k===state.sub?'on':''}">${n}</button>`).join('');$$('button',bar).forEach(b=>b.onclick=()=>select(area,b.dataset.sub));renderPurpose(area,state.sub);requestAnimationFrame(()=>apply(area,state.sub))}
+function bindMain(){const nav=$('.beginnerNav');if(!nav)return;nav.addEventListener('click',e=>{const b=e.target.closest('button[data-key]');if(!b)return;setTimeout(()=>syncArea(b.dataset.key),60)});window.addEventListener('hd20-nav-area-changed',e=>{const area=e.detail?.area;if(!MAP[area]){[ensure(),ensurePurpose(),$('#hd20OpsMetrics')].forEach(el=>el&&el.style.setProperty('display','none','important'));return}if(state.area===area&&$('#hd20PurposePanel'))return;setTimeout(()=>syncArea(area),0)})}
 function boot(){ensure();ensureGridModal();bindMain();window.addEventListener('hd20-action-updated',()=>{if(state.area==='action'&&state.sub==='verify')renderActionVerify($('#awAction'))});setTimeout(()=>render(window.HD20_NAV?.active?.()||'dashboard'),120)}
 window.HD20_SUBNAV={render,select,state:()=>({...state}),map:MAP,contracts:CONTRACT,purpose:CONTRACT,contractMap:(area)=>area?{[area]:MAP[area]}:MAP,contractPurpose:(area)=>area?Object.fromEntries(Object.entries(CONTRACT).filter(([k])=>k.startsWith(area+'.'))):CONTRACT,openGrid:()=>openGrid(state.area,state.sub),advancementType,advancementCandidate,advancementConfirmed};document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot,{once:true}):boot();
 })();
