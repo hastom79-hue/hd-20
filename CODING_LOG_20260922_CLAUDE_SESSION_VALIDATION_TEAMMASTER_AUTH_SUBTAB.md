@@ -1659,6 +1659,13 @@
 - 버전 `hd20-improve-board.js?v=20260930-topextra-1`, `hd20-request-board.js?v=20260930-overbadge-1`.
 - 검증(`overbadge_check.py`): 대형메인팀 7·프레임제작팀 9 등 막대 위 표시가 표의 기한경과 열과 전부 일치, SVG bounding box 겹침 0건. 16개 탭 회귀 오류 0건.
 
+### `4e3f970` — feat: 조치 지연 리드타임 패널 (2026-09-30)
+- 변경 파일: `hd20-request-board.js`(+11/-0), `index.html`(+1/-1)
+- `hd20-request-board.js`: `dayDiff(a,b)`, `delayDays(c,today)`(위 정의). `delayRows`=팀별 `{team,n,avg,max}`(지연 0건 팀 제외, avg 내림차순+n 내림차순 정렬). `delayChart=chart({rotate:true,linkX:true,sel:S.selTeam,series:[{name:'평균 지연일수',color:'#c0392b'}]})`. `delayOverallAvg`=건수 가중 전체 평균.
+- 마크업: 조치대응부서 패널과 선택 팀 추이 패널 사이에 새 `ibRow` 삽입, 지연 0건이면 안내 문구로 대체. 클릭 바인딩은 기존 `svg[2]`(팀 차트) 패턴을 그대로 `svg[3]`(신규 delayChart)에 추가.
+- 버전 `hd20-request-board.js?v=20260930-delaylt-1`.
+- 검증(`delay_lt_check.py`): `HD20KPIData.actionCases()`를 직접 집계한 상위 3팀(프레임제작팀 27.8일·중형메인팀 23.2일·초대형조립팀 21.4일)이 화면 차트 순위·표시값(정수 반올림 28/23/21)과 정확히 일치. 팀명 클릭 시 선택 팀 추이 패널이 정확히 전환. 16개 탭 회귀 오류 0건.
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
@@ -1722,8 +1729,8 @@
 ## (2026-09-28 갱신) 종료조건
 16개 탭 순회·기능 회귀 세트 콘솔 오류 0건, 최신 GitHub Pages 빌드 `built` 확인, 실제 사이트 확인 결과 반영 후 종료.
 
-## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 78건)
-> 커밋 시각은 저장소 표기 기준. 아래 78건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
+## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 79건)
+> 커밋 시각은 저장소 표기 기준. 아래 79건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
 > (`e182f66`은 이 대화 밖의 다른 Claude 세션이 같은 계정으로 push한 커밋이라 포함됨. 대장은 `git log --since`가 날짜가 뒤섞인 이력에서 일부를 건너뛰는 것을 발견해, 커밋 날짜를 직접 비교해 생성)
 
 | 커밋 | 시각 | 제목 | 변경 파일 |
@@ -1806,8 +1813,9 @@
 | `8f0e5b4` | 2026-09-30 03:06 | fix+feat: ③ 영역 5개 서브탭에 중복 반영되던 고도화 작업장 추이 카드 축소 + 고도화 맵 버블 지도를 정렬 막대 리스트로 재설계 | `final-layout-polish.js`, `hd20-five-area-integration.js`, `hd20-maturity-map-tab.js`, `index.html` |
 | `c587364` | 2026-09-30 03:18 | feat: 통합기준정보를 상단 배너 버튼(모달)에서 '⑥ 통합기준정보' 탭으로 이동 | `app.js`, `beginner-navigation.js`, `hd20-subtabs.js`, `index.html`, `master-info-modal.js` |
 | `bbcbbff` | 2026-09-30 03:47 | feat: 조치대응부서 누적막대에 기한경과 건수를 빨간 글자로 병기(가장 효율적인 안 채택) | `hd20-improve-board.js`, `hd20-request-board.js`, `index.html` |
+| `4e3f970` | 2026-09-30 03:51 | feat: 개선요청 종합에 '조치 지연 리드타임' 패널 신설 — 팀별 평균 지연일수 순위 | `hd20-request-board.js`, `index.html` |
 
-### 문서 커밋(67건, 로그 갱신용)
+### 문서 커밋(68건, 로그 갱신용)
 - `c661242` docs: development/coding log for validation fixture, team master, auth, subtab split (2026-09-22)
 - `da246aa` docs: log advancement 4-way subtab split (4aee88b) in dev/coding logs
 - `015b9b3` docs: log action/audit 4-way subtab split + metric bugfix (57e264c) in dev/coding logs
@@ -1875,3 +1883,4 @@
 - `f962ba7` docs: 표시순서 번호 입력 방식(8b32a21) 로그 반영, 커밋 대장 재생성
 - `64a3ab4` docs: 카드 중복 축소·고도화 맵 재설계·종합 점검(8f0e5b4) 로그 반영, 커밋 대장 재생성
 - `174f872` docs: 통합기준정보 탭 이동(c587364) 로그 반영, 커밋 대장 재생성
+- `d5ffa25` docs: 기한경과 뱃지 병기(bbcbbff) 로그 반영, 커밋 대장 재생성
