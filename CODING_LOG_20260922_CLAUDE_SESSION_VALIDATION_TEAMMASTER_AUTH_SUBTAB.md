@@ -1718,6 +1718,14 @@
 - 버전 `hd20-ops-v2.js?v=20260930-drow-1`.
 - 검증(`drow_click_check.py`): 3항목 `cursor:pointer` 전환, 2번째 항목(6개월 지속관리 중) 클릭 시 `HD20_NAV.active()==='audit'`, `#hd20UniversalGridModal.on` 존재 확인. 5S 등록 E2E, 16개 탭 회귀 오류 0건.
 
+### `d80c2eb` — feat: 유지 이탈 현황 섹션 (2026-09-30)
+- 변경 파일: `hd20-judge-process.js`(+26/-2), `index.html`(+1/-1)
+- `hd20-judge-process.js` `data()`: `confirmedDateOf(r)`, `lossRows=confirmed.filter(r=>!maintained.has(r.id)).map(...)` — `maintainLostAt`/`lostAt`/`invalidatedAt` 실제 기록 우선, 없으면 확정일+6개월 추정(`estimated=true`), `days=Math.round((Date.now()-lostDate)/86400000)`, `avg desc` 정렬과 같은 방식으로 `days` 내림차순 정렬.
+- `render()`: `lossRowsHtml`/`lossSection` 생성(0건이면 "전부 유지 중" 안내), 기존 `box.innerHTML`에 판정 파이프라인 표 바로 아래로 삽입. CSS `.jpLossWrap/.jpLossHead/.jpLossDays(.hi/.mid/.lo)/.jpLossEmpty` 추가(180일↑ 빨강·90일↑ 주황 뱃지).
+- 버그 수정(구현 중 자체 발견): 최초 str_replace 삽입 위치가 기존 `box.innerHTML=`...`` 템플릿 리터럴이 닫히기 전 지점이라 새 JS 코드가 문자열 내부로 삽입되어 파싱 에러 발생(`Unexpected identifier '$'`) → 템플릿 리터럴 전체를 하나로 재구성해 해결.
+- 버전 `hd20-judge-process.js?v=20260930-loss-1`.
+- 검증(`loss_section_check.py`): 10건 전부 정확한 팀·작업장·날짜·정체일수(312/44/40/18/14일 및 '곧 재평가' 5건), 최상단(대형Att.팀·조립1구역 2)이 자율개선 종합에서 이미 확인한 VALID-A-00020과 일치. 5S 등록 E2E, 16개 탭 회귀 오류 0건.
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
@@ -1781,8 +1789,8 @@
 ## (2026-09-28 갱신) 종료조건
 16개 탭 순회·기능 회귀 세트 콘솔 오류 0건, 최신 GitHub Pages 빌드 `built` 확인, 실제 사이트 확인 결과 반영 후 종료.
 
-## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 88건)
-> 커밋 시각은 저장소 표기 기준. 아래 88건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
+## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 89건)
+> 커밋 시각은 저장소 표기 기준. 아래 89건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
 > (`e182f66`은 이 대화 밖의 다른 Claude 세션이 같은 계정으로 push한 커밋이라 포함됨. 대장은 `git log --since`가 날짜가 뒤섞인 이력에서 일부를 건너뛰는 것을 발견해, 커밋 날짜를 직접 비교해 생성)
 
 | 커밋 | 시각 | 제목 | 변경 파일 |
@@ -1875,8 +1883,9 @@
 | `251801c` | 2026-09-30 21:02 | redesign: 고도화 맵 — Case 목록을 상시 2단 패널에서 클릭 시 팝업으로 전환(디자인 컨셉 재정리) | `final-layout-polish.js`, `hd20-maturity-map-tab.js`, `index.html` |
 | `64d18ae` | 2026-09-30 21:23 | redesign: 개선요청 종합 '상세내용' — 300건 상시 그리드를 15건 미리보기+전체 보기 팝업으로 통일 | `hd20-request-board.js`, `index.html` |
 | `586e566` | 2026-09-30 21:30 | feat: 실행·유지 'Audit 후 6개월 지속관리' 카드 3개 항목도 클릭 가능하게 연결(대시보드 팝업 점검 마무리) | `hd20-ops-v2.js`, `index.html` |
+| `d80c2eb` | 2026-09-30 21:35 | feat: 심사 프로세스에 '유지 이탈 현황' 신설 — 이탈 작업장을 정체일수 순으로 모아 관리 | `hd20-judge-process.js`, `index.html` |
 
-### 문서 커밋(76건, 로그 갱신용)
+### 문서 커밋(77건, 로그 갱신용)
 - `c661242` docs: development/coding log for validation fixture, team master, auth, subtab split (2026-09-22)
 - `da246aa` docs: log advancement 4-way subtab split (4aee88b) in dev/coding logs
 - `015b9b3` docs: log action/audit 4-way subtab split + metric bugfix (57e264c) in dev/coding logs
@@ -1953,3 +1962,4 @@
 - `992d142` docs: 대시보드 팝업 점검 1·2단계(3305f0a,5ee51ea) 로그 반영, 커밋 대장 재생성
 - `d854582` docs: 고도화 맵 팝업 전환(251801c) 로그 반영, 커밋 대장 재생성
 - `c7839b2` docs: 상세내용 미리보기+팝업(64d18ae) 로그 반영, 커밋 대장 재생성
+- `f1ee8c8` docs: Audit 지속관리 클릭 연결(586e566) 로그 반영, 커밋 대장 재생성 — 대시보드 팝업 점검 완료
