@@ -1678,6 +1678,12 @@
 - 버전 `activity-workflow.js?v=20260930-filter-1`, `hd20-native-production-guard.js?v=20260930-actfix-1`.
 - 검증(`activity_filter_check2.py`): 팀 필터 50건/전체 868건, 표 50행 전부 대형Att.팀 일치. +상태=완료 38건, 표 전부 '완료' 일치. 5S 등록 E2E, 16개 탭 회귀 오류 0건.
 
+### `3d23f5e` — refactor: candidate/confirmed 위임 전환 (2026-09-30)
+- 변경 파일: `hd20-judge-process.js`(+2/-2), `hd20-kpi-evidence-drill.js`(+2/-2), `hd20-ops-v2.js`(+2/-2), `hd20-subtabs.js`(+2/-2), `index.html`(+1/-1)
+- 4개 파일 공통 패턴: `function {name}(x){return window.HD20KPIData?.isCandidate?.(x) ?? (기존 하드코딩 로직)}`(confirmed도 동일). `hd20-judge-process.js`는 지역 화살표 함수(`isCandidate`/`isConfirmed`)에 같은 패턴 적용.
+- 버전 4개 파일 모두 `?v=20260930-dedup-1`.
+- 검증(`consistency_audit.py`+`exec_iprow_check.py` 재실행): 종합현황(51/57/47)·활동관리(170/113/57)·심사 프로세스(170/113/57)·확정·수평전개(47/82.5%)·고도화 맵 막대 합계(47/57)·실행·유지 `.ipRow` 합계(57/47) 전부 리팩터링 이전과 동일. 5S 등록 E2E, 16개 탭 회귀 오류 0건.
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
@@ -1741,8 +1747,8 @@
 ## (2026-09-28 갱신) 종료조건
 16개 탭 순회·기능 회귀 세트 콘솔 오류 0건, 최신 GitHub Pages 빌드 `built` 확인, 실제 사이트 확인 결과 반영 후 종료.
 
-## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 81건)
-> 커밋 시각은 저장소 표기 기준. 아래 81건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
+## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 82건)
+> 커밋 시각은 저장소 표기 기준. 아래 82건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
 > (`e182f66`은 이 대화 밖의 다른 Claude 세션이 같은 계정으로 push한 커밋이라 포함됨. 대장은 `git log --since`가 날짜가 뒤섞인 이력에서 일부를 건너뛰는 것을 발견해, 커밋 날짜를 직접 비교해 생성)
 
 | 커밋 | 시각 | 제목 | 변경 파일 |
@@ -1828,8 +1834,9 @@
 | `4e3f970` | 2026-09-30 03:51 | feat: 개선요청 종합에 '조치 지연 리드타임' 패널 신설 — 팀별 평균 지연일수 순위 | `hd20-request-board.js`, `index.html` |
 | `b6edebf` | 2026-09-30 03:56 | fix: 조치 지연 리드타임 패널에도 클릭 안내 문구 추가(조치대응부서와 통일) | `hd20-request-board.js`, `index.html` |
 | `bbfd3c1` | 2026-09-30 09:24 | feat: 활동관리(활동 실적) 화면에 hd-22식 필터 바 추가 + 가드 스크립트 충돌 수정 | `activity-workflow.js`, `hd20-native-production-guard.js`, `index.html` |
+| `3d23f5e` | 2026-09-30 09:27 | refactor: candidate/confirmed 판정 로직 중복 정리 — 4개 파일을 원본(HD20KPIData)에 위임 | `hd20-judge-process.js`, `hd20-kpi-evidence-drill.js`, `hd20-ops-v2.js`, `hd20-subtabs.js`, `index.html` |
 
-### 문서 커밋(70건, 로그 갱신용)
+### 문서 커밋(71건, 로그 갱신용)
 - `c661242` docs: development/coding log for validation fixture, team master, auth, subtab split (2026-09-22)
 - `da246aa` docs: log advancement 4-way subtab split (4aee88b) in dev/coding logs
 - `015b9b3` docs: log action/audit 4-way subtab split + metric bugfix (57e264c) in dev/coding logs
@@ -1900,3 +1907,4 @@
 - `d5ffa25` docs: 기한경과 뱃지 병기(bbcbbff) 로그 반영, 커밋 대장 재생성
 - `2629943` docs: 조치 지연 리드타임 패널(4e3f970) 로그 반영, 커밋 대장 재생성
 - `7671097` docs: 지연 리드타임 클릭 안내 통일(b6edebf) 로그 반영, 커밋 대장 재생성
+- `cc5d4ac` docs: 활동관리 필터 바(bbfd3c1) 로그 반영, 커밋 대장 재생성

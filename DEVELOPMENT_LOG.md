@@ -1259,3 +1259,10 @@ Canonical Store는 다음을 기준으로 한다.
 - 결함 발견: hd20-native-production-guard.js의 patchActivity()가 같은 표를 필터 없이 무조건 다시 그려
   필터가 항상 원상 복구되는 결함(대상 추출 화면에서 겪은 것과 동일 패턴) 발견·제거.
 - 검증: 대형Att.팀 필터 50건 전부 일치, +완료 상태 38건 전부 일치. 16개 탭 회귀 오류 0건.
+
+### 2026-09-30 / candidate/confirmed 판정 로직 중복 정리 (`3d23f5e`)
+- 사용자 지시: "다 진행하자"(잔여 과제 2번). 이전 전수 감사(94a749b)에서 지적한 코드 중복 위험 해소.
+- hd20-ops-v2.js·hd20-kpi-evidence-drill.js·hd20-subtabs.js·hd20-judge-process.js 4개 파일의
+  candidate/confirmed 판정 로직을 원본(window.HD20KPIData.isCandidate/isConfirmed)에 위임하도록 교체.
+  함수 이름·호출부는 그대로 두고 내부만 위임+폴백 구조로.
+- 검증: 리팩터링 전후 6개 화면 숫자 전수 재대조(170/113/57/47/51) — 하나도 안 바뀜. 16개 탭 회귀 오류 0건.
