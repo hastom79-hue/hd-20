@@ -1643,6 +1643,15 @@
 - 종합 점검(`consistency_audit.py`+`exec_iprow_check.py`): `HD20KPIData.snapshot()` 기준값(confirmed:57,maintained:47,newSecured:51,loss:10)을 ①종합현황 카드, ②활동관리 KPI, ③심사 프로세스 단계값, ③확정·수평전개 카드, ⑤고도화 맵(카드+막대 합계 `{합계유지:47,합계확정:57}`), ④실행·유지 `.ipRow` 합계(`{합계_공식확정:57,합계_현재유지:47}`) 6곳에서 실측 대조 — 전부 일치.
 - 검증: `maturity_click_check.py`류 시행착오(초기엔 텍스트 추출 실수로 불일치처럼 보였다가 `maturity_final_confirm.py`로 클릭 팀=선택 팀 일치 최종 확인). 5S 등록 E2E(960→961), 16개 탭 회귀 오류 0건, ③ 서브탭 높이 자연 감소 확인(후보 목록 6463→5871 등, 카드 제거분 반영).
 
+### `c587364` — feat: 통합기준정보 상단 버튼→탭 이동 (2026-09-30)
+- 변경 파일: `app.js`(+8/-1), `beginner-navigation.js`(+4/-4), `hd20-subtabs.js`(+9/-2), `index.html`(+1/-1), `master-info-modal.js`(+4/-4)
+- `index.html`: `<button id="openMaster">` 제거.
+- `beginner-navigation.js`: `NAV_HTML`에 `<button data-key="master">⑥ 통합기준정보</button>` 추가. `SCREEN_BY_KEY.master='masterModal'`(기존 모달 id 그대로 재사용). `HD20_NAV.areas`에 `'master'` 추가. `go()`에서 `key==='master'`일 때 `hd20-open-master` 커스텀 이벤트 발행(기본 탭 재설정용).
+- `master-info-modal.js`: `.masterModal{position:fixed;...}`→`{display:none;padding:0}`, `.on{display:flex}`→`{display:block}`, `.modalBox`의 `max-height/overflow`를 페이지 인라인에 맞게 조정. 최상위 wrapper에 `class="masterModal awScreen"` 추가(다른 awActivity/awAudit/awAction과 동일한 표시 메커니즘 편입).
+- `app.js` `initMaster()`: `#openMaster` 바인딩 제거, `hd20-open-master` 이벤트로 기본 탭('order') 재설정, `close`→`HD20_NAV.go('dashboard')`, `cancel`→`loadSettings()`로 미저장 변경 되돌림, 저장 후 모달 닫기 대신 `alert('저장했습니다.')`.
+- **버그 수정(구현 중 발견)**: `hd20-subtabs.js`의 `syncArea(area)`와 `hd20-nav-area-changed` 리스너가 `if(!MAP[area])return`으로 조기 종료해, 'master' 진입 시 `#hd20PurposePanel`(화면 안내 카드)·`#hd20OpsMetrics`(KPI 스트립)·`#hd20Subnav`(서브탭 바)가 이전 영역 내용을 그대로 보여줌 → 두 지점 모두 `if(!MAP[area]){...hide 3 elements...return}` 분기 추가. 1차 시도(`style.display='none'`)는 `hd22-theme.css`의 `.app>.hd20PurposePanel{display:grid!important}`에 막혀 무효 → `style.setProperty('display','none','important')`로 재수정.
+- 검증(`master_leak_debug.py`~`five_area_sanity.py`): activity→advancement→audit→action→master→dashboard→activity 순회에서 안내카드/KPI스트립/서브탭바가 5개 정식 영역에서 True, master에서 False, 복귀 후 다시 True로 정확히 전환. 5S 등록 E2E, 16개 탭 회귀 오류 0건(1회 실적분석 높이 이상치는 재실행 시 미재현되어 일시적 타이밍 편차로 판정).
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
@@ -1706,8 +1715,8 @@
 ## (2026-09-28 갱신) 종료조건
 16개 탭 순회·기능 회귀 세트 콘솔 오류 0건, 최신 GitHub Pages 빌드 `built` 확인, 실제 사이트 확인 결과 반영 후 종료.
 
-## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 76건)
-> 커밋 시각은 저장소 표기 기준. 아래 76건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
+## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 77건)
+> 커밋 시각은 저장소 표기 기준. 아래 77건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
 > (`e182f66`은 이 대화 밖의 다른 Claude 세션이 같은 계정으로 push한 커밋이라 포함됨. 대장은 `git log --since`가 날짜가 뒤섞인 이력에서 일부를 건너뛰는 것을 발견해, 커밋 날짜를 직접 비교해 생성)
 
 | 커밋 | 시각 | 제목 | 변경 파일 |
@@ -1788,8 +1797,9 @@
 | `023b7b0` | 2026-09-29 22:26 | feat: 자율개선 종합 ⑤번 차트에 월별 이탈 건수 표시 추가 | `hd20-improve-board.js`, `index.html` |
 | `8b32a21` | 2026-09-30 02:53 | feat: 생산팀 표시순서 편집을 ▲▼ 버튼에서 순서 번호 직접 입력 방식으로 변경 | `app.js`, `index.html`, `master-info-modal.js` |
 | `8f0e5b4` | 2026-09-30 03:06 | fix+feat: ③ 영역 5개 서브탭에 중복 반영되던 고도화 작업장 추이 카드 축소 + 고도화 맵 버블 지도를 정렬 막대 리스트로 재설계 | `final-layout-polish.js`, `hd20-five-area-integration.js`, `hd20-maturity-map-tab.js`, `index.html` |
+| `c587364` | 2026-09-30 03:18 | feat: 통합기준정보를 상단 배너 버튼(모달)에서 '⑥ 통합기준정보' 탭으로 이동 | `app.js`, `beginner-navigation.js`, `hd20-subtabs.js`, `index.html`, `master-info-modal.js` |
 
-### 문서 커밋(65건, 로그 갱신용)
+### 문서 커밋(66건, 로그 갱신용)
 - `c661242` docs: development/coding log for validation fixture, team master, auth, subtab split (2026-09-22)
 - `da246aa` docs: log advancement 4-way subtab split (4aee88b) in dev/coding logs
 - `015b9b3` docs: log action/audit 4-way subtab split + metric bugfix (57e264c) in dev/coding logs
@@ -1855,3 +1865,4 @@
 - `45eabef` docs: 개선요청 팀 차트 보강(2866aca) 로그 반영, 커밋 대장 재생성
 - `d5bea56` docs: 월별 이탈 표시(023b7b0) 로그 반영, 커밋 대장 재생성
 - `f962ba7` docs: 표시순서 번호 입력 방식(8b32a21) 로그 반영, 커밋 대장 재생성
+- `64a3ab4` docs: 카드 중복 축소·고도화 맵 재설계·종합 점검(8f0e5b4) 로그 반영, 커밋 대장 재생성
