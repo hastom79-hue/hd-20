@@ -109,7 +109,7 @@ function render(box){
     <tr><td>합계</td><td>${sum.total}</td><td>${sum.done}건 (${pctS(sum.done)}%)</td><td>${sum.open}건 (${pctS(sum.open)}%)</td><td>${sum.over}건 (${pctS(sum.over)}%)</td></tr>
     ${teamRows.map(gridRow).join('')}</tbody></table>`;
   // ④ 상세내용
-  const detailRows=[...rowsM].sort((a,b)=>String(b.date).localeCompare(String(a.date))).slice(0,300);
+  const detailAll=[...rowsM].sort((a,b)=>String(b.date).localeCompare(String(a.date))),detailRows=detailAll.slice(0,15);
   const detail=`<table class="rqGrid rqDetail"><thead><tr><th>요청번호</th><th>요청출처</th><th>조치대응부서</th><th>작업장</th><th>진행현황</th><th>요청일</th><th>완료예정일</th><th>완료일</th></tr></thead><tbody>
     ${detailRows.length?detailRows.map(c=>`<tr><td>${esc(c.id)}</td><td>${esc(sourceOf(c))}</td><td>${esc(c.team)}</td><td>${esc(c.workplace||'—')}</td><td>${isOverdue(c,D.today)?'<b style="color:#c0392b">기한경과</b>':esc(c.status)}</td><td>${esc(c.date||'—')}</td><td>${esc(c.due||'—')}</td><td>${esc(c.doneDate||'—')}</td></tr>`).join(''):`<tr><td colspan="8" style="text-align:center;color:#8a99a6;padding:16px">조건에 해당하는 개선요청이 없습니다.</td></tr>`}
     </tbody></table>`;
@@ -127,8 +127,8 @@ function render(box){
 <div class="ibRow"><div class="ibPanel"><div class="ibHead">조치대응부서 진행현황<button type="button" class="ibEv" data-evk="c">근거 데이터</button><em>${S.month?+S.month+'월':'연간누적'} · 합계 ${sum.total}건 · 팀명을 클릭하면 아래 상세 추이가 바뀝니다</em></div><div class="ibBody">${teamChart}${leg([['완료','#1f6f6b'],['진행·대기','#a8c7c4'],['기한경과','#e0b03c']])}<div class="rqScroll" style="margin-top:10px">${teamGrid}</div></div></div></div>
 <div class="ibRow"><div class="ibPanel"><div class="ibHead">조치 지연 리드타임<button type="button" class="ibEv" data-evk="d">근거 데이터</button><em>${S.month?+S.month+'월':'연간누적'} · 지연 발생 ${delayRows.reduce((a,r)=>a+r.n,0)}건 · 전체 평균 ${delayOverallAvg}일 · 팀명을 클릭하면 아래 상세 추이가 바뀝니다</em></div><div class="ibBody">${delayChart||'<p style="padding:20px;color:#8a99a6;text-align:center">조건에 해당하는 지연 건이 없습니다.</p>'}${delayChart?leg([['평균 지연일수(완료 늦은 건은 완료일-기한, 진행 중인 기한경과 건은 오늘-기한)','#c0392b']]):''}</div></div></div>
 <div class="ibRow"><div class="ibPanel"><div class="ibHead">선택 팀 월별 등록·완료 추이<button type="button" class="ibEv" data-evk="e">근거 데이터</button><em>[ ${esc(S.selTeam)} ] ${S.year}년</em></div><div class="ibBody">${teamTrend}${leg([['등록','#8fa3b3'],['완료','#1f6f6b']])}</div></div></div>
-<div class="ibRow"><div class="ibPanel"><div class="ibHead">상세내용<em>표시 ${detailRows.length}건 / 조건 일치 ${rowsM.length}건</em></div><div class="ibBody"><div class="rqScroll">${detail}</div></div></div></div>
-<p class="ibFoot">※ 개선요청 = Audit 부적합·현장 5S 점검에서 발생해 담당 팀(조치대응부서)에 배정된 조치 건. 완료 = 상태 '완료'. 기한경과 = 미완료이면서 조치기한이 오늘 이전. 재발 = 효과검증 후 재발이 기록된 건. 상세내용은 최근 300건까지 표시하며 엑셀다운로드는 조건에 맞는 전체 건을 내려받습니다.</p>`;
+<div class="ibRow"><div class="ibPanel"><div class="ibHead">상세내용<button type="button" class="ibEv" data-evk="f">전체 보기</button><em>미리보기 ${detailRows.length}건 / 조건 일치 ${rowsM.length}건</em></div><div class="ibBody"><div class="rqScroll">${detail}</div></div></div></div>
+<p class="ibFoot">※ 개선요청 = Audit 부적합·현장 5S 점검에서 발생해 담당 팀(조치대응부서)에 배정된 조치 건. 완료 = 상태 '완료'. 기한경과 = 미완료이면서 조치기한이 오늘 이전. 재발 = 효과검증 후 재발이 기록된 건. 상세내용은 최근 15건만 미리보기로 표시하며, [전체 보기]를 누르면 조건에 맞는 전체 건을 팝업 그리드로 볼 수 있습니다. 엑셀다운로드는 조건에 맞는 전체 건을 내려받습니다.</p>`;
   const evCols=['요청번호','요청출처','조치대응부서','작업장','진행현황','요청일','완료예정일','완료일'],
     evMapR=c=>[esc(c.id),sourceOf(c),c.team,c.workplace||'—',c.status,c.date,c.due||'—',c.doneDate||'—'],
     evDelayCols=[...evCols,'지연일수'],evDelayMapR=c=>[...evMapR(c),delayDays(c,D.today)??''];
@@ -138,6 +138,7 @@ function render(box){
     c:['조치대응부서 근거 데이터 ('+(S.month?+S.month+'월':'연간누적')+')',rowsM,evCols,evMapR],
     d:['조치 지연 근거 데이터 ('+(S.month?+S.month+'월':'연간누적')+')',rowsM.filter(c=>delayDays(c,D.today)!==null),evDelayCols,evDelayMapR],
     e:['선택 팀 근거 데이터 · '+S.selTeam,selYearRows,evCols,evMapR],
+    f:['상세내용 전체 보기 ('+(S.month?+S.month+'월':'연간누적')+')',detailAll,evCols,evMapR],
   };
   box.querySelectorAll('[data-evk]').forEach(b=>{b.onclick=()=>{const [t,rows,cols,mapR]=EV[b.dataset.evk];openRows({title:t,cols,rows:rows.map(mapR),file:'5S_개선요청_근거_'+b.dataset.evk})}});
   box.querySelectorAll('[data-f]').forEach(el=>el.onchange=()=>{S[el.dataset.f]=el.value;render(box)});
