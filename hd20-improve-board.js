@@ -49,7 +49,7 @@ function filt(D,{ignoreMonth=false,ignoreYear=false}={}){
 const monthOf=r=>+String(r.date||r.regDate||'').slice(5,7);
 function axis(v){const raw=v/4,p=Math.pow(10,Math.floor(Math.log10(raw))),f=raw/p,n=f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10,step=n*p;return{step,max:Math.ceil(v/step-1e-9)*step}}
 const tk=v=>String(Number(v.toFixed(3)));
-function chart({w,h=240,cats,series,stack=false,per=false,rotate=false,sel=null,colorOf=null,minSlot=36,fmt=null,hline=null,linkX=false,topPct=null}){
+function chart({w,h=240,cats,series,stack=false,per=false,rotate=false,sel=null,colorOf=null,minSlot=36,fmt=null,hline=null,linkX=false,topPct=null,topExtra=null}){
   const F=v=>fmt?fmt(v):fx(v,per);
   const W0=Math.max(w,cats.length*minSlot+56),slot0=(W0-56)/Math.max(1,cats.length);rotate=rotate||(slot0<58&&cats.some(c=>String(c).length>3));
   const m={l:46,r:10,t:20,b:rotate?84:30},W=W0,iw=W-m.l-m.r,ih=h-m.t-m.b;
@@ -64,9 +64,10 @@ function chart({w,h=240,cats,series,stack=false,per=false,rotate=false,sel=null,
       if(!stack){const hasPct=s.pct&&Number.isFinite(s.pct[i]);const pctTxt=hasPct?` (${s.pct[i]}%)`:'';
         b+=hasPct?`<text x="${x}" y="${y-4}" text-anchor="start" font-size="10.5" font-weight="800" fill="${C.ink}">${F(v)}${pctTxt}</text>`:`<text x="${x+bwK/2}" y="${y-4}" text-anchor="middle" font-size="10.5" font-weight="800" fill="${C.ink}">${F(v)}</text>`}
       acc+=v;startX+=bwK+gap});
-    if(stack&&tot[i]>0){const tp=topPct&&Number.isFinite(topPct[i])?topPct[i]:null;
+    if(stack&&tot[i]>0){const tp=topPct&&Number.isFinite(topPct[i])?topPct[i]:null,tx=topExtra&&topExtra[i]?topExtra[i]:null;
       b+=`<text x="${cx}" y="${yv(tot[i])-4}" text-anchor="middle" font-size="10.5" font-weight="800" fill="${C.ink}">${F(tot[i])}</text>`;
-      if(tp!==null)b+=`<text x="${cx}" y="${yv(tot[i])-17}" text-anchor="middle" font-size="9.5" font-weight="800" fill="${tp<70?'#c0392b':'#2f7a4d'}">완료 ${tp}%</text>`}
+      if(tp!==null)b+=`<text x="${cx}" y="${yv(tot[i])-17}" text-anchor="middle" font-size="9.5" font-weight="800" fill="${tp<70?'#c0392b':'#2f7a4d'}">완료 ${tp}%</text>`;
+      if(tx)b+=`<text x="${cx}" y="${yv(tot[i])-17}" text-anchor="middle" font-size="9.5" font-weight="850" fill="${tx.color}">${esc(tx.text)}</text>`}
     const ly=m.t+ih+15,isSel=sel!==null&&c===sel,lblCls=linkX?' class="hit xlbl"':'',lblAttr=linkX?` data-cat="${esc(c)}"`:'',lblFill=linkX?'#2c5f8a':(isSel?'#14304c':C.soft),lblDeco=linkX?' text-decoration="underline"':'';
     b+=rotate?`<text transform="translate(${cx+4},${ly}) rotate(-45)"${lblCls}${lblAttr} text-anchor="end" font-size="11" fill="${lblFill}"${lblDeco} font-weight="${isSel?900:600}">${esc(c)}</text>`:`<text x="${cx}" y="${ly}"${lblCls}${lblAttr} text-anchor="middle" font-size="11.5" fill="${lblFill}"${lblDeco}>${esc(c)}</text>`});
   return `<svg width="${W}" height="${h}" viewBox="0 0 ${W} ${h}" role="img">${g}<line x1="${m.l}" x2="${W-m.r}" y1="${m.t+ih}" y2="${m.t+ih}" stroke="#b7c6d1"/>${b}${hline?`<line x1="${m.l}" x2="${W-m.r}" y1="${yv(hline.value)}" y2="${yv(hline.value)}" stroke="#c0392b" stroke-width="1.6" stroke-dasharray="6 4"/><text x="${W-m.r}" y="${yv(hline.value)-5}" text-anchor="end" font-size="11" font-weight="800" fill="#c0392b">${esc(hline.label)}</text>`:''}</svg>`}

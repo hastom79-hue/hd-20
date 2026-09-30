@@ -86,7 +86,11 @@ function render(box){
   const sum={total:teamRows.reduce((a,r)=>a+r.total,0),done:teamRows.reduce((a,r)=>a+r.done,0),open:teamRows.reduce((a,r)=>a+r.open,0),over:teamRows.reduce((a,r)=>a+r.over,0)};
   const pctS=n=>sum.total?Math.round(n/sum.total*1000)/10:0;
   if(!S.selTeam||!teamRows.some(r=>r.team===S.selTeam))S.selTeam=teamRows[0]?.team||'';
-  const teamChart=chart({w:box.clientWidth-40,h:280,cats:teamRows.map(r=>r.team),stack:true,rotate:true,sel:S.selTeam,linkX:true,minSlot:60,
+  /* 누적 막대는 맨 아래(완료) 칸만 팀 간 비교가 쉽고, 맨 위 칸(기한경과)은 시작 높이가 팀마다 달라 눈으로
+     비교하기 어려움 — 막대 순서는 그대로 두되, 가장 중요한 위험 신호인 기한경과 건수를 막대 위에 빨간 글자로
+     따로 병기해 굳이 칸 높이를 비교하지 않아도 바로 보이게 함(0건인 팀은 표시 생략). */
+  const overExtra=teamRows.map(r=>r.over>0?{text:`기한경과 ${r.over}`,color:'#c0392b'}:null);
+  const teamChart=chart({w:box.clientWidth-40,h:280,cats:teamRows.map(r=>r.team),stack:true,rotate:true,sel:S.selTeam,linkX:true,minSlot:60,topExtra:overExtra,
     series:[{name:'완료',vals:teamRows.map(r=>r.done),color:'#1f6f6b'},{name:'진행·대기',vals:teamRows.map(r=>r.open),color:'#a8c7c4'},{name:'기한경과',vals:teamRows.map(r=>r.over),color:'#e0b03c'}]});
   const selRows=D.cases.filter(c=>c.team===S.selTeam&&(!S.source||sourceOf(c)===S.source)),selYearRows=selRows.filter(c=>String(c.date||'').slice(0,4)===S.year);
   const selRegM=Array.from({length:12},(_,i)=>selYearRows.filter(c=>mo(c)===i+1).length),selDoneM=Array.from({length:12},(_,i)=>selYearRows.filter(c=>mo(c)===i+1&&isDone(c)).length);
