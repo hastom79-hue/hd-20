@@ -1628,6 +1628,13 @@
 - 버전 `hd20-improve-board.js?v=20260930-loss-1`.
 - 검증(`loss_check.py`~`loss_verify_real.py`): 이탈이 2025-11로 추정되는 대형Att.팀은 2026년 화면에서 0건(연도 경계 정상 처리), 대형메인팀 2026-08 1건·중형상부1팀 2026-09 1건·중형상부2팀 2026-09 2건 모두 실제 confirmedDate+6개월 추정과 정확히 일치. 대형메인팀 스크린샷에서 주 막대 0.13(07월)→0.09(08월) 하락과 이탈 표시(08월 1건) 정합 확인. 16개 탭 회귀 오류 0건.
 
+### `8b32a21` — feat: 표시순서 번호 직접 입력 (2026-09-30)
+- 변경 파일: `app.js`(+12/-1), `index.html`(+1/-1), `master-info-modal.js`(+5/-5)
+- `app.js` `renderOrderEditor()`: 각 행 마크업을 `<input type="number" class="orderNumInput" data-team="{t}" value="{i+1}">`로. `apply()`: 모든 입력값을 `{team,v,i(원래 인덱스)}`로 모아 `.sort((a,b)=>(a.v-b.v)||(a.i-b.i))`(안정 정렬, 동률은 원래 순서 유지) 후 `teamOrder`를 그 결과로 교체, `renderOrderEditor()`+`renderChart()` 재호출. `onchange`+`Enter`(blur 유도) 바인딩.
+- `master-info-modal.js`: `.orderNo`/`.orderBtns` 관련 CSS를 `.orderNumWrap`/`.orderNumInput`로 교체, 안내 문구 교체.
+- 버전 `app.js?v=20260930-numinput-1`, `master-info-modal.js?v=20260930-numinput-1`.
+- 검증(`numinput_check3.py`): 4번째(프레임제작팀)에 '1' 입력 → 즉시 2번째로 재배치, 입력칸 1..5로 재갱신. `#saveOrder` 클릭 후 `localStorage['gmes5s_team_display_order']`에 `['대형Att.팀','프레임제작팀','대형메인팀',...]` 정확히 저장 확인. 16개 탭 회귀 오류 0건.
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
@@ -1691,8 +1698,8 @@
 ## (2026-09-28 갱신) 종료조건
 16개 탭 순회·기능 회귀 세트 콘솔 오류 0건, 최신 GitHub Pages 빌드 `built` 확인, 실제 사이트 확인 결과 반영 후 종료.
 
-## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 74건)
-> 커밋 시각은 저장소 표기 기준. 아래 74건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
+## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 75건)
+> 커밋 시각은 저장소 표기 기준. 아래 75건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
 > (`e182f66`은 이 대화 밖의 다른 Claude 세션이 같은 계정으로 push한 커밋이라 포함됨. 대장은 `git log --since`가 날짜가 뒤섞인 이력에서 일부를 건너뛰는 것을 발견해, 커밋 날짜를 직접 비교해 생성)
 
 | 커밋 | 시각 | 제목 | 변경 파일 |
@@ -1771,8 +1778,9 @@
 | `75c1e44` | 2026-09-29 22:18 | feat: 자율개선 종합 좌우 패널 비율 30:70으로 조정 — 수평전개 라벨 겹침 보정 | `hd20-improve-board.js`, `index.html` |
 | `2866aca` | 2026-09-29 22:21 | feat: 개선요청 종합에 자율개선 종합과 같은 '팀 단위 차트 + 클릭 상세' 구조 보강 | `hd20-request-board.js`, `index.html` |
 | `023b7b0` | 2026-09-29 22:26 | feat: 자율개선 종합 ⑤번 차트에 월별 이탈 건수 표시 추가 | `hd20-improve-board.js`, `index.html` |
+| `8b32a21` | 2026-09-30 02:53 | feat: 생산팀 표시순서 편집을 ▲▼ 버튼에서 순서 번호 직접 입력 방식으로 변경 | `app.js`, `index.html`, `master-info-modal.js` |
 
-### 문서 커밋(63건, 로그 갱신용)
+### 문서 커밋(64건, 로그 갱신용)
 - `c661242` docs: development/coding log for validation fixture, team master, auth, subtab split (2026-09-22)
 - `da246aa` docs: log advancement 4-way subtab split (4aee88b) in dev/coding logs
 - `015b9b3` docs: log action/audit 4-way subtab split + metric bugfix (57e264c) in dev/coding logs
@@ -1836,3 +1844,4 @@
 - `8a9df86` docs: 좌우 비율·월별 완료율(63c351f) 로그 반영, 커밋 대장 재생성
 - `d8791b6` docs: 자율개선 좌우 비율 조정(75c1e44) 로그 반영, 커밋 대장 재생성
 - `45eabef` docs: 개선요청 팀 차트 보강(2866aca) 로그 반영, 커밋 대장 재생성
+- `d5bea56` docs: 월별 이탈 표시(023b7b0) 로그 반영, 커밋 대장 재생성
