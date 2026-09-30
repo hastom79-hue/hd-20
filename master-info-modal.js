@@ -1,5 +1,5 @@
 (()=>{'use strict';
-const html = `<div id="masterModal" class="masterModal"><div class="modalBox"><div class="modalHead"><b>통합기준정보</b><span>생산팀 표시순서 · 분기별 인당 목표 · 운영정책</span><button type="button" id="closeMaster" aria-label="닫기">×</button></div><div class="masterTabs"><button type="button" data-master-tab="order" class="on">표시순서</button><button type="button" data-master-tab="target">인당 목표</button></div><div id="masterOrderPanel"><p class="masterHint">▲▼ 버튼으로 대시보드 팀별 차트에 표시되는 생산팀 순서를 조정합니다.</p><div id="orderList" class="orderList"></div></div><div id="masterTargetPanel" style="display:none"><p class="masterHint">분기별 인당 5S 개선활동 목표 건수를 설정합니다. 대시보드 상단 차트에 기준선으로 표시됩니다.</p><div class="targetGrid"><label>Q1 목표(건/인)<input type="number" id="q1Target" min="0" step="0.1" placeholder="미설정"></label><label>Q2 목표(건/인)<input type="number" id="q2Target" min="0" step="0.1" placeholder="미설정"></label><label>Q3 목표(건/인)<input type="number" id="q3Target" min="0" step="0.1" placeholder="미설정"></label><label>Q4 목표(건/인)<input type="number" id="q4Target" min="0" step="0.1" placeholder="미설정"></label></div></div><div class="modalFoot"><button type="button" id="cancelOrder">취소</button><button type="button" id="saveOrder" class="primary">저장</button></div></div></div>`;
+const html = `<div id="masterModal" class="masterModal"><div class="modalBox"><div class="modalHead"><b>통합기준정보</b><span>생산팀 표시순서 · 분기별 인당 목표 · 운영정책</span><button type="button" id="closeMaster" aria-label="닫기">×</button></div><div class="masterTabs"><button type="button" data-master-tab="order" class="on">표시순서</button><button type="button" data-master-tab="target">인당 목표</button></div><div id="masterOrderPanel"><p class="masterHint">순서 칸에 숫자를 입력하면 대시보드 팀별 차트에 표시되는 생산팀 순서가 그 번호대로 정렬됩니다(같은 번호를 입력하면 기존 순서를 유지).</p><div id="orderList" class="orderList"></div></div><div id="masterTargetPanel" style="display:none"><p class="masterHint">분기별 인당 5S 개선활동 목표 건수를 설정합니다. 대시보드 상단 차트에 기준선으로 표시됩니다.</p><div class="targetGrid"><label>Q1 목표(건/인)<input type="number" id="q1Target" min="0" step="0.1" placeholder="미설정"></label><label>Q2 목표(건/인)<input type="number" id="q2Target" min="0" step="0.1" placeholder="미설정"></label><label>Q3 목표(건/인)<input type="number" id="q3Target" min="0" step="0.1" placeholder="미설정"></label><label>Q4 목표(건/인)<input type="number" id="q4Target" min="0" step="0.1" placeholder="미설정"></label></div></div><div class="modalFoot"><button type="button" id="cancelOrder">취소</button><button type="button" id="saveOrder" class="primary">저장</button></div></div></div>`;
 
 const style=document.createElement('style');
 style.id='masterModalStyle';
@@ -15,11 +15,11 @@ style.textContent=`.masterModal{position:fixed;inset:0;z-index:99985;display:non
 .masterModal .masterTabs button.on{background:#0b5b83;color:#fff;border-color:#0b5b83}
 .masterModal .masterHint{margin:14px 18px 8px;font-size:12px;color:#7890a0}
 .masterModal .orderList{margin:0 18px 14px;display:flex;flex-direction:column;gap:6px}
-.masterModal .orderRow{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid #e5edf2;border-radius:9px}
-.masterModal .orderNo{width:22px;height:22px;flex:0 0 auto;display:grid;place-items:center;background:#eef4f7;border-radius:6px;font-size:11px;color:#546b7a}
+.masterModal .orderRow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;border:1px solid #e5edf2;border-radius:9px}
+.masterModal .orderNumWrap{display:flex;align-items:center;gap:6px;font-size:11.5px;color:#546b7a;font-weight:800;flex:0 0 auto}
 .masterModal .orderName{flex:1;font-size:13px;color:#17394f}
-.masterModal .orderBtns{display:flex;gap:4px}
-.masterModal .orderBtns button{width:26px;height:26px;border:1px solid #d7e2e8;border-radius:7px;background:#fff;cursor:pointer}
+.masterModal .orderNumInput{width:50px;height:28px;border:1px solid #d7e2e8;border-radius:7px;text-align:center;font-size:13px;color:#17394f}
+.masterModal 
 .masterModal .targetGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:0 18px 14px}
 .masterModal .targetGrid label{display:flex;flex-direction:column;gap:5px;font-size:12px;color:#546b7a}
 .masterModal .targetGrid input{padding:8px 10px;border:1px solid #d7e2e8;border-radius:8px;font-size:13px}
