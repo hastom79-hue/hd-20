@@ -1707,6 +1707,11 @@
 - 버전 `hd20-maturity-map-tab.js?v=20260930-redesign-2`(index.html·final-layout-polish.js 양쪽 동기화).
 - 검증(`maturity_redesign_check.py`): 우측 패널 렌더 폭 0, 막대 카드 폭 1330px(전체). 중형상부2팀 팝업(확정6·유지4·66.7%·케이스6건)이 막대 표시값과 일치. KPI 누적확정 팝업 57건 일치. `maturity_filter_still_works.py`로 기존 '유지미흡' 필터 클릭 시 오류 0건. 5S 등록 E2E, 16개 탭 회귀 오류 0건.
 
+### `64d18ae` — redesign: 상세내용 미리보기+팝업 (2026-09-30)
+- 변경 파일: `hd20-request-board.js`(+4/-3), `index.html`(+1/-1)
+- `detailAll`(전체, 정렬만) / `detailRows`(미리보기 15건)로 분리. 헤더에 `data-evk="f"` 버튼 추가, `EV.f`에 `detailAll` 연결.
+- 검증(`detail_popup_check.py`): 미리보기 15행, 팝업 569건=헤더 '조건 일치' 수치와 일치. 5S 등록 E2E, 16개 탭 회귀 오류 0건.
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
@@ -1770,8 +1775,8 @@
 ## (2026-09-28 갱신) 종료조건
 16개 탭 순회·기능 회귀 세트 콘솔 오류 0건, 최신 GitHub Pages 빌드 `built` 확인, 실제 사이트 확인 결과 반영 후 종료.
 
-## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 86건)
-> 커밋 시각은 저장소 표기 기준. 아래 86건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
+## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 87건)
+> 커밋 시각은 저장소 표기 기준. 아래 87건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
 > (`e182f66`은 이 대화 밖의 다른 Claude 세션이 같은 계정으로 push한 커밋이라 포함됨. 대장은 `git log --since`가 날짜가 뒤섞인 이력에서 일부를 건너뛰는 것을 발견해, 커밋 날짜를 직접 비교해 생성)
 
 | 커밋 | 시각 | 제목 | 변경 파일 |
@@ -1862,8 +1867,9 @@
 | `3305f0a` | 2026-09-30 09:46 | feat: 개선요청 종합 6개 패널에 근거 데이터 팝업 추가 | `hd20-request-board.js`, `index.html` |
 | `5ee51ea` | 2026-09-30 09:49 | fix: 운영 건전성 KPI 6개 지표 — 죽어있던 드릴다운 팝업 연결 복구(종합현황+성과·운영분석 동시 적용) | `dashboard-grid-drilldown.js`, `index.html` |
 | `251801c` | 2026-09-30 21:02 | redesign: 고도화 맵 — Case 목록을 상시 2단 패널에서 클릭 시 팝업으로 전환(디자인 컨셉 재정리) | `final-layout-polish.js`, `hd20-maturity-map-tab.js`, `index.html` |
+| `64d18ae` | 2026-09-30 21:23 | redesign: 개선요청 종합 '상세내용' — 300건 상시 그리드를 15건 미리보기+전체 보기 팝업으로 통일 | `hd20-request-board.js`, `index.html` |
 
-### 문서 커밋(74건, 로그 갱신용)
+### 문서 커밋(75건, 로그 갱신용)
 - `c661242` docs: development/coding log for validation fixture, team master, auth, subtab split (2026-09-22)
 - `da246aa` docs: log advancement 4-way subtab split (4aee88b) in dev/coding logs
 - `015b9b3` docs: log action/audit 4-way subtab split + metric bugfix (57e264c) in dev/coding logs
@@ -1938,3 +1944,4 @@
 - `ba4f601` docs: candidate/confirmed 중복 정리(3d23f5e) 로그 반영, 커밋 대장 재생성
 - `b2ced62` docs: 요청출처 순서 번호 입력 통일(fb98384) 로그 반영, 커밋 대장 재생성
 - `992d142` docs: 대시보드 팝업 점검 1·2단계(3305f0a,5ee51ea) 로그 반영, 커밋 대장 재생성
+- `d854582` docs: 고도화 맵 팝업 전환(251801c) 로그 반영, 커밋 대장 재생성
