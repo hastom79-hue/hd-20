@@ -30,8 +30,8 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
 function data(){
   const K=window.HD20KPIData,snap=K?.snapshot?.()||{},rows=snap.rows||[],M=window.HD20ProductionTeamMaster,teams=M?.teamNames?.()||[];
   const isType=r=>{const v=String(r.type||'').trim();return v==='5S 고도화'||v==='고도화'};
-  const isCandidate=r=>{if(!isType(r))return false;if(r.candidate===true||r.isCandidate===true)return true;const s=String(r.judgeState||r.status||'').trim();return !!s&&s!=='미확정'&&/판정대기|보완요청|확정|후보|검토/.test(s)};
-  const isConfirmed=r=>!!r&&isType(r)&&r.confirmed===true&&String(r.judgeState||'').trim()==='확정';
+  const isCandidate=r=>window.HD20KPIData?.isCandidate?.(r) ?? (!!isType(r)&&(r.candidate===true||r.isCandidate===true||(()=>{const s=String(r.judgeState||r.status||'').trim();return !!s&&s!=='미확정'&&/판정대기|보완요청|확정|후보|검토/.test(s)})()));
+  const isConfirmed=r=>window.HD20KPIData?.isConfirmed?.(r) ?? (!!r&&isType(r)&&r.confirmed===true&&String(r.judgeState||'').trim()==='확정');
   const all=rows.length,candidates=rows.filter(isCandidate),confirmed=rows.filter(isConfirmed);
   const js=r=>String(r.judgeState||r.status||'').trim();
   const pending=candidates.filter(r=>!isConfirmed(r)&&/판정대기|미확정/.test(js(r))),review=candidates.filter(r=>!isConfirmed(r)&&/검토중|후보/.test(js(r))),supplement=candidates.filter(r=>!isConfirmed(r)&&/보완요청/.test(js(r)));

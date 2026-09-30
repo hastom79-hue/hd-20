@@ -59,8 +59,8 @@ function display(v){return v===0?'0':v===false?'false':txt(v)||'—'}
 function seoulDate(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())}
 function doneStatus(x){return /완료|확정|종료|종결|close|done/i.test(txt(x?.status||x?.activityStatus||x?.judgeState||x?.auditState))}
 function advancementType(x){const v=txt(x?.type||x?.category||x?.sType||x?.['5S구분']||x?.['활동유형']);return v==='5S 고도화'||v==='고도화'||v==='5S고도화'}
-function advancementCandidate(x){if(!x||!advancementType(x))return false;if(x.candidate===true||x.isCandidate===true)return true;const s=txt(x.judgeState||x.status);if(!s||s==='미확정')return false;return /판정대기|보완요청|확정|후보|검토|대기/.test(s)}
-function advancementConfirmed(x){return !!x&&advancementType(x)&&x.confirmed===true&&txt(x.judgeState)==='확정'}
+function advancementCandidate(x){return window.HD20KPIData?.isCandidate?.(x) ?? (!!x&&advancementType(x)&&(x.candidate===true||x.isCandidate===true||(x.judgeState||x.status)&&!/^미확정$/.test(txt(x.judgeState||x.status))&&/판정대기|보완요청|확정|후보|검토|대기/.test(txt(x.judgeState||x.status))))}
+function advancementConfirmed(x){return window.HD20KPIData?.isConfirmed?.(x) ?? (!!x&&advancementType(x)&&x.confirmed===true&&txt(x.judgeState)==='확정')}
 function dueOf(x){return txt(x?.due||x?.targetDate||x?.deadline).slice(0,10)}
 function actionState(x){const d=dueOf(x);if(doneStatus(x))return'완료';if(d&&d<seoulDate())return'기한경과';return d?'진행중':'기한미정'}
 function effectVerified(x){if(x?.effectVerified===true)return true;const v=txt(x?.effectState??x?.effectResult);if(['미흡','부적합','무효','대기','미검증','효과확인대기','false','0','N','n'].includes(v))return false;return['유효','적합','검증완료','효과확인','효과확인완료','완료','true','1','Y','y'].includes(v)}
