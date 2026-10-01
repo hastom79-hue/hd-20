@@ -24,7 +24,7 @@ function renderList(panel){const n=cur.length;
     inp.onchange=apply;inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();inp.blur()}})
   })}
 function ensure(){
-  const modal=document.querySelector('#masterModal .modalBox'),tabs=modal?.querySelector('.masterTabs');if(!modal||!tabs)return false;
+  const modal=document.querySelector('#masterModal .masterInfoBox'),tabs=modal?.querySelector('.masterTabs');if(!modal||!tabs)return false;
   let btn=tabs.querySelector('[data-master-tab="sourceOrder"]');
   if(!btn){btn=document.createElement('button');btn.type='button';btn.dataset.masterTab='sourceOrder';btn.textContent='요청출처 순서';tabs.appendChild(btn)}
   let panel=document.getElementById(ID);
