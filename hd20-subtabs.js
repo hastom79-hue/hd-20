@@ -102,8 +102,17 @@ function applyAction(sub){const root=$('#awAction');if(!root)return;root.dataset
 }
 function apply(area,sub){try{document.querySelector('.app')?.setAttribute('data-hd-view',area+'.'+sub)}catch(e){}
   if(area==='dashboard')applyDashboard(sub);else if(area==='activity')applyActivity(sub);else if(area==='advancement')applyAdvancement(sub);else if(area==='audit')applyAudit(sub);else if(area==='action')applyAction(sub);window.dispatchEvent(new CustomEvent('hd20-subtab-changed',{detail:{area,sub}}))}
-function select(area,sub){state={area,sub};$$('button',ensure()).forEach(b=>b.classList.toggle('on',b.dataset.sub===sub));apply(area,sub);renderPurpose(area,sub)}
+function select(area,sub){state={area,sub};$$('button',ensure()).forEach(b=>b.classList.toggle('on',b.dataset.sub===sub));apply(area,sub);renderPurpose(area,sub);
+  try{const u=new URL(location.href);if(u.searchParams.get('area')===area)u.searchParams.set('sub',sub);history.replaceState(null,'',u)}catch{}}
 function syncArea(area){
+  if(window.__HD20_RESTORE_SUB&&MAP[area]?.some(([k])=>k===window.__HD20_RESTORE_SUB)){
+    const restoreSub=window.__HD20_RESTORE_SUB;window.__HD20_RESTORE_SUB=null;
+    state.sub=restoreSub;state.area=area;const bar=ensure(),items=MAP[area]||[];
+    bar.innerHTML=items.map(([k,n])=>`<button type="button" data-sub="${k}" class="${k===restoreSub?'on':''}">${n}</button>`).join('');
+    $$('button',bar).forEach(b=>b.onclick=()=>select(area,b.dataset.sub));
+    ensure().style.removeProperty('display');ensurePurpose().style.removeProperty('display');
+    renderPurpose(area,restoreSub);requestAnimationFrame(()=>apply(area,restoreSub));return;
+  }
   if(!MAP[area]){
     /* '통합기준정보' 등 이 서브탭 체계를 모르는 새 영역으로 이동한 경우: 안내 카드·서브탭 바가 이전 영역
        내용을 그대로 보여준 채 남아있던 결함 → 둘 다 숨김(빈 화면으로 진입시 잔상 없음) */
