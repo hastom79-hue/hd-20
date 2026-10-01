@@ -1780,6 +1780,13 @@
 - 디버깅 경과: `w`를 아무리 줄여도 SVG 폭이 안 바뀌는 현상을 추적해 `chart()` 내부의 `W0=Math.max(w,cats.length*minSlot+56)`에서 `minSlot`이 지배적임을 특정(`w` 조정은 무의미, `minSlot`을 낮춰야 실제 폭이 줄어듦).
 - 검증(`req_panel1_check.py`, `req_overlap_detect2.py`): SVG 우측 끝이 패널 안쪽에 들어옴(`svg_overflow:false`), 라벨 47개 전수 겹침 0건, 완료율 정수 표시(예: "47%") 끝까지 온전. 5S 등록 E2E, 16개 탭 회귀 오류 0건(격리 재현으로 1회성 타이밍 이상 배제).
 
+### `734e021` — redesign: 고도화 맵 트리맵 (2026-09-30)
+- 변경 파일: `final-layout-polish.js`(+1/-1), `hd20-maturity-map-tab.js`(+39/-8), `index.html`(+1/-1)
+- `hd20-maturity-map-tab.js`: `treemapLayout(items,x,y,w,h)` 재귀 이진분할(누적값 50% 지점 기준 분할, 긴 변 방향으로 분할) 신설. 기존 `.mmtBars`(div 막대 리스트) 생성 로직을 SVG `<rect>`+`<text>` 트리맵 생성으로 교체(`rateColor(t)` 유지율 구간별 색상: 90%↑ `#1f6f6b`, 70~90% `#2f8f63`, 50~70% `#d9a441`, 50%미만 `#c0392b`; 필터 모드면 전부 `#c0392b`). 작은 셀(46×30px 미만)은 텍스트 생략. 기존 `.mmtCases`(숨겨진 Case 목록, 필터 가드 의존)·`openTeamPopup`·`activate()` 패턴은 그대로 재사용해 셀 클릭 시 팝업 연동.
+- 헤더를 '팀별 고도화 Portfolio Map'으로, 유지율 구간 색상 범례(`.mmtTreeLeg`) 추가.
+- 버전 `hd20-maturity-map-tab.js?v=20260930-treemap-1`(index.html·final-layout-polish.js 동기화).
+- 검증(`treemap_check.py`, `treemap_resize_check.py`): 16개 셀=16개 rect, 겹침 0건. 4번째 셀(대형Att.팀·확정5·유지4·80%) 클릭 시 팝업 제목 일치. '유지미흡' 필터 시 8개 셀로 축소, 전부 빨강. 1440/768/430px 3개 폭 전부 16셀 정상. 5S 등록 E2E, 16개 탭 회귀 오류 0건.
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
@@ -1843,8 +1850,8 @@
 ## (2026-09-28 갱신) 종료조건
 16개 탭 순회·기능 회귀 세트 콘솔 오류 0건, 최신 GitHub Pages 빌드 `built` 확인, 실제 사이트 확인 결과 반영 후 종료.
 
-## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 96건)
-> 커밋 시각은 저장소 표기 기준. 아래 96건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
+## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 97건)
+> 커밋 시각은 저장소 표기 기준. 아래 97건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
 > (`e182f66`은 이 대화 밖의 다른 Claude 세션이 같은 계정으로 push한 커밋이라 포함됨. 대장은 `git log --since`가 날짜가 뒤섞인 이력에서 일부를 건너뛰는 것을 발견해, 커밋 날짜를 직접 비교해 생성)
 
 | 커밋 | 시각 | 제목 | 변경 파일 |
@@ -1945,8 +1952,9 @@
 | `01ca2de` | 2026-10-01 09:53 | fix: 통합기준정보 탭 — 떠 있는 좁은 모달 카드처럼 보이던 레이아웃을 다른 탭과 같은 전체 폭으로 | `final-layout-polish.js`, `index.html`, `master-info-modal.js`, `operating-policy-master.js`, `request-source-order-master.js` |
 | `30dacd1` | 2026-10-01 22:22 | fix: 고도화 맵 'Case 필터'가 재설계 이후 죽어있던 결함 수정 — 팀별 막대가 실제로 필터를 반영 | `final-layout-polish.js`, `hd20-maturity-map-operational-guard.js`, `hd20-maturity-map-tab.js`, `index.html` |
 | `889185d` | 2026-10-01 22:46 | fix: 개선요청 종합 — 막대 라벨 겹침·SVG 폭 초과 실제 버그 수정 | `hd20-improve-board.js`, `hd20-request-board.js`, `index.html` |
+| `734e021` | 2026-10-01 22:51 | redesign: '고도화 맵'을 막대 리스트에서 실제 트리맵(지도)으로 재설계 | `final-layout-polish.js`, `hd20-maturity-map-tab.js`, `index.html` |
 
-### 문서 커밋(83건, 로그 갱신용)
+### 문서 커밋(84건, 로그 갱신용)
 - `c661242` docs: development/coding log for validation fixture, team master, auth, subtab split (2026-09-22)
 - `da246aa` docs: log advancement 4-way subtab split (4aee88b) in dev/coding logs
 - `015b9b3` docs: log action/audit 4-way subtab split + metric bugfix (57e264c) in dev/coding logs
@@ -2030,3 +2038,4 @@
 - `19dbabf` docs: 후보 목록 중복 섹션 제거(5956bc7) 로그 반영, 커밋 대장 재생성
 - `564a115` docs: Excel Import 안내 명확화(8e0894a) 로그 반영, 커밋 대장 재생성
 - `904c454` docs: 통합기준정보 전체 폭(01ca2de) 로그 반영, 커밋 대장 재생성
+- `c7fa5d8` docs: 고도화 맵 필터·개선요청 차트 수정(30dacd1,889185d) 로그 반영, 커밋 대장 재생성
