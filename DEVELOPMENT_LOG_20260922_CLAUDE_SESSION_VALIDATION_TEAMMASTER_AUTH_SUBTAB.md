@@ -859,6 +859,9 @@
 ### 96. 후보 목록 탭 이름·내용 불일치 해소 (커밋 `5956bc7`)
 - 개발일지 참조. 5개 영역 전수 점검 결과, 공유 컨테이너의 서브뷰 숨김 누락 발견·수정.
 
+### 97. Excel Import 분석 안내 명확화 (커밋 `8e0894a`)
+- 개발일지 참조. 죽은 기능이 아닌 미사용 상태임을 확인, 안내문 개선.
+
 ## 정정·발견 사항 추가 (2026-09-28 저녁)
 1. 웹 완성도 평가에 대해 인상이 아닌 측정으로 원인(구조: 화면 전체 선렌더링·스타일 다층)을 확인. CSS 수정만으로는 격차가 줄지 않음을 사용자에게 명시.
 2. 헤더 클릭 정렬 미동작은 원본에서도 동일(회귀 아님). 별도 확인 필요.
@@ -870,8 +873,8 @@
 - 5S 자율개선 종합: 참여율 정의(등록자/총원) 사용자 확인, 목표선(분기별 인당 목표) 표시 여부, 실제 .xlsx 내보내기 여부.
 - 표 헤더 정렬 미동작 원인 조사.
 
-## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 92건)
-> 커밋 시각은 저장소 표기 기준. 아래 92건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
+## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 93건)
+> 커밋 시각은 저장소 표기 기준. 아래 93건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
 > (`e182f66`은 이 대화 밖의 다른 Claude 세션이 같은 계정으로 push한 커밋이라 포함됨. 대장은 `git log --since`가 날짜가 뒤섞인 이력에서 일부를 건너뛰는 것을 발견해, 커밋 날짜를 직접 비교해 생성)
 
 | 커밋 | 시각 | 제목 | 변경 파일 |
@@ -968,8 +971,9 @@
 | `6ac77b4` | 2026-10-01 01:54 | fix: 새로고침 시 화면이 항상 초기화되던 결함 수정 — URL 기반 딥링크 복원 신설 | `beginner-navigation.js`, `dashboard-section-tabs.js`, `final-layout-polish.js`, `hd20-subtabs.js`, `index.html` |
 | `b91266a` | 2026-10-01 02:02 | fix+redesign: 대시보드 레이아웃 3건 — 7개 탭 위치 이동, 범용 KPI 스트립 제거, 핵심지표를 이탈 중심으로 교체 | `dashboard-section-tabs.js`, `final-layout-polish.js`, `hd20-overhaul.css`, `hd20-subtabs.js`, `index.html`, `top-kpi-drilldown.js` |
 | `5956bc7` | 2026-10-01 02:10 | fix: '③ 고도화·표준화 > 후보 목록' 탭 이름과 무관한 중복 섹션 제거 — 대시보드와 겹치던 콘텐츠 정리 | `hd20-condition-groups.js`, `index.html` |
+| `8e0894a` | 2026-10-01 02:14 | fix: 활동관리 'Excel Import 분석' 빈 상태 안내 명확화 — 버그처럼 보이던 정상 상태 해소 | `activity-import-analysis-mail-preview.js`, `index.html` |
 
-### 문서 커밋(80건, 로그 갱신용)
+### 문서 커밋(81건, 로그 갱신용)
 - `c661242` docs: development/coding log for validation fixture, team master, auth, subtab split (2026-09-22)
 - `da246aa` docs: log advancement 4-way subtab split (4aee88b) in dev/coding logs
 - `015b9b3` docs: log action/audit 4-way subtab split + metric bugfix (57e264c) in dev/coding logs
@@ -1050,3 +1054,4 @@
 - `8779d13` docs: 유지 이탈 현황(d80c2eb) 로그 반영, 커밋 대장 재생성
 - `6c8c0b9` docs: 새로고침 딥링크 복원(6ac77b4) 로그 반영, 커밋 대장 재생성
 - `ff654ef` docs: 대시보드 레이아웃 3건(b91266a) 로그 반영, 커밋 대장 재생성
+- `19dbabf` docs: 후보 목록 중복 섹션 제거(5956bc7) 로그 반영, 커밋 대장 재생성
