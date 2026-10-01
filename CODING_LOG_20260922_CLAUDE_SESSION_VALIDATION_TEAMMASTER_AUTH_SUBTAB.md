@@ -1767,6 +1767,19 @@
 - 버전: `master-info-modal.js?v=20260930-fullwidth-2`, `operating-policy-master.js?v=20260930-fix-1`, `request-source-order-master.js?v=20260930-fix-1`.
 - 검증(`master_width_trace.py`, `master_all_tabs_check.py`): 렌더 폭 1362px(화면 폭 1378px), 탭 4개(표시순서·인당 목표·운영정책·요청출처 순서) 전부 정상. 5S 등록 E2E, 16개 탭 회귀 오류 0건(1회성 실적분석 높이 이상치 재실행으로 미재현 확인).
 
+### `30dacd1` — fix: 고도화 맵 Case 필터 재연결 (2026-09-30)
+- 변경 파일: `final-layout-polish.js`(+1/-1), `hd20-maturity-map-operational-guard.js`(+4/-1), `hd20-maturity-map-tab.js`(+20/-5), `index.html`(+1/-1)
+- `hd20-maturity-map-tab.js`: `render()`가 `document.getElementById(ID).dataset.mmtFilter`를 읽어 팀별 막대를 재계산(해당 조건 Case 수 기준, 0건 팀 제외). 막대 색상·라벨도 필터 모드에 따라 전환(`warn` 클래스, 빨강).
+- `hd20-maturity-map-operational-guard.js`: 필터 버튼 클릭 시 `window.HD20_MATURITY_MAP_TAB.render()` 호출 추가. render()가 전체 DOM을 재작성하며 필터 바 자신도 지우는 부작용 발견 → `setTimeout(0)`으로 필터 바 재생성+모드 복원.
+- 검증(`maturity_filter_dead_check.py`, `maturity_filter_fixed_check.py`): '유지미흡' 선택 시 직접 계산한 팀별 건수(8개 팀, 1~2건)와 화면이 정확히 일치.
+
+### `889185d` — fix: 개선요청 종합 차트 겹침·overflow 수정 (2026-09-30)
+- 변경 파일: `hd20-improve-board.js`(+1/-1), `hd20-request-board.js`(+5/-5), `index.html`(+1/-1)
+- `hd20-request-board.js`: `overExtra` 텍스트를 `'기한경과 '+N` → `N`만으로 축소, 의미는 헤더 `<em>`에 안내문 추가. ②번 차트 `minSlot` 86→60, 폭 배분 여유(`-8`→`-20`) 확대, `donePct` 반올림을 소수 1자리→정수로.
+- `hd20-improve-board.js`: `chart()`의 `topExtra` y좌표를 `-17`→`-19`로(총합 숫자와의 세로 간격 확대, 자율개선 종합에도 적용되는 공용 변경).
+- 디버깅 경과: `w`를 아무리 줄여도 SVG 폭이 안 바뀌는 현상을 추적해 `chart()` 내부의 `W0=Math.max(w,cats.length*minSlot+56)`에서 `minSlot`이 지배적임을 특정(`w` 조정은 무의미, `minSlot`을 낮춰야 실제 폭이 줄어듦).
+- 검증(`req_panel1_check.py`, `req_overlap_detect2.py`): SVG 우측 끝이 패널 안쪽에 들어옴(`svg_overflow:false`), 라벨 47개 전수 겹침 0건, 완료율 정수 표시(예: "47%") 끝까지 온전. 5S 등록 E2E, 16개 탭 회귀 오류 0건(격리 재현으로 1회성 타이밍 이상 배제).
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
@@ -1830,8 +1843,8 @@
 ## (2026-09-28 갱신) 종료조건
 16개 탭 순회·기능 회귀 세트 콘솔 오류 0건, 최신 GitHub Pages 빌드 `built` 확인, 실제 사이트 확인 결과 반영 후 종료.
 
-## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 94건)
-> 커밋 시각은 저장소 표기 기준. 아래 94건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
+## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 96건)
+> 커밋 시각은 저장소 표기 기준. 아래 96건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
 > (`e182f66`은 이 대화 밖의 다른 Claude 세션이 같은 계정으로 push한 커밋이라 포함됨. 대장은 `git log --since`가 날짜가 뒤섞인 이력에서 일부를 건너뛰는 것을 발견해, 커밋 날짜를 직접 비교해 생성)
 
 | 커밋 | 시각 | 제목 | 변경 파일 |
@@ -1930,8 +1943,10 @@
 | `5956bc7` | 2026-10-01 02:10 | fix: '③ 고도화·표준화 > 후보 목록' 탭 이름과 무관한 중복 섹션 제거 — 대시보드와 겹치던 콘텐츠 정리 | `hd20-condition-groups.js`, `index.html` |
 | `8e0894a` | 2026-10-01 02:14 | fix: 활동관리 'Excel Import 분석' 빈 상태 안내 명확화 — 버그처럼 보이던 정상 상태 해소 | `activity-import-analysis-mail-preview.js`, `index.html` |
 | `01ca2de` | 2026-10-01 09:53 | fix: 통합기준정보 탭 — 떠 있는 좁은 모달 카드처럼 보이던 레이아웃을 다른 탭과 같은 전체 폭으로 | `final-layout-polish.js`, `index.html`, `master-info-modal.js`, `operating-policy-master.js`, `request-source-order-master.js` |
+| `30dacd1` | 2026-10-01 22:22 | fix: 고도화 맵 'Case 필터'가 재설계 이후 죽어있던 결함 수정 — 팀별 막대가 실제로 필터를 반영 | `final-layout-polish.js`, `hd20-maturity-map-operational-guard.js`, `hd20-maturity-map-tab.js`, `index.html` |
+| `889185d` | 2026-10-01 22:46 | fix: 개선요청 종합 — 막대 라벨 겹침·SVG 폭 초과 실제 버그 수정 | `hd20-improve-board.js`, `hd20-request-board.js`, `index.html` |
 
-### 문서 커밋(82건, 로그 갱신용)
+### 문서 커밋(83건, 로그 갱신용)
 - `c661242` docs: development/coding log for validation fixture, team master, auth, subtab split (2026-09-22)
 - `da246aa` docs: log advancement 4-way subtab split (4aee88b) in dev/coding logs
 - `015b9b3` docs: log action/audit 4-way subtab split + metric bugfix (57e264c) in dev/coding logs
@@ -2014,3 +2029,4 @@
 - `ff654ef` docs: 대시보드 레이아웃 3건(b91266a) 로그 반영, 커밋 대장 재생성
 - `19dbabf` docs: 후보 목록 중복 섹션 제거(5956bc7) 로그 반영, 커밋 대장 재생성
 - `564a115` docs: Excel Import 안내 명확화(8e0894a) 로그 반영, 커밋 대장 재생성
+- `904c454` docs: 통합기준정보 전체 폭(01ca2de) 로그 반영, 커밋 대장 재생성

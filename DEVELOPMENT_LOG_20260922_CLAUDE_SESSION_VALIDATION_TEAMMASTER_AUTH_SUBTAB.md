@@ -865,6 +865,9 @@
 ### 98. 통합기준정보 전체 폭 레이아웃 (커밋 `01ca2de`)
 - 개발일지 참조. 범용 모달 제약 분리, 연쇄 결함 발견·수정.
 
+### 98. 고도화 맵 필터 복구·개선요청 종합 차트 버그 수정 (커밋 `30dacd1`, `889185d`)
+- 개발일지 참조. 죽은 필터 재연결, 차트 겹침·overflow 원인 특정 및 수정.
+
 ## 정정·발견 사항 추가 (2026-09-28 저녁)
 1. 웹 완성도 평가에 대해 인상이 아닌 측정으로 원인(구조: 화면 전체 선렌더링·스타일 다층)을 확인. CSS 수정만으로는 격차가 줄지 않음을 사용자에게 명시.
 2. 헤더 클릭 정렬 미동작은 원본에서도 동일(회귀 아님). 별도 확인 필요.
@@ -876,8 +879,8 @@
 - 5S 자율개선 종합: 참여율 정의(등록자/총원) 사용자 확인, 목표선(분기별 인당 목표) 표시 여부, 실제 .xlsx 내보내기 여부.
 - 표 헤더 정렬 미동작 원인 조사.
 
-## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 94건)
-> 커밋 시각은 저장소 표기 기준. 아래 94건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
+## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 96건)
+> 커밋 시각은 저장소 표기 기준. 아래 96건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
 > (`e182f66`은 이 대화 밖의 다른 Claude 세션이 같은 계정으로 push한 커밋이라 포함됨. 대장은 `git log --since`가 날짜가 뒤섞인 이력에서 일부를 건너뛰는 것을 발견해, 커밋 날짜를 직접 비교해 생성)
 
 | 커밋 | 시각 | 제목 | 변경 파일 |
@@ -976,8 +979,10 @@
 | `5956bc7` | 2026-10-01 02:10 | fix: '③ 고도화·표준화 > 후보 목록' 탭 이름과 무관한 중복 섹션 제거 — 대시보드와 겹치던 콘텐츠 정리 | `hd20-condition-groups.js`, `index.html` |
 | `8e0894a` | 2026-10-01 02:14 | fix: 활동관리 'Excel Import 분석' 빈 상태 안내 명확화 — 버그처럼 보이던 정상 상태 해소 | `activity-import-analysis-mail-preview.js`, `index.html` |
 | `01ca2de` | 2026-10-01 09:53 | fix: 통합기준정보 탭 — 떠 있는 좁은 모달 카드처럼 보이던 레이아웃을 다른 탭과 같은 전체 폭으로 | `final-layout-polish.js`, `index.html`, `master-info-modal.js`, `operating-policy-master.js`, `request-source-order-master.js` |
+| `30dacd1` | 2026-10-01 22:22 | fix: 고도화 맵 'Case 필터'가 재설계 이후 죽어있던 결함 수정 — 팀별 막대가 실제로 필터를 반영 | `final-layout-polish.js`, `hd20-maturity-map-operational-guard.js`, `hd20-maturity-map-tab.js`, `index.html` |
+| `889185d` | 2026-10-01 22:46 | fix: 개선요청 종합 — 막대 라벨 겹침·SVG 폭 초과 실제 버그 수정 | `hd20-improve-board.js`, `hd20-request-board.js`, `index.html` |
 
-### 문서 커밋(82건, 로그 갱신용)
+### 문서 커밋(83건, 로그 갱신용)
 - `c661242` docs: development/coding log for validation fixture, team master, auth, subtab split (2026-09-22)
 - `da246aa` docs: log advancement 4-way subtab split (4aee88b) in dev/coding logs
 - `015b9b3` docs: log action/audit 4-way subtab split + metric bugfix (57e264c) in dev/coding logs
@@ -1060,3 +1065,4 @@
 - `ff654ef` docs: 대시보드 레이아웃 3건(b91266a) 로그 반영, 커밋 대장 재생성
 - `19dbabf` docs: 후보 목록 중복 섹션 제거(5956bc7) 로그 반영, 커밋 대장 재생성
 - `564a115` docs: Excel Import 안내 명확화(8e0894a) 로그 반영, 커밋 대장 재생성
+- `904c454` docs: 통합기준정보 전체 폭(01ca2de) 로그 반영, 커밋 대장 재생성
