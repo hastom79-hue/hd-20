@@ -77,8 +77,8 @@ function render(box){
   const regM=Array.from({length:12},(_,i)=>rowsY.filter(c=>mo(c)===i+1).length);
   const openM=Array.from({length:12},(_,i)=>rowsY.filter(c=>mo(c)===i+1&&c.status==='진행중').length);
   const doneM=Array.from({length:12},(_,i)=>rowsY.filter(c=>mo(c)===i+1&&isDone(c)).length);
-  const donePct=doneM.map((v,i)=>regM[i]?Math.round(v/regM[i]*1000)/10:null);
-  const B=chart({w:Math.floor((box.clientWidth-36)*.7)-8,cats:ML,minSlot:86,series:[{name:'등록',vals:regM,color:'#8fa3b3'},{name:'진행',vals:openM,color:'#e0b03c'},{name:'완료',vals:doneM,color:'#1f6f6b',widthScale:1.5,pct:donePct}]});
+  const donePct=doneM.map((v,i)=>regM[i]?Math.round(v/regM[i]*100):null);
+  const B=chart({w:Math.floor((box.clientWidth-36)*.7)-20,cats:ML,minSlot:60,series:[{name:'등록',vals:regM,color:'#8fa3b3'},{name:'진행',vals:openM,color:'#e0b03c'},{name:'완료',vals:doneM,color:'#1f6f6b',widthScale:1.5,pct:donePct}]});
   // ③ 조치대응부서 진행현황
   /* 가로축 정렬: 통합기준정보(표시순서)에서 관리하는 생산팀 순서를 그대로 따름(값 기준 정렬 안 함) */
   const teamOrder=(()=>{try{const v=JSON.parse(localStorage.getItem('gmes5s_team_display_order')||'null');if(Array.isArray(v)&&v.length)return v}catch{}return window.HD20ProductionTeamMaster?.teamNames?.()||null})();
@@ -98,8 +98,8 @@ function render(box){
   /* 누적 막대는 맨 아래(완료) 칸만 팀 간 비교가 쉽고, 맨 위 칸(기한경과)은 시작 높이가 팀마다 달라 눈으로
      비교하기 어려움 — 막대 순서는 그대로 두되, 가장 중요한 위험 신호인 기한경과 건수를 막대 위에 빨간 글자로
      따로 병기해 굳이 칸 높이를 비교하지 않아도 바로 보이게 함(0건인 팀은 표시 생략). */
-  const overExtra=teamRows.map(r=>r.over>0?{text:`기한경과 ${r.over}`,color:'#c0392b'}:null);
-  const teamChart=chart({w:box.clientWidth-40,h:280,cats:teamRows.map(r=>r.team),stack:true,rotate:true,sel:S.selTeam,linkX:true,minSlot:60,topExtra:overExtra,
+  const overExtra=teamRows.map(r=>r.over>0?{text:`${r.over}`,color:'#c0392b'}:null);
+  const teamChart=chart({w:box.clientWidth-40,h:280,cats:teamRows.map(r=>r.team),stack:true,rotate:true,sel:S.selTeam,linkX:true,minSlot:72,topExtra:overExtra,
     series:[{name:'완료',vals:teamRows.map(r=>r.done),color:'#1f6f6b'},{name:'진행·대기',vals:teamRows.map(r=>r.open),color:'#a8c7c4'},{name:'기한경과',vals:teamRows.map(r=>r.over),color:'#e0b03c'}]});
   const selRows=D.cases.filter(c=>c.team===S.selTeam&&(!S.source||sourceOf(c)===S.source)),selYearRows=selRows.filter(c=>String(c.date||'').slice(0,4)===S.year);
   const selRegM=Array.from({length:12},(_,i)=>selYearRows.filter(c=>mo(c)===i+1).length),selDoneM=Array.from({length:12},(_,i)=>selYearRows.filter(c=>mo(c)===i+1&&isDone(c)).length);
@@ -124,7 +124,7 @@ function render(box){
 <span class="sp"></span><button type="button" class="alt" data-rq="print">프린트</button><button type="button" class="alt" data-rq="csv">엑셀다운로드(상세내용)</button></div>
 <div class="ibRow r1"><div class="ibPanel"><div class="ibHead">요청출처별 등록 및 진행(*)현황<button type="button" class="ibEv" data-evk="a">근거 데이터</button><em>${S.month?+S.month+'월':'연간누적'} · 건 · 완료(*)=완료</em></div><div class="ibBody">${A}${leg([['등록','#5c6b7a'],['완료','#1f6f6b']])}</div></div>
 <div class="ibPanel"><div class="ibHead">월별 등록 및 진행현황<button type="button" class="ibEv" data-evk="b">근거 데이터</button><em>누적완료율(오픈 이후) ${openRate}% · ${S.year}년 누적완료율 ${yearRate}%</em></div><div class="ibBody">${B}${leg([['등록','#8fa3b3'],['진행','#e0b03c'],['완료','#1f6f6b']])}</div></div></div>
-<div class="ibRow"><div class="ibPanel"><div class="ibHead">조치대응부서 진행현황<button type="button" class="ibEv" data-evk="c">근거 데이터</button><em>${S.month?+S.month+'월':'연간누적'} · 합계 ${sum.total}건 · 팀명을 클릭하면 아래 상세 추이가 바뀝니다</em></div><div class="ibBody">${teamChart}${leg([['완료','#1f6f6b'],['진행·대기','#a8c7c4'],['기한경과','#e0b03c']])}<div class="rqScroll" style="margin-top:10px">${teamGrid}</div></div></div></div>
+<div class="ibRow"><div class="ibPanel"><div class="ibHead">조치대응부서 진행현황<button type="button" class="ibEv" data-evk="c">근거 데이터</button><em>${S.month?+S.month+'월':'연간누적'} · 합계 ${sum.total}건 · 막대 위 빨간 숫자=기한경과 건수 · 팀명을 클릭하면 아래 상세 추이가 바뀝니다</em></div><div class="ibBody">${teamChart}${leg([['완료','#1f6f6b'],['진행·대기','#a8c7c4'],['기한경과','#e0b03c']])}<div class="rqScroll" style="margin-top:10px">${teamGrid}</div></div></div></div>
 <div class="ibRow"><div class="ibPanel"><div class="ibHead">조치 지연 리드타임<button type="button" class="ibEv" data-evk="d">근거 데이터</button><em>${S.month?+S.month+'월':'연간누적'} · 지연 발생 ${delayRows.reduce((a,r)=>a+r.n,0)}건 · 전체 평균 ${delayOverallAvg}일 · 팀명을 클릭하면 아래 상세 추이가 바뀝니다</em></div><div class="ibBody">${delayChart||'<p style="padding:20px;color:#8a99a6;text-align:center">조건에 해당하는 지연 건이 없습니다.</p>'}${delayChart?leg([['평균 지연일수(완료 늦은 건은 완료일-기한, 진행 중인 기한경과 건은 오늘-기한)','#c0392b']]):''}</div></div></div>
 <div class="ibRow"><div class="ibPanel"><div class="ibHead">선택 팀 월별 등록·완료 추이<button type="button" class="ibEv" data-evk="e">근거 데이터</button><em>[ ${esc(S.selTeam)} ] ${S.year}년</em></div><div class="ibBody">${teamTrend}${leg([['등록','#8fa3b3'],['완료','#1f6f6b']])}</div></div></div>
 <div class="ibRow"><div class="ibPanel"><div class="ibHead">상세내용<button type="button" class="ibEv" data-evk="f">전체 보기</button><em>미리보기 ${detailRows.length}건 / 조건 일치 ${rowsM.length}건</em></div><div class="ibBody"><div class="rqScroll">${detail}</div></div></div></div>
