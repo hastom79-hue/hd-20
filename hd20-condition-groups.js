@@ -25,11 +25,11 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
 #${ID} .cgMoreBtn{display:block;width:100%;border:0;border-top:1px solid #edf1f4;background:#fafbfc;color:#14304c;font-weight:850;padding:10px;cursor:pointer}
 #${ID} .cgEmpty{padding:14px;color:#7a8a97;font-size:13px}
 #${ID} .cgNote{margin:12px 2px 0;font-size:12px;color:#7a8a97}
-#performanceConversionAnalysis[data-subview="analysis"]>.pcHeader,#performanceConversionAnalysis[data-subview="detail"]>.pcHeader{display:none!important}
+#performanceConversionAnalysis[data-subview="analysis"]>.pcHeader,#performanceConversionAnalysis[data-subview="detail"]>.pcHeader,#performanceConversionAnalysis[data-subview="judge"]>.pcHeader{display:none!important}
 #performanceConversionAnalysis[data-subview="analysis"] #hd20MaturityConditionAnalysis .mcaLevelRail,#performanceConversionAnalysis[data-subview="analysis"] #hd20MaturityConditionAnalysis .mcaBodyGrid{display:none!important}
 /* 3조건 분석 탭: 집계 기준이 다른 건수 카드와 내용 없는 접힌 제목 막대는 숨김(아래 목록·비율 막대가 같은 기준의 값) */
 .app[data-hd-view="advancement.analysis"] #hd20OpsMetrics{display:none!important}
-#performanceConversionAnalysis[data-subview="analysis"] .pcGrid{display:none!important}
+#performanceConversionAnalysis[data-subview="analysis"] .pcGrid{display:none!important}#performanceConversionAnalysis[data-subview="judge"] .pcFlow,#performanceConversionAnalysis[data-subview="judge"] .pcGrid{display:none!important}
 #${ID} tbody[hidden]{display:none!important}
 @media(max-width:760px){#${ID} table,#${ID} thead,#${ID} tbody,#${ID} tr,#${ID} th,#${ID} td{display:block}#${ID} thead{display:none}#${ID} tr{padding:8px 10px;border-top:1px solid #edf1f4}#${ID} td{border:0;padding:2px 0}#${ID} td:nth-child(-n+3){display:inline-block;margin-right:6px}#${ID} td:nth-child(-n+2)::after{content:' ·';color:#a0adb8}#${ID} td:nth-child(3){display:block}#${ID} td:nth-child(n+4){display:inline-block;margin-right:4px}#${ID} .dot{min-width:0;margin:2px 4px 2px 0}}`;document.head.appendChild(s)}
 function uniq(rows){const m=new Map();rows.forEach(x=>{const u=x._unit,k=`${u.team}|${u.line}|${u.workplace||u.name}`;if(!m.has(k))m.set(k,x)});return[...m.values()].sort((a,b)=>{const A=a._unit,B=b._unit;return (A.team||'').localeCompare(B.team||'','ko')||(A.line||'').localeCompare(B.line||'','ko')||(A.workplace||'').localeCompare(B.workplace||'','ko')})}
