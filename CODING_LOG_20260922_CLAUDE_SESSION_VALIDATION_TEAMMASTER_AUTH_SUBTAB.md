@@ -1759,6 +1759,14 @@
 - 버전 `activity-import-analysis-mail-preview.js?v=20260930-clarify-1`.
 - 검증(`excel_import_check.py`): `#hd20ImportAnalysis` 텍스트가 새 안내문과 정확히 일치. 5S 등록 E2E, 16개 탭 회귀 오류 0건.
 
+### `01ca2de` — fix: 통합기준정보 전체 폭 (2026-09-30)
+- 변경 파일: `final-layout-polish.js`(+1/-1), `index.html`(+1/-1), `master-info-modal.js`(+2/-2), `operating-policy-master.js`(+1/-1), `request-source-order-master.js`(+1/-1)
+- 원인 추적(`master_width_trace.py`): `max-width:none`으로 바꿔도 계산된 `maxWidth`가 계속 920px — `modal-safety.js`의 `.modalBox{width:min(920px,...)!important;max-width:920px!important}`가 공용 클래스를 통해 적용되고 있음을 확인.
+- `master-info-modal.js`: `class="modalBox"`→`class="masterInfoBox"`, CSS 선택자 `.masterModal .modalBox`→`.masterModal .masterInfoBox`.
+- 연쇄 결함 발견: `operating-policy-master.js`/`request-source-order-master.js`가 `#masterModal .modalBox`로 자기 탭을 주입하던 것이 깨져 '운영정책'·'요청출처 순서' 탭이 사라짐 → 두 파일의 셀렉터도 `masterInfoBox`로 수정.
+- 버전: `master-info-modal.js?v=20260930-fullwidth-2`, `operating-policy-master.js?v=20260930-fix-1`, `request-source-order-master.js?v=20260930-fix-1`.
+- 검증(`master_width_trace.py`, `master_all_tabs_check.py`): 렌더 폭 1362px(화면 폭 1378px), 탭 4개(표시순서·인당 목표·운영정책·요청출처 순서) 전부 정상. 5S 등록 E2E, 16개 탭 회귀 오류 0건(1회성 실적분석 높이 이상치 재실행으로 미재현 확인).
+
 ## 회귀 확인(공통, Playwright Chromium)
 - 15개 탭(대시보드 2 + 활동관리 2 + 고도화 3 + 진단유지 3 + 개선실행 3) 전체
   버튼 클릭 순회, `pageerror`/`console.error`/`dialog` 이벤트 리스너로 0건 확인.
@@ -1822,8 +1830,8 @@
 ## (2026-09-28 갱신) 종료조건
 16개 탭 순회·기능 회귀 세트 콘솔 오류 0건, 최신 GitHub Pages 빌드 `built` 확인, 실제 사이트 확인 결과 반영 후 종료.
 
-## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 93건)
-> 커밋 시각은 저장소 표기 기준. 아래 93건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
+## 부록: 이 세션 Claude 코드 커밋 대장 (git에서 자동 생성, 총 94건)
+> 커밋 시각은 저장소 표기 기준. 아래 94건이 세 로그(개발일지·상세 개발일지·코딩일지)에 모두 등장하는지 스크립트로 검증함.
 > (`e182f66`은 이 대화 밖의 다른 Claude 세션이 같은 계정으로 push한 커밋이라 포함됨. 대장은 `git log --since`가 날짜가 뒤섞인 이력에서 일부를 건너뛰는 것을 발견해, 커밋 날짜를 직접 비교해 생성)
 
 | 커밋 | 시각 | 제목 | 변경 파일 |
@@ -1921,8 +1929,9 @@
 | `b91266a` | 2026-10-01 02:02 | fix+redesign: 대시보드 레이아웃 3건 — 7개 탭 위치 이동, 범용 KPI 스트립 제거, 핵심지표를 이탈 중심으로 교체 | `dashboard-section-tabs.js`, `final-layout-polish.js`, `hd20-overhaul.css`, `hd20-subtabs.js`, `index.html`, `top-kpi-drilldown.js` |
 | `5956bc7` | 2026-10-01 02:10 | fix: '③ 고도화·표준화 > 후보 목록' 탭 이름과 무관한 중복 섹션 제거 — 대시보드와 겹치던 콘텐츠 정리 | `hd20-condition-groups.js`, `index.html` |
 | `8e0894a` | 2026-10-01 02:14 | fix: 활동관리 'Excel Import 분석' 빈 상태 안내 명확화 — 버그처럼 보이던 정상 상태 해소 | `activity-import-analysis-mail-preview.js`, `index.html` |
+| `01ca2de` | 2026-10-01 09:53 | fix: 통합기준정보 탭 — 떠 있는 좁은 모달 카드처럼 보이던 레이아웃을 다른 탭과 같은 전체 폭으로 | `final-layout-polish.js`, `index.html`, `master-info-modal.js`, `operating-policy-master.js`, `request-source-order-master.js` |
 
-### 문서 커밋(81건, 로그 갱신용)
+### 문서 커밋(82건, 로그 갱신용)
 - `c661242` docs: development/coding log for validation fixture, team master, auth, subtab split (2026-09-22)
 - `da246aa` docs: log advancement 4-way subtab split (4aee88b) in dev/coding logs
 - `015b9b3` docs: log action/audit 4-way subtab split + metric bugfix (57e264c) in dev/coding logs
@@ -2004,3 +2013,4 @@
 - `6c8c0b9` docs: 새로고침 딥링크 복원(6ac77b4) 로그 반영, 커밋 대장 재생성
 - `ff654ef` docs: 대시보드 레이아웃 3건(b91266a) 로그 반영, 커밋 대장 재생성
 - `19dbabf` docs: 후보 목록 중복 섹션 제거(5956bc7) 로그 반영, 커밋 대장 재생성
+- `564a115` docs: Excel Import 안내 명확화(8e0894a) 로그 반영, 커밋 대장 재생성
