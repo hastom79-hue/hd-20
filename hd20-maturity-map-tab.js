@@ -68,9 +68,11 @@ function render(){css();const el=ensure(),d=data();
   const rowFrag=document.createDocumentFragment();
   const colorOf=t=>t.level>=60?(t.attrition<50?'#188b59':'#247bb5'):(t.attrition<50?'#d9a11b':'#d9473f');
   const coordSeen={};
+  const dense=enriched.filter(t=>t.attrition<=1&&t.level>=95).sort((a,b)=>a.team.localeCompare(b.team,'ko'));
+  const denseSlot=new Map(dense.map((t,i)=>[t.team,{x:10+(i%3)*10,y:96-Math.floor(i/3)*13-(i%3)*4}]));
   enriched.forEach((t,i)=>{
-    const px=Math.max(1,Math.min(99,t.attrition)),py=Math.max(2,Math.min(98,t.level)),key=Math.round(px)+'|'+Math.round(py),dup=coordSeen[key]||0;coordSeen[key]=dup+1;
-    const dot=document.createElement('button');dot.type='button';dot.className='mmtBubble';dot.style.left=px+'%';dot.style.bottom=py+'%';dot.style.setProperty('--mmt-color',colorOf(t));dot.style.setProperty('--label-shift',(dup%2?1:-1)*(Math.floor(dup/2)+1)*24+'px');
+    const slot=denseSlot.get(t.team),px=slot?slot.x:Math.max(2,Math.min(97,t.attrition)),py=slot?slot.y:Math.max(4,Math.min(96,t.level)),key=Math.round(px)+'|'+Math.round(py),dup=coordSeen[key]||0;coordSeen[key]=dup+1;
+    const dot=document.createElement('button');dot.type='button';dot.className='mmtBubble';dot.style.left=px+'%';dot.style.bottom=py+'%';dot.style.setProperty('--mmt-color',colorOf(t));dot.style.setProperty('--label-shift',slot?'0px':((dup%2?1:-1)*(Math.floor(dup/2)+1)*18+'px'));
     dot.innerHTML='<i></i><span><b>'+esc(t.team)+'</b><small>'+t.maintained+'/'+t.confirmed+' · '+(t.rate===null?'—':t.rate+'%')+'</small></span>';
     dot.title=t.team+' · 이탈도 '+t.attrition+'% · 실행률 '+t.level+'%';matrix.appendChild(dot);
     const row=document.createElement('div');row.innerHTML=`<button type="button" class="mmtTeam"><b>${esc(t.team)}</b><span>확정 ${t.confirmed}</span><span>유지 ${t.maintained}</span><span>${t.rate===null?'—':t.rate+'%'}</span></button><div class="mmtTeamCases" hidden>${t.cases.length?t.cases.map((x,ci)=>`<div class="mmtCase"><button type="button" data-mmt-case="${ci}"><b>${esc(x.workplace||x.title||x.id||'공식확정 Case')}</b><small>${esc(txt(x.judgedAt||x.confirmedAt||x.judgeDate||x.date).slice(0,10)||'—')} · ${esc(x.maintainState||x.auditState||x.status||'유지상태 미기재')}</small></button></div>`).join(''):'<div class="mmtEmpty">공식 확정 Case 없음</div>'}</div>`;rowFrag.appendChild(row);
