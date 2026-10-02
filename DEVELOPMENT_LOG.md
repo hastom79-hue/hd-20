@@ -1637,3 +1637,10 @@ Canonical Store는 다음을 기준으로 한다.
 - 5S Raw key(hd20GMES5SAutoImproveRawV1)에 한해 canonical과 동일한 validation/production 격리를 적용. Audit/Action 등 다른 저장소는 이번 범위에서 임의 필터링하지 않음.
 - 기본 validation 모드=web-validation-fixture only, validation=0/off=non-prod 제외 운영데이터.
 - 하위탭 구조·순서·업무기능 및 후보/확정 산식은 변경 없음.
+
+
+### 2026-10-02 / non-prod 필터 canonical 잔여 불일치 정합화
+- canonical dashboard-kpi-source의 isNonProdRowBase에는 21개 LEGACY_TEST_IDS 차단이 있으나 maturity/performance/subtabs fallback에는 해당 조건이 빠져 운영모드에서 legacy DRAW 테스트행이 화면별로 다르게 포함될 수 있음을 확인.
+- 3개 fallback에 동일 legacy ID set 차단 추가: maturity `6d52641`, performance `8a3bfb6`, subtabs `8b0a9ba`.
+- 첫 cache-bust 시 정규식 매칭 실패로 index 내용 변경 없이 커밋(`267c2f8`)된 것을 즉시 검출했고, 실제 버전 문자열을 직접 교체해 `3614111`로 정상 배포 완료.
+- 운영 데이터/판정 산식/하위탭 구조 변경 없음.
