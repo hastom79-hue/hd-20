@@ -23,8 +23,8 @@ const CONTRACT={
 };
 let state={area:'dashboard',sub:'summary'};const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
 const keyOf=(a=state.area,s=state.sub)=>`${a}.${s}`;const contract=(a=state.area,s=state.sub)=>CONTRACT[keyOf(a,s)]||CONTRACT['dashboard.summary'];
-function ensure(){let bar=$('#hd20Subnav');if(!bar){bar=document.createElement('nav');bar.id='hd20Subnav';bar.className='hd20Subnav';bar.setAttribute('aria-label','세부 업무 메뉴');const anchor=$('.beginnerHint')||$('.beginnerNav');anchor?.insertAdjacentElement('afterend',bar)}return bar}
-function ensurePurpose(){let el=$('#hd20PurposePanel');if(!el){el=document.createElement('section');el.id='hd20PurposePanel';el.className='hd20PurposePanel';ensure().insertAdjacentElement('afterend',el)}return el}
+function ensure(){let bar=$('#hd20Subnav');if(!bar){bar=document.createElement('nav');bar.id='hd20Subnav';bar.className='hd20Subnav';bar.setAttribute('aria-label','세부 업무 메뉴')}const hint=$('.beginnerHint'),nav=$('.beginnerNav');const anchor=hint||nav;if(anchor&&bar.previousElementSibling!==anchor)anchor.insertAdjacentElement('afterend',bar);return bar}
+function ensurePurpose(){let el=$('#hd20PurposePanel');if(!el){el=document.createElement('section');el.id='hd20PurposePanel';el.className='hd20PurposePanel'}const bar=ensure();if(bar&&el.previousElementSibling!==bar)bar.insertAdjacentElement('afterend',el);return el}
 function currentRoot(area){return area==='dashboard'?$('.app'):area==='activity'?$('#awActivity'):area==='advancement'?($('#performanceConversionAnalysis')||$('#awWorkplace')):area==='audit'?$('#awAudit'):$('#awAction')}
 
 /* hd-22 벤치마킹: 탭마다 "사용자가 할 일 / 관리자가 관리할 것"과 핵심 버튼을 명시 */
