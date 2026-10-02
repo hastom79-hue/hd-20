@@ -2139,3 +2139,10 @@
 - 250ms debounce 유지 → 데이터 정합 갱신과 flicker 방지 동시 유지
 - `859cde5` chore: state-sensitive signature 배포
 - `bc73b04` docs: DEVELOPMENT_LOG 동시 갱신
+
+- 추적결함: 3대 요건/판정 데이터 변경 후 열린 advancement 운영 하위화면의 직접 재렌더 이벤트 바인딩 부족
+- `aab3ed0` fix: refreshActiveAdvancement + KPI/import/judged/manual refresh 이벤트 연결
+- 후보/3조건/상세/심사/표준화 중 현재 활성 화면만 재렌더
+- 네비게이션/서브탭 구조 변경 없음
+- `329b4a7` chore: hd20-subtabs cache-bust 배포
+- `6c84c06` docs: DEVELOPMENT_LOG 동시 갱신
