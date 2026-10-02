@@ -2102,3 +2102,9 @@
 - `af9c275` fix: canonical maintained 판정에 미흡/이탈/재점검/attrition 명시 제외
 - `edf3ff0` chore: dashboard-kpi-source cache-bust 배포
 - `6011fa1` docs: DEVELOPMENT_LOG 동시 갱신
+
+- `aa76606` fix: 고도화맵 Y축에 실제 후보 활동량 20% 반영, 저활동 팀 과대평가 방지
+- 신규 가중치: 유지45 + Case20 + 전환15 + 활동량20
+- X축 이탈도/canonical 유지판정 변경 없음
+- `1f32fd6` chore: maturity map cache-bust 배포
+- `d6206c3` docs: DEVELOPMENT_LOG 동시 갱신
