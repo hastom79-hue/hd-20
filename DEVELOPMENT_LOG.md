@@ -1630,3 +1630,10 @@ Canonical Store는 다음을 기준으로 한다.
 - canonical load 의미와 맞춰 기본 validation 모드에서는 web-validation-fixture만, validation=0/off에서는 demo/e2e/validation 계열 non-prod row를 제외한 운영 데이터만 사용하도록 수정.
 - API 정상 시 HD20KPIData.load()를 최우선 사용하므로 기존 정상 경로에는 영향 없음.
 - 이로써 성과전환/3조건 분석과 고도화맵이 API 정상·지연 양쪽에서 동일한 데이터 격리 원칙을 사용.
+
+
+### 2026-10-02 / 운영 하위탭 5S Raw 검증·운영 데이터 격리 (`1303edd`, `d9c81ea`)
+- hd20-subtabs.js의 readStore()가 모든 localStorage 배열을 무필터 반환하여 활동관리 및 고도화 후보/3조건/상세/심사/확정전개가 fixture와 운영 데이터를 함께 볼 수 있는 구조 확인.
+- 5S Raw key(hd20GMES5SAutoImproveRawV1)에 한해 canonical과 동일한 validation/production 격리를 적용. Audit/Action 등 다른 저장소는 이번 범위에서 임의 필터링하지 않음.
+- 기본 validation 모드=web-validation-fixture only, validation=0/off=non-prod 제외 운영데이터.
+- 하위탭 구조·순서·업무기능 및 후보/확정 산식은 변경 없음.
