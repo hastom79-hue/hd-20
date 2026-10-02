@@ -1623,3 +1623,10 @@ Canonical Store는 다음을 기준으로 한다.
 - dashboard-kpi-source의 validation 모드 의미를 fallback에도 적용: 기본 validation 모드에서는 source=web-validation-fixture만, validation=0/off에서는 demo/e2e/validation 계열 non-prod row를 제외한 운영 데이터만 사용.
 - 따라서 canonical API 정상/지연 여부와 무관하게 고도화맵이 동일 데이터 모집단을 유지하도록 수정.
 - 후보/확정/유지 산식 및 production Raw 자체는 변경 없음.
+
+
+### 2026-10-02 / 성과전환 fallback 검증·운영 데이터 격리 (`07f5843`, `302c2f3`)
+- performance-conversion-analysis.js의 API 미로드 fallback load()가 Raw 전체를 반환해 maturity map에서 수정한 것과 동일하게 fixture/운영 데이터 혼합 가능성을 확인.
+- canonical load 의미와 맞춰 기본 validation 모드에서는 web-validation-fixture만, validation=0/off에서는 demo/e2e/validation 계열 non-prod row를 제외한 운영 데이터만 사용하도록 수정.
+- API 정상 시 HD20KPIData.load()를 최우선 사용하므로 기존 정상 경로에는 영향 없음.
+- 이로써 성과전환/3조건 분석과 고도화맵이 API 정상·지연 양쪽에서 동일한 데이터 격리 원칙을 사용.
