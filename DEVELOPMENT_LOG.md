@@ -1539,3 +1539,9 @@ Canonical Store는 다음을 기준으로 한다.
 - advancementMaintained/advancementAttrition 공통 helper 추가. HD20KPIData.isMaintained를 우선 사용하고 API 미가용 시 canonical과 동일한 fallback 사용.
 - 3조건 분석 lost, 심사 프로세스 '유지 이탈', 확정·수평전개 lost/maintained를 모두 공통 helper로 교체.
 - 후보/확정 판정과 네비게이션 구조는 변경하지 않음. Audit 자체의 별도 종료평가 risk 규칙은 고도화 Case 유지판정과 다른 업무영역이므로 이번 변경에서 제외.
+
+
+### 2026-10-02 / 라인·작업장 상세 이탈사유 canonical 표시 수정 (`a615cec`, `8b4812f`)
+- renderAdvDetail의 '확정 후 이탈사유'가 attritionReason 또는 attrition===true만 확인해, canonical상 이탈(valid=false, 부적합/해제/실패 등)인데 attrition flag가 없는 Case를 '—'로 표시하는 잔여 결함 확인.
+- advancementAttrition으로 이탈 여부를 판정하고, 이탈 시 attritionReason → maintainState/auditState/status → '유지 이탈' 순으로 실제 원천값을 표시하도록 수정.
+- 비이탈 Case는 '—' 유지. 임의 사유 생성 없음.
