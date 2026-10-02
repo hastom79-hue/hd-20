@@ -2146,3 +2146,9 @@
 - 네비게이션/서브탭 구조 변경 없음
 - `329b4a7` chore: hd20-subtabs cache-bust 배포
 - `6c84c06` docs: DEVELOPMENT_LOG 동시 갱신
+
+- 추적결함 확인: performance-conversion-analysis criteriaCount가 배열형 criteriaMatched 미지원
+- `f2a1271` fix: Array.isArray(criteriaMatched) 우선 처리, 0~3 충족수 일치
+- 숫자형 및 criteriaVisual/Green/Space fallback 유지
+- `7a4755b` chore: strict criteria distribution cache-bust 배포
+- `18eedf2` docs: DEVELOPMENT_LOG 동시 갱신
