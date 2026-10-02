@@ -2152,3 +2152,10 @@
 - 숫자형 및 criteriaVisual/Green/Space fallback 유지
 - `7a4755b` chore: strict criteria distribution cache-bust 배포
 - `18eedf2` docs: DEVELOPMENT_LOG 동시 갱신
+
+- 추적결함 확인: 확정 후 이탈 Case를 후보 전체로 나누는 분모 오류
+- `56d9eba` fix: 이탈률=확정 후 이탈/공식확정으로 통일, 배너에 n/confirmed·rate 표시
+- 후보 0/1/2/3조건 분포는 후보군 기준 유지
+- 고도화맵 X축 이탈도와 의미체계 일치
+- `5977f6b` chore: attrition denominator correction 배포
+- `57fe550` docs: DEVELOPMENT_LOG 동시 갱신
