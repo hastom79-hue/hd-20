@@ -1526,3 +1526,9 @@ Canonical Store는 다음을 기준으로 한다.
 - confirmed 집합을 별도 생성하고 lost=confirmed.filter(attritionOf), rate=lost/confirmed로 수정. 고도화맵 X축 이탈도 정의와 동일한 의미체계로 통일.
 - 실제 심사 분포 배너에 '확정 후 이탈 n / 공식확정 n · rate%'를 직접 노출하여 건수와 분모를 동시에 확인 가능하게 개선.
 - 0/1/2/3조건 분포는 후보군 기준을 그대로 유지. 후보 단계 조건분포와 확정 후 유지이탈을 섞지 않음.
+
+
+### 2026-10-02 / 3조건 분석 이탈판정 canonical 통일 (`1027fb1`, `8fad2b0`)
+- 고도화맵은 HD20KPIData.isMaintained를 사용하지만 performance-conversion-analysis의 attritionOf는 별도 정규식(미흡/중지/이탈/재점검)만 사용하고 있어 부적합/해제/실패/status/valid=false에서 화면 간 이탈 건수가 달라질 수 있었음.
+- attritionOf가 HD20KPIData.isConfirmed + !isMaintained를 우선 사용하도록 통일. canonical API 미가용 시에도 동일 상태어(중지/미흡/이탈/재점검/부적합/해제/실패), attrition=true, valid=false를 반영하는 fallback 유지.
+- 결과적으로 고도화맵 X축 이탈도와 3조건 분석 '확정 후 이탈'의 판정 기준이 동일해짐.
