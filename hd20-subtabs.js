@@ -36,6 +36,17 @@ const ADV_FLOW={
  'advancement.detail':{goal:'현장 단위 판정근거 검증',look:'팀 · 라인 · 작업장 · 조건별 근거 · 공식판정 상태',decide:'근거 충분 / 추가 확인 필요 / 판정 부적합',act:'보완요청 또는 공식 심사·판정으로 연결'},
  'advancement.process':{goal:'심사 정체 없이 공식판정 완료',look:'현재 심사단계 · 담당 · 체류기간 · 보완사유 · 판정대기',decide:'정상 진행 / 지연 / 보완 필요',act:'담당자 처리·보완 후 확정 단계로 이동'},
  'advancement.standard':{goal:'확정 Case를 표준으로 정착·확산',look:'공식확정 Case · 적용범위 · 유지상태 · 재현성 · 수평전개 대상',decide:'표준화 가능 / 추가 검증 / 유지 미흡',act:'표준 등록·수평전개 또는 Audit 유지관리 연결'}
+,
+ 'activity.manage':{goal:'현장 5S 활동을 빠짐없이 등록·완결',look:'생산팀 · 활동유형 · 문제내용 · 개선내용 · BEFORE/AFTER · 진행상태',decide:'정상완료 / 증빙보완 / 미완료 / 고도화 후보',act:'누락 보완·완료처리 또는 고도화 후보로 연결'},
+ 'activity.analysis':{goal:'팀별 실행편차와 고도화 가능활동 발굴',look:'팀별 활동량 · 유형별 분포 · 완료율 · 월별 추이 · 후보전환',decide:'실행부족 팀 / 정체유형 / 우수활동',act:'실행 촉진 또는 우수활동 고도화 검토'},
+ 'audit.draw':{goal:'Risk 기반 Audit 대상 선정',look:'Risk 가중치 · 생산팀 · 작업장 · 최근 Audit 이력',decide:'이번 Audit 대상 / 제외 / 재추출 필요',act:'대상 확정 후 실제 Audit 실시로 연결'},
+ 'audit.inspect':{goal:'현장 Audit 결과를 근거와 함께 판정',look:'점검항목 · 적합/부적합 · 현장근거 · 실시일',decide:'적합 / 부적합 / 추가확인',act:'부적합은 개선요청, 적합은 6개월 유지관리 시작'},
+ 'audit.ongoing':{goal:'Audit 후 6개월 동안 개선상태 유지 확인',look:'월별 확인상태 · 재발여부 · 유지증빙 · 관리 D-Day',decide:'정상유지 / 확인누락 / 재발징후',act:'누락 확인·재조치 또는 종료평가 준비'},
+ 'audit.retention':{goal:'6개월 유지성과 최종 판정',look:'관리기간 · 유지증빙 · 재발여부 · 종료평가 대기',decide:'유지 적합 / 유지 미흡',act:'적합은 관리종료, 미흡은 개선조치로 재연결'},
+ 'action.manage':{goal:'개선요청을 담당·기한·증빙 기반으로 완료',look:'요청내용 · 담당자 · 기한 · 진행률 · BEFORE/AFTER · 기한경과',decide:'정상진행 / 지연 / 증빙부족 / 완료',act:'지연 Follow-up·증빙보완 또는 효과검증으로 이동'},
+ 'action.leadtime':{goal:'개선조치 지연 원인과 병목 확인',look:'예상 Lead Time · 실제 Lead Time · 기한경과 · 단계별 체류',decide:'정상 / 지연 / 장기정체',act:'지연 Case를 조치목록에서 우선관리'},
+ 'action.master':{goal:'개선요청 알림의 담당 기준정보 정확성 확보',look:'생산팀 · 팀장 · 이메일 · 누락여부',decide:'정상 / 담당자 미지정 / 이메일 누락',act:'기준정보 보완 후 알림·메일링에 반영'},
+ 'action.verify':{goal:'완료조치의 실제 효과와 재발 여부 검증',look:'완료증빙 · 효과검증 결과 · 재발여부 · 추가조치',decide:'효과확인 / 효과미흡 / 재발',act:'효과확인은 종료, 미흡·재발은 추가조치로 재진입'
 };
 const ROLES={
  'activity.manage':{user:'오늘 발견한 5S 문제와 개선 내용을 등록하고, BEFORE·AFTER 사진을 첨부하세요.',admin:'미완료·증빙 누락 건과 팀별 등록 편차를 확인하고, 고도화 가능 건을 후보로 연결하세요.',cta:{label:'+ 5S 신규등록',sel:'[data-aw="new"]'}},
