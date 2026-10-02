@@ -1644,3 +1644,11 @@ Canonical Store는 다음을 기준으로 한다.
 - 3개 fallback에 동일 legacy ID set 차단 추가: maturity `6d52641`, performance `8a3bfb6`, subtabs `8b0a9ba`.
 - 첫 cache-bust 시 정규식 매칭 실패로 index 내용 변경 없이 커밋(`267c2f8`)된 것을 즉시 검출했고, 실제 버전 문자열을 직접 교체해 `3614111`로 정상 배포 완료.
 - 운영 데이터/판정 산식/하위탭 구조 변경 없음.
+
+
+### 2026-10-02 / canonical ↔ fallback nonProd 필터 4파일 교차검증
+- dashboard-kpi-source.js의 canonical isNonProdRowBase와 hd20-maturity-map-tab.js, performance-conversion-analysis.js, hd20-subtabs.js fallback 필터를 항목별 대조.
+- 공통 제외조건: isDemo/isTest, demo-seed/e2e-fixture/web-validation-fixture source, DEMO-/E2E-/VALID-/AUTO-DEMO- ID, 동일 sourceCaseId prefix, demo domain email, legacy teamlead@example.com, LEGACY_TEST_IDS.
+- 3개 fallback 모두 canonical의 LEGACY_TEST_IDS까지 동일 목록으로 반영되어 잔여 포함/제외 불일치 없음 확인.
+- validation mode 의미도 4파일 동일: 기본=web-validation-fixture only, validation=0/off=non-prod 제외 운영데이터.
+- 정상 코드에 불필요한 재수정은 하지 않고 교차검증 결과만 기록.
