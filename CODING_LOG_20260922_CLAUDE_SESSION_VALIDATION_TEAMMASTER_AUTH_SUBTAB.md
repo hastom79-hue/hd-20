@@ -2187,3 +2187,11 @@
 - candidate/confirmed canonical 모집단 정의는 변경 없음
 - `d5ba6f5` chore: process readiness alignment 배포
 - `e0dbc3c` docs: DEVELOPMENT_LOG 동시 갱신
+
+- 교차검색: performance analysis는 이미 조건충족수≠확정, maturity map은 공식확정만 성과 반영
+- 잔여 UX: hd20-subtabs CONTRACT의 3/3 의미가 모호
+- `118d37b` fix: 3/3=심사진입 가능, 증빙+공식판정 후 확정으로 명시
+- 상세탭도 조건수/공식판정 별도 개념 및 3/3 미확정→심사프로세스 연결 명시
+- 산식/데이터/탭구조 변경 없음
+- `477a31a` chore: 문구 정합화 배포
+- `3f307ce` docs: DEVELOPMENT_LOG 동시 갱신
