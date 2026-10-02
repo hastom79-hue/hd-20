@@ -31,9 +31,12 @@ html,body{background:var(--h22-bg)!important}
 .app>.beginnerNav:not(:has(button[data-key="dashboard"].active))+.beginnerHint{display:none!important}
 
 /* ── 3. 하위 탭: 칩 ── */
-.app>.hd20Subnav{background:transparent!important;border:0!important;box-shadow:none!important;padding:2px 0 12px!important;gap:8px!important;overflow-x:auto;flex-wrap:nowrap!important}
-.app>.hd20Subnav button{flex:0 0 auto;border-radius:999px!important;background:#fff!important;color:var(--h22-ink)!important;border:1px solid var(--h22-line)!important;font-weight:800!important;padding:9px 18px!important;box-shadow:var(--h22-sh,0 1px 3px rgba(20,48,76,.06))!important}
+.app>.hd20Subnav{background:#fff!important;border:1px solid var(--h22-line)!important;box-shadow:var(--h22-sh,0 1px 3px rgba(20,48,76,.06))!important;padding:8px!important;gap:6px!important;overflow-x:auto;flex-wrap:nowrap!important;border-radius:10px!important}
+.app>.hd20Subnav button{flex:1 0 150px;min-width:150px;border-radius:7px!important;background:#f7fafc!important;color:var(--h22-ink)!important;border:1px solid var(--h22-line)!important;font-weight:800!important;padding:9px 11px!important;box-shadow:none!important;text-align:left!important;min-height:58px!important}
+.app>.hd20Subnav button b{display:block;font-size:12px;line-height:1.25;color:#173f59}
+.app>.hd20Subnav button small{display:block;margin-top:5px;font-size:9.5px;line-height:1.3;color:#718695;font-weight:650;white-space:normal}
 .app>.hd20Subnav button.on{background:var(--h22-navy)!important;color:#fff!important;border-color:var(--h22-navy)!important}
+.app>.hd20Subnav button.on b,.app>.hd20Subnav button.on small{color:#fff!important}
 
 /* ── 4. 화면 안내: 사용자 / 관리자 카드 ── */
 .app>.hd20PurposePanel{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;gap:16px 24px!important;background:#fff!important;border:1px solid var(--h22-line)!important;border-left:5px solid var(--h22-navy)!important;border-radius:14px!important;padding:18px 22px!important;box-shadow:0 1px 3px rgba(20,48,76,.06)!important}
