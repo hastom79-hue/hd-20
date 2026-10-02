@@ -2195,3 +2195,10 @@
 - 산식/데이터/탭구조 변경 없음
 - `477a31a` chore: 문구 정합화 배포
 - `3f307ce` docs: DEVELOPMENT_LOG 동시 갱신
+
+- Y축 검증: candidate activity 20% + confirmed/candidate conversion 15%가 동일 후보 모집단을 공유해 후보신호 중복 가능
+- `14e5e93` fix: 유지55 + Case20 + 전환10 + 후보활동15로 재균형
+- 소수 후보의 높은 전환율로 저활동 팀이 과대평가되는 효과 완화
+- X축 이탈도/공식확정/현재유지 산식 변경 없음
+- `3abdc51` chore: maturity score balance 배포
+- `844ea68` docs: DEVELOPMENT_LOG 동시 갱신
