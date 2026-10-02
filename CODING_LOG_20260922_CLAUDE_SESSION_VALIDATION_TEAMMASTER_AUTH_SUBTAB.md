@@ -2060,3 +2060,7 @@
 - `70e85a7` style: 엄격 심사분포/이탈 요약 compact UI 추가
 - `996233a` chore: performance-conversion-analysis + theme cache-bust 배포
 - `7fed9a7` docs: DEVELOPMENT_LOG 동시 갱신
+
+- `b0f490a` feat: 라인·작업장 상세에 3대 요건 충족수/Gap/공식판정/확정 후 이탈사유 Raw Data 표 연결
+- `b1379c2` chore: 상세 Gap 화면 cache-bust 배포
+- `602e69e` docs: DEVELOPMENT_LOG 동시 갱신
