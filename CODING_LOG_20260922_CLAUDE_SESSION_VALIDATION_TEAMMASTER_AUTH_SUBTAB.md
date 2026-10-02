@@ -2055,3 +2055,8 @@
 - `3b520e0` chore: 고도화 전체 Lifecycle cache-bust 배포
 - `c68a380` docs: DEVELOPMENT_LOG에 10/02 작업이력 누락분 일괄 보강
 - 작업 계약: 탭 제목/설명만 꾸미지 않고 실제 원천데이터→핵심지표→확인대상→판단기준→실행기능→다음단계→이력·증빙을 연결한다. 기존 하위 탭 구조는 고정한다.
+
+- `6a6186b` feat: 3대 요건 후보를 정확 0/1/2/3조건으로 집계하고 공식확정 후 이탈 Case 별도 노출
+- `70e85a7` style: 엄격 심사분포/이탈 요약 compact UI 추가
+- `996233a` chore: performance-conversion-analysis + theme cache-bust 배포
+- `7fed9a7` docs: DEVELOPMENT_LOG 동시 갱신
