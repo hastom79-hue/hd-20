@@ -108,8 +108,10 @@ function hide(){const el=ensure();el.classList.remove('on');el.hidden=true;$('.m
 function open(){return show()}
 function close(){return hide()}
 let refreshTimer=0,lastRenderSig='';
-function refresh(){clearTimeout(refreshTimer);refreshTimer=setTimeout(()=>{if(window.HD20_NAV?.active?.()!=='dashboard'||window.HD20_DASHBOARD_TABS?.active?.()!=='maturity')return;const d=data(),sig=[d.confirmed.length,d.maintained.length,d.candidates.length,d.teams.join('|')].join(':');if(sig===lastRenderSig&&document.getElementById(ID)?.classList.contains('on'))return;lastRenderSig=sig;show()},180)}
-window.HD20_MATURITY_MAP_TAB={show,hide,open,close,render,data,teamStats,openCase};
-window.addEventListener('hd20-open-maturity-map-tab',show);window.addEventListener('hd20-close-maturity-map-tab',hide);['hd20-kpi-source-updated','hd20-gmes-5s-imported','hd20-gmes-5s-judged','hd20-refresh-requested'].forEach(e=>window.addEventListener(e,()=>setTimeout(refresh,0)));document.addEventListener('keydown',e=>{if(e.key==='Escape')$('.mmtDetail.on')?.classList.remove('on')});
+function signature(){const d=data();return [d.confirmed.length,d.maintained.length,d.candidates.length,d.teams.join('|')].join(':')}
+function refresh(){clearTimeout(refreshTimer);refreshTimer=setTimeout(()=>{if(window.HD20_NAV?.active?.()!=='dashboard'||window.HD20_DASHBOARD_TABS?.active?.()!=='maturity')return;const sig=signature();if(sig===lastRenderSig)return;lastRenderSig=sig;show()},250)}
+function openStable(){const sig=signature(),el=document.getElementById(ID);if(el&&el.dataset.renderSig===sig){el.classList.add('on');el.hidden=false;lastRenderSig=sig;return true}const ok=show(),node=document.getElementById(ID);if(node)node.dataset.renderSig=sig;lastRenderSig=sig;return ok}
+window.HD20_MATURITY_MAP_TAB={show:openStable,hide,open:openStable,close,render,data,teamStats,openCase};
+window.addEventListener('hd20-open-maturity-map-tab',openStable);window.addEventListener('hd20-close-maturity-map-tab',hide);['hd20-kpi-source-updated','hd20-gmes-5s-imported','hd20-gmes-5s-judged'].forEach(e=>window.addEventListener(e,refresh));document.addEventListener('keydown',e=>{if(e.key==='Escape')$('.mmtDetail.on')?.classList.remove('on')});
 function boot(){css();const el=ensure();el.hidden=true}document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot,{once:true}):boot();
 })();
