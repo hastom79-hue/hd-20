@@ -2202,3 +2202,10 @@
 - X축 이탈도/공식확정/현재유지 산식 변경 없음
 - `3abdc51` chore: maturity score balance 배포
 - `844ea68` docs: DEVELOPMENT_LOG 동시 갱신
+
+- fixture 수치검증: profile 차등은 존재했으나 초기 seed r=0/.35/.55 고정으로 모든 팀 첫 Case가 확정되어 저활동팀 차이 희석
+- `d038679` fix: 초기 seed r도 pf.confirm 연동, deterministic bias만 유지
+- 중형/성능 저확정, 제작/대형계열 고확정 특성이 fixture에 더 직접 반영
+- production raw data 변경 없음, 기존 localStorage는 fixture 재생성 전 유지
+- `8b75474` chore: fixture profile correction 배포
+- `a23f94d` docs: DEVELOPMENT_LOG 동시 갱신
