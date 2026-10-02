@@ -64,10 +64,11 @@ function render(){css();const el=ensure(),d=data();
     // 고도화 수준은 단순 유지율의 복제가 아니라 유지성과(50)+확정 Case 축적(30)+후보→확정 전환(20)의 복합지수.
     const level=Math.round((retention*.5+volume*.3+conversion*.2)*10)/10;
     const attrition=t.confirmed?Math.round((t.confirmed-t.maintained)/t.confirmed*1000)/10:0;
+    // 이탈은 3대 고도화 요건을 현재 유지하지 못하는 공식확정 Case의 실제 비율이다. 설비 선진화 수준 자체를 활동 실행성과로 대체하지 않는다.
     return {...t,attrition,level,retention,volume:Math.round(volume*10)/10,conversion:Math.round(conversion*10)/10};
   });
   const mapWrap=document.createElement('div');mapWrap.className='mmtMatrixWrap';
-  mapWrap.innerHTML='<div class="mmtMatrixY">고도화 수준<small>(실행률)</small></div><div class="mmtMatrix"><div class="mmtQuad qStable"><b>안정 운영</b></div><div class="mmtQuad qExcellent"><b>우수 유지</b></div><div class="mmtQuad qImprove"><b>보완 필요</b></div><div class="mmtQuad qFocus"><b>집중 고도화 대상</b></div><div class="mmtHLine"></div><div class="mmtVLine"></div><div class="mmtTicksX"></div><div class="mmtTicksY"></div></div><div class="mmtMatrixX">기존 대비 이탈도 (Gap) →</div>';
+  mapWrap.innerHTML='<div class="mmtMatrixY">고도화 실행수준<small>(유지·Case·전환)</small></div><div class="mmtMatrix"><div class="mmtQuad qStable"><b>안정 운영</b></div><div class="mmtQuad qExcellent"><b>우수 유지</b></div><div class="mmtQuad qImprove"><b>보완 필요</b></div><div class="mmtQuad qFocus"><b>집중 고도화 대상</b></div><div class="mmtHLine"></div><div class="mmtVLine"></div><div class="mmtTicksX"></div><div class="mmtTicksY"></div></div><div class="mmtMatrixX">기존 대비 이탈도 (Gap) →</div>';
   bars.innerHTML='';bars.appendChild(mapWrap);
   const matrix=$('.mmtMatrix',mapWrap),tx=$('.mmtTicksX',matrix),ty=$('.mmtTicksY',matrix);
   for(let n=0;n<=100;n+=10){tx.insertAdjacentHTML('beforeend','<i style="left:'+n+'%">'+n+'%</i>')}
@@ -112,7 +113,7 @@ function render(){css();const el=ensure(),d=data();
     const teamBtn=$('.mmtTeam',row),list=$('.mmtTeamCases',row),activate=()=>{$$('.mmtBubble',bars).forEach(v=>v.classList.remove('on'));$$('.mmtTeam',cases).forEach(v=>v.classList.remove('on'));$$('.mmtTeamCases',cases).forEach(v=>v.hidden=true);dot.classList.add('on');teamBtn.classList.add('on');list.hidden=false};
     dot.onclick=()=>{activate();openTeamPopup(t)};teamBtn.onclick=activate;$$('[data-mmt-case]',row).forEach((b,ci)=>b.onclick=()=>openCase(t.cases[ci]));if(i===0)activate();
   });cases.appendChild(rowFrag);
-  const side=document.createElement('aside');side.className='mmtRank';side.innerHTML='<b>팀별 현황 <small>(이탈도 높은 순)</small></b><div class="mmtRankHead"><span>팀명</span><span>달성/전체</span><span>실행률</span><span>이탈도</span></div>'+[...enriched].sort((a,b)=>b.attrition-a.attrition||b.confirmed-a.confirmed).slice(0,10).map((t,i)=>'<div class="mmtRankRow"><em>'+(i+1)+'</em><strong>'+esc(t.team)+'</strong><span>'+t.maintained+'/'+t.confirmed+'</span><span>'+(t.rate===null?'—':t.rate+'%')+'</span><span>'+t.attrition+'%</span></div>').join('');
+  const side=document.createElement('aside');side.className='mmtRank';side.innerHTML='<b>팀별 현황 <small>(3대 요건 이탈 높은 순)</small></b><div class="mmtRankHead"><span>팀명</span><span>달성/전체</span><span>실행률</span><span>이탈도</span></div>'+[...enriched].sort((a,b)=>b.attrition-a.attrition||b.confirmed-a.confirmed).slice(0,10).map((t,i)=>'<div class="mmtRankRow"><em>'+(i+1)+'</em><strong>'+esc(t.team)+'</strong><span>'+t.maintained+'/'+t.confirmed+'</span><span>'+(t.rate===null?'—':t.rate+'%')+'</span><span>'+t.attrition+'%</span></div>').join('');
   $('.mmtMapCard',el).appendChild(side);
   const kpiCols=['생산팀','작업장/사례','등록일','판정일','판정상태'],kpiMapR=x=>[x.team||'—',x.workplace||x.title||x.id||'—',txt(x.date||x.regDate||x.createdAt).slice(0,10)||'—',txt(x.judgedAt||x.confirmedAt||x.judgeDate).slice(0,10)||'—',x.judgeState||'—'];
   const KPI_EV={new:['올해 신규 공식확정 근거',newSecuredRows],conf:['누적 공식확정 근거',d.confirmed],keep:['현재 유지 근거',d.maintained]};
