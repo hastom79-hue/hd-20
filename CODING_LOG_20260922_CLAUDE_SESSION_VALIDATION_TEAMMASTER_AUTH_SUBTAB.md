@@ -2310,3 +2310,5 @@
 - cache chain: final-layout-polish.js 동적 dashboard-section-tabs loader와 index.html final-layout-polish 참조를 단계별 강제 갱신.
 - 주요 복구 커밋: 05adc2ef, bea2da0c, a550d227, f89ceb51, 52a11afc, 5319744d, ea42083d, 3a4e18ad, 8dd40d3e, 515b30d0, 686f87c5, b5693107, 2f3e0c9d, b2371ff7, da146fa9, a4133277, 33a068c1.
 - 신규 디자인 추가는 중단하고 Dashboard 탭 표시/숨김·진입경로·고아 DOM 회귀 복구를 우선 진행.
+
+- 2026-10-03 Dashboard section 딥링크 회귀수정: apply()가 URL section을 기록하지만 boot()가 무조건 summary로 초기화하던 비대칭 수정. area=dashboard이며 visible TABS key인 경우 section을 최초 active로 복원하고 숨김 탭은 제외. 커밋 b97db9ef, loader e7451aab, index cache-bust 524bbfe3.
