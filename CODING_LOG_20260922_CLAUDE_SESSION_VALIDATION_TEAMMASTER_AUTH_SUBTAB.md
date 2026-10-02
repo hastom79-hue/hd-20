@@ -2266,3 +2266,9 @@
 - 하위탭 구조/순서/판정산식 변경 없음
 - `d9c81ea` chore: operational subtab data isolation 배포
 - `48a5aa4` docs: DEVELOPMENT_LOG 동시 갱신
+
+- non-prod 비교: canonical에만 LEGACY_TEST_IDS 21건 차단 존재 → fallback 3곳 잔여 불일치 확인
+- `6d52641` maturity / `8a3bfb6` performance / `8b0a9ba` subtabs legacy-ID 필터 동기화
+- `267c2f8` cache-bust 자동매칭 실패(내용변경 없음) 즉시 검출
+- `3614111` fix: 실제 index 버전 문자열 직접 교체, 정상 배포
+- `25d69e3` docs: DEVELOPMENT_LOG 동시 갱신
