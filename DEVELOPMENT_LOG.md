@@ -1532,3 +1532,10 @@ Canonical Store는 다음을 기준으로 한다.
 - 고도화맵은 HD20KPIData.isMaintained를 사용하지만 performance-conversion-analysis의 attritionOf는 별도 정규식(미흡/중지/이탈/재점검)만 사용하고 있어 부적합/해제/실패/status/valid=false에서 화면 간 이탈 건수가 달라질 수 있었음.
 - attritionOf가 HD20KPIData.isConfirmed + !isMaintained를 우선 사용하도록 통일. canonical API 미가용 시에도 동일 상태어(중지/미흡/이탈/재점검/부적합/해제/실패), attrition=true, valid=false를 반영하는 fallback 유지.
 - 결과적으로 고도화맵 X축 이탈도와 3조건 분석 '확정 후 이탈'의 판정 기준이 동일해짐.
+
+
+### 2026-10-02 / 고도화 하위탭 유지·이탈 판정 전면 canonical 통일 (`352711a`, `e9ef339`)
+- hd20-subtabs 전체 검색에서 3조건 분석, 심사 프로세스, 확정·수평전개에 별도 이탈 정규식이 잔존함을 확인. 기존 정규식은 부적합/해제/실패/status/valid=false를 빠뜨릴 수 있어 고도화맵과 화면별 건수 차이 가능.
+- advancementMaintained/advancementAttrition 공통 helper 추가. HD20KPIData.isMaintained를 우선 사용하고 API 미가용 시 canonical과 동일한 fallback 사용.
+- 3조건 분석 lost, 심사 프로세스 '유지 이탈', 확정·수평전개 lost/maintained를 모두 공통 helper로 교체.
+- 후보/확정 판정과 네비게이션 구조는 변경하지 않음. Audit 자체의 별도 종료평가 risk 규칙은 고도화 Case 유지판정과 다른 업무영역이므로 이번 변경에서 제외.
