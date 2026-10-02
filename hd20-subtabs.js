@@ -126,7 +126,32 @@ function renderAdvDetail(){
  const body=rows.slice().sort((a,b)=>advCriteriaCount(a)-advCriteriaCount(b)).map(x=>`<tr><td>${esc(txt(x.team)||'—')}</td><td>${esc(advLine(x))}</td><td>${esc(txt(x.workplace||x.title)||'—')}</td><td><b>${advCriteriaCount(x)}/3</b></td><td>${esc(advGap(x))}</td><td>${esc(txt(x.judgeState||x.status)||'미확정')}</td><td>${esc(txt(x.attritionReason)||((x.attrition===true)?'유지 이탈':'—'))}</td></tr>`).join('');
  host.innerHTML=`<div class="pcPanelHead">라인·작업장별 심사 Gap · 이탈 상세 <small>원천데이터 기준 · 미분류 라인은 임의 추정하지 않음</small></div><div class="pcTableWrap"><table class="pcTable"><thead><tr><th>생산팀</th><th>라인</th><th>작업장/활동</th><th>충족</th><th>보완 필요 요건</th><th>공식판정</th><th>확정 후 이탈사유</th></tr></thead><tbody>${body||'<tr><td colspan="7">현재 고도화 후보 상세 데이터가 없습니다.</td></tr>'}</tbody></table></div>`
 }
-function applyAdvancement(sub){const conversion=$('#performanceConversionAnalysis'),work=$('#awWorkplace'),detail=ensureAdvDetail();document.querySelector('.app')?.classList.add('awFocused');if(conversion){conversion.classList.add('on');show(conversion,true);conversion.classList.toggle('hd20AdvancementStandard',sub==='standard');conversion.dataset.subview=sub}if(work){work.classList.add('on');show(work,true);work.dataset.subview=sub;showAll(work);show($('.awFlow',work),true);show($('.awGrid',work),true)}if(detail){if(sub==='detail')renderAdvDetail();show(detail,sub==='detail')}}
+function ensureAdvProcess(){
+ let host=$('#hd20AdvProcessOperational');if(host)return host;host=document.createElement('section');host.id='hd20AdvProcessOperational';host.className='pcPanel hd20AdvProcessOperational';const root=$('#performanceConversionAnalysis');(root?.querySelector('.pcGrid')||root)?.appendChild(host);return host
+}
+function advProcessState(x){
+ const n=advCriteriaCount(x),s=txt(x?.judgeState||x?.status),confirmed=advancementConfirmed(x);
+ if(confirmed)return x?.attrition===true||/미흡|중지|이탈|재점검/i.test(txt(x?.maintainState||x?.auditState))?'유지 이탈':'확정·전개';
+ if(/보완/.test(s)||n<3)return '요건 보완';
+ if(n>=3&&/대기|후보|검토|미확정|/.test(s))return '공식심사 대기';
+ return '후보 지정'
+}
+function advProcessReason(x,state){
+ if(state==='유지 이탈')return txt(x?.attritionReason)||'확정 후 유지요건 재점검 필요';
+ if(state==='요건 보완')return advGap(x);
+ if(state==='공식심사 대기')return '3대 요건 충족 · 공식판정 대기';
+ if(state==='확정·전개')return '공식확정 · 표준화/수평전개 및 유지관리';
+ return '후보 근거 및 3대 요건 검증 필요'
+}
+function renderAdvProcess(){
+ const host=ensureAdvProcess();if(!host)return;const rows=readStore('hd20GMES5SAutoImproveRawV1').filter(advancementCandidate);
+ const states=['후보 지정','요건 보완','공식심사 대기','확정·전개','유지 이탈'];const grouped=Object.fromEntries(states.map(s=>[s,[]]));rows.forEach(x=>{const s=advProcessState(x);(grouped[s]||(grouped[s]=[])).push(x)});
+ const cards=states.map(s=>`<div class="hd20ProcQueue ${s==='요건 보완'||s==='유지 이탈'?'risk':''}"><small>${s}</small><b>${grouped[s].length}건</b><span>${s==='후보 지정'?'근거 검증':s==='요건 보완'?'3대 요건 미충족':s==='공식심사 대기'?'3/3 충족 후 판정대기':s==='확정·전개'?'표준화·수평전개': '재고도화/Audit 환류'}</span></div>`).join('');
+ const queue=rows.filter(x=>['요건 보완','공식심사 대기','유지 이탈'].includes(advProcessState(x))).sort((a,b)=>advCriteriaCount(a)-advCriteriaCount(b));
+ const body=queue.map(x=>{const s=advProcessState(x);return `<tr><td>${esc(txt(x.team)||'—')}</td><td>${esc(advLine(x))}</td><td>${esc(txt(x.workplace||x.title)||'—')}</td><td><b>${esc(s)}</b></td><td>${advCriteriaCount(x)}/3</td><td>${esc(advProcessReason(x,s))}</td><td>${esc(s==='유지 이탈'?'Audit/재고도화':s==='요건 보완'?'요건 보완 후 재검증':'공식판정 진행')}</td></tr>`}).join('');
+ host.innerHTML=`<div class="pcPanelHead">현재 심사 Queue · 정체/환류 관리 <small>건수는 흐름의 보조정보이며, 아래 Case가 실제 조치 대상입니다.</small></div><div class="hd20ProcQueues">${cards}</div><div class="pcTableWrap"><table class="pcTable"><thead><tr><th>생산팀</th><th>라인</th><th>작업장/활동</th><th>현재 단계</th><th>요건</th><th>정체·환류 사유</th><th>다음 조치</th></tr></thead><tbody>${body||'<tr><td colspan="7">현재 정체·환류 대상 Case가 없습니다.</td></tr>'}</tbody></table></div>`
+}
+function applyAdvancement(sub){const conversion=$('#performanceConversionAnalysis'),work=$('#awWorkplace'),detail=ensureAdvDetail(),process=ensureAdvProcess();document.querySelector('.app')?.classList.add('awFocused');if(conversion){conversion.classList.add('on');show(conversion,true);conversion.classList.toggle('hd20AdvancementStandard',sub==='standard');conversion.dataset.subview=sub}if(work){work.classList.add('on');show(work,true);work.dataset.subview=sub;showAll(work);show($('.awFlow',work),true);show($('.awGrid',work),true)}if(detail){if(sub==='detail')renderAdvDetail();show(detail,sub==='detail')}if(process){if(sub==='process')renderAdvProcess();show(process,sub==='process')}}
 function applyAudit(sub){const root=$('#awAudit');if(!root)return;root.dataset.subview=sub;showAll(root);show($('.awFlow',root),true);show($('.awAuditLane',root),true);const draw=$('.auditDraw',root),batch=$('#hd20AuditBatchExecution',root),closed=$('.auditClosedLoop',root),ongoing=$('.audit6m',root),closeEval=document.getElementById('hd20AuditCloseEvaluation');show(draw,sub==='draw');show(batch,sub==='draw');show(closed,sub==='inspect');show(ongoing,sub==='ongoing');show(closeEval,sub==='retention')}
 function ensureActionVerify(root){let host=$('#hd20ActionVerifyStatus',root);if(!host){host=document.createElement('section');host.id='hd20ActionVerifyStatus';host.className='awCard';const anchor=$('.awKpis',root)||$('.awFlow',root)||$('.amHeroNote',root)||$('.awHero',root);anchor?.insertAdjacentElement('afterend',host)}return host}
 function renderActionVerify(root){const host=ensureActionVerify(root);if(!host)return;const rows=readStore('hd20ActionCasesV2'),done=rows.filter(doneStatus),verified=done.filter(effectVerified),pendingVerify=done.filter(x=>!effectVerified(x)),recurrence=verified.filter(recurrenceConfirmed);host.innerHTML=`<div class="awHead"><div><b>효과·재발 검증현황</b><small>실제 개선조치 데이터 기준 · 미입력 결과는 임의 생성하지 않습니다.</small></div></div><div class="awKpis"><div><small>전체 개선요청</small><b>${rows.length}건</b></div><div><small>조치 진행·대기</small><b>${rows.length-done.length}건</b></div></div><div class="awHint" style="margin-top:10px">${pendingVerify.length?`완료 ${done.length}건 중 효과검증 미입력 ${pendingVerify.length}건은 <b>검증 대기</b> 상태입니다.`:done.length?'완료된 개선조치는 모두 효과검증 결과가 입력되어 있습니다.':'완료된 개선조치가 없어 효과검증 대상이 없습니다.'}</div>`}
