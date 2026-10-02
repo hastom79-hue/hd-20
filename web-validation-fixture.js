@@ -81,8 +81,11 @@ const minDay=(a,b)=>Math.min(a,b);
 /* ---------- 활동 (Activity) ---------- */
 function makeActivities(){
   const per=60*SCALE,out=[];let seq=0;
+  /* 현장 운영 현실 반영: 설비 선진화에 따른 외관상 수준과 실제 5S/OS 실행량을 분리한다. */
+  const profile=team=>/^중형/.test(team)?{activity:.58,confirm:.17,loss:.52}:/^(대형|휠로더|초대형)/.test(team)?{activity:1.18,confirm:.34,loss:.27}:/^(프레임|Boom)/.test(team)?{activity:1.30,confirm:.39,loss:.22}:/^(성능|트러블슈팅)/.test(team)?{activity:.48,confirm:.14,loss:.58}:{activity:1,confirm:.30,loss:.32};
   TEAMS.forEach((team,ti)=>{
-    for(let j=0;j<per;j++){
+    const pf=profile(team),teamPer=Math.max(18,Math.round(per*pf.activity));
+    for(let j=0;j<teamPer;j++){
       seq++;
       const prev=chance(.08),regDay=prev?dayNum(`${Y-1}-01-01`)+ri(0,364):Y0+ri(0,Math.max(0,T0-Y0)),date=fromDay(regDay);
       const advanced=j%5===4,slot=Math.floor(j/5);
@@ -96,11 +99,12 @@ function makeActivities(){
         /* 팀마다 첫 3개 고도화 행은 확정/판정대기/보완요청 고정 → 16개 팀 전부 데이터 보유 */
         const r=slot===0?0:slot===1?.35:slot===2?.55:R();
         const judgedDay=minDay(T0,regDay+ri(1,30));
-        if(r<.30){
+        if(r<pf.confirm){
           row.criteriaMatched=[...CRIT];Object.assign(row,{candidate:true,isCandidate:true,judgeState:'확정',confirmed:true,status:chance(.1)?'유지관리':'확정',judgedAt:fromDay(judgedDay),confirmedAt:fromDay(judgedDay),level:ri(1,5)});
-          const weak=chance(.15);row.maintainState=weak?pick(['미흡','중지']):'정상';row.valid=!weak;
+          const weak=chance(pf.loss);row.maintainState=weak?pick(['미흡','중지']):'정상';row.valid=!weak;
+          if(weak){row.attrition=true;row.attritionReason=pick(['3대 요건 유지 미흡','정위치·정량 기준 이탈','Green Zone 유지 미흡','시각화·형적관리 유지 미흡']);row.attritionAt=fromDay(minDay(T0,judgedDay+ri(30,180)))}
           if(chance(.45)){row.horizontalRollout=true;row.rolloutState=pick(['수평전개중','수평전개 완료'])}
-        }else if(r<.50){Object.assign(row,{candidate:true,isCandidate:true,judgeState:'판정대기',status:'판정대기'})}
+        }else if(r<Math.max(pf.confirm+.20,.50)){Object.assign(row,{candidate:true,isCandidate:true,judgeState:'판정대기',status:'판정대기'})}
         else if(r<.62){Object.assign(row,{candidate:true,isCandidate:true,judgeState:'보완요청',status:'보완요청',judgedAt:fromDay(minDay(T0,regDay+ri(1,20)))})}
         else if(r<.72){Object.assign(row,{candidate:true,isCandidate:true,judgeState:'미확정',status:'판정대기',judgedAt:fromDay(minDay(T0,regDay+ri(1,20)))})}
         else if(r<.85){Object.assign(row,{candidate:false,judgeState:'',status:'완료'})}
