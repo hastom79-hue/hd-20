@@ -1519,3 +1519,10 @@ Canonical Store는 다음을 기준으로 한다.
 - fixture 및 hd20-subtabs는 criteriaMatched=['시각화…','Green Zone',…] 배열형을 사용하므로 동일 Case가 상단 '실제 심사 분포'와 하단 팀별 분석에서 다르게 집계될 수 있었음.
 - criteriaCount에 Array.isArray 분기를 최우선 추가하여 배열 길이를 0~3 충족수로 canonical 처리. 숫자형/개별 criteriaVisual·Green·Space fallback은 유지.
 - 결과적으로 0/1/2/3조건 분포와 고도화 하위 분석의 조건 충족수 해석을 일치시킴.
+
+
+### 2026-10-02 / 확정 후 이탈률 분모 오류 수정 (`56d9eba`, `5977f6b`)
+- criteriaGapSummary 추적 결과 lost는 공식확정 후 이탈 Case만 집계하면서 rate 분모는 전체 후보(cand.length)를 사용하고 있었음. '확정 후 이탈률' 의미와 분모가 불일치.
+- confirmed 집합을 별도 생성하고 lost=confirmed.filter(attritionOf), rate=lost/confirmed로 수정. 고도화맵 X축 이탈도 정의와 동일한 의미체계로 통일.
+- 실제 심사 분포 배너에 '확정 후 이탈 n / 공식확정 n · rate%'를 직접 노출하여 건수와 분모를 동시에 확인 가능하게 개선.
+- 0/1/2/3조건 분포는 후보군 기준을 그대로 유지. 후보 단계 조건분포와 확정 후 유지이탈을 섞지 않음.
