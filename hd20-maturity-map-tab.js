@@ -129,7 +129,7 @@ function hide(){const el=ensure();el.classList.remove('on');el.hidden=true;$('.m
 function open(){return show()}
 function close(){return hide()}
 let refreshTimer=0,lastRenderSig='';
-function signature(){const d=data();return [d.confirmed.length,d.maintained.length,d.candidates.length,d.teams.join('|')].join(':')}
+function signature(){const d=data(),a=api();const teamSig=teamStats(d).map(t=>[t.team,t.candidates,t.confirmed,t.maintained].join('~')).join('|');const stateSig=d.confirmed.map(x=>[txt(x.id||x.activityId||x.caseId||x.workplace||x.title),a?.isMaintained?.(x)?1:0,txt(x.maintainState||x.auditState||x.status),x.attrition===true?1:0,x.valid===false?0:1].join('~')).sort().join('|');return [d.rows.length,d.candidates.length,d.confirmed.length,d.maintained.length,teamSig,stateSig].join(':')}
 function refresh(){clearTimeout(refreshTimer);refreshTimer=setTimeout(()=>{if(window.HD20_NAV?.active?.()!=='dashboard'||window.HD20_DASHBOARD_TABS?.active?.()!=='maturity')return;const sig=signature();if(sig===lastRenderSig)return;lastRenderSig=sig;show()},250)}
 function openStable(){const sig=signature(),el=document.getElementById(ID);if(el&&el.dataset.renderSig===sig){el.classList.add('on');el.hidden=false;lastRenderSig=sig;return true}const ok=show(),node=document.getElementById(ID);if(node)node.dataset.renderSig=sig;lastRenderSig=sig;return ok}
 window.HD20_MATURITY_MAP_TAB={show:openStable,hide,open:openStable,close,render,data,teamStats,openCase};
