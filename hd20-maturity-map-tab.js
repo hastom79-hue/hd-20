@@ -57,13 +57,13 @@ function render(){css();const el=ensure(),d=data();
   const sumC=d.candidates.length,sumF=d.confirmed.length,sumM=d.maintained.length,rate=sumF?Math.round(sumM/sumF*1000)/10:null,newSecuredRows=window.HD20KPIData?.snapshot?.().newSecured||[],newF=newSecuredRows.length,maxMaintained=Math.max(1,...teams.map(x=>x.maintained),1);el.innerHTML=`<div class="mmtHero"><div><small>고도화 현황</small><h2>고도화 맵</h2><p>공식확정 · 현재 유지상태를 생산팀별로 비교하고 공식 확정 Case까지 Drill-down합니다. (후보는 성과가 아니므로 제외)</p></div><div><small>판정기준</small><b>KPI Canonical 동일판정 · 공식확정만 성과 반영</b></div></div><div class="mmtKpis"><button type="button" class="mmtKpi" data-mmtk="new"><small>올해 신규 공식확정</small><b>${newF}</b></button><button type="button" class="mmtKpi" data-mmtk="conf"><small>누적 공식확정</small><b>${sumF}</b></button><button type="button" class="mmtKpi" data-mmtk="keep"><small>현재 유지</small><b>${sumM}</b></button><div class="mmtKpi"><small>유지율 (현재 유지 ÷ 공식확정)</small><b>${rate===null?'—':rate+'%'}</b></div></div><div class="mmtWrap"><section class="mmtMapCard"><div class="mmtHead"><b>팀별 고도화 Portfolio Map</b><span>Y축=고도화 복합지수(유지50%+Case축적30%+확정전환20%) · X축=기존 대비 이탈도(Gap) · 색상=4개 관리영역</span></div><div class="mmtBars"></div><div class="mmtTreeLeg mmtLegendDetail"><span><i style="background:#df3e3e"></i><b>집중 고도화</b><small>고도화 수준 낮음 · 이탈도 높음 → 이탈 원인 확인 및 재고도화 우선</small></span><span><i style="background:#d8a20b"></i><b>보완 필요</b><small>이탈은 낮으나 고도화 수준 낮음 → 실행·Case 축적 중심 보완</small></span><span><i style="background:#15966a"></i><b>안정 운영</b><small>고도화 수준 높음 · 이탈도 낮음 → 현 수준 유지 및 일상관리 강화</small></span><span><i style="background:#1688c9"></i><b>우수 유지</b><small>고도화 수준 높으나 이탈 신호 존재 → 이탈 항목 집중 점검</small></span></div></section><section class="mmtCaseCard"><div class="mmtHead"><b>팀별 공식확정 Case</b><span>팀 선택 → Case 상세</span></div><div class="mmtCases"></div></section></div>`;const bars=$('.mmtBars',el),cases=$('.mmtCases',el);if(!teams.length){bars.innerHTML='<div class="mmtEmpty">고도화 공식확정 원천데이터가 없습니다.</div>';cases.innerHTML='<div class="mmtEmpty">공식 확정 Case가 없습니다.</div>';return el}
   /* Portfolio Map: actual Gap on X, composite maturity score on Y. */
   const maxConfirmed=Math.max(1,...teams.map(t=>t.confirmed));
+  const maxCandidates=Math.max(1,...teams.map(t=>t.candidates));
   const enriched=teams.map(t=>{
     const retention=t.rate===null?0:t.rate;
     const volume=Math.min(100,t.confirmed/maxConfirmed*100);
     const conversion=t.candidates?Math.min(100,t.confirmed/t.candidates*100):retention;
     // 고도화 수준은 단순 유지율의 복제가 아니라 유지성과(50)+확정 Case 축적(30)+후보→확정 전환(20)의 복합지수.
     // 실행수준은 유지성과뿐 아니라 실제 후보 발굴량을 함께 반영한다. 설비가 선진화되어 보여도 활동량이 적으면 과대평가하지 않는다.
-    const maxCandidates=Math.max(1,...teams.map(x=>x.candidates));
     const activity=Math.min(100,t.candidates/maxCandidates*100);
     const level=Math.round((retention*.45+volume*.20+conversion*.15+activity*.20)*10)/10;
     const attrition=t.confirmed?Math.round((t.confirmed-t.maintained)/t.confirmed*1000)/10:0;
