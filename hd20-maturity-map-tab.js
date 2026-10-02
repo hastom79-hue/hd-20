@@ -95,7 +95,7 @@ function render(){css();const el=ensure(),d=data();
       const slotX=q.x0+(q.x1-q.x0)*fx,slotY=q.y1-(q.y1-q.y0)*fy;
       // actual coordinates remain the primary signal; slot packing only prevents unreadable overlap.
       const actualX=Math.max(q.x0,Math.min(q.x1,t.attrition)),actualY=Math.max(q.y0,Math.min(q.y1,t.level));
-      displayByTeam.set(t.team,{x:actualX*.38+slotX*.62,y:actualY*.45+slotY*.55});
+      displayByTeam.set(t.team,{x:actualX*.72+slotX*.28,y:actualY*.72+slotY*.28});
     });
   });
   const displayPoint=t=>{
@@ -103,7 +103,8 @@ function render(){css();const el=ensure(),d=data();
     let x=p.x,y=p.y;
     for(let pass=0;pass<12;pass++){
       if(!placed.some(v=>Math.abs(v.x-x)<7&&Math.abs(v.y-y)<5))break;
-      x+=t.attrition<50?3:-3;y+=(pass%2?3:-3);
+      x+=t.attrition<50?2:-2;y+=(pass%2?2:-2);
+      x=Math.max(3,Math.min(97,x));y=Math.max(5,Math.min(96,y));
     }
     placed.push({x,y});return{x,y};
   };
