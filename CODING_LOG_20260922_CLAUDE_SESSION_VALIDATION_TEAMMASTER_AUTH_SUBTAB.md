@@ -2080,3 +2080,10 @@
 - `9ba46bb` style: 후보 판정 준비도 및 보완 우선순위 UI
 - 배포 cache-bust: 도구 보안 차단으로 미완료, 다음 실행에서 재시도
 - `42595e5` docs: DEVELOPMENT_LOG 동시 갱신
+
+- `73f5799` chore: 직전 차단된 후보 준비도 cache-bust 재배포 성공
+- 정적 검증: 고도화 5개 하위탭 map + judge/detail/process/standard 운영요소 모두 true
+- `9099342` feat: 3대 요건별 미충족 + 팀별 집중도 + 확정 후 이탈 집계
+- `c9c5e0a` style: 요건 미충족 집중도 요약 UI
+- `26650eb` chore: 3조건 집중도 cache-bust 배포
+- `811eb1e` docs: DEVELOPMENT_LOG 동시 갱신
