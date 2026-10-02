@@ -2234,3 +2234,9 @@
 - 단순 미확정/상태없음은 후보 자동승격 안 함, 공식확정 규칙 변경 없음
 - `7b7efa0` chore: 관련 JS 동시 배포
 - `7134197` docs: DEVELOPMENT_LOG 동시 갱신
+
+- performance analysis 추적: KPI API 미로드 시 candidate/confirmed/maintained가 전부 false → 지표 0건 붕괴 가능
+- `39a6334` fix: canonical-equivalent fallback 3종 추가, 미확정+판정대기 후보 규칙 포함
+- API 정상 시 canonical 우선 사용, load timing 장애에서만 fallback
+- `e179489` chore: performance canonical fallback 배포
+- `41211c2` docs: DEVELOPMENT_LOG 동시 갱신
