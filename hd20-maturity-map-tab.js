@@ -2,7 +2,9 @@
 const ID='hd20MaturityMapTab',STYLE='hd20MaturityMapTabStyle';
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)],txt=v=>String(v??'').trim(),esc=v=>txt(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function api(){return window.HD20KPIData||null}
-function fallbackLoad(){try{const v=JSON.parse(localStorage.getItem('hd20GMES5SAutoImproveRawV1')||'[]');return Array.isArray(v)?v:[]}catch{return[]}}
+function fallbackValidationMode(){const v=new URL(location.href).searchParams.get('validation');return v!=='0'&&v!=='off'}
+function fallbackNonProd(x){if(!x||typeof x!=='object')return false;const source=txt(x.source).toLowerCase(),id=txt(x.id).toUpperCase(),sourceCaseId=txt(x.sourceCaseId).toUpperCase(),email=txt(x.email).toLowerCase();return x.isDemo===true||x.isTest===true||source==='demo-seed'||source==='e2e-fixture'||source==='web-validation-fixture'||id.startsWith('DEMO-')||id.startsWith('E2E-')||id.startsWith('VALID-')||id.includes('AUTO-DEMO-')||sourceCaseId.startsWith('DEMO-')||sourceCaseId.startsWith('E2E-')||sourceCaseId.startsWith('VALID-')||email.endsWith('@hd-hyundai-demo.co.kr')||/^teamlead\d+@example\.com$/i.test(email)}
+function fallbackLoad(){try{const v=JSON.parse(localStorage.getItem('hd20GMES5SAutoImproveRawV1')||'[]');if(!Array.isArray(v))return[];return fallbackValidationMode()?v.filter(x=>x?.source==='web-validation-fixture'):v.filter(x=>!fallbackNonProd(x))}catch{return[]}}
 function fallbackType(x){const v=txt(x?.type||x?.category||x?.sType||x?.['5S구분']||x?.['활동유형']);return v==='5S 고도화'||v==='고도화'||v==='5S고도화'}
 function fallbackCandidate(x){if(!x||!fallbackType(x))return false;if(x.candidate===true||x.isCandidate===true)return true;const judge=txt(x.judgeState),status=txt(x.status);if(!judge&&!status)return false;if(judge==='미확정')return /판정대기|보완요청|후보|검토|대기/.test(status);return /판정대기|보완요청|확정|후보|검토|대기/.test(judge||status)}
 function fallbackConfirmed(x){return !!x&&fallbackType(x)&&x.confirmed===true&&txt(x.judgeState)==='확정'}
