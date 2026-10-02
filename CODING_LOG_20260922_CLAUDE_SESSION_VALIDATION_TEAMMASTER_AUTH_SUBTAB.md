@@ -2120,3 +2120,9 @@
 - `e984a7d` fix: 구형 50/30/20 문구→45/20/15/20, tooltip 활동량 추가, 순위 제목 유지요건 이탈로 정정
 - `a467cb7` chore: maturity map label correction 배포
 - `4da4a22` docs: DEVELOPMENT_LOG 동시 갱신
+
+- 추적검증: 기존 packing이 slot 좌표를 과도하게 반영해 실제 X/Y와 시각 위치 괴리 가능 확인
+- `80fd818` fix: actual 좌표 비중 72%, slot 28%, 충돌 이동폭 2%, 외곽 clamp 적용
+- 산식/actualX/actualY/사분면 판정 변경 없음
+- `ac8b40a` chore: packing 보정 배포
+- `a52e7bf` docs: DEVELOPMENT_LOG 동시 갱신
