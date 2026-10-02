@@ -133,7 +133,7 @@ function advProcessState(x){
  const n=advCriteriaCount(x),s=txt(x?.judgeState||x?.status),confirmed=advancementConfirmed(x);
  if(confirmed)return x?.attrition===true||/미흡|중지|이탈|재점검/i.test(txt(x?.maintainState||x?.auditState))?'유지 이탈':'확정·전개';
  if(/보완/.test(s)||n<3)return '요건 보완';
- if(n>=3&&/대기|후보|검토|미확정|/.test(s))return '공식심사 대기';
+ if(n>=3&&(/대기|후보|검토|미확정/.test(s)||!s))return '공식심사 대기';
  return '후보 지정'
 }
 function advProcessReason(x,state){
