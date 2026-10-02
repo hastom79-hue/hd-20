@@ -2180,3 +2180,10 @@
 - 비이탈은 —, 임의 사유 생성 없음
 - `8b4812f` chore: 상세 이탈사유 수정 배포
 - `4427bea` docs: DEVELOPMENT_LOG 동시 갱신
+
+- 추적결함: 후보목록은 증빙 Gap을 보지만 심사프로세스는 무시 → 증빙 누락 3/3 후보가 심사대기로 조기 진입 가능
+- `7b1665e` fix: process state를 증빙→3대요건→공식심사 순으로 정합화
+- 후보지정 정체도 queue에 노출, 실제 누락 증빙과 다음조치 표시
+- candidate/confirmed canonical 모집단 정의는 변경 없음
+- `d5ba6f5` chore: process readiness alignment 배포
+- `e0dbc3c` docs: DEVELOPMENT_LOG 동시 갱신
