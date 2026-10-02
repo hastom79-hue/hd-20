@@ -116,7 +116,7 @@ function applyActivity(sub){const root=$('#awActivity');if(!root)return;root.dat
 function ensureAdvAnalysis(){
  let host=$('#hd20AdvAnalysisOperational');if(host)return host;host=document.createElement('section');host.id='hd20AdvAnalysisOperational';host.className='pcPanel hd20AdvAnalysisOperational';const root=$('#performanceConversionAnalysis');(root?.querySelector('.pcGrid')||root)?.appendChild(host);return host
 }
-function advCriteriaFlags(x){const ok=v=>v===true||/^(Y|YES|충족|적합)$/i.test(txt(v));return [ok(x?.visualization??x?.criteriaVisual),ok(x?.greenZone??x?.criteriaGreen),ok(x?.spaceUtilization??x?.criteriaSpace)]}
+function advCriteriaFlags(x){const ok=v=>v===true||/^(Y|YES|충족|적합)$/i.test(txt(v));if(Array.isArray(x?.criteriaMatched)){const s=new Set(x.criteriaMatched);return ['시각화·형적관리','인간공학적 Green Zone','정량축소·정위치 변경을 통한 공간 활용'].map(k=>s.has(k))}return [ok(x?.visualization??x?.criteriaVisual),ok(x?.greenZone??x?.criteriaGreen),ok(x?.spaceUtilization??x?.criteriaSpace)]}
 function renderAdvAnalysis(){
  const host=ensureAdvAnalysis();if(!host)return;const rows=readStore('hd20GMES5SAutoImproveRawV1').filter(advancementCandidate);const names=['시각화·형적관리','Green Zone','공간활용'];
  const miss=names.map((name,i)=>({name,count:rows.filter(x=>!advCriteriaFlags(x)[i]).length}));const lost=rows.filter(x=>advancementConfirmed(x)&&(x?.attrition===true||/미흡|중지|이탈|재점검/i.test(txt(x?.maintainState||x?.auditState))));
@@ -129,7 +129,7 @@ function ensureAdvDetail(){
  host=document.createElement('section');host.id='hd20AdvDetailOperational';host.className='pcPanel hd20AdvDetailOperational';
  const root=$('#performanceConversionAnalysis');(root?.querySelector('.pcGrid')||root)?.appendChild(host);return host
 }
-function advCriteriaCount(x){const n=Number(x?.criteriaMatched);if(Number.isFinite(n))return Math.max(0,Math.min(3,n));const a=[x?.visualization??x?.criteriaVisual,x?.greenZone??x?.criteriaGreen,x?.spaceUtilization??x?.criteriaSpace];return a.filter(v=>v===true||/^(Y|YES|충족|적합)$/i.test(txt(v))).length}
+function advCriteriaCount(x){if(Array.isArray(x?.criteriaMatched))return Math.max(0,Math.min(3,x.criteriaMatched.length));const n=Number(x?.criteriaMatched);if(Number.isFinite(n))return Math.max(0,Math.min(3,n));const a=[x?.visualization??x?.criteriaVisual,x?.greenZone??x?.criteriaGreen,x?.spaceUtilization??x?.criteriaSpace];return a.filter(v=>v===true||/^(Y|YES|충족|적합)$/i.test(txt(v))).length}
 function advLine(x){return txt(x?.line||x?.lineName||x?.productionLine||x?.['라인'])||'미분류/라인 매핑 필요'}
 function advGap(x){const n=advCriteriaCount(x);if(n>=3)return '3대 요건 충족';const gaps=[];const checks=[['시각화·형적관리',x?.visualization??x?.criteriaVisual],['Green Zone',x?.greenZone??x?.criteriaGreen],['공간활용',x?.spaceUtilization??x?.criteriaSpace]];checks.forEach(([k,v])=>{if(!(v===true||/^(Y|YES|충족|적합)$/i.test(txt(v))))gaps.push(k)});return gaps.length?gaps.join(' · '):`${3-n}개 요건 보완 필요`}
 function renderAdvDetail(){
