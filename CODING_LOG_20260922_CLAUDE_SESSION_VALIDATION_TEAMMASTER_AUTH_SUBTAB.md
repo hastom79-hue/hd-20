@@ -2133,3 +2133,9 @@
 - `79f8b89` chore: 1차 보안차단 후 cache-bust 재시도 배포 성공
 - 산식/50·60 판정기준/우측 순위 변경 없음
 - `f4209d5` docs: DEVELOPMENT_LOG 동시 갱신
+
+- 추적결함: 기존 signature가 총 건수+팀명 중심이라 동일 건수 내 유지/이탈 상태교환을 감지 못할 수 있음
+- `25ad881` fix: teamSig + Case별 isMaintained/state/attrition/valid를 refresh signature에 포함
+- 250ms debounce 유지 → 데이터 정합 갱신과 flicker 방지 동시 유지
+- `859cde5` chore: state-sensitive signature 배포
+- `bc73b04` docs: DEVELOPMENT_LOG 동시 갱신
