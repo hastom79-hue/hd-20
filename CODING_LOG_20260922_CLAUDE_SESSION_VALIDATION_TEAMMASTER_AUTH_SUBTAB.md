@@ -2096,3 +2096,9 @@
 - `b3e833e` chore: criteria-array/현실보정 cache-bust 재배포 성공
 - 정적검증 PASS: 팀 profile 4군, 3조건 개별필드, 배열형 criteriaMatched, analysis/detail/process/standard 운영화면
 - `627e995` docs: DEVELOPMENT_LOG 동시 갱신
+
+- 추적검증: maturity map → HD20KPIData.isMaintained canonical 경로 확인
+- 발견 Gap: maintainState 미흡/이탈/재점검 또는 attrition=true가 valid 누락 시 유지로 오판 가능
+- `af9c275` fix: canonical maintained 판정에 미흡/이탈/재점검/attrition 명시 제외
+- `edf3ff0` chore: dashboard-kpi-source cache-bust 배포
+- `6011fa1` docs: DEVELOPMENT_LOG 동시 갱신
