@@ -2173,3 +2173,10 @@
 - Audit 종료평가 risk는 별도 업무규칙이므로 변경 제외
 - `e9ef339` chore: hd20-subtabs canonical retention 배포
 - `51fc30e` docs: DEVELOPMENT_LOG 동시 갱신
+
+- 잔여결함: 상세탭 이탈사유가 attrition===true 중심이라 canonical 이탈 일부가 '—' 표시
+- `a615cec` fix: advancementAttrition 판정 + 실제 상태값 fallback으로 이탈사유 표시
+- 표시 우선순위: attritionReason > maintainState/auditState/status > 유지 이탈
+- 비이탈은 —, 임의 사유 생성 없음
+- `8b4812f` chore: 상세 이탈사유 수정 배포
+- `4427bea` docs: DEVELOPMENT_LOG 동시 갱신
