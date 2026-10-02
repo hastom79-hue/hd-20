@@ -129,3 +129,8 @@ input:focus,select:focus,textarea:focus{border-color:#7EA3C2!important;box-shado
 .rqMainRow{margin-top:12px}.rqRiskRow{margin-top:12px}.rqTeamTrendRow{margin-top:12px}.rqTeamTrendRow .rqSecondaryPanel{background:#fbfcfd}
 .rqOverviewRow .ibHead,.rqMainRow .ibHead,.rqRiskRow .ibHead{min-height:44px}
 @media(max-width:980px){.rqOverviewRow{grid-template-columns:1fr}}
+
+.rqEvidence{margin-left:7px!important;padding:3px 7px!important;min-height:24px!important;font-size:10.5px!important;border-color:#d8e1e8!important;background:#fff!important;color:#6b7e8d!important}
+.rqOverviewRow .ibBody,.rqMainRow .ibBody,.rqRiskRow .ibBody,.rqTeamTrendRow .ibBody{padding-top:10px!important;padding-bottom:10px!important}
+.rqOverviewRow .ibLeg,.rqMainRow .ibLeg,.rqRiskRow .ibLeg,.rqTeamTrendRow .ibLeg{margin-top:4px!important;font-size:10.5px!important}
+.rqOverviewRow .ibHead>span,.rqMainRow .ibHead>span,.rqRiskRow .ibHead>span,.rqTeamTrendRow .ibHead>span{font-weight:800;color:#14304c}
