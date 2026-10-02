@@ -2253,3 +2253,9 @@
 - validation 기본=web-validation-fixture만, validation=0/off=non-prod 제외 운영데이터
 - `082eab6` chore: data-isolation correction 배포
 - `59b72aa` docs: DEVELOPMENT_LOG 동시 갱신
+
+- performance fallback 데이터격리 추적: API 미로드 시 Raw 전체 반환 → fixture+운영 혼합 가능
+- `07f5843` fix: validation 기본 fixture-only / validation=0,off non-prod 제외 운영데이터
+- API 정상 시 canonical load 최우선 유지
+- `302c2f3` chore: performance data-isolation correction 배포
+- `7aa1fb1` docs: DEVELOPMENT_LOG 동시 갱신
