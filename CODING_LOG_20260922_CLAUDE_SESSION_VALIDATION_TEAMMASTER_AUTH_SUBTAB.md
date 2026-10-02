@@ -2247,3 +2247,9 @@
 - API 정상 시 canonical 최우선, load timing 장애에서만 fallback
 - `7f17a61` chore: maturity map fallback 배포
 - `cc837ab` docs: DEVELOPMENT_LOG 동시 갱신
+
+- fallback 데이터격리 검증: 직전 fallbackLoad가 Raw 전체를 읽어 API 지연 시 fixture+운영 혼합 가능
+- `8a72a45` fix: canonical과 동일 validation/production 분리 의미를 maturity fallback에 적용
+- validation 기본=web-validation-fixture만, validation=0/off=non-prod 제외 운영데이터
+- `082eab6` chore: data-isolation correction 배포
+- `59b72aa` docs: DEVELOPMENT_LOG 동시 갱신
