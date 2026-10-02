@@ -2227,3 +2227,10 @@
 - 공식확정 조건/이탈/loss/missBias는 변경 없음
 - `bfc4f9d` chore: review-state band correction 배포
 - `e4e09b9` docs: DEVELOPMENT_LOG 동시 갱신
+
+- canonical 후보검증: fixture flags가 있으면 정상이나 상태-only Raw에서 judgeState=미확정이 status=판정대기를 가려 후보 누락 가능
+- `bad3b7f` fix: canonical isCandidate가 미확정+진행상태를 후보로 유지
+- `c7068ad` fix: hd20-subtabs fallback 동일 규칙 동기화
+- 단순 미확정/상태없음은 후보 자동승격 안 함, 공식확정 규칙 변경 없음
+- `7b7efa0` chore: 관련 JS 동시 배포
+- `7134197` docs: DEVELOPMENT_LOG 동시 갱신
