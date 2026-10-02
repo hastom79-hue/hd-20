@@ -100,11 +100,12 @@ function render(){css();const el=ensure(),d=data();
   });
   const displayPoint=t=>{
     const p=displayByTeam.get(t.team)||{x:t.attrition,y:t.level};
-    let x=p.x,y=p.y;
+    const bx=t.attrition<50?[3,48]:[52,97],by=t.level>=60?[62,96]:[5,58];
+    let x=Math.max(bx[0],Math.min(bx[1],p.x)),y=Math.max(by[0],Math.min(by[1],p.y));
     for(let pass=0;pass<12;pass++){
       if(!placed.some(v=>Math.abs(v.x-x)<7&&Math.abs(v.y-y)<5))break;
       x+=t.attrition<50?2:-2;y+=(pass%2?2:-2);
-      x=Math.max(3,Math.min(97,x));y=Math.max(5,Math.min(96,y));
+      x=Math.max(bx[0],Math.min(bx[1],x));y=Math.max(by[0],Math.min(by[1],y));
     }
     placed.push({x,y});return{x,y};
   };
