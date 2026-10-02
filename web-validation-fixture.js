@@ -95,12 +95,12 @@ function makeActivities(){
       }else{
         row.type='5S 고도화';
         row.line=pick(LINES);
-        {const n=R()<.06?0:(R()<.5?3:ri(1,3));row.criteriaMatched=shuffle(CRIT).slice(0,n)}
+        {const missBias=/^중형/.test(team)?.72:/^(성능|트러블슈팅)/.test(team)?.80:/^(프레임|Boom)/.test(team)?.30:/^(대형|휠로더|초대형)/.test(team)?.38:.48;const n=R()<.08?0:(R()<missBias?ri(1,3):3);row.criteriaMatched=shuffle(CRIT).slice(0,n);const hit=new Set(row.criteriaMatched);row.criteriaVisual=hit.has(CRIT[0])?'Y':'N';row.criteriaGreen=hit.has(CRIT[1])?'Y':'N';row.criteriaSpace=hit.has(CRIT[2])?'Y':'N'}
         /* 팀마다 첫 3개 고도화 행은 확정/판정대기/보완요청 고정 → 16개 팀 전부 데이터 보유 */
         const r=slot===0?0:slot===1?.35:slot===2?.55:R();
         const judgedDay=minDay(T0,regDay+ri(1,30));
         if(r<pf.confirm){
-          row.criteriaMatched=[...CRIT];Object.assign(row,{candidate:true,isCandidate:true,judgeState:'확정',confirmed:true,status:chance(.1)?'유지관리':'확정',judgedAt:fromDay(judgedDay),confirmedAt:fromDay(judgedDay),level:ri(1,5)});
+          row.criteriaMatched=[...CRIT];row.criteriaVisual='Y';row.criteriaGreen='Y';row.criteriaSpace='Y';Object.assign(row,{candidate:true,isCandidate:true,judgeState:'확정',confirmed:true,status:chance(.1)?'유지관리':'확정',judgedAt:fromDay(judgedDay),confirmedAt:fromDay(judgedDay),level:ri(1,5)});
           const weak=chance(pf.loss);row.maintainState=weak?pick(['미흡','중지']):'정상';row.valid=!weak;
           if(weak){row.attrition=true;row.attritionReason=pick(['3대 요건 유지 미흡','정위치·정량 기준 이탈','Green Zone 유지 미흡','시각화·형적관리 유지 미흡']);row.attritionAt=fromDay(minDay(T0,judgedDay+ri(30,180)))}
           if(chance(.45)){row.horizontalRollout=true;row.rolloutState=pick(['수평전개중','수평전개 완료'])}
