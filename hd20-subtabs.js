@@ -84,6 +84,8 @@ function doneStatus(x){return /완료|확정|종료|종결|close|done/i.test(txt
 function advancementType(x){const v=txt(x?.type||x?.category||x?.sType||x?.['5S구분']||x?.['활동유형']);return v==='5S 고도화'||v==='고도화'||v==='5S고도화'}
 function advancementCandidate(x){return window.HD20KPIData?.isCandidate?.(x) ?? (!!x&&advancementType(x)&&(x.candidate===true||x.isCandidate===true||(x.judgeState||x.status)&&!/^미확정$/.test(txt(x.judgeState||x.status))&&/판정대기|보완요청|확정|후보|검토|대기/.test(txt(x.judgeState||x.status))))}
 function advancementConfirmed(x){return window.HD20KPIData?.isConfirmed?.(x) ?? (!!x&&advancementType(x)&&x.confirmed===true&&txt(x.judgeState)==='확정')}
+function advancementMaintained(x){const api=window.HD20KPIData;if(api?.isMaintained)return api.isMaintained(x);return advancementConfirmed(x)&&x?.attrition!==true&&x?.valid!==false&&!/중지|미흡|이탈|재점검|부적합|해제|실패/i.test(txt(x?.maintainState||x?.auditState||x?.status))}
+function advancementAttrition(x){return advancementConfirmed(x)&&!advancementMaintained(x)}
 function dueOf(x){return txt(x?.due||x?.targetDate||x?.deadline).slice(0,10)}
 function actionState(x){const d=dueOf(x);if(doneStatus(x))return'완료';if(d&&d<seoulDate())return'기한경과';return d?'진행중':'기한미정'}
 function effectVerified(x){if(x?.effectVerified===true)return true;const v=txt(x?.effectState??x?.effectResult);if(['미흡','부적합','무효','대기','미검증','효과확인대기','false','0','N','n'].includes(v))return false;return['유효','적합','검증완료','효과확인','효과확인완료','완료','true','1','Y','y'].includes(v)}
@@ -119,7 +121,7 @@ function ensureAdvAnalysis(){
 function advCriteriaFlags(x){const ok=v=>v===true||/^(Y|YES|충족|적합)$/i.test(txt(v));if(Array.isArray(x?.criteriaMatched)){const s=new Set(x.criteriaMatched);return ['시각화·형적관리','인간공학적 Green Zone','정량축소·정위치 변경을 통한 공간 활용'].map(k=>s.has(k))}return [ok(x?.visualization??x?.criteriaVisual),ok(x?.greenZone??x?.criteriaGreen),ok(x?.spaceUtilization??x?.criteriaSpace)]}
 function renderAdvAnalysis(){
  const host=ensureAdvAnalysis();if(!host)return;const rows=readStore('hd20GMES5SAutoImproveRawV1').filter(advancementCandidate);const names=['시각화·형적관리','Green Zone','공간활용'];
- const miss=names.map((name,i)=>({name,count:rows.filter(x=>!advCriteriaFlags(x)[i]).length}));const lost=rows.filter(x=>advancementConfirmed(x)&&(x?.attrition===true||/미흡|중지|이탈|재점검/i.test(txt(x?.maintainState||x?.auditState))));
+ const miss=names.map((name,i)=>({name,count:rows.filter(x=>!advCriteriaFlags(x)[i]).length}));const lost=rows.filter(advancementAttrition);
  const teams={};rows.forEach(x=>{const k=txt(x.team)||'미지정';teams[k]??={rows:[],lost:0};teams[k].rows.push(x);if(lost.includes(x))teams[k].lost++});
  const teamRows=Object.entries(teams).map(([team,v])=>{const m=names.map((_,i)=>v.rows.filter(x=>!advCriteriaFlags(x)[i]).length);return{team,total:v.rows.length,m,lost:v.lost}}).sort((a,b)=>(b.m.reduce((s,n)=>s+n,0)+b.lost)-(a.m.reduce((s,n)=>s+n,0)+a.lost));
  host.innerHTML=`<div class="pcPanelHead">3대 요건 미충족 집중도 <small>어느 요건·어느 생산팀에서 심사 이탈이 집중되는지 확인</small></div><div class="hd20CriteriaMiss">${miss.map(x=>`<div><small>${x.name} 미충족</small><b>${x.count}건</b></div>`).join('')}<div class="risk"><small>확정 후 유지이탈</small><b>${lost.length}건</b></div></div><div class="pcTableWrap"><table class="pcTable"><thead><tr><th>생산팀</th><th>후보</th><th>시각화 미충족</th><th>Green Zone 미충족</th><th>공간활용 미충족</th><th>확정 후 이탈</th></tr></thead><tbody>${teamRows.map(r=>`<tr><td>${esc(r.team)}</td><td>${r.total}</td><td>${r.m[0]}</td><td>${r.m[1]}</td><td>${r.m[2]}</td><td><b>${r.lost}</b></td></tr>`).join('')||'<tr><td colspan="6">현재 고도화 후보 데이터가 없습니다.</td></tr>'}</tbody></table></div>`
@@ -152,7 +154,7 @@ function ensureAdvProcess(){
 }
 function advProcessState(x){
  const n=advCriteriaCount(x),s=txt(x?.judgeState||x?.status),confirmed=advancementConfirmed(x);
- if(confirmed)return x?.attrition===true||/미흡|중지|이탈|재점검/i.test(txt(x?.maintainState||x?.auditState))?'유지 이탈':'확정·전개';
+ if(confirmed)return advancementAttrition(x)?'유지 이탈':'확정·전개';
  if(/보완/.test(s)||n<3)return '요건 보완';
  if(n>=3&&(/대기|후보|검토|미확정/.test(s)||!s))return '공식심사 대기';
  return '후보 지정'
@@ -180,7 +182,7 @@ function advStandardState(x){return txt(x?.standardState||x?.standardizationStat
 function advRolloutState(x){return txt(x?.rolloutState||x?.deploymentState||x?.['수평전개상태'])||'미설정'}
 function renderAdvStandard(){
  const host=ensureAdvStandard();if(!host)return;const all=readStore('hd20GMES5SAutoImproveRawV1');const rows=all.filter(advancementConfirmed);
- const lost=rows.filter(x=>x?.attrition===true||/미흡|중지|이탈|재점검/i.test(txt(x?.maintainState||x?.auditState)));const maintained=rows.filter(x=>!lost.includes(x));
+ const lost=rows.filter(advancementAttrition);const maintained=rows.filter(advancementMaintained);
  const unsetScope=rows.filter(x=>advScope(x)==='미설정').length,unsetStd=rows.filter(x=>advStandardState(x)==='미설정').length,unsetRoll=rows.filter(x=>advRolloutState(x)==='미설정').length;
  const body=rows.slice().sort((a,b)=>(lost.includes(a)?-1:1)).map(x=>{const isLost=lost.includes(x);return `<tr><td>${esc(txt(x.team)||'—')}</td><td>${esc(advLine(x))}</td><td>${esc(txt(x.workplace||x.title)||'—')}</td><td>${esc(advStandardState(x))}</td><td>${esc(advScope(x))}</td><td>${esc(advRolloutState(x))}</td><td>${esc(isLost?(txt(x.attritionReason)||'유지 이탈'):(txt(x.maintainState)||'유지'))}</td><td><b>${isLost?'Audit/재고도화':(advScope(x)==='미설정'||advRolloutState(x)==='미설정'?'전개정보 보완':'유지관리')}</b></td></tr>`}).join('');
  host.innerHTML=`<div class="pcPanelHead">확정 Case 표준화 · 수평전개 · 유지관리 <small>확정이 끝이 아니라 재현·전개·유지까지 관리</small></div><div class="hd20StandardSummary"><div><small>공식확정</small><b>${rows.length}건</b></div><div><small>현재 유지</small><b>${maintained.length}건</b></div><div class="risk"><small>유지 이탈</small><b>${lost.length}건</b></div><div><small>적용범위 미설정</small><b>${unsetScope}건</b></div><div><small>표준화 미설정</small><b>${unsetStd}건</b></div><div><small>수평전개 미설정</small><b>${unsetRoll}건</b></div></div><div class="pcTableWrap"><table class="pcTable"><thead><tr><th>생산팀</th><th>라인</th><th>확정 Case</th><th>표준화</th><th>적용범위</th><th>수평전개</th><th>유지상태</th><th>다음 관리</th></tr></thead><tbody>${body||'<tr><td colspan="8">현재 공식확정 Case가 없습니다.</td></tr>'}</tbody></table></div>`
