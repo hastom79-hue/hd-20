@@ -82,7 +82,7 @@ function display(v){return v===0?'0':v===false?'false':txt(v)||'—'}
 function seoulDate(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())}
 function doneStatus(x){return /완료|확정|종료|종결|close|done/i.test(txt(x?.status||x?.activityStatus||x?.judgeState||x?.auditState))}
 function advancementType(x){const v=txt(x?.type||x?.category||x?.sType||x?.['5S구분']||x?.['활동유형']);return v==='5S 고도화'||v==='고도화'||v==='5S고도화'}
-function advancementCandidate(x){return window.HD20KPIData?.isCandidate?.(x) ?? (!!x&&advancementType(x)&&(x.candidate===true||x.isCandidate===true||(x.judgeState||x.status)&&!/^미확정$/.test(txt(x.judgeState||x.status))&&/판정대기|보완요청|확정|후보|검토|대기/.test(txt(x.judgeState||x.status))))}
+function advancementCandidate(x){if(window.HD20KPIData?.isCandidate)return window.HD20KPIData.isCandidate(x);if(!x||!advancementType(x))return false;if(x.candidate===true||x.isCandidate===true)return true;const judge=txt(x.judgeState),status=txt(x.status);if(!judge&&!status)return false;if(judge==='미확정')return /판정대기|보완요청|후보|검토|대기/.test(status);return /판정대기|보완요청|확정|후보|검토|대기/.test(judge||status)}
 function advancementConfirmed(x){return window.HD20KPIData?.isConfirmed?.(x) ?? (!!x&&advancementType(x)&&x.confirmed===true&&txt(x.judgeState)==='확정')}
 function advancementMaintained(x){const api=window.HD20KPIData;if(api?.isMaintained)return api.isMaintained(x);return advancementConfirmed(x)&&x?.attrition!==true&&x?.valid!==false&&!/중지|미흡|이탈|재점검|부적합|해제|실패/i.test(txt(x?.maintainState||x?.auditState||x?.status))}
 function advancementAttrition(x){return advancementConfirmed(x)&&!advancementMaintained(x)}
