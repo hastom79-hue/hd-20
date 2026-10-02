@@ -2126,3 +2126,10 @@
 - 산식/actualX/actualY/사분면 판정 변경 없음
 - `ac8b40a` chore: packing 보정 배포
 - `a52e7bf` docs: DEVELOPMENT_LOG 동시 갱신
+
+- 경계 추적: actual 사분면 판정은 정상, collision 이동이 경계 횡단 가능했던 시각오인 Gap 발견
+- `fa55c1c` fix: displayPoint를 actual 사분면 내부 hard-boundary로 clamp
+- 경계: 좌 3~48 / 우 52~97 / 상 62~96 / 하 5~58
+- `79f8b89` chore: 1차 보안차단 후 cache-bust 재시도 배포 성공
+- 산식/50·60 판정기준/우측 순위 변경 없음
+- `f4209d5` docs: DEVELOPMENT_LOG 동시 갱신
