@@ -94,6 +94,13 @@ function render(box){
   const delayOverallAvg=delayRows.length?Math.round(delayRows.reduce((a,r)=>a+r.avg*r.n,0)/delayRows.reduce((a,r)=>a+r.n,0)*10)/10:0;
   const sum={total:teamRows.reduce((a,r)=>a+r.total,0),done:teamRows.reduce((a,r)=>a+r.done,0),open:teamRows.reduce((a,r)=>a+r.open,0),over:teamRows.reduce((a,r)=>a+r.over,0)};
   const pctS=n=>sum.total?Math.round(n/sum.total*1000)/10:0;
+  const rqKpis=`<div class="rqKpiStrip">
+    <div><small>개선요청</small><b>${sum.total}<em>건</em></b><span>${S.month?+S.month+'월':'연간누적'}</span></div>
+    <div><small>개선완료</small><b>${sum.done}<em>건</em></b><span>완료율 ${pctS(sum.done)}%</span></div>
+    <div><small>진행·대기</small><b>${sum.open}<em>건</em></b><span>조치 진행중</span></div>
+    <div class="risk"><small>기한경과</small><b>${sum.over}<em>건</em></b><span>${pctS(sum.over)}% · 우선관리</span></div>
+    <div class="risk"><small>평균 지연</small><b>${delayOverallAvg}<em>일</em></b><span>지연 발생 ${delayRows.reduce((a,r)=>a+r.n,0)}건</span></div>
+  </div>`;
   if(!S.selTeam||!teamRows.some(r=>r.team===S.selTeam))S.selTeam=teamRows[0]?.team||'';
   /* 누적 막대는 맨 아래(완료) 칸만 팀 간 비교가 쉽고, 맨 위 칸(기한경과)은 시작 높이가 팀마다 달라 눈으로
      비교하기 어려움 — 막대 순서는 그대로 두되, 가장 중요한 위험 신호인 기한경과 건수를 막대 위에 빨간 글자로
@@ -115,16 +122,16 @@ function render(box){
     </tbody></table>`;
   const opt=(a,cur,all='ALL')=>`<option value="">${all}</option>`+a.map(x=>`<option value="${esc(x)}"${x===cur?' selected':''}>${esc(x)}</option>`).join('');
   box.innerHTML=`<div class="ibTitle"><h2>5S 개선요청 종합 대시보드</h2></div><p class="ibNote">기본 조회조건은 당해년도 연간누적 데이터입니다 (월간 데이터 조회 시, 해당 월을 선택하세요)</p>
-<p class="rqCaveat">※ 참고 VTB 화면의 요청부서 그리드는 5S에서는 생략하고 조치대응부서에 집중했습니다. 개선요청 출처는 5S모듈·생산혁신팀 HDPS파트·리더십(경영진·팀장/부서장) 3종이며, 현재 원천에는 출처 필드가 없어 등록자가 생산팀장 기준정보의 팀장 또는 통합기준정보(운영정책)에 등록한 경영진·공장장 명단과 일치하면 리더십, 그 외엔 Audit 연계 여부로 5S모듈/생산혁신팀 HDPS파트를 추정 표기합니다(둘 다 비어 있으면 리더십은 0). ‘완료(*)’는 원천에 기각 상태가 없어 완료 단독 기준입니다.</p>
+<details class="rqMethod"><summary>집계기준 · 데이터 유의사항</summary><p class="rqCaveat">※ 참고 VTB 화면의 요청부서 그리드는 5S에서는 생략하고 조치대응부서에 집중했습니다. 개선요청 출처는 5S모듈·생산혁신팀 HDPS파트·리더십(경영진·팀장/부서장) 3종이며, 현재 원천에는 출처 필드가 없어 등록자가 생산팀장 기준정보의 팀장 또는 통합기준정보(운영정책)에 등록한 경영진·공장장 명단과 일치하면 리더십, 그 외엔 Audit 연계 여부로 5S모듈/생산혁신팀 HDPS파트를 추정 표기합니다(둘 다 비어 있으면 리더십은 0). ‘완료(*)’는 원천에 기각 상태가 없어 완료 단독 기준입니다.</p></details>
 <div class="ibBar"><label>공장 <select disabled><option>[울산] 울산캠퍼스</option></select></label><label>년 <select data-f="year">${D.years.map(y=>`<option${y===S.year?' selected':''}>${y}</option>`).join('')}</select></label>
 <label>월 <select data-f="month"><option value="">전체</option>${Array.from({length:12},(_,i)=>{const v=String(i+1).padStart(2,'0');return `<option value="${v}"${v===S.month?' selected':''}>${i+1}월</option>`}).join('')}</select></label><button type="button" data-rq="go">조회</button>
 <label>요청출처 <select data-f="source">${opt(SOURCES,S.source)}</select></label><label>조치대응부서 <select data-f="team">${opt(D.teams,S.team)}</select></label>
 <label>처리상태 <select data-f="status"><option value="">ALL</option><option>조치대기</option><option>진행중</option><option>완료</option><option>기한경과</option></select></label>
 <label>재발 <select data-f="roll"><option value="">ALL</option><option value="Y">재발 있음</option><option value="N">재발 없음</option></select></label>
-<span class="sp"></span><button type="button" class="alt" data-rq="print">프린트</button><button type="button" class="alt" data-rq="csv">엑셀다운로드(상세내용)</button></div>
+<span class="sp"></span><button type="button" class="alt" data-rq="print">프린트</button><button type="button" class="alt" data-rq="csv">엑셀다운로드(상세내용)</button></div>${rqKpis}
 <div class="ibRow r1"><div class="ibPanel"><div class="ibHead">요청출처별 등록 및 진행(*)현황<button type="button" class="ibEv" data-evk="a">근거 데이터</button><em>${S.month?+S.month+'월':'연간누적'} · 건 · 완료(*)=완료</em></div><div class="ibBody">${A}${leg([['등록','#5c6b7a'],['완료','#1f6f6b']])}</div></div>
 <div class="ibPanel"><div class="ibHead">월별 등록 및 진행현황<button type="button" class="ibEv" data-evk="b">근거 데이터</button><em>누적완료율(오픈 이후) ${openRate}% · ${S.year}년 누적완료율 ${yearRate}%</em></div><div class="ibBody">${B}${leg([['등록','#8fa3b3'],['진행','#e0b03c'],['완료','#1f6f6b']])}</div></div></div>
-<div class="ibRow"><div class="ibPanel"><div class="ibHead">조치대응부서 진행현황<button type="button" class="ibEv" data-evk="c">근거 데이터</button><em>${S.month?+S.month+'월':'연간누적'} · 합계 ${sum.total}건 · 막대 위 빨간 숫자=기한경과 건수 · 팀명을 클릭하면 아래 상세 추이가 바뀝니다</em></div><div class="ibBody">${teamChart}${leg([['완료','#1f6f6b'],['진행·대기','#a8c7c4'],['기한경과','#e0b03c']])}<div class="rqScroll" style="margin-top:10px">${teamGrid}</div></div></div></div>
+<div class="ibRow rqMainRow"><div class="ibPanel rqPrimary"><div class="ibHead">조치대응부서 진행현황<button type="button" class="ibEv" data-evk="c">근거 데이터</button><em>${S.month?+S.month+'월':'연간누적'} · 합계 ${sum.total}건 · 막대 위 빨간 숫자=기한경과 건수 · 팀명을 클릭하면 아래 상세 추이가 바뀝니다</em></div><div class="ibBody">${teamChart}${leg([['완료','#1f6f6b'],['진행·대기','#a8c7c4'],['기한경과','#e0b03c']])}<div class="rqScroll" style="margin-top:10px">${teamGrid}</div></div></div></div>
 <div class="ibRow"><div class="ibPanel"><div class="ibHead">조치 지연 리드타임<button type="button" class="ibEv" data-evk="d">근거 데이터</button><em>${S.month?+S.month+'월':'연간누적'} · 지연 발생 ${delayRows.reduce((a,r)=>a+r.n,0)}건 · 전체 평균 ${delayOverallAvg}일 · 팀명을 클릭하면 아래 상세 추이가 바뀝니다</em></div><div class="ibBody">${delayChart||'<p style="padding:20px;color:#8a99a6;text-align:center">조건에 해당하는 지연 건이 없습니다.</p>'}${delayChart?leg([['평균 지연일수(완료 늦은 건은 완료일-기한, 진행 중인 기한경과 건은 오늘-기한)','#c0392b']]):''}</div></div></div>
 <div class="ibRow"><div class="ibPanel"><div class="ibHead">선택 팀 월별 등록·완료 추이<button type="button" class="ibEv" data-evk="e">근거 데이터</button><em>[ ${esc(S.selTeam)} ] ${S.year}년</em></div><div class="ibBody">${teamTrend}${leg([['등록','#8fa3b3'],['완료','#1f6f6b']])}</div></div></div>
 <div class="ibRow"><div class="ibPanel"><div class="ibHead">상세내용<button type="button" class="ibEv" data-evk="f">전체 보기</button><em>미리보기 ${detailRows.length}건 / 조건 일치 ${rowsM.length}건</em></div><div class="ibBody"><div class="rqScroll">${detail}</div></div></div></div>
