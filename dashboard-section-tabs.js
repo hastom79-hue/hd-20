@@ -5,6 +5,7 @@ const TABS=[
  {key:'improve',label:'5S 자율개선 종합',desc:'유형·월별·팀별 인당 개선건수',targets:['#hd20ImproveBoard']},
  {key:'request',label:'5S 개선요청 종합',desc:'처리 단계·팀별 완료율·처리일수',targets:['#hd20RequestBoard']},
  {key:'execution',label:'실행·유지',desc:'팀별 실행·Audit·Action',targets:['.mainGrid','#hd20OperationalBridge']},
+ {key:'maturity',label:'고도화맵',desc:'팀별 고도화 수준·이탈도·공식확정 Case',targets:['#hd20MaturityMapTab']},
  {key:'analysis',label:'성과·운영분석',desc:'6개 지표의 월별 추이',targets:['#hd20OpsTrend']},
  /* 현장참고: 초기 구축용 샘플(운영실적 제외)·외부 참고사진뿐이라 운영 목적이 없어 메뉴에서만 숨김(코드·데이터는 유지, apply('field')는 계속 동작) */
  {key:'field',label:'현장참고',desc:'초기 샘플·공개 현장사진',targets:['#hd20FieldShowcaseBootstrap'],hidden:true}
