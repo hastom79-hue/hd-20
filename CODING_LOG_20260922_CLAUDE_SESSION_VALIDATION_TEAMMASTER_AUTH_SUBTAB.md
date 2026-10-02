@@ -2221,3 +2221,9 @@
 - `e8cea06` test: 단계분리 guard 주석 추가, 정상 계산로직은 불필요 변경하지 않음
 - `1855c55` chore: fixture stage-separation guard 배포
 - `b40f005` docs: DEVELOPMENT_LOG 동시 갱신
+
+- 후보판정 분기 검증: pending 상한만 profile 연동, 이후 .62/.72/.85 고정 → 높은 confirm에서 중간 단계 구간 축소/소실 가능
+- `cd31049` fix: confirm 이후 review-state cut을 누적 monotonic band로 변경
+- 공식확정 조건/이탈/loss/missBias는 변경 없음
+- `bfc4f9d` chore: review-state band correction 배포
+- `e4e09b9` docs: DEVELOPMENT_LOG 동시 갱신
