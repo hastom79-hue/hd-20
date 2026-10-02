@@ -1552,3 +1552,11 @@ Canonical Store는 다음을 기준으로 한다.
 - advProcessState에 advEvidenceGap을 연결: 공식확정 전 증빙 누락 Case는 '후보 지정' 단계에 유지, 증빙 완결 후 요건 미충족은 '요건 보완', 증빙+3/3 충족은 상태문구와 무관하게 '공식심사 대기'.
 - 심사 Queue에 '후보 지정' 정체 Case도 포함하고 실제 누락 증빙 항목 및 다음조치 '증빙 보완 후 요건검증' 표시.
 - 후보 정의 자체는 advancementCandidate/advancementConfirmed canonical helper를 그대로 사용하여 후보 목록과 심사 프로세스의 모집단은 동일 유지.
+
+
+### 2026-10-02 / 3/3 충족과 공식확정 의미분리 문구 정합화 (`118d37b`, `477a31a`)
+- 고도화 관련 핵심 JS 3개(hd20-subtabs, performance-conversion-analysis, maturity-map)를 교차검색. 산식상 performance-conversion-analysis는 이미 '조건 충족수 ≠ 공식확정', maturity map은 '공식확정만 성과 반영'으로 분리되어 있었음.
+- hd20-subtabs의 3조건 분석/라인·작업장 상세 CONTRACT 안내는 3/3의 의미가 명시적이지 않아 사용자가 3/3을 확정으로 해석할 여지를 확인.
+- 3조건 분석: 3/3='공식심사 진입 가능 상태'로 명시하고 증빙 완결+공식판정을 거쳐야 확정됨을 추가.
+- 라인·작업장 상세: 조건 충족수와 공식판정을 별도 열/별도 개념으로 명시, 3/3 미확정은 심사 프로세스로 연결하도록 정리.
+- 산식/데이터/탭 구조 변경 없음.
