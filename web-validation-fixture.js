@@ -84,7 +84,7 @@ function makeActivities(){
   /* 현장 운영 현실 반영: 설비 선진화에 따른 외관상 수준과 실제 5S/OS 실행량을 분리한다. */
   const profile=team=>/^중형/.test(team)?{activity:.58,confirm:.17,loss:.52}:/^(대형|휠로더|초대형)/.test(team)?{activity:1.18,confirm:.34,loss:.27}:/^(프레임|Boom)/.test(team)?{activity:1.30,confirm:.39,loss:.22}:/^(성능|트러블슈팅)/.test(team)?{activity:.48,confirm:.14,loss:.58}:{activity:1,confirm:.30,loss:.32};
   TEAMS.forEach((team,ti)=>{
-    const pf=profile(team),teamPer=Math.max(18,Math.round(per*pf.activity));
+    const pf=profile(team),teamPer=Math.max(8,Math.round(per*pf.activity));
     for(let j=0;j<teamPer;j++){
       seq++;
       const prev=chance(.08),regDay=prev?dayNum(`${Y-1}-01-01`)+ri(0,364):Y0+ri(0,Math.max(0,T0-Y0)),date=fromDay(regDay);
