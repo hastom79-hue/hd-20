@@ -2064,3 +2064,9 @@
 - `b0f490a` feat: 라인·작업장 상세에 3대 요건 충족수/Gap/공식판정/확정 후 이탈사유 Raw Data 표 연결
 - `b1379c2` chore: 상세 Gap 화면 cache-bust 배포
 - `602e69e` docs: DEVELOPMENT_LOG 동시 갱신
+
+- `6b9ddf3` feat: 심사 프로세스 실제 Queue/정체사유/다음조치 Raw Data 연결
+- `d11369f` fix: 빈 정규식 대안으로 심사대기 과대분류 가능성 제거
+- `58e3498` style: 심사 Queue와 위험/환류 상태 시각 구분
+- `8415f9e` chore: 심사 Queue 화면 cache-bust 배포
+- `ea78f59` docs: DEVELOPMENT_LOG 동시 갱신
