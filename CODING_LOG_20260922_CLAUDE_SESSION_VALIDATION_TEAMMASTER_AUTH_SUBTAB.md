@@ -2166,3 +2166,10 @@
 - 고도화맵 X축 ↔ 3조건 확정후이탈 판정 통일
 - `8fad2b0` chore: canonical attrition alignment 배포
 - `9a3034f` docs: DEVELOPMENT_LOG 동시 갱신
+
+- 전체검색 결과: advancement 3조건/심사/표준화에 별도 이탈 정규식 잔존 확인
+- `352711a` fix: advancementMaintained/advancementAttrition 공통 canonical helper 추가 및 3개 운영화면 교체
+- 부적합/해제/실패/status/valid=false까지 KPI 유지판정과 동일 처리
+- Audit 종료평가 risk는 별도 업무규칙이므로 변경 제외
+- `e9ef339` chore: hd20-subtabs canonical retention 배포
+- `51fc30e` docs: DEVELOPMENT_LOG 동시 갱신
