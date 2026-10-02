@@ -134,3 +134,11 @@ input:focus,select:focus,textarea:focus{border-color:#7EA3C2!important;box-shado
 .rqOverviewRow .ibBody,.rqMainRow .ibBody,.rqRiskRow .ibBody,.rqTeamTrendRow .ibBody{padding-top:10px!important;padding-bottom:10px!important}
 .rqOverviewRow .ibLeg,.rqMainRow .ibLeg,.rqRiskRow .ibLeg,.rqTeamTrendRow .ibLeg{margin-top:4px!important;font-size:10.5px!important}
 .rqOverviewRow .ibHead>span,.rqMainRow .ibHead>span,.rqRiskRow .ibHead>span,.rqTeamTrendRow .ibHead>span{font-weight:800;color:#14304c}
+
+.rqFilterBar{display:grid!important;grid-template-columns:auto minmax(0,1fr) auto;gap:10px!important;align-items:center!important;padding:9px 10px!important}
+.rqFilterPrimary,.rqFilterSecondary,.rqFilterActions{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.rqFilterPrimary{padding-right:10px;border-right:1px solid #e1e7ec}.rqFilterSecondary{min-width:0}.rqFilterActions{justify-content:flex-end}
+.rqFilterBar label{margin:0!important}.rqFilterBar select{min-height:32px!important}.rqFilterBar button{min-height:32px!important}
+.rqFilterSecondary label{font-size:11px;color:#667988}.rqFilterActions .alt{padding-inline:9px!important;font-size:11px!important}
+@media(max-width:1100px){.rqFilterBar{grid-template-columns:1fr auto}.rqFilterSecondary{grid-column:1/-1;order:3;padding-top:7px;border-top:1px solid #e7ecef}.rqFilterPrimary{border-right:0}.rqFilterActions{grid-column:2}}
+@media(max-width:700px){.rqFilterBar{grid-template-columns:1fr}.rqFilterActions{grid-column:1;justify-content:flex-start}.rqFilterSecondary{grid-column:1}.rqFilterPrimary{padding-right:0}}
