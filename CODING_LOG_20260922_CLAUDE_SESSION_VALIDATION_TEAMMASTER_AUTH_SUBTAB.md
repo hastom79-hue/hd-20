@@ -2209,3 +2209,9 @@
 - production raw data 변경 없음, 기존 localStorage는 fixture 재생성 전 유지
 - `8b75474` chore: fixture profile correction 배포
 - `a23f94d` docs: DEVELOPMENT_LOG 동시 갱신
+
+- 변수결합 검증: teamPer 최소18 강제가 중형 .58 / 성능계열 .48 활동차이를 평탄화 가능
+- `4325431` fix: fixture teamPer floor 18→8, 저활동 profile 차이를 후보량/Y축 activity에 보존
+- confirm/loss/missBias 변경 없음, production raw data 영향 없음
+- `ad2004a1` chore: fixture activity floor correction 배포
+- `8652a5c` docs: DEVELOPMENT_LOG 동시 갱신
