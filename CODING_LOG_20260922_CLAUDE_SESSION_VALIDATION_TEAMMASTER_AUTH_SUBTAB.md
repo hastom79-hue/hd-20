@@ -2259,3 +2259,10 @@
 - API 정상 시 canonical load 최우선 유지
 - `302c2f3` chore: performance data-isolation correction 배포
 - `7aa1fb1` docs: DEVELOPMENT_LOG 동시 갱신
+
+- hd20-subtabs readStore 추적: 5S Raw 무필터 반환 → 후보목록/3조건/상세/심사/확정전개에서 fixture+운영 혼합 가능
+- `1303edd` fix: 5S Raw key에만 canonical validation/production 격리 적용
+- Audit/Action 저장소는 범위확대 방지를 위해 변경하지 않음
+- 하위탭 구조/순서/판정산식 변경 없음
+- `d9c81ea` chore: operational subtab data isolation 배포
+- `48a5aa4` docs: DEVELOPMENT_LOG 동시 갱신
