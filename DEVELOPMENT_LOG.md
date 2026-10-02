@@ -1450,3 +1450,10 @@ Canonical Store는 다음을 기준으로 한다.
 - fixture에도 criteriaVisual/criteriaGreen/criteriaSpace를 동기 생성하여 요약·상세·팀별 미충족 분석이 같은 판정근거를 사용하도록 정합화.
 - 현실 보정: 중형 및 성능/트러블슈팅은 3조건 미충족 확률을 높이고, 프레임/Boom 제작은 낮추며, 대형/휠로더/초대형은 상대적으로 양호하도록 조건분포까지 반영.
 - cache-bust 배포 호출은 이번 실행에서 도구 보안 차단. 코드 반영은 완료했으며 다음 실행에서 재시도.
+
+
+### 2026-10-02 / 배포 재시도 성공 + 현실보정/3조건 정합 정적검증 (`b3e833e`)
+- 직전 보안차단으로 미완료였던 hd20-subtabs.js / web-validation-fixture.js cache-bust를 재시도해 정상 배포.
+- fixture 현실보정 정적검증: 중형(.58/.17/.52), 대형·휠로더·초대형(1.18/.34/.27), 프레임·Boom(1.30/.39/.22), 성능·트러블슈팅(.48/.14/.58) profile 존재 확인.
+- 3대 요건 개별필드(criteriaVisual/criteriaGreen/criteriaSpace) 동기 생성 확인.
+- 분석코드 검증: criteriaMatched 배열형 충족수 계산, 조건명 Set 기반 요건별 판정, 3조건 집중도/라인상세/심사Queue/확정수평전개 운영화면 모두 존재 확인.
