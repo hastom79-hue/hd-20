@@ -1545,3 +1545,10 @@ Canonical Store는 다음을 기준으로 한다.
 - renderAdvDetail의 '확정 후 이탈사유'가 attritionReason 또는 attrition===true만 확인해, canonical상 이탈(valid=false, 부적합/해제/실패 등)인데 attrition flag가 없는 Case를 '—'로 표시하는 잔여 결함 확인.
 - advancementAttrition으로 이탈 여부를 판정하고, 이탈 시 attritionReason → maintainState/auditState/status → '유지 이탈' 순으로 실제 원천값을 표시하도록 수정.
 - 비이탈 Case는 '—' 유지. 임의 사유 생성 없음.
+
+
+### 2026-10-02 / 후보목록 ↔ 심사프로세스 준비도 분류 정합화 (`7b1665e`, `d5ba6f5`)
+- 후보 목록은 미확정 후보에 대해 증빙 Gap→3대요건 Gap→공식판정 준비완료 순으로 판단하지만 심사 프로세스는 증빙 Gap을 보지 않아, 증빙이 빠진 3/3 후보도 '공식심사 대기'로 분류될 수 있었음.
+- advProcessState에 advEvidenceGap을 연결: 공식확정 전 증빙 누락 Case는 '후보 지정' 단계에 유지, 증빙 완결 후 요건 미충족은 '요건 보완', 증빙+3/3 충족은 상태문구와 무관하게 '공식심사 대기'.
+- 심사 Queue에 '후보 지정' 정체 Case도 포함하고 실제 누락 증빙 항목 및 다음조치 '증빙 보완 후 요건검증' 표시.
+- 후보 정의 자체는 advancementCandidate/advancementConfirmed canonical helper를 그대로 사용하여 후보 목록과 심사 프로세스의 모집단은 동일 유지.
