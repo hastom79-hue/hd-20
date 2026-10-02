@@ -2070,3 +2070,8 @@
 - `58e3498` style: 심사 Queue와 위험/환류 상태 시각 구분
 - `8415f9e` chore: 심사 Queue 화면 cache-bust 배포
 - `ea78f59` docs: DEVELOPMENT_LOG 동시 갱신
+
+- `390789b` feat: 확정 Case 표준화/적용범위/수평전개/유지상태/다음관리 연결
+- `0db8652` style: 확정 이후 관리 완결성 및 유지이탈 위험 요약 UI
+- `3cdc43d` chore: 확정·수평전개 운영화면 cache-bust 배포
+- `3d20301` docs: DEVELOPMENT_LOG 동시 갱신
