@@ -2272,3 +2272,9 @@
 - `267c2f8` cache-bust 자동매칭 실패(내용변경 없음) 즉시 검출
 - `3614111` fix: 실제 index 버전 문자열 직접 교체, 정상 배포
 - `25d69e3` docs: DEVELOPMENT_LOG 동시 갱신
+
+- canonical/fallback nonProd 4파일 교차검증 완료
+- demo/test/source/id/sourceCaseId/demo-email/legacy-email/LEGACY_TEST_IDS 조건 모두 동일 확인
+- validation 기본 fixture-only, validation=0/off production-only 의미 동일
+- 잔여 필터 불일치 없음 → 정상 코드 불필요 변경하지 않음
+- `cb33e53` docs: DEVELOPMENT_LOG 검증결과 기록
