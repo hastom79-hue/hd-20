@@ -1616,3 +1616,10 @@ Canonical Store는 다음을 기준으로 한다.
 - localStorage Raw를 읽는 fallbackLoad와 canonical-equivalent type/candidate/confirmed/maintained 판정식을 추가.
 - canonical API가 존재하면 기존 API를 최우선 사용하며, 지연/미로드 시에만 fallback으로 모집단을 유지.
 - signature()의 유지상태 판정도 동일 fallback을 사용하도록 보정해 API 지연 중 refresh signature가 잘못 고정되는 문제까지 방지.
+
+
+### 2026-10-02 / 고도화맵 fallback 검증·운영 데이터 격리 (`8a72a45`, `082eab6`)
+- 직전 추가한 maturity-map fallbackLoad가 Raw localStorage 전체를 그대로 읽어 canonical API 지연 시 validation fixture와 운영 데이터가 혼합될 수 있는 회귀 위험 확인.
+- dashboard-kpi-source의 validation 모드 의미를 fallback에도 적용: 기본 validation 모드에서는 source=web-validation-fixture만, validation=0/off에서는 demo/e2e/validation 계열 non-prod row를 제외한 운영 데이터만 사용.
+- 따라서 canonical API 정상/지연 여부와 무관하게 고도화맵이 동일 데이터 모집단을 유지하도록 수정.
+- 후보/확정/유지 산식 및 production Raw 자체는 변경 없음.
