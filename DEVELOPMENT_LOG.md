@@ -1581,3 +1581,10 @@ Canonical Store는 다음을 기준으로 한다.
 - 이 평탄화는 고도화맵 Y축 activity=candidates/maxCandidates의 팀별 차이를 축소해 저활동 팀을 실제보다 높게 보이게 할 수 있음.
 - fixture 최소 floor를 18→8로 낮춰 profile activity 차이가 후보 활동량에 실제 반영되도록 수정. 팀별 데이터 공백 방지는 유지.
 - confirm/loss/missBias와 production Raw Data는 변경 없음. 기존 localStorage는 fixture 재생성 전 유지.
+
+
+### 2026-10-02 / missBias ↔ loss 단계독립 검증 (`e8cea06`, `1855c55`)
+- fixture 생성 흐름을 코드 레벨로 검증한 결과 missBias는 확정 전 criteriaMatched 생성에만 관여하고, 공식확정 분기 진입 시 criteriaMatched를 3대 요건 전체로 재설정함.
+- 확정 후 유지이탈은 해당 분기 내부에서 pf.loss만으로 weak를 생성하므로 missBias가 X축 이탈도에 직접 중복 반영되지 않음을 확인.
+- 따라서 중형/성능계열의 높은 missBias는 '심사 전 준비도 부족', 높은 loss는 '확정 후 유지취약'이라는 서로 다른 단계 신호로 유지됨.
+- 향후 회귀 시 두 변수를 섞지 않도록 fixture 코드에 단계분리 guard 주석 추가. 계산 로직 자체는 검증 결과 정상이라 변경하지 않음.
