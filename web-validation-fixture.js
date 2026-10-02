@@ -97,6 +97,7 @@ function makeActivities(){
         row.line=pick(LINES);
         {const missBias=/^중형/.test(team)?.72:/^(성능|트러블슈팅)/.test(team)?.80:/^(프레임|Boom)/.test(team)?.30:/^(대형|휠로더|초대형)/.test(team)?.38:.48;const n=R()<.08?0:(R()<missBias?ri(1,3):3);row.criteriaMatched=shuffle(CRIT).slice(0,n);const hit=new Set(row.criteriaMatched);row.criteriaVisual=hit.has(CRIT[0])?'Y':'N';row.criteriaGreen=hit.has(CRIT[1])?'Y':'N';row.criteriaSpace=hit.has(CRIT[2])?'Y':'N'}
         /* 팀마다 초기 3개 고도화 행도 팀별 profile(confirm)을 반영하되 데이터 공백은 피하도록 단계별 deterministic bias만 적용 */
+        /* missBias는 확정 전 3조건 준비도에만 사용하고, 확정 Case는 아래에서 3/3으로 고정한다. 확정 후 이탈은 pf.loss만 사용해 두 단계를 독립 유지한다. */
         const r=slot===0?Math.min(.12,pf.confirm*.55):slot===1?Math.min(.42,pf.confirm+.08):slot===2?Math.min(.62,pf.confirm+.20):R();
         const judgedDay=minDay(T0,regDay+ri(1,30));
         if(r<pf.confirm){
