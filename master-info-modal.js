@@ -5,7 +5,7 @@ const style=document.createElement('style');
 style.id='masterModalStyle';
 style.textContent=`.masterModal{display:none;padding:0}
 .masterModal.on{display:block}
-.masterModal .masterInfoBox{width:100%;max-width:none;max-height:none;overflow:visible;border-radius:12px;background:#fff;box-shadow:0 4px 14px rgba(18,49,70,.05);border:1px solid #d9e3ea;display:flex;flex-direction:column}
+.masterModal .masterInfoBox{width:min(1240px,calc(100vw - 64px));max-width:1240px;max-height:calc(100vh - 150px);overflow:auto;margin:22px auto;border-radius:12px;background:#fff;box-shadow:0 4px 14px rgba(18,49,70,.05);border:1px solid #d9e3ea;display:flex;flex-direction:column}
 .masterModal .modalHead{display:flex;align-items:center;gap:10px;padding:16px 18px;border-bottom:1px solid #e5edf2}
 .masterModal .modalHead b{font-size:17px;color:#17394f;white-space:nowrap}
 .masterModal .modalHead span{flex:1;font-size:11px;color:#7890a0}
