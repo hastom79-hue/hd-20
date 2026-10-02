@@ -1498,3 +1498,10 @@ Canonical Store는 다음을 기준으로 한다.
 - 각 팀의 actual 판정 사분면을 displayPoint의 hard boundary로 사용하도록 수정: X<50은 3~48, X>=50은 52~97, Y>=60은 62~96, Y<60은 5~58 범위 내에서만 충돌회피 이동.
 - 따라서 화면상의 점이 계산상 사분면과 다른 영역으로 넘어가는 시각적 오인을 차단. 실제 산식/경계값/순위값은 변경 없음.
 - 최초 cache-bust 호출 1회 보안차단 후 동일 변경 재시도하여 배포 성공.
+
+
+### 2026-10-02 / 고도화맵 상태변경 미갱신 추적수정 (`25ad881`, `859cde5`)
+- refresh/openStable의 signature가 기존에는 confirmed/maintained/candidate 건수와 팀명만 비교함을 확인.
+- 건수 총합이 동일한 상태에서 A팀 유지→이탈, B팀 이탈→유지처럼 상태가 교환되거나 maintainState/attrition/valid만 변경되면 signature가 같아 재렌더가 생략될 수 있는 결함 확인.
+- signature에 팀별 후보/확정/유지 건수와 각 공식확정 Case의 stable 식별값, canonical isMaintained 결과, maintainState/auditState/status, attrition, valid 상태를 포함하도록 보강.
+- 이제 총 건수 불변 상태변경도 맵/우측 순위/Y축 실행수준 갱신을 유발. 250ms debounce는 유지해 흔들림 재발 방지.
