@@ -2298,3 +2298,15 @@
 - 요청출처 차트는 보조, 월별 등록·처리 추이는 핵심 Overview로 위계 차등화. 차트 높이·범례·근거 버튼을 축소해 리포트형 나열감을 완화.
 - 조회영역은 기본조건(공장/년/월/조회), 상세필터(출처/부서/상태/재발), 출력(프린트/상세엑셀) 3그룹으로 분리.
 - 관련 커밋: 7cc49e64, 39a72faa, 1dd2006d, d08693ae, 7b3b1ea9, 9adb968e, 94819760, de604a6c, c254d004. 실제 로딩 참조 cache-bust: 711fb007.
+
+
+### 2026-10-03 / Dashboard 긴급 복구·탭 소유권 회귀수정
+- 개선요청 종합 재디자인 이후 사용자 실웹에서 Dashboard 레이아웃 붕괴 및 고도화맵 진입 누락 확인. 재디자인 런타임 3파일(hd20-request-board.js, hd20-overhaul.css, index.html)을 재디자인 직전 기준으로 우선 복구.
+- 고도화맵 본체 삭제가 아니라 dashboard-section-tabs.js TABS 등록에서 maturity가 빠진 것이 직접 진입 누락 원인임을 확인하고 고도화맵 탭을 #hd20MaturityMapTab에 재등록.
+- 현행 Dashboard 탭 전체를 기준으로 body mode class를 상호 배타 관리하도록 setMode() 보정하여 improve/request/analysis 전환 시 과거 mode class 잔류 가능성 제거.
+- #hd20MaturityMapTab을 allTargets() visibility 격리 세트에 명시적으로 포함해 다른 Dashboard 탭에서 잔류 노출되지 않도록 보강.
+- index.html에 남아 있던 .bottomGrid(5S 고도화 판정 기준·고도화 작업장 추이)가 탭 정의에서 orphan 상태임을 확인하여 standard를 '고도화 기준·추이'로 복구하고 .bottomGrid와 재연결.
+- 폐기된 standard 전용 과거 레이아웃 override CSS는 제거한 뒤 현재 탭 소유권으로 재연결하여 과거 !important 레이아웃 간섭을 차단.
+- cache chain: final-layout-polish.js 동적 dashboard-section-tabs loader와 index.html final-layout-polish 참조를 단계별 강제 갱신.
+- 주요 복구 커밋: 05adc2ef, bea2da0c, a550d227, f89ceb51, 52a11afc, 5319744d, ea42083d, 3a4e18ad, 8dd40d3e, 515b30d0, 686f87c5, b5693107, 2f3e0c9d, b2371ff7, da146fa9, a4133277, 33a068c1.
+- 신규 디자인 추가는 중단하고 Dashboard 탭 표시/숨김·진입경로·고아 DOM 회귀 복구를 우선 진행.
