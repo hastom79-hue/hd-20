@@ -1512,3 +1512,10 @@ Canonical Store는 다음을 기준으로 한다.
 - refreshActiveAdvancement를 추가해 현재 열린 고도화 하위탭만 선택적으로 재렌더.
 - 감지 이벤트: hd20-kpi-source-updated, hd20-gmes-5s-imported, hd20-gmes-5s-judged, hd20-refresh-requested.
 - 대상: 후보 목록, 3조건 분석, 라인·작업장 상세, 심사 프로세스, 확정·수평전개. 네비게이션 구조/탭 순서는 변경하지 않음.
+
+
+### 2026-10-02 / 3조건 분석 배열형 criteriaMatched 잔여불일치 수정 (`f2a1271`, `7a4755b`)
+- performance-conversion-analysis.js의 criteriaCount가 Number(criteriaMatched)를 우선 사용하고 배열형 criteriaMatched를 직접 처리하지 않는 잔여 불일치 확인.
+- fixture 및 hd20-subtabs는 criteriaMatched=['시각화…','Green Zone',…] 배열형을 사용하므로 동일 Case가 상단 '실제 심사 분포'와 하단 팀별 분석에서 다르게 집계될 수 있었음.
+- criteriaCount에 Array.isArray 분기를 최우선 추가하여 배열 길이를 0~3 충족수로 canonical 처리. 숫자형/개별 criteriaVisual·Green·Space fallback은 유지.
+- 결과적으로 0/1/2/3조건 분포와 고도화 하위 분석의 조건 충족수 해석을 일치시킴.
