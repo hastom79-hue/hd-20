@@ -2215,3 +2215,9 @@
 - confirm/loss/missBias 변경 없음, production raw data 영향 없음
 - `ad2004a1` chore: fixture activity floor correction 배포
 - `8652a5c` docs: DEVELOPMENT_LOG 동시 갱신
+
+- 변수독립 검증: missBias=확정전 criteria 준비도, pf.loss=확정후 유지이탈
+- 확정 분기에서 criteriaMatched를 3/3으로 재설정하므로 missBias가 X축 이탈에 직접 중복 반영되지 않음
+- `e8cea06` test: 단계분리 guard 주석 추가, 정상 계산로직은 불필요 변경하지 않음
+- `1855c55` chore: fixture stage-separation guard 배포
+- `b40f005` docs: DEVELOPMENT_LOG 동시 갱신
