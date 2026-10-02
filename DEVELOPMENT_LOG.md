@@ -1595,3 +1595,10 @@ Canonical Store는 다음을 기준으로 한다.
 - confirm 이후 pending→supplement→unconfirmed→closed cut을 이전 cut 기준 누적 증가시키는 monotonic band로 변경.
 - 팀별 confirm 특성은 유지하면서 판정대기/보완요청/미확정/완료 단계가 역전·소실되지 않도록 보정.
 - 공식확정 판정(r<pf.confirm), loss, missBias 및 production Raw Data는 변경 없음.
+
+
+### 2026-10-02 / 미확정+판정대기 canonical 후보 누락 수정 (`bad3b7f`, `c7068ad`, `7b7efa0`)
+- fixture는 미확정 심사 Case를 candidate=true/isCandidate=true + judgeState='미확정' + status='판정대기'로 생성해 현재는 후보로 잡히지만, canonical isCandidate의 상태 fallback은 judgeState가 '미확정'이면 status를 보지 않고 false 처리하는 잠재 불일치를 확인.
+- candidate flag가 유실되거나 외부 Raw Data가 상태만 제공할 경우 동일 Case가 후보 목록/고도화맵 후보활동량에서 누락될 수 있어 canonical 규칙 수정.
+- judgeState='미확정'이라도 status가 판정대기·보완요청·후보·검토·대기이면 후보로 유지. 단순 미확정이며 진행상태가 없으면 후보로 자동 승격하지 않음.
+- hd20-subtabs fallback도 동일 규칙으로 동기화. 공식확정 규칙은 변경 없음.
