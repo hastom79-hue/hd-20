@@ -19,6 +19,23 @@ const CONTRACT={
  'action.master':{title:'팀장 기준정보',purpose:'개선조치 알림 발송에 사용하는 생산팀장 성명·이메일 기준정보를 등록·수정합니다.',judge:'전체 16개 생산팀의 팀장 정보가 누락 없이 입력되어 있는지 확인',next:'미지정·이메일 누락 팀은 보완하고, 저장 후 조치 알림에 자동 반영',features:['팀장 기준정보','이메일 등록','Excel 일괄등록']},
  'action.verify':{title:'효과·재발관리',purpose:'완료된 개선조치가 실제 효과를 만들었는지 검증하고 같은 문제가 재발하는지 추적합니다.',judge:'완료표시와 효과확인을 분리하고 효과 미검증·재발 건을 집중 확인',next:'효과 미흡은 추가조치, 재발은 근인·대책을 재검토하여 폐쇄루프 재진입',features:['효과검증','검증대기','재발관리','폐쇄루프']}
 };
+const WORKFLOW={
+ 'activity.manage':['현장 문제·개선내용과 BEFORE/AFTER 증빙 확인','등록정보·증빙 완결 여부 판정','누락 보완 또는 고도화 후보 연결'],
+ 'activity.analysis':['팀·유형·기간별 실행 편차와 추이 확인','저활동·정체·우수활동 구분','실행 촉진 또는 고도화 검토'],
+ 'advancement.judge':['후보별 판정상태와 제출 근거 확인','판정대기·보완요청·확정 구분','근거 보완 또는 다음 심사 단계 진행'],
+ 'advancement.analysis':['3대 조건별 충족·미충족 분포 확인','심사 가능 수준과 부족 조건 판정','부족 조건 보완 후 상세검증'],
+ 'advancement.detail':['라인·작업장별 조건과 공식판정 확인','개별 사례의 조건 Gap 확인','후보 보완 또는 공식판정 연결'],
+ 'advancement.process':['후보→판정→확정 단계별 정체 확인','어느 단계에서 처리가 멈췄는지 판정','정체 단계 담당 업무로 즉시 연결'],
+ 'advancement.standard':['확정사례의 적용범위·유지상태 확인','재현·수평전개 가능 여부 판정','전개대상 지정 또는 Audit 연결'],
+ 'audit.draw':['Risk 기준과 추출 대상 분포 확인','이번 Audit 대상의 적정성 판단','대상 확정 후 실제 Audit 실시'],
+ 'audit.inspect':['점검항목·결과·부적합 근거 확인','적합/부적합 및 입력 완결성 판정','부적합 개선요청 또는 유지관리 시작'],
+ 'audit.ongoing':['월별 유지상태·재발징후·확인누락 점검','6개월 유지 정상/미흡 판단','재조치 또는 종료평가 준비'],
+ 'audit.retention':['6개월 도래 건의 최종 근거 확인','유지 적합/부적합 최종 판정','관리종료 또는 개선조치 재연결'],
+ 'action.manage':['담당·기한·조치내용·증빙 확인','기한경과·진행·완료 상태 판단','우선 Follow-up 또는 효과검증 이관'],
+ 'action.leadtime':['계획 대비 실제 처리기간 확인','병목·지연 건 판별','지연 건 조치목록 우선관리'],
+ 'action.master':['팀장 성명·이메일 누락/오류 확인','알림 발송 가능 상태 판단','기준정보 보완·저장'],
+ 'action.verify':['완료조치의 효과와 재발 여부 확인','유효/미흡/미검증·재발 판정','추가조치 또는 폐쇄루프 완료']
+};
 let state={area:'dashboard',sub:'summary'};const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
 const keyOf=(a=state.area,s=state.sub)=>`${a}.${s}`;const contract=(a=state.area,s=state.sub)=>CONTRACT[keyOf(a,s)]||CONTRACT['dashboard.summary'];
 function ensure(){let bar=$('#hd20Subnav');if(!bar){bar=document.createElement('nav');bar.id='hd20Subnav';bar.className='hd20Subnav';bar.setAttribute('aria-label','세부 업무 메뉴');const anchor=$('.beginnerHint')||$('.beginnerNav');anchor?.insertAdjacentElement('afterend',bar)}return bar}
@@ -44,8 +61,8 @@ const ROLES={
  'action.verify':{user:'완료한 조치의 효과가 유지되는지 확인해 결과를 입력하세요.',admin:'효과 미검증·재발 건을 집중 확인하고, 미흡한 건은 추가조치를 요청하세요.'}
 };
 function runCta(c){const root=document.querySelector('.awScreen.on')||document;let b=c.sel?document.querySelector(c.sel):null;if(!b&&c.text)b=[...root.querySelectorAll('button')].find(x=>x.textContent.includes(c.text)&&!x.closest('#hd20PurposePanel'));if(b){b.scrollIntoView({block:'center'});b.click()}}
-function renderPurpose(area=state.area,sub=state.sub){const p=contract(area,sub),el=ensurePurpose();el.dataset.contract=keyOf(area,sub);const R=ROLES[keyOf(area,sub)]||{};const cta=R.cta;
-  el.innerHTML=`<div class="hd20PurposeMain"><small>화면 안내 · ${MAP[area]?.find(x=>x[0]===sub)?.[1]||p.title}</small><h2>${p.title}</h2><p>${p.purpose}</p><div class="hd20RoleGrid"><div class="hd20Role user"><b>👤 사용자 · 이 화면에서 할 일</b><span>${R.user||p.judge}</span></div><div class="hd20Role admin"><b>🛠 관리자 · 이 화면에서 관리할 것</b><span>${R.admin||p.next}</span></div></div><details class="hd20PurposeMore"><summary>판단 기준 · 다음 단계 보기</summary><div class="hd20PurposeLogic"><span><b>판단</b>${p.judge}</span><span><b>다음</b>${p.next}</span></div><div class="hd20FeatureChips">${p.features.map(x=>`<span>${x}</span>`).join('')}</div></details></div><div class="hd20PurposeSide"><div class="hd20PurposeActions">${cta?`<button type="button" class="hd20Cta" data-hd20-cta>${cta.label}</button>`:''}<button type="button" data-hd20-grid>상세 데이터 그리드</button><button type="button" data-hd20-refresh>화면 새로고침</button></div></div>`;
+function renderPurpose(area=state.area,sub=state.sub){const p=contract(area,sub),el=ensurePurpose();el.dataset.contract=keyOf(area,sub);const R=ROLES[keyOf(area,sub)]||{};const cta=R.cta,wf=WORKFLOW[keyOf(area,sub)]||[p.judge,p.judge,p.next];
+  el.innerHTML=`<div class="hd20PurposeMain"><small>화면 안내 · ${MAP[area]?.find(x=>x[0]===sub)?.[1]||p.title}</small><h2>${p.title}</h2><p>${p.purpose}</p><div class="hd20RoleGrid"><div class="hd20Role user"><b>👤 사용자 · 이 화면에서 할 일</b><span>${R.user||p.judge}</span></div><div class="hd20Role admin"><b>🛠 관리자 · 이 화면에서 관리할 것</b><span>${R.admin||p.next}</span></div></div><div class="hd20WorkPath"><div><b>1. 확인</b><span>${wf[0]}</span></div><div><b>2. 판단</b><span>${wf[1]}</span></div><div><b>3. 실행</b><span>${wf[2]}</span></div></div><details class="hd20PurposeMore"><summary>판단 기준 · 다음 단계 보기</summary><div class="hd20PurposeLogic"><span><b>판단</b>${p.judge}</span><span><b>다음</b>${p.next}</span></div><div class="hd20FeatureChips">${p.features.map(x=>`<span>${x}</span>`).join('')}</div></details></div><div class="hd20PurposeSide"><div class="hd20PurposeActions">${cta?`<button type="button" class="hd20Cta" data-hd20-cta>${cta.label}</button>`:''}<button type="button" data-hd20-grid>상세 데이터 그리드</button><button type="button" data-hd20-refresh>화면 새로고침</button></div></div>`;
   el.querySelector('[data-hd20-cta]')?.addEventListener('click',()=>runCta(cta));
   el.querySelector('[data-hd20-grid]')?.addEventListener('click',()=>openGrid(area,sub));el.querySelector('[data-hd20-refresh]')?.addEventListener('click',()=>{window.HD20KPIData?.signal?.();window.dispatchEvent(new CustomEvent('hd20-refresh-requested'));apply(state.area,state.sub);renderPurpose()})}
 function ensureGridModal(){let m=$('#hd20UniversalGridModal');if(m)return m;m=document.createElement('div');m.id='hd20UniversalGridModal';m.className='hd20GridModal';m.innerHTML=`<div class="hd20GridBox" role="dialog" aria-modal="true" aria-labelledby="hd20GridTitle"><div class="hd20GridHead"><div><b id="hd20GridTitle">상세 데이터</b><small id="hd20GridMeta"></small></div><button type="button" data-grid-close aria-label="닫기">×</button></div><div class="hd20GridToolbar"><input id="hd20GridSearch" type="search" placeholder="상세 데이터 검색"><button type="button" data-grid-csv>CSV 다운로드</button></div><div id="hd20GridBody" class="hd20GridBody"></div></div>`;document.body.appendChild(m);m.querySelector('[data-grid-close]').onclick=()=>m.classList.remove('on');m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('on')});document.addEventListener('keydown',e=>{if(e.key==='Escape')m.classList.remove('on')});m.querySelector('#hd20GridSearch').addEventListener('input',filterGrid);m.querySelector('[data-grid-csv]').onclick=downloadGridCsv;return m}
