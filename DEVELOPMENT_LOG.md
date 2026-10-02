@@ -1505,3 +1505,10 @@ Canonical Store는 다음을 기준으로 한다.
 - 건수 총합이 동일한 상태에서 A팀 유지→이탈, B팀 이탈→유지처럼 상태가 교환되거나 maintainState/attrition/valid만 변경되면 signature가 같아 재렌더가 생략될 수 있는 결함 확인.
 - signature에 팀별 후보/확정/유지 건수와 각 공식확정 Case의 stable 식별값, canonical isMaintained 결과, maintainState/auditState/status, attrition, valid 상태를 포함하도록 보강.
 - 이제 총 건수 불변 상태변경도 맵/우측 순위/Y축 실행수준 갱신을 유발. 250ms debounce는 유지해 흔들림 재발 방지.
+
+
+### 2026-10-02 / 고도화 하위탭 데이터변경 동기갱신 추적수정 (`aab3ed0`, `329b4a7`)
+- 3대 요건 값(criteriaMatched/criteriaVisual/criteriaGreen/criteriaSpace)만 바뀌는 경우, 고도화맵은 KPI source 이벤트를 통해 갱신될 수 있으나 hd20-subtabs의 3조건 분석/상세/심사/표준화 운영화면은 활성 탭 상태에서 동일 이벤트에 직접 재렌더 바인딩이 없음을 확인.
+- refreshActiveAdvancement를 추가해 현재 열린 고도화 하위탭만 선택적으로 재렌더.
+- 감지 이벤트: hd20-kpi-source-updated, hd20-gmes-5s-imported, hd20-gmes-5s-judged, hd20-refresh-requested.
+- 대상: 후보 목록, 3조건 분석, 라인·작업장 상세, 심사 프로세스, 확정·수평전개. 네비게이션 구조/탭 순서는 변경하지 않음.
