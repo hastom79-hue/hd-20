@@ -2108,3 +2108,9 @@
 - X축 이탈도/canonical 유지판정 변경 없음
 - `1f32fd6` chore: maturity map cache-bust 배포
 - `d6206c3` docs: DEVELOPMENT_LOG 동시 갱신
+
+- 추적검증: 제작/중형/대형·휠로더·초대형/성능계열 profile 방향성 재확인
+- `679667a` refactor: maxCandidates를 map render당 1회 계산, 결과값 변경 없음
+- `ea7394c` chore: maturity map cache-bust 배포
+- 추가 수치보정 보류: 역왜곡 실증 전 임의 조정 방지
+- `c919df6` docs: DEVELOPMENT_LOG 동시 갱신
