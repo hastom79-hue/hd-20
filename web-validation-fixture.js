@@ -98,8 +98,8 @@ function makeActivities(){
         {const missBias=/^중형/.test(team)?.72:/^(성능|트러블슈팅)/.test(team)?.80:/^(프레임|Boom)/.test(team)?.30:/^(대형|휠로더|초대형)/.test(team)?.38:.48;const n=R()<.08?0:(R()<missBias?ri(1,2):3);row.criteriaMatched=shuffle(CRIT).slice(0,n);const hit=new Set(row.criteriaMatched);row.criteriaVisual=hit.has(CRIT[0])?'Y':'N';row.criteriaGreen=hit.has(CRIT[1])?'Y':'N';row.criteriaSpace=hit.has(CRIT[2])?'Y':'N'}
         /* 팀마다 초기 3개 고도화 행도 팀별 profile(confirm)을 반영하되 데이터 공백은 피하도록 단계별 deterministic bias만 적용 */
         /* missBias는 확정 전 3조건 준비도에만 사용하고, 확정 Case는 아래에서 3/3으로 고정한다. 확정 후 이탈은 pf.loss만 사용해 두 단계를 독립 유지한다. */
-        const warm=Math.min(1,slot/3); /* 초기 seed가 모든 팀을 강제로 확정시키지 않도록 profile 확률을 중심으로만 완만하게 보정 */
-        const r=slot<3?Math.max(0,Math.min(.999,pf.confirm+((R()-.5)*(.36-.08*warm)))):R();
+        /* 초기 Case도 일반 Case와 동일한 확률표본을 사용한다. 특정 slot을 강제/보정하면 팀별 공식확정률이 왜곡된다. */
+        const r=R();
         const judgedDay=minDay(T0,regDay+ri(1,30));
         if(r<pf.confirm){
           row.criteriaMatched=[...CRIT];row.criteriaVisual='Y';row.criteriaGreen='Y';row.criteriaSpace='Y';Object.assign(row,{candidate:true,isCandidate:true,judgeState:'확정',confirmed:true,status:chance(.1)?'유지관리':'확정',judgedAt:fromDay(judgedDay),confirmedAt:fromDay(judgedDay),level:ri(1,5)});
