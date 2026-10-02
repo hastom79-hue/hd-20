@@ -2159,3 +2159,10 @@
 - 고도화맵 X축 이탈도와 의미체계 일치
 - `5977f6b` chore: attrition denominator correction 배포
 - `57fe550` docs: DEVELOPMENT_LOG 동시 갱신
+
+- 추적결함: map canonical isMaintained vs 3조건 별도 attrition regex 불일치
+- 누락상태: 부적합/해제/실패/status/valid=false
+- `1027fb1` fix: attritionOf = canonical confirmed && !isMaintained 우선, 동일 fallback 보강
+- 고도화맵 X축 ↔ 3조건 확정후이탈 판정 통일
+- `8fad2b0` chore: canonical attrition alignment 배포
+- `9a3034f` docs: DEVELOPMENT_LOG 동시 갱신
