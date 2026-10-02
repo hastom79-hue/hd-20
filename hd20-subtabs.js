@@ -153,10 +153,11 @@ function ensureAdvProcess(){
  let host=$('#hd20AdvProcessOperational');if(host)return host;host=document.createElement('section');host.id='hd20AdvProcessOperational';host.className='pcPanel hd20AdvProcessOperational';const root=$('#performanceConversionAnalysis');(root?.querySelector('.pcGrid')||root)?.appendChild(host);return host
 }
 function advProcessState(x){
- const n=advCriteriaCount(x),s=txt(x?.judgeState||x?.status),confirmed=advancementConfirmed(x);
+ const n=advCriteriaCount(x),s=txt(x?.judgeState||x?.status),confirmed=advancementConfirmed(x),evidenceGap=advEvidenceGap(x).length;
  if(confirmed)return advancementAttrition(x)?'유지 이탈':'확정·전개';
+ if(evidenceGap)return '후보 지정';
  if(/보완/.test(s)||n<3)return '요건 보완';
- if(n>=3&&(/대기|후보|검토|미확정/.test(s)||!s))return '공식심사 대기';
+ if(n>=3)return '공식심사 대기';
  return '후보 지정'
 }
 function advProcessReason(x,state){
@@ -164,14 +165,14 @@ function advProcessReason(x,state){
  if(state==='요건 보완')return advGap(x);
  if(state==='공식심사 대기')return '3대 요건 충족 · 공식판정 대기';
  if(state==='확정·전개')return '공식확정 · 표준화/수평전개 및 유지관리';
- return '후보 근거 및 3대 요건 검증 필요'
+ return advEvidenceGap(x).length?'후보 증빙 보완: '+advEvidenceGap(x).join(' · '):'후보 근거 및 3대 요건 검증 필요'
 }
 function renderAdvProcess(){
  const host=ensureAdvProcess();if(!host)return;const rows=readStore('hd20GMES5SAutoImproveRawV1').filter(advancementCandidate);
  const states=['후보 지정','요건 보완','공식심사 대기','확정·전개','유지 이탈'];const grouped=Object.fromEntries(states.map(s=>[s,[]]));rows.forEach(x=>{const s=advProcessState(x);(grouped[s]||(grouped[s]=[])).push(x)});
  const cards=states.map(s=>`<div class="hd20ProcQueue ${s==='요건 보완'||s==='유지 이탈'?'risk':''}"><small>${s}</small><b>${grouped[s].length}건</b><span>${s==='후보 지정'?'근거 검증':s==='요건 보완'?'3대 요건 미충족':s==='공식심사 대기'?'3/3 충족 후 판정대기':s==='확정·전개'?'표준화·수평전개': '재고도화/Audit 환류'}</span></div>`).join('');
- const queue=rows.filter(x=>['요건 보완','공식심사 대기','유지 이탈'].includes(advProcessState(x))).sort((a,b)=>advCriteriaCount(a)-advCriteriaCount(b));
- const body=queue.map(x=>{const s=advProcessState(x);return `<tr><td>${esc(txt(x.team)||'—')}</td><td>${esc(advLine(x))}</td><td>${esc(txt(x.workplace||x.title)||'—')}</td><td><b>${esc(s)}</b></td><td>${advCriteriaCount(x)}/3</td><td>${esc(advProcessReason(x,s))}</td><td>${esc(s==='유지 이탈'?'Audit/재고도화':s==='요건 보완'?'요건 보완 후 재검증':'공식판정 진행')}</td></tr>`}).join('');
+ const queue=rows.filter(x=>['후보 지정','요건 보완','공식심사 대기','유지 이탈'].includes(advProcessState(x))).sort((a,b)=>advCriteriaCount(a)-advCriteriaCount(b));
+ const body=queue.map(x=>{const s=advProcessState(x);return `<tr><td>${esc(txt(x.team)||'—')}</td><td>${esc(advLine(x))}</td><td>${esc(txt(x.workplace||x.title)||'—')}</td><td><b>${esc(s)}</b></td><td>${advCriteriaCount(x)}/3</td><td>${esc(advProcessReason(x,s))}</td><td>${esc(s==='유지 이탈'?'Audit/재고도화':s==='후보 지정'?'증빙 보완 후 요건검증':s==='요건 보완'?'요건 보완 후 재검증':'공식판정 진행')}</td></tr>`}).join('');
  host.innerHTML=`<div class="pcPanelHead">현재 심사 Queue · 정체/환류 관리 <small>건수는 흐름의 보조정보이며, 아래 Case가 실제 조치 대상입니다.</small></div><div class="hd20ProcQueues">${cards}</div><div class="pcTableWrap"><table class="pcTable"><thead><tr><th>생산팀</th><th>라인</th><th>작업장/활동</th><th>현재 단계</th><th>요건</th><th>정체·환류 사유</th><th>다음 조치</th></tr></thead><tbody>${body||'<tr><td colspan="7">현재 정체·환류 대상 Case가 없습니다.</td></tr>'}</tbody></table></div>`
 }
 function ensureAdvStandard(){
