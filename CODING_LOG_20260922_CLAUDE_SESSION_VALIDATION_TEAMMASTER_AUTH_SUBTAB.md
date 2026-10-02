@@ -2087,3 +2087,8 @@
 - `c9c5e0a` style: 요건 미충족 집중도 요약 UI
 - `26650eb` chore: 3조건 집중도 cache-bust 배포
 - `811eb1e` docs: DEVELOPMENT_LOG 동시 갱신
+
+- `5d4c4e3` fix/data: fixture 3대 요건 개별필드 동기화 + 팀별 현실 미충족 편차 반영
+- `6ac4cc4` fix: criteriaMatched 배열형을 충족수/요건별 Gap 분석에서 정확히 처리
+- cache-bust 배포: 도구 보안 차단으로 다음 실행 재시도
+- `764a3ca` docs: DEVELOPMENT_LOG 동시 갱신
