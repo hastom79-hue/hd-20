@@ -1661,3 +1661,6 @@ Canonical Store는 다음을 기준으로 한다.
 - 검증 RNG seed `20260921` 고정으로 동일 조건의 Raw 분포가 재현되므로 이후 팀별 후보→3조건→확정→유지/이탈→고도화맵 좌표 역추적 기준으로 사용.
 
 - 후속 배포 반영: `index.html`의 `web-validation-fixture.js` cache-bust를 `v=20261002-realism2`로 갱신 (`905ef3e7`). 수정된 Raw 현실성 로직이 구 캐시에 가려지지 않도록 실제 로딩 참조까지 동기화.
+
+- 추가 확률검증에서 초기 3개 Case의 `pf.confirm` 중심 대칭분산도 `r < pf.confirm` 확률을 약 50%로 왜곡할 수 있음을 확인. slot 예외를 완전 제거하고 모든 Case에 동일한 `r=R()` 적용 (`00e678d3`). 팀별 confirm profile이 실제 공식확정 확률을 직접 결정하도록 수정.
+- fixture cache-bust를 `v=20261002-realism3`로 재갱신하여 위 확정분포 보정이 실제 로딩 경로에 반영되도록 동기화 (`756ae9e4`).
