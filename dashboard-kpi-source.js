@@ -10,7 +10,7 @@ function load(){try{const v=JSON.parse(localStorage.getItem(KEY)||'[]');return A
 function yearOf(v){const m=String(v??'').match(/(20\d{2})/);return m?Number(m[1]):null}
 function selectedYear(){const txt=document.querySelector('.controls select')?.textContent||'';const y=yearOf(txt);return y||new Date().getFullYear()}
 function isAdvancementType(x){const v=String(x?.type||x?.category||x?.sType||x?.['5S구분']||x?.['활동유형']||'').trim();return v==='5S 고도화'||v==='고도화'||v==='5S고도화'}
-function isCandidate(x){if(!x||!isAdvancementType(x))return false;if(x.candidate===true||x.isCandidate===true)return true;const s=String(x.judgeState||x.status||'').trim();if(!s||s==='미확정')return false;return /판정대기|보완요청|확정|후보|검토|대기/.test(s)}
+function isCandidate(x){if(!x||!isAdvancementType(x))return false;if(x.candidate===true||x.isCandidate===true)return true;const judge=String(x.judgeState||'').trim(),status=String(x.status||'').trim();if(!judge&&!status)return false;if(judge==='미확정')return /판정대기|보완요청|후보|검토|대기/.test(status);const s=judge||status;return /판정대기|보완요청|확정|후보|검토|대기/.test(s)}
 function isConfirmed(x){return !!x&&isAdvancementType(x)&&x.confirmed===true&&String(x.judgeState||'').trim()==='확정'}
 function isMaintained(x){if(!isConfirmed(x))return false;return !/중지|미흡|이탈|재점검|부적합|해제|실패/.test(String(x.maintainState||x.auditState||x.status||''))&&x.attrition!==true&&x.valid!==false}
 function num(v){const n=Number(String(v??'').replace(/[^0-9.\-]/g,''));return Number.isFinite(n)&&n>0?n:null}
