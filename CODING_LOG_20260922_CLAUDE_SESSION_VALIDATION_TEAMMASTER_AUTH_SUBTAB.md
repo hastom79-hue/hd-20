@@ -2240,3 +2240,10 @@
 - API 정상 시 canonical 우선 사용, load timing 장애에서만 fallback
 - `e179489` chore: performance canonical fallback 배포
 - `41211c2` docs: DEVELOPMENT_LOG 동시 갱신
+
+- maturity map 추적: data()가 KPI API 없으면 즉시 empty 반환 → 전체 0건 붕괴 가능
+- `63dcfa0` fix: Raw fallbackLoad + canonical-equivalent type/candidate/confirmed/maintained 판정 추가
+- signature 유지판정도 fallback 동기화
+- API 정상 시 canonical 최우선, load timing 장애에서만 fallback
+- `7f17a61` chore: maturity map fallback 배포
+- `cc837ab` docs: DEVELOPMENT_LOG 동시 갱신
