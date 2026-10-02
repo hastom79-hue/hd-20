@@ -1574,3 +1574,10 @@ Canonical Store는 다음을 기준으로 한다.
 - 그러나 각 팀 초기 3개 고도화 row의 r값을 0/.35/.55로 고정해 첫 row가 모든 팀에서 무조건 확정되는 구조였고, 특히 저활동·저확정 팀의 차이를 희석시킬 수 있었음.
 - 초기 seed도 pf.confirm에 연동하도록 변경해 팀별 확정성향을 유지하면서 deterministic bias로 데이터 공백만 방지.
 - 실제 운영 Raw Data는 변경하지 않으며 validation/demo fixture 생성 시에만 적용됨. 기존 localStorage는 fixture 재생성 전까지 그대로 유지.
+
+
+### 2026-10-02 / fixture 저활동팀 활동량 floor 왜곡 수정 (`4325431`, `ad2004a1`)
+- teamPer 산식이 Math.max(18, round(per*activity))로 최소 18건을 강제해 중형(activity .58), 성능·트러블슈팅(.48)의 낮은 활동량이 per 값에 따라 동일 18건으로 평탄화될 수 있었음.
+- 이 평탄화는 고도화맵 Y축 activity=candidates/maxCandidates의 팀별 차이를 축소해 저활동 팀을 실제보다 높게 보이게 할 수 있음.
+- fixture 최소 floor를 18→8로 낮춰 profile activity 차이가 후보 활동량에 실제 반영되도록 수정. 팀별 데이터 공백 방지는 유지.
+- confirm/loss/missBias와 production Raw Data는 변경 없음. 기존 localStorage는 fixture 재생성 전 유지.
