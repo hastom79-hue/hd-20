@@ -105,11 +105,13 @@ function makeActivities(){
           const weak=chance(pf.loss);row.maintainState=weak?pick(['미흡','중지']):'정상';row.valid=!weak;
           if(weak){row.attrition=true;row.attritionReason=pick(['3대 요건 유지 미흡','정위치·정량 기준 이탈','Green Zone 유지 미흡','시각화·형적관리 유지 미흡']);row.attritionAt=fromDay(minDay(T0,judgedDay+ri(30,180)))}
           if(chance(.45)){row.horizontalRollout=true;row.rolloutState=pick(['수평전개중','수평전개 완료'])}
-        }else if(r<Math.max(pf.confirm+.20,.50)){Object.assign(row,{candidate:true,isCandidate:true,judgeState:'판정대기',status:'판정대기'})}
-        else if(r<.62){Object.assign(row,{candidate:true,isCandidate:true,judgeState:'보완요청',status:'보완요청',judgedAt:fromDay(minDay(T0,regDay+ri(1,20)))})}
-        else if(r<.72){Object.assign(row,{candidate:true,isCandidate:true,judgeState:'미확정',status:'판정대기',judgedAt:fromDay(minDay(T0,regDay+ri(1,20)))})}
-        else if(r<.85){Object.assign(row,{candidate:false,judgeState:'',status:'완료'})}
-        else{Object.assign(row,{candidate:true,isCandidate:true,judgeState:pick(['후보','검토중']),status:'검토중'})}
+        }else{const pendingCut=Math.min(.62,pf.confirm+.24),supplementCut=Math.min(.74,pendingCut+.14),unconfirmedCut=Math.min(.84,supplementCut+.10),closedCut=Math.min(.92,unconfirmedCut+.08);
+          if(r<pendingCut)Object.assign(row,{candidate:true,isCandidate:true,judgeState:'판정대기',status:'판정대기'});
+          else if(r<supplementCut)Object.assign(row,{candidate:true,isCandidate:true,judgeState:'보완요청',status:'보완요청',judgedAt:fromDay(minDay(T0,regDay+ri(1,20)))});
+          else if(r<unconfirmedCut)Object.assign(row,{candidate:true,isCandidate:true,judgeState:'미확정',status:'판정대기',judgedAt:fromDay(minDay(T0,regDay+ri(1,20)))});
+          else if(r<closedCut)Object.assign(row,{candidate:false,judgeState:'',status:'완료'});
+          else Object.assign(row,{candidate:true,isCandidate:true,judgeState:pick(['후보','검토중']),status:'검토중'});
+        }
       }
       out.push(row);
     }
