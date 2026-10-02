@@ -1609,3 +1609,10 @@ Canonical Store는 다음을 기준으로 한다.
 - canonical과 동일한 fallback 판정식을 내부에 추가. 특히 미확정+판정대기 후보 규칙도 동일 적용.
 - API가 정상 로드되면 기존처럼 canonical 함수를 최우선 사용하며 fallback은 사용하지 않음.
 - 따라서 script load timing 이상에서도 후보목록/3조건분석/성과전환/고도화맵 모집단 의미가 동일하게 유지됨.
+
+
+### 2026-10-02 / 고도화맵 canonical API 지연 시 0건 붕괴 방지 (`63dcfa0`, `7f17a61`)
+- hd20-maturity-map-tab.js의 data()가 HD20KPIData 미로드 시 즉시 빈 rows/candidates/confirmed/maintained를 반환해 로딩순서 이상에서 고도화맵 전체가 0건/빈 화면으로 붕괴하는 구조 확인.
+- localStorage Raw를 읽는 fallbackLoad와 canonical-equivalent type/candidate/confirmed/maintained 판정식을 추가.
+- canonical API가 존재하면 기존 API를 최우선 사용하며, 지연/미로드 시에만 fallback으로 모집단을 유지.
+- signature()의 유지상태 판정도 동일 fallback을 사용하도록 보정해 API 지연 중 refresh signature가 잘못 고정되는 문제까지 방지.
