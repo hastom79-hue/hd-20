@@ -1588,3 +1588,10 @@ Canonical Store는 다음을 기준으로 한다.
 - 확정 후 유지이탈은 해당 분기 내부에서 pf.loss만으로 weak를 생성하므로 missBias가 X축 이탈도에 직접 중복 반영되지 않음을 확인.
 - 따라서 중형/성능계열의 높은 missBias는 '심사 전 준비도 부족', 높은 loss는 '확정 후 유지취약'이라는 서로 다른 단계 신호로 유지됨.
 - 향후 회귀 시 두 변수를 섞지 않도록 fixture 코드에 단계분리 guard 주석 추가. 계산 로직 자체는 검증 결과 정상이라 변경하지 않음.
+
+
+### 2026-10-02 / fixture 후보판정 분기 비단조 구간 수정 (`cd31049`, `bfc4f9d`)
+- 기존 분기는 판정대기 상한만 max(pf.confirm+.20,.50)로 profile 연동되고 이후 보완요청 .62 / 미확정 .72 / 완료 .85가 절대값 고정이어서, confirm profile이 높은 팀에서는 판정대기 구간이 커질수록 보완/미확정 구간이 비정상적으로 축소되는 비단조 구조가 있었음.
+- confirm 이후 pending→supplement→unconfirmed→closed cut을 이전 cut 기준 누적 증가시키는 monotonic band로 변경.
+- 팀별 confirm 특성은 유지하면서 판정대기/보완요청/미확정/완료 단계가 역전·소실되지 않도록 보정.
+- 공식확정 판정(r<pf.confirm), loss, missBias 및 production Raw Data는 변경 없음.
