@@ -62,13 +62,16 @@ function render(){css();const el=ensure(),d=data();
     const volume=Math.min(100,t.confirmed/maxConfirmed*100);
     const conversion=t.candidates?Math.min(100,t.confirmed/t.candidates*100):retention;
     // 고도화 수준은 단순 유지율의 복제가 아니라 유지성과(50)+확정 Case 축적(30)+후보→확정 전환(20)의 복합지수.
-    const level=Math.round((retention*.5+volume*.3+conversion*.2)*10)/10;
+    // 실행수준은 유지성과뿐 아니라 실제 후보 발굴량을 함께 반영한다. 설비가 선진화되어 보여도 활동량이 적으면 과대평가하지 않는다.
+    const maxCandidates=Math.max(1,...teams.map(x=>x.candidates));
+    const activity=Math.min(100,t.candidates/maxCandidates*100);
+    const level=Math.round((retention*.45+volume*.20+conversion*.15+activity*.20)*10)/10;
     const attrition=t.confirmed?Math.round((t.confirmed-t.maintained)/t.confirmed*1000)/10:0;
     // 이탈은 3대 고도화 요건을 현재 유지하지 못하는 공식확정 Case의 실제 비율이다. 설비 선진화 수준 자체를 활동 실행성과로 대체하지 않는다.
-    return {...t,attrition,level,retention,volume:Math.round(volume*10)/10,conversion:Math.round(conversion*10)/10};
+    return {...t,attrition,level,retention,volume:Math.round(volume*10)/10,conversion:Math.round(conversion*10)/10,activity:Math.round(activity*10)/10};
   });
   const mapWrap=document.createElement('div');mapWrap.className='mmtMatrixWrap';
-  mapWrap.innerHTML='<div class="mmtMatrixY">고도화 실행수준<small>(유지·Case·전환)</small></div><div class="mmtMatrix"><div class="mmtQuad qStable"><b>안정 운영</b></div><div class="mmtQuad qExcellent"><b>우수 유지</b></div><div class="mmtQuad qImprove"><b>보완 필요</b></div><div class="mmtQuad qFocus"><b>집중 고도화 대상</b></div><div class="mmtHLine"></div><div class="mmtVLine"></div><div class="mmtTicksX"></div><div class="mmtTicksY"></div></div><div class="mmtMatrixX">기존 대비 이탈도 (Gap) →</div>';
+  mapWrap.innerHTML='<div class="mmtMatrixY">고도화 실행수준<small>(유지·Case·전환·활동량)</small></div><div class="mmtMatrix"><div class="mmtQuad qStable"><b>안정 운영</b></div><div class="mmtQuad qExcellent"><b>우수 유지</b></div><div class="mmtQuad qImprove"><b>보완 필요</b></div><div class="mmtQuad qFocus"><b>집중 고도화 대상</b></div><div class="mmtHLine"></div><div class="mmtVLine"></div><div class="mmtTicksX"></div><div class="mmtTicksY"></div></div><div class="mmtMatrixX">기존 대비 이탈도 (Gap) →</div>';
   bars.innerHTML='';bars.appendChild(mapWrap);
   const matrix=$('.mmtMatrix',mapWrap),tx=$('.mmtTicksX',matrix),ty=$('.mmtTicksY',matrix);
   for(let n=0;n<=100;n+=10){tx.insertAdjacentHTML('beforeend','<i style="left:'+n+'%">'+n+'%</i>')}
