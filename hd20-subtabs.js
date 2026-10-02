@@ -40,6 +40,13 @@ let state={area:'dashboard',sub:'summary'};const $=(s,r=document)=>r.querySelect
 const keyOf=(a=state.area,s=state.sub)=>`${a}.${s}`;const contract=(a=state.area,s=state.sub)=>CONTRACT[keyOf(a,s)]||CONTRACT['dashboard.summary'];
 function ensure(){let bar=$('#hd20Subnav');if(!bar){bar=document.createElement('nav');bar.id='hd20Subnav';bar.className='hd20Subnav';bar.setAttribute('aria-label','세부 업무 메뉴');const anchor=$('.beginnerHint')||$('.beginnerNav');anchor?.insertAdjacentElement('afterend',bar)}return bar}
 function ensurePurpose(){let el=$('#hd20PurposePanel');if(!el){el=document.createElement('section');el.id='hd20PurposePanel';el.className='hd20PurposePanel';ensure().insertAdjacentElement('afterend',el)}return el}
+function enforceTopStatusOrder(area=state.area){
+  if(area==='dashboard')return;
+  const bar=ensure(),purpose=ensurePurpose(),metrics=$('#hd20OpsMetrics');
+  if(metrics&&bar&&bar.parentNode===metrics.parentNode)bar.insertAdjacentElement('afterend',metrics);
+  if(purpose&&metrics&&purpose.parentNode===metrics.parentNode)metrics.insertAdjacentElement('afterend',purpose);
+  else if(purpose&&bar&&purpose.parentNode===bar.parentNode)bar.insertAdjacentElement('afterend',purpose);
+}
 function currentRoot(area){return area==='dashboard'?$('.app'):area==='activity'?$('#awActivity'):area==='advancement'?($('#performanceConversionAnalysis')||$('#awWorkplace')):area==='audit'?$('#awAudit'):$('#awAction')}
 
 /* hd-22 벤치마킹: 탭마다 "사용자가 할 일 / 관리자가 관리할 것"과 핵심 버튼을 명시 */
@@ -201,7 +208,7 @@ function applyAction(sub){const root=$('#awAction');if(!root)return;root.dataset
      관리)에서는 숨김. 내용 삭제가 아니라 서브탭별 표시 범위 재구성. */
   show($('.awActions',root),sub==='manage');
 }
-function apply(area,sub){try{document.querySelector('.app')?.setAttribute('data-hd-view',area+'.'+sub)}catch(e){}
+function apply(area,sub){enforceTopStatusOrder(area);try{document.querySelector('.app')?.setAttribute('data-hd-view',area+'.'+sub)}catch(e){}
   if(area==='dashboard')applyDashboard(sub);else if(area==='activity')applyActivity(sub);else if(area==='advancement')applyAdvancement(sub);else if(area==='audit')applyAudit(sub);else if(area==='action')applyAction(sub);window.dispatchEvent(new CustomEvent('hd20-subtab-changed',{detail:{area,sub}}))}
 function select(area,sub){state={area,sub};$$('button',ensure()).forEach(b=>b.classList.toggle('on',b.dataset.sub===sub));apply(area,sub);renderPurpose(area,sub);
   try{const u=new URL(location.href);if(u.searchParams.get('area')===area)u.searchParams.set('sub',sub);history.replaceState(null,'',u)}catch{}}
