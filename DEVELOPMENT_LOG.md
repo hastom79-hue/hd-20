@@ -1602,3 +1602,10 @@ Canonical Store는 다음을 기준으로 한다.
 - candidate flag가 유실되거나 외부 Raw Data가 상태만 제공할 경우 동일 Case가 후보 목록/고도화맵 후보활동량에서 누락될 수 있어 canonical 규칙 수정.
 - judgeState='미확정'이라도 status가 판정대기·보완요청·후보·검토·대기이면 후보로 유지. 단순 미확정이며 진행상태가 없으면 후보로 자동 승격하지 않음.
 - hd20-subtabs fallback도 동일 규칙으로 동기화. 공식확정 규칙은 변경 없음.
+
+
+### 2026-10-02 / 성과전환 분석 canonical 미로드 fallback 복구 (`39a6334`, `e179489`)
+- performance-conversion-analysis.js는 isCandidate/isConfirmed/isMaintained를 HD20KPIData API에만 위임하고 API가 미로드/지연이면 모두 false를 반환해 후보·확정·유지 지표가 0건으로 붕괴할 수 있었음.
+- canonical과 동일한 fallback 판정식을 내부에 추가. 특히 미확정+판정대기 후보 규칙도 동일 적용.
+- API가 정상 로드되면 기존처럼 canonical 함수를 최우선 사용하며 fallback은 사용하지 않음.
+- 따라서 script load timing 이상에서도 후보목록/3조건분석/성과전환/고도화맵 모집단 의미가 동일하게 유지됨.
