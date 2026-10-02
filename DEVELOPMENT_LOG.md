@@ -1457,3 +1457,10 @@ Canonical Store는 다음을 기준으로 한다.
 - fixture 현실보정 정적검증: 중형(.58/.17/.52), 대형·휠로더·초대형(1.18/.34/.27), 프레임·Boom(1.30/.39/.22), 성능·트러블슈팅(.48/.14/.58) profile 존재 확인.
 - 3대 요건 개별필드(criteriaVisual/criteriaGreen/criteriaSpace) 동기 생성 확인.
 - 분석코드 검증: criteriaMatched 배열형 충족수 계산, 조건명 Set 기반 요건별 판정, 3조건 집중도/라인상세/심사Queue/확정수평전개 운영화면 모두 존재 확인.
+
+
+### 2026-10-02 / 고도화맵 추적검증 — 유지판정 canonical 보정 (`af9c275`, `edf3ff0`)
+- 고도화맵은 자체 임의판정이 아니라 HD20KPIData.isMaintained()를 사용함을 재확인.
+- 추적 중 canonical isMaintained가 '중지|부적합|해제|실패'만 제외하고 '미흡|이탈|재점검' 및 explicit attrition=true를 직접 제외하지 않는 Gap 발견.
+- fixture는 이탈 시 valid=false도 함께 기록해 대부분 제외되지만, 실제 Raw Data에서 valid 값이 없고 maintainState='미흡'인 Case는 유지로 오판될 가능성이 있어 근인 수정.
+- canonical 유지판정에서 중지/미흡/이탈/재점검/부적합/해제/실패, attrition=true, valid=false를 모두 유지 제외하도록 통일. 고도화맵/추이/공유 KPI가 동일 기준을 사용.
