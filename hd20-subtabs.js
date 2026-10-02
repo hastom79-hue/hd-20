@@ -1,10 +1,12 @@
 (()=>{'use strict';
-const MAP={dashboard:[['summary','종합현황'],['analysis','성과·운영분석']],activity:[['manage','활동관리'],['analysis','실적분석']],advancement:[['judge','후보 목록'],['analysis','3조건 분석'],['detail','라인·작업장 상세'],['process','심사 프로세스'],['standard','확정·수평전개']],audit:[['draw','대상 추출'],['inspect','실시·점검 입력'],['ongoing','6개월 관리중'],['retention','종료평가']],action:[['manage','조치 목록'],['leadtime','처리기간 분석'],['master','팀장 기준정보'],['verify','효과·재발관리']]};
+const MAP={dashboard:[['summary','종합현황'],['analysis','성과·운영분석']],activity:[['manage','활동관리'],['analysis','실적분석']],advancement:[['map','고도화 Portfolio Map'],['trend','고도화 판정기준·추이'],['judge','후보 목록'],['analysis','3조건 분석'],['detail','라인·작업장 상세'],['process','심사 프로세스'],['standard','확정·수평전개']],audit:[['draw','대상 추출'],['inspect','실시·점검 입력'],['ongoing','6개월 관리중'],['retention','종료평가']],action:[['manage','조치 목록'],['leadtime','처리기간 분석'],['master','팀장 기준정보'],['verify','효과·재발관리']]};
 const CONTRACT={
  'dashboard.summary':{title:'종합현황',purpose:'울산캠퍼스 5S 운영상태를 한 화면에서 파악하고 오늘 우선 확인할 영역을 정합니다.',judge:'목표 대비 성과, 고도화 확보, Audit 대기, 미완료·기한경과·재발을 동시에 확인',next:'이상 KPI·Risk 카드를 상세근거로 Drill-down하여 담당 업무 탭으로 이동',features:['핵심 KPI','팀별 성과','Action Summary','우선순위']},
  'dashboard.analysis':{title:'성과·운영분석',purpose:'단순 실적 건수를 넘어 판정 Lead Time, 유지율, 재발률, 조치완료율 등 운영 건전성을 분석합니다.',judge:'성과 증가가 프로세스 건전성 개선과 함께 일어나는지 확인',next:'취약 지표의 원천 데이터를 확인하고 원인 업무영역에서 조치',features:['운영 KPI','월별 추이','유지율','재발·기한']},
  'activity.manage':{title:'활동관리',purpose:'현장에서 발생한 5S 개선활동을 문제·조치·증빙과 함께 누락 없이 등록하고 상태를 관리합니다.',judge:'활동 건수보다 문제와 개선내용, 생산팀, 일자, BEFORE/AFTER 증빙의 완결성을 확인',next:'미완료·미증빙 건은 보완하고 고도화 가능 건은 후보로 연결',features:['신규등록','문제·개선','BEFORE/AFTER','상태관리']},
  'activity.analysis':{title:'실적분석',purpose:'누적 활동을 생산팀·유형·기간별로 비교해 실행 편차와 고도화 전환 가능성을 찾습니다.',judge:'팀별 활동량, 완료율, 최근 추이, 후보 전환 분포의 이상치를 확인',next:'저활동·정체 팀은 실행을 촉진하고 우수 활동은 고도화 검토',features:['팀별 실적','유형 분석','월별 추이','후보 전환']},
+ 'advancement.map':{title:'고도화 Portfolio Map',purpose:'팀별 고도화 수준과 기존 대비 이탈도를 한 화면에서 비교해 관리 우선영역을 확인합니다.',judge:'팀별 고도화 복합지수·이탈도·공식확정 Case를 함께 확인',next:'집중 고도화·보완 필요 팀은 상세 Case와 원천 근거를 확인해 후속조치',features:['팀별 Portfolio','이탈도','공식확정 Case','관리영역']},
+ 'advancement.trend':{title:'고도화 판정기준·추이',purpose:'5S 고도화 3대 판정기준과 월별 고도화 작업장 변화를 함께 확인합니다.',judge:'3대 기준의 의미와 유지·신규·이탈의 월별 변화를 확인',next:'기준 미충족·이탈 작업장은 후보·3조건 분석·상세 화면에서 원인을 확인',features:['3대 판정기준','월별 추이','유지·신규·이탈']},
  'advancement.judge':{title:'후보 목록',purpose:'5S 고도화 후보로 등록된 작업장 목록을 확인하고 판정 상태를 관리합니다.',judge:'후보 건수와 판정 진행 상태(판정대기·보완요청·확정)를 확인',next:'판정대기는 근거를 보완하고, 3대 조건 충족 여부는 별도 탭에서 상세 확인',features:['후보목록','판정상태','작업장별 현황']},
  'advancement.analysis':{title:'3조건 분석',purpose:'등록된 고도화 사례가 3대 조건(시각화·Green Zone·공간활용)을 얼마나 충족하는지 요약합니다.',judge:'1개/2개 이상/3개 모두 충족 구간별 건수와 SCOPE·ANALYSIS 현황을 확인',next:'구간별 분포를 확인한 뒤 라인·작업장별 상세는 별도 탭에서 확인',features:['3대조건 요약','SCOPE·ANALYSIS']},
  'advancement.detail':{title:'라인·작업장 상세',purpose:'3대 조건 충족 현황을 생산팀·라인·작업장 단위 개별 사례로 확인합니다.',judge:'각 사례의 조건 충족수와 공식판정 상태를 개별 행 단위로 확인',next:'조건 확장이 필요한 사례는 후보 목록에서, 공식판정은 확정·수평전개에서 이어서 관리',features:['라인·작업장별 상세표','충족수','공식판정']},
@@ -29,6 +31,8 @@ function currentRoot(area){return area==='dashboard'?$('.app'):area==='activity'
 const ROLES={
  'activity.manage':{user:'오늘 발견한 5S 문제와 개선 내용을 등록하고, BEFORE·AFTER 사진을 첨부하세요.',admin:'미완료·증빙 누락 건과 팀별 등록 편차를 확인하고, 고도화 가능 건을 후보로 연결하세요.',cta:{label:'+ 5S 신규등록',sel:'[data-aw="new"]'}},
  'activity.analysis':{user:'우리 팀의 유형별·월별 활동 추이를 보고 부족한 5S 유형을 찾으세요.',admin:'활동이 적거나 정체된 팀에 실행을 요청하고, 우수 활동은 고도화 후보로 검토하세요.'},
+ 'advancement.map':{user:'우리 팀의 고도화 수준·이탈도와 관리영역을 확인하세요.',admin:'이탈도가 높거나 고도화 수준이 낮은 팀을 우선 확인하고 공식확정 Case를 Drill-down하세요.'},
+ 'advancement.trend':{user:'3대 판정기준과 월별 고도화 작업장 변화를 확인하세요.',admin:'이탈 증가·신규 정체 구간을 확인해 후보·3조건 분석과 연결하세요.'},
  'advancement.judge':{user:'우리 작업장이 후보로 올라왔는지, 판정 상태(대기·보완요청·확정)를 확인하세요.',admin:'판정대기 건의 근거를 확인해 확정 또는 보완요청을 결정하세요.'},
  'advancement.analysis':{user:'우리 작업장이 3대 조건 중 몇 개를 충족했는지 확인하세요.',admin:'1개·2개·3개 충족 분포를 보고 조건 확장이 필요한 작업장을 골라내세요.'},
  'advancement.detail':{user:'라인·작업장별 충족 조건과 공식판정 상태를 확인하세요.',admin:'충족수가 부족한 사례는 후보 목록에서, 공식판정은 확정·수평전개에서 이어서 처리하세요.'},
