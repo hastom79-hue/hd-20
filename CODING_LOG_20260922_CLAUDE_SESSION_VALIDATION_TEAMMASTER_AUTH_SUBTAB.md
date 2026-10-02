@@ -2039,3 +2039,19 @@
 - `564a115` docs: Excel Import 안내 명확화(8e0894a) 로그 반영, 커밋 대장 재생성
 - `904c454` docs: 통합기준정보 전체 폭(01ca2de) 로그 반영, 커밋 대장 재생성
 - `c7fa5d8` docs: 고도화 맵 필터·개선요청 차트 수정(30dacd1,889185d) 로그 반영, 커밋 대장 재생성
+
+
+## 2026-10-02 — 하위 탭 Workflow-first / 고도화 현실 데이터 보정
+- `62b3ca1` feat: 하위 탭별 확인→판단→실행 WORKFLOW 정의
+- `7107cb4` style: WORKFLOW 3단계 UI scoped styling
+- `011637d` chore: workflow 안내 cache-bust 배포
+- `d2266b0` data: 팀 특성별 5S/OS 활동량·고도화 전환·확정 후 이탈 현실화, 이탈 사유/시점 Raw Data 기록
+- `8dd79e4` refine: 고도화 맵을 실제 실행수준·3대 요건 이탈 관점으로 명확화
+- `2edeec0` chore: 현실화 데이터/맵 배포
+- `0a8338a` feat: 심사 프로세스 8단계 Lifecycle + Audit/Action 업무흐름 최상단 배치
+- `a6629fb` style: Workflow-first 프로세스 플로우 UI
+- `94c5182` chore: 프로세스 플로우 배포
+- `44ffd92` feat: 고도화 5개 하위 탭 전체에 공통 Lifecycle 기준축 표시
+- `3b520e0` chore: 고도화 전체 Lifecycle cache-bust 배포
+- `c68a380` docs: DEVELOPMENT_LOG에 10/02 작업이력 누락분 일괄 보강
+- 작업 계약: 탭 제목/설명만 꾸미지 않고 실제 원천데이터→핵심지표→확인대상→판단기준→실행기능→다음단계→이력·증빙을 연결한다. 기존 하위 탭 구조는 고정한다.
