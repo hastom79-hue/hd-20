@@ -2114,3 +2114,9 @@
 - `ea7394c` chore: maturity map cache-bust 배포
 - 추가 수치보정 보류: 역왜곡 실증 전 임의 조정 방지
 - `c919df6` docs: DEVELOPMENT_LOG 동시 갱신
+
+- 추적검증 PASS: 우측 순위 attrition과 X축 actualX 동일 원천값 사용
+- 표시좌표는 충돌방지 packing 보정, actualX/tooltip은 실제값 유지
+- `e984a7d` fix: 구형 50/30/20 문구→45/20/15/20, tooltip 활동량 추가, 순위 제목 유지요건 이탈로 정정
+- `a467cb7` chore: maturity map label correction 배포
+- `4da4a22` docs: DEVELOPMENT_LOG 동시 갱신
