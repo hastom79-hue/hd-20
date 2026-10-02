@@ -2075,3 +2075,8 @@
 - `0db8652` style: 확정 이후 관리 완결성 및 유지이탈 위험 요약 UI
 - `3cdc43d` chore: 확정·수평전개 운영화면 cache-bust 배포
 - `3d20301` docs: DEVELOPMENT_LOG 동시 갱신
+
+- `3e78032` feat: 후보 목록에 증빙 Gap/3대 요건 Gap/판정상태/다음조치 연결
+- `9ba46bb` style: 후보 판정 준비도 및 보완 우선순위 UI
+- 배포 cache-bust: 도구 보안 차단으로 미완료, 다음 실행에서 재시도
+- `42595e5` docs: DEVELOPMENT_LOG 동시 갱신
