@@ -100,9 +100,10 @@ function render(box){
   /* 누적 막대는 맨 아래(완료) 칸만 팀 간 비교가 쉽고, 맨 위 칸(기한경과)은 시작 높이가 팀마다 달라 눈으로
      비교하기 어려움 — 막대 순서는 그대로 두되, 가장 중요한 위험 신호인 기한경과 건수를 막대 위에 빨간 글자로
      따로 병기해 굳이 칸 높이를 비교하지 않아도 바로 보이게 함(0건인 팀은 표시 생략). */
-  const overExtra=teamRows.map(r=>r.over>0?{text:`${r.over}`,color:'#c0392b'}:null);
-  const teamChart=chart({w:box.clientWidth-40,h:280,cats:teamRows.map(r=>r.team),stack:true,rotate:true,sel:S.selTeam,linkX:true,minSlot:72,topExtra:overExtra,
-    series:[{name:'미완료',vals:teamRows.map(r=>r.open),color:'#a8c7c4'},{name:'기한초과',vals:teamRows.map(r=>r.over),color:'#e0b03c'}]});
+  const backlogRows=[...teamRows].filter(r=>r.open+r.over>0).sort((a,b)=>(b.open+b.over)-(a.open+a.over)||b.over-a.over||orderIdx(a.team)-orderIdx(b.team));
+  const backlogExtra=backlogRows.map(r=>({text:`미조치 ${r.open+r.over} · 초과 ${r.over}`,color:r.over?'#c0392b':'#526b7a'}));
+  const teamChart=chart({w:box.clientWidth-40,h:280,cats:backlogRows.map(r=>r.team),rotate:true,minSlot:72,topExtra:backlogExtra,
+    series:[{name:'미조치 잔량',vals:backlogRows.map(r=>r.open+r.over),color:'#6f8797'}]});
   const selRows=D.cases.filter(c=>c.team===S.selTeam&&(!S.source||sourceOf(c)===S.source)),selYearRows=selRows.filter(c=>String(c.date||'').slice(0,4)===S.year);
   const selRegM=Array.from({length:12},(_,i)=>selYearRows.filter(c=>mo(c)===i+1).length),selDoneM=Array.from({length:12},(_,i)=>selYearRows.filter(c=>mo(c)===i+1&&isDone(c)).length);
   const teamTrend=chart({w:box.clientWidth-40,h:230,cats:ML,per:false,series:[{name:'등록',vals:selRegM,color:'#8fa3b3'},{name:'완료',vals:selDoneM,color:'#1f6f6b'}]});
@@ -128,7 +129,7 @@ function render(box){
 <span class="sp"></span><button type="button" class="alt" data-rq="print">프린트</button><button type="button" class="alt" data-rq="csv">엑셀다운로드(상세내용)</button></div>
 <div class="ibRow r1"><div class="ibPanel"><div class="ibHead">개선요청 발생현황<button type="button" class="ibEv" data-evk="a">근거 데이터</button><em>${S.month?+S.month+'월':'연간누적'} · 요청출처별</em></div><div class="ibBody">${A}${leg([['등록','#5c6b7a'],['완료','#1f6f6b']])}</div></div>
 <div class="ibPanel"><div class="ibHead">월별 요청·완료·미완료 추이<button type="button" class="ibEv" data-evk="b">근거 데이터</button><em>누적완료율 ${openRate}% · ${S.year}년 완료율 ${yearRate}%</em></div><div class="ibBody">${B}${leg([['등록','#8fa3b3'],['미완료','#e0b03c'],['완료','#1f6f6b']])}</div></div></div>
-<div class="ibRow"><div class="ibPanel"><div class="ibHead">팀별 미조치 현황<button type="button" class="ibEv" data-evk="c">근거 데이터</button><em>미완료와 기한초과만 표시 · 빨간 숫자=기한초과</em></div><div class="ibBody">${teamChart}${leg([['미완료','#a8c7c4'],['기한초과','#e0b03c']])}<details class="rqTeamDetail"><summary>팀별 수치 상세보기</summary><div class="rqScroll" style="margin-top:10px">${teamGrid}</div></details></div></div></div>
+<div class="ibRow"><div class="ibPanel"><div class="ibHead">팀별 미조치 현황<button type="button" class="ibEv" data-evk="c">근거 데이터</button><em>미조치 잔량이 많은 팀 순 · 표기=미조치 총량·기한초과</em></div><div class="ibBody">${teamChart}${leg([['미조치 잔량','#6f8797']])}<details class="rqTeamDetail"><summary>팀별 수치 상세보기</summary><div class="rqScroll" style="margin-top:10px">${teamGrid}</div></details></div></div></div>
 <div class="ibRow"><div class="ibPanel"><div class="ibHead">기한초과 집중관리<button type="button" class="ibEv" data-evk="d">근거 데이터</button><em>기한초과 ${delayRows.reduce((a,r)=>a+r.n,0)}건 · 평균 초과 ${delayOverallAvg}일 · 막대=건수 / 표기=평균·최대 초과일</em></div><div class="ibBody">${delayChart||'<p style="padding:20px;color:#8a99a6;text-align:center">현재 기한초과 대상이 없습니다.</p>'}${delayChart?leg([['기한초과 건수','#c0392b']]):''}</div></div></div>
 <div class="ibRow"><div class="ibPanel"><div class="ibHead">즉시조치 대상<button type="button" class="ibEv" data-evk="f">전체 보기</button><em>기한초과·미완료 우선 · 미리보기 ${detailRows.length}건 / 미완료 ${actionAll.length}건</em></div><div class="ibBody"><div class="rqScroll">${detail}</div></div></div></div>
 <p class="rqCaveat">※ 요청출처는 5S모듈·생산혁신팀 HDPS파트·리더십 3종입니다. 현재 원천에 출처 필드가 없어 등록자와 Audit 연계 여부로 일부 출처를 추정합니다. 팀별 수치 Grid는 메인 판단 흐름을 방해하지 않도록 상세보기로 접었습니다.</p><p class="ibFoot">※ 관리순서: 요청 발생 확인 → 미완료 팀 식별 → 기한초과 집중관리 → 실제 조치 대상 확인. 상세 전체보기와 엑셀다운로드는 현재 조회조건을 그대로 사용합니다.</p>`
