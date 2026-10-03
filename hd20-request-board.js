@@ -79,7 +79,7 @@ function render(box){
   const openM=Array.from({length:12},(_,i)=>rowsY.filter(c=>mo(c)===i+1&&!isDone(c)).length);
   const doneM=Array.from({length:12},(_,i)=>rowsY.filter(c=>mo(c)===i+1&&isDone(c)).length);
   const donePct=doneM.map((v,i)=>regM[i]?Math.round(v/regM[i]*100):null);
-  const B=chart({w:Math.floor((box.clientWidth-36)*.7)-20,cats:ML,minSlot:60,series:[{name:'요청',vals:regM,color:'#8fa3b3'},{name:'미완료',vals:openM,color:'#e0b03c'},{name:'완료',vals:doneM,color:'#1f6f6b',widthScale:1.5,pct:donePct}]});
+  const B=chart({w:Math.floor((box.clientWidth-36)*.7)-20,cats:ML,minSlot:60,series:[{name:'요청',vals:regM,color:'#8fa3b3'},{name:'미완료',vals:openM,color:'#e0b03c',widthScale:1.5,pct:openM.map((v,i)=>regM[i]?Math.round(v/regM[i]*100):null)}]});
   // ③ 조치대응부서 진행현황
   /* 가로축 정렬: 통합기준정보(표시순서)에서 관리하는 생산팀 순서를 그대로 따름(값 기준 정렬 안 함) */
   const teamOrder=(()=>{try{const v=JSON.parse(localStorage.getItem('gmes5s_team_display_order')||'null');if(Array.isArray(v)&&v.length)return v}catch{}return window.HD20ProductionTeamMaster?.teamNames?.()||null})();
@@ -128,7 +128,7 @@ function render(box){
 <label>재발 <select data-f="roll"><option value="">ALL</option><option value="Y">재발 있음</option><option value="N">재발 없음</option></select></label>
 <span class="sp"></span><button type="button" class="alt" data-rq="print">프린트</button><button type="button" class="alt" data-rq="csv">엑셀다운로드(상세내용)</button></div>
 <div class="ibRow r1"><div class="ibPanel"><div class="ibHead">개선요청 발생현황<button type="button" class="ibEv" data-evk="a">근거 데이터</button><em>${S.month?+S.month+'월':'연간누적'} · 요청출처별 · 미완료율 함께 표시</em></div><div class="ibBody">${A}${leg([['요청','#5c6b7a'],['미완료','#e0b03c']])}</div></div>
-<div class="ibPanel"><div class="ibHead">월별 요청·완료·미완료 추이<button type="button" class="ibEv" data-evk="b">근거 데이터</button><em>누적완료율 ${openRate}% · ${S.year}년 완료율 ${yearRate}%</em></div><div class="ibBody">${B}${leg([['요청','#8fa3b3'],['미완료','#e0b03c'],['완료','#1f6f6b']])}</div></div></div>
+<div class="ibPanel"><div class="ibHead">월별 요청·미완료 추이<button type="button" class="ibEv" data-evk="b">근거 데이터</button><em>누적완료율 ${openRate}% · ${S.year}년 완료율 ${yearRate}%</em></div><div class="ibBody">${B}${leg([['요청','#8fa3b3'],['미완료','#e0b03c']])}</div></div></div>
 <div class="ibRow"><div class="ibPanel"><div class="ibHead">팀별 미조치 현황<button type="button" class="ibEv" data-evk="c">근거 데이터</button><em>미조치 잔량이 많은 팀 순 · 표기=미조치 총량·기한초과</em></div><div class="ibBody">${teamChart}${leg([['미조치 잔량','#6f8797']])}<details class="rqTeamDetail"><summary>팀별 수치 상세보기</summary><div class="rqScroll" style="margin-top:10px">${teamGrid}</div></details></div></div></div>
 <div class="ibRow"><div class="ibPanel"><div class="ibHead">기한초과 집중관리<button type="button" class="ibEv" data-evk="d">근거 데이터</button><em>기한초과 ${delayRows.reduce((a,r)=>a+r.n,0)}건 · 평균 초과 ${delayOverallAvg}일 · 막대=건수 / 표기=평균·최대 초과일</em></div><div class="ibBody">${delayChart||'<p style="padding:20px;color:#8a99a6;text-align:center">현재 기한초과 대상이 없습니다.</p>'}${delayChart?leg([['기한초과 건수','#c0392b']]):''}</div></div></div>
 <div class="ibRow"><div class="ibPanel"><div class="ibHead">즉시조치 대상<button type="button" class="ibEv" data-evk="f">전체 보기</button><em>기한초과·미완료 우선 · 미리보기 ${detailRows.length}건 / 미완료 ${actionAll.length}건</em></div><div class="ibBody"><div class="rqScroll">${detail}</div></div></div></div>
