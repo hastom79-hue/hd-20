@@ -88,9 +88,10 @@ function render(box){
     return{team:t,total:a.length,done,open,over,pct}}).filter(r=>r.total>0).sort((a,b)=>orderIdx(a.team)-orderIdx(b.team)||a.team.localeCompare(b.team,'ko'));
   // 조치 지연 리드타임: 완료 늦은 건 + 진행 중 기한경과 건을 모두 포함해 팀별 평균 지연일수를 계산(지연이 없으면 표에서 제외).
   const delayRows=teamsAll.map(t=>{const a=rowsM.filter(c=>c.team===t).map(c=>delayDays(c,D.today)).filter(v=>v!==null);
-    return{team:t,n:a.length,avg:a.length?Math.round(a.reduce((x,y)=>x+y,0)/a.length*10)/10:0,max:a.length?Math.max(...a):0}}).filter(r=>r.n>0).sort((a,b)=>b.avg-a.avg||b.n-a.n);
+    return{team:t,n:a.length,avg:a.length?Math.round(a.reduce((x,y)=>x+y,0)/a.length*10)/10:0,max:a.length?Math.max(...a):0}}).filter(r=>r.n>0).sort((a,b)=>b.n-a.n||b.avg-a.avg);
   const delayChart=delayRows.length?chart({w:box.clientWidth-40,h:260,cats:delayRows.map(r=>r.team),rotate:true,linkX:true,sel:S.selTeam,minSlot:64,
-    series:[{name:'평균 지연일수',vals:delayRows.map(r=>r.avg),color:'#c0392b'}],
+    topExtra:delayRows.map(r=>({text:`평균 ${r.avg}일 · 최대 ${r.max}일`,color:'#c0392b'})),
+    series:[{name:'기한초과 건수',vals:delayRows.map(r=>r.n),color:'#c0392b'}],
     colorOf:()=>'#c0392b'}):null;
   const delayOverallAvg=delayRows.length?Math.round(delayRows.reduce((a,r)=>a+r.avg*r.n,0)/delayRows.reduce((a,r)=>a+r.n,0)*10)/10:0;
   const sum={total:teamRows.reduce((a,r)=>a+r.total,0),done:teamRows.reduce((a,r)=>a+r.done,0),open:teamRows.reduce((a,r)=>a+r.open,0),over:teamRows.reduce((a,r)=>a+r.over,0)};
@@ -128,7 +129,7 @@ function render(box){
 <div class="ibRow r1"><div class="ibPanel"><div class="ibHead">개선요청 발생현황<button type="button" class="ibEv" data-evk="a">근거 데이터</button><em>${S.month?+S.month+'월':'연간누적'} · 요청출처별</em></div><div class="ibBody">${A}${leg([['등록','#5c6b7a'],['완료','#1f6f6b']])}</div></div>
 <div class="ibPanel"><div class="ibHead">월별 요청·완료·미완료 추이<button type="button" class="ibEv" data-evk="b">근거 데이터</button><em>누적완료율 ${openRate}% · ${S.year}년 완료율 ${yearRate}%</em></div><div class="ibBody">${B}${leg([['등록','#8fa3b3'],['미완료','#e0b03c'],['완료','#1f6f6b']])}</div></div></div>
 <div class="ibRow"><div class="ibPanel"><div class="ibHead">팀별 미조치 현황<button type="button" class="ibEv" data-evk="c">근거 데이터</button><em>미완료와 기한초과만 표시 · 빨간 숫자=기한초과</em></div><div class="ibBody">${teamChart}${leg([['미완료','#a8c7c4'],['기한초과','#e0b03c']])}<details class="rqTeamDetail"><summary>팀별 수치 상세보기</summary><div class="rqScroll" style="margin-top:10px">${teamGrid}</div></details></div></div></div>
-<div class="ibRow"><div class="ibPanel"><div class="ibHead">기한초과 집중관리<button type="button" class="ibEv" data-evk="d">근거 데이터</button><em>기한초과 ${delayRows.reduce((a,r)=>a+r.n,0)}건 · 평균 초과 ${delayOverallAvg}일</em></div><div class="ibBody">${delayChart||'<p style="padding:20px;color:#8a99a6;text-align:center">현재 기한초과 대상이 없습니다.</p>'}${delayChart?leg([['평균 초과일','#c0392b']]):''}</div></div></div>
+<div class="ibRow"><div class="ibPanel"><div class="ibHead">기한초과 집중관리<button type="button" class="ibEv" data-evk="d">근거 데이터</button><em>기한초과 ${delayRows.reduce((a,r)=>a+r.n,0)}건 · 평균 초과 ${delayOverallAvg}일 · 막대=건수 / 표기=평균·최대 초과일</em></div><div class="ibBody">${delayChart||'<p style="padding:20px;color:#8a99a6;text-align:center">현재 기한초과 대상이 없습니다.</p>'}${delayChart?leg([['기한초과 건수','#c0392b']]):''}</div></div></div>
 <div class="ibRow"><div class="ibPanel"><div class="ibHead">즉시조치 대상<button type="button" class="ibEv" data-evk="f">전체 보기</button><em>기한초과·미완료 우선 · 미리보기 ${detailRows.length}건 / 미완료 ${actionAll.length}건</em></div><div class="ibBody"><div class="rqScroll">${detail}</div></div></div></div>
 <p class="rqCaveat">※ 요청출처는 5S모듈·생산혁신팀 HDPS파트·리더십 3종입니다. 현재 원천에 출처 필드가 없어 등록자와 Audit 연계 여부로 일부 출처를 추정합니다. 팀별 수치 Grid는 메인 판단 흐름을 방해하지 않도록 상세보기로 접었습니다.</p><p class="ibFoot">※ 관리순서: 요청 발생 확인 → 미완료 팀 식별 → 기한초과 집중관리 → 실제 조치 대상 확인. 상세 전체보기와 엑셀다운로드는 현재 조회조건을 그대로 사용합니다.</p>`
   const evCols=['요청번호','요청출처','조치대응부서','작업장','진행현황','요청일','완료예정일','완료일'],
