@@ -115,8 +115,8 @@ function render(box){
   const priorityRank=x=>isOverdue(x,D.today)?0:!isDone(x)?1:2;
   const detailAll=[...rowsM].sort((a,b)=>priorityRank(a)-priorityRank(b)||(delayDays(b,D.today)||0)-(delayDays(a,D.today)||0)||String(a.due||'9999-12-31').localeCompare(String(b.due||'9999-12-31'))||String(b.date).localeCompare(String(a.date)));
   const actionAll=detailAll.filter(x=>!isDone(x)),detailRows=actionAll.slice(0,15);
-  const detail=`<table class="rqGrid rqDetail"><thead><tr><th>요청번호</th><th>요청출처</th><th>조치대응부서</th><th>작업장</th><th>진행현황</th><th>초과일</th><th>요청일</th><th>완료예정일</th><th>완료일</th></tr></thead><tbody>
-    ${detailRows.length?detailRows.map(c=>`<tr><td>${esc(c.id)}</td><td>${esc(sourceOf(c))}</td><td>${esc(c.team)}</td><td>${esc(c.workplace||'—')}</td><td>${isOverdue(c,D.today)?'<b style="color:#c0392b">기한경과</b>':esc(c.status)}</td><td>${delayDays(c,D.today)??'—'}</td><td>${esc(c.date||'—')}</td><td>${esc(c.due||'—')}</td><td>${esc(c.doneDate||'—')}</td></tr>`).join(''):`<tr><td colspan="9" style="text-align:center;color:#8a99a6;padding:16px">조건에 해당하는 개선요청이 없습니다.</td></tr>`}
+  const detail=`<table class="rqGrid rqDetail"><thead><tr><th>우선</th><th>요청번호</th><th>조치대응부서</th><th>작업장</th><th>현재상태</th><th>초과일</th><th>완료예정일</th></tr></thead><tbody>
+    ${detailRows.length?detailRows.map((c,i)=>`<tr><td>${i+1}</td><td>${esc(c.id)}</td><td>${esc(c.team)}</td><td>${esc(c.workplace||'—')}</td><td>${isOverdue(c,D.today)?'<b style="color:#c0392b">기한초과</b>':esc(c.status)}</td><td>${delayDays(c,D.today)??'—'}</td><td>${esc(c.due||'—')}</td></tr>`).join(''):`<tr><td colspan="7" style="text-align:center;color:#8a99a6;padding:16px">조건에 해당하는 개선요청이 없습니다.</td></tr>`}
     </tbody></table>`;
   const opt=(a,cur,all='ALL')=>`<option value="">${all}</option>`+a.map(x=>`<option value="${esc(x)}"${x===cur?' selected':''}>${esc(x)}</option>`).join('');
   box.innerHTML=`<div class="ibTitle"><h2>5S 개선요청 종합 대시보드</h2></div><p class="ibNote">개선요청 발생 → 처리 → 미조치·기한초과 → 즉시조치 대상을 한 화면에서 관리합니다.</p>
