@@ -2312,3 +2312,5 @@
 - 신규 디자인 추가는 중단하고 Dashboard 탭 표시/숨김·진입경로·고아 DOM 회귀 복구를 우선 진행.
 
 - 2026-10-03 Dashboard section 딥링크 회귀수정: apply()가 URL section을 기록하지만 boot()가 무조건 summary로 초기화하던 비대칭 수정. area=dashboard이며 visible TABS key인 경우 section을 최초 active로 복원하고 숨김 탭은 제외. 커밋 b97db9ef, loader e7451aab, index cache-bust 524bbfe3.
+
+- 2026-10-03 개선요청 종합 Dashboard 재구성: 관리 흐름을 '요청 발생 → 미조치 팀 식별 → 기한초과 집중관리 → 즉시조치 대상'으로 단순화. 팀별 메인 차트에서 완료를 제거하고 미완료/기한초과에 집중, 상시 팀별 Grid는 접이식 상세로 이동, '조치 지연 리드타임'을 '기한초과 집중관리'로 변경, 선택팀 월별 추이 패널 제거, 하단 상세를 '즉시조치 대상'으로 재정의. 데이터/필터/근거 팝업/CSV 로직은 유지. commits c7b415bd, bea6e18c, 4b0bed44.
