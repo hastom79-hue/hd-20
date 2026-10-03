@@ -60,7 +60,7 @@ function delayDays(c,today){if(!c.due)return null;if(isDone(c)){if(!c.doneDate)r
 function filt(D,{ignoreYear=false,ignoreMonth=false}={}){
   return D.cases.filter(c=>{if(!ignoreYear&&String(c.date||'').slice(0,4)!==S.year)return false;if(!ignoreMonth&&S.month&&mo(c)!==+S.month)return false;
     if(S.source&&sourceOf(c)!==S.source)return false;if(S.team&&c.team!==S.team)return false;
-    if(S.status&&(S.status==='기한경과'?!isOverdue(c,D.today):c.status!==S.status))return false;
+    if(S.status&&(S.status==='기한초과'?!isOverdue(c,D.today):c.status!==S.status))return false;
     if(S.roll==='Y'&&!c.recurrence)return false;if(S.roll==='N'&&c.recurrence)return false;return true})}
 function render(box){
   LEADER_NAMES=null;
@@ -94,7 +94,7 @@ function render(box){
     series:[{name:'기한초과 건수',vals:delayRows.map(r=>r.n),color:'#c0392b'}],
     colorOf:()=>'#c0392b'}):null;
   const delayOverallAvg=delayRows.length?Math.round(delayRows.reduce((a,r)=>a+r.avg*r.n,0)/delayRows.reduce((a,r)=>a+r.n,0)*10)/10:0;
-  const sum={total:teamRows.reduce((a,r)=>a+r.total,0),done:teamRows.reduce((a,r)=>a+r.done,0),open:teamRows.reduce((a,r)=>a+r.open,0),over:teamRows.reduce((a,r)=>a+r.over,0)};
+  const sum={total:teamRows.reduce((a,r)=>a+r.total,0),done:teamRows.reduce((a,r)=>a+r.done,0),open:teamRows.reduce((a,r)=>a+r.open,0),over:teamRows.reduce((a,r)=>a+r.over,0)}; // open=기한내 미완료, 전체 미완료=open+over
   const pctS=n=>sum.total?Math.round(n/sum.total*1000)/10:0;
   if(!S.selTeam||!teamRows.some(r=>r.team===S.selTeam))S.selTeam=teamRows[0]?.team||'';
   /* 누적 막대는 맨 아래(완료) 칸만 팀 간 비교가 쉽고, 맨 위 칸(기한경과)은 시작 높이가 팀마다 달라 눈으로
@@ -120,11 +120,11 @@ function render(box){
     </tbody></table>`;
   const opt=(a,cur,all='ALL')=>`<option value="">${all}</option>`+a.map(x=>`<option value="${esc(x)}"${x===cur?' selected':''}>${esc(x)}</option>`).join('');
   box.innerHTML=`<div class="ibTitle"><h2>5S 개선요청 종합 대시보드</h2></div><p class="ibNote">개선요청 발생 → 처리 → 미조치·기한초과 → 즉시조치 대상을 한 화면에서 관리합니다.</p>
-<div class="rqKpis"><div class="rqKpi"><small>개선요청</small><b>${sum.total}건</b></div><div class="rqKpi"><small>개선완료</small><b>${sum.done}건 · ${pctS(sum.done)}%</b></div><div class="rqKpi"><small>미완료</small><b>${sum.open}건</b></div><div class="rqKpi risk"><small>기한초과</small><b>${sum.over}건 · ${pctS(sum.over)}%</b></div><div class="rqKpi risk"><small>평균 초과일</small><b>${delayOverallAvg}일</b></div></div>
+<div class="rqKpis"><div class="rqKpi"><small>개선요청</small><b>${sum.total}건</b></div><div class="rqKpi"><small>개선완료</small><b>${sum.done}건 · ${pctS(sum.done)}%</b></div><div class="rqKpi"><small>미완료</small><b>${sum.open+sum.over}건 · ${pctS(sum.open+sum.over)}%</b></div><div class="rqKpi risk"><small>기한초과</small><b>${sum.over}건 · ${pctS(sum.over)}%</b></div><div class="rqKpi risk"><small>평균 초과일</small><b>${delayOverallAvg}일</b></div></div>
 <div class="ibBar"><label>공장 <select disabled><option>[울산] 울산캠퍼스</option></select></label><label>년 <select data-f="year">${D.years.map(y=>`<option${y===S.year?' selected':''}>${y}</option>`).join('')}</select></label>
 <label>월 <select data-f="month"><option value="">전체</option>${Array.from({length:12},(_,i)=>{const v=String(i+1).padStart(2,'0');return `<option value="${v}"${v===S.month?' selected':''}>${i+1}월</option>`}).join('')}</select></label><button type="button" data-rq="go">조회</button>
 <label>요청출처 <select data-f="source">${opt(SOURCES,S.source)}</select></label><label>조치대응부서 <select data-f="team">${opt(D.teams,S.team)}</select></label>
-<label>처리상태 <select data-f="status"><option value="">ALL</option><option>조치대기</option><option>진행중</option><option>완료</option><option>기한경과</option></select></label>
+<label>처리상태 <select data-f="status"><option value="">ALL</option><option>조치대기</option><option>진행중</option><option>완료</option><option>기한초과</option></select></label>
 <label>재발 <select data-f="roll"><option value="">ALL</option><option value="Y">재발 있음</option><option value="N">재발 없음</option></select></label>
 <span class="sp"></span><button type="button" class="alt" data-rq="print">프린트</button><button type="button" class="alt" data-rq="csv">엑셀다운로드(상세내용)</button></div>
 <div class="ibRow r1"><div class="ibPanel"><div class="ibHead">개선요청 발생현황<button type="button" class="ibEv" data-evk="a">근거 데이터</button><em>${S.month?+S.month+'월':'연간누적'} · 요청출처별 · 미완료율 함께 표시</em></div><div class="ibBody">${A}${leg([['요청','#5c6b7a'],['미완료','#e0b03c']])}</div></div>
