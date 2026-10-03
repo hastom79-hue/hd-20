@@ -44,7 +44,7 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
 #${ID} .rqGrid tbody tr:first-child td{font-weight:900;background:#f8fafb}#${ID} .rqGrid tbody tr:first-child td:first-child{text-align:left}
 #${ID} .rqGrid td:first-child{text-align:left;font-weight:800}
 #${ID} .rqScroll{overflow:auto;border:1px solid #edf1f4;border-radius:8px}#${ID} .ibPanel:has(.rqDetail) .rqScroll{max-height:420px}#${ID} .ibPanel:has(.rqGrid:not(.rqDetail)) .rqScroll{max-height:340px}
-#${ID} .rqDetail th{white-space:nowrap}#${ID} .rqDetail td{white-space:nowrap;text-align:left}
+#${ID} .rqTeamDetail{margin-top:10px;border-top:1px solid #edf1f4;padding-top:8px}#${ID} .rqTeamDetail summary{cursor:pointer;font-size:12px;font-weight:850;color:#49657b}#${ID} .rqDetail th{white-space:nowrap}#${ID} .rqDetail td{white-space:nowrap;text-align:left}
 #${ID} .ibFoot{margin:10px 2px 0;font-size:12px;color:#7a8a97}
 .app.awFocused #${ID}{display:none!important}
 @media print{#${ID} .ibBar{display:none}}
