@@ -25,7 +25,8 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
 #${ID}{background:#fff;border:1px solid #dfe6ec;border-radius:14px;padding:16px 18px;box-shadow:0 1px 3px rgba(20,48,76,.06)}
 #${ID} .ibTitle{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}#${ID} h2{margin:0;font-size:21px;color:#14304c}
 #${ID} .ibNote{margin:4px 0 12px;font-size:13px;font-weight:800;color:#22303f}
-#${ID} .rqCaveat{margin:0 0 12px;padding:8px 12px;background:#fdf6e3;border:1px solid #f0dfae;border-radius:8px;color:#8a6d1f;font-size:12.5px;line-height:1.55}
+#${ID} .rqCaveat{margin:10px 0 0;padding:8px 12px;background:#fdf6e3;border:1px solid #f0dfae;border-radius:8px;color:#8a6d1f;font-size:12.5px;line-height:1.55}
+#${ID} .rqKpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:10px 0 12px}#${ID} .rqKpi{padding:11px 12px;border:1px solid #dce6ec;border-radius:9px;background:#fff}#${ID} .rqKpi small{display:block;font-size:11px;font-weight:850;color:#6e8392}#${ID} .rqKpi b{display:block;margin-top:3px;font-size:21px;color:#173a57}#${ID} .rqKpi.risk b{color:#b33b31}@media(max-width:900px){#${ID} .rqKpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
 #${ID} .ibBar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:10px 12px;background:#f4f7f9;border:1px solid #e3eaf0;border-radius:10px}
 #${ID} .ibBar label{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:850;color:#3b5163}
 #${ID} .ibBar select,#${ID} .ibBar input{height:32px;border:1px solid #cfd9e2;border-radius:7px;background:#fff;padding:0 8px;font-size:13px;color:#22303f}
@@ -115,7 +116,7 @@ function render(box){
     </tbody></table>`;
   const opt=(a,cur,all='ALL')=>`<option value="">${all}</option>`+a.map(x=>`<option value="${esc(x)}"${x===cur?' selected':''}>${esc(x)}</option>`).join('');
   box.innerHTML=`<div class="ibTitle"><h2>5S 개선요청 종합 대시보드</h2></div><p class="ibNote">기본 조회조건은 당해년도 연간누적 데이터입니다 (월간 데이터 조회 시, 해당 월을 선택하세요)</p>
-<p class="rqCaveat">※ 참고 VTB 화면의 요청부서 그리드는 5S에서는 생략하고 조치대응부서에 집중했습니다. 개선요청 출처는 5S모듈·생산혁신팀 HDPS파트·리더십(경영진·팀장/부서장) 3종이며, 현재 원천에는 출처 필드가 없어 등록자가 생산팀장 기준정보의 팀장 또는 통합기준정보(운영정책)에 등록한 경영진·공장장 명단과 일치하면 리더십, 그 외엔 Audit 연계 여부로 5S모듈/생산혁신팀 HDPS파트를 추정 표기합니다(둘 다 비어 있으면 리더십은 0). ‘완료(*)’는 원천에 기각 상태가 없어 완료 단독 기준입니다.</p>
+<div class="rqKpis"><div class="rqKpi"><small>개선요청</small><b>${sum.total}건</b></div><div class="rqKpi"><small>개선완료</small><b>${sum.done}건 · ${pctS(sum.done)}%</b></div><div class="rqKpi"><small>진행·대기</small><b>${sum.open}건</b></div><div class="rqKpi risk"><small>기한경과</small><b>${sum.over}건 · ${pctS(sum.over)}%</b></div><div class="rqKpi risk"><small>평균 지연</small><b>${delayOverallAvg}일</b></div></div>
 <div class="ibBar"><label>공장 <select disabled><option>[울산] 울산캠퍼스</option></select></label><label>년 <select data-f="year">${D.years.map(y=>`<option${y===S.year?' selected':''}>${y}</option>`).join('')}</select></label>
 <label>월 <select data-f="month"><option value="">전체</option>${Array.from({length:12},(_,i)=>{const v=String(i+1).padStart(2,'0');return `<option value="${v}"${v===S.month?' selected':''}>${i+1}월</option>`}).join('')}</select></label><button type="button" data-rq="go">조회</button>
 <label>요청출처 <select data-f="source">${opt(SOURCES,S.source)}</select></label><label>조치대응부서 <select data-f="team">${opt(D.teams,S.team)}</select></label>
@@ -128,7 +129,7 @@ function render(box){
 <div class="ibRow"><div class="ibPanel"><div class="ibHead">조치 지연 리드타임<button type="button" class="ibEv" data-evk="d">근거 데이터</button><em>${S.month?+S.month+'월':'연간누적'} · 지연 발생 ${delayRows.reduce((a,r)=>a+r.n,0)}건 · 전체 평균 ${delayOverallAvg}일 · 팀명을 클릭하면 아래 상세 추이가 바뀝니다</em></div><div class="ibBody">${delayChart||'<p style="padding:20px;color:#8a99a6;text-align:center">조건에 해당하는 지연 건이 없습니다.</p>'}${delayChart?leg([['평균 지연일수(완료 늦은 건은 완료일-기한, 진행 중인 기한경과 건은 오늘-기한)','#c0392b']]):''}</div></div></div>
 <div class="ibRow"><div class="ibPanel"><div class="ibHead">선택 팀 월별 등록·완료 추이<button type="button" class="ibEv" data-evk="e">근거 데이터</button><em>[ ${esc(S.selTeam)} ] ${S.year}년</em></div><div class="ibBody">${teamTrend}${leg([['등록','#8fa3b3'],['완료','#1f6f6b']])}</div></div></div>
 <div class="ibRow"><div class="ibPanel"><div class="ibHead">상세내용<button type="button" class="ibEv" data-evk="f">전체 보기</button><em>미리보기 ${detailRows.length}건 / 조건 일치 ${rowsM.length}건</em></div><div class="ibBody"><div class="rqScroll">${detail}</div></div></div></div>
-<p class="ibFoot">※ 개선요청 = Audit 부적합·현장 5S 점검에서 발생해 담당 팀(조치대응부서)에 배정된 조치 건. 완료 = 상태 '완료'. 기한경과 = 미완료이면서 조치기한이 오늘 이전. 재발 = 효과검증 후 재발이 기록된 건. 상세내용은 최근 15건만 미리보기로 표시하며, [전체 보기]를 누르면 조건에 맞는 전체 건을 팝업 그리드로 볼 수 있습니다. 엑셀다운로드는 조건에 맞는 전체 건을 내려받습니다.</p>`;
+<p class="rqCaveat">※ 참고 VTB 화면의 요청부서 그리드는 5S에서는 생략하고 조치대응부서에 집중했습니다. 개선요청 출처는 5S모듈·생산혁신팀 HDPS파트·리더십(경영진·팀장/부서장) 3종이며, 현재 원천에는 출처 필드가 없어 등록자가 생산팀장 기준정보의 팀장 또는 통합기준정보(운영정책)에 등록한 경영진·공장장 명단과 일치하면 리더십, 그 외엔 Audit 연계 여부로 5S모듈/생산혁신팀 HDPS파트를 추정 표기합니다. ‘완료(*)’는 원천에 기각 상태가 없어 완료 단독 기준입니다.</p><p class="ibFoot">※ 개선요청 = Audit 부적합·현장 5S 점검에서 발생해 담당 팀(조치대응부서)에 배정된 조치 건. 완료 = 상태 '완료'. 기한경과 = 미완료이면서 조치기한이 오늘 이전. 재발 = 효과검증 후 재발이 기록된 건. 상세내용은 최근 15건만 미리보기로 표시하며, [전체 보기]를 누르면 조건에 맞는 전체 건을 팝업 그리드로 볼 수 있습니다. 엑셀다운로드는 조건에 맞는 전체 건을 내려받습니다.</p>`;
   const evCols=['요청번호','요청출처','조치대응부서','작업장','진행현황','요청일','완료예정일','완료일'],
     evMapR=c=>[esc(c.id),sourceOf(c),c.team,c.workplace||'—',c.status,c.date,c.due||'—',c.doneDate||'—'],
     evDelayCols=[...evCols,'지연일수'],evDelayMapR=c=>[...evMapR(c),delayDays(c,D.today)??''];
