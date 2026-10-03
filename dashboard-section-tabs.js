@@ -22,7 +22,7 @@ function css(){if(document.getElementById('hd20DashboardSectionTabsStyle'))retur
 function labelBefore(el){const p=el?.previousElementSibling;return p?.classList?.contains('hd20DashboardSectionLabel')?p:null}
 function dashboardVisible(){return window.HD20_NAV?.active?.()==='dashboard'}
 function allTargets(){return [...new Set(TABS.flatMap(t=>t.targets).concat(['.bottomGrid','#hd20MaturityMapTab']).flatMap(sel=>[...document.querySelectorAll(sel)]))]}
-function setMode(key){TABS.forEach(t=>document.body.classList.toggle(`hd20Dashboard${t.key[0].toUpperCase()+t.key.slice(1)}Active`,key===t.key))}
+function setMode(key){const modes=new Set(TABS.map(t=>t.key).concat(['standard','field']));modes.forEach(k=>document.body.classList.toggle(`hd20Dashboard${k[0].toUpperCase()+k.slice(1)}Active`,key===k))}
 function maturityShow(){const el=document.getElementById('hd20MaturityMapTab');if(el)el.hidden=false;return window.HD20_MATURITY_DASHBOARD_BRIDGE?.show?.()??window.HD20_MATURITY_MAP_TAB?.showDashboard?.()??!!el}
 function maturityHide(){const el=document.getElementById('hd20MaturityMapTab');if(el){el.classList.remove('on');el.hidden=true;document.querySelector('.mmtDetail.on')?.classList.remove('on');return true}return window.HD20_MATURITY_DASHBOARD_BRIDGE?.hide?.()??window.HD20_MATURITY_MAP_TAB?.hideDashboard?.()??false}
 function normalizeStandardStructure(grid){if(!grid)return;const criteria=document.querySelector('.criteria')?.closest('.card');const trend=document.querySelector('.trendBox')?.closest('.card');[criteria,trend].forEach(card=>{if(card&&card.parentElement!==grid)grid.appendChild(card)})}
