@@ -110,7 +110,9 @@ function render(box){
     <tr><td>합계</td><td>${sum.total}</td><td>${sum.done}건 (${pctS(sum.done)}%)</td><td>${sum.open}건 (${pctS(sum.open)}%)</td><td>${sum.over}건 (${pctS(sum.over)}%)</td></tr>
     ${teamRows.map(gridRow).join('')}</tbody></table>`;
   // ④ 상세내용
-  const detailAll=[...rowsM].sort((a,b)=>String(b.date).localeCompare(String(a.date))),detailRows=detailAll.slice(0,15);
+  const priorityRank=x=>isOverdue(x,D.today)?0:!isDone(x)?1:2;
+  const detailAll=[...rowsM].sort((a,b)=>priorityRank(a)-priorityRank(b)||(delayDays(b,D.today)||0)-(delayDays(a,D.today)||0)||String(a.due||'9999-12-31').localeCompare(String(b.due||'9999-12-31'))||String(b.date).localeCompare(String(a.date)));
+  const actionAll=detailAll.filter(x=>!isDone(x)),detailRows=actionAll.slice(0,15);
   const detail=`<table class="rqGrid rqDetail"><thead><tr><th>요청번호</th><th>요청출처</th><th>조치대응부서</th><th>작업장</th><th>진행현황</th><th>요청일</th><th>완료예정일</th><th>완료일</th></tr></thead><tbody>
     ${detailRows.length?detailRows.map(c=>`<tr><td>${esc(c.id)}</td><td>${esc(sourceOf(c))}</td><td>${esc(c.team)}</td><td>${esc(c.workplace||'—')}</td><td>${isOverdue(c,D.today)?'<b style="color:#c0392b">기한경과</b>':esc(c.status)}</td><td>${esc(c.date||'—')}</td><td>${esc(c.due||'—')}</td><td>${esc(c.doneDate||'—')}</td></tr>`).join(''):`<tr><td colspan="8" style="text-align:center;color:#8a99a6;padding:16px">조건에 해당하는 개선요청이 없습니다.</td></tr>`}
     </tbody></table>`;
@@ -127,7 +129,7 @@ function render(box){
 <div class="ibPanel"><div class="ibHead">월별 요청·완료·미완료 추이<button type="button" class="ibEv" data-evk="b">근거 데이터</button><em>누적완료율 ${openRate}% · ${S.year}년 완료율 ${yearRate}%</em></div><div class="ibBody">${B}${leg([['등록','#8fa3b3'],['미완료','#e0b03c'],['완료','#1f6f6b']])}</div></div></div>
 <div class="ibRow"><div class="ibPanel"><div class="ibHead">팀별 미조치 현황<button type="button" class="ibEv" data-evk="c">근거 데이터</button><em>미완료와 기한초과만 표시 · 빨간 숫자=기한초과</em></div><div class="ibBody">${teamChart}${leg([['미완료','#a8c7c4'],['기한초과','#e0b03c']])}<details class="rqTeamDetail"><summary>팀별 수치 상세보기</summary><div class="rqScroll" style="margin-top:10px">${teamGrid}</div></details></div></div></div>
 <div class="ibRow"><div class="ibPanel"><div class="ibHead">기한초과 집중관리<button type="button" class="ibEv" data-evk="d">근거 데이터</button><em>기한초과 ${delayRows.reduce((a,r)=>a+r.n,0)}건 · 평균 초과 ${delayOverallAvg}일</em></div><div class="ibBody">${delayChart||'<p style="padding:20px;color:#8a99a6;text-align:center">현재 기한초과 대상이 없습니다.</p>'}${delayChart?leg([['평균 초과일','#c0392b']]):''}</div></div></div>
-<div class="ibRow"><div class="ibPanel"><div class="ibHead">즉시조치 대상<button type="button" class="ibEv" data-evk="f">전체 보기</button><em>기한초과·미완료 우선 · 미리보기 ${detailRows.length}건</em></div><div class="ibBody"><div class="rqScroll">${detail}</div></div></div></div>
+<div class="ibRow"><div class="ibPanel"><div class="ibHead">즉시조치 대상<button type="button" class="ibEv" data-evk="f">전체 보기</button><em>기한초과·미완료 우선 · 미리보기 ${detailRows.length}건 / 미완료 ${actionAll.length}건</em></div><div class="ibBody"><div class="rqScroll">${detail}</div></div></div></div>
 <p class="rqCaveat">※ 요청출처는 5S모듈·생산혁신팀 HDPS파트·리더십 3종입니다. 현재 원천에 출처 필드가 없어 등록자와 Audit 연계 여부로 일부 출처를 추정합니다. 팀별 수치 Grid는 메인 판단 흐름을 방해하지 않도록 상세보기로 접었습니다.</p><p class="ibFoot">※ 관리순서: 요청 발생 확인 → 미완료 팀 식별 → 기한초과 집중관리 → 실제 조치 대상 확인. 상세 전체보기와 엑셀다운로드는 현재 조회조건을 그대로 사용합니다.</p>`
   const evCols=['요청번호','요청출처','조치대응부서','작업장','진행현황','요청일','완료예정일','완료일'],
     evMapR=c=>[esc(c.id),sourceOf(c),c.team,c.workplace||'—',c.status,c.date,c.due||'—',c.doneDate||'—'],
@@ -137,7 +139,7 @@ function render(box){
     b:['월별 근거 데이터 ('+S.year+'년)',rowsY,evCols,evMapR],
     c:['조치대응부서 근거 데이터 ('+(S.month?+S.month+'월':'연간누적')+')',rowsM,evCols,evMapR],
     d:['조치 지연 근거 데이터 ('+(S.month?+S.month+'월':'연간누적')+')',rowsM.filter(c=>delayDays(c,D.today)!==null),evDelayCols,evDelayMapR],
-    f:['상세내용 전체 보기 ('+(S.month?+S.month+'월':'연간누적')+')',detailAll,evCols,evMapR],
+    f:['즉시조치 대상 전체 보기 ('+(S.month?+S.month+'월':'연간누적')+')',actionAll,evCols,evMapR],
   };
   box.querySelectorAll('[data-evk]').forEach(b=>{b.onclick=()=>{const [t,rows,cols,mapR]=EV[b.dataset.evk];openRows({title:t,cols,rows:rows.map(mapR),file:'5S_개선요청_근거_'+b.dataset.evk})}});
   box.querySelectorAll('[data-f]').forEach(el=>el.onchange=()=>{S[el.dataset.f]=el.value;render(box)});
