@@ -12,6 +12,7 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
 #${ID}{background:#fff;border:1px solid #dfe6ec;border-radius:14px;padding:16px 18px;box-shadow:0 1px 3px rgba(20,48,76,.06)}
 #${ID} .ibTitle{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}#${ID} h2{margin:0;font-size:21px;color:#14304c}
 #${ID} .ibNote{margin:4px 0 12px;font-size:13px;font-weight:800;color:#22303f}
+#${ID} .ibKpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:10px 0 12px}#${ID} .ibKpi{padding:11px 12px;border:1px solid #dce6ec;border-radius:9px;background:#fff}#${ID} .ibKpi small{display:block;font-size:11px;font-weight:850;color:#6e8392}#${ID} .ibKpi b{display:block;margin-top:3px;font-size:21px;color:#173a57}#${ID} .ibKpi.risk b{color:#b33b31}@media(max-width:900px){#${ID} .ibKpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
 #${ID} .ibBar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:10px 12px;background:#f4f7f9;border:1px solid #e3eaf0;border-radius:10px}
 #${ID} .ibBar label{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:850;color:#3b5163}
 #${ID} .ibBar select,#${ID} .ibBar input{height:32px;border:1px solid #cfd9e2;border-radius:7px;background:#fff;padding:0 8px;font-size:13px;color:#22303f}
@@ -117,6 +118,7 @@ function render(box){
   const lossChart=`<div class="ibLossWrap"><div class="ibLossLabel">이탈(그 달에 유지 종료됨)<em>연간 ${lossTot}건</em></div><div class="ibLossRow">${lossRow}</div></div>`;
   const opt=(a,cur,all='ALL')=>`<option value="">${all}</option>`+a.map(x=>`<option value="${esc(x)}"${x===cur?' selected':''}>${esc(x)}</option>`).join('');
   box.innerHTML=`<div class="ibTitle"><h2>5S 자율개선 종합 대시보드</h2></div><p class="ibNote">기본 조회조건은 당해년도 연간누적 데이터입니다 (월간 데이터 조회 시, 해당 월을 선택하세요)</p>
+<div class="ibKpis"><div class="ibKpi"><small>5S 활동</small><b>${totC}건</b></div><div class="ibKpi"><small>${per?'인당 활동':'팀 평균 활동'}</small><b>${avg.toFixed(2)}${per?'건/인':'건'}</b></div><div class="ibKpi"><small>당월 참여율</small><b>${part.toFixed(1)}%</b></div><div class="ibKpi"><small>고도화 현재 유지 · 선택팀</small><b>${curKeep}곳</b></div><div class="ibKpi risk"><small>고도화 유지 이탈 · 선택팀</small><b>${lossTot}건</b></div></div>
 <div class="ibBar"><label>공장 <select disabled><option>[울산] 울산캠퍼스</option></select></label><label>년 <select data-f="year">${D.years.map(y=>`<option${y===S.year?' selected':''}>${y}</option>`).join('')}</select></label>
 <label>월 <select data-f="month"><option value="">전체</option>${Array.from({length:12},(_,i)=>{const v=String(i+1).padStart(2,'0');return `<option value="${v}"${v===S.month?' selected':''}>${i+1}월</option>`}).join('')}</select></label><button type="button" data-ib="go">조회</button>
 <label>차트집계 <select data-f="metric"><option value="per"${per?' selected':''}>5S 활동/총원 (인당)</option><option value="total"${!per?' selected':''}>총 건수</option></select></label>
