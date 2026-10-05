@@ -17,7 +17,7 @@ function bind(nav){nav.querySelectorAll('button[data-key]').forEach(btn=>btn.onc
 function normalizeDeepLink(k){return ({conversion:'advancement',workplace:'advancement',master:'dashboard'})[k]||k}
 function init(){if(initialized)return;const nav=document.querySelector('.beginnerNav');if(!nav)return;initialized=true;ensureNav();ensureHint(nav);bind(nav);
   const q=new URLSearchParams(location.search),raw=q.get('tab'),area=q.get('area'),section=q.get('section'),sub=q.get('sub');
-  if(['maturitymap','map','maturity'].includes(raw)){goDashboard(nav,'maturity');return}
+  if(['maturitymap','map','maturity'].includes(raw)){go('advancement',nav);window.__HD20_RESTORE_SUB='map';return}
   /* 새로고침 시 마지막으로 보던 화면을 복원 — area(영역)까지는 여기서, sub(서브탭)은 hd20-subtabs.js가
      스스로 부팅되면서 같은 URL을 읽어 이어서 복원함(서브탭 목록이 area 결정 후에야 만들어지므로 분리) */
   const AREAS=['dashboard','activity','advancement','audit','action','master'];
@@ -40,6 +40,6 @@ function init(){if(initialized)return;const nav=document.querySelector('.beginne
     return;
   }
   go('dashboard',nav)}
-window.HD20_NAV={go:key=>{const nav=document.querySelector('.beginnerNav');if(!nav)return;const k=normalizeDeepLink(key);if(['maturitymap','map','maturity'].includes(k)){goDashboard(nav,'maturity');return}go(k,nav)},active:()=>activeKey,areas:['dashboard','activity','advancement','audit','action','master'],ready:()=>initialized};
+window.HD20_NAV={go:key=>{const nav=document.querySelector('.beginnerNav');if(!nav)return;const k=normalizeDeepLink(key);if(['maturitymap','map','maturity'].includes(k)){go('advancement',nav);window.__HD20_RESTORE_SUB='map';setTimeout(()=>window.HD20_SUBNAV?.select?.('advancement','map'),0);return}go(k,nav)},active:()=>activeKey,areas:['dashboard','activity','advancement','audit','action','master'],ready:()=>initialized};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else setTimeout(init,0);
 })();
