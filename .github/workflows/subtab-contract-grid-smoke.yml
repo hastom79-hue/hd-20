@@ -91,6 +91,14 @@ jobs:
               else assert(areaMs<5000,`dense ${area} entry regression: ${areaMs}ms`);
               for(const sub of subs){
                 await page.getByRole('button',{name:sub,exact:true}).click(); await page.waitForTimeout(100);
+                if(area==='advancement'){
+                  const key=windowSub=>({judge:'hd20AdvJudgeOperational',analysis:'hd20AdvAnalysisOperational',detail:'hd20AdvDetailOperational',process:'hd20AdvProcessOperational',standard:'hd20AdvStandardOperational'})[windowSub];
+                  const subKey=await page.evaluate(()=>window.HD20_SUBNAV?.state?.().sub);
+                  const ownership=await page.evaluate(expected=>{const ids=['hd20AdvJudgeOperational','hd20AdvAnalysisOperational','hd20AdvDetailOperational','hd20AdvProcessOperational','hd20AdvStandardOperational'];const visible=id=>{const e=document.getElementById(id);return !!e&&getComputedStyle(e).display!=='none'&&e.getClientRects().length>0};const work=document.getElementById('awWorkplace'),map=document.getElementById('hd20MaturityMapTab'),trend=document.querySelector('.bottomGrid');return{visibleOps:ids.filter(visible),work:visible('awWorkplace'),map:visible('hd20MaturityMapTab')&&!map?.hidden,trend:!!trend&&getComputedStyle(trend).display!=='none'&&trend.getClientRects().length>0,expected}},key(subKey));
+                  if(ownership.expected)assert(ownership.visibleOps.length===1&&ownership.visibleOps[0]===ownership.expected&&!ownership.work&&!ownership.map&&!ownership.trend,'advancement work-tab ownership failed '+subKey+': '+JSON.stringify(ownership));
+                  else if(subKey==='map')assert(ownership.visibleOps.length===0&&!ownership.work&&ownership.map&&!ownership.trend,'advancement map ownership failed '+JSON.stringify(ownership));
+                  else if(subKey==='trend')assert(ownership.visibleOps.length===0&&!ownership.work&&!ownership.map&&ownership.trend,'advancement trend ownership failed '+JSON.stringify(ownership));
+                }
                 const c=await page.locator('#hd20PurposePanel').getAttribute('data-contract');
                 assert(c&&c.startsWith(area+'.'),`contract missing for ${area}/${sub}: ${c}`);
                 const text=await page.locator('#hd20PurposePanel').innerText();
