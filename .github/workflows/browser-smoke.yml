@@ -101,6 +101,12 @@ jobs:
               await restore.goto('http://127.0.0.1:4173/index.html?area=advancement&sub=map',{waitUntil:'commit',timeout:15000});await restore.waitForTimeout(1900);
               const mapRestore=await restore.evaluate(()=>{const s=window.HD20_SUBNAV?.state?.(),el=document.getElementById('hd20MaturityMapTab');return{nav:window.HD20_NAV?.active?.(),area:s?.area,sub:s?.sub,visible:!!el&&getComputedStyle(el).display!=='none'}});
               if(mapRestore.nav!=='advancement'||mapRestore.area!=='advancement'||mapRestore.sub!=='map'||!mapRestore.visible)throw new Error('advancement map refresh restore failed '+JSON.stringify(mapRestore));
+              await restore.reload({waitUntil:'commit',timeout:15000});await restore.waitForTimeout(1900);
+              const mapReload=await restore.evaluate(()=>{const s=window.HD20_SUBNAV?.state?.(),el=document.getElementById('hd20MaturityMapTab');return{nav:window.HD20_NAV?.active?.(),area:s?.area,sub:s?.sub,visible:!!el&&!el.hidden&&getComputedStyle(el).display!=='none',query:location.search}});
+              if(mapReload.nav!=='advancement'||mapReload.area!=='advancement'||mapReload.sub!=='map'||!mapReload.visible)throw new Error('advancement map reload persistence failed '+JSON.stringify(mapReload));
+              await restore.goto('http://127.0.0.1:4173/index.html?area=master&tab=dashboard',{waitUntil:'commit',timeout:15000});await restore.waitForTimeout(1900);
+              const canonicalPrecedence=await restore.evaluate(()=>({nav:window.HD20_NAV?.active?.(),modal:document.getElementById('masterModal')?.classList.contains('on')||getComputedStyle(document.getElementById('masterModal')).display!=='none',query:location.search}));
+              if(canonicalPrecedence.nav!=='master'||!canonicalPrecedence.modal)throw new Error('canonical area did not override legacy tab '+JSON.stringify(canonicalPrecedence));
               await restore.close();
               evidence.main={readyState:main.readyState,nav:main.nav,bodyVisible:main.bodyVisible,authPending:main.authPending,priority:main.priority,bridge:main.bridge,kpi:main.kpi,metric:main.metric,legacyLanding:main.legacyLanding};evidence.maturity=maturity;evidence.retiredDashboardChrome=retired;evidence.pageErrors=errors;
               await page.screenshot({path:'artifacts/main-dashboard.png',fullPage:false,timeout:10000}).catch(e=>{evidence.screenshotWarning=String(e);console.warn('SCREENSHOT_WARNING',String(e))});
