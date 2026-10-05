@@ -107,6 +107,12 @@ jobs:
             await page.evaluate(()=>window.HD20_NAV?.go?.('master')); await page.waitForTimeout(250);
             const leaderMaster=await page.evaluate(()=>({tab:!!document.querySelector('#masterModal [data-master-tab="leader"]'),panel:!!document.querySelector('#hd20TeamLeaderMasterPanel')}));
             assert(leaderMaster.tab&&leaderMaster.panel,'team leader master missing from operating standards: '+JSON.stringify(leaderMaster));
+            const masterTabs=['order','target','sourceOrder','policy','leader'];
+            for(const key of masterTabs){
+              await page.locator('#masterModal [data-master-tab="'+key+'"]').click(); await page.waitForTimeout(50);
+              const vis=await page.evaluate(()=>['masterOrderPanel','masterTargetPanel','hd20SourceOrderPanel','hd20OperatingPolicyPanel','hd20TeamLeaderMasterPanel'].filter(id=>{const e=document.getElementById(id);return e&&getComputedStyle(e).display!=='none'}));
+              assert(vis.length===1,'operating master panel exclusivity failed '+key+': '+JSON.stringify(vis));
+            }
             const expectedCount=Object.values(areas).reduce((n,subs)=>n+subs.length,0); assert(count===expectedCount,`not all operational subtabs checked: ${count}/${expectedCount}`);
             assert(errs.length===0,'page errors:\n'+errs.join('\n---\n'));
             await maturityCheck();
