@@ -102,6 +102,18 @@ jobs:
           ! grep -R --include='*.js' --exclude='demo-seed-data.js' --exclude-dir='.git' -n "source:'demo-seed'\|HD20_DEMO_ACTIONS\|HD20_ACTION_DEMO_SEED_DISABLED" .
           ! grep -R --include='*.js' --include='*.html' --exclude-dir='.git' -n 'example\.com\|홍길동\|김현대' .
 
+      - name: Verify validation fixture is explicit opt-in only
+        run: |
+          set -euo pipefail
+          test -s web-validation-fixture.js
+          grep -q "const ACTIVE=MODE==='1'" web-validation-fixture.js
+          grep -q "if(!ACTIVE)" web-validation-fixture.js
+          ! grep -q "파라미터 없이 접속해도 검증 데이터가 자동으로 보임" web-validation-fixture.js
+          grep -q "web-validation-fixture.js" index.html
+          ! grep -q "hd20-maturity-map-showcase.js" index.html
+          ! grep -q "hd20-field-showcase-bootstrap.js" final-layout-polish.js
+          ! grep -q "hd20-maturity-map-showcase.js" final-layout-polish.js
+
       - name: Verify workflow screens
         run: |
           set -euo pipefail
