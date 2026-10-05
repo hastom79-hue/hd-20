@@ -17,15 +17,12 @@ function bind(nav){nav.querySelectorAll('button[data-key]').forEach(btn=>btn.onc
 function normalizeDeepLink(k){return ({conversion:'advancement',workplace:'advancement'})[k]||k}
 function init(){if(initialized)return;const nav=document.querySelector('.beginnerNav');if(!nav)return;initialized=true;ensureNav();ensureHint(nav);bind(nav);
   const q=new URLSearchParams(location.search),raw=q.get('tab'),area=q.get('area'),section=q.get('section'),sub=q.get('sub');
-  if(['maturitymap','map','maturity'].includes(raw)){go('advancement',nav);window.__HD20_RESTORE_SUB='map';return}
-  /* 새로고침 시 마지막으로 보던 화면을 복원 — area(영역)까지는 여기서, sub(서브탭)은 hd20-subtabs.js가
-     스스로 부팅되면서 같은 URL을 읽어 이어서 복원함(서브탭 목록이 area 결정 후에야 만들어지므로 분리) */
+  /* canonical area/sub가 있으면 legacy tab보다 우선한다. restore sub는 go() 전에 예약해
+     subnav 초기화 race에서 기본 첫 탭으로 되돌아가는 것을 막는다. */
   const AREAS=['dashboard','activity','advancement','audit','action','master'];
-  const legacyArea=normalizeDeepLink(raw);
-  if(raw&&AREAS.includes(legacyArea)){if(legacyArea==='dashboard')goDashboard(nav,section||'');else go(legacyArea,nav);if(sub)window.__HD20_RESTORE_SUB=sub;return}
   if(area&&AREAS.includes(area)){
-    if(area==='dashboard')goDashboard(nav,section||'');else go(area,nav);
     if(sub)window.__HD20_RESTORE_SUB=sub;
+    if(area==='dashboard')goDashboard(nav,section||'');else go(area,nav);
     /* 안전망: 다른 스크립트들이 각자 타이밍에 기본값(요약/종합현황)으로 되돌리는 경합이 있어, 페이지가
        완전히 안정된 뒤(1.6초) URL을 다시 확인해 최종적으로 한 번 더 강제 적용 — 그 사이 값이 바뀌지
        않았다면(사용자가 이미 다른 곳으로 이동한 게 아니라면) 그대로 재적용 */
@@ -41,7 +38,10 @@ function init(){if(initialized)return;const nav=document.querySelector('.beginne
     },1600);
     return;
   }
+  if(['maturitymap','map','maturity'].includes(raw)){window.__HD20_RESTORE_SUB='map';go('advancement',nav);return}
+  const legacyArea=normalizeDeepLink(raw);
+  if(raw&&AREAS.includes(legacyArea)){if(sub)window.__HD20_RESTORE_SUB=sub;if(legacyArea==='dashboard')goDashboard(nav,section||'');else go(legacyArea,nav);return}
   go('dashboard',nav)}
-window.HD20_NAV={go:key=>{const nav=document.querySelector('.beginnerNav');if(!nav)return;const k=normalizeDeepLink(key);if(['maturitymap','map','maturity'].includes(k)){go('advancement',nav);window.__HD20_RESTORE_SUB='map';setTimeout(()=>window.HD20_SUBNAV?.select?.('advancement','map'),0);return}go(k,nav)},active:()=>activeKey,areas:['dashboard','activity','advancement','audit','action','master'],ready:()=>initialized};
+window.HD20_NAV={go:key=>{const nav=document.querySelector('.beginnerNav');if(!nav)return;const k=normalizeDeepLink(key);if(['maturitymap','map','maturity'].includes(k)){window.__HD20_RESTORE_SUB='map';go('advancement',nav);setTimeout(()=>window.HD20_SUBNAV?.select?.('advancement','map'),0);return}go(k,nav)},active:()=>activeKey,areas:['dashboard','activity','advancement','audit','action','master'],ready:()=>initialized};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else setTimeout(init,0);
 })();
