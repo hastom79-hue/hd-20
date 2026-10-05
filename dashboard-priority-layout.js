@@ -29,20 +29,12 @@ function ensure(){
     cards.insertAdjacentElement('afterend',root);
   }
   const main=document.querySelector('.mainGrid');if(main&&!main.previousElementSibling?.classList.contains('hd20DashboardSectionLabel')){const label=document.createElement('div');label.className='hd20DashboardSectionLabel';label.innerHTML='<div><small>EXECUTION & SUSTAIN</small><b>팀별 실행 · Audit 유지관리</b></div><span>팀별 활동에서 Audit·개선조치까지 연결 확인</span>';main.insertAdjacentElement('beforebegin',label)}
-  /* Dashboard에서는 고도화 전용 STANDARD & TREND 라벨을 생성하지 않는다.
-     판정기준·고도화 추이는 ③ 고도화·표준화 영역에서만 소유한다. */
-  document.querySelectorAll('.hd20DashboardSectionLabel').forEach(label=>{
-    if(label.textContent?.includes('STANDARD & TREND')||label.textContent?.includes('판정기준 · 고도화 추이')) label.remove();
-  });
+  const bottom=document.querySelector('.bottomGrid');
+  if(bottom?.previousElementSibling?.classList.contains('hd20DashboardSectionLabel'))bottom.previousElementSibling.remove();
   return root;
 }
 function card(x,i,op){return `<article class="hd20HealthKpi" data-kpi="${x.key}" data-tab="${x.tab}"><div class="hd20HealthKpiIndex">0${i+1}</div><div class="hd20HealthKpiBody"><small>${x.label}</small><strong>${fmt(op[x.key],x.key)}</strong><p>${x.hint}</p></div></article>`}
-function removeRetiredStandardTrendLabel(){
-  document.querySelectorAll('.hd20DashboardSectionLabel').forEach(label=>{
-    const t=(label.textContent||'').replace(/\s+/g,' ').trim();
-    if(t.includes('STANDARD & TREND')||t.includes('판정기준 · 고도화 추이')||t.includes('판정기준·고도화 추이'))label.remove();
-  });
-}
+function removeRetiredStandardTrendLabel(){const bottom=document.querySelector('.bottomGrid');if(bottom?.previousElementSibling?.classList.contains('hd20DashboardSectionLabel'))bottom.previousElementSibling.remove()}
 function render(){
   removeRetiredStandardTrendLabel();
   const root=ensure();if(!root)return;
