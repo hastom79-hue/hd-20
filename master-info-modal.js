@@ -40,4 +40,11 @@ style.textContent=`.masterModal{display:none;padding:0}
 
 document.head.appendChild(style);
 document.body.insertAdjacentHTML('beforeend',html);
+const masterPanelByTab={order:'masterOrderPanel',target:'masterTargetPanel',policy:'hd20OperatingPolicyPanel',sourceOrder:'hd20RequestSourceOrderPanel',leader:'hd20TeamLeaderMasterPanel'};
+document.querySelector('#masterModal .masterTabs')?.addEventListener('click',e=>{
+  const btn=e.target.closest('[data-master-tab]');if(!btn)return;
+  const active=btn.dataset.masterTab;
+  document.querySelectorAll('#masterModal .masterTabs button').forEach(b=>b.classList.toggle('on',b===btn));
+  Object.entries(masterPanelByTab).forEach(([key,id])=>{const p=document.getElementById(id);if(p)p.style.display=key===active?'block':'none'});
+},true);
 })();
