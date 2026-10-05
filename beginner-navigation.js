@@ -12,7 +12,7 @@ function go(key,nav){if(key==='dashboard'){goDashboard(nav);return}
   try{const u=new URL(location.href);u.searchParams.set('area',key);u.searchParams.delete('section');history.replaceState(null,'',u)}catch{}
   syncNav(nav,key);if(key==='advancement'){openAdvancement(nav);return}const id=SCREEN_BY_KEY[key];if(id){openScreen(id);if(key==='master')window.dispatchEvent(new CustomEvent('hd20-open-master'));return}}
 function ensureNav(){let nav=document.querySelector('.beginnerNav');if(!nav){nav=document.createElement('nav');nav.className='beginnerNav';nav.setAttribute('aria-label','5S 통합관리 메뉴');document.querySelector('.top')?.insertAdjacentElement('afterend',nav)}nav.innerHTML=NAV_HTML;nav.dataset.controller='canonical-five-area-v10-early-boot';return nav}
-function ensureHint(nav){let hint=document.querySelector('.beginnerHint');if(!hint){hint=document.createElement('div');hint.className='beginnerHint';nav.insertAdjacentElement('afterend',hint)}hint.innerHTML='<b>업무 흐름</b> <span class="flowStep">활동 실행</span><i>→</i><span class="flowStep">고도화 판정·표준화</span><i>→</i><span class="flowStep">진단·Audit</span><i>→</i><span class="flowStep">개선·효과검증</span><i>→</i><span class="flowStep">표준/활동 환류</span><em>대시보드에서 전 과정 통합 모니터링</em>'}
+function ensureHint(nav){document.querySelector('.beginnerHint')?.remove()}
 function bind(nav){nav.querySelectorAll('button[data-key]').forEach(btn=>btn.onclick=()=>go(btn.dataset.key,nav))}
 function normalizeDeepLink(k){return ({conversion:'advancement',workplace:'advancement',master:'dashboard'})[k]||k}
 function init(){if(initialized)return;const nav=document.querySelector('.beginnerNav');if(!nav)return;initialized=true;ensureNav();ensureHint(nav);bind(nav);
