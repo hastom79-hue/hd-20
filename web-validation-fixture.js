@@ -42,9 +42,10 @@ function restore(){
 function cleanUrl(extra){const u=new URL(location.href);['validation','edge','scale'].forEach(p=>u.searchParams.delete(p));Object.entries(extra||{}).forEach(([k,v])=>u.searchParams.set(k,v));return u.toString()}
 
 if(MODE==='reset'){try{restore()}catch(e){console.error('[validation-fixture] restore failed',e)}location.replace(cleanUrl({validation:'0'}));return}
-/* 기본값: 파라미터 없이 접속해도 검증 데이터가 자동으로 보임. 끄려면 ?validation=0 (또는 off) */
-const OFF=MODE==='0'||MODE==='off';
-if(OFF){try{if(ls.getItem(META)||ls.getItem(BACKUP))restore()}catch(e){console.error('[validation-fixture] auto-restore failed',e)}return}
+/* Production default: 검증 데이터는 명시적 ?validation=1 에서만 실행한다.
+   일반 접속/validation=0/off는 과거 fixture 흔적이 있으면 원본을 복구하고 즉시 종료한다. */
+const ACTIVE=MODE==='1';
+if(!ACTIVE){try{if(ls.getItem(META)||ls.getItem(BACKUP))restore()}catch(e){console.error('[validation-fixture] auto-restore failed',e)}return}
 
 window.HD20_VALIDATION_MODE=true;window.HD20_VALIDATION_ISOLATED=true;
 
