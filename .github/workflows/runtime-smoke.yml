@@ -110,6 +110,9 @@ jobs:
           grep -q "if(!ACTIVE)" web-validation-fixture.js
           ! grep -q "파라미터 없이 접속해도 검증 데이터가 자동으로 보임" web-validation-fixture.js
           grep -q "web-validation-fixture.js" index.html
+          grep -q "if(__v==='1')" supabase-sync.js
+          ! grep -q "if(__v!=='0'&&__v!=='off')" supabase-sync.js
+          ! grep -q "demo-seed-data.js" index.html
           ! grep -q "hd20-maturity-map-showcase.js" index.html
           ! grep -q "hd20-field-showcase-bootstrap.js" final-layout-polish.js
           ! grep -q "hd20-maturity-map-showcase.js" final-layout-polish.js
