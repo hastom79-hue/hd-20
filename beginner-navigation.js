@@ -14,7 +14,7 @@ function go(key,nav){if(key==='dashboard'){goDashboard(nav);return}
 function ensureNav(){let nav=document.querySelector('.beginnerNav');if(!nav){nav=document.createElement('nav');nav.className='beginnerNav';nav.setAttribute('aria-label','5S 통합관리 메뉴');document.querySelector('.top')?.insertAdjacentElement('afterend',nav)}nav.innerHTML=NAV_HTML;nav.dataset.controller='canonical-five-area-v10-early-boot';return nav}
 function ensureHint(nav){document.querySelector('.beginnerHint')?.remove()}
 function bind(nav){nav.querySelectorAll('button[data-key]').forEach(btn=>btn.onclick=()=>go(btn.dataset.key,nav))}
-function normalizeDeepLink(k){return ({conversion:'advancement',workplace:'advancement',master:'dashboard'})[k]||k}
+function normalizeDeepLink(k){return ({conversion:'advancement',workplace:'advancement'})[k]||k}
 function init(){if(initialized)return;const nav=document.querySelector('.beginnerNav');if(!nav)return;initialized=true;ensureNav();ensureHint(nav);bind(nav);
   const q=new URLSearchParams(location.search),raw=q.get('tab'),area=q.get('area'),section=q.get('section'),sub=q.get('sub');
   if(['maturitymap','map','maturity'].includes(raw)){go('advancement',nav);window.__HD20_RESTORE_SUB='map';return}
