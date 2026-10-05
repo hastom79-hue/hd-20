@@ -78,7 +78,7 @@ jobs:
             const dashKeys=await page.locator('#hd20DashboardSectionTabs button[data-dashboard-section]').evaluateAll(xs=>xs.map(x=>x.dataset.dashboardSection));
             assert(JSON.stringify(dashKeys)===JSON.stringify(['summary','improve','request','execution','analysis']),'dashboard groups mismatch: '+dashKeys.join(','));
             const maturityCheck=async()=>{await page.evaluate(()=>window.HD20_NAV?.go?.('maturity'));await page.waitForTimeout(250);const maturityState=await page.evaluate(()=>{const tab=document.querySelector('#hd20MaturityMapTab'),map=tab?.querySelector('.mmtMap'),st=window.HD20_SUBNAV?.state?.();return {nav:window.HD20_NAV?.active?.(),area:st?.area,sub:st?.sub,visible:!!tab&&!tab.hidden&&getComputedStyle(tab).display!=='none',mapHeight:map?.getBoundingClientRect().height||0,dots:document.querySelectorAll('#hd20MaturityMapTab .mmtDot').length,teams:document.querySelectorAll('#hd20MaturityMapTab .mmtTeam').length}});assert(maturityState.nav==='advancement'&&maturityState.area==='advancement'&&maturityState.sub==='map'&&maturityState.visible&&maturityState.mapHeight>300,'advancement maturity map not active: '+JSON.stringify(maturityState));await page.evaluate(()=>window.HD20_NAV?.go?.('dashboard'));await page.waitForTimeout(100);};
-            const areas={activity:['활동관리','실적분석'],advancement:['후보 목록','3조건 분석','라인·작업장 상세','확정·수평전개'],audit:['대상 추출','실시·점검 입력','6개월 관리중','종료평가'],action:['조치 목록','처리기간 분석','팀장 기준정보','효과·재발관리']};
+            const areas={activity:['① 문제·개선 등록','② 실행현황·우수활동 선별'],advancement:['① 후보 접수·근거확인','② 3대 요건 판정','③ 작업장 근거검증','④ 공식심사·정체관리','⑤ 확정·표준화·수평전개','⑥ 유지·이탈 포트폴리오','판정기준·성과추이'],audit:['① Risk 대상선정','② 현장 Audit·판정','③ 6개월 유지검증','④ 종료·재조치 판정'],action:['① 개선요청·실행','② 지연·병목관리','③ 효과검증·재발폐쇄']};
             let count=0;
             for(const [area,subs] of Object.entries(areas)){
               const areaStart=Date.now(); console.log('LOAD_STAGE area-start',area);
@@ -102,12 +102,17 @@ jobs:
                 await page.keyboard.press('Escape'); count++;
               }
             }
+            await page.evaluate(()=>window.HD20_NAV?.go?.('action')); await page.waitForTimeout(120);
+            const actionMasterCount=await page.locator('#actionMgmt .amMaster').count(); assert(actionMasterCount===0,'orphan team master remains in action: '+actionMasterCount);
+            await page.evaluate(()=>window.HD20_NAV?.go?.('master')); await page.waitForTimeout(250);
+            const leaderMaster=await page.evaluate(()=>({tab:!!document.querySelector('#masterModal [data-master-tab="leader"]'),panel:!!document.querySelector('#hd20TeamLeaderMasterPanel')}));
+            assert(leaderMaster.tab&&leaderMaster.panel,'team leader master missing from operating standards: '+JSON.stringify(leaderMaster));
             const expectedCount=Object.values(areas).reduce((n,subs)=>n+subs.length,0); assert(count===expectedCount,`not all operational subtabs checked: ${count}/${expectedCount}`);
             assert(errs.length===0,'page errors:\n'+errs.join('\n---\n'));
             await maturityCheck();
             await page.setViewportSize({width:390,height:844});
             await page.evaluate(()=>document.querySelector('.beginnerNav button[data-key="activity"]')?.click()); await page.waitForTimeout(100);
-            await page.getByRole('button',{name:'활동관리',exact:true}).click();
+            await page.getByRole('button',{name:'① 문제·개선 등록',exact:true}).click();
             await page.getByRole('button',{name:'상세 데이터 그리드',exact:true}).click();
             const box=await page.locator('.hd20GridBox').boundingBox(); assert(box&&box.width<=390.5,'mobile grid overflow');
             const mobile=await page.evaluate(()=>{const de=document.documentElement,b=document.body,modal=document.querySelector('#hd20UniversalGridModal'),grid=document.querySelector('.hd20GridBox'),purpose=document.querySelector('#hd20PurposePanel');const rect=e=>{if(!e)return null;const r=e.getBoundingClientRect();return {left:r.left,right:r.right,width:r.width,height:r.height}};return {scrollWidth:Math.max(de.scrollWidth,b.scrollWidth),clientWidth:de.clientWidth,modal:rect(modal),grid:rect(grid),purpose:rect(purpose)}}); assert(mobile.scrollWidth<=mobile.clientWidth+2,`dense mobile page overflow ${mobile.scrollWidth}>${mobile.clientWidth}`); for(const [name,r] of Object.entries({grid:mobile.grid,purpose:mobile.purpose}))if(r)assert(r.left>=-2&&r.right<=392,`dense mobile ${name} out of viewport: ${JSON.stringify(r)}`);
