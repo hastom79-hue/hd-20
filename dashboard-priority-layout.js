@@ -37,13 +37,20 @@ function ensure(){
   return root;
 }
 function card(x,i,op){return `<article class="hd20HealthKpi" data-kpi="${x.key}" data-tab="${x.tab}"><div class="hd20HealthKpiIndex">0${i+1}</div><div class="hd20HealthKpiBody"><small>${x.label}</small><strong>${fmt(op[x.key],x.key)}</strong><p>${x.hint}</p></div></article>`}
+function removeRetiredStandardTrendLabel(){
+  document.querySelectorAll('.hd20DashboardSectionLabel').forEach(label=>{
+    const t=(label.textContent||'').replace(/\s+/g,' ').trim();
+    if(t.includes('STANDARD & TREND')||t.includes('판정기준 · 고도화 추이')||t.includes('판정기준·고도화 추이'))label.remove();
+  });
+}
 function render(){
+  removeRetiredStandardTrendLabel();
   const root=ensure();if(!root)return;
   const snap=window.HD20KPIData?.snapshot?.();const op=window.HD20KPIData?.operational?.(snap)||{};
   const groups=root.querySelector('.hd20DashboardPriorityGroups');
   groups.innerHTML=GROUPS.map(g=>{const items=KPI.filter(x=>x.tab===g.key);return `<section class="hd20HealthGroup" data-domain="${g.key}"><header><div><small>STEP ${g.step}</small><b>${g.label}</b><p>${g.summary}</p></div><button type="button" data-group-tab="${g.key}">업무화면 →</button></header><div class="hd20HealthGroupGrid">${items.map(x=>card(x,KPI.indexOf(x),op)).join('')}</div></section>`}).join('');
   groups.querySelectorAll('[data-group-tab]').forEach(btn=>btn.addEventListener('click',()=>gotoTab(btn.dataset.groupTab)));
 }
-function boot(){render();['hd20-kpi-source-updated','hd20-gmes-5s-imported','hd20-gmes-5s-judged','hd20-audit-updated','hd20-action-updated'].forEach(ev=>window.addEventListener(ev,()=>setTimeout(render,0)))}
+function boot(){removeRetiredStandardTrendLabel();render();setTimeout(removeRetiredStandardTrendLabel,500);setTimeout(removeRetiredStandardTrendLabel,1800);['hd20-kpi-source-updated','hd20-gmes-5s-imported','hd20-gmes-5s-judged','hd20-audit-updated','hd20-action-updated'].forEach(ev=>window.addEventListener(ev,()=>setTimeout(render,0)))}
 window.HD20DashboardPriority={render,KPI,GROUPS};document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot,{once:true}):boot();
 })();
