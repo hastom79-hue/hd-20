@@ -16,8 +16,8 @@ function classify(el){
 function apply(detail){
   if(detail?.area!=='action')return;
   const root=$('#awAction');if(!root)return;
-  const sub=['leadtime','master','verify'].includes(detail.sub)?detail.sub:'manage';
-  root.dataset.canonicalSubview=sub==='verify'?'effect-recurrence':sub==='master'?'team-leader-master':sub==='leadtime'?'leadtime-analysis':'action-management';
+  const sub=['leadtime','verify'].includes(detail.sub)?detail.sub:'manage';
+  root.dataset.canonicalSubview=sub==='verify'?'effect-recurrence':sub==='leadtime'?'leadtime-analysis':'action-management';
   $$(':scope > .amSummary,:scope > .amGrid,:scope > .amMaster,:scope > .amRecentList,:scope > .amCasesScroll,:scope > .amCard,:scope > .hd20LtWrap,:scope > section',root).forEach(el=>{
     if(el.classList.contains('awHero'))return;
     const role=classify(el);if(!role)return;
@@ -27,7 +27,7 @@ function apply(detail){
   const manageForm=$('.amRegisterFormCard',root);if(manageForm)manageForm.classList.toggle('hd20SubHidden',sub!=='manage');
   const nativeSummary=$(':scope > .amSummary',root);if(nativeSummary)nativeSummary.classList.toggle('hd20SubHidden',sub!=='manage');
   const nativeGrid=$(':scope > .amGrid',root);if(nativeGrid)nativeGrid.classList.toggle('hd20SubHidden',sub!=='manage');
-  const nativeMaster=$(':scope > .amMaster',root);if(nativeMaster)nativeMaster.classList.toggle('hd20SubHidden',sub!=='master');
+  const nativeMaster=$(':scope > .amMaster',root);if(nativeMaster)nativeMaster.classList.add('hd20SubHidden');
   const nativeLt=$(':scope > .hd20LtWrap',root);if(nativeLt)nativeLt.classList.toggle('hd20SubHidden',sub!=='leadtime');
   const nativeRecent=$(':scope > .amRecentList',root);if(nativeRecent)nativeRecent.classList.toggle('hd20SubHidden',sub!=='manage');
   const nativeCases=$(':scope > .amCasesScroll',root);if(nativeCases)nativeCases.classList.toggle('hd20SubHidden',sub!=='manage');
