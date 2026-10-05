@@ -1708,3 +1708,19 @@ Canonical Store는 다음을 기준으로 한다.
 - 2026-10-03 개선요청 KPI 정의 오류 수정: 내부 teamRows.open은 '기한내 미완료'라 기한초과를 제외하는 값인데 상단 KPI에서 이를 '미완료'로 표시하던 오류 확인. 상단 미완료를 open+over로 수정하고 미완료율 추가. 처리상태 필터의 '기한경과'도 화면 표준용어 '기한초과'로 통일하고 필터 로직 동기화. commits acce8b57, 7681437c.
 
 - 2026-10-03 KPI→차트→Grid 교차검증 추가수정: '기한초과 집중관리/평균 초과일'이 완료된 과거 지연건까지 포함하던 로직을 발견하여 현재 미완료+기한초과 건만 집계하도록 변경. 팀별 상세 Grid의 '개선진행/대기/기한경과'도 '기한내 미완료/기한초과'로 정의를 명확히 하고 CSV 상태표기도 기한초과로 통일. commits ea31e1da, 9182fb44.
+
+
+### 2026-10-06 / Release Candidate QA 13~24 — workflow IA, production isolation, legacy retirement
+- RC 원칙: 신규 기능 추가보다 화면 소유권·운영데이터 신뢰·딥링크·레이아웃 회귀를 우선하며, 코드 변경만으로 PASS를 선언하지 않는다.
+- 고도화 업무흐름을 후보 근거확인 → 3대 요건 판정 → 작업장 근거검증 → 공식심사 → 확정/표준화/수평전개 → 유지·이탈 포트폴리오 → 판정기준/성과추이로 분리. 3/3 조건충족과 공식확정은 동일 상태로 취급하지 않는다.
+- 고도화 subtab 소유권 중복 제거: #awWorkplace는 legacy로 숨기고 judge/analysis/detail/process/standard 전용 panel, map, trend가 각 sub의 단일 owner가 되도록 정리. defensive advancement-subtab-dedupe-guard는 final-layout-polish에서 실제 동적 로드됨을 재확인하여 과거 '미로드' 판단을 정정.
+- 구형 showcase production 제거: hd20-field-showcase-bootstrap.js, hd20-maturity-map-showcase.js의 direct/dynamic loader를 제거. 이후 production boot 직접검사에서 두 showcase와 demo-seed-data.js가 로드되지 않음을 재확인.
+- validation fixture 중대 결함 수정: 과거에는 query parameter가 없어도 fixture가 자동 seed되었으나, 현재는 ?validation=1에서만 활성화. 일반 URL/validation=0/off에서는 fixture 흔적이 있으면 원본을 복원하고 종료.
+- Supabase validation 조건 역전 결함 수정: 일반 접속이 sync 차단되고 validation=0에서 sync되던 조건을 제거. 현재는 ?validation=1에서만 원격 DB sync를 격리하고 일반 접속은 정상 sync.
+- deep-link 결정성 보강: canonical area/sub가 legacy tab보다 우선하며 restore sub를 area go 전에 예약. advancement/map은 reload 후에도 동일 sub 유지하도록 browser smoke 계약 추가.
+- ⑥ 운영기준은 production에서 실제 로드되는 integrated-master-factors를 canonical로 정리. 중복 기본 탭/footer를 숨기고 ① 조직/팀 ② 팀별 인당목표 ③ 요청출처 ④ 업무/팩터 ⑤ 메일링의 5기능으로 통합.
+- 구형 maturity-condition-analysis.js는 현재 ② 3대 요건 판정과 기능 중복 및 공통 상단 잔류 위험이 있어 production dynamic loader에서 제거. runtime/design smoke도 legacy panel을 필수 정상조건으로 보지 않도록 계약 수정.
+- viewport 계약은 1440/1152/900/375에서 top navigation, body horizontal overflow, workflow rail, Master modal viewport 이탈을 검사한다.
+- 고도화 7개 sub의 browser smoke를 강화하여 expected owner 정확히 1개, 다른 owner 동시노출 금지, legacy #awWorkplace 재등장 금지를 검사한다.
+- 주요 커밋: cabeb804, fbf99dd, 0998b373, 5de666bd, 8d6ad722, 359bf067, c7b02b69, 31dd2440, 72388aee, 707710fc, c7193baf, 00690762, d7fe8a53, f504a87d, 3c82dfee, 3a805f45, cdb15ed8, fad41648, dd99cd56, e7f6ad96, 45fcf968, f97c1347.
+- CI 상태 주의: GitHub connector의 workflow 조회는 제한된 범위만 반환할 수 있으므로 green run을 직접 확인하기 전에는 최종 CI PASS로 기록하지 않는다.
