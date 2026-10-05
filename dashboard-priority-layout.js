@@ -29,7 +29,11 @@ function ensure(){
     cards.insertAdjacentElement('afterend',root);
   }
   const main=document.querySelector('.mainGrid');if(main&&!main.previousElementSibling?.classList.contains('hd20DashboardSectionLabel')){const label=document.createElement('div');label.className='hd20DashboardSectionLabel';label.innerHTML='<div><small>EXECUTION & SUSTAIN</small><b>팀별 실행 · Audit 유지관리</b></div><span>팀별 활동에서 Audit·개선조치까지 연결 확인</span>';main.insertAdjacentElement('beforebegin',label)}
-  const bottom=document.querySelector('.bottomGrid');if(bottom&&!bottom.previousElementSibling?.classList.contains('hd20DashboardSectionLabel')){const label=document.createElement('div');label.className='hd20DashboardSectionLabel';label.innerHTML='<div><small>STANDARD & TREND</small><b>판정기준 · 고도화 추이</b></div><span>3대 기준과 시간축 변화를 함께 확인</span>';bottom.insertAdjacentElement('beforebegin',label)}
+  /* Dashboard에서는 고도화 전용 STANDARD & TREND 라벨을 생성하지 않는다.
+     판정기준·고도화 추이는 ③ 고도화·표준화 영역에서만 소유한다. */
+  document.querySelectorAll('.hd20DashboardSectionLabel').forEach(label=>{
+    if(label.textContent?.includes('STANDARD & TREND')||label.textContent?.includes('판정기준 · 고도화 추이')) label.remove();
+  });
   return root;
 }
 function card(x,i,op){return `<article class="hd20HealthKpi" data-kpi="${x.key}" data-tab="${x.tab}"><div class="hd20HealthKpiIndex">0${i+1}</div><div class="hd20HealthKpiBody"><small>${x.label}</small><strong>${fmt(op[x.key],x.key)}</strong><p>${x.hint}</p></div></article>`}
