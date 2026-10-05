@@ -21,6 +21,8 @@ function init(){if(initialized)return;const nav=document.querySelector('.beginne
   /* 새로고침 시 마지막으로 보던 화면을 복원 — area(영역)까지는 여기서, sub(서브탭)은 hd20-subtabs.js가
      스스로 부팅되면서 같은 URL을 읽어 이어서 복원함(서브탭 목록이 area 결정 후에야 만들어지므로 분리) */
   const AREAS=['dashboard','activity','advancement','audit','action','master'];
+  const legacyArea=normalizeDeepLink(raw);
+  if(raw&&AREAS.includes(legacyArea)){if(legacyArea==='dashboard')goDashboard(nav,section||'');else go(legacyArea,nav);if(sub)window.__HD20_RESTORE_SUB=sub;return}
   if(area&&AREAS.includes(area)){
     if(area==='dashboard')goDashboard(nav,section||'');else go(area,nav);
     if(sub)window.__HD20_RESTORE_SUB=sub;
