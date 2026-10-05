@@ -116,6 +116,8 @@ jobs:
           ! grep -q "hd20-maturity-map-showcase.js" index.html
           ! grep -q "hd20-field-showcase-bootstrap.js" final-layout-polish.js
           ! grep -q "hd20-maturity-map-showcase.js" final-layout-polish.js
+          ! grep -q "maturity-condition-analysis.js" index.html
+          ! grep -q "maturity-condition-analysis.js" final-layout-polish.js
 
       - name: Verify workflow screens
         run: |
@@ -130,10 +132,6 @@ jobs:
       - name: Verify advancement and audit semantics
         run: |
           set -euo pipefail
-          grep -q '시각화·형적관리' maturity-condition-analysis.js
-          grep -q '인간공학적 Green Zone' maturity-condition-analysis.js
-          grep -q '정량축소·정위치 변경을 통한 공간 활용' maturity-condition-analysis.js
-          grep -q '조건 충족수 ≠ 공식판정' maturity-condition-analysis.js
           grep -q 'function pickTeams' audit-random-draw.js
           grep -q 'batchId' audit-random-draw.js
           grep -q 'Audit 표본수가 미설정' audit-random-draw.js
