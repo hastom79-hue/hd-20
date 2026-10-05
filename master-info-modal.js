@@ -40,7 +40,7 @@ style.textContent=`.masterModal{display:none;padding:0}
 
 document.head.appendChild(style);
 document.body.insertAdjacentHTML('beforeend',html);
-const masterPanelByTab={order:'masterOrderPanel',target:'masterTargetPanel',policy:'hd20OperatingPolicyPanel',sourceOrder:'hd20RequestSourceOrderPanel',leader:'hd20TeamLeaderMasterPanel'};
+const masterPanelByTab={order:'masterOrderPanel',target:'masterTargetPanel',policy:'hd20OperatingPolicyPanel',sourceOrder:'hd20SourceOrderPanel',leader:'hd20TeamLeaderMasterPanel'};
 document.querySelector('#masterModal .masterTabs')?.addEventListener('click',e=>{
   const btn=e.target.closest('[data-master-tab]');if(!btn)return;
   const active=btn.dataset.masterTab;
