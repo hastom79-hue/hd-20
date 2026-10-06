@@ -214,7 +214,7 @@ function applyAction(sub){const root=$('#awAction');if(!root)return;root.dataset
 }
 function apply(area,sub){enforceTopStatusOrder(area);try{document.querySelector('.app')?.setAttribute('data-hd-view',area+'.'+sub)}catch(e){}
   if(area==='dashboard')applyDashboard(sub);else if(area==='activity')applyActivity(sub);else if(area==='advancement')applyAdvancement(sub);else if(area==='audit')applyAudit(sub);else if(area==='action')applyAction(sub);window.dispatchEvent(new CustomEvent('hd20-subtab-changed',{detail:{area,sub}}))}
-function select(area,sub){state={area,sub};$('button',ensure()).forEach(b=>b.classList.toggle('on',b.dataset.sub===sub));apply(area,sub);renderPurpose(area,sub);requestAnimationFrame(()=>apply(area,sub));
+function select(area,sub){state={area,sub};document.querySelectorAll('#hd20Subnav button').forEach(b=>b.classList.toggle('on',b.dataset.sub===sub));apply(area,sub);renderPurpose(area,sub);requestAnimationFrame(()=>apply(area,sub));
   try{const u=new URL(location.href);if(u.searchParams.get('area')===area)u.searchParams.set('sub',sub);history.replaceState(null,'',u)}catch{}}
 function syncArea(area){
   if(window.__HD20_RESTORE_SUB&&MAP[area]?.some(([k])=>k===window.__HD20_RESTORE_SUB)){
