@@ -66,6 +66,8 @@ jobs:
           set -euo pipefail
           test -s hd20-five-area.css
           grep -q 'grid-template-columns:repeat(6,minmax(0,1fr))' hd20-five-area.css
+          ! grep -q "workplace.classList.add('on')" hd20-five-area-integration.js
+          ! grep -q "hd20-six-nav-layout.js" final-layout-polish.js
 
       - name: Verify auth bootstrap fail-safe
         run: |
