@@ -57,3 +57,10 @@
 .hd20PurposePanel>.hd20ProcessRule{padding:7px 10px;font-size:11px}
 @media(max-width:900px){.hd20PurposePanel{grid-template-columns:1fr}}
 @media(max-width:700px){.hd20PurposePanel{margin-top:8px;padding:10px 11px}.hd20PurposeActions{grid-template-columns:1fr}.hd20PurposePanel>.hd20ProcessFlow,.hd20PurposePanel>.hd20ProcessFlow.compact{display:flex;gap:6px;overflow-x:auto;scrollbar-width:thin}.hd20ProcessFlow>div{flex:0 0 138px;min-height:62px}}
+
+
+/* 2026-10-06 RC: give workflow steps real width; arrows are separators, not equal columns */
+@media(min-width:701px){
+  .hd20PurposePanel>.hd20ProcessFlow{grid-template-columns:minmax(0,1fr) 18px minmax(0,1fr) 18px minmax(0,1fr) 18px minmax(0,1fr) 18px minmax(0,1fr) 18px minmax(0,1fr) 18px minmax(0,1fr) 18px minmax(0,1fr)}
+  .hd20PurposePanel>.hd20ProcessFlow.compact{grid-template-columns:minmax(0,1fr) 18px minmax(0,1fr) 18px minmax(0,1fr) 18px minmax(0,1fr) 18px minmax(0,1fr)}
+}
