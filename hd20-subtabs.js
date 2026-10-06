@@ -153,6 +153,8 @@ function ensureAdvJudge(){
  let host=$('#hd20AdvJudgeOperational');if(host)return host;host=document.createElement('section');host.id='hd20AdvJudgeOperational';host.className='pcPanel hd20AdvJudgeOperational';const root=$('#performanceConversionAnalysis');(root?.querySelector('.pcGrid')||root)?.prepend(host);return host
 }
 function advEvidenceGap(x){const gaps=[];if(!txt(x?.problem))gaps.push('문제정의');if(!txt(x?.improvement||x?.action))gaps.push('개선내용');if(!txt(x?.before))gaps.push('BEFORE');if(!txt(x?.after))gaps.push('AFTER');return gaps}
+function advWorkplaceVerified(x){return x?.workplaceVerification?.state==='완료'||x?.workplaceVerified===true}
+function saveWorkplaceVerification(id){const key='hd20GMES5SAutoImproveRawV1';let all;try{all=JSON.parse(localStorage.getItem(key)||'[]')}catch{return false}if(!Array.isArray(all))return false;const row=all.find(x=>String(x?.id)===String(id));if(!row||advancementConfirmed(row)||advEvidenceGap(row).length||advCriteriaCount(row)<3)return false;row.workplaceVerification={state:'완료',verifiedAt:new Date().toISOString()};row.workplaceVerified=true;localStorage.setItem(key,JSON.stringify(all));window.dispatchEvent(new CustomEvent('hd20-workplace-verified',{detail:{id:String(id)}}));window.HD20KPIData?.signal?.();return true}
 function renderAdvJudge(){
  const host=ensureAdvJudge();if(!host)return;const rows=readStore('hd20GMES5SAutoImproveRawV1').filter(advancementCandidate).filter(x=>!advancementConfirmed(x));
  const priority=x=>{const e=advEvidenceGap(x).length,n=advCriteriaCount(x);return(e&&n<3)?0:e?1:n<3?2:3};const body=rows.slice().sort((a,b)=>priority(a)-priority(b)||advCriteriaCount(a)-advCriteriaCount(b)||advEvidenceGap(b).length-advEvidenceGap(a).length).map(x=>{const eg=advEvidenceGap(x),n=advCriteriaCount(x),s=txt(x?.judgeState||x?.status)||'판정대기';const next=eg.length?'증빙 보완':n<3?'3대 요건 보완':'작업장 근거검증';return `<tr><td>${esc(txt(x.team)||'—')}</td><td>${esc(advLine(x))}</td><td>${esc(txt(x.workplace||x.title)||'—')}</td><td>${esc(s)}</td><td>${n}/3</td><td>${esc(eg.length?eg.join(' · '):'완결')}</td><td>${esc(n<3?advGap(x):'3대 요건 충족')}</td><td><b>${esc(next)}</b></td></tr>`}).join('');
@@ -167,21 +169,21 @@ function advProcessState(x){
  if(confirmed)return advancementAttrition(x)?'유지 이탈':'확정·전개';
  if(evidenceGap)return '후보 지정';
  if(/보완/.test(s)||n<3)return '요건 보완';
- if(n>=3)return '작업장 근거검증 필요';
+ if(n>=3)return advWorkplaceVerified(x)?'공식심사 대기':'작업장 근거검증 필요';
  return '후보 지정'
 }
 function advProcessReason(x,state){
  if(state==='유지 이탈')return txt(x?.attritionReason)||'확정 후 유지요건 재점검 필요';
  if(state==='요건 보완')return advGap(x);
- if(state==='작업장 근거검증 필요')return '3대 요건 충족 · 작업장 근거검증 완료 근거 필요';
+ if(state==='작업장 근거검증 필요')return '3대 요건 충족 · 작업장 근거검증 완료 근거 필요';if(state==='공식심사 대기')return '작업장 근거검증 완료 · 공식판정 필요';
  if(state==='확정·전개')return '공식확정 · 표준화/수평전개 및 유지관리';
  return advEvidenceGap(x).length?'후보 증빙 보완: '+advEvidenceGap(x).join(' · '):'후보 근거 및 3대 요건 검증 필요'
 }
 function renderAdvProcess(){
  const host=ensureAdvProcess();if(!host)return;const rows=readStore('hd20GMES5SAutoImproveRawV1').filter(advancementCandidate);
- const states=['후보 지정','요건 보완','작업장 근거검증 필요','확정·전개','유지 이탈'];const grouped=Object.fromEntries(states.map(s=>[s,[]]));rows.forEach(x=>{const s=advProcessState(x);(grouped[s]||(grouped[s]=[])).push(x)});
+ const states=['후보 지정','요건 보완','작업장 근거검증 필요','공식심사 대기','확정·전개','유지 이탈'];const grouped=Object.fromEntries(states.map(s=>[s,[]]));rows.forEach(x=>{const s=advProcessState(x);(grouped[s]||(grouped[s]=[])).push(x)});
  const confirmed=rows.filter(advancementConfirmed),maintained=confirmed.filter(advancementMaintained),lost=confirmed.filter(advancementAttrition),candidateOnly=rows.filter(x=>!advancementConfirmed(x));const ready=candidateOnly.filter(x=>advCriteriaCount(x)===3&&!advEvidenceGap(x).length),gap=candidateOnly.filter(x=>advCriteriaCount(x)<3||advEvidenceGap(x).length);const cards=[['전체 후보',rows.length,'등록된 고도화 활동'],['보완·검증',gap.length,'증빙 또는 3대 요건 Gap'],['3/3 근거검증',ready.length,'작업장 근거검증 필요'],['공식확정',confirmed.length,'judgeState=확정'],['현재 유지',maintained.length,'확정 후 유지 중'],['확정 후 이탈',lost.length,'유지 실패·재점검']].map(([s,n,d])=>`<div class="hd20ProcQueue ${s==='보완·검증'||s==='확정 후 이탈'?'risk':''}"><small>${s}</small><b>${n}건</b><span>${d}</span></div>`).join('');const funnel=`<div class="hd20AdvFunnel">${[['후보',rows.length],['보완/검증',gap.length],['3/3 근거검증',ready.length],['공식확정',confirmed.length],['현재 유지',maintained.length]].map(([k,n],i)=>`<div><small>${k}</small><b>${n}</b>${i<4?'<i>→</i>':''}</div>`).join('')}<div class="loss"><small>확정 후 이탈</small><b>${lost.length}</b></div></div>`;
- const queue=rows.filter(x=>['후보 지정','요건 보완','작업장 근거검증 필요','유지 이탈'].includes(advProcessState(x))).sort((a,b)=>advCriteriaCount(a)-advCriteriaCount(b));
+ const queue=rows.filter(x=>['후보 지정','요건 보완','작업장 근거검증 필요','공식심사 대기','유지 이탈'].includes(advProcessState(x))).sort((a,b)=>advCriteriaCount(a)-advCriteriaCount(b));
  const body=queue.map(x=>{const s=advProcessState(x);return `<tr><td>${esc(txt(x.team)||'—')}</td><td>${esc(advLine(x))}</td><td>${esc(txt(x.workplace||x.title)||'—')}</td><td><b>${esc(s)}</b></td><td>${advCriteriaCount(x)}/3</td><td>${esc(advProcessReason(x,s))}</td><td>${esc(s==='유지 이탈'?'Audit/재고도화':s==='후보 지정'?'증빙 보완 후 요건검증':s==='요건 보완'?'요건 보완 후 재검증':'공식판정 진행')}</td></tr>`}).join('');
  host.innerHTML=`<div class="pcPanelHead">고도화 심사 Funnel · 정체/이탈 관리 <small>3/3과 공식확정을 분리하고, 확정 후 유지·이탈까지 한 흐름으로 관리합니다.</small></div>${funnel}<div class="hd20ProcQueues">${cards}</div><div class="pcTableWrap"><table class="pcTable"><thead><tr><th>생산팀</th><th>라인</th><th>작업장/활동</th><th>현재 단계</th><th>요건</th><th>정체·환류 사유</th><th>다음 조치</th></tr></thead><tbody>${body||'<tr><td colspan="7">현재 정체·환류 대상 Case가 없습니다.</td></tr>'}</tbody></table></div>`
 }
