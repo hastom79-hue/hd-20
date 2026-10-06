@@ -44,6 +44,18 @@ function recoverFromBackup(){
   return{ok:true,savedTotal,currentTotal,safetyKey};
 }
 window.HD20_DATA_RECOVERY={status:recoveryStatus,backupKey:BACKUP,recover:recoverFromBackup};
+function installRecoveryNotice(){
+  const s=recoveryStatus(),cur=Object.values(s.current||{}).reduce((a,n)=>a+n,0),saved=Object.values(s.saved||{}).reduce((a,n)=>a+n,0);
+  if(!s.hasBackup||cur!==0||saved<=cur)return;
+  const host=document.querySelector('.top');if(!host||document.getElementById('hd20DataRecoveryNotice'))return;
+  const box=document.createElement('div');box.id='hd20DataRecoveryNotice';box.setAttribute('role','alert');
+  box.style.cssText='flex-basis:100%;margin-top:8px;padding:9px 12px;border:1px solid #d9a441;border-radius:8px;background:#fff8e8;font-size:12px;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap';
+  const msg=document.createElement('span');msg.textContent='운영 데이터가 비어 있습니다. 보존된 원본 백업 '+saved+'건이 확인되었습니다. 자동 복구는 실행하지 않습니다.';
+  const btn=document.createElement('button');btn.type='button';btn.textContent='원본 백업 복구';btn.style.cssText='padding:6px 10px;font-weight:700';
+  btn.addEventListener('click',()=>{if(!confirm('현재 상태를 안전 백업한 뒤 보존된 원본 데이터를 복구하시겠습니까?'))return;const r=recoverFromBackup();if(!r.ok){alert('복구 조건을 충족하지 못했습니다: '+r.reason);return}location.reload()});
+  box.append(msg,btn);host.appendChild(box);
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',installRecoveryNotice,{once:true});else installRecoveryNotice();
 
 /* ---------- 백업 / 복구 ---------- */
 function strip(k,raw){
