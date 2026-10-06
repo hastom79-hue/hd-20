@@ -23,7 +23,6 @@ function integrateAdvancement(){
   let host=conversion.querySelector('.hd20AdvancementIntegrated');
   if(!host){host=document.createElement('section');host.className='hd20AdvancementIntegrated';const anchor=conversion.querySelector('.pcInsight')||conversion.querySelector('.pcFlow');if(anchor)anchor.insertAdjacentElement('afterend',host);else conversion.appendChild(host)}
   if(workplace&&workplace.parentElement!==host){host.appendChild(workplace);workplace.classList.add('hd20IntegratedSubscreen');workplace.dataset.area='advancement'}
-  if(workplace)workplace.classList.add('on');
 }
 function masterUtility(){
   const btn=document.getElementById('openMaster');if(btn){btn.textContent='⚙ 통합기준정보';btn.title='생산팀·목표·운영정책·6개 5S 유형·3대 판정기준'}
