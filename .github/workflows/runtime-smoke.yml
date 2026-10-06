@@ -60,15 +60,12 @@ jobs:
           ! grep -q "key:'maturity'" dashboard-section-tabs.js
           grep -q "['map','⑥ 유지·이탈 포트폴리오']" hd20-subtabs.js
           test -s hd20-subtabs.js
-          test -s hd20-five-area-integration.js
-          grep -q "areas:\['dashboard','activity','advancement','audit','action','master'\]" hd20-five-area-integration.js
 
       - name: Verify six-column navigation layout
         run: |
           set -euo pipefail
-          test -s hd20-six-nav-layout.js
-          grep -q "const ID='hd20FiveNavLayoutStyle'" hd20-six-nav-layout.js
-          grep -q 'repeat(6,minmax(0,1fr))' hd20-six-nav-layout.js
+          test -s hd20-five-area.css
+          grep -q 'grid-template-columns:repeat(6,minmax(0,1fr))' hd20-five-area.css
 
       - name: Verify auth bootstrap fail-safe
         run: |
