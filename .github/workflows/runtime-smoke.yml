@@ -158,3 +158,4 @@ jobs:
           for f in maturity-seq-action-link.js demo-data-seed.js action-demo-seed.js audit-global-seed.js emergency-ui-stabilizer-v2.js register-tab-fill.js audit-admin-import.js crud-hotfix.js action-button-hotfix.js management.html v2-preview.html; do
             test ! -e "$f"
           done
+
