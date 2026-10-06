@@ -22,6 +22,14 @@ const K={a:'hd20GMES5SAutoImproveRawV1',u:'hd20AuditRandomDrawsV1',x:'hd20Action
 const META='hd20ValidationFixtureMetaV2',BACKUP='hd20ValidationBackupV1';
 const ls=localStorage;
 const ROW_KEYS=[K.a,K.u,K.x];
+function recoveryStatus(){
+  let backup=null;try{backup=JSON.parse(ls.getItem(BACKUP)||'null')}catch{}
+  const count=v=>{try{const x=typeof v==='string'?JSON.parse(v):v;return Array.isArray(x)?x.length:(x&&typeof x==='object'?Object.keys(x).length:0)}catch{return 0}};
+  const current={};ROW_KEYS.forEach(k=>current[k]=count(ls.getItem(k)));
+  const saved={};if(backup?.values)Object.entries(backup.values).forEach(([k,v])=>saved[k]=count(v));
+  return{hasBackup:!!backup?.values,backupAt:backup?.at||'',current,saved};
+}
+window.HD20_DATA_RECOVERY={status:recoveryStatus,backupKey:BACKUP};
 
 /* ---------- 백업 / 복구 ---------- */
 function strip(k,raw){
