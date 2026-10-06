@@ -16,13 +16,9 @@ function markOperationalScreens(){
 }
 function integrateAdvancement(){
   const conversion=document.getElementById('performanceConversionAnalysis');
-  const workplace=document.getElementById('awWorkplace');
   if(!conversion)return;
   addAreaHeader(conversion,'고도화 관리','고도화·판정','등록된 고도화 후보가 조건을 얼마나 충족했는지 확인하고, 공식 확정 여부를 판정합니다.');
   conversion.dataset.area='advancement';
-  let host=conversion.querySelector('.hd20AdvancementIntegrated');
-  if(!host){host=document.createElement('section');host.className='hd20AdvancementIntegrated';const anchor=conversion.querySelector('.pcInsight')||conversion.querySelector('.pcFlow');if(anchor)anchor.insertAdjacentElement('afterend',host);else conversion.appendChild(host)}
-  if(workplace&&workplace.parentElement!==host){host.appendChild(workplace);workplace.classList.add('hd20IntegratedSubscreen');workplace.dataset.area='advancement'}
 }
 function masterUtility(){
   const btn=document.getElementById('openMaster');if(btn){btn.textContent='⚙ 통합기준정보';btn.title='생산팀·목표·운영정책·6개 5S 유형·3대 판정기준'}
