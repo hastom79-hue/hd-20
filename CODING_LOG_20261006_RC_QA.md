@@ -47,3 +47,5 @@ Revision checked: `7342629690cd14f462e87dc7b4022959ad22ce15`.
 - Runtime run `37399427523`, job `112063043704`: `steps=[]`, `runner_id=0`, empty `runner_name`.
 - Therefore the current red smoke status is a **pre-step runner/job-start failure**, not evidence that application assertions executed and failed.
 - RC remains **NOT PASS** until browser/runtime assertions execute successfully (or equivalent observable browser evidence is obtained) against the deployed production revision.
+
+- 2026-10-06 runner 재검증: repository Public 전환 후 GitHub-hosted Actions runner 재할당 여부를 새 HEAD에서 재검증. 기능 변경 없음.
