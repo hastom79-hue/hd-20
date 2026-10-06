@@ -29,7 +29,10 @@ function recoverySummary(v){const rows=parseRecoveryRows(v),out={total:rows.leng
 function recoveryStatus(){
   let backup=null;try{backup=JSON.parse(ls.getItem(BACKUP)||'null')}catch{}
   const current={},saved={};ROW_KEYS.forEach(k=>{current[k]=recoverySummary(ls.getItem(k));saved[k]=recoverySummary(backup?.values?.[k])});
-  return{hasBackup:!!backup?.values,backupAt:backup?.at||'',current,saved};
+  const totals=(x)=>Object.values(x||{}).reduce((a,n)=>({total:a.total+(n.total||0),production:a.production+(n.production||0),fixture:a.fixture+(n.fixture||0),demo:a.demo+(n.demo||0)}),{total:0,production:0,fixture:0,demo:0});
+  const activityRows=parseRecoveryRows(ls.getItem(K.a));
+  const activityExcel=activityRows.filter(r=>recoveryKind(r)==='production'&&String(r?.source||'')==='excel-import'&&String(r?.id||'').startsWith('IMP-')).length;
+  return{hasBackup:!!backup?.values,backupAt:backup?.at||'',current,saved,currentTotals:totals(current),savedTotals:totals(saved),currentExcelImport:activityExcel};
 }
 function recoverFromBackup(){
   let b=null;try{b=JSON.parse(ls.getItem(BACKUP)||'null')}catch{}
@@ -44,7 +47,7 @@ function recoverFromBackup(){
   ls.setItem('hd20DataRecoveryMetaV1',JSON.stringify({at:new Date().toISOString(),source:BACKUP,savedProduction:savedProd,currentProduction:currentProd,nonProductionExcluded:true}));
   return{ok:true,savedProduction:savedProd,currentProduction:currentProd,safetyKey};
 }
-window.HD20_DATA_RECOVERY={status:recoveryStatus,backupKey:BACKUP,recover:recoverFromBackup};
+window.HD20_DATA_RECOVERY={status:recoveryStatus,backupKey:BACKUP,recover:recoverFromBackup,diagnose:()=>{const s=recoveryStatus();return{backup:s.hasBackup,backupAt:s.backupAt,currentProduction:s.currentTotals?.production||0,savedProduction:s.savedTotals?.production||0,currentExcelImport:s.currentExcelImport||0,current:s.current,saved:s.saved}}};
 function installRecoveryNotice(){
   const s=recoveryStatus(),cur=Object.values(s.current||{}).reduce((a,n)=>a+(n.production||0),0),saved=Object.values(s.saved||{}).reduce((a,n)=>a+(n.production||0),0);
   if(!s.hasBackup||cur!==0||saved<=cur)return;
