@@ -148,6 +148,10 @@ jobs:
           grep -q "production cleanup failed" web-validation-fixture.js
           grep -q "hd20PreRecoverySafetyBackupV1" web-validation-fixture.js
           grep -q "backup-not-richer" web-validation-fixture.js
+          grep -q "id='hd20DataRecoveryNotice'" web-validation-fixture.js
+          grep -q "if(!s.hasBackup||cur!==0||saved<=cur)return" web-validation-fixture.js
+          grep -q "자동 복구는 실행하지 않습니다" web-validation-fixture.js
+          grep -q "data-recovery5" index.html
 
       - name: Verify Supabase auth and sync wiring
         run: |
