@@ -55,11 +55,11 @@ function installRecoveryNotice(){
     const r=recoverFromBackup();
     if(r.ok){console.warn('[HD20 recovery] restored preserved production backup',r);location.reload();return;}
   }
-  const top=document.querySelector('.top'),app=document.querySelector('.app')||document.body;if(!app||document.getElementById('hd20DataRecoveryNotice'))return;const host=document.createElement('div');host.id='hd20DataRecoveryNoticeHost';host.style.cssText='display:block;width:100%;box-sizing:border-box;margin:8px 0 0';if(top&&top.parentNode)top.insertAdjacentElement('afterend',host);else app.prepend(host);
+  const top=document.querySelector('.top'),app=document.querySelector('.app')||document.body;if(!app||document.getElementById('hd20DataRecoveryNotice'))return;const host=document.createElement('div');host.id='hd20DataRecoveryNoticeHost';host.style.cssText='display:block;width:100%;box-sizing:border-box;margin:0';const nav=document.querySelector('.beginnerNav');if(nav&&nav.parentNode)nav.insertAdjacentElement('afterend',host);else if(top&&top.parentNode)top.insertAdjacentElement('afterend',host);else app.prepend(host);
   const box=document.createElement('div');box.id='hd20DataRecoveryNotice';box.setAttribute('role','alert');
-  box.style.cssText='width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid #d9a441;border-radius:8px;background:#fff8e8;font-size:12px;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap';
+  box.style.cssText='width:100%;box-sizing:border-box;min-height:30px;padding:5px 12px;border:0;border-top:1px solid #d9a441;background:#fff8e8;font-size:11px;line-height:18px;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:nowrap';
   const msg=document.createElement('span');const at=s.backupAt?new Date(s.backupAt).toLocaleString():'없음';const excel=s.currentExcelImport||0;const savedA=s.saved?.[K.a]?.production||0,savedU=s.saved?.[K.u]?.production||0,savedX=s.saved?.[K.x]?.production||0;msg.textContent=saved>0?'데이터 복구 진단 · 현재 실운영 '+cur+'건 · 보존 원본 '+saved+'건 (Activity '+savedA+' / Audit '+savedU+' / Action '+savedX+') · 현재 Excel Import 원본 '+excel+'건 · 백업시각 '+at:'데이터 복구 진단 · 현재 실운영 '+cur+'건 · 보존 원본 0건 · 현재 Excel Import 원본 '+excel+'건 · 이 브라우저에는 복구 가능한 보존 원본이 확인되지 않습니다.';
-  const btn=document.createElement('button');btn.type='button';btn.textContent=saved>cur?'원본 백업 복구':'복구 원본 없음';btn.disabled=!(saved>cur);btn.style.cssText='padding:6px 10px;font-weight:700';
+  const btn=document.createElement('button');btn.type='button';btn.textContent=saved>cur?'원본 백업 복구':'복구 원본 없음';btn.disabled=!(saved>cur);btn.style.cssText='padding:3px 8px;font-size:11px;font-weight:700;white-space:nowrap';
   btn.addEventListener('click',()=>{if(!confirm('현재 상태를 안전 백업한 뒤 보존된 원본 데이터를 복구하시겠습니까?'))return;const r=recoverFromBackup();if(!r.ok){alert('복구 조건을 충족하지 못했습니다: '+r.reason);return}location.reload()});
   box.append(msg,btn);host.appendChild(box);
 }
