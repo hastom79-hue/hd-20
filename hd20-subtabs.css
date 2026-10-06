@@ -75,3 +75,6 @@
   .hd20ProcessFlow>div span{font-size:9.5px;line-height:1.3}
   .hd20ProcessFlow>i{font-size:14px}
 }
+
+/* 2026-10-07 RC: mobile viewport containment */
+@media(max-width:700px){html,body,.app{max-width:100%;overflow-x:hidden}.hd20PurposePanel,.awScreen,#performanceConversionAnalysis,.pcGrid,.pcPanel,.awCard,.card{min-width:0!important;max-width:100%!important;box-sizing:border-box}.hd20Subnav{max-width:100%;box-sizing:border-box}.hd20GridSection{max-width:100%;overflow-x:auto}}
