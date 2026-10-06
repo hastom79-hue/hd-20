@@ -9,7 +9,8 @@
  *
  * 안전장치
  *   - 검증 모드에서는 Supabase 동기화가 꺼져 있음 (supabase-sync.js 의 isolation).
- *   - 시드 직전에 원본 localStorage 값을 백업하고, validation=1 없이 페이지를 열면 자동 복구.
+ *   - 시드 직전에 원본 localStorage 값을 백업한다. 일반 접속에서는 자동 복구하지 않고 fixture 행만 정리한다.
+ *   - 원본 복구는 richer-backup 검증과 복구 전 safety backup을 거친 명시적 복구만 허용한다.
  *   - 모든 행은 source='web-validation-fixture' + id 접두사 VALID- 로 표시됨.
  *   - 팀장 마스터(이메일)는 건드리지 않음.
  */
@@ -64,7 +65,7 @@ function cleanUrl(extra){const u=new URL(location.href);['validation','edge','sc
 
 if(MODE==='reset'){try{restore()}catch(e){console.error('[validation-fixture] restore failed',e)}location.replace(cleanUrl({validation:'0'}));return}
 /* Production default: 검증 데이터는 명시적 ?validation=1 에서만 실행한다.
-   일반 접속/validation=0/off는 과거 fixture 흔적이 있으면 원본을 복구하고 즉시 종료한다. */
+   일반 접속/validation=0/off에서는 원본 backup을 자동 적용하지 않고 fixture 행만 제거한다. */
 const ACTIVE=MODE==='1';
 if(!ACTIVE){try{
   /* Production safety: 일반 접속에서는 fixture 행만 제거한다.
