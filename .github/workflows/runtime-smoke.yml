@@ -140,6 +140,15 @@ jobs:
           grep -q 'batchId' audit-random-draw.js
           grep -q 'Audit 표본수가 미설정' audit-random-draw.js
 
+      - name: Verify canonical data loss and recovery guards
+        run: |
+          set -euo pipefail
+          grep -q "blocked empty canonical push" supabase-sync.js
+          grep -q "remoteEmpty=Array.isArray(clean)&&clean.length===0" supabase-sync.js
+          grep -q "production cleanup failed" web-validation-fixture.js
+          grep -q "hd20PreRecoverySafetyBackupV1" web-validation-fixture.js
+          grep -q "backup-not-richer" web-validation-fixture.js
+
       - name: Verify Supabase auth and sync wiring
         run: |
           set -euo pipefail
