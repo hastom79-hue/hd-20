@@ -87,5 +87,5 @@ jobs:
                 await page.close();mark('viewport-pass');
               }
             } finally {await browser.close();}
-          })().catch(e=>{console.error(e);process.exitCode=1});
+          })().catch(e=>{const m=String(e.stack||e).replace(/\r?\n/g,'%0A');console.error(e);console.error('::error title=HD20 Dashboard Canonical::'+m);process.exitCode=1});
           JS
