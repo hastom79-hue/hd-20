@@ -113,13 +113,11 @@ jobs:
             await page.evaluate(()=>window.HD20_NAV?.go?.('action')); await page.waitForTimeout(120);
             const actionMasterCount=await page.locator('#actionMgmt .amMaster').count(); assert(actionMasterCount===0,'orphan team master remains in action: '+actionMasterCount);
             await page.evaluate(()=>window.HD20_NAV?.go?.('master')); await page.waitForTimeout(250);
-            const leaderMaster=await page.evaluate(()=>({tab:!!document.querySelector('#masterModal [data-master-tab="leader"]'),panel:!!document.querySelector('#hd20TeamLeaderMasterPanel')}));
-            assert(leaderMaster.tab&&leaderMaster.panel,'team leader master missing from operating standards: '+JSON.stringify(leaderMaster));
-            const masterTabs=['order','target','sourceOrder','policy','leader'];
+            const masterTabs=['team','target','source','factor','mail'];
             for(const key of masterTabs){
-              await page.locator('#masterModal [data-master-tab="'+key+'"]').click(); await page.waitForTimeout(50);
-              const vis=await page.evaluate(()=>['masterOrderPanel','masterTargetPanel','hd20SourceOrderPanel','hd20OperatingPolicyPanel','hd20TeamLeaderMasterPanel'].filter(id=>{const e=document.getElementById(id);return e&&getComputedStyle(e).display!=='none'}));
-              assert(vis.length===1,'operating master panel exclusivity failed '+key+': '+JSON.stringify(vis));
+              await page.locator('#masterModal [data-master-tab="integrated-'+key+'"]').click(); await page.waitForTimeout(70);
+              const state=await page.evaluate(k=>{const vis=e=>!!e&&getComputedStyle(e).display!=='none'&&e.getClientRects().length>0;const legacyTabs=['order','target','sourceOrder','policy','leader'].filter(x=>vis(document.querySelector('#masterModal [data-master-tab="'+x+'"]')));const legacyPanels=['masterOrderPanel','masterTargetPanel','hd20SourceOrderPanel','hd20OperatingPolicyPanel','hd20TeamLeaderMasterPanel'].filter(id=>vis(document.getElementById(id)));return{active:document.querySelector('#masterModal .masterTabs button.on')?.dataset.masterTab||'',integrated:vis(document.getElementById('hd20IntegratedMasterFactors')),legacyTabs,legacyPanels,save:[...document.querySelectorAll('#hd20IntegratedMasterFactors .imfBtn')].filter(vis).length}},key);
+              assert(state.active==='integrated-'+key&&state.integrated&&state.legacyTabs.length===0&&state.legacyPanels.length===0&&state.save===1,'integrated operating master ownership failed '+key+': '+JSON.stringify(state));
             }
             const expectedCount=Object.values(areas).reduce((n,subs)=>n+subs.length,0); assert(count===expectedCount,`not all operational subtabs checked: ${count}/${expectedCount}`);
             assert(errs.length===0,'page errors:\n'+errs.join('\n---\n'));
