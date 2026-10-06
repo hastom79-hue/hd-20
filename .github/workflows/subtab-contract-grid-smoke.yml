@@ -26,7 +26,7 @@ jobs:
           python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/hd20-subtab-http.log 2>&1 &
           for i in {1..30}; do curl -fsS http://127.0.0.1:4173/index.html >/dev/null && exit 0; sleep 1; done
           cat /tmp/hd20-subtab-http.log; exit 1
-      - name: Validate five-area IA, dashboard groups and operational subtab grids
+      - name: Validate six-area IA, dashboard groups and operational subtab grids
         run: |
           cat > smoke.cjs <<'NODE'
           const {chromium}=require('playwright');
