@@ -45,7 +45,12 @@ if(MODE==='reset'){try{restore()}catch(e){console.error('[validation-fixture] re
 /* Production default: 검증 데이터는 명시적 ?validation=1 에서만 실행한다.
    일반 접속/validation=0/off는 과거 fixture 흔적이 있으면 원본을 복구하고 즉시 종료한다. */
 const ACTIVE=MODE==='1';
-if(!ACTIVE){try{if(ls.getItem(META)||ls.getItem(BACKUP))restore()}catch(e){console.error('[validation-fixture] auto-restore failed',e)}return}
+if(!ACTIVE){try{
+  /* Production safety: 일반 접속에서는 fixture 행만 제거한다.
+     과거 BACKUP을 현재 정상 데이터 위에 자동 덮어쓰지 않는다. 명시적 validation=reset에서만 backup restore 허용. */
+  ROW_KEYS.forEach(k=>{const raw=ls.getItem(k);if(raw===null)return;const clean=strip(k,raw);if(clean===null)ls.removeItem(k);else if(clean!==raw)ls.setItem(k,clean)});
+  ls.removeItem(META);
+}catch(e){console.error('[validation-fixture] production cleanup failed',e)}return}
 
 window.HD20_VALIDATION_MODE=true;window.HD20_VALIDATION_ISOLATED=true;
 
