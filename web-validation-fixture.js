@@ -47,21 +47,27 @@ function recoverFromBackup(){
   ls.setItem('hd20DataRecoveryMetaV1',JSON.stringify({at:new Date().toISOString(),source:BACKUP,savedProduction:savedProd,currentProduction:currentProd,nonProductionExcluded:true}));
   return{ok:true,savedProduction:savedProd,currentProduction:currentProd,safetyKey};
 }
-window.HD20_DATA_RECOVERY={status:recoveryStatus,backupKey:BACKUP,recover:recoverFromBackup,diagnose:()=>{const s=recoveryStatus();return{backup:s.hasBackup,backupAt:s.backupAt,currentProduction:s.currentTotals?.production||0,savedProduction:s.savedTotals?.production||0,currentExcelImport:s.currentExcelImport||0,current:s.current,saved:s.saved}}};
+function exportRecoveryEvidence(){
+  const s=recoveryStatus(),keys=[...ROW_KEYS,K.t,BACKUP,'hd20PreRecoverySafetyBackupV1','hd20DataRecoveryMetaV1'],values={};
+  keys.forEach(k=>values[k]=ls.getItem(k));
+  const payload={exportedAt:new Date().toISOString(),page:location.origin+location.pathname,status:{backup:s.hasBackup,backupAt:s.backupAt,current:s.current,saved:s.saved,currentTotals:s.currentTotals,savedTotals:s.savedTotals,currentExcelImport:s.currentExcelImport},values};
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}),a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);a.download='HD20_recovery_evidence_'+new Date().toISOString().replace(/[:.]/g,'-')+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  return payload.status;
+}
+window.HD20_DATA_RECOVERY={status:recoveryStatus,backupKey:BACKUP,recover:recoverFromBackup,exportEvidence:exportRecoveryEvidence,diagnose:()=>{const s=recoveryStatus();return{backup:s.hasBackup,backupAt:s.backupAt,currentProduction:s.currentTotals?.production||0,savedProduction:s.savedTotals?.production||0,currentExcelImport:s.currentExcelImport||0,current:s.current,saved:s.saved}}};
 function installRecoveryNotice(){
   const s=recoveryStatus(),cur=Object.values(s.current||{}).reduce((a,n)=>a+(n.production||0),0),saved=Object.values(s.saved||{}).reduce((a,n)=>a+(n.production||0),0);
   if(cur!==0)return;
-  if(saved>cur){
-    const r=recoverFromBackup();
-    if(r.ok){console.warn('[HD20 recovery] restored preserved production backup',r);location.reload();return;}
-  }
   const top=document.querySelector('.top'),app=document.querySelector('.app')||document.body;if(!app||document.getElementById('hd20DataRecoveryNotice'))return;const host=document.createElement('div');host.id='hd20DataRecoveryNoticeHost';host.style.cssText='display:block;width:100%;box-sizing:border-box;margin:0';const nav=document.querySelector('.beginnerNav');if(nav&&nav.parentNode)nav.insertAdjacentElement('afterend',host);else if(top&&top.parentNode)top.insertAdjacentElement('afterend',host);else app.prepend(host);
   const box=document.createElement('div');box.id='hd20DataRecoveryNotice';box.setAttribute('role','alert');
   box.style.cssText='width:100%;box-sizing:border-box;min-height:30px;padding:5px 12px;border:0;border-top:1px solid #d9a441;background:#fff8e8;font-size:11px;line-height:18px;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:nowrap';
   const msg=document.createElement('span');const at=s.backupAt?new Date(s.backupAt).toLocaleString():'없음';const excel=s.currentExcelImport||0;const savedA=s.saved?.[K.a]?.production||0,savedU=s.saved?.[K.u]?.production||0,savedX=s.saved?.[K.x]?.production||0;msg.textContent=saved>0?'데이터 복구 진단 · 현재 실운영 '+cur+'건 · 보존 원본 '+saved+'건 (Activity '+savedA+' / Audit '+savedU+' / Action '+savedX+') · 현재 Excel Import 원본 '+excel+'건 · 백업시각 '+at:'데이터 복구 진단 · 현재 실운영 '+cur+'건 · 보존 원본 0건 · 현재 Excel Import 원본 '+excel+'건 · 이 브라우저에는 복구 가능한 보존 원본이 확인되지 않습니다.';
+  const actions=document.createElement('span');actions.style.cssText='display:flex;gap:6px;white-space:nowrap';
+  const exp=document.createElement('button');exp.type='button';exp.textContent='복구 증거 Export';exp.style.cssText='padding:3px 8px;font-size:11px;font-weight:700;white-space:nowrap';exp.addEventListener('click',exportRecoveryEvidence);
   const btn=document.createElement('button');btn.type='button';btn.textContent=saved>cur?'원본 백업 복구':'복구 원본 없음';btn.disabled=!(saved>cur);btn.style.cssText='padding:3px 8px;font-size:11px;font-weight:700;white-space:nowrap';
-  btn.addEventListener('click',()=>{if(!confirm('현재 상태를 안전 백업한 뒤 보존된 원본 데이터를 복구하시겠습니까?'))return;const r=recoverFromBackup();if(!r.ok){alert('복구 조건을 충족하지 못했습니다: '+r.reason);return}location.reload()});
-  box.append(msg,btn);host.appendChild(box);
+  btn.addEventListener('click',()=>{if(!confirm('먼저 복구 증거 Export를 보관했는지 확인하십시오. 현재 상태를 안전 백업한 뒤 보존된 원본 데이터를 복구하시겠습니까?'))return;const r=recoverFromBackup();if(!r.ok){alert('복구 조건을 충족하지 못했습니다: '+r.reason);return}location.reload()});
+  actions.append(exp,btn);box.append(msg,actions);host.appendChild(box);
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',installRecoveryNotice,{once:true});else installRecoveryNotice();
 
