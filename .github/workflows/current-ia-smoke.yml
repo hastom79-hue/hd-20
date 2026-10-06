@@ -61,6 +61,6 @@ jobs:
               console.log(`PASS ${viewport.width}: six-area IA + 5 dashboard groups`);await page.close();
             }
             await browser.close();
-          })().catch(e=>{console.error(e.stack||e);process.exit(1)});
+          })().catch(e=>{const m=String(e.stack||e).replace(/\r?\n/g,'%0A');console.error(e.stack||e);console.error('::error title=HD20 Current IA::'+m);process.exit(1)});
           NODE
           node hd20-current-ia.cjs
