@@ -20,7 +20,7 @@ function integrateAdvancement(){
   if(!guide){
     guide=document.createElement('div');guide.id='hd20AdvancementDecisionGuide';guide.className='hd20AdvancementDecisionGuide';
     guide.style.cssText='margin:0 0 12px;padding:10px 12px;border:1px solid #cbd7e2;background:#f7fafc;font-size:12px;line-height:1.55;color:#26394b';
-    guide.innerHTML='<b>공식 판정 원칙</b> · 조건 충족 수준과 공식 판정은 분리합니다. 3대 요건은 후보의 준비도·유지상태를 판단하는 기준이며, 충족 개수만으로 자동 확정하지 않습니다.<br><b>판정 흐름</b> · 현장 등록 → 생산혁신팀 + 5S 모듈 판정 → 확정 / 보완요청 / 미확정';
+    guide.innerHTML='<b>공식 판정 원칙</b> · 조건 충족 수준과 공식 판정은 분리합니다. 3대 요건은 후보의 준비도·유지상태를 판단하는 기준이며, 충족 개수만으로 공식확정으로 간주하지 않습니다.<br><b>판정 흐름</b> · 현장 등록 → 생산혁신팀 + 5S 모듈 판정 → 확정 / 보완요청 / 미확정';
     conversion.prepend(guide);
   }
 }
