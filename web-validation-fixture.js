@@ -50,12 +50,12 @@ function recoverFromBackup(){
 window.HD20_DATA_RECOVERY={status:recoveryStatus,backupKey:BACKUP,recover:recoverFromBackup,diagnose:()=>{const s=recoveryStatus();return{backup:s.hasBackup,backupAt:s.backupAt,currentProduction:s.currentTotals?.production||0,savedProduction:s.savedTotals?.production||0,currentExcelImport:s.currentExcelImport||0,current:s.current,saved:s.saved}}};
 function installRecoveryNotice(){
   const s=recoveryStatus(),cur=Object.values(s.current||{}).reduce((a,n)=>a+(n.production||0),0),saved=Object.values(s.saved||{}).reduce((a,n)=>a+(n.production||0),0);
-  if(!s.hasBackup||cur!==0||saved<=cur)return;
+  if(cur!==0)return;
   const host=document.querySelector('.top')||document.querySelector('.app')||document.body;if(!host||document.getElementById('hd20DataRecoveryNotice'))return;
   const box=document.createElement('div');box.id='hd20DataRecoveryNotice';box.setAttribute('role','alert');
   box.style.cssText='flex-basis:100%;margin-top:8px;padding:9px 12px;border:1px solid #d9a441;border-radius:8px;background:#fff8e8;font-size:12px;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap';
-  const msg=document.createElement('span');const at=s.backupAt?new Date(s.backupAt).toLocaleString():'시각 미상';msg.textContent='운영 데이터가 비어 있습니다. 보존된 실운영 원본 백업 '+saved+'건이 확인되었습니다. 백업시각: '+at+'. 자동 복구는 실행하지 않습니다.';
-  const btn=document.createElement('button');btn.type='button';btn.textContent='원본 백업 복구';btn.style.cssText='padding:6px 10px;font-weight:700';
+  const msg=document.createElement('span');const at=s.backupAt?new Date(s.backupAt).toLocaleString():'없음';const excel=s.currentExcelImport||0;msg.textContent=saved>0?'데이터 복구 진단 · 현재 실운영 '+cur+'건 · 보존 원본 '+saved+'건 · 현재 Excel Import 원본 '+excel+'건 · 백업시각 '+at:'데이터 복구 진단 · 현재 실운영 '+cur+'건 · 보존 원본 0건 · 현재 Excel Import 원본 '+excel+'건 · 이 브라우저에는 복구 가능한 보존 원본이 확인되지 않습니다.';
+  const btn=document.createElement('button');btn.type='button';btn.textContent=saved>cur?'원본 백업 복구':'복구 원본 없음';btn.disabled=!(saved>cur);btn.style.cssText='padding:6px 10px;font-weight:700';
   btn.addEventListener('click',()=>{if(!confirm('현재 상태를 안전 백업한 뒤 보존된 원본 데이터를 복구하시겠습니까?'))return;const r=recoverFromBackup();if(!r.ok){alert('복구 조건을 충족하지 못했습니다: '+r.reason);return}location.reload()});
   box.append(msg,btn);host.appendChild(box);
 }
