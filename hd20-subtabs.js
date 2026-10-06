@@ -152,10 +152,7 @@ function renderAdvDetail(){
   host.querySelectorAll('.hd20VerifyWorkplace').forEach(btn=>btn.addEventListener('click',()=>{if(!btn.dataset.id||!saveWorkplaceVerification(btn.dataset.id))return;renderAdvDetail();renderAdvProcess()}))
 }
 function ensureAdvJudge(){
- let host=$('#hd20AdvJudgeOperational');const root=$('#performanceConversionAnalysis');if(!root)return null;
- if(!host){host=document.createElement('section');host.id='hd20AdvJudgeOperational';host.className='pcPanel hd20AdvJudgeOperational'}
- if(host.parentElement!==root)root.appendChild(host);
- return host
+ let host=$('#hd20AdvJudgeOperational');if(host)return host;host=document.createElement('section');host.id='hd20AdvJudgeOperational';host.className='pcPanel hd20AdvJudgeOperational';const root=$('#performanceConversionAnalysis');(root?.querySelector('.pcGrid')||root)?.prepend(host);return host
 }
 function advEvidenceGap(x){const gaps=[];if(!txt(x?.problem))gaps.push('문제정의');if(!txt(x?.improvement||x?.action))gaps.push('개선내용');if(!txt(x?.before))gaps.push('BEFORE');if(!txt(x?.after))gaps.push('AFTER');return gaps}
 function advWorkplaceVerified(x){return x?.workplaceVerification?.state==='완료'||x?.workplaceVerified===true}
@@ -167,10 +164,7 @@ function renderAdvJudge(){
  host.innerHTML=`<div class="pcPanelHead">후보 심사 준비도 · 보완 우선순위 <small>후보 등록 이후 실제로 무엇이 부족해 판정으로 못 넘어가는지 확인</small></div><div class="hd20JudgeReadiness"><div><small>미확정 후보</small><b>${rows.length}건</b></div><div class="risk"><small>증빙+요건 동시 Gap</small><b>${bothGap}건</b></div><div class="risk"><small>증빙만 보완</small><b>${evidenceOnly}건</b></div><div class="risk"><small>요건만 보완</small><b>${criteriaOnly}건</b></div><div><small>공식판정 준비완료</small><b>${ready}건</b></div></div><div class="pcTableWrap"><table class="pcTable"><thead><tr><th>생산팀</th><th>라인</th><th>후보 Case</th><th>판정상태</th><th>요건</th><th>증빙 Gap</th><th>요건 Gap</th><th>다음 조치</th></tr></thead><tbody>${body||'<tr><td colspan="8">현재 미확정 고도화 후보가 없습니다.</td></tr>'}</tbody></table></div>`
 }
 function ensureAdvProcess(){
- let host=$('#hd20AdvProcessOperational');const root=$('#performanceConversionAnalysis');if(!root)return null;
- if(!host){host=document.createElement('section');host.id='hd20AdvProcessOperational';host.className='pcPanel hd20AdvProcessOperational'}
- if(host.parentElement!==root)root.appendChild(host);
- return host
+ let host=$('#hd20AdvProcessOperational');if(host)return host;const root=$('#performanceConversionAnalysis');if(!root)return null;let grid=root.querySelector('.pcGrid');if(!grid){grid=document.createElement('div');grid.className='pcGrid';root.appendChild(grid)}host=document.createElement('section');host.id='hd20AdvProcessOperational';host.className='pcPanel hd20AdvProcessOperational';grid.appendChild(host);return host
 }
 function advProcessState(x){
  const n=advCriteriaCount(x),s=txt(x?.judgeState||x?.status),confirmed=advancementConfirmed(x),evidenceGap=advEvidenceGap(x).length;
