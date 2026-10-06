@@ -29,7 +29,20 @@ function recoveryStatus(){
   const saved={};if(backup?.values)Object.entries(backup.values).forEach(([k,v])=>saved[k]=count(v));
   return{hasBackup:!!backup?.values,backupAt:backup?.at||'',current,saved};
 }
-window.HD20_DATA_RECOVERY={status:recoveryStatus,backupKey:BACKUP};
+function recoverFromBackup(){
+  let b=null;try{b=JSON.parse(ls.getItem(BACKUP)||'null')}catch{}
+  if(!b?.values)return{ok:false,reason:'backup-missing'};
+  const parseRows=v=>{try{const x=typeof v==='string'?JSON.parse(v):v;return Array.isArray(x)?x:[]}catch{return[]}};
+  const savedCounts=ROW_KEYS.map(k=>parseRows(b.values[k]).length),currentCounts=ROW_KEYS.map(k=>parseRows(ls.getItem(k)).length);
+  const savedTotal=savedCounts.reduce((a,n)=>a+n,0),currentTotal=currentCounts.reduce((a,n)=>a+n,0);
+  if(savedTotal<=currentTotal||savedTotal===0)return{ok:false,reason:'backup-not-richer',savedTotal,currentTotal};
+  const safetyKey='hd20PreRecoverySafetyBackupV1';
+  if(!ls.getItem(safetyKey)){const values={};Object.values(K).forEach(k=>values[k]=ls.getItem(k));ls.setItem(safetyKey,JSON.stringify({at:new Date().toISOString(),values}))}
+  Object.entries(b.values).forEach(([k,v])=>{if(v===null)ls.removeItem(k);else ls.setItem(k,v)});
+  ls.setItem('hd20DataRecoveryMetaV1',JSON.stringify({at:new Date().toISOString(),source:BACKUP,savedTotal,currentTotal}));
+  return{ok:true,savedTotal,currentTotal,safetyKey};
+}
+window.HD20_DATA_RECOVERY={status:recoveryStatus,backupKey:BACKUP,recover:recoverFromBackup};
 
 /* ---------- 백업 / 복구 ---------- */
 function strip(k,raw){
