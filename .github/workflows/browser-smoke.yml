@@ -117,10 +117,12 @@ jobs:
               const canonicalPrecedence=await restore.evaluate(()=>({nav:window.HD20_NAV?.active?.(),modal:document.getElementById('masterModal')?.classList.contains('on')||getComputedStyle(document.getElementById('masterModal')).display!=='none',query:location.search}));
               if(canonicalPrecedence.nav!=='master'||!canonicalPrecedence.modal)throw new Error('canonical area did not override legacy tab '+JSON.stringify(canonicalPrecedence));
               await restore.close();
+              evidence.responsive={};
+              for(const width of [1152,900,375]){const rp=await browser.newPage({viewport:{width,height:900}});rp.on('dialog',d=>d.accept());await rp.route('**/*',route=>{const req=route.request(),u=new URL(req.url());if(u.hostname==='127.0.0.1'||u.hostname==='localhost')return route.continue();if(req.resourceType()==='script')return route.fulfill({status:200,contentType:'application/javascript',body:'/* HD20 CI external script stub */'});return route.abort('blockedbyclient')});await rp.goto('http://127.0.0.1:4173/index.html?area=advancement&sub=judge',{waitUntil:'commit',timeout:15000});await rp.waitForFunction(()=>!!document.querySelector('#hd20PurposePanel .hd20ProcessFlow'),{},{timeout:20000});await rp.waitForTimeout(250);const state=await rp.evaluate(()=>{const de=document.documentElement,b=document.body,flow=document.querySelector('#hd20PurposePanel .hd20ProcessFlow');return{bodyOverflow:Math.max(de.scrollWidth,b.scrollWidth)-de.clientWidth,flowOverflow:flow?flow.scrollWidth-flow.clientWidth:0,flowDisplay:flow?getComputedStyle(flow).display:'none',navCount:document.querySelectorAll('.beginnerNav button[data-key]').length}});evidence.responsive[width]=state;if(state.bodyOverflow>2||state.navCount!==6||(width>=900&&state.flowOverflow>2)||(width===375&&state.flowDisplay!=='flex'))throw new Error('Responsive layout mismatch '+width+' '+JSON.stringify(state));await rp.close();}
               evidence.main={readyState:main.readyState,nav:main.nav,bodyVisible:main.bodyVisible,authPending:main.authPending,priority:main.priority,bridge:main.bridge,kpi:main.kpi,metric:main.metric,legacyLanding:main.legacyLanding};evidence.maturity=maturity;evidence.retiredDashboardChrome=retired;evidence.pageErrors=errors;
               await page.screenshot({path:'artifacts/main-dashboard.png',fullPage:false,timeout:10000}).catch(e=>{evidence.screenshotWarning=String(e);console.warn('SCREENSHOT_WARNING',String(e))});
               fs.writeFileSync('artifacts/diagnostics.json',JSON.stringify(evidence,null,2));
-              console.log('HD20 BROWSER BOOT/FIVE-AREA PASS',evidence);
+              console.log('HD20 BROWSER BOOT/SIX-AREA PASS',evidence);
             }catch(e){failure=e;evidence.failure=String(e);evidence.pageErrors=errors;fs.writeFileSync('artifacts/diagnostics.json',JSON.stringify(evidence,null,2));console.error('BOOT TRACE',JSON.stringify({requested:evidence.localRequests.slice(-12),finished:evidence.finished.slice(-12)},null,2));console.error(e)}finally{await browser.close()}
             if(failure)process.exit(1);
           })();
@@ -131,6 +133,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: hd20-five-area-browser-evidence
+          name: hd20-six-area-browser-evidence
           path: artifacts/
           if-no-files-found: warn
