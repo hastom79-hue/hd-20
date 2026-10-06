@@ -26,7 +26,7 @@ jobs:
           python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/hd20-current-ia-http.log 2>&1 &
           for i in {1..30}; do curl -fsS http://127.0.0.1:4173/index.html >/dev/null && exit 0; sleep 1; done
           cat /tmp/hd20-current-ia-http.log; exit 1
-      - name: Validate canonical five areas and dashboard groups
+      - name: Validate canonical six areas and dashboard groups
         run: |
           cat > hd20-current-ia.cjs <<'NODE'
           const { chromium }=require('playwright');
