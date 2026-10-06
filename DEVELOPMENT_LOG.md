@@ -1724,3 +1724,17 @@ Canonical Store는 다음을 기준으로 한다.
 - 고도화 7개 sub의 browser smoke를 강화하여 expected owner 정확히 1개, 다른 owner 동시노출 금지, legacy #awWorkplace 재등장 금지를 검사한다.
 - 주요 커밋: cabeb804, fbf99dd, 0998b373, 5de666bd, 8d6ad722, 359bf067, c7b02b69, 31dd2440, 72388aee, 707710fc, c7193baf, 00690762, d7fe8a53, f504a87d, 3c82dfee, 3a805f45, cdb15ed8, fad41648, dd99cd56, e7f6ad96, 45fcf968, f97c1347.
 - CI 상태 주의: GitHub connector의 workflow 조회는 제한된 범위만 반환할 수 있으므로 green run을 직접 확인하기 전에는 최종 CI PASS로 기록하지 않는다.
+
+
+### 2026-10-06 / Release Candidate QA 25~33 — six-area contract, workplace verification gate, deployed RC
+- legacy integration API의 areas 목록을 dashboard/activity/advancement/audit/action/master 6영역으로 정합화하고 runtime contract로 잠금.
+- 고도화 3/3 안내를 '공식심사 진입 가능'에서 '작업장 근거검증 대상'으로 수정하여 엄격한 단계 정의와 UI 문구를 일치시킴.
+- 기존 judgeState(확정/보완요청/미확정)는 공식판정 의미를 유지하고, 작업장 근거검증은 별도 optional metadata workplaceVerification/workplaceVerified로 분리. 공식확정 KPI 정의는 변경하지 않음.
+- 3/3 + 증빙완결 미확정 Case에만 작업장 근거검증 완료 조치를 허용. 완료 후에만 advProcessState가 '공식심사 대기'로 이동하며, 검증 전에는 '작업장 근거검증 필요'에 유지.
+- 심사 Funnel과 운영카드를 보완/검증 → 근거검증 필요 → 공식심사 대기 → 공식확정 → 현재 유지로 분리하여 단계별 건수 중복 제거.
+- ④ 공식심사 Queue의 다음 조치도 근거검증 전 Case는 '작업장 근거검증', 검증 완료 Case만 '공식판정 진행'으로 정합화.
+- Supabase sync의 sanitizeStore는 객체 내부 필드를 재구성하지 않고 non-production 행만 제거하므로 workplaceVerification metadata가 canonical payload push/pull에서 보존됨을 코드 기준 확인. 별도 DB schema migration 불필요.
+- compact desktop 701~1000px workflow rail은 화살표/간격을 축소해 desktop full-width no-scroll 원칙을 유지하도록 보정.
+- 최신 배포 확인: 94ef68d9 revision의 GitHub Pages build/deployment run 37400692107 SUCCESS (2026-10-06T01:46:18Z).
+- 일반 runtime/browser smoke는 최신 revision에서도 steps=[] / runner_id=0으로 종료되어 assertion이 실행되지 않음. 이는 현재 앱 assertion 실패 증거가 아니라 runner 미배정 상태이며, 실제 browser smoke 실행 전까지 RC 최종 PASS는 선언하지 않음.
+- 주요 커밋: e0fbaa58, 61335d22, 5ac72ac6, 627e3949, 37eb4776, f85fd85f, 2e4a9002, 32414e22, 94ef68d9, 2ab51171.
