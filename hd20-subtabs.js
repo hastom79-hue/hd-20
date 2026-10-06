@@ -164,7 +164,7 @@ function renderAdvJudge(){
  host.innerHTML=`<div class="pcPanelHead">후보 심사 준비도 · 보완 우선순위 <small>후보 등록 이후 실제로 무엇이 부족해 판정으로 못 넘어가는지 확인</small></div><div class="hd20JudgeReadiness"><div><small>미확정 후보</small><b>${rows.length}건</b></div><div class="risk"><small>증빙+요건 동시 Gap</small><b>${bothGap}건</b></div><div class="risk"><small>증빙만 보완</small><b>${evidenceOnly}건</b></div><div class="risk"><small>요건만 보완</small><b>${criteriaOnly}건</b></div><div><small>공식판정 준비완료</small><b>${ready}건</b></div></div><div class="pcTableWrap"><table class="pcTable"><thead><tr><th>생산팀</th><th>라인</th><th>후보 Case</th><th>판정상태</th><th>요건</th><th>증빙 Gap</th><th>요건 Gap</th><th>다음 조치</th></tr></thead><tbody>${body||'<tr><td colspan="8">현재 미확정 고도화 후보가 없습니다.</td></tr>'}</tbody></table></div>`
 }
 function ensureAdvProcess(){
- let host=$('#hd20AdvProcessOperational');if(host)return host;host=document.createElement('section');host.id='hd20AdvProcessOperational';host.className='pcPanel hd20AdvProcessOperational';const root=$('#performanceConversionAnalysis');(root?.querySelector('.pcGrid')||root)?.appendChild(host);return host
+ let host=$('#hd20AdvProcessOperational');if(host)return host;const root=$('#performanceConversionAnalysis');if(!root)return null;let grid=root.querySelector('.pcGrid');if(!grid){grid=document.createElement('div');grid.className='pcGrid';root.appendChild(grid)}host=document.createElement('section');host.id='hd20AdvProcessOperational';host.className='pcPanel hd20AdvProcessOperational';grid.appendChild(host);return host
 }
 function advProcessState(x){
  const n=advCriteriaCount(x),s=txt(x?.judgeState||x?.status),confirmed=advancementConfirmed(x),evidenceGap=advEvidenceGap(x).length;
@@ -214,7 +214,7 @@ function applyAction(sub){const root=$('#awAction');if(!root)return;root.dataset
 }
 function apply(area,sub){enforceTopStatusOrder(area);try{document.querySelector('.app')?.setAttribute('data-hd-view',area+'.'+sub)}catch(e){}
   if(area==='dashboard')applyDashboard(sub);else if(area==='activity')applyActivity(sub);else if(area==='advancement')applyAdvancement(sub);else if(area==='audit')applyAudit(sub);else if(area==='action')applyAction(sub);window.dispatchEvent(new CustomEvent('hd20-subtab-changed',{detail:{area,sub}}))}
-function select(area,sub){state={area,sub};$$('button',ensure()).forEach(b=>b.classList.toggle('on',b.dataset.sub===sub));apply(area,sub);renderPurpose(area,sub);
+function select(area,sub){state={area,sub};$('button',ensure()).forEach(b=>b.classList.toggle('on',b.dataset.sub===sub));apply(area,sub);renderPurpose(area,sub);requestAnimationFrame(()=>apply(area,sub));
   try{const u=new URL(location.href);if(u.searchParams.get('area')===area)u.searchParams.set('sub',sub);history.replaceState(null,'',u)}catch{}}
 function syncArea(area){
   if(window.__HD20_RESTORE_SUB&&MAP[area]?.some(([k])=>k===window.__HD20_RESTORE_SUB)){
