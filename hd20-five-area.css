@@ -61,3 +61,5 @@
 .beginnerNav button .navTop{font-size:15px!important;letter-spacing:-.2px!important}
 .beginnerNav button small{margin-top:3px!important;font-size:10.5px!important}
 @media(max-width:700px){.beginnerNav{gap:4px!important;padding:4px!important;overflow:visible!important}.beginnerNav button{border-radius:4px!important;border:0!important;min-height:50px!important}}
+
+#performanceConversionAnalysis[data-area="advancement"] .pcGrid>#hd20AdvJudgeOperational,#performanceConversionAnalysis[data-area="advancement"] .pcGrid>#hd20AdvAnalysisOperational,#performanceConversionAnalysis[data-area="advancement"] .pcGrid>#hd20AdvDetailOperational,#performanceConversionAnalysis[data-area="advancement"] .pcGrid>#hd20AdvProcessOperational,#performanceConversionAnalysis[data-area="advancement"] .pcGrid>#hd20AdvStandardOperational{grid-column:1/-1!important;width:100%!important;max-width:none!important}
