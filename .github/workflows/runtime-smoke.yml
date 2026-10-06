@@ -63,6 +63,10 @@ jobs:
           grep -q "if(n>=3)return '작업장 근거검증 필요'" hd20-subtabs.js
           ! grep -q "if(n>=3)return '공식심사 대기'" hd20-subtabs.js
           grep -q "3/3 근거검증" hd20-subtabs.js
+          grep -q "workplaceVerification={state:'완료'" hd20-subtabs.js
+          grep -q "advWorkplaceVerified(x)?'공식심사 대기':'작업장 근거검증 필요'" hd20-subtabs.js
+          grep -q "formalReady=candidateOnly.filter" hd20-subtabs.js
+          grep -q "\['근거검증',verificationNeeded.length\],\['공식심사',formalReady.length\]" hd20-subtabs.js
 
       - name: Verify six-column navigation layout
         run: |
