@@ -60,6 +60,9 @@ jobs:
           ! grep -q "key:'maturity'" dashboard-section-tabs.js
           grep -q "['map','⑥ 유지·이탈 포트폴리오']" hd20-subtabs.js
           test -s hd20-subtabs.js
+          grep -q "if(n>=3)return '작업장 근거검증 필요'" hd20-subtabs.js
+          ! grep -q "if(n>=3)return '공식심사 대기'" hd20-subtabs.js
+          grep -q "3/3 근거검증" hd20-subtabs.js
 
       - name: Verify six-column navigation layout
         run: |
