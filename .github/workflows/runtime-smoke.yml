@@ -71,6 +71,7 @@ jobs:
           grep -q 'grid-template-columns:repeat(6,minmax(0,1fr))' hd20-five-area.css
           ! grep -q "workplace.classList.add('on')" hd20-five-area-integration.js
           ! grep -q "hd20-six-nav-layout.js" final-layout-polish.js
+          grep -q "window.HD20_FIVE_AREA={refresh,areas:\['dashboard','activity','advancement','audit','action','master'\]}" hd20-five-area-integration.js
 
       - name: Verify auth bootstrap fail-safe
         run: |
