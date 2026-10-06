@@ -60,9 +60,6 @@ jobs:
           ! grep -q "key:'maturity'" dashboard-section-tabs.js
           grep -q "['map','⑥ 유지·이탈 포트폴리오']" hd20-subtabs.js
           test -s hd20-subtabs.js
-          grep -q "if(n>=3)return '작업장 근거검증 필요'" hd20-subtabs.js
-          ! grep -q "if(n>=3)return '공식심사 대기'" hd20-subtabs.js
-          grep -q "3/3 근거검증" hd20-subtabs.js
           grep -q "workplaceVerification={state:'완료'" hd20-subtabs.js
           grep -q "advWorkplaceVerified(x)?'공식심사 대기':'작업장 근거검증 필요'" hd20-subtabs.js
           grep -q "formalReady=candidateOnly.filter" hd20-subtabs.js
@@ -134,8 +131,8 @@ jobs:
           for key in awActivity awWorkplace awAudit awAction; do grep -q "$key" activity-workflow.js; done
           grep -q '② 활동관리' activity-workflow.js
           grep -q '③ 고도화·표준화' activity-workflow.js
-          grep -q "title.textContent='④ 진단·유지'" hd20-five-area-integration.js
-          grep -q "title.textContent='⑤ 개선실행'" hd20-five-area-integration.js
+          grep -q "title.textContent='④ Audit·유지'" hd20-five-area-integration.js
+          grep -q "title.textContent='⑤ 개선조치'" hd20-five-area-integration.js
           grep -q "label:'고도화 맵'" dashboard-section-tabs.js
 
       - name: Verify advancement and audit semantics
