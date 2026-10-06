@@ -51,6 +51,10 @@ window.HD20_DATA_RECOVERY={status:recoveryStatus,backupKey:BACKUP,recover:recove
 function installRecoveryNotice(){
   const s=recoveryStatus(),cur=Object.values(s.current||{}).reduce((a,n)=>a+(n.production||0),0),saved=Object.values(s.saved||{}).reduce((a,n)=>a+(n.production||0),0);
   if(cur!==0)return;
+  if(saved>cur){
+    const r=recoverFromBackup();
+    if(r.ok){console.warn('[HD20 recovery] restored preserved production backup',r);location.reload();return;}
+  }
   const host=document.querySelector('.top')||document.querySelector('.app')||document.body;if(!host||document.getElementById('hd20DataRecoveryNotice'))return;
   const box=document.createElement('div');box.id='hd20DataRecoveryNotice';box.setAttribute('role','alert');
   box.style.cssText='flex-basis:100%;margin-top:8px;padding:9px 12px;border:1px solid #d9a441;border-radius:8px;background:#fff8e8;font-size:12px;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap';
