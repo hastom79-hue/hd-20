@@ -66,3 +66,6 @@
 
 /* RC mobile canonical nav: six tabs remain inside viewport, no horizontal rail */
 @media(max-width:700px){.beginnerNav{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;overflow:hidden!important;width:100%!important;box-sizing:border-box!important}.beginnerNav button{flex:none!important;width:auto!important;min-width:0!important;max-width:100%!important}.beginnerNav button:last-child{grid-column:auto!important}}
+
+/* RC hard mobile containment: override all earlier flex nav rules */
+@media screen and (max-width:700px){html body .beginnerNav{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;grid-auto-flow:row!important;width:100%!important;max-width:100%!important;overflow:hidden!important}html body .beginnerNav>button[data-key]{display:flex!important;flex:initial!important;width:100%!important;min-width:0!important;max-width:none!important;box-sizing:border-box!important}html body .beginnerNav>button[data-key]:last-child{grid-column:auto!important}}
