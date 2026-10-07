@@ -8,7 +8,8 @@ const parseRaw=raw=>{try{const v=JSON.parse(raw||'[]');return Array.isArray(v)?v
 const parse=k=>parseRaw(localStorage.getItem(k));
 const isDemo=r=>r?.source===SRC||String(r?.id||'').startsWith('DEMO-');
 const isFixture=r=>r?.source==='web-validation-fixture'||String(r?.id||'').startsWith('VALID-');
-const isProduction=r=>r&&!isDemo(r)&&!isFixture(r);
+const isMeaningful=r=>r&&typeof r==='object'&&(String(r.team||'').trim()||String(r.title||r.problem||r.area||'').trim());
+const isProduction=r=>isMeaningful(r)&&!isDemo(r)&&!isFixture(r);
 const prodCount=()=>Object.values(K).reduce((n,k)=>n+parse(k).filter(isProduction).length,0);
 function hasRecoverableProductionBackup(){try{const b=JSON.parse(localStorage.getItem(BACKUP)||'null');if(!b?.values||typeof b.values!=='object')return false;return Object.values(K).some(k=>parseRaw(b.values[k]).some(isProduction))}catch{return false}}
 if(prodCount()>0||hasRecoverableProductionBackup())return;
