@@ -81,3 +81,5 @@
 
 /* RC containment: keep desktop workflow rail geometry inside its own client box */
 @media(min-width:701px){.hd20PurposePanel>.hd20ProcessFlow{box-sizing:border-box!important;padding-left:6px!important;padding-right:6px!important;overflow:hidden!important}.hd20ProcessFlow>div{word-break:break-word!important}}
+
+@media(min-width:701px){.hd20PurposePanel>.hd20ProcessFlow{width:calc(100% - 12px)!important;justify-self:start!important}}
