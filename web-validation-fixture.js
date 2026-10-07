@@ -57,6 +57,7 @@ function exportRecoveryEvidence(){
 }
 window.HD20_DATA_RECOVERY={status:recoveryStatus,backupKey:BACKUP,recover:recoverFromBackup,exportEvidence:exportRecoveryEvidence,diagnose:()=>{const s=recoveryStatus();return{backup:s.hasBackup,backupAt:s.backupAt,currentProduction:s.currentTotals?.production||0,savedProduction:s.savedTotals?.production||0,currentExcelImport:s.currentExcelImport||0,current:s.current,saved:s.saved}}};
 function installRecoveryNotice(){
+  if(window.HD20_DEFAULT_FIXTURE_FALLBACK===true)return;
   const s=recoveryStatus(),cur=Object.values(s.current||{}).reduce((a,n)=>a+(n.production||0),0),saved=Object.values(s.saved||{}).reduce((a,n)=>a+(n.production||0),0);
   if(cur!==0)return;
   const top=document.querySelector('.top'),app=document.querySelector('.app')||document.body;if(!app||document.getElementById('hd20DataRecoveryNotice'))return;const host=document.createElement('div');host.id='hd20DataRecoveryNoticeHost';host.style.cssText='display:block;width:100%;box-sizing:border-box;margin:0';const nav=document.querySelector('.beginnerNav');if(nav&&nav.parentNode)nav.insertAdjacentElement('afterend',host);else if(top&&top.parentNode)top.insertAdjacentElement('afterend',host);else app.prepend(host);
@@ -90,9 +91,15 @@ function restore(){
 function cleanUrl(extra){const u=new URL(location.href);['validation','edge','scale'].forEach(p=>u.searchParams.delete(p));Object.entries(extra||{}).forEach(([k,v])=>u.searchParams.set(k,v));return u.toString()}
 
 if(MODE==='reset'){try{restore()}catch(e){console.error('[validation-fixture] restore failed',e)}location.replace(cleanUrl({validation:'0'}));return}
-/* Production default: 검증 데이터는 명시적 ?validation=1 에서만 실행한다.
-   일반 접속/validation=0/off에서는 원본 backup을 자동 적용하지 않고 fixture 행만 제거한다. */
-const ACTIVE=MODE==='1';
+/* Production-safe default fallback:
+   - ?validation=1: explicit fixture mode.
+   - ?validation=0/off: fixture disabled.
+   - no parameter: real production rows win. If a richer production backup exists, keep recovery path visible.
+     Only when both current production and saved production are 0 do we seed the team-master fixture so an empty site is testable. */
+const bootRecovery=recoveryStatus();
+const DEFAULT_FALLBACK=MODE===null&&(bootRecovery.currentTotals?.production||0)===0&&(bootRecovery.savedTotals?.production||0)===0;
+const ACTIVE=MODE==='1'||DEFAULT_FALLBACK;
+window.HD20_DEFAULT_FIXTURE_FALLBACK=DEFAULT_FALLBACK;
 if(!ACTIVE){try{
   /* Production safety: 일반 접속에서는 fixture 행만 제거한다.
      과거 BACKUP을 현재 정상 데이터 위에 자동 덮어쓰지 않는다. 명시적 validation=reset에서만 backup restore 허용. */
@@ -331,7 +338,7 @@ function banner(){
   const c=summary.counts||{},bad=!!summary.error;
   b.style.cssText='position:sticky;top:0;z-index:10050;padding:7px 12px;text-align:center;border-bottom:1px solid '+(bad?'#d98a80':'#e3c66a')+';background:'+(bad?'#fde8e4':'#fff3cd')+';color:'+(bad?'#8c2a1c':'#664d03')+';font:800 12px/1.5 sans-serif';
   const txt=document.createElement('span');
-  txt.textContent=bad?`검증 데이터 저장 실패(${summary.error}) · 물량을 줄이거나 원본 복구 후 다시 시도`:`검증 데이터 모드 v${V} · Activity ${c.activity} / Audit ${c.audit} / Action ${c.action}${EDGE?' · 엣지 케이스 포함':''}${SCALE>1?' · ×'+SCALE:''} · 브라우저 로컬 전용`;
+  txt.textContent=bad?`검증 데이터 저장 실패(${summary.error}) · 물량을 줄이거나 원본 복구 후 다시 시도`:`${DEFAULT_FALLBACK?'빈 데이터 자동 검증 모드':'검증 데이터 모드'} v${V} · Activity ${c.activity} / Audit ${c.audit} / Action ${c.action}${EDGE?' · 엣지 케이스 포함':''}${SCALE>1?' · ×'+SCALE:''} · 브라우저 로컬 전용`;
   b.append(txt);
   const link=(label,href)=>{const a=document.createElement('a');a.textContent=label;a.href=href;a.style.cssText='margin-left:10px;color:inherit;text-decoration:underline';b.append(a)};
   link(EDGE?'엣지 끄기':'엣지 켜기',cleanUrl({validation:'1',...(EDGE?{}:{edge:'1'}),...(SCALE>1?{scale:SCALE}:{})}));
