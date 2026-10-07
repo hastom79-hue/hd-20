@@ -78,3 +78,6 @@
 
 /* 2026-10-07 RC: mobile viewport containment */
 @media(max-width:700px){html,body,.app{max-width:100%;overflow-x:hidden}.hd20PurposePanel,.awScreen,#performanceConversionAnalysis,.pcGrid,.pcPanel,.awCard,.card{min-width:0!important;max-width:100%!important;box-sizing:border-box}.hd20Subnav{max-width:100%;box-sizing:border-box}.hd20GridSection{max-width:100%;overflow-x:auto}}
+
+/* RC containment: keep desktop workflow rail geometry inside its own client box */
+@media(min-width:701px){.hd20PurposePanel>.hd20ProcessFlow{box-sizing:border-box!important;padding-left:6px!important;padding-right:6px!important;overflow:hidden!important}.hd20ProcessFlow>div{word-break:break-word!important}}
