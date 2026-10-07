@@ -9,3 +9,7 @@
 @media(max-width:1100px){.mainGrid .chart{overflow-x:auto;overflow-y:hidden;padding-bottom:112px}.mainGrid .cols{min-width:960px}}
 /* 2026-09-15: HD-22 background parity — override later theme gradient */
 html,body{background:#F4F6F8!important}
+
+/* HD20 viewport-safe master modal guard */
+#masterModal{position:fixed!important;inset:0!important;z-index:10000!important;align-items:center!important;justify-content:center!important;overflow:auto!important;padding:20px!important;box-sizing:border-box!important}
+#masterModal .masterInfoBox{position:relative!important;top:auto!important;left:auto!important;right:auto!important;bottom:auto!important;transform:none!important;max-width:calc(100vw - 40px)!important;max-height:calc(100vh - 40px)!important;overflow:auto!important;margin:auto!important;box-sizing:border-box!important}
