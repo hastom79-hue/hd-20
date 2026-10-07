@@ -3,12 +3,15 @@
 if(window.HD20_VALIDATION_MODE)return;
 const P=new URL(location.href).searchParams;
 if(P.get('demo')==='0')return;
-const SRC='demo-seed',MARK='hd20VisibleDemoSeedV1';
+const SRC='demo-seed',MARK='hd20VisibleDemoSeedV1',BACKUP='hd20ValidationBackupV1';
 const K={a:'hd20GMES5SAutoImproveRawV1',u:'hd20AuditRandomDrawsV1',x:'hd20ActionCasesV2'};
 const teams=['대형Att.팀','대형메인팀','대형상부팀','프레임제작팀','Boom제작팀','중형상부1팀','중형상부2팀','중형하부팀','중형Att팀','중형메인팀','휠로더Front팀','휠로더리어팀','휠로더메인팀','초대형조립팀','성능팀','트러블슈팅팀'];
 const parse=k=>{try{const v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[]}catch{return[]}};
-const prodCount=()=>Object.values(K).reduce((n,k)=>n+parse(k).filter(r=>r?.source!==SRC&&!String(r?.id||'').startsWith('DEMO-')).length,0);
-if(prodCount()>0)return;
+const isProd=r=>r?.source!==SRC&&r?.source!=='web-validation-fixture'&&!String(r?.id||'').startsWith('DEMO-')&&!String(r?.id||'').startsWith('VALID-');
+const prodCount=()=>Object.values(K).reduce((n,k)=>n+parse(k).filter(isProd).length,0);
+function recoverableBackupExists(){try{const b=JSON.parse(localStorage.getItem(BACKUP)||'null'),values=b?.values;if(!values||typeof values!=='object')return false;return Object.values(K).some(k=>{const raw=values[k];if(typeof raw!=='string'||!raw.trim())return false;try{const rows=JSON.parse(raw);return Array.isArray(rows)&&rows.some(isProd)}catch{return false}})}catch{return false}}
+/* Evidence-first recovery: never overwrite empty canonical stores with demo while a production backup can be recovered explicitly. */
+if(prodCount()>0||recoverableBackupExists())return;
 window.HD20_DEMO_MODE=true;window.HD20_VALIDATION_ISOLATED=true;
 const now=new Date(),ymd=d=>d.toISOString().slice(0,10),days=n=>{const d=new Date(now);d.setDate(d.getDate()-n);return ymd(d)};
 const activity=[];teams.forEach((team,ti)=>{const weak=/중형|성능|트러블/.test(team),count=weak?12:24;for(let i=0;i<count;i++){activity.push({id:`DEMO-A-${ti}-${i}`,source:SRC,team,group:ti<3||ti>=5&&ti<=9||ti>=14?'조립1팀':'조립2팀',date:days((i*3+ti)%120),type:['정리','정돈','청소','시각화','위험구역관리'][i%5],area:['조립라인','자재구역','공구실','검사대'][i%4],problem:['공구 위치 불명확','통로 적치','라벨 미흡','불용품 방치'][i%4],improvement:['형적관리','Green Zone','정위치 표기','정량축소'][i%4],status:i%7===0?'보완':'완료',confirmed:!weak&&i%4===0,criteriaCount:weak?(i%3)+1:((i+ti)%4===0?3:2)});}});
