@@ -10,9 +10,12 @@ const isDemo=r=>r?.source===SRC||String(r?.id||'').startsWith('DEMO-');
 const isFixture=r=>r?.source==='web-validation-fixture'||String(r?.id||'').startsWith('VALID-');
 const isMeaningful=r=>r&&typeof r==='object'&&(String(r.team||'').trim()||String(r.title||r.problem||r.area||'').trim());
 const isProduction=r=>isMeaningful(r)&&!isDemo(r)&&!isFixture(r);
-const prodCount=()=>Object.values(K).reduce((n,k)=>n+parse(k).filter(isProduction).length,0);
+const prodRows=()=>Object.values(K).flatMap(k=>parse(k).filter(isProduction));
+const prodCount=()=>prodRows().length;
+const canonicalProduction=()=>{const rows=prodRows();if(!rows.length)return false;const teams=window.HD20ProductionTeamMaster?.teamNames?.()||[];return rows.some(r=>teams.includes(String(r.team||'').trim())&&(String(r.id||'').trim()||String(r.date||r.createdAt||'').trim()));};
 function hasRecoverableProductionBackup(){try{const b=JSON.parse(localStorage.getItem(BACKUP)||'null');if(!b?.values||typeof b.values!=='object')return false;return Object.values(K).some(k=>parseRaw(b.values[k]).some(isProduction))}catch{return false}}
-if(prodCount()>0||hasRecoverableProductionBackup())return;
+/* Only protect identifiable canonical production data. Empty/stale placeholders must not keep the deployed UI at zero forever. */
+if(canonicalProduction()||hasRecoverableProductionBackup())return;
 function boot(){
  const master=window.HD20ProductionTeamMaster,teams=master?.teamNames?.()||[];
  if(!teams.length){setTimeout(boot,80);return}
