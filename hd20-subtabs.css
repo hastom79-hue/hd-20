@@ -86,3 +86,5 @@
 
 /* RC final: process rail uses border-box so padding is included in measured width */
 @media(min-width:701px){.hd20PurposePanel>.hd20ProcessFlow{box-sizing:border-box!important;width:100%!important;padding-left:0!important;padding-right:0!important}}
+
+@media(min-width:701px){.hd20ProcessFlow>*{min-width:0!important;max-width:100%!important;box-sizing:border-box!important}.hd20ProcessFlow>div b,.hd20ProcessFlow>div span{min-width:0!important;max-width:100%!important;overflow-wrap:anywhere!important;word-break:break-word!important}}
