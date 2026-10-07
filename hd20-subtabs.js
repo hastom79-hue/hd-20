@@ -152,7 +152,7 @@ function renderAdvDetail(){
   host.querySelectorAll('.hd20VerifyWorkplace').forEach(btn=>btn.addEventListener('click',()=>{if(!btn.dataset.id||!saveWorkplaceVerification(btn.dataset.id))return;renderAdvDetail();renderAdvProcess()}))
 }
 function ensureAdvJudge(){
- let host=$('#hd20AdvJudgeOperational');if(host)return host;host=document.createElement('section');host.id='hd20AdvJudgeOperational';host.className='pcPanel hd20AdvJudgeOperational';const root=$('#performanceConversionAnalysis');(root?.querySelector('.pcGrid')||root)?.prepend(host);return host
+ let host=$('#hd20AdvJudgeOperational');if(host)return host;host=document.createElement('section');host.id='hd20AdvJudgeOperational';host.className='pcPanel awCard hd20AdvJudgeOperational';const root=$('#performanceConversionAnalysis');(root?.querySelector('.pcGrid')||root)?.prepend(host);return host
 }
 function advEvidenceGap(x){const gaps=[];if(!txt(x?.problem))gaps.push('문제정의');if(!txt(x?.improvement||x?.action))gaps.push('개선내용');if(!txt(x?.before))gaps.push('BEFORE');if(!txt(x?.after))gaps.push('AFTER');return gaps}
 function advWorkplaceVerified(x){return x?.workplaceVerification?.state==='완료'||x?.workplaceVerified===true}
