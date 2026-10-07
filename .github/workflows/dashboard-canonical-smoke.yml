@@ -40,7 +40,7 @@ jobs:
           for retired in ["key:'maturity'","key:'standard'"]:
               if retired in tabs: sys.exit(f'retired dashboard ownership remains: {retired}')
           subtabs=pathlib.Path('hd20-subtabs.js').read_text(encoding='utf-8')
-          for key in ["['map','⑥ 유지·이탈 포트폴리오']","['trend','판정기준·성과추이']"]:
+          for key in ["['map','① 유지·이탈 포트폴리오']","['trend','② 판정기준·성과추이']"]:
               if key not in subtabs: sys.exit(f'advancement ownership missing: {key}')
           if "let active='summary'" not in tabs or "function reset(){active='summary'" not in tabs: sys.exit('dashboard subtab reset contract missing')
           bridge=pathlib.Path('dashboard-operational-bridge.js').read_text(encoding='utf-8')
