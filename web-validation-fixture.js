@@ -97,8 +97,9 @@ if(MODE==='reset'){try{restore()}catch(e){console.error('[validation-fixture] re
    - no parameter: real production rows win. If a richer production backup exists, keep recovery path visible.
      Only when both current production and saved production are 0 do we seed the team-master fixture so an empty site is testable. */
 const bootRecovery=recoveryStatus();
-const DEFAULT_FALLBACK=MODE===null&&(bootRecovery.currentTotals?.production||0)===0&&(bootRecovery.savedTotals?.production||0)===0;
-const ACTIVE=MODE==='1'||DEFAULT_FALLBACK;
+/* Validation fixture is explicit-only. Normal empty deployments are seeded by development-demo-mode.js from the canonical team master. */
+const DEFAULT_FALLBACK=false;
+const ACTIVE=MODE==='1';
 window.HD20_DEFAULT_FIXTURE_FALLBACK=DEFAULT_FALLBACK;
 if(!ACTIVE){try{
   /* Production safety: 일반 접속에서는 fixture 행만 제거한다.
