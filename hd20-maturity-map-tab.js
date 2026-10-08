@@ -115,25 +115,29 @@ function render(){css();const el=ensure(),d=data();
       displayByTeam.set(t.team,{x:actualX*.72+slotX*.28,y:actualY*.72+slotY*.28});
     });
   });
-  const displayPoint=t=>{
+  const displayPoint=(t,teamIdx)=>{
     const p=displayByTeam.get(t.team)||{x:t.attrition,y:t.level};
     const bx=t.attrition<50?[3,48]:[52,97],by=t.level>=60?[62,96]:[5,58];
     let x=Math.max(bx[0],Math.min(bx[1],p.x)),y=Math.max(by[0],Math.min(by[1],p.y));
     /* 기존 충돌 회피는 버블 원(점)끼리만 7%×5% 이내를 겹침으로 봤는데, 버블 옆에 붙는 팀명 라벨(최대
        145px, 버블 폭보다 훨씬 넓음)까지 포함하면 여전히 겹쳐 보이는 것을 실측으로 확인 — 판정 기준을
        라벨 폭을 감안한 값으로 넓히고, 한 방향으로만 밀던 것을 나선형(각도를 바꿔가며)으로 바꿔
-       여러 점이 한 곳에 몰려도 사방으로 고르게 퍼지도록 보강 */
-    const origX=x,origY=y;
+       여러 점이 한 곳에 몰려도 사방으로 고르게 퍼지도록 보강. 추가 발견: 동일 좌표(예: 0/0 미시작 팀
+       여럿)에서 출발하는 모든 점이 pass=0부터 '같은' 각도 궤적(0,47,94...도)을 그리다 보니, 나중 점이
+       먼저 배치된 점을 피해도 그 다음 점이 또 같은 자리에서 걸리는 경우가 실측으로 확인됨(3~4개팀 잔존
+       중첩) → 팀 인덱스를 시작 각도에 섞어(황금각 137.5도 간격) 같은 출발점이라도 팀마다 서로 다른
+       방향의 나선을 그리게 해 충돌 확률을 크게 낮춤 */
+    const origX=x,origY=y,baseAng=(teamIdx*137.5)%360;
     for(let pass=0;pass<40;pass++){
       if(!placed.some(v=>Math.abs(v.x-x)<22&&Math.abs(v.y-y)<13))break;
-      const ang=(pass*47)*Math.PI/180,step=9+pass*2.1;
+      const ang=(baseAng+pass*47)*Math.PI/180,step=9+pass*2.1;
       x=origX+Math.cos(ang)*step;y=origY+Math.sin(ang)*step*.6;
       x=Math.max(bx[0],Math.min(bx[1],x));y=Math.max(by[0],Math.min(by[1],y));
     }
     placed.push({x,y});return{x,y};
   };
   enriched.forEach((t,i)=>{
-    const pt=displayPoint(t),px=pt.x,py=pt.y,key=Math.round(px)+'|'+Math.round(py),dup=coordSeen[key]||0;coordSeen[key]=dup+1;
+    const pt=displayPoint(t,i),px=pt.x,py=pt.y,key=Math.round(px)+'|'+Math.round(py),dup=coordSeen[key]||0;coordSeen[key]=dup+1;
     const dot=document.createElement('button');dot.type='button';dot.className='mmtBubble';dot.style.left=px+'%';dot.style.bottom=py+'%';dot.style.setProperty('--mmt-color',colorOf(t));dot.style.setProperty('--label-shift',dup?((dup%2?1:-1)*(Math.floor(dup/2)+1)*18+'px'):'0px');dot.dataset.actualX=t.attrition;dot.dataset.actualY=t.level;
     dot.innerHTML='<i></i><span><b>'+esc(t.team)+'</b><small>'+t.maintained+'/'+t.confirmed+' · '+(t.rate===null?'—':t.rate+'%')+'</small></span>';
     dot.title=t.team+' · 이탈도 '+t.attrition+'% · 고도화 실행수준 '+t.level+'% (유지 '+t.retention+'% · Case축적 '+t.volume+'% · 전환 '+t.conversion+'% · 활동량 '+t.activity+'%)';matrix.appendChild(dot);
