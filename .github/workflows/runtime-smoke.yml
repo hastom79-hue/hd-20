@@ -156,7 +156,7 @@ jobs:
           grep -q "if(cur!==0)return" web-validation-fixture.js
           grep -q "복구 원본 없음" web-validation-fixture.js
           grep -q "currentExcelImport" web-validation-fixture.js
-          grep -q "web-validation-fixture.js?v=20261008-explicit-only1" index.html\n          grep -q "development-demo-mode.js?v=20261008-advancement2" index.html
+          grep -q "web-validation-fixture.js?v=20261008-explicit-only1" index.html\n          grep -q "development-demo-mode.js?v=20261008-advancement3" index.html
 
       - name: Verify Supabase auth and sync wiring
         run: |
