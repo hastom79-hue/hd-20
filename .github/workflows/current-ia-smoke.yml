@@ -43,7 +43,7 @@ jobs:
               await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'commit',timeout:15000});
               await page.waitForFunction(()=>!!document.querySelector('.beginnerNav'),{},{timeout:10000});
               await page.waitForFunction(()=>window.HD20_NAV&&window.HD20_DASHBOARD_TABS&&document.getElementById('hd20DashboardSectionTabs'),{},{timeout:25000});
-              const expected=['dashboard','activity','advancement','audit','action','master'];
+              const expected=['dashboard','activity','audit','action','advancement','master'];
               const keys=await page.locator('.beginnerNav button[data-key]').evaluateAll(xs=>xs.map(x=>x.dataset.key));
               assert(JSON.stringify(keys)===JSON.stringify(expected),'canonical top nav mismatch: '+JSON.stringify(keys));
               assert((await page.locator('.beginnerNav button.active').getAttribute('data-key'))==='dashboard','dashboard not initial tab');
