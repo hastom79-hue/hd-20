@@ -17,6 +17,8 @@ function hasRecoverableProductionBackup(){try{const b=JSON.parse(localStorage.ge
 /* Only protect identifiable canonical production data. Empty/stale placeholders must not keep the deployed UI at zero forever. */
 if(canonicalProduction()||hasRecoverableProductionBackup()){
   window.HD20_DEMO_SUPPRESSED_REASON=canonicalProduction()?'production-data-present':'production-backup-present';
+  const explain=()=>{if(document.getElementById('hd20DemoSuppressedNotice'))return;const nav=document.querySelector('.beginnerNav');if(!nav)return;const el=document.createElement('div');el.id='hd20DemoSuppressedNotice';el.setAttribute('role','status');el.style.cssText='padding:7px 12px;background:#fff4df;border-bottom:1px solid #e9ca8c;color:#66440d;font-size:12px;font-weight:700';el.textContent=window.HD20_DEMO_SUPPRESSED_REASON==='production-data-present'?'데이터 보호 모드 · 기존 운영데이터가 감지되어 가상 검증데이터 자동생성을 중단했습니다. 화면이 0이면 운영데이터 집계 연결을 확인하세요.':'데이터 보호 모드 · 복구 백업이 감지되어 가상 검증데이터 자동생성을 중단했습니다. 기존 백업은 보존됩니다.';nav.insertAdjacentElement('afterend',el)};
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',explain,{once:true});else explain();
   return;
 }
 /* A stale session reload marker must not prevent a fresh demo after storage reset. */
