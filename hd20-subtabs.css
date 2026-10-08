@@ -98,3 +98,8 @@
 .hd20Subnav button.on::after,.hd20Subnav button.active::after{display:none!important}
 #hd20DashboardSectionTabs button:hover:not(.active):not(.on),.hd20Subnav button:hover:not(.on):not(.active){background:#f2f7fd!important;color:#0d4f95!important}
 @media(max-width:700px){#hd20DashboardSectionTabs button,.hd20Subnav button{min-width:165px!important;font-size:12px!important}}
+
+/* Override late runtime-injected dashboard CSS and inner bold labels */
+#hd20DashboardSectionTabs button b{display:inline!important;color:inherit!important;font-size:inherit!important;font-weight:inherit!important;line-height:inherit!important}
+#hd20DashboardSectionTabs button.active b{color:#fff!important}
+#hd20DashboardSectionTabs button:not(.active) b{color:#173650!important}
