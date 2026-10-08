@@ -23,7 +23,13 @@ function snapshot(){const rows=load(),year=selectedYear(),activities=rows.filter
 function pickField(x,keys){for(const k of keys){if(x?.[k]!==undefined&&x[k]!==null&&x[k]!=='')return x[k]}return null}
 function asDate(v){if(!v)return null;const d=new Date(v);return Number.isNaN(d.getTime())?null:d}
 function daysBetween(a,b){a=asDate(a);b=asDate(b);return a&&b?Math.max(0,Math.round((b-a)/86400000)):null}
-function levelOf(x){const v=String(x?.level||x?.maturityLevel||x?.lv||'').match(/[1-5]/);return v?+v[0]:null}
+function levelOf(x){const v=String(x?.level||x?.maturityLevel||x?.lv||'').match(/[1-5]/);if(v)return+v[0];
+  /* 확정 사례에 level/maturityLevel/lv 필드가 전혀 없는 현재 데이터 모델에서는 항상 null이 되어
+     '고도화 수준' KPI가 분모 0으로 영원히 '—'였던 결함을 발견 — 실제로 존재하는 3대 요건 충족 개수
+     (criteriaMatched, 0~3)를 그대로 수준값으로 대체 사용(조건을 모두 충족할수록 높은 수준이라는
+     기존 '고도화 3대 판정기준' 의미와 일치) */
+  const cm=Number(x?.criteriaMatched);
+  return Number.isFinite(cm)&&cm>0?cm:null}
 function pct(n,d){return d?Math.round(n/d*1000)/10:null}
 function txt(v){return String(v??'').trim()}
 function actionDone(x){return /완료|확정|종료|종결|close|done/i.test(txt(x?.status||x?.activityStatus||x?.judgeState||x?.auditState))}
