@@ -1,7 +1,7 @@
 (()=>{'use strict';
 /* Visible demo data for an empty web workspace. Local-only: never sync to Supabase. */
 if(window.HD20_VALIDATION_MODE)return;
-const P=new URL(location.href).searchParams;if(P.get('demo')==='0')return;
+const P=new URL(location.href).searchParams;if(P.get('demo')==='0'||P.get('validation')==='0')return;
 const SRC='demo-seed',MARK='hd20VisibleDemoSeedV1',BACKUP='hd20ValidationBackupV1';
 const K={a:'hd20GMES5SAutoImproveRawV1',u:'hd20AuditRandomDrawsV1',x:'hd20ActionCasesV2'};
 const parseRaw=raw=>{try{const v=JSON.parse(raw||'[]');return Array.isArray(v)?v:[]}catch{return[]}};
