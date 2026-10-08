@@ -88,3 +88,13 @@
 @media(min-width:701px){.hd20PurposePanel>.hd20ProcessFlow{box-sizing:border-box!important;width:100%!important;padding-left:0!important;padding-right:0!important}}
 
 @media(min-width:701px){.hd20ProcessFlow>*{min-width:0!important;max-width:100%!important;box-sizing:border-box!important}.hd20ProcessFlow>div b,.hd20ProcessFlow>div span{min-width:0!important;max-width:100%!important;overflow-wrap:anywhere!important;word-break:break-word!important}}
+
+/* Final approved unified secondary navigation: dashboard and all operating areas */
+#hd20DashboardSectionTabs,.hd20Subnav{display:flex!important;align-items:stretch!important;gap:0!important;width:100%!important;max-width:100%!important;min-height:49px!important;margin:0 0 12px!important;padding:3px!important;border:1px solid #dce5ee!important;border-radius:12px!important;background:#fff!important;box-shadow:0 3px 10px rgba(16,47,77,.055)!important;overflow-x:auto!important;position:relative!important;top:auto!important;z-index:5!important;scrollbar-width:thin!important}
+#hd20DashboardSectionTabs button,.hd20Subnav button{position:relative!important;display:flex!important;align-items:center!important;justify-content:center!important;flex:1 0 auto!important;min-width:150px!important;min-height:42px!important;height:auto!important;margin:0!important;padding:9px 15px!important;border:0!important;border-radius:7px!important;background:#fff!important;color:#173650!important;font-size:12.5px!important;font-weight:800!important;line-height:1.35!important;text-align:center!important;white-space:nowrap!important;box-shadow:none!important;clip-path:none!important;transform:none!important}
+#hd20DashboardSectionTabs button+button::before,.hd20Subnav button+button::before{content:''!important;position:absolute!important;left:0!important;top:25%!important;height:50%!important;width:1px!important;background:#dce5ee!important}
+#hd20DashboardSectionTabs button.active,#hd20DashboardSectionTabs button.on,.hd20Subnav button.on,.hd20Subnav button.active{background:#2474f5!important;color:#fff!important;box-shadow:0 2px 7px rgba(36,116,245,.15)!important}
+#hd20DashboardSectionTabs button.active::before,#hd20DashboardSectionTabs button.on::before,.hd20Subnav button.on::before,.hd20Subnav button.active::before{display:none!important}
+.hd20Subnav button.on::after,.hd20Subnav button.active::after{display:none!important}
+#hd20DashboardSectionTabs button:hover:not(.active):not(.on),.hd20Subnav button:hover:not(.on):not(.active){background:#f2f7fd!important;color:#0d4f95!important}
+@media(max-width:700px){#hd20DashboardSectionTabs button,.hd20Subnav button{min-width:165px!important;font-size:12px!important}}
