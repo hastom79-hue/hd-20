@@ -28,6 +28,16 @@ function boot(){
  if(!teams.length){setTimeout(boot,80);return}
  const groupOf=team=>master?.groupOf?.(team)||'';
  window.HD20_DEMO_MODE=true;window.HD20_VALIDATION_ISOLATED=true;
+ /* 가상 데이터가 activity/audit/action은 채우면서 팀별 인원수(headcount)는 전혀 설정하지 않아,
+    '인당 5S 개선활동' 등 인당 계산이 필요한 지표가 항상 '—'로 비어 보이던 결함을 발견해 보강.
+    이미 저장된(실제 운영) 인원 마스터가 있으면 절대 덮어쓰지 않음. */
+ try{
+   const HC_KEY='hd20TeamHeadcountMasterV1';
+   if(!localStorage.getItem(HC_KEY)){
+     const hc=teams.map((team,i)=>({team,headcount:20+(i%6)*3}));
+     localStorage.setItem(HC_KEY,JSON.stringify(hc));
+   }
+ }catch{}
  const now=new Date(),ymd=d=>d.toISOString().slice(0,10),days=n=>{const d=new Date(now);d.setDate(d.getDate()-n);return ymd(d)};
  const weak=team=>/중형|성능|트러블/.test(team),strong=team=>/프레임|Boom/.test(team);
  const activity=[];teams.forEach((team,ti)=>{const count=weak(team)?12:strong(team)?26:24;for(let i=0;i<count;i++){const advancement=i%4===0;const criteria=weak(team)?(i%3)+1:((i+ti)%4===0?3:2);const approved=advancement&&criteria===3&&!weak(team)&&i%8===0;const dropped=(advancement&&weak(team)&&i%8===0)||(approved&&i%16===0);activity.push({id:`DEMO-A-${ti}-${i}`,source:SRC,team,group:groupOf(team),date:days((i*3+ti)%120),type:advancement?'5S 고도화':['정리','정돈','청소','시각화','위험구역관리'][i%5],area:['조립라인','자재구역','공구실','검사대'][i%4],problem:['공구 위치 불명확','통로 적치','라벨 미흡','불용품 방치'][i%4],improvement:['형적관리','Green Zone','정위치 표기','정량축소'][i%4],status:approved?'완료':dropped?'이탈':advancement?'판정대기':i%7===0?'보완':'완료',candidate:advancement&&!approved,judgeState:approved?'확정':advancement?'판정대기':'',confirmed:approved,judgedAt:approved?days((i*3+ti)%100):'',criteriaCount:criteria,criteriaMatched:criteria,maintainState:dropped?'이탈':approved?'유지':'',attrition:dropped,visualization:criteria>=1,greenZone:criteria>=2,spaceUtilization:criteria>=3});}});
