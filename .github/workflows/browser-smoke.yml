@@ -56,7 +56,7 @@ jobs:
               await page.waitForFunction(()=>!!document.getElementById('hd20OperationalBridge'),{},{timeout:15000});
               await page.waitForTimeout(500);
               const main=await page.evaluate(()=>({readyState:document.readyState,nav:[...document.querySelectorAll('.beginnerNav button[data-key]')].map(x=>x.dataset.key),bodyVisible:getComputedStyle(document.body).visibility!=='hidden',authPending:document.documentElement.classList.contains('hd20-auth-pending'),priority:document.querySelectorAll('#hd20DashboardPriority').length,bridge:!!document.getElementById('hd20OperationalBridge'),kpi:document.querySelectorAll('.cards .kpi').length,metric:document.querySelectorAll('.hd20HealthKpi').length,legacyLanding:document.querySelectorAll('.hd20ApprovedLanding').length,text:document.body.innerText}));
-              const expected=['dashboard','activity','advancement','audit','action','master'];
+              const expected=['dashboard','activity','audit','action','advancement','master'];
               if(JSON.stringify(main.nav)!==JSON.stringify(expected))throw new Error('Main nav mismatch '+JSON.stringify(main));
               if(!main.bodyVisible||main.authPending||main.priority!==1||!main.bridge)throw new Error('Boot contract mismatch '+JSON.stringify(main));
               if(main.kpi!==5||main.metric!==6||main.legacyLanding!==0)throw new Error('Main dashboard contract mismatch '+JSON.stringify({kpi:main.kpi,metric:main.metric,legacyLanding:main.legacyLanding}));
