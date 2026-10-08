@@ -26,7 +26,12 @@ function ensure(){css();const p=panel(),tabs=document.querySelector('#masterModa
 document.querySelector('#masterModal .modalFoot')?.style.setProperty('display','none');
 const head=document.querySelector('#masterModal .modalHead span');if(head)head.textContent='조직/팀 · 팀별 인당목표 · 요청출처 · 업무/팩터 · 메일링 기준정보';
 const map={team:'① 조직/팀',target:'② 팀별 인당목표',source:'③ 요청출처',factor:'④ 업무/팩터',mail:'⑤ 메일링'};Object.entries(map).forEach(([k,n])=>{let b=tabs.querySelector('[data-master-tab="integrated-'+k+'"]');if(!b){b=document.createElement('button');b.type='button';b.dataset.masterTab='integrated-'+k;b.textContent=n;b.addEventListener('click',()=>show(k));tabs.appendChild(b)}});if(!tabs.querySelector('button.on:not([style*="display: none"])'))show('team');return true}
-function suppressLegacy(){const tabs=document.querySelector('#masterModal .masterTabs');if(!tabs)return;['order','target','sourceOrder','policy','leader'].forEach(k=>{const b=tabs.querySelector('[data-master-tab="'+k+'"]');if(b){b.hidden=true;b.classList.remove('on');b.style.setProperty('display','none','important');b.style.setProperty('visibility','hidden','important')}})}
+function suppressLegacy(){const tabs=document.querySelector('#masterModal .masterTabs');if(!tabs)return;
+  /* 'policy'(운영정책 — Audit 표본수·Risk 가중치·개선요청 자동지정일수·리더십 명단 설정)는 '④ 업무/팩터' 등
+     새 5개 탭으로 실제 대체된 적이 없는데도 여기 묶여 숨겨져 있었음. 그 결과 Audit 표본수를 설정할 방법이
+     화면 어디에도 없어 'Risk 대상선정 > 대상 일괄추출'이 "표본수가 설정되지 않았습니다" 안내만 반복하며
+     영원히 진행 불가능한 상태였던 것을 발견 — 'policy'만 숨김 대상에서 제외해 복구. */
+  ['order','target','sourceOrder','leader'].forEach(k=>{const b=tabs.querySelector('[data-master-tab="'+k+'"]');if(b){b.hidden=true;b.classList.remove('on');b.style.setProperty('display','none','important');b.style.setProperty('visibility','hidden','important')}})}
 function boot(){let n=0;const run=()=>{if(ensure()){suppressLegacy();const modal=document.getElementById('masterModal');if(modal)new MutationObserver(()=>suppressLegacy()).observe(modal,{subtree:true,childList:true});return}if(++n<80)setTimeout(run,150)};run()}
 window.HD20IntegratedMaster={teamRows,targets,factors:()=>read(FACTOR_KEY,FACTORS),mailing:()=>read(MAIL_KEY,MAIL),getHeadcount:t=>teamRows().find(x=>x.team===t)?.headcount||null};
 document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot,{once:true}):boot();})();
