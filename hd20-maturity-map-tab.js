@@ -112,9 +112,15 @@ function render(){css();const el=ensure(),d=data();
     const p=displayByTeam.get(t.team)||{x:t.attrition,y:t.level};
     const bx=t.attrition<50?[3,48]:[52,97],by=t.level>=60?[62,96]:[5,58];
     let x=Math.max(bx[0],Math.min(bx[1],p.x)),y=Math.max(by[0],Math.min(by[1],p.y));
-    for(let pass=0;pass<12;pass++){
-      if(!placed.some(v=>Math.abs(v.x-x)<7&&Math.abs(v.y-y)<5))break;
-      x+=t.attrition<50?2:-2;y+=(pass%2?2:-2);
+    /* 기존 충돌 회피는 버블 원(점)끼리만 7%×5% 이내를 겹침으로 봤는데, 버블 옆에 붙는 팀명 라벨(최대
+       145px, 버블 폭보다 훨씬 넓음)까지 포함하면 여전히 겹쳐 보이는 것을 실측으로 확인 — 판정 기준을
+       라벨 폭을 감안한 값으로 넓히고, 한 방향으로만 밀던 것을 나선형(각도를 바꿔가며)으로 바꿔
+       여러 점이 한 곳에 몰려도 사방으로 고르게 퍼지도록 보강 */
+    const origX=x,origY=y;
+    for(let pass=0;pass<40;pass++){
+      if(!placed.some(v=>Math.abs(v.x-x)<22&&Math.abs(v.y-y)<13))break;
+      const ang=(pass*47)*Math.PI/180,step=9+pass*2.1;
+      x=origX+Math.cos(ang)*step;y=origY+Math.sin(ang)*step*.6;
       x=Math.max(bx[0],Math.min(bx[1],x));y=Math.max(by[0],Math.min(by[1],y));
     }
     placed.push({x,y});return{x,y};
