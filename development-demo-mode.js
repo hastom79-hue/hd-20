@@ -15,7 +15,10 @@ const prodCount=()=>prodRows().length;
 const canonicalProduction=()=>{const rows=prodRows();if(!rows.length)return false;const teams=window.HD20ProductionTeamMaster?.teamNames?.()||[];return rows.some(r=>teams.includes(String(r.team||'').trim())&&(String(r.id||'').trim()||String(r.date||r.createdAt||'').trim()));};
 function hasRecoverableProductionBackup(){try{const b=JSON.parse(localStorage.getItem(BACKUP)||'null');if(!b?.values||typeof b.values!=='object')return false;return Object.values(K).some(k=>parseRaw(b.values[k]).some(isProduction))}catch{return false}}
 /* Only protect identifiable canonical production data. Empty/stale placeholders must not keep the deployed UI at zero forever. */
-if(canonicalProduction()||hasRecoverableProductionBackup())return;
+if(canonicalProduction()||hasRecoverableProductionBackup()){
+  window.HD20_DEMO_SUPPRESSED_REASON=canonicalProduction()?'production-data-present':'production-backup-present';
+  return;
+}
 /* A stale session reload marker must not prevent a fresh demo after storage reset. */
 if(!parse(K.a).some(isDemo))sessionStorage.removeItem('hd20DemoSeedReloaded');
 function boot(){
