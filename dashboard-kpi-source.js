@@ -3,7 +3,15 @@ const KEY='hd20GMES5SAutoImproveRawV1',HEADCOUNT_KEY='hd20TeamHeadcountMasterV1'
 const LEGACY_TEST_IDS=new Set('DRAW-1788010755791,DRAW-1788010759290,DRAW-1788010760070,DRAW-1788010760500,DRAW-1788010760921,DRAW-1788010761360,DRAW-1788011635587,DRAW-1788011636106,DRAW-1788011636356,DRAW-1788011636538,DRAW-1788011636773,DRAW-1788011636931,DRAW-1788011637126,DRAW-1788011637396,DRAW-1788011637597,DRAW-1788011637788,DRAW-1788011637966,DRAW-1788011638138,DRAW-1788011638487,DRAW-1788011638656,DRAW-1788011638846'.split(','));
 /* 검증 모드(?validation=1)에서는 web-validation-fixture 행을 정상 데이터로 취급한다.
    (supabase-sync.js 는 자체 isNonProdRow 를 쓰므로 DB 반입 차단은 그대로 유지됨) */
-function isNonProdRow(x){if(x&&typeof x==='object'&&validationMode()&&x.source==='web-validation-fixture')return false;return isNonProdRowBase(x)}
+/* isNonProdRow는 16개 파일(audit-close-evaluation.js·hd20-action-verify-canonical-guard.js·
+   hd20-trace-production-guard.js 등)이 window.HD20KPIData.isNonProdRow로 공유하는 중앙 판정 함수인데,
+   정작 이 함수 자체는 데모 모드(window.HD20_DEMO_MODE)를 전혀 몰라 demo-seed 행을 항상 '비운영(제외
+   대상)'으로 판정하고 있었음. load()/actionCases()/auditDraws() 등 이 파일 자신의 조회 함수들은 이미
+   데모 모드일 때 demo-seed를 포함하도록 별도 처리돼 있었지만, 이 함수를 그대로 가져다 쓰는 다른 16개
+   파일은 그 보정을 받지 못해 '종료평가 대기 0건' 등으로 계속 비어 보였음(사용자 지적: "가상데이터가
+   여전히 부족하다") — 근본 원인은 이 한 함수였으므로 여기서 데모 모드 보정을 추가해 모든 참조처에
+   일괄 적용되도록 함. 실제 운영 환경(HD20_DEMO_MODE 미설정)에서는 동작이 전혀 바뀌지 않음. */
+function isNonProdRow(x){if(x&&typeof x==='object'&&validationMode()&&x.source==='web-validation-fixture')return false;if(x&&typeof x==='object'&&window.HD20_DEMO_MODE===true&&x.source==='demo-seed')return false;return isNonProdRowBase(x)}
 function isNonProdRowBase(x){if(!x||typeof x!=='object')return false;const source=String(x.source||'').toLowerCase(),id=String(x.id||'').toUpperCase(),sourceCaseId=String(x.sourceCaseId||'').toUpperCase(),email=String(x.email||'').toLowerCase(),legacySeedEmail=/^teamlead\d+@example\.com$/i.test(email);return x.isDemo===true||x.isTest===true||source==='demo-seed'||source==='e2e-fixture'||source==='web-validation-fixture'||id.startsWith('DEMO-')||id.startsWith('E2E-')||id.startsWith('VALID-')||id.includes('AUTO-DEMO-')||sourceCaseId.startsWith('DEMO-')||sourceCaseId.startsWith('E2E-')||sourceCaseId.startsWith('VALID-')||email.endsWith('@hd-hyundai-demo.co.kr')||legacySeedEmail||LEGACY_TEST_IDS.has(id)}
 function validationMode(){return new URL(location.href).searchParams.get('validation')==='1'}
 function load(){try{const v=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(v)?(validationMode()?v.filter(x=>x?.source==='web-validation-fixture'):v.filter(x=>window.HD20_DEMO_MODE===true&&x?.source==='demo-seed'||!isNonProdRow(x))):[]}catch{return[]}}
