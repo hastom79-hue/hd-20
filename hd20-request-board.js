@@ -50,7 +50,7 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
 @media print{#${ID} .ibBar{display:none}}
 @media(max-width:1100px){#${ID} .r1,#${ID} .rqManageRow{grid-template-columns:1fr}}`;document.head.appendChild(s)}
 function data(){
-  const K=window.HD20KPIData,cases=K?.actionCases?.()||[],M=window.HD20ProductionTeamMaster,teams=M?.teamNames?.()||[];
+  const K=window.HD20KPIData,cases=K?.actionCases?.()||[],M=window.HD20ProductionTeamMaster,masterTeams=M?.teamNames?.()||[],teams=[...new Set([...masterTeams,...cases.map(c=>c.team).filter(Boolean)])];
   const years=[...new Set(cases.map(c=>String(c.date||'').slice(0,4)))].filter(Boolean).sort();
   return{cases,teams,years,today:K?.seoulDateKey?.()||new Date().toISOString().slice(0,10)};
 }
@@ -64,7 +64,7 @@ function filt(D,{ignoreYear=false,ignoreMonth=false}={}){
     if(S.roll==='Y'&&!c.recurrence)return false;if(S.roll==='N'&&c.recurrence)return false;return true})}
 function render(box){
   LEADER_NAMES=null;
-  const KIT=window.HD20_BOARD_KIT;if(!KIT||!window.HD20KPIData?.actionCases)return;const {chart,leg,openRows}=KIT,D=data();
+  const KIT=window.HD20_BOARD_KIT;if(!KIT||!window.HD20KPIData?.actionCases){box.innerHTML='<h2>5S 개선요청 종합 대시보드</h2><p role="status">데이터 조회 모듈을 연결 중입니다.</p>';return}const {chart,leg,openRows}=KIT,D=data();
   if(!S.year)S.year=D.years.includes(String(new Date().getFullYear()))?String(new Date().getFullYear()):(D.years[D.years.length-1]||String(new Date().getFullYear()));
   const teamsAll=D.teams.filter(t=>!S.team||t===S.team),rowsY=filt(D,{ignoreMonth:true}).filter(c=>teamsAll.includes(c.team)),rowsM=S.month?rowsY.filter(c=>mo(c)===+S.month):rowsY;
   const allEver=D.cases.filter(c=>teamsAll.includes(c.team)),doneEver=allEver.filter(isDone),openRate=allEver.length?Math.round(doneEver.length/allEver.length*1000)/10:0;
@@ -149,7 +149,6 @@ function render(box){
     const text='\ufeff'+out.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n'),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:'text/csv;charset=utf-8'}));a.download=`5S_개선요청종합_${S.year}${S.month||''}.csv`;document.body.appendChild(a);a.click();a.remove()};
 }
 function ensure(){
-  if(!window.HD20_BOARD_KIT||!window.HD20KPIData?.actionCases||!window.HD20ProductionTeamMaster)return false;
   css();let box=document.getElementById(ID);
   if(!box){const anchor=document.getElementById('hd20ImproveBoard')||document.getElementById('hd20DashboardPriority')||document.querySelector('.cards')||document.getElementById('hd20DashboardSectionTabs');if(!anchor)return false;box=document.createElement('section');box.id=ID;anchor.insertAdjacentElement('afterend',box);
     const T=window.HD20_DASHBOARD_TABS;if(T?.apply)T.apply(T.active?.()||'summary',{scroll:false})}
