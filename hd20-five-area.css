@@ -195,3 +195,15 @@ html body.hd20DashboardExecutionActive .mainGrid .donutWrap .drow{
  html body.hd20DashboardExecutionActive .mainGrid .donutWrap{grid-template-columns:140px minmax(0,1fr)!important;gap:10px!important}
  html body.hd20DashboardExecutionActive .mainGrid .donutWrap .dlist{grid-template-columns:1fr!important;gap:7px!important}
 }
+
+
+/* FIX: previous layout only matched a body mode that is not guaranteed during tab restore.
+   Apply to the actual .mainGrid > .sideStack structure whenever it is displayed. */
+html body .app .mainGrid{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:12px!important;min-width:0!important}
+html body .app .mainGrid>.sideStack{display:grid!important;grid-template-columns:minmax(0,1.5fr) minmax(270px,.5fr)!important;gap:12px!important;width:100%!important;order:-1!important;align-items:stretch!important}
+html body .app .mainGrid>.card{width:100%!important;min-width:0!important;order:1!important}
+html body .app .mainGrid>.sideStack>.card{min-width:0!important}
+html body .app .mainGrid>.sideStack .donutWrap{display:grid!important;grid-template-columns:150px minmax(0,1fr)!important;gap:18px!important;align-items:center!important}
+html body .app .mainGrid>.sideStack .donutWrap .dlist{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:12px!important}
+@media(max-width:1050px){html body .app .mainGrid>.sideStack{grid-template-columns:1fr!important}}
+@media(max-width:680px){html body .app .mainGrid>.sideStack .donutWrap .dlist{grid-template-columns:1fr!important}}
