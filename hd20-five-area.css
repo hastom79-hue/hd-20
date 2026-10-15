@@ -98,3 +98,14 @@ html body .beginnerNav>button.active .navNumber{background:none!important;color:
 html body .beginnerNav .navLabel{white-space:normal!important;overflow-wrap:keep-all!important;word-break:keep-all!important}
 @media(max-width:1050px){html body .beginnerNav{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
 @media(max-width:620px){html body .beginnerNav{grid-template-columns:repeat(2,minmax(0,1fr))!important}html body .beginnerNav>button[data-key]{min-height:54px!important}}
+
+/* Approved premium underline navigation: six fixed tabs, no arrows or number circles. */
+html body .beginnerNav{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:0!important;padding:4px 12px!important;background:#102c47!important;border:0!important;border-radius:12px!important;overflow:visible!important;box-shadow:0 4px 12px rgba(10,33,55,.12)!important}
+html body .beginnerNav>button[data-key],html body .beginnerNav>button[data-key]:first-child,html body .beginnerNav>button[data-key]:last-child{position:relative!important;display:flex!important;flex:initial!important;width:100%!important;min-width:0!important;min-height:54px!important;margin:0!important;padding:11px 4px 10px!important;border:0!important;border-bottom:3px solid #36516b!important;border-radius:0!important;clip-path:none!important;background:transparent!important;color:#b7c9d9!important;box-shadow:none!important;text-align:center!important}
+html body .beginnerNav>button[data-key].active{background:transparent!important;color:#fff!important;border-bottom:3px solid #62a7ff!important;box-shadow:none!important}
+html body .beginnerNav>button[data-key]:hover:not(.active){background:#1b3b58!important;color:#fff!important}
+html body .beginnerNav .navTop{display:flex!important;justify-content:center!important;align-items:center!important;gap:0!important;font-size:clamp(11px,.96vw,14px)!important;font-weight:750!important;line-height:1.35!important;white-space:normal!important}
+html body .beginnerNav .navNumber{display:none!important}
+html body .beginnerNav .navLabel{white-space:normal!important;word-break:keep-all!important;overflow-wrap:normal!important}
+@media(max-width:1050px){html body .beginnerNav{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+@media(max-width:620px){html body .beginnerNav{grid-template-columns:repeat(2,minmax(0,1fr))!important}html body .beginnerNav>button[data-key]{min-height:48px!important}}
