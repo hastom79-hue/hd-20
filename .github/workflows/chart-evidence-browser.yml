@@ -42,9 +42,10 @@ jobs:
               const button=page.locator('#'+id+' [data-evk]').first();
               await button.click({force:true});
               await page.waitForTimeout(250);
-              const visible=await page.locator('#hd20EvidenceModal.on, #hd20EvidenceRows.on, [id*="Evidence"].on').count();
+              const visible=await page.locator('#hd20BoardEvidence.on').count();
               result[name].modalVisible=visible;
-              await page.keyboard.press('Escape');
+              if(visible!==1)throw Error(name+' evidence modal did not open');
+              await page.locator('#hd20BoardEvidence [data-ev="close"]').click();
               const download=page.waitForEvent('download',{timeout:8000});
               await page.locator('#'+id+' button').filter({hasText:'엑셀 추출'}).first().click({force:true});
               const file=await download;
