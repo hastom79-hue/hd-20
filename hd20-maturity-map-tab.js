@@ -145,7 +145,7 @@ function render(){css();const el=ensure(),d=data();
     const teamBtn=$('.mmtTeam',row),list=$('.mmtTeamCases',row),activate=()=>{$$('.mmtBubble',bars).forEach(v=>v.classList.remove('on'));$$('.mmtTeam',cases).forEach(v=>v.classList.remove('on'));$$('.mmtTeamCases',cases).forEach(v=>v.hidden=true);dot.classList.add('on');teamBtn.classList.add('on');list.hidden=false};
     dot.onclick=()=>{activate();openTeamPopup(t)};teamBtn.onclick=activate;$$('[data-mmt-case]',row).forEach((b,ci)=>b.onclick=()=>openCase(t.cases[ci]));if(i===0)activate();
   });
-  // Preserve true metric coordinates; move only labels into readable lanes inside the chart.
+  // Preserve actual coordinates; place overlapping labels in separate readable lanes (2026-10-15).
   const grouped=new Map();$('.mmtBubble',matrix).forEach(dot=>{const key=dot.dataset.coordKey;if(!grouped.has(key))grouped.set(key,[]);grouped.get(key).push(dot)});
   grouped.forEach(dots=>{if(dots.length<2)return;const px=parseFloat(dots[0].style.left),py=parseFloat(dots[0].style.bottom);const rowsPerColumn=8;const cols=Math.ceil(dots.length/rowsPerColumn);dots.forEach((dot,i)=>{const col=Math.floor(i/rowsPerColumn),row=i%rowsPerColumn,count=Math.min(rowsPerColumn,dots.length-col*rowsPerColumn),dy=(row-(count-1)/2)*38;const span=dot.querySelector('span');if(!span)return;span.style.position='absolute';span.style.top='50%';span.style.left='22px';span.style.transform='translateY(calc(-50% + '+dy+'px))';span.style.zIndex='10';span.style.minWidth='110px';if(px>65){span.style.left='auto';span.style.right='22px'}if(col){span.style.marginLeft=(px>65?-col*130:col*130)+'px'}})});
   cases.appendChild(rowFrag);
