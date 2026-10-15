@@ -2,6 +2,8 @@
 /* Visible demo data for an empty web workspace. Local-only: never sync to Supabase. */
 if(window.HD20_VALIDATION_MODE)return;
 const P=new URL(location.href).searchParams;if(P.get('demo')==='0'||P.get('validation')==='0')return;
+/* Expose data visibility diagnostics without changing or overwriting production records. */
+window.HD20_DATA_DIAGNOSTICS=()=>{const keys={activity:'hd20GMES5SAutoImproveRawV1',audit:'hd20AuditRandomDrawsV1',action:'hd20ActionCasesV2'};const read=k=>{try{const v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[]}catch{return[]}};return Object.fromEntries(Object.entries(keys).map(([area,key])=>{const rows=read(key);return [area,{total:rows.length,demo:rows.filter(r=>r?.source==='demo-seed'||String(r?.id||'').startsWith('DEMO-')).length,production:rows.filter(r=>r?.source!=='demo-seed'&&!String(r?.id||'').startsWith('DEMO-')).length}]}))};
 const SRC='demo-seed',MARK='hd20VisibleDemoSeedV1',BACKUP='hd20ValidationBackupV1';
 const K={a:'hd20GMES5SAutoImproveRawV1',u:'hd20AuditRandomDrawsV1',x:'hd20ActionCasesV2'};
 const parseRaw=raw=>{try{const v=JSON.parse(raw||'[]');return Array.isArray(v)?v:[]}catch{return[]}};
