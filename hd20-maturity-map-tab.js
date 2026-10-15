@@ -137,7 +137,7 @@ function render(){css();const el=ensure(),d=data();
     placed.push({x,y});return{x,y};
   };
   enriched.forEach((t,i)=>{
-    const pt=displayPoint(t,i),px=pt.x,py=pt.y,key=Math.round(px)+'|'+Math.round(py),dup=coordSeen[key]||0;coordSeen[key]=dup+1;
+    const pt={x:Math.max(0,Math.min(100,t.attrition)),y:Math.max(0,Math.min(100,t.level))},px=pt.x,py=pt.y,key=Math.round(px)+'|'+Math.round(py),dup=coordSeen[key]||0;coordSeen[key]=dup+1;
     const dot=document.createElement('button');dot.type='button';dot.className='mmtBubble';dot.style.left=px+'%';dot.style.bottom=py+'%';dot.style.setProperty('--mmt-color',colorOf(t));dot.style.setProperty('--label-shift',dup?((dup%2?1:-1)*(Math.floor(dup/2)+1)*18+'px'):'0px');dot.dataset.actualX=t.attrition;dot.dataset.actualY=t.level;
     dot.innerHTML='<i></i><span><b>'+esc(t.team)+'</b><small>'+t.maintained+'/'+t.confirmed+' · '+(t.rate===null?'—':t.rate+'%')+'</small></span>';
     dot.title=t.team+' · 이탈도 '+t.attrition+'% · 고도화 실행수준 '+t.level+'% (유지 '+t.retention+'% · Case축적 '+t.volume+'% · 전환 '+t.conversion+'% · 활동량 '+t.activity+'%)';matrix.appendChild(dot);
