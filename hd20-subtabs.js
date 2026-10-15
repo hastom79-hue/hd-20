@@ -217,7 +217,6 @@ function apply(area,sub){enforceTopStatusOrder(area);try{document.querySelector(
 function select(area,sub){state={area,sub};if(area==='advancement'&&sub==='process')ensureAdvProcess();document.querySelectorAll('#hd20Subnav button').forEach(b=>b.classList.toggle('on',b.dataset.sub===sub));apply(area,sub);renderPurpose(area,sub);requestAnimationFrame(()=>apply(area,sub));
   try{const u=new URL(location.href);if(u.searchParams.get('area')===area)u.searchParams.set('sub',sub);history.replaceState(null,'',u)}catch{}}
 function syncArea(area){
-  if(MAP[area]&&state.area===area&&MAP[area].some(([k])=>k===state.sub)&&!window.__HD20_RESTORE_SUB){const bar=ensure(),items=MAP[area];bar.innerHTML=items.map(([k,n])=>`<button type="button" data-sub="${k}" class="${k===state.sub?'on':''}">${n}</button>`).join('');$$('button',bar).forEach(b=>b.onclick=()=>select(area,b.dataset.sub));renderPurpose(area,state.sub);requestAnimationFrame(()=>apply(area,state.sub));return}
   if(window.__HD20_RESTORE_SUB&&MAP[area]?.some(([k])=>k===window.__HD20_RESTORE_SUB)){
     const restoreSub=window.__HD20_RESTORE_SUB;window.__HD20_RESTORE_SUB=null;
     state.sub=restoreSub;state.area=area;const bar=ensure(),items=MAP[area]||[];
