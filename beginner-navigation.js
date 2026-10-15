@@ -33,7 +33,7 @@ function init(){if(initialized)return;const nav=document.querySelector('.beginne
         const cur=document.querySelector('#hd20DashboardSectionTabs button.active')?.dataset.dashboardSection;
         if((section||'summary')!==(cur||'summary'))window.HD20_DASHBOARD_TABS?.apply?.(section||'summary');
       }else{
-        if(sub&&window.HD20_SUBNAV?.select&&window.HD20_NAV?.active?.()===area)window.HD20_SUBNAV.select(area,sub);
+        if(sub&&window.HD20_SUBNAV?.select&&window.HD20_NAV?.active?.()===area&&window.HD20_SUBNAV.state?.().sub!==sub)window.HD20_SUBNAV.select(area,sub);
       }
     },1600);
     return;
