@@ -109,3 +109,52 @@ html body .beginnerNav .navNumber{display:none!important}
 html body .beginnerNav .navLabel{white-space:normal!important;word-break:keep-all!important;overflow-wrap:normal!important}
 @media(max-width:1050px){html body .beginnerNav{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
 @media(max-width:620px){html body .beginnerNav{grid-template-columns:repeat(2,minmax(0,1fr))!important}html body .beginnerNav>button[data-key]{min-height:48px!important}}
+
+
+/* Approved 2026-10-15: unified slim underline subnavigation across all six top-level areas.
+   Keep labels, ordering, data attributes and existing JavaScript tab ownership untouched. */
+html body #hd20DashboardSectionTabs,
+html body #hd20Subnav,
+html body .hd20Subnav{
+  display:flex!important;align-items:stretch!important;gap:0!important;
+  margin:0 0 12px!important;padding:3px 10px!important;min-height:48px!important;
+  box-sizing:border-box!important;background:#fff!important;
+  border:1px solid #dce5ee!important;border-radius:10px!important;
+  box-shadow:0 2px 8px rgba(16,47,77,.045)!important;
+  overflow-x:auto!important;overflow-y:hidden!important;
+  scrollbar-width:thin!important;
+}
+html body #hd20DashboardSectionTabs>button,
+html body #hd20Subnav>button,
+html body .hd20Subnav>button{
+  position:relative!important;display:flex!important;align-items:center!important;
+  justify-content:center!important;flex:1 0 auto!important;
+  min-width:max-content!important;min-height:42px!important;
+  margin:0!important;padding:9px 16px!important;
+  background:transparent!important;border:0!important;
+  border-bottom:3px solid transparent!important;border-radius:0!important;
+  box-shadow:none!important;color:#50677a!important;
+  font-size:12.5px!important;font-weight:750!important;
+  white-space:nowrap!important;text-align:center!important;
+  clip-path:none!important;transform:none!important;
+}
+html body #hd20DashboardSectionTabs>button.active,
+html body #hd20Subnav>button.on,
+html body .hd20Subnav>button.on,
+html body #hd20Subnav>button.active{
+  color:#145cb5!important;background:transparent!important;
+  border-bottom-color:#2879ef!important;box-shadow:none!important;
+}
+html body #hd20DashboardSectionTabs>button.active b{color:#145cb5!important}
+html body #hd20DashboardSectionTabs>button:hover:not(.active),
+html body #hd20Subnav>button:hover:not(.on),
+html body .hd20Subnav>button:hover:not(.on){background:#f5f9fe!important;color:#145cb5!important}
+html body #hd20Subnav>button.on::after,
+html body .hd20Subnav>button.on::after{display:none!important;content:none!important}
+html body #hd20DashboardSectionTabs>button:focus-visible,
+html body #hd20Subnav>button:focus-visible{outline:2px solid #2879ef!important;outline-offset:-3px!important}
+@media(max-width:700px){
+ html body #hd20DashboardSectionTabs>button,
+ html body #hd20Subnav>button,
+ html body .hd20Subnav>button{flex:0 0 auto!important;min-height:40px!important;padding:8px 13px!important;font-size:12px!important}
+}
