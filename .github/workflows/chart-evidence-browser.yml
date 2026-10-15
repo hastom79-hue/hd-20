@@ -39,22 +39,28 @@ jobs:
                 return {exists:!!box,buttons:evidence.length,exportButtons:[...(box?.querySelectorAll('button')||[])].filter(b=>b.textContent.trim()==='엑셀 추출').length};
               },id);
               if(!result[name].exists||result[name].buttons<4||result[name].exportButtons!==result[name].buttons)throw Error(name+' evidence controls mismatch '+JSON.stringify(result[name]));
-              const button=page.locator('#'+id+' [data-evk]').first();
-              await button.click({force:true});
-              await page.waitForTimeout(250);
-              const visible=await page.locator('#hd20BoardEvidence.on').count();
-              result[name].modalVisible=visible;
-              if(visible!==1)throw Error(name+' evidence modal did not open');
-              await page.locator('#hd20BoardEvidence [data-ev="close"]').click();
-              const download=page.waitForEvent('download',{timeout:8000});
-              await page.locator('#'+id+' button').filter({hasText:'엑셀 추출'}).first().click({force:true});
-              const file=await download;
-              result[name].download=file.suggestedFilename();
-              const fs=require('fs');const filePath=await file.path();const raw=fs.readFileSync(filePath,'utf8');
-              result[name].csvBytes=Buffer.byteLength(raw);result[name].csvRows=raw.trim().split(/\r?\n/).length;
-              if(!raw.startsWith('\uFEFF')||result[name].csvRows<1)throw Error(name+' invalid CSV payload');
-              if(!result[name].download.endsWith('.csv'))throw Error(name+' non-CSV download');
-              if(!raw.includes('요청번호')&&name==='request')throw Error('request CSV header missing');
+              result[name].charts=[];
+              for(let i=0;i<result[name].buttons;i++){
+                const button=page.locator('#'+id+' [data-evk]').nth(i);
+                const key=await button.getAttribute('data-evk');
+                await button.click({force:true});
+                const modal=page.locator('#hd20BoardEvidence.on');
+                await modal.waitFor({state:'visible',timeout:5000});
+                const modalRows=await modal.locator('tbody tr').count();
+                const modalHeaders=await modal.locator('thead th').allTextContents();
+                await modal.locator('[data-ev="close"]').click();
+                const downloadPromise=page.waitForEvent('download',{timeout:8000});
+                const exportButton=page.locator('#'+id+' [data-evk="'+key+'"] + button').first();
+                await exportButton.click({force:true});
+                const download=await downloadPromise;
+                const fs=require('fs');const raw=fs.readFileSync(await download.path(),'utf8');
+                const lines=raw.replace(/^\uFEFF/,'').trimEnd().split(/\r?\n/);
+                const csvHeader=lines[0]||'';
+                if(!raw.startsWith('\uFEFF')||!download.suggestedFilename().endsWith('.csv'))throw Error(name+'/'+key+' invalid CSV');
+                if(name==='request'&&!csvHeader.includes('요청번호'))throw Error(name+'/'+key+' missing request ID header');
+                if(modalHeaders.some(h=>!csvHeader.includes(h.trim())))throw Error(name+'/'+key+' modal/CSV headers differ');
+                result[name].charts.push({key,modalRows,csvRows:lines.length-1,filename:download.suggestedFilename()});
+              }
             }
             console.log('EVIDENCE_RESULT',JSON.stringify({result,errors}));
             await browser.close();
