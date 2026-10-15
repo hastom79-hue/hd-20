@@ -177,7 +177,7 @@ function render(box){
   const opt=(a,cur,all='ALL')=>`<option value="">${all}</option>`+a.map(x=>`<option value="${esc(x)}"${x===cur?' selected':''}>${esc(x)}</option>`).join('');
 
   // V2: Monthly completions use actual completion dates; backlog carries open cases from earlier periods.
-  const monthlyDone=Array.from({length:12},(_,i)=>D.cases.filter(x=>teamsAll.includes(x.team)&&(!S.source||sourceOf(x)===S.source)&&(!S.team||x.team===S.team)&&isDone(x)&&String(x.doneDate||'').slice(0,7)===S.year+'-'+String(i+1).padStart(2,'0')).length);
+  const monthlyDone=Array.from({length:12},(_,i)=>filt(D,{ignoreYear:true,ignoreMonth:true}).filter(x=>teamsAll.includes(x.team)&&isDone(x)&&String(x.doneDate||'').slice(0,7)===S.year+'-'+String(i+1).padStart(2,'0')).length);
   const monthlyTrend=chart({w:Math.max(440,box.clientWidth-85),cats:ML,minSlot:58,series:[{name:'신규 요청',vals:regM,color:'#829db5'},{name:'완료',vals:monthlyDone,color:'#247c83'}]});
   const teamCompletion=chart({w:Math.max(440,box.clientWidth-85),h:260,cats:teamRows.map(r=>r.team),rotate:true,minSlot:64,series:[{name:'완료',vals:teamRows.map(r=>r.done),color:'#247c83'},{name:'미완료',vals:teamRows.map(r=>r.open+r.over),color:'#c69a65'}]});
   // Approved V2: three fixed source categories, proportional horizontal bars.
