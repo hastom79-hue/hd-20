@@ -158,3 +158,40 @@ html body #hd20Subnav>button:focus-visible{outline:2px solid #2879ef!important;o
  html body #hd20Subnav>button,
  html body .hd20Subnav>button{flex:0 0 auto!important;min-height:40px!important;padding:8px 13px!important;font-size:12px!important}
 }
+
+
+/* 2026-10-15: execution overview - move Audit lifecycle and Action Summary above the team chart.
+   Preserve the existing donut, three-item legend, lifecycle and action controls. */
+html body.hd20DashboardExecutionActive .mainGrid{
+  display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+  gap:12px!important;align-items:start!important;
+}
+html body.hd20DashboardExecutionActive .mainGrid>.sideStack{
+  order:-1!important;display:grid!important;
+  grid-template-columns:minmax(0,1.35fr) minmax(280px,.65fr)!important;
+  gap:12px!important;width:100%!important;min-width:0!important;
+}
+html body.hd20DashboardExecutionActive .mainGrid>.card{
+  order:1!important;grid-column:1/-1!important;width:100%!important;min-width:0!important;
+}
+html body.hd20DashboardExecutionActive .mainGrid>.sideStack>.card{
+  min-width:0!important;height:100%!important;
+}
+html body.hd20DashboardExecutionActive .mainGrid .donutWrap{
+  display:grid!important;grid-template-columns:150px minmax(0,1fr)!important;
+  gap:20px!important;align-items:center!important;
+}
+html body.hd20DashboardExecutionActive .mainGrid .donutWrap .dlist{
+  display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:12px!important;align-items:center!important;
+}
+html body.hd20DashboardExecutionActive .mainGrid .donutWrap .drow{
+  min-width:0!important;align-items:flex-start!important;
+}
+@media(max-width:1050px){
+ html body.hd20DashboardExecutionActive .mainGrid>.sideStack{grid-template-columns:1fr!important}
+}
+@media(max-width:760px){
+ html body.hd20DashboardExecutionActive .mainGrid .donutWrap{grid-template-columns:140px minmax(0,1fr)!important;gap:10px!important}
+ html body.hd20DashboardExecutionActive .mainGrid .donutWrap .dlist{grid-template-columns:1fr!important;gap:7px!important}
+}
