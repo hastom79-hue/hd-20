@@ -232,6 +232,8 @@ function render(box){
     d:['조치 지연 근거 데이터 ('+(S.month?+S.month+'월':'연간누적')+')',rowsM.filter(c=>delayDays(c,D.today)!==null),evDelayCols,evDelayMapR],
     f:['즉시조치 대상 전체 보기 ('+(S.month?+S.month+'월':'연간누적')+')',actionAll,evCols,evMapR],
   };
+  const downloadEvidence=(cols,rows,file)=>{const csv='\ufeff'+[cols,...rows].map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download=file+'.csv';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)};
+  box.querySelectorAll('[data-evk]').forEach(b=>{const dl=document.createElement('button');dl.type='button';dl.className='ibEv';dl.textContent='엑셀 추출';dl.style.marginLeft='6px';dl.addEventListener('click',()=>{const key=b.dataset.evk;const [title,rows,columns,mapR]=EV[key];downloadEvidence(columns,rows.map(mapR),'5S_개선요청_차트_'+key);});b.insertAdjacentElement('afterend',dl)});
   box.querySelectorAll('[data-evk]').forEach(b=>{b.onclick=()=>{const [t,rows,cols,mapR]=EV[b.dataset.evk];openRows({title:t,cols,rows:rows.map(mapR),file:'5S_개선요청_근거_'+b.dataset.evk})}});
   box.querySelectorAll('[data-f]').forEach(el=>el.onchange=()=>{S[el.dataset.f]=el.value;render(box)});
   box.querySelector('[data-rq="reset"]').onclick=()=>{Object.assign(S,{year:null,month:'',source:'',team:'',status:'',roll:'',selTeam:''});render(box)};box.querySelector('[data-rq="go"]').onclick=()=>render(box);box.querySelector('[data-rq="print"]').onclick=()=>window.print();
