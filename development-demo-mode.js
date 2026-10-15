@@ -24,6 +24,8 @@ window.HD20_DEMO_VISIBLE_IN_NORMAL_MODE=true;
 /* A stale session reload marker must not prevent a fresh demo after storage reset. */
 if(!parse(K.a).some(isDemo))sessionStorage.removeItem('hd20DemoSeedReloaded');
 function boot(){
+ /* CI load fixtures must remain untouched for contract and capacity checks. */
+ if(Object.values(K).some(k=>parse(k).some(r=>r?.source==='ci-load-fixture')))return;
  const master=window.HD20ProductionTeamMaster,teams=master?.teamNames?.()||[];
  if(!teams.length){setTimeout(boot,80);return}
  const groupOf=team=>master?.groupOf?.(team)||'';
