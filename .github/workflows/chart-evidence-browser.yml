@@ -38,7 +38,7 @@ jobs:
                 const evidence=[...(box?.querySelectorAll('[data-evk]')||[])];
                 return {exists:!!box,buttons:evidence.length,exportButtons:[...(box?.querySelectorAll('button')||[])].filter(b=>b.textContent.trim()==='엑셀 추출').length};
               },id);
-              if(result[name].buttons<4||result[name].exportButtons!==result[name].buttons)throw Error(name+' evidence controls mismatch '+JSON.stringify(result[name]));
+              if(!result[name].exists||result[name].buttons<4||result[name].exportButtons!==result[name].buttons)throw Error(name+' evidence controls mismatch '+JSON.stringify(result[name]));
               const button=page.locator('#'+id+' [data-evk]').first();
               await button.click({force:true});
               await page.waitForTimeout(250);
@@ -50,6 +50,9 @@ jobs:
               await page.locator('#'+id+' button').filter({hasText:'엑셀 추출'}).first().click({force:true});
               const file=await download;
               result[name].download=file.suggestedFilename();
+              const fs=require('fs');const filePath=await file.path();const raw=fs.readFileSync(filePath,'utf8');
+              result[name].csvBytes=Buffer.byteLength(raw);result[name].csvRows=raw.trim().split(/\r?\n/).length;
+              if(!raw.startsWith('\uFEFF')||result[name].csvRows<1)throw Error(name+' invalid CSV payload');
               if(!result[name].download.endsWith('.csv'))throw Error(name+' non-CSV download');
             }
             console.log('EVIDENCE_RESULT',JSON.stringify({result,errors}));
