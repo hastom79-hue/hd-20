@@ -161,5 +161,5 @@ function refresh(){clearTimeout(refreshTimer);refreshTimer=setTimeout(()=>{if(wi
 function openStable(){const sig=signature(),el=document.getElementById(ID);if(el&&el.dataset.renderSig===sig){el.classList.add('on');el.hidden=false;lastRenderSig=sig;return true}const ok=show(),node=document.getElementById(ID);if(node)node.dataset.renderSig=sig;lastRenderSig=sig;return ok}
 window.HD20_MATURITY_MAP_TAB={show:openStable,hide,open:openStable,close,render,data,teamStats,openCase};
 window.addEventListener('hd20-open-maturity-map-tab',openStable);window.addEventListener('hd20-close-maturity-map-tab',hide);['hd20-kpi-source-updated','hd20-gmes-5s-imported','hd20-gmes-5s-judged'].forEach(e=>window.addEventListener(e,refresh));document.addEventListener('keydown',e=>{if(e.key==='Escape')$('.mmtDetail.on')?.classList.remove('on')});
-function boot(){css();const el=ensure();el.hidden=true}document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot,{once:true}):boot();
+function boot(){css();const el=ensure();if(!el.isConnected){console.warn('HD20 maturity map mount pending');return}try{render()}catch(error){console.error('HD20 maturity map initial render failed',error)}el.hidden=true}document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot,{once:true}):boot();
 })();
