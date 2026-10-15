@@ -229,7 +229,7 @@ function render(box){
     a:['요청출처별 근거 데이터 ('+(S.month?+S.month+'월':'연간누적')+')',rowsM,evCols,evMapR],
     b:['월별 근거 데이터 ('+S.year+'년)',rowsY,evCols,evMapR],
     c:['조치대응부서 근거 데이터 ('+(S.month?+S.month+'월':'연간누적')+')',rowsM,evCols,evMapR],
-    d:['조치 지연 근거 데이터 ('+(S.month?+S.month+'월':'연간누적')+')',rowsM.filter(c=>delayDays(c,D.today)!==null),evDelayCols,evDelayMapR],
+    d:['현재 기한초과 근거 데이터 ('+(S.month?+S.month+'월':'연간누적')+')',rowsM.filter(c=>teamsAll.includes(c.team)&&isOverdue(c,D.today)),evDelayCols,evDelayMapR],
     f:['즉시조치 대상 전체 보기 ('+(S.month?+S.month+'월':'연간누적')+')',actionAll,evCols,evMapR],
   };
   const downloadEvidence=(cols,rows,file)=>{const csv='\ufeff'+[cols,...rows].map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download=file+'.csv';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)};
