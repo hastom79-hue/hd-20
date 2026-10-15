@@ -74,6 +74,23 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
 #${ID} .rqCaveat{background:#fffaf0;border-color:#f0e7d1;color:#786b51;font-size:11px}
 @media(max-width:700px){#${ID}{padding:12px;border-radius:9px}#${ID} .ibTitle{align-items:flex-start}#${ID} h2{font-size:17px}#${ID} .ibBar{padding:10px;gap:8px}#${ID} .ibBar label{flex:1 1 135px;justify-content:space-between}#${ID} .ibBar select{max-width:65%}#${ID} .ibBar .sp{display:none}#${ID} .ibBar button{flex:1 1 auto}#${ID} .ibBody{padding:8px}#${ID} .ibHead{padding:8px 10px}}
 
+
+#${ID} .rqV2Kpis{grid-template-columns:repeat(6,minmax(0,1fr));gap:9px}
+#${ID} .rqKpiHint{display:block;margin-top:5px;color:#7b8d9b;font-size:10px;line-height:1.4}
+#${ID} .rqStatus{display:grid;gap:16px;padding:10px 6px}
+#${ID} .rqStatus>div{display:grid;grid-template-columns:1fr auto;gap:7px;font-size:12px;color:#4a6072}
+#${ID} .rqStatus strong{font-variant-numeric:tabular-nums;color:#233d51}
+#${ID} .rqTrack{grid-column:1/-1;background:#eef2f5;height:9px;border-radius:5px;overflow:hidden}
+#${ID} .rqTrack i{display:block;height:100%;border-radius:5px}
+#${ID} .rqBands{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:12px}
+#${ID} .rqBands>div{padding:13px;background:#f8fafc;border:1px solid #e7edf1;border-radius:8px;text-align:center}
+#${ID} .rqBands small{display:block;color:#718494;font-size:11px}
+#${ID} .rqBands b{display:block;margin-top:5px;color:#a95045;font-size:20px}
+#${ID} .rqEmpty{padding:24px;text-align:center;color:#8092a0}
+#${ID} .ibHead{flex-wrap:wrap}
+#${ID} .ibHead .ibEv{margin-left:auto}
+@media(max-width:1100px){#${ID} .rqV2Kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:600px){#${ID} .rqV2Kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .app.awFocused #${ID}{display:none!important}
 @media print{#${ID} .ibBar{display:none}}
 @media(max-width:1100px){#${ID} .r1,#${ID} .rqManageRow{grid-template-columns:1fr}}`;document.head.appendChild(s)}
@@ -145,19 +162,36 @@ function render(box){
     ${detailRows.length?detailRows.map((c,i)=>`<tr><td>${i+1}</td><td>${esc(c.id)}</td><td>${esc(c.team)}</td><td>${esc(c.workplace||'—')}</td><td>${isOverdue(c,D.today)?'<b style="color:#c0392b">기한초과</b>':esc(c.status)}</td><td>${delayDays(c,D.today)??'—'}</td><td>${esc(c.due||'—')}</td></tr>`).join(''):`<tr><td colspan="7" style="text-align:center;color:#8a99a6;padding:16px">조건에 해당하는 개선요청이 없습니다.</td></tr>`}
     </tbody></table>`;
   const opt=(a,cur,all='ALL')=>`<option value="">${all}</option>`+a.map(x=>`<option value="${esc(x)}"${x===cur?' selected':''}>${esc(x)}</option>`).join('');
-  box.innerHTML=`<div class="ibTitle"><h2>5S 개선요청 종합 대시보드</h2></div><p class="ibNote">개선요청 발생 → 처리 → 미조치·기한초과 → 즉시조치 대상을 한 화면에서 관리합니다.</p>
-<div class="rqKpis"><div class="rqKpi"><small>개선요청</small><b>${sum.total}건</b></div><div class="rqKpi"><small>개선완료</small><b>${sum.done}건 · ${pctS(sum.done)}%</b></div><div class="rqKpi"><small>미완료</small><b>${sum.open+sum.over}건 · ${pctS(sum.open+sum.over)}%</b></div><div class="rqKpi risk"><small>기한초과</small><b>${sum.over}건 · ${pctS(sum.over)}%</b></div><div class="rqKpi risk"><small>평균 초과일</small><b>${delayOverallAvg}일</b></div></div>
-<div class="ibBar"><label>공장 <select disabled><option>[울산] 울산캠퍼스</option></select></label><label>년 <select data-f="year">${D.years.map(y=>`<option${y===S.year?' selected':''}>${y}</option>`).join('')}</select></label>
-<label>월 <select data-f="month"><option value="">전체</option>${Array.from({length:12},(_,i)=>{const v=String(i+1).padStart(2,'0');return `<option value="${v}"${v===S.month?' selected':''}>${i+1}월</option>`}).join('')}</select></label><button type="button" data-rq="go">조회</button>
-<label>요청출처 <select data-f="source">${opt(SOURCES,S.source)}</select></label><label>조치대응부서 <select data-f="team">${opt(D.teams,S.team)}</select></label>
-<label>처리상태 <select data-f="status"><option value="">ALL</option><option>조치대기</option><option>진행중</option><option>완료</option><option>기한초과</option></select></label>
-<label>재발 <select data-f="roll"><option value="">ALL</option><option value="Y">재발 있음</option><option value="N">재발 없음</option></select></label>
-<span class="sp"></span><button type="button" class="alt" data-rq="print">프린트</button><button type="button" class="alt" data-rq="csv">엑셀다운로드(상세내용)</button></div>
-<div class="ibRow r1"><div class="ibPanel"><div class="ibHead">개선요청 발생현황<button type="button" class="ibEv" data-evk="a">근거 데이터</button><em>${S.month?+S.month+'월':'연간누적'} · 요청출처별 · 미완료율 함께 표시</em></div><div class="ibBody">${A}${leg([['요청','#5c6b7a'],['미완료','#e0b03c']])}</div></div>
-<div class="ibPanel"><div class="ibHead">월별 요청·미완료 추이<button type="button" class="ibEv" data-evk="b">근거 데이터</button><em>누적완료율 ${openRate}% · ${S.year}년 완료율 ${yearRate}%</em></div><div class="ibBody">${B}${leg([['요청','#8fa3b3'],['미완료','#e0b03c']])}</div></div></div>
-<div class="ibRow rqManageRow"><div class="ibPanel"><div class="ibHead">팀별 미조치 현황<button type="button" class="ibEv" data-evk="c">근거 데이터</button><em>미조치 잔량이 많은 팀 순 · 표기=미조치 총량·기한초과</em></div><div class="ibBody">${teamChart}${leg([['미조치 잔량','#6f8797']])}<details class="rqTeamDetail"><summary>팀별 수치 상세보기</summary><div class="rqScroll" style="margin-top:10px">${teamGrid}</div></details></div></div><div class="ibPanel"><div class="ibHead">기한초과 집중관리<button type="button" class="ibEv" data-evk="d">근거 데이터</button><em>기한초과 ${delayRows.reduce((a,r)=>a+r.n,0)}건 · 평균 초과 ${delayOverallAvg}일 · 막대=건수 / 표기=평균·최대 초과일</em></div><div class="ibBody">${delayChart||'<p style="padding:20px;color:#8a99a6;text-align:center">현재 기한초과 대상이 없습니다.</p>'}${delayChart?leg([['기한초과 건수','#c0392b']]):''}</div></div></div>
-<div class="ibRow"><div class="ibPanel"><div class="ibHead">즉시조치 대상<button type="button" class="ibEv" data-evk="f">전체 보기</button><em>기한초과·미완료 우선 · 미리보기 ${detailRows.length}건 / 미완료 ${actionAll.length}건</em></div><div class="ibBody"><div class="rqScroll">${detail}</div></div></div></div>
-<p class="rqCaveat">※ 요청출처는 5S모듈·생산혁신팀 HDPS파트·리더십 3종입니다. 현재 원천에 출처 필드가 없어 등록자와 Audit 연계 여부로 일부 출처를 추정합니다. 팀별 수치 Grid는 메인 판단 흐름을 방해하지 않도록 상세보기로 접었습니다.</p><p class="ibFoot">※ 관리순서: 요청 발생 확인 → 미완료 팀 식별 → 기한초과 집중관리 → 실제 조치 대상 확인. 상세 전체보기와 엑셀다운로드는 현재 조회조건을 그대로 사용합니다.</p>`
+
+  // V2: Monthly completions use actual completion dates; backlog carries open cases from earlier periods.
+  const monthlyDone=Array.from({length:12},(_,i)=>D.cases.filter(x=>teamsAll.includes(x.team)&&(!S.source||sourceOf(x)===S.source)&&(!S.team||x.team===S.team)&&isDone(x)&&String(x.doneDate||'').slice(0,7)===S.year+'-'+String(i+1).padStart(2,'0')).length);
+  const monthlyTrend=chart({w:Math.max(440,box.clientWidth-85),cats:ML,minSlot:58,series:[{name:'신규 요청',vals:regM,color:'#829db5'},{name:'완료',vals:monthlyDone,color:'#247c83'}]});
+  const teamCompletion=chart({w:Math.max(440,box.clientWidth-85),h:260,cats:teamRows.map(r=>r.team),rotate:true,minSlot:64,series:[{name:'완료',vals:teamRows.map(r=>r.done),color:'#247c83'},{name:'미완료',vals:teamRows.map(r=>r.open+r.over),color:'#c69a65'}]});
+  const overCases=rowsM.filter(c=>isOverdue(c,D.today));
+  const delayBands=[overCases.filter(c=>delayDays(c,D.today)<=7).length,overCases.filter(c=>delayDays(c,D.today)>=8&&delayDays(c,D.today)<=14).length,overCases.filter(c=>delayDays(c,D.today)>=15).length];
+  const kpi=(label,value,detail,risk=false)=>'<div class="rqKpi'+(risk?' risk':'')+'"><small>'+label+'</small><b>'+value+'</b><span class="rqKpiHint">'+detail+'</span></div>';
+  const section=(title,meta,content,key)=>'<section class="ibPanel"><div class="ibHead"><span>'+title+'</span><em>'+meta+'</em>'+(key?'<button type="button" class="ibEv" data-evk="'+key+'">근거 데이터</button>':'')+'</div><div class="ibBody">'+content+'</div></section>';
+  const filters='<div class="ibBar"><label>연도 <select data-f="year">'+D.years.map(y=>'<option'+(y===S.year?' selected':'')+'>'+y+'</option>').join('')+'</select></label><label>월 <select data-f="month"><option value="">전체</option>'+Array.from({length:12},(_,i)=>{const v=String(i+1).padStart(2,'0');return '<option value="'+v+'"'+(v===S.month?' selected':'')+'>'+(i+1)+'월</option>'}).join('')+'</select></label><label>요청출처 <select data-f="source">'+opt(SOURCES,S.source)+'</select></label><label>조치대응팀 <select data-f="team">'+opt(D.teams,S.team)+'</select></label><label>진행상태 <select data-f="status">'+opt(['조치대기','진행중','완료','기한초과'],S.status)+'</select></label><label>재발 <select data-f="roll"><option value="">전체</option><option value="Y"'+(S.roll==='Y'?' selected':'')+'>있음</option><option value="N"'+(S.roll==='N'?' selected':'')+'>없음</option></select></label><button type="button" data-rq="go">조회</button><button type="button" class="alt" data-rq="reset">초기화</button><span class="sp"></span><button type="button" class="alt" data-rq="print">인쇄</button><button type="button" class="alt" data-rq="csv">엑셀 다운로드</button></div>';
+  box.innerHTML='<div class="ibTitle"><h2>개선요청 종합현황</h2></div><p class="ibNote">요청 발생 · 조치 이행 · 지연 위험 · 팀별 대응력</p>'
+    +filters
+    +'<div class="rqKpis rqV2Kpis">'
+    +kpi('총 개선요청',sum.total+'건','조회조건 전체')
+    +kpi('완료',sum.done+'건','조치 완료')
+    +kpi('미완료',(sum.open+sum.over)+'건','기한내 미완료 포함')
+    +kpi('완료율',pctS(sum.done)+'%','완료 / 전체')
+    +kpi('기한초과',sum.over+'건','미완료 중 기한경과',true)
+    +kpi('평균 지연일',delayOverallAvg+'일','현재 기한초과 건 기준',true)
+    +'</div>'
+    +'<div class="ibRow">'+section('01. 월별 요청·완료 추이','완료일 기준 · 신규 요청과 별도 집계',monthlyTrend+leg([['신규 요청','#829db5'],['완료','#247c83']]),'b')+'</div>'
+    +'<div class="ibRow rqManageRow">'
+    +section('02. 요청출처별 현황','요청 / 미완료',A+leg([['요청','#5c6b7a'],['미완료','#e0b03c']]),'a')
+    +section('03. 조치 진행상태','완료 · 기한내 미완료 · 기한초과','<div class="rqStatus">'+[['완료',sum.done,'#247c83'],['기한내 미완료',sum.open,'#c69a65'],['기한초과',sum.over,'#b85e52']].map(x=>'<div><span>'+x[0]+'</span><strong>'+x[1]+'건</strong><div class="rqTrack"><i style="width:'+(sum.total?x[1]/sum.total*100:0)+'%;background:'+x[2]+'"></i></div></div>').join('')+'</div>','c')
+    +'</div>'
+    +'<div class="ibRow">'+section('04. 조치대응팀별 이행성과','완료 / 미완료 · 팀별 건수',teamCompletion+leg([['완료','#247c83'],['미완료','#c69a65']])+'<details class="rqTeamDetail"><summary>팀별 상세 실적 펼치기</summary><div class="rqScroll">'+teamGrid+'</div></details>','c')+'</div>'
+    +'<div class="ibRow">'+section('05. 기한초과 집중관리','현재 미완료 기준 · 지연기간별 분포','<div class="rqBands">'+['1~7일','8~14일','15일 이상'].map((x,i)=>'<div><small>'+x+'</small><b>'+delayBands[i]+'건</b></div>').join('')+'</div>'+(delayChart||'<p class="rqEmpty">현재 기한초과 대상이 없습니다.</p>'),'d')+'</div>'
+    +'<div class="ibRow">'+section('06. 개선요청 상세 관리','기한초과·미완료 우선 · 미리보기 '+detailRows.length+' / '+actionAll.length,'<div class="rqScroll">'+detail+'</div>','f')+'</div>'
+    +'<p class="rqCaveat">※ 요청출처는 5S모듈·생산혁신팀 HDPS파트·리더십 3종입니다. 원천에 출처 필드가 없는 경우 일부 출처는 등록자 및 Audit 연계 정보로 추정됩니다. 완료일이 없는 완료 건은 월별 완료 추이에서 제외되며 총 완료 건수에는 포함됩니다.</p>';
+
   const evCols=['요청번호','요청출처','조치대응부서','작업장','진행현황','요청일','완료예정일','완료일'],
     evMapR=c=>[esc(c.id),sourceOf(c),c.team,c.workplace||'—',c.status,c.date,c.due||'—',c.doneDate||'—'],
     evDelayCols=[...evCols,'지연일수'],evDelayMapR=c=>[...evMapR(c),delayDays(c,D.today)??''];
@@ -170,7 +204,7 @@ function render(box){
   };
   box.querySelectorAll('[data-evk]').forEach(b=>{b.onclick=()=>{const [t,rows,cols,mapR]=EV[b.dataset.evk];openRows({title:t,cols,rows:rows.map(mapR),file:'5S_개선요청_근거_'+b.dataset.evk})}});
   box.querySelectorAll('[data-f]').forEach(el=>el.onchange=()=>{S[el.dataset.f]=el.value;render(box)});
-  box.querySelector('[data-rq="go"]').onclick=()=>render(box);box.querySelector('[data-rq="print"]').onclick=()=>window.print();
+  box.querySelector('[data-rq="reset"]').onclick=()=>{Object.assign(S,{year:null,month:'',source:'',team:'',status:'',roll:'',selTeam:''});render(box)};box.querySelector('[data-rq="go"]').onclick=()=>render(box);box.querySelector('[data-rq="print"]').onclick=()=>window.print();
   box.querySelector('[data-rq="csv"]').onclick=()=>{
     const out=[['5S 개선요청 종합 대시보드',S.year+'년',S.month?S.month+'월':'연간누적'],[],['요청번호','요청출처','조치대응부서','작업장','진행현황','요청일','완료예정일','완료일']];
     rowsM.forEach(c=>out.push([c.id,sourceOf(c),c.team,c.workplace||'',isOverdue(c,D.today)?'기한초과':c.status,c.date||'',c.due||'',c.doneDate||'']));
