@@ -91,6 +91,19 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
 #${ID} .ibHead .ibEv{margin-left:auto}
 @media(max-width:1100px){#${ID} .rqV2Kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:600px){#${ID} .rqV2Kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+#${ID} .rqBars{display:grid;gap:16px;padding:10px 5px}
+#${ID} .rqBarItem{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;align-items:center;font-size:12px;color:#465c6d}
+#${ID} .rqBarItem strong{font-variant-numeric:tabular-nums;font-weight:800;color:#28465b}
+#${ID} .rqBarItem .rqTrack{grid-column:1/-1;height:11px}
+#${ID} .rqBarItem small{font-size:10px;color:#8495a3;font-weight:500}
+#${ID} .rqDonutWrap{display:grid;grid-template-columns:minmax(130px,180px) minmax(0,1fr);gap:18px;align-items:center;padding:10px}
+#${ID} .rqDonutWrap svg{width:100%;max-width:180px}
+#${ID} .rqDonutLegend{display:grid;gap:13px}
+#${ID} .rqDonutLegend>div{display:grid;grid-template-columns:10px 1fr auto;align-items:center;gap:8px;font-size:11px;color:#526779}
+#${ID} .rqDonutLegend i{height:10px;border-radius:2px}
+#${ID} .rqDonutLegend b{color:#244258;font-variant-numeric:tabular-nums}
+@media(max-width:550px){#${ID} .rqDonutWrap{grid-template-columns:1fr;justify-items:center}#${ID} .rqDonutLegend{width:100%}}
 .app.awFocused #${ID}{display:none!important}
 @media print{#${ID} .ibBar{display:none}}
 @media(max-width:1100px){#${ID} .r1,#${ID} .rqManageRow{grid-template-columns:1fr}}`;document.head.appendChild(s)}
@@ -167,6 +180,13 @@ function render(box){
   const monthlyDone=Array.from({length:12},(_,i)=>D.cases.filter(x=>teamsAll.includes(x.team)&&(!S.source||sourceOf(x)===S.source)&&(!S.team||x.team===S.team)&&isDone(x)&&String(x.doneDate||'').slice(0,7)===S.year+'-'+String(i+1).padStart(2,'0')).length);
   const monthlyTrend=chart({w:Math.max(440,box.clientWidth-85),cats:ML,minSlot:58,series:[{name:'신규 요청',vals:regM,color:'#829db5'},{name:'완료',vals:monthlyDone,color:'#247c83'}]});
   const teamCompletion=chart({w:Math.max(440,box.clientWidth-85),h:260,cats:teamRows.map(r=>r.team),rotate:true,minSlot:64,series:[{name:'완료',vals:teamRows.map(r=>r.done),color:'#247c83'},{name:'미완료',vals:teamRows.map(r=>r.open+r.over),color:'#c69a65'}]});
+  // Approved V2: three fixed source categories, proportional horizontal bars.
+  const sourceBars='<div class="rqBars">'+SOURCES.map(s=>{const n=rowsM.filter(c=>sourceOf(c)===s).length;return '<div class="rqBarItem"><span>'+esc(s)+'</span><strong>'+n+'건</strong><div class="rqTrack"><i style="width:'+(sum.total?100*n/sum.total:0)+'%;background:#668da7"></i></div></div>'}).join('')+'</div>';
+  // Approved V2: donut summarizes the same mutually exclusive status groups as KPI cards.
+  const statusParts=[{label:'완료',n:sum.done,color:'#247c83'},{label:'진행 중·미착수',n:sum.open,color:'#c69a65'},{label:'기한초과',n:sum.over,color:'#b85e52'}];
+  let ringOffset=0;const ring=statusParts.map(x=>{const len=sum.total?x.n/sum.total*100:0;const s='<circle cx="75" cy="75" r="54" fill="none" stroke="'+x.color+'" stroke-width="19" pathLength="100" stroke-dasharray="'+len+' '+(100-len)+'" stroke-dashoffset="'+(-ringOffset)+'" transform="rotate(-90 75 75)"/>';ringOffset+=len;return s}).join('');
+  const statusDonut='<div class="rqDonutWrap"><svg viewBox="0 0 150 150" role="img" aria-label="조치 진행상태 도넛 차트"><circle cx="75" cy="75" r="54" fill="none" stroke="#edf1f4" stroke-width="19"/>'+ring+'<text x="75" y="70" text-anchor="middle" font-size="11" fill="#64788a">총 요청</text><text x="75" y="91" text-anchor="middle" font-size="22" font-weight="800" fill="#173a57">'+sum.total+'</text></svg><div class="rqDonutLegend">'+statusParts.map(x=>'<div><i style="background:'+x.color+'"></i><span>'+x.label+'</span><b>'+x.n+'건</b></div>').join('')+'</div></div>';
+  const teamRateBars='<div class="rqBars">'+teamRows.map(r=>{const rate=r.total?Math.round(r.done/r.total*1000)/10:0;return '<div class="rqBarItem rqTeamRate"><span>'+esc(r.team)+'</span><strong>'+rate+'% <small>('+r.done+'/'+r.total+')</small></strong><div class="rqTrack"><i style="width:'+rate+'%;background:'+(rate<50?'#b85e52':'#247c83')+'"></i></div></div>'}).join('')+'</div>';
   const overCases=rowsM.filter(c=>isOverdue(c,D.today));
   const delayBands=[overCases.filter(c=>delayDays(c,D.today)<=7).length,overCases.filter(c=>delayDays(c,D.today)>=8&&delayDays(c,D.today)<=14).length,overCases.filter(c=>delayDays(c,D.today)>=15).length];
   const kpi=(label,value,detail,risk=false)=>'<div class="rqKpi'+(risk?' risk':'')+'"><small>'+label+'</small><b>'+value+'</b><span class="rqKpiHint">'+detail+'</span></div>';
@@ -184,10 +204,10 @@ function render(box){
     +'</div>'
     +'<div class="ibRow">'+section('01. 월별 요청·완료 추이','완료일 기준 · 신규 요청과 별도 집계',monthlyTrend+leg([['신규 요청','#829db5'],['완료','#247c83']]),'b')+'</div>'
     +'<div class="ibRow rqManageRow">'
-    +section('02. 요청출처별 현황','요청 / 미완료',A+leg([['요청','#5c6b7a'],['미완료','#e0b03c']]),'a')
-    +section('03. 조치 진행상태','완료 · 기한내 미완료 · 기한초과','<div class="rqStatus">'+[['완료',sum.done,'#247c83'],['기한내 미완료',sum.open,'#c69a65'],['기한초과',sum.over,'#b85e52']].map(x=>'<div><span>'+x[0]+'</span><strong>'+x[1]+'건</strong><div class="rqTrack"><i style="width:'+(sum.total?x[1]/sum.total*100:0)+'%;background:'+x[2]+'"></i></div></div>').join('')+'</div>','c')
+    +section('02. 요청출처별 현황','요청 / 미완료',sourceBars,'a')
+    +section('03. 조치 진행상태','완료 · 기한내 미완료 · 기한초과',statusDonut,'c')
     +'</div>'
-    +'<div class="ibRow">'+section('04. 조치대응팀별 이행성과','완료 / 미완료 · 팀별 건수',teamCompletion+leg([['완료','#247c83'],['미완료','#c69a65']])+'<details class="rqTeamDetail"><summary>팀별 상세 실적 펼치기</summary><div class="rqScroll">'+teamGrid+'</div></details>','c')+'</div>'
+    +'<div class="ibRow">'+section('04. 조치대응팀별 이행성과','완료 / 미완료 · 팀별 건수',teamRateBars+'<details class="rqTeamDetail"><summary>팀별 상세 실적 펼치기</summary><div class="rqScroll">'+teamGrid+'</div></details>','c')+'</div>'
     +'<div class="ibRow">'+section('05. 기한초과 집중관리','현재 미완료 기준 · 지연기간별 분포','<div class="rqBands">'+['1~7일','8~14일','15일 이상'].map((x,i)=>'<div><small>'+x+'</small><b>'+delayBands[i]+'건</b></div>').join('')+'</div>'+(delayChart||'<p class="rqEmpty">현재 기한초과 대상이 없습니다.</p>'),'d')+'</div>'
     +'<div class="ibRow">'+section('06. 개선요청 상세 관리','기한초과·미완료 우선 · 미리보기 '+detailRows.length+' / '+actionAll.length,'<div class="rqScroll">'+detail+'</div>','f')+'</div>'
     +'<p class="rqCaveat">※ 요청출처는 5S모듈·생산혁신팀 HDPS파트·리더십 3종입니다. 원천에 출처 필드가 없는 경우 일부 출처는 등록자 및 Audit 연계 정보로 추정됩니다. 완료일이 없는 완료 건은 월별 완료 추이에서 제외되며 총 완료 건수에는 포함됩니다.</p>';
