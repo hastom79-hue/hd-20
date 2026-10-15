@@ -36,7 +36,7 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
 .app.awFocused #${ID}{display:none!important}
 @media print{#${ID} .ibBar,#${ID} .ibEv{display:none!important}#${ID} .ibBody{overflow:visible!important}#${ID} svg{width:100%!important;height:auto!important;max-width:100%}#${ID} .ibPanel{break-inside:avoid;page-break-inside:avoid}#${ID} .ibRow{grid-template-columns:1fr!important}}`;document.head.appendChild(s)}
 function data(){
-  const K=window.HD20KPIData,snap=K?.snapshot?.()||{},rows=snap.rows||[],M=window.HD20ProductionTeamMaster,teams=M?.teamNames?.()||[],HC=window.HD20_HEADCOUNT_MASTER||[];
+  const K=window.HD20KPIData,snap=K?.snapshot?.()||{},rows=snap.rows||[],M=window.HD20ProductionTeamMaster,teams=M?.teamNames?.()||[],HC=(()=>{let stored=[];try{const v=JSON.parse(localStorage.getItem('hd20TeamHeadcountMasterV1')||'[]');if(Array.isArray(v))stored=v}catch{}const canonical=window.HD20_HEADCOUNT_MASTER||[];const byTeam=new Map(stored.map(x=>[x.team,x]));canonical.forEach(x=>{if(Number(x.headcount)>0)byTeam.set(x.team,x)});return [...byTeam.values()]})();
   const hcOf=t=>{const v=Number(HC.find(h=>h.team===t)?.headcount);return Number.isFinite(v)&&v>0?v:0};
   const groupOf=t=>M?.groupOf?.(t)||'';
   const years=[...new Set(rows.map(r=>String(r.date||r.regDate||'').slice(0,4)).filter(Boolean))].sort();
