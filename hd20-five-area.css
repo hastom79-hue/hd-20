@@ -207,3 +207,45 @@ html body .app .mainGrid>.sideStack .donutWrap{display:grid!important;grid-templ
 html body .app .mainGrid>.sideStack .donutWrap .dlist{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:12px!important}
 @media(max-width:1050px){html body .app .mainGrid>.sideStack{grid-template-columns:1fr!important}}
 @media(max-width:680px){html body .app .mainGrid>.sideStack .donutWrap .dlist{grid-template-columns:1fr!important}}
+
+
+/* Screenshot correction: remove tall empty Action Summary column.
+   Audit uses full row; Action Summary becomes a compact horizontal strip beneath it. */
+html body .app .mainGrid>.sideStack,
+html body.hd20DashboardExecutionActive .mainGrid>.sideStack{
+  display:flex!important;flex-direction:column!important;align-items:stretch!important;
+  gap:10px!important;width:100%!important;
+}
+html body .app .mainGrid>.sideStack>.card,
+html body.hd20DashboardExecutionActive .mainGrid>.sideStack>.card{
+  height:auto!important;min-height:0!important;align-self:stretch!important;
+  display:block!important;flex:0 0 auto!important;
+}
+html body .app .mainGrid>.sideStack>.card:nth-child(2),
+html body.hd20DashboardExecutionActive .mainGrid>.sideStack>.card:nth-child(2){
+  display:flex!important;align-items:center!important;gap:20px!important;
+  padding:10px 16px!important;
+}
+html body .app .mainGrid>.sideStack>.card:nth-child(2)>.cardHead,
+html body.hd20DashboardExecutionActive .mainGrid>.sideStack>.card:nth-child(2)>.cardHead{
+  flex:0 0 auto!important;padding:0!important;border:0!important;
+}
+html body .app .mainGrid>.sideStack>.card:nth-child(2) .cardBody,
+html body.hd20DashboardExecutionActive .mainGrid>.sideStack>.card:nth-child(2) .cardBody{
+  flex:1 1 auto!important;padding:0!important;min-width:0!important;
+}
+html body .app .mainGrid>.sideStack>.card:nth-child(2) .actionList,
+html body.hd20DashboardExecutionActive .mainGrid>.sideStack>.card:nth-child(2) .actionList{
+  display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:8px!important;align-items:center!important;
+}
+html body .app .mainGrid>.sideStack>.card:nth-child(2) .actionRow,
+html body.hd20DashboardExecutionActive .mainGrid>.sideStack>.card:nth-child(2) .actionRow{
+  min-width:0!important;padding:9px!important;border-radius:8px!important;
+}
+@media(max-width:1000px){
+ html body .app .mainGrid>.sideStack>.card:nth-child(2),
+ html body.hd20DashboardExecutionActive .mainGrid>.sideStack>.card:nth-child(2){display:block!important}
+ html body .app .mainGrid>.sideStack>.card:nth-child(2) .actionList,
+ html body.hd20DashboardExecutionActive .mainGrid>.sideStack>.card:nth-child(2) .actionList{grid-template-columns:repeat(2,minmax(0,1fr))!important;margin-top:8px!important}
+}
