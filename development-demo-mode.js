@@ -17,12 +17,10 @@ const prodCount=()=>prodRows().length;
 const canonicalProduction=()=>{const rows=prodRows();if(!rows.length)return false;const teams=window.HD20ProductionTeamMaster?.teamNames?.()||[];return rows.some(r=>teams.includes(String(r.team||'').trim())&&(String(r.id||'').trim()||String(r.date||r.createdAt||'').trim()));};
 function hasRecoverableProductionBackup(){try{const b=JSON.parse(localStorage.getItem(BACKUP)||'null');if(!b?.values||typeof b.values!=='object')return false;return Object.values(K).some(k=>parseRaw(b.values[k]).some(isProduction))}catch{return false}}
 /* Only protect identifiable canonical production data. Empty/stale placeholders must not keep the deployed UI at zero forever. */
-if(P.get('demo')!=='1'&&(canonicalProduction()||hasRecoverableProductionBackup())){
-  window.HD20_DEMO_SUPPRESSED_REASON=canonicalProduction()?'production-data-present':'production-backup-present';
-  const explain=()=>{if(document.getElementById('hd20DemoSuppressedNotice'))return;const nav=document.querySelector('.beginnerNav');if(!nav)return;const el=document.createElement('div');el.id='hd20DemoSuppressedNotice';el.setAttribute('role','status');el.style.cssText='padding:7px 12px;background:#fff4df;border-bottom:1px solid #e9ca8c;color:#66440d;font-size:12px;font-weight:700';const counts=Object.fromEntries(Object.entries(K).map(([name,key])=>[name,{total:parse(key).length,production:parse(key).filter(isProduction).length,demo:parse(key).filter(isDemo).length}]));window.HD20_DEMO_SUPPRESSION_COUNTS=counts;el.textContent=(window.HD20_DEMO_SUPPRESSED_REASON==='production-data-present'?'데이터 보호 모드 · 기존 운영데이터 감지':'데이터 보호 모드 · 복구 백업 감지')+` · Activity ${counts.a.total}건(운영 ${counts.a.production}) / Audit ${counts.u.total}건(운영 ${counts.u.production}) / Action ${counts.x.total}건(운영 ${counts.x.production}) · 원본 보존 · 가상데이터 자동생성 중단`;const btn=document.createElement('button');btn.type='button';btn.textContent='가상 검증데이터 보기';btn.style.cssText='margin-left:12px;padding:5px 10px;border:1px solid #b17b26;border-radius:6px;background:white;color:#66440d;font-weight:800;cursor:pointer';btn.addEventListener('click',()=>{const url=new URL(location.href);url.searchParams.set('demo','1');url.searchParams.delete('validation');location.assign(url.href)});el.appendChild(btn);nav.insertAdjacentElement('afterend',el)};
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',explain,{once:true});else explain();
-  return;
-}
+/* User-approved: show the same validation rows in normal and ?demo=1 views.
+   Keep source=demo-seed and never sync synthetic rows to the operational DB.
+   Existing production rows are preserved by preserve() below. */
+window.HD20_DEMO_VISIBLE_IN_NORMAL_MODE=true;
 /* A stale session reload marker must not prevent a fresh demo after storage reset. */
 if(!parse(K.a).some(isDemo))sessionStorage.removeItem('hd20DemoSeedReloaded');
 function boot(){
