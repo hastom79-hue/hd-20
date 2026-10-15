@@ -54,6 +54,7 @@ jobs:
               result[name].csvBytes=Buffer.byteLength(raw);result[name].csvRows=raw.trim().split(/\r?\n/).length;
               if(!raw.startsWith('\uFEFF')||result[name].csvRows<1)throw Error(name+' invalid CSV payload');
               if(!result[name].download.endsWith('.csv'))throw Error(name+' non-CSV download');
+              if(!raw.includes('요청번호')&&name==='request')throw Error('request CSV header missing');
             }
             console.log('EVIDENCE_RESULT',JSON.stringify({result,errors}));
             await browser.close();
