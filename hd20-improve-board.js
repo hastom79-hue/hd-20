@@ -36,7 +36,7 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
 .app.awFocused #${ID}{display:none!important}
 @media print{#${ID} .ibBar,#${ID} .ibEv{display:none!important}#${ID} .ibBody{overflow:visible!important}#${ID} svg{width:100%!important;height:auto!important;max-width:100%}#${ID} .ibPanel{break-inside:avoid;page-break-inside:avoid}#${ID} .ibRow{grid-template-columns:1fr!important}}`;document.head.appendChild(s)}
 function data(){
-  const K=window.HD20KPIData,snap=K?.snapshot?.()||{},rows=snap.rows||[],M=window.HD20ProductionTeamMaster,teams=M?.teamNames?.()||[],HC=(()=>{let stored=[];try{const v=JSON.parse(localStorage.getItem('hd20TeamHeadcountMasterV1')||'[]');if(Array.isArray(v))stored=v}catch{}const canonical=window.HD20_HEADCOUNT_MASTER||[];const byTeam=new Map(stored.map(x=>[x.team,x]));canonical.forEach(x=>{if(Number(x.headcount)>0)byTeam.set(x.team,x)});return [...byTeam.values()]})();
+  const K=window.HD20KPIData,snap=K?.snapshot?.()||{},rows=snap.rows||[],M=window.HD20ProductionTeamMaster,teams=[...new Set([...(M?.teamNames?.()||[]),...rows.map(r=>r.team).filter(Boolean)])],HC=(()=>{let stored=[];try{const v=JSON.parse(localStorage.getItem('hd20TeamHeadcountMasterV1')||'[]');if(Array.isArray(v))stored=v}catch{}const canonical=window.HD20_HEADCOUNT_MASTER||[];const byTeam=new Map(stored.map(x=>[x.team,x]));canonical.forEach(x=>{if(Number(x.headcount)>0)byTeam.set(x.team,x)});return [...byTeam.values()]})();
   const hcOf=t=>{const v=Number(HC.find(h=>h.team===t)?.headcount);return Number.isFinite(v)&&v>0?v:0};
   const groupOf=t=>M?.groupOf?.(t)||'';
   const years=[...new Set(rows.map(r=>String(r.date||r.regDate||'').slice(0,4)).filter(Boolean))].sort();
@@ -145,17 +145,18 @@ function exportCsv({S,tv,A,ML,dVals,per}){
   out.push([],['[팀별]','건수','팀 인원',per?'인당 개선건수':'건수']);tv.forEach(x=>out.push([x.t,x.c,x.h,per?(x.h?(x.c/x.h).toFixed(3):''):x.c]));
   out.push([],[`[단일 팀: ${S.team}] 월별`,'값']);ML.forEach((m,i)=>out.push([m,dVals[i].toFixed(3)]));
   const text='\ufeff'+out.map(r=>r.map(q).join(',')).join('\r\n'),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:'text/csv;charset=utf-8'}));a.download=`5S_자율개선종합_${S.year}${S.month||''}.csv`;document.body.appendChild(a);a.click();a.remove()}
+function safeRender(box){if(!box)return;try{render(box)}catch(error){console.error('HD20 improve board render error',error);box.textContent='5S 자율개선 종합 대시보드 표시 오류: '+String(error?.message||error)}}
 function ensure(){
-  if(!window.HD20KPIData?.snapshot||!window.HD20ProductionTeamMaster)return false;
+  if(!window.HD20KPIData?.snapshot)return false;
   css();let box=document.getElementById(ID);
   if(!box){const anchor=document.getElementById('hd20DashboardPriority')||document.querySelector('.cards');if(!anchor)return false;box=document.createElement('section');box.id=ID;anchor.insertAdjacentElement('afterend',box);
     const T=window.HD20_DASHBOARD_TABS;if(T?.apply)T.apply(T.active?.()||'summary',{scroll:false})}
-  render(box);return true}
+  safeRender(box);return true}
 let tries=0;(function boot(){if(!ensure()&&tries++<80)setTimeout(boot,150)})();
-document.addEventListener('click',e=>{if(e.target.closest?.('#hd20DashboardSectionTabs button[data-dashboard-section="improve"]'))setTimeout(()=>{const b=document.getElementById(ID);if(b)render(b)},80)},true);
-['hd20-kpi-source-updated','hd20-gmes-5s-imported','hd20-gmes-5s-judged'].forEach(ev=>window.addEventListener(ev,()=>setTimeout(()=>{const b=document.getElementById(ID);if(b&&b.offsetParent!==null)render(b)},80)));
-const rerender=()=>{const b=document.getElementById('hd20ImproveBoard');if(b)render(b)};window.addEventListener('beforeprint',()=>{window.__hd20BoardPrint=true;rerender()});window.addEventListener('afterprint',()=>{window.__hd20BoardPrint=false;rerender()});
-let rz;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>{const b=document.getElementById(ID);if(b&&b.offsetParent!==null)render(b)},250)});
+document.addEventListener('click',e=>{if(e.target.closest?.('#hd20DashboardSectionTabs button[data-dashboard-section="improve"]'))setTimeout(()=>{const b=document.getElementById(ID);if(b)safeRender(b)},80)},true);
+['hd20-kpi-source-updated','hd20-gmes-5s-imported','hd20-gmes-5s-judged'].forEach(ev=>window.addEventListener(ev,()=>setTimeout(()=>{const b=document.getElementById(ID);if(b)safeRender(b)},80)));
+const rerender=()=>{const b=document.getElementById('hd20ImproveBoard');if(b)safeRender(b)};window.addEventListener('beforeprint',()=>{window.__hd20BoardPrint=true;rerender()});window.addEventListener('afterprint',()=>{window.__hd20BoardPrint=false;rerender()});
+let rz;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>{const b=document.getElementById(ID);if(b)safeRender(b)},250)});
 
 /* 통합기준정보의 분기별 인당 목표(해당 분기까지의 누적 인당 목표로 해석). 미설정이면 v=null */
 function quarterTarget(){try{const t=JSON.parse(localStorage.getItem('gmes5s_quarter_perperson_targets')||'{}'),q='Q'+(Math.floor(new Date().getMonth()/3)+1),v=Number(t[q]);return{q,v:Number.isFinite(v)&&v>0?v:null}}catch{return{q:'Q'+(Math.floor(new Date().getMonth()/3)+1),v:null}}}
@@ -180,5 +181,5 @@ function openRows({title,cols,rows,file}){
   head.querySelector('[data-ev="csv"]').onclick=()=>{const v=view(),t='\ufeff'+[cols,...v].map(r=>r.map(x=>'"'+String(x??'').replace(/"/g,'""')+'"').join(',')).join('\r\n'),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'text/csv;charset=utf-8'}));a.download=(file||title)+'.csv';document.body.appendChild(a);a.click();a.remove()};
   draw();m.classList.add('on')}
 window.HD20_BOARD_KIT={chart,leg,esc,fx,C,axis,quarterTarget,openRows};
-window.HD20_IMPROVE_BOARD={render:()=>{const b=document.getElementById(ID);if(b)render(b)},state:S};
+window.HD20_IMPROVE_BOARD={render:()=>{const b=document.getElementById(ID);if(b)safeRender(b)},state:S};
 })();
