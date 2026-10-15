@@ -151,7 +151,8 @@ function render(box){
     topExtra:delayRows.map(r=>({text:`평균 ${r.avg}일 · 최대 ${r.max}일`,color:'#c0392b'})),
     series:[{name:'기한초과 건수',vals:delayRows.map(r=>r.n),color:'#c0392b'}],
     colorOf:()=>'#c0392b'}):null;
-  const delayOverallAvg=delayRows.length?Math.round(delayRows.reduce((a,r)=>a+r.avg*r.n,0)/delayRows.reduce((a,r)=>a+r.n,0)*10)/10:0;
+  const activeOverdue=rowsM.filter(c=>teamsAll.includes(c.team)&&isOverdue(c,D.today));
+  const delayOverallAvg=activeOverdue.length?Math.round(activeOverdue.reduce((a,c)=>a+(delayDays(c,D.today)||0),0)/activeOverdue.length*10)/10:0;
   const sum={total:teamRows.reduce((a,r)=>a+r.total,0),done:teamRows.reduce((a,r)=>a+r.done,0),open:teamRows.reduce((a,r)=>a+r.open,0),over:teamRows.reduce((a,r)=>a+r.over,0)}; // open=기한내 미완료, 전체 미완료=open+over
   const pctS=n=>sum.total?Math.round(n/sum.total*1000)/10:0;
   if(!S.selTeam||!teamRows.some(r=>r.team===S.selTeam))S.selTeam=teamRows[0]?.team||'';
