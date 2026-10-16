@@ -149,7 +149,7 @@ function render(box){
         '<text x="'+cx+'" y="335" text-anchor="middle" font-size="10" font-weight="700" fill="#a55f10">'+(denom>0?r.toFixed(2):'—')+'</text>';
     }).join('');
     const ticks=[0,.25,.5,.75,1].map(k=>'<line x1="46" x2="'+(width-28)+'" y1="'+(290-k*260)+'" y2="'+(290-k*260)+'" stroke="#e2e6e9"/><text x="37" y="'+(294-k*260)+'" text-anchor="end" font-size="10">'+Math.round(maxCount*k)+'</text>').join('');
-    return '<svg width="'+width+'" height="352" viewBox="0 0 '+width+' 352" role="img" aria-label="5S 유형별 등록건수 막대 및 인당 개선건수 수치 배지">'+ticks+bars+'</svg>';
+    return '<svg width="'+width+'" height="377" viewBox="0 0 '+width+' 377" role="img" aria-label="5S 유형별 등록건수 막대 및 인당 개선건수 수치 배지">'+ticks+bars+'<text x="'+(width/2)+'" y="368" text-anchor="middle" font-size="12" font-weight="700" fill="#a55f10">주황색 수치: 인당 개선건수 (건/인)</text></svg>';
   })();
   // b) 월별 — 건수로 고정 표시. 수평전개 적용대상건수는 그 달 5S 활동 완료건수 대비 비율(%)을 값 옆에 병기하고 막대를 넓혀 값이 겹치지 않게 함
   const mo=(pred)=>Array.from({length:12},(_,i)=>rowsY.filter(r=>monthOf(r)===i+1&&pred(r)).length),rowsC=filt(D,{ignoreYear:true,ignoreMonth:true}).filter(inTeams),cy=r=>cdOf(r).slice(0,4),cm=r=>+cdOf(r).slice(5,7),confM=(a)=>Array.from({length:12},(_,i)=>a.filter(r=>r.judgeState==='확정'&&cy(r)===S.year&&cm(r)===i+1).length),ML=Array.from({length:12},(_,i)=>String(i+1).padStart(2,'0')+'월');
