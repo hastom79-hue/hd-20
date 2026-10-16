@@ -1,0 +1,57 @@
+name: HD20 dashboard boards visibility smoke
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  boards:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/hd20-boards-http.log 2>&1 &
+          for i in {1..30}; do curl -fsS http://127.0.0.1:4173/index.html >/dev/null && exit 0; sleep 1; done
+          exit 1
+      - name: Verify 5S improve and request dashboards
+        run: |
+          node - <<'NODE'
+          const {chromium}=require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            try{
+              for(const viewport of [{width:1440,height:1000},{width:390,height:844}]){
+                const page=await browser.newPage({viewport});
+                const errors=[];
+                page.on('pageerror',e=>errors.push(String(e)));
+                await page.route('**/*',route=>{
+                  const req=route.request(),url=new URL(req.url());
+                  if(['127.0.0.1','localhost'].includes(url.hostname))return route.continue();
+                  if(req.resourceType()==='script')return route.fulfill({status:200,contentType:'application/javascript',body:'/* external CI stub */'});
+                  return route.abort('blockedbyclient');
+                });
+                await page.goto('http://127.0.0.1:4173/index.html?area=dashboard',{waitUntil:'domcontentloaded'});
+                await page.waitForFunction(()=>!!window.HD20_DASHBOARD_TABS,{timeout:25000});
+                for(const [key,id,api] of [['improve','hd20ImproveBoard','HD20_IMPROVE_BOARD'],['request','hd20RequestBoard','HD20_REQUEST_BOARD']]){
+                  await page.evaluate(key=>window.HD20_DASHBOARD_TABS.apply(key,{scroll:false}),key);
+                  await page.waitForTimeout(800);
+                  const state=await page.evaluate(({key,id,api})=>{
+                    const el=document.getElementById(id),style=el&&getComputedStyle(el),rect=el?.getBoundingClientRect();
+                    return {key,api:!!window[api],exists:!!el,children:el?.children.length||0,htmlLength:el?.innerHTML.length||0,display:style?.display,visibility:style?.visibility,width:rect?.width||0,height:rect?.height||0,active:window.HD20_DASHBOARD_TABS?.active?.()};
+                  },{key,id,api});
+                  console.log('BOARD_EVIDENCE',JSON.stringify({viewport,key,state,errors:errors.slice(-5)}));
+                  if(!state.api||!state.exists||state.htmlLength<100||state.display==='none'||state.width<100||state.height<100)throw new Error('board not rendered '+JSON.stringify(state));
+                }
+                await page.close();
+              }
+            }finally{await browser.close()}
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
