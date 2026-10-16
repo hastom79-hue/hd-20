@@ -25,6 +25,9 @@ body.hd20DashboardImproveActive #hd20ImproveBoard .ibPanel,body.hd20DashboardReq
 body.hd20DashboardImproveActive #hd20ImproveBoard .ibHead,body.hd20DashboardRequestActive #hd20RequestBoard .ibHead{min-height:48px}
 body.hd20DashboardAnalysisActive #hd20OpsTrend,body.hd20DashboardExecutionActive .mainGrid{min-width:0}
 @media(max-width:760px){body.hd20DashboardSummaryActive .cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}}
+/* Enforce exclusive ownership of legacy execution panels in every non-execution dashboard. */
+body.hd20DashboardSummaryActive .mainGrid,body.hd20DashboardImproveActive .mainGrid,body.hd20DashboardRequestActive .mainGrid,body.hd20DashboardAnalysisActive .mainGrid{display:none!important}
+body.hd20DashboardSummaryActive #hd20OperationalBridge,body.hd20DashboardImproveActive #hd20OperationalBridge,body.hd20DashboardRequestActive #hd20OperationalBridge,body.hd20DashboardAnalysisActive #hd20OperationalBridge{display:none!important}
 body.hd20DashboardExecutionActive .mainGrid{grid-template-columns:minmax(0,1fr) 330px;gap:10px;margin-bottom:10px}body.hd20DashboardExecutionActive .mainGrid .chart{height:330px;padding-bottom:92px}@media(max-width:1100px){body.hd20DashboardExecutionActive .mainGrid{grid-template-columns:1fr}}@media(max-width:760px){#${ID}{overflow-x:auto;position:static}#${ID} button{flex:0 0 145px}}`;document.head.appendChild(s)}
 function labelBefore(el){const p=el?.previousElementSibling;return p?.classList?.contains('hd20DashboardSectionLabel')?p:null}
 function dashboardVisible(){return window.HD20_NAV?.active?.()==='dashboard'}
