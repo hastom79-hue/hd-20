@@ -212,7 +212,7 @@ function applyAction(sub){const root=$('#awAction');if(!root)return;root.dataset
      관리)에서는 숨김. 내용 삭제가 아니라 서브탭별 표시 범위 재구성. */
   show($('.awActions',root),sub==='manage');
 }
-function apply(area,sub){enforceTopStatusOrder(area);try{document.querySelector('.app')?.setAttribute('data-hd-view',area+'.'+sub)}catch(e){}
+function apply(area,sub){if(area!=='dashboard'){['Summary','Improve','Request','Execution','Analysis','Field'].forEach(k=>document.body.classList.remove('hd20Dashboard'+k+'Active'))}enforceTopStatusOrder(area);try{document.querySelector('.app')?.setAttribute('data-hd-view',area+'.'+sub)}catch(e){}
   if(area==='dashboard'){if(window.HD20_DASHBOARD_TABS?.refresh)window.HD20_DASHBOARD_TABS.refresh();else applyDashboard(sub)}else if(area==='activity')applyActivity(sub);else if(area==='advancement')applyAdvancement(sub);else if(area==='audit')applyAudit(sub);else if(area==='action')applyAction(sub);window.dispatchEvent(new CustomEvent('hd20-subtab-changed',{detail:{area,sub}}))}
 function select(area,sub){state={area,sub};if(area==='advancement'&&sub==='process')ensureAdvProcess();document.querySelectorAll('#hd20Subnav button').forEach(b=>b.classList.toggle('on',b.dataset.sub===sub));apply(area,sub);renderPurpose(area,sub);requestAnimationFrame(()=>apply(area,sub));
   try{const u=new URL(location.href);if(u.searchParams.get('area')===area)u.searchParams.set('sub',sub);history.replaceState(null,'',u)}catch{}}
