@@ -13,6 +13,21 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
 #${ID} .ibTitle{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}#${ID} h2{margin:0;font-size:21px;color:#14304c}
 #${ID} .ibNote{margin:4px 0 12px;font-size:13px;font-weight:800;color:#22303f}
 #${ID} .ibKpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:10px 0 12px}#${ID} .ibKpi{padding:11px 12px;border:1px solid #dce6ec;border-radius:9px;background:#fff}#${ID} .ibKpi small{display:block;font-size:11px;font-weight:850;color:#6e8392}#${ID} .ibKpi b{display:block;margin-top:3px;font-size:21px;color:#173a57}#${ID} .ibKpi.risk b{color:#b33b31}@media(max-width:900px){#${ID} .ibKpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+#${ID} .ibMonthlyTrend{margin-top:14px;padding:13px;border:1px solid #dce3e9;border-radius:9px;background:#fafbfc;color:#26384a}
+#${ID} .ibTrendTitle{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+#${ID} .ibTrendTitle strong{font-size:12px;color:#173a57}
+#${ID} .ibTrendTitle span{font-size:11px;color:#718091}
+#${ID} .ibTrendCards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+#${ID} .ibTrendCard{padding:10px;min-width:0;background:#fff;border:1px solid #e1e6eb;border-radius:7px}
+#${ID} .ibTrendLabel{font-size:11px;color:#536779;font-weight:700}
+#${ID} .ibTrendMain{font-size:23px;font-weight:850;color:#21384e;margin:6px 0 3px;white-space:nowrap}
+#${ID} .ibTrendDelta{font-size:11px;font-weight:750;color:#43586c}
+#${ID} .ibTrendCompare{font-size:10px;color:#788695;border-top:1px solid #e9edf1;padding-top:7px;margin-top:8px;line-height:1.4}
+#${ID} .ibTrendSummary{display:flex;gap:12px;align-items:baseline;margin-top:9px;padding:9px 10px;background:#f1f4f6;border-radius:6px;font-size:11px;line-height:1.5}
+#${ID} .ibTrendSummary strong{flex-shrink:0;color:#34485a}
+#${ID} .ibTrendSummary span{color:#526579}
+#${ID} .ibTrendEmpty{margin-top:14px;padding:12px;background:#f6f8fa;border-radius:7px;color:#667788;font-size:12px}
+@media(max-width:680px){#${ID} .ibTrendCards{grid-template-columns:1fr}#${ID} .ibTrendSummary{display:block}}
 #${ID} .ibTypeDefs{padding:12px;border:1px solid #dce6ec;border-radius:9px;background:#f8fafc;margin:0 0 10px}#${ID} .ibTypeDefs strong{display:block;font-size:12px;color:#173a57;margin-bottom:8px}#${ID} .ibTypeDefs dl{margin:0;display:grid;gap:6px}#${ID} .ibTypeDefs dl>div{display:grid;grid-template-columns:85px minmax(0,1fr);gap:8px;align-items:start}#${ID} .ibTypeDefs dt{font-weight:800;font-size:11px;color:#285c70}#${ID} .ibTypeDefs dd{margin:0;font-size:11px;color:#405669;line-height:1.5}#${ID} .ibTypeDefs small{color:#9b6b26}
 #${ID} .ibAdvBadge{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;margin:0 0 10px;padding:9px 12px;border:1px solid #f0dfae;border-radius:9px;background:#fdf9ee}
 #${ID} .ibAdvBadge b{font-size:16px;color:#8a5a00}#${ID} .ibAdvBadge span{font-size:11.5px;color:#8a7850;line-height:1.5}
@@ -155,6 +170,26 @@ function render(box){
   const mo=(pred)=>Array.from({length:12},(_,i)=>rowsY.filter(r=>monthOf(r)===i+1&&pred(r)).length),rowsC=filt(D,{ignoreYear:true,ignoreMonth:true}).filter(inTeams),cy=r=>cdOf(r).slice(0,4),cm=r=>+cdOf(r).slice(5,7),confM=(a)=>Array.from({length:12},(_,i)=>a.filter(r=>r.judgeState==='확정'&&cy(r)===S.year&&cm(r)===i+1).length),ML=Array.from({length:12},(_,i)=>String(i+1).padStart(2,'0')+'월');
   const doneM=mo(r=>DONE.includes(r.status)),rollM=mo(r=>r.horizontalRollout===true),rollPct=rollM.map((v,i)=>doneM[i]?Math.round(v/doneM[i]*1000)/10:null);
   const B=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W*.6)-10),h:360,cats:ML,per:false,minSlot:0,series:[{name:'5S 활동 완료건수',vals:doneM,color:C.dark},{name:'고도화 확정 건수',vals:confM(rowsC),color:C.amber},{name:'수평전개 적용대상건수',vals:rollM,color:C.grey,widthScale:1.5,pct:rollPct}]});
+  // 월별 추이 분석: 완료된 최근 두 달을 비교하며, 모든 값은 차트와 동일한 원천 배열에서 산출
+  const upgradeM=confM(rowsC);
+  const now=new Date(),currentYear=String(now.getFullYear());
+  const lastClosed=S.year===currentYear?now.getMonth():12;
+  const validMonths=Array.from({length:Math.max(0,lastClosed)},(_,i)=>i).filter(i=>doneM[i]>0||upgradeM[i]>0||rollM[i]>0);
+  const latest=validMonths.length?validMonths[validMonths.length-1]:-1;
+  const prev=latest>0?latest-1:-1;
+  const pct=(n,d)=>d>0?n/d*100:null;
+  const fmtP=v=>v===null?'산정 불가':v.toFixed(1)+'%';
+  const delta=(a,b,unit)=>{if(b===null||a===null)return '비교 불가';const v=a-b;return (v>0?'+':'')+v.toFixed(unit==='건'?0:1)+unit};
+  const trendCard=(name,cur,old,unit,detail)=>'<div class="ibTrendCard"><div class="ibTrendLabel">'+name+'</div><div class="ibTrendMain">'+(cur===null?'산정 불가':(unit==='건'?cur.toLocaleString()+'건':fmtP(cur)))+'</div><div class="ibTrendDelta">전월 대비 '+delta(cur,old,unit==='건'?'건':'%p')+(unit==='건'&&old>0?' ('+delta(pct(cur-old,old),0,'%')+')':'')+'</div><div class="ibTrendCompare">'+detail+'</div></div>';
+  const monthLabel=i=>(i+1)+'월';
+  const trendPanel=latest<0?'<div class="ibTrendEmpty">비교 가능한 월별 실적이 없습니다.</div>':(()=>{
+    const base=prev>=0,done=doneM[latest],up=upgradeM[latest],rate=pct(rollM[latest],done),oldRate=base?pct(rollM[prev],doneM[prev]):null;
+    const pair=(oldV,newV,u)=>base?monthLabel(prev)+' '+oldV+u+' → '+monthLabel(latest)+' '+newV+u:'전월 비교 데이터 없음';
+    const ratePair=base?monthLabel(prev)+' '+fmtP(oldRate)+' → '+monthLabel(latest)+' '+fmtP(rate):'전월 비교 데이터 없음';
+    const movement=(cur,old)=>!base?'비교 불가':cur>old?'증가':cur<old?'감소':'동일';
+    const interpretation=base?'활동 완료 '+delta(done,doneM[prev],'건')+' · 고도화 확정 '+delta(up,upgradeM[prev],'건')+' · 수평전개 적용률 '+delta(rate,oldRate,'%p')+' (전월 대비)':'전월 비교 가능한 실적이 없어 증감 분석을 표시하지 않습니다.';
+    return '<div class="ibMonthlyTrend"><div class="ibTrendTitle"><strong>월별 실적 추이 분석</strong><span>'+S.year+'년 '+monthLabel(latest)+' 기준'+(base?' · 전월 비교':'')+'</span></div><div class="ibTrendCards">'+trendCard('5S 활동 완료',done,base?doneM[prev]:null,'건',pair(base?doneM[prev]:0,done,'건'))+trendCard('고도화 확정',up,base?upgradeM[prev]:null,'건',pair(base?upgradeM[prev]:0,up,'건'))+trendCard('수평전개 적용률',rate,oldRate,'%',ratePair)+'</div><div class="ibTrendSummary"><strong>종합 추이 해석</strong><span>'+interpretation+'</span></div></div>';
+  })();
   // c) 팀별 인당
   /* 가로축 정렬: 값(인당 건수) 기준 정렬을 쓰지 않고, 통합기준정보(표시순서) 탭에서 관리하는 생산팀 표시순서를 그대로 따름 */
   const teamOrder=(()=>{try{const v=JSON.parse(localStorage.getItem('gmes5s_team_display_order')||'null');if(Array.isArray(v)&&v.length)return v}catch{}return window.HD20ProductionTeamMaster?.teamNames?.()||null})();
@@ -192,7 +227,7 @@ function render(box){
 <label>고도화 확정 <select data-f="judge"><option value="">ALL</option><option value="Y"${S.judge==='Y'?' selected':''}>확정 결과만</option><option value="N"${S.judge==='N'?' selected':''}>확정 외</option></select></label><label>수평전개 <select data-f="roll"><option value="">ALL</option><option value="Y"${S.roll==='Y'?' selected':''}>적용대상</option><option value="N"${S.roll==='N'?' selected':''}>비대상</option></select></label>
 <span class="sp"></span><button type="button" class="alt" data-ib="print">프린트</button><button type="button" class="alt" data-ib="csv">엑셀다운로드</button></div>
 <div class="ibRow r1"><div class="ibPanel"><div class="ibHead">5S 유형별 등록건수 및 인당 개선건수<button type="button" class="ibEv" data-evk="a">근거 데이터</button><em>${S.month?S.month.replace(/^0/,'')+'월':'연간누적'} · 건</em></div><div class="ibBody">${A}<div class="ibTypeDefs"><strong>5S 유형별 활동 정의</strong><dl><div><dt>정리</dt><dd>불용·불급·잉여품 제거활동</dd></div><div><dt>정돈</dt><dd>정량·정위치 준수활동</dd></div><div><dt>청소</dt><dd>작업장 청소, 작업장 외(설비, 부대물, 유틸리티 등) 청소</dd></div><div><dt>시각화관리</dt><dd>정량·정위치 준수를 위한 표식관리, 설비·지그·작업장 등의 도색작업</dd></div><div><dt>위험구역관리</dt><dd>출입통제, 타이거마크 표식관리</dd></div><div><dt>설비 자주보전</dt><dd>설비 자주보전 활동 (세부 기준 별도 확정)</dd></div></dl></div><div class="ibLeg"><span>청록색 막대: 유형별 등록건수(건, 왼쪽 축) · 주황색 수치 배지: 인당 개선건수(건/인, 선택 조직 전체 인원 기준). 인당 수치는 등록건수를 동일 인원으로 나눈 값이므로 별도 막대로 중복 표현하지 않습니다.</span></div></div></div>
-<div class="ibPanel"><div class="ibHead">월별 등록 및 진행현황<button type="button" class="ibEv" data-evk="b">근거 데이터</button><em>${S.year}년 · 건 · 수평전개=그 달 완료건수 대비 %</em></div><div class="ibBody">${B}${leg([['5S 활동 완료건수',C.dark],['고도화 확정 건수',C.amber],['수평전개 적용대상건수',C.grey]])}</div></div></div>
+<div class="ibPanel"><div class="ibHead">월별 등록 및 진행현황<button type="button" class="ibEv" data-evk="b">근거 데이터</button><em>${S.year}년 · 건 · 수평전개=그 달 완료건수 대비 %</em></div><div class="ibBody">${B}${leg([['5S 활동 완료건수',C.dark],['고도화 확정 건수',C.amber],['수평전개 적용대상건수',C.grey]])}${trendPanel}</div></div></div>
 <div class="ibRow"><div class="ibPanel"><div class="ibHead">현장조직 팀에 대한 개선활동 현황${per?'(인당 개선건수)':'(총 건수)'}<button type="button" class="ibEv" data-evk="c">근거 데이터</button><em class="pt">당월(${String(mm).padStart(2,'0')}월) 현재 참여율 ${part.toFixed(1)}% (등록자 ${owners}명 / 총원 ${hcAll}명)</em></div><div class="ibBody">${Cc}${leg([['평균 이상 (평균 '+avg.toFixed(2)+(per?'건/인)':'건)'),C.dark],['평균 미만',C.amber]])}</div></div></div>
 <div class="ibRow r3"><div class="ibPanel"><div class="ibHead">단일 팀에 대한 연간/월별 누적 활동 실적${per?'(인당 개선건수)':''}<button type="button" class="ibEv" data-evk="d">근거 데이터</button><em>[ ${esc(S.team)} ] 연간 ${fx(dCum,per)}${unit}</em></div><div class="ibBody">${Dd}</div></div>
 <div class="ibPanel"><div class="ibHead">선택팀 고도화 유지·이탈 Drill-down${per?'(인당)':''}<button type="button" class="ibEv" data-evk="e">근거 데이터</button><em>[ ${esc(S.team)} ] 유지 ${curKeep}곳 · 이탈 ${lossTot}건</em></div><div class="ibBody">${E}${leg([['기존 유지','#a8c7c4'],['신규 확정',C.dark]])}${lossChart}${est?`<div class="ibLeg"><span>※ 유지 이탈 시점 기록이 없어 확정일+6개월(종료평가 시점)로 추정한 값이 ${est}건 포함됩니다. 수평전개 적용대상은 [근거 데이터]에서 확인하세요.</span></div>`:''}</div></div></div>
