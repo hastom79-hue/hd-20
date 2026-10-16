@@ -26,6 +26,7 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
    눌리고 12개월 중 실제 값 있는 달이 5~6개뿐인 오른쪽은 빈 축 공간이 커 보여 두 패널 사이 여백이
    불균형해 보였음(사용자 지적, 업로드 스크린샷 기준) — 1:1에 가깝게 재조정. */
 #${ID} .r1{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+#${ID} .r1{width:100%;grid-template-columns:repeat(2,minmax(0,1fr))!important;align-items:stretch}#${ID} .r1>.ibPanel{width:100%;min-width:0;box-sizing:border-box}#${ID} .r1 .ibBody>svg{aspect-ratio:auto;width:100%!important;height:240px!important;max-height:240px!important}
 #${ID} .r1>.ibPanel{min-width:0;height:100%}#${ID} .r1 .ibBody{display:flex;flex-direction:column;min-width:0}#${ID} .r1 .ibBody>svg{flex:none;width:100%!important}#${ID} .r1 .ibAdvBadge{margin:8px 0 0;padding:7px 10px}#${ID} .r1 .ibLeg{margin-top:8px}#${ID} .r3{grid-template-columns:repeat(2,minmax(0,1fr))}
 #${ID} .ibPanel{border:1px solid #e3eaf0;border-radius:10px;background:#fff;overflow:hidden}
 #${ID} .ibHead{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 12px;background:#f1f5f8;border-bottom:1px solid #e3eaf0;font-size:13.5px;font-weight:900;color:#22303f}
@@ -91,7 +92,7 @@ function axis(v){const raw=v/4,p=Math.pow(10,Math.floor(Math.log10(raw))),f=raw/
 const tk=v=>String(Number(v.toFixed(3)));
 function chart({w,h=240,cats,series,stack=false,per=false,rotate=false,sel=null,colorOf=null,minSlot=36,fmt=null,hline=null,linkX=false,topPct=null,topExtra=null}){
   const F=v=>fmt?fmt(v):fx(v,per);
-  const W0=Math.max(w,cats.length*minSlot+56),slot0=(W0-56)/Math.max(1,cats.length);rotate=rotate||(slot0<58&&cats.some(c=>String(c).length>3));
+  const W0=Math.max(320,w),slot0=(W0-56)/Math.max(1,cats.length);rotate=rotate||(slot0<58&&cats.some(c=>String(c).length>3));
   const m={l:46,r:10,t:20,b:rotate?84:30},W=W0,iw=W-m.l-m.r,ih=h-m.t-m.b;
   const tot=cats.map((_,i)=>stack?series.reduce((a,s)=>a+(s.vals[i]||0),0):Math.max(...series.map(s=>s.vals[i]||0)));
   const ax=axis(Math.max(0.0001,...tot,hline?hline.value*1.05:0)),max=ax.max,yv=v=>m.t+ih-(v/max)*ih,slot=iw/Math.max(1,cats.length);
@@ -132,11 +133,11 @@ function render(box){
      그대로 두고 표현만 바꿔 해결: '5S 고도화'는 축 비교가 아닌 강조 숫자 배지로 분리 표시하고, 차트는
      서로 자릿수가 비슷한 나머지 5개 기본 유형만으로 그려 막대 높이 차이가 실제 비교에 의미 있게 함. */
   const BASIC_TYPES=TYPES.filter(t=>t!=='5S 고도화'),basicAllT=BASIC_TYPES.map(t=>rowsM.filter(r=>r.type===t).length),advIdx=TYPES.indexOf('5S 고도화'),advCnt=allT[advIdx]||0,advPct=allT.reduce((a,b)=>a+b,0)?Math.round(advCnt/allT.reduce((a,b)=>a+b,0)*1000)/10:0;
-  const A=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W*.5)-10),cats:BASIC_TYPES,per:false,minSlot:70,series:[{name:'등록 건수',vals:basicAllT,color:C.dark}]});
+  const A=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W*.5)-10),h:240,cats:BASIC_TYPES,per:false,minSlot:0,series:[{name:'등록 건수',vals:basicAllT,color:C.dark}]});
   // b) 월별 — 건수로 고정 표시. 수평전개 적용대상건수는 그 달 5S 활동 완료건수 대비 비율(%)을 값 옆에 병기하고 막대를 넓혀 값이 겹치지 않게 함
   const mo=(pred)=>Array.from({length:12},(_,i)=>rowsY.filter(r=>monthOf(r)===i+1&&pred(r)).length),rowsC=filt(D,{ignoreYear:true,ignoreMonth:true}).filter(inTeams),cy=r=>cdOf(r).slice(0,4),cm=r=>+cdOf(r).slice(5,7),confM=(a)=>Array.from({length:12},(_,i)=>a.filter(r=>r.judgeState==='확정'&&cy(r)===S.year&&cm(r)===i+1).length),ML=Array.from({length:12},(_,i)=>String(i+1).padStart(2,'0')+'월');
   const doneM=mo(r=>DONE.includes(r.status)),rollM=mo(r=>r.horizontalRollout===true),rollPct=rollM.map((v,i)=>doneM[i]?Math.round(v/doneM[i]*1000)/10:null);
-  const B=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W*.5)-10),cats:ML,per:false,minSlot:60,series:[{name:'5S 활동 완료건수',vals:doneM,color:C.dark},{name:'고도화 확정 건수',vals:confM(rowsC),color:C.amber},{name:'수평전개 적용대상건수',vals:rollM,color:C.grey,widthScale:1.5,pct:rollPct}]});
+  const B=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W*.5)-10),h:240,cats:ML,per:false,minSlot:0,series:[{name:'5S 활동 완료건수',vals:doneM,color:C.dark},{name:'고도화 확정 건수',vals:confM(rowsC),color:C.amber},{name:'수평전개 적용대상건수',vals:rollM,color:C.grey,widthScale:1.5,pct:rollPct}]});
   // c) 팀별 인당
   /* 가로축 정렬: 값(인당 건수) 기준 정렬을 쓰지 않고, 통합기준정보(표시순서) 탭에서 관리하는 생산팀 표시순서를 그대로 따름 */
   const teamOrder=(()=>{try{const v=JSON.parse(localStorage.getItem('gmes5s_team_display_order')||'null');if(Array.isArray(v)&&v.length)return v}catch{}return window.HD20ProductionTeamMaster?.teamNames?.()||null})();
