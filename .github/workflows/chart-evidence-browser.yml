@@ -101,6 +101,9 @@ jobs:
             const requestV4=await page.evaluate(()=>{const el=document.getElementById('hd20RequestBoard');return {kpis:el?.querySelectorAll('.rqV2Kpis .rqKpi').length,donuts:el?.querySelectorAll('.rqDonutWrap').length,bars:el?.querySelectorAll('.rqV4StatusRow').length,charts:el?.querySelectorAll('[data-evk]').length}});
             if(requestV4.kpis!==4||requestV4.donuts!==0||requestV4.bars!==3||requestV4.charts!==6)throw Error('Request V4 redesign contract '+JSON.stringify(requestV4));
             result.requestV4=requestV4;
+            const bridgeState=await page.evaluate(()=>{const el=document.getElementById('hd20OperationalBridge');return {hidden:!!el?.classList.contains('hd20DashboardSectionHidden'),aria:el?.getAttribute('aria-hidden'),visible:!!el&&getComputedStyle(el).display!=='none'}});
+            if(!bridgeState.hidden||bridgeState.aria!=='true'||bridgeState.visible)throw Error('Legacy bridge must be fully retired '+JSON.stringify(bridgeState));
+            result.bridgeState=bridgeState;
             // Verify tab ownership: only the selected section's main target is visible.
             const ownership=[['summary','#hd20DashboardPriority'],['improve','#hd20ImproveBoard'],['request','#hd20RequestBoard'],['execution','#hd20V3Execution'],['analysis','#hd20OpsTrend']];
             result.tabIsolation={};
