@@ -1,6 +1,58 @@
 /* 인쇄 전용 스타일: 내비게이션·버튼·배너를 숨기고 실제 데이터(표·차트·
    지표)만 인쇄되도록 함. 화면 표시에는 전혀 영향 없음(@media print
    블록 안에서만 적용). */
+/* 사용자 지시: "개선요청 종합 탭 A3출력시 한화면애 들어와야함" / "자율개선종합도 a3가로로 출력시
+   한화면에 보여져야 함", 이어서 "인쇄영역에 들어와도 글자크기 등 시인성 나쁘면 안된다 현장게시판에
+   게시할것이다" — 처음엔 6개 섹션 전부를 넣으려고 글자를 0.76배까지 줄였으나(판독 불가 수준),
+   사용자가 섹션별 중요도를 직접 판단해 "06빼라"고 확정: 06(개선요청 상세 관리, 15~64건 세부 목록
+   테이블)만 인쇄에서 제외하고 01~05는 유지. 06을 뺀 만큼 확보된 여백으로 축소율을 크게 완화해
+   게시판에서 읽을 수 있는 글자 크기를 확보. */
+@page { size: A3 landscape; margin: 8mm; }
+@media print {
+  /* "02 요청출처별 현황"도 이어서 제외 확정(사용자: "02제외") — 02가 빠지면 같은 줄(rqManageRow,
+     2열)에 "03 조치 진행상태" 도넛만 남아 절반 폭만 차지하므로, 그 줄을 1열로 바꿔 03이 자연스럽게
+     폭을 채우도록 함. */
+  #hd20RequestBoard .rqPrintSkip { display: none !important; }
+  #hd20RequestBoard .rqManageRow { grid-template-columns: 1fr; }
+  #hd20RequestBoard .rqManageRow .rqDonutWrap { max-width: 420px; margin: 0 auto; }
+  #hd20RequestBoard,
+  #hd20ImproveBoard {
+    column-count: 2;
+    column-gap: 14px;
+    column-fill: balance;
+  }
+  #hd20RequestBoard .ibRow,
+  #hd20RequestBoard .rqKpis,
+  #hd20ImproveBoard .ibRow,
+  #hd20ImproveBoard .ibKpis {
+    break-inside: avoid;
+    -webkit-column-break-inside: avoid;
+    margin-bottom: 8px;
+  }
+  #hd20RequestBoard .ibTitle,
+  #hd20RequestBoard > p.ibNote,
+  #hd20RequestBoard .ibBar,
+  #hd20ImproveBoard .ibHero,
+  #hd20ImproveBoard .ibToolbar {
+    column-span: all;
+  }
+  /* "04 조치대응팀별 이행성과"(타팀·내팀 비교의 핵심 섹션)는 2단에 끼워 좁히지 않고 전체 폭으로
+     펼쳐 팀명·막대·완료율 글자를 가장 크게 유지. */
+  #hd20RequestBoard .rqTeamCompare { column-span: all; }
+  #hd20RequestBoard, #hd20ImproveBoard { font-size: 13.5px; }
+  #hd20RequestBoard .ibHead, #hd20ImproveBoard .ibHead { font-size: 14px; }
+  #hd20RequestBoard .rqKpi b, #hd20ImproveBoard .ibKpi b { font-size: 20px !important; }
+  /* "더보기"로 숨겨진 나머지 행은 인쇄에도 그대로 생략(필요 시 화면에서 확인). */
+  /* 06을 빼고 폰트를 13.5px로 키운 뒤 실측하니 A3 가로 가용 높이(약 1060px) 대비 여전히 약 39%
+     초과(1474px) — scale을 0.70까지 낮춰야 한 페이지에 들어옴. 이 경우 KPI 큰 숫자가 20px×0.70≈
+     14px로 렌더되는데, 이는 처음 시도(0.76배 축소 + 폰트 10.5px였을 때의 체감 크기, 약 8px)보다
+     뚜렷이 크고 일반 인쇄물 본문 수준은 유지함. */
+  #hd20RequestBoard, #hd20ImproveBoard {
+    transform: scale(0.66);
+    transform-origin: top left;
+    width: 151.5%;
+  }
+}
 @media print {
   /* 검증 데이터 배너, 상단 액션 버튼 4개 */
   #hd20ValidationBanner,
