@@ -106,12 +106,12 @@ function filt(D,{ignoreMonth=false,ignoreYear=false}={}){
 const monthOf=r=>+String(r.date||r.regDate||'').slice(5,7);
 function axis(v){const raw=v/4,p=Math.pow(10,Math.floor(Math.log10(raw))),f=raw/p,n=f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10,step=n*p;return{step,max:Math.ceil(v/step-1e-9)*step}}
 const tk=v=>String(Number(v.toFixed(3)));
-function chart({w,h=240,cats,series,stack=false,per=false,rotate=false,sel=null,colorOf=null,minSlot=36,fmt=null,hline=null,linkX=false,topPct=null,topExtra=null}){
+function chart({w,h=240,cats,series,stack=false,per=false,rotate=false,sel=null,colorOf=null,minSlot=36,fmt=null,hline=null,linkX=false,topPct=null,topExtra=null,axisHeadroom=0,raisePlot=false}){
   const F=v=>fmt?fmt(v):fx(v,per);
   const W0=Math.max(320,w),slot0=(W0-56)/Math.max(1,cats.length);rotate=rotate||(slot0<58&&cats.some(c=>String(c).length>3));
-  const m={l:46,r:10,t:20,b:rotate?84:30},W=W0,iw=W-m.l-m.r,ih=h-m.t-m.b;
+  const m={l:46,r:10,t:raisePlot?12:20,b:rotate?84:(raisePlot?24:30)},W=W0,iw=W-m.l-m.r,ih=h-m.t-m.b;
   const tot=cats.map((_,i)=>stack?series.reduce((a,s)=>a+(s.vals[i]||0),0):Math.max(...series.map(s=>s.vals[i]||0)));
-  const ax=axis(Math.max(0.0001,...tot,hline?hline.value*1.05:0)),max=ax.max,yv=v=>m.t+ih-(v/max)*ih,slot=iw/Math.max(1,cats.length);
+  const dataMax=Math.max(0.0001,...tot,hline?hline.value*1.05:0),ax=axis(dataMax*(1+axisHeadroom)),max=ax.max,yv=v=>m.t+ih-(v/max)*ih,slot=iw/Math.max(1,cats.length);
   let g='';for(let i=0;i<=Math.round(max/ax.step);i++){const v=ax.step*i,y=yv(v);g+=`<line x1="${m.l}" x2="${W-m.r}" y1="${y}" y2="${y}" stroke="${C.grid}"/><text x="${m.l-6}" y="${y+4}" text-anchor="end" font-size="11" fill="${C.soft}">${tk(v)}</text>`}
   let b='';const n0=series.length,bw0=stack?Math.min(40,slot*.6):Math.min(24,slot*.72/n0);
   const scales=series.map(s=>s.widthScale||1),bws=scales.map(sc=>bw0*sc),gap=stack?0:Math.max(1,bw0*.08),groupW=bws.reduce((a,w)=>a+w,0)+gap*(n0-1);
@@ -169,7 +169,7 @@ function render(box){
   // b) 월별 — 건수로 고정 표시. 수평전개 적용대상건수는 그 달 5S 활동 완료건수 대비 비율(%)을 값 옆에 병기하고 막대를 넓혀 값이 겹치지 않게 함
   const mo=(pred)=>Array.from({length:12},(_,i)=>rowsY.filter(r=>monthOf(r)===i+1&&pred(r)).length),rowsC=filt(D,{ignoreYear:true,ignoreMonth:true}).filter(inTeams),cy=r=>cdOf(r).slice(0,4),cm=r=>+cdOf(r).slice(5,7),confM=(a)=>Array.from({length:12},(_,i)=>a.filter(r=>r.judgeState==='확정'&&cy(r)===S.year&&cm(r)===i+1).length),ML=Array.from({length:12},(_,i)=>String(i+1).padStart(2,'0')+'월');
   const doneM=mo(r=>DONE.includes(r.status)),rollM=mo(r=>r.horizontalRollout===true),rollPct=rollM.map((v,i)=>doneM[i]?Math.round(v/doneM[i]*1000)/10:null);
-  const B=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W*.6)-10),h:360,cats:ML,per:false,minSlot:0,series:[{name:'5S 활동 완료건수',vals:doneM,color:C.dark},{name:'고도화 확정 건수',vals:confM(rowsC),color:C.amber},{name:'수평전개 적용대상건수',vals:rollM,color:C.grey,widthScale:1.5,pct:rollPct}]});
+  const B=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W*.6)-10),h:360,cats:ML,per:false,minSlot:0,axisHeadroom:0.08,raisePlot:true,series:[{name:'5S 활동 완료건수',vals:doneM,color:C.dark},{name:'고도화 확정 건수',vals:confM(rowsC),color:C.amber},{name:'수평전개 적용대상건수',vals:rollM,color:C.grey,widthScale:1.5,pct:rollPct}]});
   // 월별 추이 분석: 완료된 최근 두 달을 비교하며, 모든 값은 차트와 동일한 원천 배열에서 산출
   const upgradeM=confM(rowsC);
   const trendNow=new Date(),currentYear=String(trendNow.getFullYear());
