@@ -28,7 +28,11 @@ function ensure(){
     root.innerHTML=`<div class="hd20DashboardPriorityHead"><div><small>운영 상태</small><h2>운영 건전성 KPI</h2><p>현재 상태를 확인하고 판정·유지·개선조치 화면으로 바로 이동합니다.</p></div><div class="hd20DashboardPriorityGuide"><span>현재 상태</span><i>→</i><span>판단</span><i>→</i><span>다음 행동</span></div></div><div class="hd20V3Readiness" aria-live="polite"></div><div class="hd20DashboardPriorityGroups"></div>`;
     cards.insertAdjacentElement('afterend',root);
   }
-  const main=document.querySelector('.mainGrid');if(main&&!main.previousElementSibling?.classList.contains('hd20DashboardSectionLabel')){const label=document.createElement('div');label.className='hd20DashboardSectionLabel';label.innerHTML='<div><small>EXECUTION & SUSTAIN</small><b>팀별 실행 · Audit 유지관리</b></div><span>팀별 활동에서 Audit·개선조치까지 연결 확인</span>';main.insertAdjacentElement('beforebegin',label)}
+  /* .mainGrid 자체는 레거시로 CSS에서 display:none 처리돼 안 보이지만, 그 앞에 삽입하던 이 라벨
+     ('EXECUTION & SUSTAIN · 팀별 실행 · Audit 유지관리')만 숨김 대상이 아니라서, 대시보드 모든
+     하위탭 하단에 맥락 없이 걸려 있는 상태였음(사용자 지적: 업로드 스크린샷 기준 삭제 요청) — 라벨
+     생성 자체를 제거. 기존에 이미 꽂혀 있는 라벨을 치우는 정리 로직(아래 두 줄)은 유지. */
+  document.querySelectorAll('.mainGrid').forEach(main=>{if(main.previousElementSibling?.classList.contains('hd20DashboardSectionLabel'))main.previousElementSibling.remove()});
   const bottom=document.querySelector('.bottomGrid');
   if(bottom?.previousElementSibling?.classList.contains('hd20DashboardSectionLabel'))bottom.previousElementSibling.remove();
   return root;
