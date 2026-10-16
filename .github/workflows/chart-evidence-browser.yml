@@ -1,7 +1,7 @@
 name: HD20 chart evidence browser verification
 on:
   push:
-    branches: [fix/request-board-source-denominator-20261015, feat/dashboard-v3-integrated-20261016, fix/dashboard-empty-demo-data-20261016]
+    branches: [fix/request-board-source-denominator-20261015, feat/dashboard-v3-integrated-20261016, fix/dashboard-empty-demo-data-20261016, fix/improve-all-months-demo-20261016]
   workflow_dispatch:
 permissions:
   contents: read
@@ -101,6 +101,9 @@ jobs:
             const demoVisibility=await page.evaluate(()=>{const keys=['hd20GMES5SAutoImproveRawV1','hd20ActionCasesV2'];const counts=keys.map(k=>{try{return JSON.parse(localStorage.getItem(k)||'[]').filter(r=>r.source==='demo-seed').length}catch{return 0}});const hc=window.HD20_DEMO_HEADCOUNT_STATUS||{};const visible=id=>{const e=document.getElementById(id);return !!e&&getComputedStyle(e).display!=='none'&&e.getBoundingClientRect().height>0};return {activity:counts[0],action:counts[1],hc,improveExists:!!document.getElementById('hd20ImproveBoard'),requestExists:!!document.getElementById('hd20RequestBoard')}});
             if(demoVisibility.activity<30||demoVisibility.action<30||demoVisibility.hc.masterTeams<5||!demoVisibility.improveExists||!demoVisibility.requestExists)throw Error('Dashboard demo dataset missing '+JSON.stringify(demoVisibility));
             result.demoVisibility=demoVisibility;
+            const monthly=await page.evaluate(()=>{const year=new Date().getFullYear(),end=new Date().getMonth()+1,rows=JSON.parse(localStorage.getItem('hd20GMES5SAutoImproveRawV1')||'[]');return Array.from({length:end},(_,i)=>rows.filter(r=>r.source==='demo-seed'&&String(r.date||'').startsWith(year+'-'+String(i+1).padStart(2,'0'))&&r.type!=='5S 고도화'&&r.status==='완료').length)});
+            if(monthly.some(n=>n<1))throw Error('Missing completed activity in current-year months '+JSON.stringify(monthly));
+            result.monthlyDemoCounts=monthly;
             // Verify tab ownership: only the selected section's main target is visible.
             const ownership=[['summary','#hd20DashboardPriority'],['improve','#hd20ImproveBoard'],['request','#hd20RequestBoard'],['execution','#hd20V3Execution'],['analysis','#hd20OpsTrend']];
             result.tabIsolation={};

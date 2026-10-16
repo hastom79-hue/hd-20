@@ -57,6 +57,18 @@ function boot(){
    const confirmed=activity.filter(r=>r.team===team&&r.type==='5S 고도화'&&r.confirmed===true&&r.judgeState==='확정');
    confirmed.slice(0,retainedTarget).forEach(r=>{r.attrition=false;r.maintainState='유지'});
  });
+ /* Complete the current-year monthly chart with explicitly synthetic activity cases.
+    Never invent future months; retain original records and never sync demo rows. */
+ const year=now.getFullYear(),lastMonth=now.getMonth()+1;
+ const monthCount=Array.from({length:lastMonth},()=>0);
+ activity.forEach(r=>{const d=String(r.date||'');if(d.startsWith(year+'-')){const m=Number(d.slice(5,7));if(m>=1&&m<=lastMonth&&r.type!=='5S 고도화'&&r.status==='완료')monthCount[m-1]++}});
+ for(let m=1;m<=lastMonth;m++){
+   const target=12+((m*7)%11);
+   for(let n=monthCount[m-1];n<target;n++){
+     const ti=(m*5+n*3)%teams.length,team=teams[ti],kind=['정리','정돈','청소','시각화','위험구역관리'][(m+n)%5];
+     activity.push({id:`DEMO-A-MONTH-${year}-${String(m).padStart(2,'0')}-${n}`,source:SRC,team,group:groupOf(team),owner:`검증작업자-${String(ti+1).padStart(2,'0')}-${n%8+1}`,date:`${year}-${String(m).padStart(2,'0')}-${String(Math.min(now.getDate(),2+(n*3)%25)).padStart(2,'0')}`,type:kind,area:['조립라인','자재구역','검사대','공구실'][(m+n)%4],problem:['불용품 잔존','공구 정위치 미준수','통로 적치','시각표기 누락'][(m+n)%4],improvement:['불용품 제거','형적관리 보완','통로 구획','표준 라벨 부착'][(m+n)%4],status:'완료',horizontalRollout:(m+n)%4===0,confirmed:false,judgeState:'',evidenceNote:'월별 차트 공백 보완용 가상 검증 사례 · 운영실적 아님'});
+   }
+ }
  const audit=[];teams.forEach((team,ti)=>{for(let i=0;i<8;i++)audit.push({id:`DEMO-U-${ti}-${i}`,source:SRC,team,group:groupOf(team),date:days((i*7+ti)%150),auditDate:days(210+(i*7+ti)%150),finalEvaluation:i%5===0?'미흡':'적합',status:i%5===0?'재발':i%3===0?'관리중':'완료',result:i%5===0?'부적합':'적합',score:72+((ti*3+i*5)%27)});});
  /* actionCompleted()는 doneDate·action·(after 또는 afterEvidence)가 모두 있어야 '완료'로 인정하는데,
     이 데모 데이터가 after를 항상 빈 문자열로만 만들어 '기한 내 개선조치 완료율' 등 완료 기준 지표가
