@@ -32,6 +32,10 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
 #${ID} .ibLossCol b{font-size:10px;color:#a0453a;font-weight:850;height:12px}#${ID} .ibLeg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
 #${ID} svg text{font-family:inherit}#${ID} .hit{cursor:pointer}#${ID} .hit:hover{opacity:.85}
 #${ID} .ibFoot{margin:10px 2px 0;font-size:12px;color:#7a8a97}
+/* Fit both chart canvases to their panels instead of creating horizontal scrollbars. */
+#${ID} .ibBody{overflow-x:hidden!important;max-width:100%;min-width:0}
+#${ID} .ibBody svg{display:block;width:100%!important;max-width:100%!important;height:auto!important;min-width:0;overflow:visible}
+#${ID} .ibRow,#${ID} .ibPanel{min-width:0;max-width:100%}
 @media(max-width:1100px){#${ID} .r1,#${ID} .r3{grid-template-columns:1fr}}
 
 /* Unified restrained dashboard visual system: one typography and spacing scale. */
