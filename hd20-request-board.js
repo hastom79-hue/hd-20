@@ -7,6 +7,24 @@ const ID='hd20RequestBoard';
 const SOURCES=['5S모듈','생산혁신팀 HDPS파트','리더십'];
 const S={year:null,month:'',source:'',team:'',status:'',roll:'',selTeam:''};
 function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+/* "01 월별 요청·완료 추이" 전용 선 그래프. 공용 chart()(막대 전용, 다른 탭·섹션에서도 널리 재사용)는
+   건드리지 않고 이 섹션만 별도로 흐름(추이) 표현에 맞는 꺾은선으로 그림. */
+function lineChart({w,h=200,cats,series}){
+  const m={l:34,r:14,t:14,b:24},iw=Math.max(80,w-m.l-m.r),ih=h-m.t-m.b;
+  const maxV=Math.max(1,...series.flatMap(s=>s.vals.map(v=>v||0)));
+  const niceMax=(()=>{const step=Math.pow(10,Math.floor(Math.log10(maxV||1)));const n=Math.ceil((maxV||1)/step)*step;return n<=0?1:n})();
+  const x=i=>m.l+(cats.length>1?i/(cats.length-1)*iw:iw/2);
+  const y=v=>m.t+ih-(v/niceMax)*ih;
+  const ticks=[0,.25,.5,.75,1].map(f=>Math.round(niceMax*f));
+  const grid=ticks.map(t=>`<line x1="${m.l}" y1="${y(t)}" x2="${m.l+iw}" y2="${y(t)}" stroke="#eef2f5"/><text x="${m.l-6}" y="${y(t)+3}" text-anchor="end" font-size="9.5" fill="#9aa8b3">${t}</text>`).join('');
+  const xl=cats.map((c,i)=>`<text x="${x(i)}" y="${m.t+ih+15}" text-anchor="middle" font-size="9.5" fill="#9aa8b3">${esc(c)}</text>`).join('');
+  const lines=series.map(s=>{
+    const pts=s.vals.map((v,i)=>`${x(i)},${y(v||0)}`).join(' ');
+    const dots=s.vals.map((v,i)=>`<circle cx="${x(i)}" cy="${y(v||0)}" r="3" fill="${s.color}"><title>${esc(cats[i])} · ${esc(s.name)}: ${v||0}건</title></circle>`).join('');
+    return `<polyline points="${pts}" fill="none" stroke="${s.color}" stroke-width="2.3" stroke-linejoin="round" stroke-linecap="round"/>${dots}`;
+  }).join('');
+  return `<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" role="img" aria-label="월별 요청·완료 추이 선 그래프">${grid}${xl}${lines}</svg>`;
+}
 let LEADER_NAMES=null;
 function leaderNames(){
   if(LEADER_NAMES)return LEADER_NAMES;
@@ -192,7 +210,12 @@ function render(box){
 
   // V2: Monthly completions use actual completion dates; backlog carries open cases from earlier periods.
   const monthlyDone=Array.from({length:12},(_,i)=>filt(D,{ignoreYear:true,ignoreMonth:true}).filter(x=>teamsAll.includes(x.team)&&isDone(x)&&String(x.doneDate||'').slice(0,7)===S.year+'-'+String(i+1).padStart(2,'0')).length);
-  const monthlyTrend=chart({w:Math.max(440,box.clientWidth-85),cats:ML,minSlot:58,series:[{name:'신규 요청',vals:regM,color:'#829db5'},{name:'완료',vals:monthlyDone,color:'#247c83'}]});
+  /* "01 월별 요청·완료 추이"는 제목이 '추이'(흐름)인데 실제 표현은 막대그래프였음 — 6~10월에만
+     값이 있고 나머지 7개월은 빈 축이라, 막대보다 선으로 이어 그리면 어디서 늘고 줄었는지 흐름이 더
+     잘 보임(차트 종류 재검토 요청). 신규 요청·완료 두 선을 겹쳐 그려 간격(backlog)이 벌어지는지도
+     함께 보이게 함. 기존 공용 chart()(막대 전용)는 다른 화면에서도 쓰이므로 건드리지 않고, 이 섹션
+     전용 lineChart()를 새로 작성. */
+  const monthlyTrend=lineChart({w:Math.max(440,box.clientWidth-85),h:200,cats:ML,series:[{name:'신규 요청',vals:regM,color:'#829db5'},{name:'완료',vals:monthlyDone,color:'#247c83'}]});
   const teamCompletion=chart({w:Math.max(440,box.clientWidth-85),h:260,cats:teamRows.map(r=>r.team),rotate:true,minSlot:64,series:[{name:'완료',vals:teamRows.map(r=>r.done),color:'#247c83'},{name:'미완료',vals:teamRows.map(r=>r.open+r.over),color:'#c69a65'}]});
   // Approved V2: three fixed source categories, proportional horizontal bars.
   const sourceTotal=rowsM.length;
