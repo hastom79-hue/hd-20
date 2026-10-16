@@ -95,6 +95,21 @@ jobs:
             }
             if(errors.length)throw Error('Browser JS errors: '+errors.join(' | '));
             fs.writeFileSync('v3-browser-evidence/result.json',JSON.stringify({result,errors},null,2));
+            // Verify specialist tabs are reachable without mutating operational data.
+            result.specialist={};
+            for(const [key,selector,file] of [['execution','.mainGrid','04-execution'],['analysis','#hd20OpsTrend','05-analysis']]){
+              await page.locator('#hd20DashboardSectionTabs button[data-dashboard-section="'+key+'"]').click();
+              await page.waitForTimeout(500);
+              const state=await page.evaluate(sel=>{
+                const el=document.querySelector(sel);
+                const r=el?.getBoundingClientRect();
+                return {exists:!!el,visible:!!el&&getComputedStyle(el).display!=='none'&&r.width>0,overflow:document.documentElement.scrollWidth>innerWidth+4};
+              },selector);
+              if(!state.exists||!state.visible||state.overflow)throw Error('V3 specialist '+key+' layout invalid '+JSON.stringify(state));
+              result.specialist[key]=state;
+              await page.screenshot({path:'v3-browser-evidence/'+file+'.png',fullPage:true});
+            }
+            fs.writeFileSync('v3-browser-evidence/result.json',JSON.stringify({result,errors},null,2));
             console.log('EVIDENCE_RESULT',JSON.stringify({result,errors}));
             await browser.close();
           })().catch(e=>{console.error('EVIDENCE_FAIL',e);process.exit(1)});
