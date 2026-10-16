@@ -16,7 +16,11 @@ function date(x){return str(x.due||x.targetDate||x.deadline).slice(0,10)}
 function recurrence(x){return x.recurrence===true||/^(재발|발생|true|1|Y|yes)$/i.test(str(x.recurrenceState??x.recurrent??x['재발여부']))}
 function verified(x){return x.effectVerified===true||/^(유효|적합|검증완료|효과확인|효과확인완료|완료|true|1|Y)$/i.test(str(x.effectState??x.effectResult))}
 function team(x){return str(x.team||x.teamName||x.ownerTeam||x.department||x['팀명'])||'팀 미지정'}
-function month(x){const d=str(x.auditDate||x.completedAt||x.completionDate||x.createdAt||x.date||x.registeredAt);const m=d.match(/^(20\\d{2})[-/.](0?[1-9]|1[0-2])/);return m?m[1]+'-'+m[2].padStart(2,'0'):null}
+/* 정규식에 이스케이프가 이중으로 들어가(파일 상 '\\d', 즉 "리터럴 백슬래시 + d") 있어 어떤 날짜
+   문자열과도 영원히 매치되지 않고 있었음 — month()가 항상 null을 반환해 'B. 월별 Audit·조치 기록
+   추이' 패널이 데이터가 있어도 항상 "해당 분석에 필요한 유효한 원천데이터가 없습니다"로 고정 표시
+   되던 진짜 원인. 정상적인 단일 이스케이프(\d)로 수정. */
+function month(x){const d=str(x.auditDate||x.completedAt||x.completionDate||x.createdAt||x.date||x.registeredAt);const m=d.match(/^(20\d{2})[-/.](0?[1-9]|1[0-2])/);return m?m[1]+'-'+m[2].padStart(2,'0'):null}
 function barPanel(title,items,caption){return '<h3>'+title+'</h3>'+(items.length?'<div class="v3exBars">'+items.map(([name,value,max])=>'<div class="v3exBar"><span>'+escapeHtml(name)+'</span><div><i style="width:'+Math.max(0,Math.min(100,max?100*value/max:0))+'%"></i></div><strong>'+value+'</strong></div>').join('')+'</div>':'<div class="v3exEmpty">해당 분석에 필요한 유효한 원천데이터가 없습니다.</div>')+'<p class="v3exNote">'+caption+'</p>'}
 function escapeHtml(v){return str(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]))}
 function syncExecutionVisibility(){const el=document.getElementById(ID);if(!el)return;const active=document.body.classList.contains('hd20DashboardExecutionActive')&&window.HD20_NAV?.active?.()==='dashboard';el.hidden=!active;el.setAttribute('aria-hidden',active?'false':'true');el.style.setProperty('display',active?'':'none',active?'':'important')}
@@ -30,6 +34,13 @@ const risks=new Map();for(const x of actions){if(!late.includes(x)&&!recurrence(
 panels[3].innerHTML=barPanel('E. 유지·재발 확인 현황',actions.length?[['효과 확인',effect.length,actions.length],['재발 기록',recur.length,actions.length]]:[],'효과 확인과 재발은 독립된 집합으로 중복될 수 있습니다. 6개월 유지율은 기존 공식 KPI를 따릅니다.');
 const tbody=el.querySelector('tbody');const priority=actions.filter(x=>late.includes(x)||recurrence(x)).sort((a,b)=>Number(recurrence(b))-Number(recurrence(a))||str(date(a)).localeCompare(str(date(b)))).slice(0,5);tbody.innerHTML=priority.length?priority.map((x,i)=>'<tr><td>'+(i+1)+'</td><td>'+escapeHtml(team(x))+'</td><td>'+ (recurrence(x)?'재발':'기한 초과')+'</td><td>'+escapeHtml(date(x)||'기한 미지정')+'</td></tr>').join(''):'<tr><td colspan="4">근거가 확인된 지연·재발 조치가 없습니다.</td></tr>';
 }
-function boot(){render();const watch=new MutationObserver(()=>{syncExecutionVisibility();suppressLegacy()});watch.observe(document.body,{attributes:true,attributeFilter:['class']});['hd20-dashboard-ready','hd20-kpi-source-updated','hd20-audit-updated','hd20-action-updated'].forEach(ev=>window.addEventListener(ev,render))}
+/* development-demo-mode.js가 이 스크립트보다 먼저 로드·boot()되어 데이터 시드 직후 동기적으로
+   'hd20-kpi-source-updated' 등을 dispatchEvent하는데, 이 스크립트의 리스너는 그보다 늦게(스크립트
+   로드 순서상 나중에) 등록되어 그 이벤트를 영원히 놓치고 있었음 — 그 결과 'B. 월별 Audit·조치 기록
+   추이' 패널이 최초의 빈 데이터 상태로 render()된 뒤 다시는 갱신되지 않아 "해당 분석에 필요한 유효한
+   원천데이터가 없습니다"로 굳어 있던 것(표시 로직의 타이밍 결함이지 실제 데이터 부재가 아니었음).
+   리스너를 먼저 등록하고, 최초 render()는 한 틱 지연시켜 다른 스크립트의 동기 초기화가 끝난 뒤
+   실행되도록 보강. */
+function boot(){['hd20-dashboard-ready','hd20-kpi-source-updated','hd20-audit-updated','hd20-action-updated'].forEach(ev=>window.addEventListener(ev,render));const watch=new MutationObserver(()=>{syncExecutionVisibility();suppressLegacy()});watch.observe(document.body,{attributes:true,attributeFilter:['class']});setTimeout(render,0)}
 window.HD20V3Execution={render};document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot,{once:true}):boot();
 })();
