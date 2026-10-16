@@ -35,10 +35,14 @@ function boot(){
     이미 저장된(실제 운영) 인원 마스터가 있으면 절대 덮어쓰지 않음. */
  try{
    const HC_KEY='hd20TeamHeadcountMasterV1';
-   if(!localStorage.getItem(HC_KEY)){
-     const hc=teams.map((team,i)=>({team,headcount:20+(i%6)*3}));
-     localStorage.setItem(HC_KEY,JSON.stringify(hc));
-   }
+   const raw=localStorage.getItem(HC_KEY);
+   let existing=[];try{const v=JSON.parse(raw||'[]');if(Array.isArray(v))existing=v}catch{}
+   // Preserve every existing headcount row. Fill only teams without a master entry,
+   // and mark synthetic additions explicitly for safe review/removal.
+   const known=new Set(existing.map(r=>String(r.team||'').trim()));
+   const missing=teams.filter(t=>!known.has(t));
+   if(missing.length){const hc=missing.map((team,i)=>({team,headcount:20+(teams.indexOf(team)%6)*3,source:SRC,isDemo:true}));localStorage.setItem(HC_KEY,JSON.stringify([...existing,...hc]));}
+   window.HD20_DEMO_HEADCOUNT_STATUS={masterTeams:teams.length,existing:existing.length,filled:missing.length};
  }catch{}
  const now=new Date(),ymd=d=>d.toISOString().slice(0,10),days=n=>{const d=new Date(now);d.setDate(d.getDate()-n);return ymd(d)};
  const weak=team=>/중형|성능|트러블/.test(team),strong=team=>/프레임|Boom/.test(team);
