@@ -30,7 +30,13 @@ el.querySelector('.v3exKpis').innerHTML=metrics.map(([key,title,hint,unit])=>{le
 const panels=el.querySelectorAll('.v3exGrid .v3exPanel');
 const counts=new Map();for(const x of [...audits,...actions]){const m=month(x);if(m)counts.set(m,(counts.get(m)||0)+1)}const timeline=[...counts].sort((a,b)=>a[0].localeCompare(b[0])).slice(-12);panels[0].innerHTML=barPanel('B. 월별 Audit·조치 기록 추이',timeline.map(([m,n])=>[m,n,Math.max(...timeline.map(x=>x[1]))]),'Audit와 조치 기록 중 유효한 날짜가 있는 항목의 월별 건수입니다. 실행률과 동일한 지표로 해석하지 않습니다.');
 const statuses=[['완료',done.length],['진행·미완료',actions.length-done.length],['기한 초과',late.length]];panels[1].innerHTML=barPanel('C. 개선조치 상태 구성',actions.length?statuses.map(([k,v])=>[k,v,actions.length]):[],'기한 초과는 진행·미완료에 포함되므로 상태 건수를 합산하지 않습니다.');
-const risks=new Map();for(const x of actions){if(!late.includes(x)&&!recurrence(x))continue;const k=team(x);risks.set(k,(risks.get(k)||0)+1)}const riskList=[...risks].sort((a,b)=>b[1]-a[1]).slice(0,8);panels[2].innerHTML=barPanel('D. 팀별 지연·재발 위험건수',riskList.map(([k,v])=>[k,v,riskList[0][1]]),'기한 초과 또는 재발 표시된 조치의 중복 제거 건수입니다. 위험도 점수로 환산하지 않습니다.');
+const risks=new Map();for(const x of actions){if(!late.includes(x)&&!recurrence(x))continue;const k=team(x);risks.set(k,(risks.get(k)||0)+1)}const riskList=[...risks].sort((a,b)=>b[1]-a[1]).slice(0,8);
+/* max를 1등 팀 값 그대로 쓰면, 모든 팀 건수가 같을 때(현재 전부 2건) 전부 value/max=100%가 되어
+   "모든 팀이 똑같이 심각하다"는 잘못된 인상을 줌(사용자 지적 연장: 탭4 진행바가 전부 꽉 차 보이는
+   문제). 축 상한에 여유를 둬 데이터가 같을 때는 막대가 적당히만 차 보이게 하고, 실제로 어떤 팀이
+   더 심해지면 그 차이가 막대 길이로 뚜렷하게 드러나도록 함. */
+const riskMax=riskList.length?Math.max(riskList[0][1]+2,Math.ceil(riskList[0][1]*1.4)):1;
+panels[2].innerHTML=barPanel('D. 팀별 지연·재발 위험건수',riskList.map(([k,v])=>[k,v,riskMax]),'기한 초과 또는 재발 표시된 조치의 중복 제거 건수입니다. 위험도 점수로 환산하지 않습니다.');
 panels[3].innerHTML=barPanel('E. 유지·재발 확인 현황',actions.length?[['효과 확인',effect.length,actions.length],['재발 기록',recur.length,actions.length]]:[],'효과 확인과 재발은 독립된 집합으로 중복될 수 있습니다. 6개월 유지율은 기존 공식 KPI를 따릅니다.');
 const tbody=el.querySelector('tbody');const priority=actions.filter(x=>late.includes(x)||recurrence(x)).sort((a,b)=>Number(recurrence(b))-Number(recurrence(a))||str(date(a)).localeCompare(str(date(b)))).slice(0,5);tbody.innerHTML=priority.length?priority.map((x,i)=>'<tr><td>'+(i+1)+'</td><td>'+escapeHtml(team(x))+'</td><td>'+ (recurrence(x)?'재발':'기한 초과')+'</td><td>'+escapeHtml(date(x)||'기한 미지정')+'</td></tr>').join(''):'<tr><td colspan="4">근거가 확인된 지연·재발 조치가 없습니다.</td></tr>';
 }
