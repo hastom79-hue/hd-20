@@ -46,6 +46,13 @@ body{background:var(--hd-bg);color:var(--hd-text);font-size:15px;line-height:1.5
 .beginnerHint{border-left:0;border:1px solid var(--hd-line);border-radius:7px;background:#fff;color:var(--hd-muted);padding:8px 12px}
 .kpi,.card,.awCard{border-color:var(--hd-line);border-radius:10px;box-shadow:var(--hd-shadow)}
 .kpi{border-left:4px solid var(--hd-primary);min-height:100px}
+/* 대시보드 탭 전면 재검토(사용자 지적: "5번 탭 외에는 아무것도 맘에 들지 않는다") — 가장 먼저 눈에
+   띄는 공통 결함인 'KPI 숫자 카드'의 디자인 불일치를 해소. 탭1(.cards .kpi)은 왼쪽 색상 포인트 바와
+   그림자가 있어 카드 경계가 뚜렷한데, 탭2(.ibKpi)·탭3(.rqKpi)은 테두리가 거의 보이지 않는 옅은 선과
+   그림자 없는 평면 디자인이라 같은 "핵심 수치"인데도 탭마다 완전히 다른 비중으로 느껴졌음. 1·2·3번
+   탭의 숫자 카드가 같은 디자인 언어(왼쪽 포인트 바 + 그림자 + 통일된 radius/여백)를 쓰도록 보강. */
+#hd20ImproveBoard .ibKpi,#hd20RequestBoard .rqKpi{border:1px solid var(--hd-line);border-left:4px solid var(--hd-primary);border-radius:var(--hd-r);box-shadow:var(--hd-shadow);background:var(--hd-panel);min-height:74px;display:flex;flex-direction:column;justify-content:center}
+#hd20RequestBoard .rqKpi.risk{border-left-color:var(--hd-danger)}
 .kpi:nth-child(2){border-left-color:var(--hd-warn)}.kpi:nth-child(3){border-left-color:var(--hd-success)}.kpi:nth-child(4){border-left-color:var(--hd-primary-dark)}.kpi:nth-child(5){border-left-color:#6556b8}
 .kpi small{font-size:13px;color:var(--hd-muted)}.kpi b{font-size:30px;color:var(--hd-primary-dark)}
 .cardHead,.awHead{background:#F8FAFB;border-bottom-color:var(--hd-line);padding:11px 15px}
