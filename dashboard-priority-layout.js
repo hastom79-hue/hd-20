@@ -25,7 +25,7 @@ function ensure(){
   let root=document.getElementById(ID);
   if(!root){
     root=document.createElement('section');root.id=ID;root.className='hd20DashboardPriority';
-    root.innerHTML=`<div class="hd20DashboardPriorityHead"><div><small>운영 상태</small><h2>운영 건전성 KPI</h2><p>현재 상태를 확인하고 판정·유지·개선조치 화면으로 바로 이동합니다.</p></div><div class="hd20DashboardPriorityGuide"><span>현재 상태</span><i>→</i><span>판단</span><i>→</i><span>다음 행동</span></div></div><div class="hd20DashboardPriorityGroups"></div>`;
+    root.innerHTML=`<div class="hd20DashboardPriorityHead"><div><small>운영 상태</small><h2>운영 건전성 KPI</h2><p>현재 상태를 확인하고 판정·유지·개선조치 화면으로 바로 이동합니다.</p></div><div class="hd20DashboardPriorityGuide"><span>현재 상태</span><i>→</i><span>판단</span><i>→</i><span>다음 행동</span></div></div><div class="hd20V3Readiness" aria-live="polite"></div><div class="hd20DashboardPriorityGroups"></div>`;
     cards.insertAdjacentElement('afterend',root);
   }
   const main=document.querySelector('.mainGrid');if(main&&!main.previousElementSibling?.classList.contains('hd20DashboardSectionLabel')){const label=document.createElement('div');label.className='hd20DashboardSectionLabel';label.innerHTML='<div><small>EXECUTION & SUSTAIN</small><b>팀별 실행 · Audit 유지관리</b></div><span>팀별 활동에서 Audit·개선조치까지 연결 확인</span>';main.insertAdjacentElement('beforebegin',label)}
@@ -39,6 +39,14 @@ function render(){
   removeRetiredStandardTrendLabel();
   const root=ensure();if(!root)return;
   const snap=window.HD20KPIData?.snapshot?.();const op=window.HD20KPIData?.operational?.(snap)||{};
+  // V3 data readiness is derived exclusively from the existing operational KPI snapshot.
+  // Missing data is never presented as zero or as a calculated risk score.
+  const ready=KPI.filter(x=>op[x.key]!==null&&op[x.key]!==undefined&&Number.isFinite(Number(op[x.key])));
+  const missing=KPI.filter(x=>!ready.includes(x));
+  const readiness=root.querySelector('.hd20V3Readiness');
+  if(readiness){
+    readiness.innerHTML='<div class="hd20V3ReadinessMain"><strong>운영지표 데이터 상태</strong><span>'+ready.length+' / '+KPI.length+'개 연결 확인</span></div>'+(missing.length?'<p>확인 필요: '+missing.map(x=>x.label).join(' · ')+'</p>':'<p>6개 운영지표에 값이 연결되어 있습니다. 실제 업무 성과 판정은 별도 확인이 필요합니다.</p>');
+  }
   const groups=root.querySelector('.hd20DashboardPriorityGroups');
   groups.innerHTML=GROUPS.map(g=>{const items=KPI.filter(x=>x.tab===g.key);return `<section class="hd20HealthGroup" data-domain="${g.key}"><header><div><small>STEP ${g.step}</small><b>${g.label}</b><p>${g.summary}</p></div><button type="button" data-group-tab="${g.key}">업무화면 →</button></header><div class="hd20HealthGroupGrid">${items.map(x=>card(x,KPI.indexOf(x),op)).join('')}</div></section>`}).join('');
   groups.querySelectorAll('[data-group-tab]').forEach(btn=>btn.addEventListener('click',()=>gotoTab(btn.dataset.groupTab)));
