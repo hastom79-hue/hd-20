@@ -95,6 +95,22 @@ jobs:
             }
             if(errors.length)throw Error('Browser JS errors: '+errors.join(' | '));
             fs.writeFileSync('v3-browser-evidence/result.json',JSON.stringify({result,errors},null,2));
+            // Verify tab ownership: only the selected section's main target is visible.
+            const ownership=[['summary','#hd20DashboardPriority'],['improve','#hd20ImproveBoard'],['request','#hd20RequestBoard'],['execution','.mainGrid'],['analysis','#hd20OpsTrend']];
+            result.tabIsolation={};
+            for(const [key] of ownership){
+              await page.locator('#hd20DashboardSectionTabs button[data-dashboard-section="'+key+'"]').click();
+              await page.waitForTimeout(120);
+              const states=await page.evaluate(entries=>Object.fromEntries(entries.map(([name,selector])=>{
+                const el=document.querySelector(selector);
+                if(!el)return [name,'missing'];
+                const css=getComputedStyle(el),rect=el.getBoundingClientRect();
+                return [name,css.display!=='none'&&css.visibility!=='hidden'&&rect.width>0&&rect.height>0];
+              })),ownership);
+              if(states[key]!==true)throw Error('V3 '+key+' target not visible '+JSON.stringify(states));
+              for(const [other] of ownership){if(other!==key&&states[other]===true)throw Error('V3 tab isolation leak '+key+' -> '+other+' '+JSON.stringify(states));}
+              result.tabIsolation[key]=states;
+            }
             // Verify specialist tabs are reachable without mutating operational data.
             result.specialist={};
             for(const [key,selector,file] of [['execution','.mainGrid','04-execution'],['analysis','#hd20OpsTrend','05-analysis']]){
