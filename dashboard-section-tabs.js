@@ -25,6 +25,8 @@ body.hd20DashboardImproveActive #hd20ImproveBoard .ibPanel,body.hd20DashboardReq
 body.hd20DashboardImproveActive #hd20ImproveBoard .ibHead,body.hd20DashboardRequestActive #hd20RequestBoard .ibHead{min-height:48px}
 body.hd20DashboardAnalysisActive #hd20OpsTrend,body.hd20DashboardExecutionActive .mainGrid{min-width:0}
 @media(max-width:760px){body.hd20DashboardSummaryActive .cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}}
+/* V3 cleanup: retire the legacy duplicate Audit donut, Action Summary, and old dashboard lower grid on every dashboard tab. */
+body.hd20DashboardSummaryActive .mainGrid,body.hd20DashboardImproveActive .mainGrid,body.hd20DashboardRequestActive .mainGrid,body.hd20DashboardExecutionActive .mainGrid,body.hd20DashboardAnalysisActive .mainGrid,body.hd20DashboardSummaryActive .bottomGrid,body.hd20DashboardImproveActive .bottomGrid,body.hd20DashboardRequestActive .bottomGrid,body.hd20DashboardExecutionActive .bottomGrid,body.hd20DashboardAnalysisActive .bottomGrid{display:none!important}
 /* Enforce exclusive ownership of legacy execution panels in every non-execution dashboard. */
 body:not(.hd20DashboardExecutionActive) #hd20V3Execution{display:none!important}body.hd20DashboardExecutionActive .mainGrid,body.hd20DashboardExecutionActive #hd20OperationalBridge{display:none!important}
 body.hd20DashboardSummaryActive .mainGrid,body.hd20DashboardImproveActive .mainGrid,body.hd20DashboardRequestActive .mainGrid,body.hd20DashboardAnalysisActive .mainGrid{display:none!important}
