@@ -1,9 +1,13 @@
 (()=>{'use strict';
 const ID='hd20DashboardPriority';
+/* step:'03'/'04'/'05'가 바로 위 '업무 흐름' 배너(5S 활동 등록→...→Audit·유지관리, 8단계)와는 전혀
+   다른, 이 카드 그룹 자체만의 번호 체계였음(실제로는 3개 그룹뿐인데 번호가 3부터 시작) — "왜 STEP
+   01·02가 없지?"라는 혼란을 주고 있었음(사용자 지적: "전면 재검토"). 업무 흐름 배너와 번호 체계가
+   섞이지 않도록 이 카드들은 숫자 대신 단순한 그룹 순번(①②③)으로 표기해 혼동을 없앰. */
 const GROUPS=[
-  {key:'advancement',step:'03',label:'고도화·판정',summary:'등록된 사례를 공식 판정과 고도화 수준으로 확인'},
-  {key:'audit',step:'04',label:'유지·Audit',summary:'Audit 이후 6개월 유지와 부적합 재발을 확인'},
-  {key:'action',step:'05',label:'개선조치',summary:'완료기한이 지정된 개선조치의 실행상태를 확인'}
+  {key:'advancement',step:'①',label:'고도화·판정',summary:'등록된 사례를 공식 판정과 고도화 수준으로 확인'},
+  {key:'audit',step:'②',label:'유지·Audit',summary:'Audit 이후 6개월 유지와 부적합 재발을 확인'},
+  {key:'action',step:'③',label:'개선조치',summary:'완료기한이 지정된 개선조치의 실행상태를 확인'}
 ];
 const KPI=[
   {key:'judgmentRate',label:'공식 판정 완료율',unit:'%',tab:'advancement',hint:'판정대상 중 공식 판정 완료 비율'},
@@ -49,10 +53,18 @@ function render(){
   const missing=KPI.filter(x=>!ready.includes(x));
   const readiness=root.querySelector('.hd20V3Readiness');
   if(readiness){
-    readiness.innerHTML='<div class="hd20V3ReadinessMain"><strong>운영지표 데이터 상태</strong><span>'+ready.length+' / '+KPI.length+'개 연결 확인</span></div>'+(missing.length?'<p>확인 필요: '+missing.map(x=>x.label).join(' · ')+'</p>':'<p>6개 운영지표에 값이 연결되어 있습니다. 실제 업무 성과 판정은 별도 확인이 필요합니다.</p>');
+    /* 6개 지표가 전부 정상 연결된 평상시에도 매번 초록 포인트 바가 있는 독립된 박스로 눈에 띄게
+       보여, 바로 아래 핵심 KPI 카드들보다 이 "데이터 상태 점검" 안내가 먼저 시선을 끄는 역전 현상이
+       있었음(사용자 지적: "전면 재검토") — 정상(6/6 연결)일 때는 작은 한 줄 안내로 축소하고, 실제로
+       누락된 지표가 있을 때만(missing.length>0) 원래의 강조된 박스로 표시해 "이상 있을 때만 눈에
+       띄는" 방식으로 전환. */
+    readiness.classList.toggle('ok',!missing.length);
+    readiness.innerHTML=missing.length
+      ?'<div class="hd20V3ReadinessMain"><strong>운영지표 데이터 상태</strong><span>'+ready.length+' / '+KPI.length+'개 연결 확인</span></div><p>확인 필요: '+missing.map(x=>x.label).join(' · ')+'</p>'
+      :'<p class="hd20V3ReadinessOk">운영지표 '+KPI.length+'개 전부 정상 연결됨 · 실제 업무 성과 판정은 별도 확인이 필요합니다.</p>';
   }
   const groups=root.querySelector('.hd20DashboardPriorityGroups');
-  groups.innerHTML=GROUPS.map(g=>{const items=KPI.filter(x=>x.tab===g.key);return `<section class="hd20HealthGroup" data-domain="${g.key}"><header><div><small>STEP ${g.step}</small><b>${g.label}</b><p>${g.summary}</p></div><button type="button" data-group-tab="${g.key}">업무화면 →</button></header><div class="hd20HealthGroupGrid">${items.map(x=>card(x,KPI.indexOf(x),op)).join('')}</div></section>`}).join('');
+  groups.innerHTML=GROUPS.map(g=>{const items=KPI.filter(x=>x.tab===g.key);return `<section class="hd20HealthGroup" data-domain="${g.key}"><header><div><small>확인 영역 ${g.step}</small><b>${g.label}</b><p>${g.summary}</p></div><button type="button" data-group-tab="${g.key}">업무화면 →</button></header><div class="hd20HealthGroupGrid">${items.map(x=>card(x,KPI.indexOf(x),op)).join('')}</div></section>`}).join('');
   groups.querySelectorAll('[data-group-tab]').forEach(btn=>btn.addEventListener('click',()=>gotoTab(btn.dataset.groupTab)));
 }
 function boot(){removeRetiredStandardTrendLabel();render();setTimeout(removeRetiredStandardTrendLabel,500);setTimeout(removeRetiredStandardTrendLabel,1800);['hd20-kpi-source-updated','hd20-gmes-5s-imported','hd20-gmes-5s-judged','hd20-audit-updated','hd20-action-updated'].forEach(ev=>window.addEventListener(ev,()=>setTimeout(render,0)))}
