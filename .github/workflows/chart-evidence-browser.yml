@@ -47,6 +47,9 @@ jobs:
                 const modal=page.locator('#hd20BoardEvidence.on');
                 await modal.waitFor({state:'visible',timeout:5000});
                 const modalRows=await modal.locator('tbody tr').count();
+                const countLabel=await modal.locator('.evHead span').innerText();
+                const expectedRows=Number((countLabel.match(/^([\\d,]+)건/)||[])[1]?.replace(/,/g,''));
+                if(!Number.isFinite(expectedRows))throw Error(name+'/'+key+' modal row count unavailable: '+countLabel);
                 const modalHeaders=await modal.locator('thead th').allTextContents();
                 await modal.locator('[data-ev="close"]').click();
                 const downloadPromise=page.waitForEvent('download',{timeout:8000});
@@ -59,6 +62,8 @@ jobs:
                 if(!raw.startsWith('\uFEFF')||!download.suggestedFilename().endsWith('.csv'))throw Error(name+'/'+key+' invalid CSV');
                 if(name==='request'&&!csvHeader.includes('요청번호'))throw Error(name+'/'+key+' missing request ID header');
                 if(modalHeaders.some(h=>!csvHeader.includes(h.trim())))throw Error(name+'/'+key+' modal/CSV headers differ');
+                if(lines.length-1!==expectedRows)throw Error(name+'/'+key+' modal/CSV row count mismatch: '+expectedRows+' vs '+(lines.length-1));
+                if(modalRows!==Math.min(200,expectedRows||1))throw Error(name+'/'+key+' rendered row count mismatch');
                 result[name].charts.push({key,modalRows,csvRows:lines.length-1,filename:download.suggestedFilename()});
               }
             }
