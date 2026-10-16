@@ -104,6 +104,21 @@ jobs:
             const requestV5=await page.evaluate(()=>{const el=document.getElementById('hd20RequestBoard');const svg=el?.querySelector('.ibBody>svg');const body=svg?.parentElement;return {teamBars:el?.querySelectorAll('.rqV5TeamLine').length,oldMatrix:el?.querySelectorAll('.rqMatrix').length,overflow:body?body.scrollWidth>body.clientWidth+2:false}});
             if(requestV5.oldMatrix||requestV5.overflow)throw Error('Request V5 charts overflow or legacy matrix remains '+JSON.stringify(requestV5));
             result.requestV5=requestV5;
+            const demoIntegrity=await page.evaluate(()=>{
+              const key='hd20ActionCasesV2';const rows=JSON.parse(localStorage.getItem(key)||'[]').filter(r=>r.source==='demo-seed');
+              const master=window.HD20ProductionTeamMaster?.teamNames?.()||[];
+              const groups=new Map();for(const r of rows){if(!groups.has(r.team))groups.set(r.team,[]);groups.get(r.team).push(r)}
+              const completion=[...groups.values()].map(a=>Math.round(100*a.filter(r=>r.status==='완료').length/a.length));
+              const ages=new Set(rows.filter(r=>r.status==='기한초과').map(r=>r.dueDate));
+              const fields=rows.every(r=>r.area&&r.title&&r.action&&r.owner&&r.createdAt&&r.dueDate);
+              const doneEvidence=rows.filter(r=>r.status==='완료').every(r=>r.doneDate&&r.after&&r.evidenceNote);
+              const distinctTitles=new Set(rows.map(r=>r.title)).size;
+              const invalidTeams=[...groups.keys()].filter(t=>!master.includes(t));
+              return {rows:rows.length,teams:groups.size,masterTeams:master.length,completionRates:new Set(completion).size,overdueDates:ages.size,distinctTitles,fields,doneEvidence,invalidTeams};
+            });
+            if(demoIntegrity.rows<30||demoIntegrity.teams<5||demoIntegrity.completionRates<4||demoIntegrity.overdueDates<8||demoIntegrity.distinctTitles<8||!demoIntegrity.fields||!demoIntegrity.doneEvidence||demoIntegrity.invalidTeams.length)throw Error('Synthetic action dataset is not realistic or team-aligned '+JSON.stringify(demoIntegrity));
+            result.demoIntegrity=demoIntegrity;
+
             const teamScroll=await page.evaluate(()=>{const el=document.querySelector('#hd20RequestBoard .rqTeamDetail .rqScroll');if(!el)return {exists:false};const style=getComputedStyle(el);return {exists:true,overflowY:style.overflowY,maxHeight:style.maxHeight,scrollHeight:el.scrollHeight,clientHeight:el.clientHeight}});
             if(!teamScroll.exists||teamScroll.overflowY==='auto'||teamScroll.overflowY==='scroll'||teamScroll.scrollHeight>teamScroll.clientHeight+2)throw Error('Team detail internal vertical scrollbar '+JSON.stringify(teamScroll));
             result.teamScroll=teamScroll;
