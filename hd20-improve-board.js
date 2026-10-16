@@ -32,11 +32,43 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
 #${ID} .ibLossCol b{font-size:10px;color:#a0453a;font-weight:850;height:12px}#${ID} .ibLeg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
 #${ID} svg text{font-family:inherit}#${ID} .hit{cursor:pointer}#${ID} .hit:hover{opacity:.85}
 #${ID} .ibFoot{margin:10px 2px 0;font-size:12px;color:#7a8a97}
+/* Fit both chart canvases to their panels instead of creating horizontal scrollbars. */
+#${ID} .ibBody{overflow-x:hidden!important;max-width:100%;min-width:0}
+#${ID} .ibBody svg{display:block;width:100%!important;max-width:100%!important;height:auto!important;min-width:0;overflow:visible}
+#${ID} .ibRow,#${ID} .ibPanel{min-width:0;max-width:100%}
 @media(max-width:1100px){#${ID} .r1,#${ID} .r3{grid-template-columns:1fr}}
+
+/* Unified restrained dashboard visual system: one typography and spacing scale. */
+#${ID}{max-width:100%;box-sizing:border-box;padding:20px 22px;border-color:#dbe4eb;border-radius:12px;box-shadow:0 2px 10px rgba(24,49,69,.035)}
+#${ID} .ibTitle{align-items:center;gap:8px 16px;padding-bottom:12px;border-bottom:1px solid #e9eef2}
+#${ID} h2{font-size:19px;letter-spacing:-.035em;line-height:1.35;font-weight:850}
+#${ID} .ibNote{font-size:12px;line-height:1.5;font-weight:600;color:#64788a;margin:7px 0 12px}
+#${ID} .ibBar{gap:8px 14px;padding:12px 14px;background:#f8fafc;border-color:#e5ebf0;border-radius:8px}
+#${ID} .ibBar label{font-size:12px;font-weight:700;color:#455d70}
+#${ID} .ibBar select,#${ID} .ibBar input{min-width:0;max-width:100%;height:34px;border-color:#d7e0e8;border-radius:6px;font-size:12px}
+#${ID} .ibBar button{height:34px;font-size:12px;font-weight:750;border-radius:6px}
+#${ID} .ibRow{gap:12px;margin-top:12px}
+#${ID} .ibPanel{min-width:0;border-color:#e0e8ee;border-radius:9px;box-shadow:none}
+#${ID} .ibHead{min-height:38px;box-sizing:border-box;padding:9px 13px;background:#f7f9fb;border-bottom-color:#e5ebf0;font-size:13px;line-height:1.35;font-weight:800}
+#${ID} .ibHead em{font-size:11px;font-weight:650;color:#718494}
+#${ID} .ibBody{padding:12px;min-width:0}
+#${ID} .ibLeg{gap:8px 14px;font-size:11px;font-weight:650;color:#718494}
+#${ID} .ibFoot{font-size:11px;line-height:1.6;color:#81909e}
+#${ID} .ibKpis,#${ID} .rqKpis{gap:10px;margin:12px 0}
+#${ID} .ibKpi,#${ID} .rqKpi{min-width:0;padding:12px 14px;border-color:#e2e9ef;border-radius:8px;background:#fcfdfe}
+#${ID} .ibKpi small,#${ID} .rqKpi small{font-size:11px;font-weight:650;line-height:1.4}
+#${ID} .ibKpi b,#${ID} .rqKpi b{font-size:22px;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+#${ID} .rqGrid{font-size:12px}
+#${ID} .rqGrid th{padding:9px 10px;font-weight:750;background:#f5f8fa}
+#${ID} .rqGrid td{padding:9px 10px}
+#${ID} .rqGrid tbody tr:hover td{background:#f8fafc}
+#${ID} .rqCaveat{background:#fffaf0;border-color:#f0e7d1;color:#786b51;font-size:11px}
+@media(max-width:700px){#${ID}{padding:12px;border-radius:9px}#${ID} .ibTitle{align-items:flex-start}#${ID} h2{font-size:17px}#${ID} .ibBar{padding:10px;gap:8px}#${ID} .ibBar label{flex:1 1 135px;justify-content:space-between}#${ID} .ibBar select{max-width:65%}#${ID} .ibBar .sp{display:none}#${ID} .ibBar button{flex:1 1 auto}#${ID} .ibBody{padding:8px}#${ID} .ibHead{padding:8px 10px}}
+
 .app.awFocused #${ID}{display:none!important}
 @media print{#${ID} .ibBar,#${ID} .ibEv{display:none!important}#${ID} .ibBody{overflow:visible!important}#${ID} svg{width:100%!important;height:auto!important;max-width:100%}#${ID} .ibPanel{break-inside:avoid;page-break-inside:avoid}#${ID} .ibRow{grid-template-columns:1fr!important}}`;document.head.appendChild(s)}
 function data(){
-  const K=window.HD20KPIData,snap=K?.snapshot?.()||{},rows=snap.rows||[],M=window.HD20ProductionTeamMaster,teams=M?.teamNames?.()||[],HC=window.HD20_HEADCOUNT_MASTER||[];
+  const K=window.HD20KPIData,snap=K?.snapshot?.()||{},rows=snap.rows||[],M=window.HD20ProductionTeamMaster,teams=[...new Set([...(M?.teamNames?.()||[]),...rows.map(r=>r.team).filter(Boolean)])],HC=(()=>{let stored=[];try{const v=JSON.parse(localStorage.getItem('hd20TeamHeadcountMasterV1')||'[]');if(Array.isArray(v))stored=v}catch{}const canonical=window.HD20_HEADCOUNT_MASTER||[];const byTeam=new Map(stored.map(x=>[x.team,x]));canonical.forEach(x=>{if(Number(x.headcount)>0)byTeam.set(x.team,x)});return [...byTeam.values()]})();
   const hcOf=t=>{const v=Number(HC.find(h=>h.team===t)?.headcount);return Number.isFinite(v)&&v>0?v:0};
   const groupOf=t=>M?.groupOf?.(t)||'';
   const years=[...new Set(rows.map(r=>String(r.date||r.regDate||'').slice(0,4)).filter(Boolean))].sort();
@@ -133,6 +165,8 @@ function render(box){
 <p class="ibFoot">※ 5S 활동 = GMES 원천 5S 활동 등록(상단 지표와 같은 데이터). 완료·확정 = 상태가 완료 또는 확정. 고도화 확정 = 5S 고도화 공식 판정이 '확정'인 건(확정일 기준, 상단 '신규 확보'와 같은 기준). 인당 = 건수 ÷ 팀 인원(팀 인원 마스터). 참여율 = 당월 5S 활동을 1건 이상 등록한 사람 수 ÷ 총원(${hcAll}명). 팀 막대를 누르면 아래 두 그래프가 그 팀으로 바뀝니다.</p>`;
   const cols=['등록일','팀','5S 유형','등록자','문제점','개선내용','상태','고도화 판정','확정일','수평전개'],mapR=r=>[String(r.date||r.regDate||'').slice(0,10),r.team,r.type,r.owner,r.problem,r.improvement,r.status,r.judgeState||'',r.judgeState==='확정'?cdOf(r):'',r.horizontalRollout===true?'대상':''],sortT=a=>[...a].sort((x,y)=>String(x.team).localeCompare(String(y.team),'ko')||String(y.date).localeCompare(String(x.date)));
   const EV={a:['5S 유형별 근거 데이터 ('+(S.month?+S.month+'월':'연간누적')+')',rowsM],b:['월별 근거 데이터 ('+S.year+'년)',rowsY],c:['팀별 근거 데이터 ('+(S.month?+S.month+'월':'연간누적')+')',sortT(rowsM)],d:['선택 팀 근거 데이터 · '+S.team,tr],e:['선택 팀 고도화 확정·수평전개 근거 · '+S.team,teamConf.filter(r=>cy(r)===S.year)]};
+  const downloadEvidence=(cols,rows,file)=>{const csv='\ufeff'+[cols,...rows].map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download=file+'.csv';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)};
+  box.querySelectorAll('[data-evk]').forEach(b=>{const dl=document.createElement('button');dl.type='button';dl.className='ibEv';dl.textContent='엑셀 추출';dl.style.marginLeft='6px';dl.addEventListener('click',()=>{const key=b.dataset.evk;const [title,rows]=EV[key];downloadEvidence(cols,rows.map(mapR),'5S_자율개선_차트_'+key);});b.insertAdjacentElement('afterend',dl)});
   box.querySelectorAll('[data-evk]').forEach(b=>b.onclick=()=>{const [t,a]=EV[b.dataset.evk];openRows({title:t,cols,rows:a.map(mapR),file:'5S_자율개선_근거_'+b.dataset.evk})});
   box.querySelectorAll('[data-f]').forEach(el=>el.onchange=()=>{S[el.dataset.f]=el.value;if(el.dataset.f==='group')S.team='';render(box)});
   box.querySelector('[data-ib="go"]').onclick=()=>render(box);box.querySelector('[data-ib="print"]').onclick=()=>window.print();
@@ -145,17 +179,18 @@ function exportCsv({S,tv,A,ML,dVals,per}){
   out.push([],['[팀별]','건수','팀 인원',per?'인당 개선건수':'건수']);tv.forEach(x=>out.push([x.t,x.c,x.h,per?(x.h?(x.c/x.h).toFixed(3):''):x.c]));
   out.push([],[`[단일 팀: ${S.team}] 월별`,'값']);ML.forEach((m,i)=>out.push([m,dVals[i].toFixed(3)]));
   const text='\ufeff'+out.map(r=>r.map(q).join(',')).join('\r\n'),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:'text/csv;charset=utf-8'}));a.download=`5S_자율개선종합_${S.year}${S.month||''}.csv`;document.body.appendChild(a);a.click();a.remove()}
+function safeRender(box){if(!box)return;try{render(box)}catch(error){console.error('HD20 improve board render error',error);box.textContent='5S 자율개선 종합 대시보드 표시 오류: '+String(error?.message||error)}}
 function ensure(){
-  if(!window.HD20KPIData?.snapshot||!window.HD20ProductionTeamMaster)return false;
+  if(!window.HD20KPIData?.snapshot)return false;
   css();let box=document.getElementById(ID);
   if(!box){const anchor=document.getElementById('hd20DashboardPriority')||document.querySelector('.cards');if(!anchor)return false;box=document.createElement('section');box.id=ID;anchor.insertAdjacentElement('afterend',box);
     const T=window.HD20_DASHBOARD_TABS;if(T?.apply)T.apply(T.active?.()||'summary',{scroll:false})}
-  render(box);return true}
+  safeRender(box);return true}
 let tries=0;(function boot(){if(!ensure()&&tries++<80)setTimeout(boot,150)})();
-document.addEventListener('click',e=>{if(e.target.closest?.('#hd20DashboardSectionTabs button[data-dashboard-section="improve"]'))setTimeout(()=>{const b=document.getElementById(ID);if(b)render(b)},80)},true);
-['hd20-kpi-source-updated','hd20-gmes-5s-imported','hd20-gmes-5s-judged'].forEach(ev=>window.addEventListener(ev,()=>setTimeout(()=>{const b=document.getElementById(ID);if(b&&b.offsetParent!==null)render(b)},80)));
-const rerender=()=>{const b=document.getElementById('hd20ImproveBoard');if(b)render(b)};window.addEventListener('beforeprint',()=>{window.__hd20BoardPrint=true;rerender()});window.addEventListener('afterprint',()=>{window.__hd20BoardPrint=false;rerender()});
-let rz;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>{const b=document.getElementById(ID);if(b&&b.offsetParent!==null)render(b)},250)});
+document.addEventListener('click',e=>{if(e.target.closest?.('#hd20DashboardSectionTabs button[data-dashboard-section="improve"]'))setTimeout(()=>{const b=document.getElementById(ID);if(b)safeRender(b)},80)},true);
+['hd20-kpi-source-updated','hd20-gmes-5s-imported','hd20-gmes-5s-judged'].forEach(ev=>window.addEventListener(ev,()=>setTimeout(()=>{const b=document.getElementById(ID);if(b)safeRender(b)},80)));
+const rerender=()=>{const b=document.getElementById('hd20ImproveBoard');if(b)safeRender(b)};window.addEventListener('beforeprint',()=>{window.__hd20BoardPrint=true;rerender()});window.addEventListener('afterprint',()=>{window.__hd20BoardPrint=false;rerender()});
+let rz;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>{const b=document.getElementById(ID);if(b)safeRender(b)},250)});
 
 /* 통합기준정보의 분기별 인당 목표(해당 분기까지의 누적 인당 목표로 해석). 미설정이면 v=null */
 function quarterTarget(){try{const t=JSON.parse(localStorage.getItem('gmes5s_quarter_perperson_targets')||'{}'),q='Q'+(Math.floor(new Date().getMonth()/3)+1),v=Number(t[q]);return{q,v:Number.isFinite(v)&&v>0?v:null}}catch{return{q:'Q'+(Math.floor(new Date().getMonth()/3)+1),v:null}}}
@@ -180,5 +215,5 @@ function openRows({title,cols,rows,file}){
   head.querySelector('[data-ev="csv"]').onclick=()=>{const v=view(),t='\ufeff'+[cols,...v].map(r=>r.map(x=>'"'+String(x??'').replace(/"/g,'""')+'"').join(',')).join('\r\n'),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'text/csv;charset=utf-8'}));a.download=(file||title)+'.csv';document.body.appendChild(a);a.click();a.remove()};
   draw();m.classList.add('on')}
 window.HD20_BOARD_KIT={chart,leg,esc,fx,C,axis,quarterTarget,openRows};
-window.HD20_IMPROVE_BOARD={render:()=>{const b=document.getElementById(ID);if(b)render(b)},state:S};
+window.HD20_IMPROVE_BOARD={render:()=>{const b=document.getElementById(ID);if(b)safeRender(b)},state:S};
 })();

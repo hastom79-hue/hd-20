@@ -46,12 +46,81 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
 #${ID} .rqScroll{overflow:auto;border:1px solid #edf1f4;border-radius:8px}#${ID} .ibPanel:has(.rqDetail) .rqScroll{max-height:420px}#${ID} .ibPanel:has(.rqGrid:not(.rqDetail)) .rqScroll{max-height:340px}
 #${ID} .rqTeamDetail{margin-top:10px;border-top:1px solid #edf1f4;padding-top:8px}#${ID} .rqTeamDetail summary{cursor:pointer;font-size:12px;font-weight:850;color:#49657b}#${ID} .rqDetail th{white-space:nowrap}#${ID} .rqDetail td{white-space:nowrap;text-align:left}
 #${ID} .ibFoot{margin:10px 2px 0;font-size:12px;color:#7a8a97}
+
+/* Unified restrained dashboard visual system: one typography and spacing scale. */
+#${ID}{max-width:100%;box-sizing:border-box;padding:20px 22px;border-color:#dbe4eb;border-radius:12px;box-shadow:0 2px 10px rgba(24,49,69,.035)}
+#${ID} .ibTitle{align-items:center;gap:8px 16px;padding-bottom:12px;border-bottom:1px solid #e9eef2}
+#${ID} h2{font-size:19px;letter-spacing:-.035em;line-height:1.35;font-weight:850}
+#${ID} .ibNote{font-size:12px;line-height:1.5;font-weight:600;color:#64788a;margin:7px 0 12px}
+#${ID} .ibBar{gap:8px 14px;padding:12px 14px;background:#f8fafc;border-color:#e5ebf0;border-radius:8px}
+#${ID} .ibBar label{font-size:12px;font-weight:700;color:#455d70}
+#${ID} .ibBar select,#${ID} .ibBar input{min-width:0;max-width:100%;height:34px;border-color:#d7e0e8;border-radius:6px;font-size:12px}
+#${ID} .ibBar button{height:34px;font-size:12px;font-weight:750;border-radius:6px}
+#${ID} .ibRow{gap:12px;margin-top:12px}
+#${ID} .ibPanel{min-width:0;border-color:#e0e8ee;border-radius:9px;box-shadow:none}
+#${ID} .ibHead{min-height:38px;box-sizing:border-box;padding:9px 13px;background:#f7f9fb;border-bottom-color:#e5ebf0;font-size:13px;line-height:1.35;font-weight:800}
+#${ID} .ibHead em{font-size:11px;font-weight:650;color:#718494}
+#${ID} .ibBody{padding:12px;min-width:0}
+#${ID} .ibLeg{gap:8px 14px;font-size:11px;font-weight:650;color:#718494}
+#${ID} .ibFoot{font-size:11px;line-height:1.6;color:#81909e}
+#${ID} .ibKpis,#${ID} .rqKpis{gap:10px;margin:12px 0}
+#${ID} .ibKpi,#${ID} .rqKpi{min-width:0;padding:12px 14px;border-color:#e2e9ef;border-radius:8px;background:#fcfdfe}
+#${ID} .ibKpi small,#${ID} .rqKpi small{font-size:11px;font-weight:650;line-height:1.4}
+#${ID} .ibKpi b,#${ID} .rqKpi b{font-size:22px;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+#${ID} .rqGrid{font-size:12px}
+#${ID} .rqGrid th{padding:9px 10px;font-weight:750;background:#f5f8fa}
+#${ID} .rqGrid td{padding:9px 10px}
+#${ID} .rqGrid tbody tr:hover td{background:#f8fafc}
+#${ID} .rqCaveat{background:#fffaf0;border-color:#f0e7d1;color:#786b51;font-size:11px}
+@media(max-width:700px){#${ID}{padding:12px;border-radius:9px}#${ID} .ibTitle{align-items:flex-start}#${ID} h2{font-size:17px}#${ID} .ibBar{padding:10px;gap:8px}#${ID} .ibBar label{flex:1 1 135px;justify-content:space-between}#${ID} .ibBar select{max-width:65%}#${ID} .ibBar .sp{display:none}#${ID} .ibBar button{flex:1 1 auto}#${ID} .ibBody{padding:8px}#${ID} .ibHead{padding:8px 10px}}
+
+
+#${ID} .rqV2Kpis{grid-template-columns:repeat(6,minmax(0,1fr));gap:9px}
+#${ID} .rqKpiHint{display:block;margin-top:5px;color:#7b8d9b;font-size:10px;line-height:1.4}
+#${ID} .rqStatus{display:grid;gap:16px;padding:10px 6px}
+#${ID} .rqStatus>div{display:grid;grid-template-columns:1fr auto;gap:7px;font-size:12px;color:#4a6072}
+#${ID} .rqStatus strong{font-variant-numeric:tabular-nums;color:#233d51}
+#${ID} .rqTrack{grid-column:1/-1;background:#eef2f5;height:9px;border-radius:5px;overflow:hidden}
+#${ID} .rqTrack i{display:block;height:100%;border-radius:5px}
+#${ID} .rqBands{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:12px}
+#${ID} .rqBands>div{padding:13px;background:#f8fafc;border:1px solid #e7edf1;border-radius:8px;text-align:center}
+#${ID} .rqBands small{display:block;color:#718494;font-size:11px}
+#${ID} .rqBands b{display:block;margin-top:5px;color:#a95045;font-size:20px}
+#${ID} .rqEmpty{padding:24px;text-align:center;color:#8092a0}
+#${ID} .ibHead{flex-wrap:wrap}
+#${ID} .ibHead .ibEv{margin-left:auto}
+@media(max-width:1100px){#${ID} .rqV2Kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:600px){#${ID} .rqV2Kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+
+#${ID} .rqMatrixScroll,#${ID} .rqRiskScroll{overflow:auto;max-height:520px}
+#${ID} .rqMatrix,#${ID} .rqRiskTable{width:100%;border-collapse:collapse;font-size:12px}
+#${ID} .rqMatrix th,#${ID} .rqRiskTable th{position:sticky;top:0;background:#f5f8fa;padding:9px;text-align:left;white-space:nowrap}
+#${ID} .rqMatrix td,#${ID} .rqRiskTable td{border-top:1px solid #e9eef2;padding:7px 9px}
+#${ID} .rqMatrix td:nth-child(2){width:60%}#${ID} .rqMatrix td:last-child,#${ID} .rqRiskTable td:not(:first-child){text-align:center}
+#${ID} .rqStack{height:15px;display:flex;background:#edf1f4;border-radius:4px;overflow:hidden;min-width:160px}
+#${ID} .rqStack span{display:block;height:100%}#${ID} .rqStackDone{background:#26847f}#${ID} .rqStackOpen{background:#e5b668}#${ID} .rqStackLate{background:#c45143}
+#${ID} .rqLegend{display:flex;gap:15px;flex-wrap:wrap;margin-top:12px;font-size:11px}#${ID} .rqLegend span:first-child{color:#26847f}#${ID} .rqLegend span:nth-child(2){color:#ad812f}#${ID} .rqLegend span:last-child{color:#c45143}
+#${ID} .rqHeat{display:block;border-radius:5px;padding:9px;min-width:42px;text-align:center}#${ID} .rqHeatHigh{background:#b9473b;color:#fff}#${ID} .rqHeatMid{background:#db8e72;color:#fff}#${ID} .rqHeatLow{background:#f4d7c6;color:#713e30}#${ID} .rqHeatZero{background:#f4f6f8;color:#758899}
+#${ID} .rqDelayStack{display:flex;height:17px;overflow:hidden;border-radius:5px;margin:3px 0 16px;background:#edf1f4}#${ID} .rqDelayBand{display:block;height:100%}#${ID} .rqDelayBand0{background:#e6ba73}#${ID} .rqDelayBand1{background:#d98454}#${ID} .rqDelayBand2{background:#b9473b}
+#${ID} .rqBars{display:grid;gap:16px;padding:10px 5px}
+#${ID} .rqBarItem{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;align-items:center;font-size:12px;color:#465c6d}
+#${ID} .rqBarItem strong{font-variant-numeric:tabular-nums;font-weight:800;color:#28465b}
+#${ID} .rqBarItem .rqTrack{grid-column:1/-1;height:11px}
+#${ID} .rqBarItem small{font-size:10px;color:#8495a3;font-weight:500}
+#${ID} .rqDonutWrap{display:grid;grid-template-columns:minmax(130px,180px) minmax(0,1fr);gap:18px;align-items:center;padding:10px}
+#${ID} .rqDonutWrap svg{width:100%;max-width:180px}
+#${ID} .rqDonutLegend{display:grid;gap:13px}
+#${ID} .rqDonutLegend>div{display:grid;grid-template-columns:10px 1fr auto;align-items:center;gap:8px;font-size:11px;color:#526779}
+#${ID} .rqDonutLegend i{height:10px;border-radius:2px}
+#${ID} .rqDonutLegend b{color:#244258;font-variant-numeric:tabular-nums}
+@media(max-width:550px){#${ID} .rqDonutWrap{grid-template-columns:1fr;justify-items:center}#${ID} .rqDonutLegend{width:100%}}
 .app.awFocused #${ID}{display:none!important}
 @media print{#${ID} .ibBar{display:none}}
 @media(max-width:1100px){#${ID} .r1,#${ID} .rqManageRow{grid-template-columns:1fr}}`;document.head.appendChild(s)}
 function data(){
-  const K=window.HD20KPIData,cases=K?.actionCases?.()||[],M=window.HD20ProductionTeamMaster,teams=M?.teamNames?.()||[];
-  const years=[...new Set(cases.map(c=>String(c.date||'').slice(0,4)))].filter(Boolean).sort();
+  const K=window.HD20KPIData,rawCases=K?.actionCases?.()||[],cases=rawCases.map(c=>({...c,date:c.date||c.createdAt||c.regDate||'',due:c.due||c.dueDate||'',doneDate:c.doneDate||c.completedAt||''})),M=window.HD20ProductionTeamMaster,masterTeams=M?.teamNames?.()||[],teams=[...new Set([...masterTeams,...cases.map(c=>c.team).filter(Boolean)])];
+  const years=[...new Set(cases.map(c=>String(c.date||'').slice(0,4)))].filter(y=>/^\d{4}$/.test(y)).sort();
   return{cases,teams,years,today:K?.seoulDateKey?.()||new Date().toISOString().slice(0,10)};
 }
 const mo=c=>+String(c.date||'').slice(5,7),isOverdue=(c,today)=>c.status!=='완료'&&c.due&&c.due<today,isDone=c=>c.status==='완료';
@@ -64,8 +133,8 @@ function filt(D,{ignoreYear=false,ignoreMonth=false}={}){
     if(S.roll==='Y'&&!c.recurrence)return false;if(S.roll==='N'&&c.recurrence)return false;return true})}
 function render(box){
   LEADER_NAMES=null;
-  const KIT=window.HD20_BOARD_KIT;if(!KIT||!window.HD20KPIData?.actionCases)return;const {chart,leg,openRows}=KIT,D=data();
-  if(!S.year)S.year=D.years.includes(String(new Date().getFullYear()))?String(new Date().getFullYear()):(D.years[D.years.length-1]||String(new Date().getFullYear()));
+  const KIT=window.HD20_BOARD_KIT;if(!KIT||!window.HD20KPIData?.actionCases){box.innerHTML='<h2>5S 개선요청 종합 대시보드</h2><p role="status">데이터 조회 모듈을 연결 중입니다.</p>';return}const {chart,leg,openRows}=KIT,D=data();
+  if(!S.year||!D.years.includes(S.year))S.year=D.years.includes(String(new Date().getFullYear()))?String(new Date().getFullYear()):(D.years[D.years.length-1]||String(new Date().getFullYear()));
   const teamsAll=D.teams.filter(t=>!S.team||t===S.team),rowsY=filt(D,{ignoreMonth:true}).filter(c=>teamsAll.includes(c.team)),rowsM=S.month?rowsY.filter(c=>mo(c)===+S.month):rowsY;
   const allEver=D.cases.filter(c=>teamsAll.includes(c.team)),doneEver=allEver.filter(isDone),openRate=allEver.length?Math.round(doneEver.length/allEver.length*1000)/10:0;
   const doneYear=rowsY.filter(isDone),yearRate=rowsY.length?Math.round(doneYear.length/rowsY.length*1000)/10:0;
@@ -89,11 +158,9 @@ function render(box){
   // 현재 기한초과 집중관리: 완료건의 과거 지연은 제외하고, 지금 미완료이면서 기한을 넘긴 건만 집계.
   const delayRows=teamsAll.map(t=>{const a=rowsM.filter(c=>c.team===t&&!isDone(c)&&isOverdue(c,D.today)).map(c=>delayDays(c,D.today)).filter(v=>v!==null);
     return{team:t,n:a.length,avg:a.length?Math.round(a.reduce((x,y)=>x+y,0)/a.length*10)/10:0,max:a.length?Math.max(...a):0}}).filter(r=>r.n>0).sort((a,b)=>b.n-a.n||b.avg-a.avg);
-  const delayChart=delayRows.length?chart({w:box.clientWidth-40,h:260,cats:delayRows.map(r=>r.team),rotate:true,linkX:true,sel:S.selTeam,minSlot:64,
-    topExtra:delayRows.map(r=>({text:`평균 ${r.avg}일 · 최대 ${r.max}일`,color:'#c0392b'})),
-    series:[{name:'기한초과 건수',vals:delayRows.map(r=>r.n),color:'#c0392b'}],
-    colorOf:()=>'#c0392b'}):null;
-  const delayOverallAvg=delayRows.length?Math.round(delayRows.reduce((a,r)=>a+r.avg*r.n,0)/delayRows.reduce((a,r)=>a+r.n,0)*10)/10:0;
+  const delayChart=delayRows.length?'<div class="rqRiskScroll"><table class="rqRiskTable"><thead><tr><th>조치대응팀</th><th>1~7일</th><th>8~14일</th><th>15일+</th><th>총 초과</th></tr></thead><tbody>'+delayRows.map(r=>{const c=rowsM.filter(x=>x.team===r.team&&isOverdue(x,D.today));const v=[c.filter(x=>delayDays(x,D.today)<=7).length,c.filter(x=>delayDays(x,D.today)>=8&&delayDays(x,D.today)<=14).length,c.filter(x=>delayDays(x,D.today)>=15).length];return{team:r.team,v,total:r.n}}).sort((a,b)=>b.v[2]-a.v[2]||b.total-a.total).map(r=>'<tr><td>'+esc(r.team)+'</td>'+r.v.map(n=>'<td><span class="rqHeat '+(n>=7?'rqHeatHigh':n>=4?'rqHeatMid':n?'rqHeatLow':'rqHeatZero')+'">'+n+'</span></td>').join('')+'<td><strong>'+r.total+'</strong></td></tr>').join('')+'</tbody></table></div>':null;
+  const activeOverdue=rowsM.filter(c=>teamsAll.includes(c.team)&&isOverdue(c,D.today));
+  const delayOverallAvg=activeOverdue.length?Math.round(activeOverdue.reduce((a,c)=>a+(delayDays(c,D.today)||0),0)/activeOverdue.length*10)/10:0;
   const sum={total:teamRows.reduce((a,r)=>a+r.total,0),done:teamRows.reduce((a,r)=>a+r.done,0),open:teamRows.reduce((a,r)=>a+r.open,0),over:teamRows.reduce((a,r)=>a+r.over,0)}; // open=기한내 미완료, 전체 미완료=open+over
   const pctS=n=>sum.total?Math.round(n/sum.total*1000)/10:0;
   if(!S.selTeam||!teamRows.some(r=>r.team===S.selTeam))S.selTeam=teamRows[0]?.team||'';
@@ -117,46 +184,74 @@ function render(box){
     ${detailRows.length?detailRows.map((c,i)=>`<tr><td>${i+1}</td><td>${esc(c.id)}</td><td>${esc(c.team)}</td><td>${esc(c.workplace||'—')}</td><td>${isOverdue(c,D.today)?'<b style="color:#c0392b">기한초과</b>':esc(c.status)}</td><td>${delayDays(c,D.today)??'—'}</td><td>${esc(c.due||'—')}</td></tr>`).join(''):`<tr><td colspan="7" style="text-align:center;color:#8a99a6;padding:16px">조건에 해당하는 개선요청이 없습니다.</td></tr>`}
     </tbody></table>`;
   const opt=(a,cur,all='ALL')=>`<option value="">${all}</option>`+a.map(x=>`<option value="${esc(x)}"${x===cur?' selected':''}>${esc(x)}</option>`).join('');
-  box.innerHTML=`<div class="ibTitle"><h2>5S 개선요청 종합 대시보드</h2></div><p class="ibNote">개선요청 발생 → 처리 → 미조치·기한초과 → 즉시조치 대상을 한 화면에서 관리합니다.</p>
-<div class="rqKpis"><div class="rqKpi"><small>개선요청</small><b>${sum.total}건</b></div><div class="rqKpi"><small>개선완료</small><b>${sum.done}건 · ${pctS(sum.done)}%</b></div><div class="rqKpi"><small>미완료</small><b>${sum.open+sum.over}건 · ${pctS(sum.open+sum.over)}%</b></div><div class="rqKpi risk"><small>기한초과</small><b>${sum.over}건 · ${pctS(sum.over)}%</b></div><div class="rqKpi risk"><small>평균 초과일</small><b>${delayOverallAvg}일</b></div></div>
-<div class="ibBar"><label>공장 <select disabled><option>[울산] 울산캠퍼스</option></select></label><label>년 <select data-f="year">${D.years.map(y=>`<option${y===S.year?' selected':''}>${y}</option>`).join('')}</select></label>
-<label>월 <select data-f="month"><option value="">전체</option>${Array.from({length:12},(_,i)=>{const v=String(i+1).padStart(2,'0');return `<option value="${v}"${v===S.month?' selected':''}>${i+1}월</option>`}).join('')}</select></label><button type="button" data-rq="go">조회</button>
-<label>요청출처 <select data-f="source">${opt(SOURCES,S.source)}</select></label><label>조치대응부서 <select data-f="team">${opt(D.teams,S.team)}</select></label>
-<label>처리상태 <select data-f="status"><option value="">ALL</option><option>조치대기</option><option>진행중</option><option>완료</option><option>기한초과</option></select></label>
-<label>재발 <select data-f="roll"><option value="">ALL</option><option value="Y">재발 있음</option><option value="N">재발 없음</option></select></label>
-<span class="sp"></span><button type="button" class="alt" data-rq="print">프린트</button><button type="button" class="alt" data-rq="csv">엑셀다운로드(상세내용)</button></div>
-<div class="ibRow r1"><div class="ibPanel"><div class="ibHead">개선요청 발생현황<button type="button" class="ibEv" data-evk="a">근거 데이터</button><em>${S.month?+S.month+'월':'연간누적'} · 요청출처별 · 미완료율 함께 표시</em></div><div class="ibBody">${A}${leg([['요청','#5c6b7a'],['미완료','#e0b03c']])}</div></div>
-<div class="ibPanel"><div class="ibHead">월별 요청·미완료 추이<button type="button" class="ibEv" data-evk="b">근거 데이터</button><em>누적완료율 ${openRate}% · ${S.year}년 완료율 ${yearRate}%</em></div><div class="ibBody">${B}${leg([['요청','#8fa3b3'],['미완료','#e0b03c']])}</div></div></div>
-<div class="ibRow rqManageRow"><div class="ibPanel"><div class="ibHead">팀별 미조치 현황<button type="button" class="ibEv" data-evk="c">근거 데이터</button><em>미조치 잔량이 많은 팀 순 · 표기=미조치 총량·기한초과</em></div><div class="ibBody">${teamChart}${leg([['미조치 잔량','#6f8797']])}<details class="rqTeamDetail"><summary>팀별 수치 상세보기</summary><div class="rqScroll" style="margin-top:10px">${teamGrid}</div></details></div></div><div class="ibPanel"><div class="ibHead">기한초과 집중관리<button type="button" class="ibEv" data-evk="d">근거 데이터</button><em>기한초과 ${delayRows.reduce((a,r)=>a+r.n,0)}건 · 평균 초과 ${delayOverallAvg}일 · 막대=건수 / 표기=평균·최대 초과일</em></div><div class="ibBody">${delayChart||'<p style="padding:20px;color:#8a99a6;text-align:center">현재 기한초과 대상이 없습니다.</p>'}${delayChart?leg([['기한초과 건수','#c0392b']]):''}</div></div></div>
-<div class="ibRow"><div class="ibPanel"><div class="ibHead">즉시조치 대상<button type="button" class="ibEv" data-evk="f">전체 보기</button><em>기한초과·미완료 우선 · 미리보기 ${detailRows.length}건 / 미완료 ${actionAll.length}건</em></div><div class="ibBody"><div class="rqScroll">${detail}</div></div></div></div>
-<p class="rqCaveat">※ 요청출처는 5S모듈·생산혁신팀 HDPS파트·리더십 3종입니다. 현재 원천에 출처 필드가 없어 등록자와 Audit 연계 여부로 일부 출처를 추정합니다. 팀별 수치 Grid는 메인 판단 흐름을 방해하지 않도록 상세보기로 접었습니다.</p><p class="ibFoot">※ 관리순서: 요청 발생 확인 → 미완료 팀 식별 → 기한초과 집중관리 → 실제 조치 대상 확인. 상세 전체보기와 엑셀다운로드는 현재 조회조건을 그대로 사용합니다.</p>`
+
+  // V2: Monthly completions use actual completion dates; backlog carries open cases from earlier periods.
+  const monthlyDone=Array.from({length:12},(_,i)=>filt(D,{ignoreYear:true,ignoreMonth:true}).filter(x=>teamsAll.includes(x.team)&&isDone(x)&&String(x.doneDate||'').slice(0,7)===S.year+'-'+String(i+1).padStart(2,'0')).length);
+  const monthlyTrend=chart({w:Math.max(440,box.clientWidth-85),cats:ML,minSlot:58,series:[{name:'신규 요청',vals:regM,color:'#829db5'},{name:'완료',vals:monthlyDone,color:'#247c83'}]});
+  const teamCompletion=chart({w:Math.max(440,box.clientWidth-85),h:260,cats:teamRows.map(r=>r.team),rotate:true,minSlot:64,series:[{name:'완료',vals:teamRows.map(r=>r.done),color:'#247c83'},{name:'미완료',vals:teamRows.map(r=>r.open+r.over),color:'#c69a65'}]});
+  // Approved V2: three fixed source categories, proportional horizontal bars.
+  const sourceTotal=rowsM.length;
+  const sourceBars='<div class="rqBars">'+SOURCES.map(s=>{const n=rowsM.filter(c=>sourceOf(c)===s).length;return '<div class="rqBarItem"><span>'+esc(s)+'</span><strong>'+n+'건</strong><div class="rqTrack"><i style="width:'+(sourceTotal?100*n/sourceTotal:0)+'%;background:#668da7"></i></div></div>'}).join('')+'</div>';
+  // Approved V2: donut summarizes the same mutually exclusive status groups as KPI cards.
+  const statusParts=[{label:'완료',n:sum.done,color:'#247c83'},{label:'진행 중·미착수',n:sum.open,color:'#c69a65'},{label:'기한초과',n:sum.over,color:'#b85e52'}];
+  let ringOffset=0;const ring=statusParts.map(x=>{const len=sum.total?x.n/sum.total*100:0;const s='<circle cx="75" cy="75" r="54" fill="none" stroke="'+x.color+'" stroke-width="19" pathLength="100" stroke-dasharray="'+len+' '+(100-len)+'" stroke-dashoffset="'+(-ringOffset)+'" transform="rotate(-90 75 75)"/>';ringOffset+=len;return s}).join('');
+  const statusDonut='<div class="rqDonutWrap"><svg viewBox="0 0 150 150" role="img" aria-label="조치 진행상태 도넛 차트"><circle cx="75" cy="75" r="54" fill="none" stroke="#edf1f4" stroke-width="19"/>'+ring+'<text x="75" y="70" text-anchor="middle" font-size="11" fill="#64788a">총 요청</text><text x="75" y="91" text-anchor="middle" font-size="22" font-weight="800" fill="#173a57">'+sum.total+'</text></svg><div class="rqDonutLegend">'+statusParts.map(x=>'<div><i style="background:'+x.color+'"></i><span>'+x.label+'</span><b>'+x.n+'건</b></div>').join('')+'</div></div>';
+  const teamRateBars='<div class="rqMatrixScroll"><table class="rqMatrix"><thead><tr><th>조치대응팀</th><th>조치 구성 비교</th><th>완료율</th></tr></thead><tbody>'+[...teamRows].sort((a,b)=>(a.total?a.done/a.total:0)-(b.total?b.done/b.total:0)||b.total-a.total).map(r=>{const rate=r.total?Math.round(r.done/r.total*1000)/10:0;return '<tr><td>'+esc(r.team)+'</td><td><div class="rqStack" title="완료 '+r.done+'건 / 기한 내 미완료 '+r.open+'건 / 기한초과 '+r.over+'건"><span class="rqStackDone" style="width:'+(r.total?100*r.done/r.total:0)+'%"></span><span class="rqStackOpen" style="width:'+(r.total?100*r.open/r.total:0)+'%"></span><span class="rqStackLate" style="width:'+(r.total?100*r.over/r.total:0)+'%"></span></div></td><td>'+rate+'%</td></tr>'}).join('')+'</tbody></table><div class="rqLegend"><span>■ 완료</span><span>■ 기한 내 미완료</span><span>■ 기한초과</span></div></div>';
+  const overCases=rowsM.filter(c=>teamsAll.includes(c.team)&&isOverdue(c,D.today));
+  const delayBands=[overCases.filter(c=>delayDays(c,D.today)<=7).length,overCases.filter(c=>delayDays(c,D.today)>=8&&delayDays(c,D.today)<=14).length,overCases.filter(c=>delayDays(c,D.today)>=15).length];
+  const kpi=(label,value,detail,risk=false)=>'<div class="rqKpi'+(risk?' risk':'')+'"><small>'+label+'</small><b>'+value+'</b><span class="rqKpiHint">'+detail+'</span></div>';
+  const section=(title,meta,content,key)=>'<section class="ibPanel"><div class="ibHead"><span>'+title+'</span><em>'+meta+'</em>'+(key?'<button type="button" class="ibEv" data-evk="'+key+'">근거 데이터</button>':'')+'</div><div class="ibBody">'+content+'</div></section>';
+  const filters='<div class="ibBar"><label>연도 <select data-f="year">'+D.years.map(y=>'<option'+(y===S.year?' selected':'')+'>'+y+'</option>').join('')+'</select></label><label>월 <select data-f="month"><option value="">전체</option>'+Array.from({length:12},(_,i)=>{const v=String(i+1).padStart(2,'0');return '<option value="'+v+'"'+(v===S.month?' selected':'')+'>'+(i+1)+'월</option>'}).join('')+'</select></label><label>요청출처 <select data-f="source">'+opt(SOURCES,S.source)+'</select></label><label>조치대응팀 <select data-f="team">'+opt(D.teams,S.team)+'</select></label><label>진행상태 <select data-f="status">'+opt(['조치대기','진행중','완료','기한초과'],S.status)+'</select></label><label>재발 <select data-f="roll"><option value="">전체</option><option value="Y"'+(S.roll==='Y'?' selected':'')+'>있음</option><option value="N"'+(S.roll==='N'?' selected':'')+'>없음</option></select></label><button type="button" data-rq="go">조회</button><button type="button" class="alt" data-rq="reset">초기화</button><span class="sp"></span><button type="button" class="alt" data-rq="print">인쇄</button><button type="button" class="alt" data-rq="csv">엑셀 다운로드</button></div>';
+  box.innerHTML='<div class="ibTitle"><h2>개선요청 종합현황</h2></div><p class="ibNote">요청 발생 · 조치 이행 · 지연 위험 · 팀별 대응력</p>'
+    +filters
+    +'<div class="rqKpis rqV2Kpis">'
+    +kpi('총 개선요청',sum.total+'건','조회조건 전체')
+    +kpi('완료',sum.done+'건','조치 완료')
+    +kpi('미완료',(sum.open+sum.over)+'건','기한내 미완료 포함')
+    +kpi('완료율',pctS(sum.done)+'%','완료 / 전체')
+    +kpi('기한초과',sum.over+'건','미완료 중 기한경과',true)
+    +kpi('평균 지연일',delayOverallAvg+'일','현재 기한초과 건 기준',true)
+    +'</div>'
+    +'<div class="ibRow">'+section('01. 월별 요청·완료 추이','완료일 기준 · 신규 요청과 별도 집계',monthlyTrend+leg([['신규 요청','#829db5'],['완료','#247c83']]),'b')+'</div>'
+    +'<div class="ibRow rqManageRow">'
+    +section('02. 요청출처별 현황','요청 / 미완료',sourceBars,'a')
+    +section('03. 조치 진행상태','완료 · 기한내 미완료 · 기한초과',statusDonut,'c')
+    +'</div>'
+    +'<div class="ibRow">'+section('04. 조치대응팀별 이행성과','완료 / 미완료 · 팀별 건수',teamRateBars+'<details class="rqTeamDetail"><summary>팀별 상세 실적 펼치기</summary><div class="rqScroll">'+teamGrid+'</div></details>','c2')+'</div>'
+    +'<div class="ibRow">'+section('05. 기한초과 집중관리','현재 미완료 기준 · 지연기간별 분포','<div class="rqBands">'+['1~7일','8~14일','15일 이상'].map((x,i)=>'<div><small>'+x+'</small><b>'+delayBands[i]+'건</b></div>').join('')+'</div>'+'<div class="rqDelayStack">'+delayBands.map((n,i)=>'<span class="rqDelayBand rqDelayBand'+i+'" style="width:'+(overCases.length?100*n/overCases.length:0)+'%"></span>').join('')+'</div>'+(delayChart||'<p class="rqEmpty">현재 기한초과 대상이 없습니다.</p>'),'d')+'</div>'
+    +'<div class="ibRow">'+section('06. 개선요청 상세 관리','기한초과·미완료 우선 · 미리보기 '+detailRows.length+' / '+actionAll.length,'<div class="rqScroll">'+detail+'</div>','f')+'</div>'
+    +'<p class="rqCaveat">※ 요청출처는 5S모듈·생산혁신팀 HDPS파트·리더십 3종입니다. 원천에 출처 필드가 없는 경우 일부 출처는 등록자 및 Audit 연계 정보로 추정됩니다. 완료일이 없는 완료 건은 월별 완료 추이에서 제외되며 총 완료 건수에는 포함됩니다.</p>';
+
   const evCols=['요청번호','요청출처','조치대응부서','작업장','진행현황','요청일','완료예정일','완료일'],
-    evMapR=c=>[esc(c.id),sourceOf(c),c.team,c.workplace||'—',c.status,c.date,c.due||'—',c.doneDate||'—'],
+    evMapR=c=>[c.id,sourceOf(c),c.team,c.workplace||'—',c.status,c.date,c.due||'—',c.doneDate||'—'],
     evDelayCols=[...evCols,'지연일수'],evDelayMapR=c=>[...evMapR(c),delayDays(c,D.today)??''];
   const EV={
     a:['요청출처별 근거 데이터 ('+(S.month?+S.month+'월':'연간누적')+')',rowsM,evCols,evMapR],
-    b:['월별 근거 데이터 ('+S.year+'년)',rowsY,evCols,evMapR],
+    b:['월별 요청·완료 근거 데이터 ('+S.year+'년)',[...rowsY,...filt(D,{ignoreYear:true,ignoreMonth:true}).filter(c=>teamsAll.includes(c.team)&&isDone(c)&&String(c.doneDate||'').startsWith(S.year+'-')&&!rowsY.includes(c))],evCols,evMapR],
     c:['조치대응부서 근거 데이터 ('+(S.month?+S.month+'월':'연간누적')+')',rowsM,evCols,evMapR],
-    d:['조치 지연 근거 데이터 ('+(S.month?+S.month+'월':'연간누적')+')',rowsM.filter(c=>delayDays(c,D.today)!==null),evDelayCols,evDelayMapR],
+    c2:['조치대응팀별 이행성과 근거 데이터 ('+(S.month?+S.month+'월':'연간누적')+')',rowsM,evCols,evMapR],
+    d:['현재 기한초과 근거 데이터 ('+(S.month?+S.month+'월':'연간누적')+')',rowsM.filter(c=>teamsAll.includes(c.team)&&isOverdue(c,D.today)),evDelayCols,evDelayMapR],
     f:['즉시조치 대상 전체 보기 ('+(S.month?+S.month+'월':'연간누적')+')',actionAll,evCols,evMapR],
   };
+  const downloadEvidence=(cols,rows,file)=>{const csv='\ufeff'+[cols,...rows].map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download=file+'.csv';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)};
+  box.querySelectorAll('[data-evk]').forEach(b=>{const dl=document.createElement('button');dl.type='button';dl.className='ibEv';dl.textContent='엑셀 추출';dl.style.marginLeft='6px';dl.addEventListener('click',()=>{const key=b.dataset.evk;const [title,rows,columns,mapR]=EV[key];downloadEvidence(columns,rows.map(mapR),'5S_개선요청_차트_'+key);});b.insertAdjacentElement('afterend',dl)});
   box.querySelectorAll('[data-evk]').forEach(b=>{b.onclick=()=>{const [t,rows,cols,mapR]=EV[b.dataset.evk];openRows({title:t,cols,rows:rows.map(mapR),file:'5S_개선요청_근거_'+b.dataset.evk})}});
   box.querySelectorAll('[data-f]').forEach(el=>el.onchange=()=>{S[el.dataset.f]=el.value;render(box)});
-  box.querySelector('[data-rq="go"]').onclick=()=>render(box);box.querySelector('[data-rq="print"]').onclick=()=>window.print();
+  box.querySelector('[data-rq="reset"]').onclick=()=>{Object.assign(S,{year:null,month:'',source:'',team:'',status:'',roll:'',selTeam:''});render(box)};box.querySelector('[data-rq="go"]').onclick=()=>render(box);box.querySelector('[data-rq="print"]').onclick=()=>window.print();
   box.querySelector('[data-rq="csv"]').onclick=()=>{
     const out=[['5S 개선요청 종합 대시보드',S.year+'년',S.month?S.month+'월':'연간누적'],[],['요청번호','요청출처','조치대응부서','작업장','진행현황','요청일','완료예정일','완료일']];
     rowsM.forEach(c=>out.push([c.id,sourceOf(c),c.team,c.workplace||'',isOverdue(c,D.today)?'기한초과':c.status,c.date||'',c.due||'',c.doneDate||'']));
     const text='\ufeff'+out.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n'),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:'text/csv;charset=utf-8'}));a.download=`5S_개선요청종합_${S.year}${S.month||''}.csv`;document.body.appendChild(a);a.click();a.remove()};
 }
+function safeRender(box){if(!box)return;try{render(box)}catch(error){console.error('HD20 request board render error',error);box.textContent='5S 개선요청 종합 대시보드 표시 오류: '+String(error?.message||error)}}
 function ensure(){
-  if(!window.HD20_BOARD_KIT||!window.HD20KPIData?.actionCases||!window.HD20ProductionTeamMaster)return false;
   css();let box=document.getElementById(ID);
-  if(!box){const anchor=document.getElementById('hd20ImproveBoard')||document.getElementById('hd20DashboardPriority')||document.querySelector('.cards');if(!anchor)return false;box=document.createElement('section');box.id=ID;anchor.insertAdjacentElement('afterend',box);
+  if(!box){const anchor=document.getElementById('hd20ImproveBoard')||document.getElementById('hd20DashboardPriority')||document.querySelector('.cards')||document.getElementById('hd20DashboardSectionTabs');if(!anchor)return false;box=document.createElement('section');box.id=ID;anchor.insertAdjacentElement('afterend',box);
     const T=window.HD20_DASHBOARD_TABS;if(T?.apply)T.apply(T.active?.()||'summary',{scroll:false})}
-  render(box);return true}
-let tries=0;(function boot(){if(!ensure()&&tries++<80)setTimeout(boot,150)})();
-document.addEventListener('click',e=>{if(e.target.closest?.('#hd20DashboardSectionTabs button[data-dashboard-section="request"]'))setTimeout(()=>{const b=document.getElementById(ID);if(b)render(b)},80)},true);
-['hd20-kpi-source-updated','hd20-action-updated','hd20-policy-updated'].forEach(ev=>window.addEventListener(ev,()=>setTimeout(()=>{const b=document.getElementById(ID);if(b&&b.offsetParent!==null)render(b)},80)));
-let rz;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>{const b=document.getElementById(ID);if(b&&b.offsetParent!==null)render(b)},250)});
-window.HD20_REQUEST_BOARD={render:()=>{const b=document.getElementById(ID);if(b)render(b)},state:S};
+  safeRender(box);return true}
+let tries=0;(function boot(){if(!ensure()&&tries++<80)setTimeout(boot,150)})();window.addEventListener('hd20-dashboard-ready',()=>ensure());window.addEventListener('hd20-kpi-source-updated',()=>{if(!document.getElementById(ID))ensure()});document.addEventListener('DOMContentLoaded',()=>ensure(),{once:true});window.addEventListener('load',()=>ensure(),{once:true});
+document.addEventListener('click',e=>{if(e.target.closest?.('#hd20DashboardSectionTabs button[data-dashboard-section="request"]'))setTimeout(()=>{const b=document.getElementById(ID);if(b)safeRender(b)},80)},true);
+['hd20-kpi-source-updated','hd20-action-updated','hd20-policy-updated'].forEach(ev=>window.addEventListener(ev,()=>setTimeout(()=>{const b=document.getElementById(ID);if(b)safeRender(b)},80)));
+let rz;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>{const b=document.getElementById(ID);if(b&&b.offsetParent!==null)safeRender(b)},250)});
+window.HD20_REQUEST_BOARD={render:()=>{const b=document.getElementById(ID);if(b)safeRender(b)},state:S};
 })();
