@@ -48,8 +48,8 @@ jobs:
                 await modal.waitFor({state:'visible',timeout:5000});
                 const modalRows=await modal.locator('tbody tr').count();
                 const countLabel=await modal.locator('.evHead span').innerText();
-                const expectedRows=Number((countLabel.match(/^([\\d,]+)건/)||[])[1]?.replace(/,/g,''));
-                if(!Number.isFinite(expectedRows))throw Error(name+'/'+key+' modal row count unavailable: '+countLabel);
+                const expectedRows=Number((countLabel.match(/^([0-9,]+)건/)||[])[1]?.replace(/,/g,''));
+                if(!Number.isFinite(expectedRows)||!countLabel.match(/^[0-9,]+건/))throw Error(name+'/'+key+' modal row count unavailable: '+countLabel);
                 const modalHeaders=await modal.locator('thead th').allTextContents();
                 await modal.locator('[data-ev="close"]').click();
                 const downloadPromise=page.waitForEvent('download',{timeout:8000});
