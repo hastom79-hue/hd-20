@@ -9,15 +9,17 @@ const GROUPS=[
   {key:'audit',step:'②',label:'유지·Audit',summary:'Audit 이후 6개월 유지와 부적합 재발을 확인'},
   {key:'action',step:'③',label:'개선조치',summary:'완료기한이 지정된 개선조치의 실행상태를 확인'}
 ];
+/* good(추세가 '개선'으로 판정되는 방향)·max(미니 막대그래프 축 상한)는 5번 탭(dashboard-ops-trend.js
+   의 M 배열)과 동일한 값을 그대로 맞춤 — 같은 6개 지표를 다른 화면에서 다르게 해석하면 안 되므로. */
 const KPI=[
-  {key:'judgmentRate',label:'공식 판정 완료율',unit:'%',tab:'advancement',hint:'판정대상 중 공식 판정 완료 비율'},
-  {key:'avgLead',label:'평균 판정 Lead Time',unit:'일',tab:'advancement',hint:'등록부터 공식 판정까지 평균 소요일'},
-  {key:'maturity',label:'고도화 수준',prefix:'Lv.',tab:'advancement',hint:'공식 확정 사례의 현재 평균 Level'},
-  {key:'sixRetention',label:'Audit 후 6개월 유지율',unit:'%',tab:'audit',hint:'6개월 관리 종료 사례의 유지 비율'},
-  {key:'recurrence',label:'Audit 부적합 재발률',unit:'%',tab:'audit',hint:'재발여부가 기록된 개선조치 중 재발 비율'},
-  {key:'actionOnTime',label:'기한 내 개선조치 완료율',unit:'%',tab:'action',hint:'완료기한이 있는 완료 Case의 기한 내 완료 비율'}
+  {key:'judgmentRate',label:'공식 판정 완료율',unit:'%',tab:'advancement',hint:'판정대상 중 공식 판정 완료 비율',good:'up',max:100},
+  {key:'avgLead',label:'평균 판정 Lead Time',unit:'일',tab:'advancement',hint:'등록부터 공식 판정까지 평균 소요일',good:'down'},
+  {key:'maturity',label:'고도화 수준',prefix:'Lv.',tab:'advancement',hint:'공식 확정 사례의 현재 평균 Level',good:'up',max:5},
+  {key:'sixRetention',label:'Audit 후 6개월 유지율',unit:'%',tab:'audit',hint:'6개월 관리 종료 사례의 유지 비율',good:'up',max:100},
+  {key:'recurrence',label:'Audit 부적합 재발률',unit:'%',tab:'audit',hint:'재발여부가 기록된 개선조치 중 재발 비율',good:'down',max:100},
+  {key:'actionOnTime',label:'기한 내 개선조치 완료율',unit:'%',tab:'action',hint:'완료기한이 있는 완료 Case의 기한 내 완료 비율',good:'up',max:100}
 ];
-function fmt(v,k){if(v===null||v===undefined||Number.isNaN(v))return '—';const def=KPI.find(x=>x.key===k)||{};return `${def.prefix||''}${v}${def.unit||''}`}
+function fmt(v,k){if(v===null||v===undefined||Number.isNaN(v))return '—';const def=KPI.find(x=>x.key===k)||{};const num=def.prefix?v:(Number.isInteger(v)?v:Math.round(v*10)/10);return `${def.prefix||''}${num}${def.unit||''}`}
 function gotoTab(key){document.querySelector(`.beginnerNav button[data-key="${key}"]`)?.click()}
 function ensure(){
   const cards=document.querySelector('.cards');if(!cards)return null;
@@ -41,12 +43,42 @@ function ensure(){
   if(bottom?.previousElementSibling?.classList.contains('hd20DashboardSectionLabel'))bottom.previousElementSibling.remove();
   return root;
 }
-function card(x,i,op){return `<article class="hd20HealthKpi" data-kpi="${x.key}" data-tab="${x.tab}"><div class="hd20HealthKpiIndex">0${i+1}</div><div class="hd20HealthKpiBody"><small>${x.label}</small><strong>${fmt(op[x.key],x.key)}</strong><p>${x.hint}</p></div></article>`}
+/* 사용자 지시: "1번 탭은 5번 탭처럼 바꿔주고" — 탭1·탭5가 같은 6개 지표를 다루고 있으므로, 5번 탭
+   (dashboard-ops-trend.js)의 '카드 제목 + 큰 숫자 + 추세 화살표 + 월별 미니 막대그래프 + 캡션 +
+   원인 확인 버튼' 구성을 탭1의 카드에도 그대로 적용. 기존 .hd20HealthKpi(다른 화면에서도 참조될 수
+   있어 유지)와 별도로 .hd20HealthTrendCard라는 새 클래스로 구현해 기존 스타일과 충돌시키지 않음. */
+function trendCss(){if(document.getElementById(ID+'TrendStyle'))return;const s=document.createElement('style');s.id=ID+'TrendStyle';s.textContent=`
+#${ID} .hd20HealthTrendCard{border:1px solid #e3eaf0;border-radius:12px;padding:14px 15px;background:#fbfcfd}
+#${ID} .hd20HealthTrendCard h4{margin:0;font-size:13px;color:#22303f;font-weight:850}
+#${ID} .httBig{display:flex;align-items:baseline;gap:7px;margin:6px 0 2px}
+#${ID} .httBig b{font-size:26px;color:#14304c;letter-spacing:-.02em}#${ID} .httBig em{font-style:normal;font-size:12px;color:#5c6b7a;font-weight:800}
+#${ID} .httDelta{font-size:11.5px;font-weight:850}#${ID} .httDelta.up{color:#2f7a4d}#${ID} .httDelta.down{color:#c0392b}#${ID} .httDelta.flat{color:#7a8a97}
+#${ID} .httBars{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;align-items:end;height:64px;margin-top:9px;border-bottom:1px solid #dde5eb}
+#${ID} .httCol{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;gap:2px}
+#${ID} .httCol i{display:block;width:60%;border-radius:3px 3px 0 0;background:#b7c6d4;min-height:2px}#${ID} .httCol.last i{background:#14304c}
+#${ID} .httMon{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin-top:3px;text-align:center;font-size:9.5px;color:#a0adb8}
+#${ID} .httFoot{display:flex;justify-content:space-between;align-items:flex-end;gap:8px;margin-top:9px}
+#${ID} .httFoot p{margin:0;font-size:11px;color:#7a8a97;line-height:1.5}
+#${ID} .httFoot button{flex:0 0 auto;border:1px solid #cfd9e2;background:#fff;color:#14304c;border-radius:9px;padding:5px 9px;font-weight:850;font-size:11.5px;cursor:pointer}
+`;document.head.appendChild(s)}
+function card(x,i,op,monthly){
+  trendCss();
+  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const arr=monthly?(monthly[x.key]||[]):[],vals=arr.map(v=>v.v),known=vals.map((v,i2)=>v===null?null:i2).filter(i2=>i2!==null);
+  const li=known.length?known[known.length-1]:-1,pi=known.length>1?known[known.length-2]:-1;
+  const cur=op[x.key],prev=pi>=0?vals[pi]:null;
+  let delta='<span class="httDelta flat">비교할 이전 값 없음</span>';
+  if(cur!==null&&cur!==undefined&&prev!==null&&prev!==undefined){const d=Math.round((cur-prev)*10)/10;if(d===0)delta='<span class="httDelta flat">전월과 같음</span>';else{const better=x.good==='up'?d>0:d<0;delta=`<span class="httDelta ${better?'up':'down'}">${d>0?'▲':'▼'} ${Math.abs(d).toFixed(1)}${esc(x.unit||'')} 전월 대비 ${better?'개선':'악화'}</span>`}}
+  const mx=x.max||Math.max(1,...vals.filter(v=>v!==null));
+  const bars=arr.length?arr.map((v,i2)=>{const h=v.v===null?0:Math.max(2,Math.round(v.v/mx*58));return `<div class="httCol${i2===arr.length-1?' last':''}" title="${esc(monthly.months[i2])}: ${v.v===null?'표본 없음':fmt(v.v,x.key)} (표본 ${v.n}건)"><i style="height:${h}px"></i></div>`}).join(''):'';
+  const mon=arr.length?monthly.months.map(mm=>`<div>${+mm.slice(5)}월</div>`).join(''):'';
+  return `<article class="hd20HealthTrendCard" data-kpi="${x.key}" data-tab="${x.tab}"><h4>${x.label}</h4><div class="httBig"><b>${fmt(op[x.key],x.key)}</b></div>${delta}${bars?`<div class="httBars">${bars}</div><div class="httMon">${mon}</div>`:''}<div class="httFoot"><p>${x.hint}</p><button type="button" data-group-tab="${x.tab}">원인 확인 →</button></div></article>`}
 function removeRetiredStandardTrendLabel(){const bottom=document.querySelector('.bottomGrid');if(bottom?.previousElementSibling?.classList.contains('hd20DashboardSectionLabel'))bottom.previousElementSibling.remove()}
 function render(){
   removeRetiredStandardTrendLabel();
   const root=ensure();if(!root)return;
   const snap=window.HD20KPIData?.snapshot?.();const op=window.HD20KPIData?.operational?.(snap)||{};
+  let monthly=null;try{monthly=window.HD20KPIData?.monthlyOperational?.(6)||null}catch(e){monthly=null}
   // V3 data readiness is derived exclusively from the existing operational KPI snapshot.
   // Missing data is never presented as zero or as a calculated risk score.
   const ready=KPI.filter(x=>op[x.key]!==null&&op[x.key]!==undefined&&Number.isFinite(Number(op[x.key])));
@@ -64,7 +96,7 @@ function render(){
       :'<p class="hd20V3ReadinessOk">운영지표 '+KPI.length+'개 전부 정상 연결됨 · 실제 업무 성과 판정은 별도 확인이 필요합니다.</p>';
   }
   const groups=root.querySelector('.hd20DashboardPriorityGroups');
-  groups.innerHTML=GROUPS.map(g=>{const items=KPI.filter(x=>x.tab===g.key);return `<section class="hd20HealthGroup" data-domain="${g.key}"><header><div><small>확인 영역 ${g.step}</small><b>${g.label}</b><p>${g.summary}</p></div><button type="button" data-group-tab="${g.key}">업무화면 →</button></header><div class="hd20HealthGroupGrid">${items.map(x=>card(x,KPI.indexOf(x),op)).join('')}</div></section>`}).join('');
+  groups.innerHTML=GROUPS.map(g=>{const items=KPI.filter(x=>x.tab===g.key);return `<section class="hd20HealthGroup" data-domain="${g.key}"><header><div><small>확인 영역 ${g.step}</small><b>${g.label}</b><p>${g.summary}</p></div><button type="button" data-group-tab="${g.key}">업무화면 →</button></header><div class="hd20HealthGroupGrid">${items.map(x=>card(x,KPI.indexOf(x),op,monthly)).join('')}</div></section>`}).join('');
   groups.querySelectorAll('[data-group-tab]').forEach(btn=>btn.addEventListener('click',()=>gotoTab(btn.dataset.groupTab)));
 }
 function boot(){removeRetiredStandardTrendLabel();render();setTimeout(removeRetiredStandardTrendLabel,500);setTimeout(removeRetiredStandardTrendLabel,1800);['hd20-kpi-source-updated','hd20-gmes-5s-imported','hd20-gmes-5s-judged','hd20-audit-updated','hd20-action-updated'].forEach(ev=>window.addEventListener(ev,()=>setTimeout(render,0)))}
