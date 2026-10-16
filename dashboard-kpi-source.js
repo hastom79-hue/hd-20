@@ -77,7 +77,7 @@ function operational(s){
    재발률·기한 내 완료율=조치 완료월 기준. 각 값에 표본 수(n)를 함께 반환. */
 function monthlyOperational(n=6){
   const s=snapshot(),today=seoulDateKey(),ty=+today.slice(0,4),tm=+today.slice(5,7),months=[];
-  for(let i=n-1;i>=0;i--){const t=ty*12+(tm-1)-i;months.push(`${Math.floor(t/12)}-${String(t%12+1).padStart(2,'0')}`)}
+  if(n===12){for(let m=1;m<=12;m++)months.push(`${ty}-${String(m).padStart(2,'0')}`)}else{for(let i=n-1;i>=0;i--){const t=ty*12+(tm-1)-i;months.push(`${Math.floor(t/12)}-${String(t%12+1).padStart(2,'0')}`)}}
   const mk=v=>{if(!v)return'';const k=seoulDateKey(v);return /^\d{4}-\d{2}-\d{2}$/.test(k)?k.slice(0,7):''};
   const avg=a=>a.length?Math.round(a.reduce((x,y)=>x+y,0)/a.length*10)/10:null;
   const rows=(s.rows||[]).filter(isAdvancementType),scope=rows.filter(x=>x.candidate===true||x.isCandidate===true||String(x.judgeState||'').trim());
@@ -90,7 +90,7 @@ function monthlyOperational(n=6){
   const closed=auditDraws().filter(d=>d.auditDate).map(d=>({d,end:addMonthsKey(d.auditDate,6)})).filter(x=>x.end&&x.end<today);
   const cell=(v,c)=>({v:v??null,n:c});
   const out={months,judgmentRate:[],avgLead:[],maturity:[],sixRetention:[],recurrence:[],actionOnTime:[]};
-  months.forEach(m=>{
+  months.forEach(m=>{if(m>today.slice(0,7)){for(const k of ['judgmentRate','avgLead','maturity','sixRetention','recurrence','actionOnTime'])out[k].push(cell(null,0));return}
     const sc=scope.filter(x=>mk(regOf(x))===m);out.judgmentRate.push(cell(pct(sc.filter(isJudged).length,sc.length),sc.length));
     const jm=scope.filter(x=>isJudged(x)&&mk(judgeOf(x))===m).map(x=>daysBetween(regOf(x),judgeOf(x))).filter(Number.isFinite);out.avgLead.push(cell(avg(jm),jm.length));
     const lv=(s.confirmed||[]).filter(x=>mk(confirmedDate(x))===m).map(levelOf).filter(Number.isFinite);out.maturity.push(cell(avg(lv),lv.length));

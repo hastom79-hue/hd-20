@@ -1,7 +1,7 @@
-/* 대시보드 6번 탭 '성과·운영분석': 종합현황의 6개 운영 건전성 지표를 최근 6개월 추이로 보여줌.
+/* 대시보드 6번 탭 '성과·운영분석': 종합현황의 6개 운영 건전성 지표를 당해연도 12개월 추이로 보여줌.
    (종합현황=현재 값, 이 화면=변화 추이 → 서로 다른 목적) 읽기 전용, HD20KPIData.monthlyOperational() 사용. */
 (()=>{'use strict';
-const ID='hd20OpsTrend',N=6;
+const ID='hd20OpsTrend',N=12;
 const M=[
  {k:'judgmentRate',t:'공식 판정 완료율',u:'%',good:'up',max:100,route:'advancement',note:'그 달에 등록된 판정 대상 중 판정까지 끝난 비율'},
  {k:'avgLead',t:'평균 판정 Lead Time',u:'일',good:'down',route:'advancement',note:'그 달에 판정된 건의 등록→판정 평균 소요일'},
@@ -47,7 +47,7 @@ function render(box){
   const K=window.HD20KPIData;if(!K?.monthlyOperational)return;
   let data,overall;try{data=K.monthlyOperational(N);overall=K.operational?.(K.snapshot?.())}catch(e){box.innerHTML='<p class="otNote">추이 데이터를 계산하지 못했습니다.</p>';return}
   const cards=M.map(m=>card(m,data,overall)),badN=cards.filter(c=>c.bad).length;
-  box.innerHTML=`<div class="otHead"><small>성과·운영분석 · 월별 추이</small><h2>운영 건전성, 좋아지고 있나요?</h2><p>종합현황의 6개 지표가 최근 ${N}개월 동안 어떻게 변했는지 봅니다. 나빠진 지표는 오른쪽 아래 <b>원인 확인</b>으로 해당 업무 화면에서 조치하세요.</p><div class="otSum ${badN?'bad':'ok'}">${badN?`⚠ 전월 대비 악화된 지표 ${badN}개`:'✓ 전월 대비 악화된 지표 없음'}</div></div><div class="otGrid">${cards.map(c=>c.html).join('')}</div><p class="otNote">※ 월별 표본(n)이 적은 달은 값이 크게 흔들릴 수 있어 막대 아래에 표본 수를 함께 표시했습니다. 표본이 없는 달은 "-"입니다.</p>`;
+  box.innerHTML=`<div class="otHead"><small>성과·운영분석 · 월별 추이</small><h2>운영 건전성, 좋아지고 있나요?</h2><p>종합현황의 6개 지표가 당해연도 1~12월 동안 어떻게 변했는지 봅니다. 나빠진 지표는 오른쪽 아래 <b>원인 확인</b>으로 해당 업무 화면에서 조치하세요.</p><div class="otSum ${badN?'bad':'ok'}">${badN?`⚠ 전월 대비 악화된 지표 ${badN}개`:'✓ 전월 대비 악화된 지표 없음'}</div></div><div class="otGrid">${cards.map(c=>c.html).join('')}</div><p class="otNote">※ 월별 표본(n)이 적은 달은 값이 크게 흔들릴 수 있어 막대 아래에 표본 수를 함께 표시했습니다. 표본이 없는 달은 "-"입니다.</p>`;
   box.querySelectorAll('[data-ot-route]').forEach(b=>b.onclick=()=>window.HD20_NAV?.go?.(b.dataset.otRoute));
 }
 function ensure(){
