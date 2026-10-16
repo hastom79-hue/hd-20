@@ -4,7 +4,7 @@ const ACT='hd20GMES5SAutoImproveRawV1',AUD='hd20AuditRandomDrawsV1',ACTION='hd20
 const teams=['대형메인팀','휠로더Front팀','대형Att.팀','휠로더리어팀','중형상부1팀','중형메인팀','중형Att팀','대형상부팀','프레임제작팀','휠로더메인팀','중형상부2팀','중형하부팀','Boom제작팀','초대형조립팀','성능팀','트러블슈팅팀'];
 const lines=['대형조립 1라인','휠로더 조립라인','ATT 조립라인','휠로더 후방라인','중형상부 1라인','중형 메인라인','중형 ATT라인','대형상부라인','프레임 제작라인','휠로더 메인라인','중형상부 2라인','중형하부라인','Boom 제작라인','초대형 조립라인','성능시험라인','트러블슈팅 존'];
 const work=['메인 조립 작업장','Front 조립 작업장','Attachment 준비 작업장','Rear 조립 작업장','상부체 조립 작업장','중형 메인 작업장','중형 ATT 작업장','대형 상부체 작업장','프레임 취부 작업장','휠로더 메인 작업장','중형상부 2 작업장','하부체 조립 작업장','Boom 용접 작업장','초대형 조립 작업장','성능검사 작업장','품질 트러블 대응 작업장'];
-const types=['정리','정돈','청소','시각화','위험구역관리'];
+const types=['정리','정돈','청소','시각화','위험구역관리','설비 자주보전'];
 const pad=n=>String(n).padStart(2,'0');
 const date=(m,d)=>`2026-${pad(m)}-${pad(d)}`;
 const emptyArray=k=>{try{const v=JSON.parse(localStorage.getItem(k)||'[]');return !Array.isArray(v)||v.length===0}catch{return true}};
