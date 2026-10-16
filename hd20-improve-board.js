@@ -284,5 +284,5 @@ function openRows({title,cols,rows,file}){
   head.querySelector('[data-ev="csv"]').onclick=()=>{const v=view(),t='\ufeff'+[cols,...v].map(r=>r.map(x=>'"'+String(x??'').replace(/"/g,'""')+'"').join(',')).join('\r\n'),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'text/csv;charset=utf-8'}));a.download=(file||title)+'.csv';document.body.appendChild(a);a.click();a.remove()};
   draw();m.classList.add('on')}
 window.HD20_BOARD_KIT={chart,leg,esc,fx,C,axis,quarterTarget,openRows};
-window.HD20_IMPROVE_BOARD={render:()=>{const b=document.getElementById(ID);if(b)safeRender(b)},state:S};
+window.HD20_IMPROVE_BOARD={ensure,render:()=>{const b=document.getElementById(ID);if(b)safeRender(b);else ensure()},state:S};
 })();
