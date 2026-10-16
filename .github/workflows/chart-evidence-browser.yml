@@ -104,6 +104,9 @@ jobs:
             const requestV5=await page.evaluate(()=>{const el=document.getElementById('hd20RequestBoard');const svg=el?.querySelector('.ibBody>svg');const body=svg?.parentElement;return {teamBars:el?.querySelectorAll('.rqV5TeamLine').length,oldMatrix:el?.querySelectorAll('.rqMatrix').length,overflow:body?body.scrollWidth>body.clientWidth+2:false}});
             if(requestV5.oldMatrix||requestV5.overflow)throw Error('Request V5 charts overflow or legacy matrix remains '+JSON.stringify(requestV5));
             result.requestV5=requestV5;
+            const teamScroll=await page.evaluate(()=>{const el=document.querySelector('#hd20RequestBoard .rqTeamDetail .rqScroll');if(!el)return {exists:false};const style=getComputedStyle(el);return {exists:true,overflowY:style.overflowY,maxHeight:style.maxHeight,scrollHeight:el.scrollHeight,clientHeight:el.clientHeight}});
+            if(!teamScroll.exists||teamScroll.overflowY==='auto'||teamScroll.overflowY==='scroll'||teamScroll.scrollHeight>teamScroll.clientHeight+2)throw Error('Team detail internal vertical scrollbar '+JSON.stringify(teamScroll));
+            result.teamScroll=teamScroll;
             const bridgeState=await page.evaluate(()=>{const el=document.getElementById('hd20OperationalBridge');return {hidden:!!el?.classList.contains('hd20DashboardSectionHidden'),aria:el?.getAttribute('aria-hidden'),visible:!!el&&getComputedStyle(el).display!=='none'}});
             if(!bridgeState.hidden||bridgeState.aria!=='true'||bridgeState.visible)throw Error('Legacy bridge must be fully retired '+JSON.stringify(bridgeState));
             result.bridgeState=bridgeState;
