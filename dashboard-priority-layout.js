@@ -79,7 +79,7 @@ function render(){
   removeRetiredStandardTrendLabel();
   const root=ensure();if(!root)return;
   const snap=window.HD20KPIData?.snapshot?.();const op=window.HD20KPIData?.operational?.(snap)||{};
-  let monthly=null;try{monthly=window.HD20KPIData?.monthlyOperational?.(6)||null}catch(e){monthly=null}
+  let monthly=null;try{monthly=window.HD20KPIData?.monthlyOperational?.(12)||null}catch(e){monthly=null}
   // V3 data readiness is derived exclusively from the existing operational KPI snapshot.
   // Missing data is never presented as zero or as a calculated risk score.
   const ready=KPI.filter(x=>op[x.key]!==null&&op[x.key]!==undefined&&Number.isFinite(Number(op[x.key])));
