@@ -117,7 +117,7 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
 @media(max-width:550px){#${ID} .rqDonutWrap{grid-template-columns:1fr;justify-items:center}#${ID} .rqDonutLegend{width:100%}}
 .app.awFocused #${ID}{display:none!important}
 @media print{#${ID} .ibBar{display:none}}
-@media(max-width:1100px){#${ID} .r1,#${ID} .rqManageRow{grid-template-columns:1fr}}`;document.head.appendChild(s)}
+@media(max-width:1100px){#${ID} .r1,#${ID} .rqManageRow{grid-template-columns:1fr}}`;s.textContent+=' #'+ID+' .rqV4Intro{background:linear-gradient(110deg,#183b55,#275c6d);color:#fff;border-radius:10px;padding:15px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:12px 0}#'+ID+' .rqV4Intro strong{font-size:12px;letter-spacing:.11em}#'+ID+' .rqV4Intro span{font-size:13px;color:#e0edf0}#'+ID+' .rqV2Kpis{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}#'+ID+' .rqV2Kpis .rqKpi{padding:17px 18px;border-top:3px solid #287f80;background:#fbfdfe}#'+ID+' .rqV2Kpis .rqKpi.risk{border-top-color:#c55f5f}#'+ID+' .rqV4Status{display:grid;gap:15px;padding:16px 10px}#'+ID+' .rqV4StatusRow{display:grid;grid-template-columns:minmax(90px,1fr) minmax(80px,3fr) 54px;gap:10px;align-items:center;font-size:13px;color:#183b55}#'+ID+' .rqV4StatusRow b{text-align:right}#'+ID+' .rqV4Track{height:14px;background:#edf2f5;border-radius:7px;overflow:hidden}#'+ID+' .rqV4Track i{display:block;height:100%;border-radius:7px}#'+ID+' .rqManageRow{grid-template-columns:repeat(2,minmax(0,1fr))}@media(max-width:800px){#'+ID+' .rqV2Kpis{grid-template-columns:repeat(2,minmax(0,1fr))}#'+ID+' .rqManageRow{grid-template-columns:1fr}}';document.head.appendChild(s)}
 function data(){
   const K=window.HD20KPIData,rawCases=K?.actionCases?.()||[],cases=rawCases.map(c=>({...c,date:c.date||c.createdAt||c.regDate||'',due:c.due||c.dueDate||'',doneDate:c.doneDate||c.completedAt||''})),M=window.HD20ProductionTeamMaster,masterTeams=M?.teamNames?.()||[],teams=[...new Set([...masterTeams,...cases.map(c=>c.team).filter(Boolean)])];
   const years=[...new Set(cases.map(c=>String(c.date||'').slice(0,4)))].filter(y=>/^\d{4}$/.test(y)).sort();
@@ -195,7 +195,7 @@ function render(box){
   // Approved V2: donut summarizes the same mutually exclusive status groups as KPI cards.
   const statusParts=[{label:'완료',n:sum.done,color:'#247c83'},{label:'진행 중·미착수',n:sum.open,color:'#c69a65'},{label:'기한초과',n:sum.over,color:'#b85e52'}];
   let ringOffset=0;const ring=statusParts.map(x=>{const len=sum.total?x.n/sum.total*100:0;const s='<circle cx="75" cy="75" r="54" fill="none" stroke="'+x.color+'" stroke-width="19" pathLength="100" stroke-dasharray="'+len+' '+(100-len)+'" stroke-dashoffset="'+(-ringOffset)+'" transform="rotate(-90 75 75)"/>';ringOffset+=len;return s}).join('');
-  const statusDonut='<div class="rqDonutWrap"><svg viewBox="0 0 150 150" role="img" aria-label="조치 진행상태 도넛 차트"><circle cx="75" cy="75" r="54" fill="none" stroke="#edf1f4" stroke-width="19"/>'+ring+'<text x="75" y="70" text-anchor="middle" font-size="11" fill="#64788a">총 요청</text><text x="75" y="91" text-anchor="middle" font-size="22" font-weight="800" fill="#173a57">'+sum.total+'</text></svg><div class="rqDonutLegend">'+statusParts.map(x=>'<div><i style="background:'+x.color+'"></i><span>'+x.label+'</span><b>'+x.n+'건</b></div>').join('')+'</div></div>';
+  const statusBars='<div class="rqV4Status">'+statusParts.map(x=>'<div class="rqV4StatusRow"><span>'+esc(x.label)+'</span><div class="rqV4Track"><i style="width:'+(sum.total?100*x.n/sum.total:0)+'%;background:'+x.color+'"></i></div><b>'+x.n+'건</b></div>').join('')+'</div>';
   const teamRateBars='<div class="rqMatrixScroll"><table class="rqMatrix"><thead><tr><th>조치대응팀</th><th>조치 구성 비교</th><th>완료율</th></tr></thead><tbody>'+[...teamRows].sort((a,b)=>(a.total?a.done/a.total:0)-(b.total?b.done/b.total:0)||b.total-a.total).map(r=>{const rate=r.total?Math.round(r.done/r.total*1000)/10:0;return '<tr><td>'+esc(r.team)+'</td><td><div class="rqStack" title="완료 '+r.done+'건 / 기한 내 미완료 '+r.open+'건 / 기한초과 '+r.over+'건"><span class="rqStackDone" style="width:'+(r.total?100*r.done/r.total:0)+'%"></span><span class="rqStackOpen" style="width:'+(r.total?100*r.open/r.total:0)+'%"></span><span class="rqStackLate" style="width:'+(r.total?100*r.over/r.total:0)+'%"></span></div></td><td>'+rate+'%</td></tr>'}).join('')+'</tbody></table><div class="rqLegend"><span>■ 완료</span><span>■ 기한 내 미완료</span><span>■ 기한초과</span></div></div>';
   const overCases=rowsM.filter(c=>teamsAll.includes(c.team)&&isOverdue(c,D.today));
   const delayBands=[overCases.filter(c=>delayDays(c,D.today)<=7).length,overCases.filter(c=>delayDays(c,D.today)>=8&&delayDays(c,D.today)<=14).length,overCases.filter(c=>delayDays(c,D.today)>=15).length];
@@ -204,18 +204,17 @@ function render(box){
   const filters='<div class="ibBar"><label>연도 <select data-f="year">'+D.years.map(y=>'<option'+(y===S.year?' selected':'')+'>'+y+'</option>').join('')+'</select></label><label>월 <select data-f="month"><option value="">전체</option>'+Array.from({length:12},(_,i)=>{const v=String(i+1).padStart(2,'0');return '<option value="'+v+'"'+(v===S.month?' selected':'')+'>'+(i+1)+'월</option>'}).join('')+'</select></label><label>요청출처 <select data-f="source">'+opt(SOURCES,S.source)+'</select></label><label>조치대응팀 <select data-f="team">'+opt(D.teams,S.team)+'</select></label><label>진행상태 <select data-f="status">'+opt(['조치대기','진행중','완료','기한초과'],S.status)+'</select></label><label>재발 <select data-f="roll"><option value="">전체</option><option value="Y"'+(S.roll==='Y'?' selected':'')+'>있음</option><option value="N"'+(S.roll==='N'?' selected':'')+'>없음</option></select></label><button type="button" data-rq="go">조회</button><button type="button" class="alt" data-rq="reset">초기화</button><span class="sp"></span><button type="button" class="alt" data-rq="print">인쇄</button><button type="button" class="alt" data-rq="csv">엑셀 다운로드</button></div>';
   box.innerHTML='<div class="ibTitle"><h2>개선요청 종합현황</h2></div><p class="ibNote">요청 발생 · 조치 이행 · 지연 위험 · 팀별 대응력</p>'
     +filters
+    +'<div class="rqV4Intro"><strong>REQUEST CONTROL CENTER</strong><span>요청 접수 → 조치 이행 → 지연 해소 → 완료 검증</span></div>'
     +'<div class="rqKpis rqV2Kpis">'
-    +kpi('총 개선요청',sum.total+'건','조회조건 전체')
-    +kpi('완료',sum.done+'건','조치 완료')
-    +kpi('미완료',(sum.open+sum.over)+'건','기한내 미완료 포함')
-    +kpi('완료율',pctS(sum.done)+'%','완료 / 전체')
-    +kpi('기한초과',sum.over+'건','미완료 중 기한경과',true)
-    +kpi('평균 지연일',delayOverallAvg+'일','현재 기한초과 건 기준',true)
+    +kpi('전체 요청',sum.total+'건','조회조건 내 요청')
+    +kpi('완료율',pctS(sum.done)+'%','완료 '+sum.done+'건 / 전체 '+sum.total+'건')
+    +kpi('미완료',(sum.open+sum.over)+'건','기한초과 포함')
+    +kpi('기한초과',sum.over+'건','즉시 대응 필요',true)
     +'</div>'
     +'<div class="ibRow">'+section('01. 월별 요청·완료 추이','완료일 기준 · 신규 요청과 별도 집계',monthlyTrend+leg([['신규 요청','#829db5'],['완료','#247c83']]),'b')+'</div>'
     +'<div class="ibRow rqManageRow">'
     +section('02. 요청출처별 현황','요청 / 미완료',sourceBars,'a')
-    +section('03. 조치 진행상태','완료 · 기한내 미완료 · 기한초과',statusDonut,'c')
+    +section('03. 조치 진행상태','완료 · 기한내 미완료 · 기한초과',statusBars,'c')
     +'</div>'
     +'<div class="ibRow">'+section('04. 조치대응팀별 이행성과','완료 / 미완료 · 팀별 건수',teamRateBars+'<details class="rqTeamDetail"><summary>팀별 상세 실적 펼치기</summary><div class="rqScroll">'+teamGrid+'</div></details>','c2')+'</div>'
     +'<div class="ibRow">'+section('05. 기한초과 집중관리','현재 미완료 기준 · 지연기간별 분포','<div class="rqBands">'+['1~7일','8~14일','15일 이상'].map((x,i)=>'<div><small>'+x+'</small><b>'+delayBands[i]+'건</b></div>').join('')+'</div>'+'<div class="rqDelayStack">'+delayBands.map((n,i)=>'<span class="rqDelayBand rqDelayBand'+i+'" style="width:'+(overCases.length?100*n/overCases.length:0)+'%"></span>').join('')+'</div>'+(delayChart||'<p class="rqEmpty">현재 기한초과 대상이 없습니다.</p>'),'d')+'</div>'
