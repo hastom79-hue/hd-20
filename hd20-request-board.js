@@ -93,6 +93,7 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
 #${ID} .ibBody{overflow-x:hidden!important;max-width:100%;min-width:0}
 #${ID} .ibBody>svg{display:block;width:100%!important;height:auto!important;max-width:100%}
 #${ID} .ibPanel,#${ID} .ibRow{min-width:0;max-width:100%}
+#${ID} .rqTeamDetail .rqScroll{max-height:none!important;overflow:visible!important;border:0!important}#${ID} .rqTeamDetail .rqGrid{width:100%;table-layout:fixed}#${ID} .rqTeamDetail .rqGrid th,#${ID} .rqTeamDetail .rqGrid td{white-space:normal;overflow-wrap:anywhere}
 #${ID} .rqV5TeamRank{display:grid;gap:10px;padding:12px 6px}
 #${ID} .rqV5TeamLine{display:grid;grid-template-columns:minmax(95px,1.2fr) minmax(100px,3fr) 50px 70px;gap:10px;align-items:center;font-size:12px;color:#183b55}
 #${ID} .rqV5TeamLine>span{overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-weight:700}
