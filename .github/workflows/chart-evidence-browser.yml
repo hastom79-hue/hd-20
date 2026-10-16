@@ -1,7 +1,7 @@
 name: HD20 chart evidence browser verification
 on:
   push:
-    branches: [fix/request-board-source-denominator-20261015, feat/dashboard-v3-integrated-20261016, feat/request-dashboard-v4-20261016]
+    branches: [fix/request-board-source-denominator-20261015, feat/dashboard-v3-integrated-20261016, feat/request-dashboard-v4-20261016, feat/request-chart-v5-20261016]
   workflow_dispatch:
 permissions:
   contents: read
@@ -101,6 +101,9 @@ jobs:
             const requestV4=await page.evaluate(()=>{const el=document.getElementById('hd20RequestBoard');return {kpis:el?.querySelectorAll('.rqV2Kpis .rqKpi').length,donuts:el?.querySelectorAll('.rqDonutWrap').length,bars:el?.querySelectorAll('.rqV4StatusRow').length,charts:el?.querySelectorAll('[data-evk]').length}});
             if(requestV4.kpis!==4||requestV4.donuts!==0||requestV4.bars!==3||requestV4.charts!==6)throw Error('Request V4 redesign contract '+JSON.stringify(requestV4));
             result.requestV4=requestV4;
+            const requestV5=await page.evaluate(()=>{const el=document.getElementById('hd20RequestBoard');const svg=el?.querySelector('.ibBody>svg');const body=svg?.parentElement;return {teamBars:el?.querySelectorAll('.rqV5TeamLine').length,oldMatrix:el?.querySelectorAll('.rqMatrix').length,overflow:body?body.scrollWidth>body.clientWidth+2:false}});
+            if(requestV5.oldMatrix||requestV5.overflow)throw Error('Request V5 charts overflow or legacy matrix remains '+JSON.stringify(requestV5));
+            result.requestV5=requestV5;
             const bridgeState=await page.evaluate(()=>{const el=document.getElementById('hd20OperationalBridge');return {hidden:!!el?.classList.contains('hd20DashboardSectionHidden'),aria:el?.getAttribute('aria-hidden'),visible:!!el&&getComputedStyle(el).display!=='none'}});
             if(!bridgeState.hidden||bridgeState.aria!=='true'||bridgeState.visible)throw Error('Legacy bridge must be fully retired '+JSON.stringify(bridgeState));
             result.bridgeState=bridgeState;
