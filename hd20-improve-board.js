@@ -134,17 +134,18 @@ function render(box){
      서로 자릿수가 비슷한 나머지 5개 기본 유형만으로 그려 막대 높이 차이가 실제 비교에 의미 있게 함. */
   const BASIC_TYPES=TYPES.filter(t=>t!=='5S 고도화'),basicAllT=BASIC_TYPES.map(t=>rowsM.filter(r=>r.type===t).length),advIdx=TYPES.indexOf('5S 고도화'),advCnt=allT[advIdx]||0,advPct=allT.reduce((a,b)=>a+b,0)?Math.round(advCnt/allT.reduce((a,b)=>a+b,0)*1000)/10:0;
   const A=(()=>{
-    const width=window.__hd20BoardPrint?W-8:Math.max(320,Math.floor(W*.4)-10),height=360;
-    const base=chart({w:width,h:height,cats:BASIC_TYPES,per:false,minSlot:0,series:[{name:'등록 건수',vals:basicAllT,color:C.dark}]});
+    const width=window.__hd20BoardPrint?W-8:Math.max(320,Math.floor(W*.4)-10);
     const denom=teamsAll.reduce((sum,t)=>sum+D.hcOf(t),0);
-    const rates=basicAllT.map(n=>denom>0?n/denom:null),valid=rates.filter(Number.isFinite);
-    if(!valid.length)return base;
-    const ymax=Math.max(.1,...valid)*1.2,plotTop=20,plotBottom=330,plotHeight=plotBottom-plotTop;
-    const x=i=>46+(width-56)*(i+.5)/BASIC_TYPES.length,y=v=>plotBottom-(v/ymax)*plotHeight;
-    const pts=rates.map((v,i)=>Number.isFinite(v)?{x:x(i),y:y(v),v}:null),line=pts.filter(Boolean).map(p=>p.x+','+p.y).join(' ');
-    const overlay='<polyline points="'+line+'" fill="none" stroke="#d78b26" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>'+pts.filter(Boolean).map(p=>'<circle cx="'+p.x+'" cy="'+p.y+'" r="4" fill="#d78b26"/><text x="'+p.x+'" y="'+Math.max(12,p.y-9)+'" text-anchor="middle" font-size="10" font-weight="800" fill="#b56a14">'+p.v.toFixed(2)+'</text>').join('');
-    const ticks=[0,.5,1].map(k=>{const v=ymax*k;return '<text x="'+(width-2)+'" y="'+(y(v)+4)+'" text-anchor="end" font-size="9" fill="#b56a14">'+v.toFixed(2)+'</text>'}).join('');
-    return base.replace('</svg>',overlay+ticks+'</svg>');
+    const rates=basicAllT.map(n=>denom>0?n/denom:0);
+    const maxCount=Math.max(1,...basicAllT)*1.2,maxRate=Math.max(.01,...rates)*1.2;
+    const x=i=>46+(width-74)*(i+.5)/5, y=(v,max)=>330-v/max*300;
+    const bars=BASIC_TYPES.map((name,i)=>{
+      const cx=x(i),c=basicAllT[i],r=rates[i],cy=y(c,maxCount),ry=y(r,maxRate);
+      return '<rect x="'+(cx-21)+'" y="'+cy+'" width="18" height="'+(330-cy)+'" fill="#20746f"/><rect x="'+(cx+3)+'" y="'+ry+'" width="18" height="'+(330-ry)+'" fill="#d78b26"/>'+
+        '<text x="'+(cx-12)+'" y="'+(cy-5)+'" text-anchor="middle" font-size="10">'+c+'</text><text x="'+(cx+12)+'" y="'+(ry-5)+'" text-anchor="middle" font-size="10">'+r.toFixed(2)+'</text><text x="'+cx+'" y="350" text-anchor="middle" font-size="10">'+name+'</text>';
+    }).join('');
+    const ticks=[0,.25,.5,.75,1].map(k=>'<line x1="46" x2="'+(width-28)+'" y1="'+(330-k*300)+'" y2="'+(330-k*300)+'" stroke="#ddd"/><text x="37" y="'+(334-k*300)+'" text-anchor="end" font-size="10">'+Math.round(maxCount*k)+'</text><text x="'+(width-2)+'" y="'+(334-k*300)+'" text-anchor="end" font-size="9" fill="#b56a14">'+(maxRate*k).toFixed(2)+'</text>').join('');
+    return '<svg width="'+width+'" height="360" viewBox="0 0 '+width+' 360" role="img">'+ticks+bars+'</svg>';
   })();
   // b) 월별 — 건수로 고정 표시. 수평전개 적용대상건수는 그 달 5S 활동 완료건수 대비 비율(%)을 값 옆에 병기하고 막대를 넓혀 값이 겹치지 않게 함
   const mo=(pred)=>Array.from({length:12},(_,i)=>rowsY.filter(r=>monthOf(r)===i+1&&pred(r)).length),rowsC=filt(D,{ignoreYear:true,ignoreMonth:true}).filter(inTeams),cy=r=>cdOf(r).slice(0,4),cm=r=>+cdOf(r).slice(5,7),confM=(a)=>Array.from({length:12},(_,i)=>a.filter(r=>r.judgeState==='확정'&&cy(r)===S.year&&cm(r)===i+1).length),ML=Array.from({length:12},(_,i)=>String(i+1).padStart(2,'0')+'월');
@@ -186,7 +187,7 @@ function render(box){
 <label>부서 <select data-f="group">${opt(D.groups,S.group)}</select></label><label>5S 유형 <select data-f="type">${opt(TYPES,S.type)}</select></label>
 <label>고도화 확정 <select data-f="judge"><option value="">ALL</option><option value="Y"${S.judge==='Y'?' selected':''}>확정 결과만</option><option value="N"${S.judge==='N'?' selected':''}>확정 외</option></select></label><label>수평전개 <select data-f="roll"><option value="">ALL</option><option value="Y"${S.roll==='Y'?' selected':''}>적용대상</option><option value="N"${S.roll==='N'?' selected':''}>비대상</option></select></label>
 <span class="sp"></span><button type="button" class="alt" data-ib="print">프린트</button><button type="button" class="alt" data-ib="csv">엑셀다운로드</button></div>
-<div class="ibRow r1"><div class="ibPanel"><div class="ibHead">5S 유형별 등록건수 및 인당 개선건수<button type="button" class="ibEv" data-evk="a">근거 데이터</button><em>${S.month?S.month.replace(/^0/,'')+'월':'연간누적'} · 건</em></div><div class="ibBody">${A}<div class="ibAdvBadge"><b>5S 고도화 ${advCnt}건</b><span>전체 ${allT.reduce((a,b)=>a+b,0)}건 중 ${advPct}% · 별도 판정 유형 (그래프는 기본 5개 유형)</span></div><div class="ibLeg"><span>자율개선 사례는 이미 완료된 건만 등록하므로(등록=완료), 유형별로 몇 건이 등록됐는지만 봅니다. 막대는 등록건수(건), 주황색 선은 전체 인원 기준 인당 개선건수(건/인)입니다.</span></div></div></div>
+<div class="ibRow r1"><div class="ibPanel"><div class="ibHead">5S 유형별 등록건수 및 인당 개선건수<button type="button" class="ibEv" data-evk="a">근거 데이터</button><em>${S.month?S.month.replace(/^0/,'')+'월':'연간누적'} · 건</em></div><div class="ibBody">${A}<div class="ibAdvBadge"><b>5S 고도화 ${advCnt}건</b><span>전체 ${allT.reduce((a,b)=>a+b,0)}건 중 ${advPct}% · 별도 판정 유형 (그래프는 기본 5개 유형)</span></div><div class="ibLeg"><span>자율개선 사례는 이미 완료된 건만 등록하므로(등록=완료), 유형별로 몇 건이 등록됐는지만 봅니다. 막대는 등록건수(건), 주황색 막대는 전체 인원 기준 인당 개선건수(건/인)입니다.</span></div></div></div>
 <div class="ibPanel"><div class="ibHead">월별 등록 및 진행현황<button type="button" class="ibEv" data-evk="b">근거 데이터</button><em>${S.year}년 · 건 · 수평전개=그 달 완료건수 대비 %</em></div><div class="ibBody">${B}${leg([['5S 활동 완료건수',C.dark],['고도화 확정 건수',C.amber],['수평전개 적용대상건수',C.grey]])}</div></div></div>
 <div class="ibRow"><div class="ibPanel"><div class="ibHead">현장조직 팀에 대한 개선활동 현황${per?'(인당 개선건수)':'(총 건수)'}<button type="button" class="ibEv" data-evk="c">근거 데이터</button><em class="pt">당월(${String(mm).padStart(2,'0')}월) 현재 참여율 ${part.toFixed(1)}% (등록자 ${owners}명 / 총원 ${hcAll}명)</em></div><div class="ibBody">${Cc}${leg([['평균 이상 (평균 '+avg.toFixed(2)+(per?'건/인)':'건)'),C.dark],['평균 미만',C.amber]])}</div></div></div>
 <div class="ibRow r3"><div class="ibPanel"><div class="ibHead">단일 팀에 대한 연간/월별 누적 활동 실적${per?'(인당 개선건수)':''}<button type="button" class="ibEv" data-evk="d">근거 데이터</button><em>[ ${esc(S.team)} ] 연간 ${fx(dCum,per)}${unit}</em></div><div class="ibBody">${Dd}</div></div>
