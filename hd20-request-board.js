@@ -203,8 +203,13 @@ function render(box){
   const priorityRank=x=>isOverdue(x,D.today)?0:!isDone(x)?1:2;
   const detailAll=[...rowsM].sort((a,b)=>priorityRank(a)-priorityRank(b)||(delayDays(b,D.today)||0)-(delayDays(a,D.today)||0)||String(a.due||'9999-12-31').localeCompare(String(b.due||'9999-12-31'))||String(b.date).localeCompare(String(a.date)));
   const actionAll=detailAll.filter(x=>!isDone(x)),detailRows=actionAll.slice(0,15);
+  /* '06 개선요청 상세 관리'는 미완료 건만 보여주는 구조라(사용자 데이터 특성상) 거의 모든 행의
+     현재상태가 '기한초과' 빨강 배지로 도배돼 단조로워 보임(전면 재검토 연장) — 데이터·필터 기준은
+     그대로 두고, '초과일' 숫자에 "05 기한초과 집중관리"와 같은 심각도 색상 체계(rqHeat)를 적용해
+     같은 '기한초과' 상태 안에서도 얼마나 심각한지 한눈에 구분되게 함. */
+  const overdueCls=d=>d===null||d===undefined?'':d>=15?'rqHeatHigh':d>=8?'rqHeatMid':d>0?'rqHeatLow':'';
   const detail=`<table class="rqGrid rqDetail"><thead><tr><th>우선</th><th>요청번호</th><th>조치대응부서</th><th>작업장</th><th>현재상태</th><th>초과일</th><th>완료예정일</th></tr></thead><tbody>
-    ${detailRows.length?detailRows.map((c,i)=>`<tr><td>${i+1}</td><td>${esc(c.id)}</td><td>${esc(c.team)}</td><td>${esc(c.workplace||'—')}</td><td>${isOverdue(c,D.today)?'<b style="color:#c0392b">기한초과</b>':esc(c.status)}</td><td>${delayDays(c,D.today)??'—'}</td><td>${esc(c.due||'—')}</td></tr>`).join(''):`<tr><td colspan="7" style="text-align:center;color:#8a99a6;padding:16px">조건에 해당하는 개선요청이 없습니다.</td></tr>`}
+    ${detailRows.length?detailRows.map((c,i)=>{const d=delayDays(c,D.today);return `<tr><td>${i+1}</td><td>${esc(c.id)}</td><td>${esc(c.team)}</td><td>${esc(c.workplace||'—')}</td><td>${isOverdue(c,D.today)?'<b style="color:#c0392b">기한초과</b>':esc(c.status)}</td><td>${d!==null&&d!==undefined?'<span class="rqHeat '+overdueCls(d)+'">'+d+'일</span>':'—'}</td><td>${esc(c.due||'—')}</td></tr>`}).join(''):`<tr><td colspan="7" style="text-align:center;color:#8a99a6;padding:16px">조건에 해당하는 개선요청이 없습니다.</td></tr>`}
     </tbody></table>`;
   const opt=(a,cur,all='ALL')=>`<option value="">${all}</option>`+a.map(x=>`<option value="${esc(x)}"${x===cur?' selected':''}>${esc(x)}</option>`).join('');
 
