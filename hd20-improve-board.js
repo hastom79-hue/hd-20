@@ -26,7 +26,7 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
    눌리고 12개월 중 실제 값 있는 달이 5~6개뿐인 오른쪽은 빈 축 공간이 커 보여 두 패널 사이 여백이
    불균형해 보였음(사용자 지적, 업로드 스크린샷 기준) — 1:1에 가깝게 재조정. */
 #${ID} .r1{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
-#${ID} .r1{width:100%;grid-template-columns:repeat(2,minmax(0,1fr))!important;align-items:stretch}#${ID} .r1>.ibPanel{width:100%;min-width:0;box-sizing:border-box}#${ID} .r1 .ibBody>svg{aspect-ratio:auto;width:100%!important;height:240px!important;max-height:240px!important}
+#${ID} .r1{width:100%;grid-template-columns:minmax(0,2fr) minmax(0,3fr)!important;align-items:stretch}#${ID} .r1>.ibPanel{width:100%;min-width:0;box-sizing:border-box}#${ID} .r1 .ibBody>svg{aspect-ratio:auto;width:100%!important;height:240px!important;max-height:240px!important}
 #${ID} .r1>.ibPanel{min-width:0;height:100%}#${ID} .r1 .ibBody{display:flex;flex-direction:column;min-width:0}#${ID} .r1 .ibBody>svg{flex:none;width:100%!important}#${ID} .r1 .ibAdvBadge{margin:8px 0 0;padding:7px 10px}#${ID} .r1 .ibLeg{margin-top:8px}#${ID} .r3{grid-template-columns:repeat(2,minmax(0,1fr))}
 #${ID} .ibPanel{border:1px solid #e3eaf0;border-radius:10px;background:#fff;overflow:hidden}
 #${ID} .ibHead{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 12px;background:#f1f5f8;border-bottom:1px solid #e3eaf0;font-size:13.5px;font-weight:900;color:#22303f}
@@ -44,7 +44,7 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
 #${ID} .ibBody{overflow-x:hidden!important;max-width:100%;min-width:0}
 #${ID} .ibBody svg{display:block;width:100%!important;max-width:100%!important;height:auto!important;min-width:0;overflow:visible}
 #${ID} .ibRow,#${ID} .ibPanel{min-width:0;max-width:100%}
-@media(max-width:1100px){#${ID} .r1,#${ID} .r3{grid-template-columns:1fr}}
+@media(max-width:1100px){#${ID} .r1,#${ID} .r3{grid-template-columns:1fr!important}}
 
 /* Unified restrained dashboard visual system: one typography and spacing scale. */
 #${ID}{max-width:100%;box-sizing:border-box;padding:20px 22px;border-color:#dbe4eb;border-radius:12px;box-shadow:0 2px 10px rgba(24,49,69,.035)}
