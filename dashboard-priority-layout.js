@@ -72,7 +72,8 @@ function card(x,i,op,monthly){
   const mx=x.max||Math.max(1,...vals.filter(v=>v!==null));
   const bars=arr.length?arr.map((v,i2)=>{const h=v.v===null?0:Math.max(2,Math.round(v.v/mx*58));return `<div class="httCol${i2===arr.length-1?' last':''}" title="${esc(monthly.months[i2])}: ${v.v===null?'표본 없음':fmt(v.v,x.key)} (표본 ${v.n}건)"><i style="height:${h}px"></i></div>`}).join(''):'';
   const mon=arr.length?monthly.months.map(mm=>`<div>${+mm.slice(5)}월</div>`).join(''):'';
-  return `<article class="hd20HealthTrendCard" data-kpi="${x.key}" data-tab="${x.tab}"><h4>${x.label}</h4><div class="httBig"><b>${fmt(op[x.key],x.key)}</b></div>${delta}${bars?`<div class="httBars">${bars}</div><div class="httMon">${mon}</div>`:''}<div class="httFoot"><p>${x.hint}</p><button type="button" data-group-tab="${x.tab}">원인 확인 →</button></div></article>`}
+  const g=GROUPS.find(gg=>gg.key===x.tab);
+  return `<article class="hd20HealthTrendCard" data-kpi="${x.key}" data-tab="${x.tab}"><div class="httGroupTag">${g?g.step+' '+g.label:''}</div><h4>${x.label}</h4><div class="httBig"><b>${fmt(op[x.key],x.key)}</b></div>${delta}${bars?`<div class="httBars">${bars}</div><div class="httMon">${mon}</div>`:''}<div class="httFoot"><p>${x.hint}</p><button type="button" data-group-tab="${x.tab}">원인 확인 →</button></div></article>`}
 function removeRetiredStandardTrendLabel(){const bottom=document.querySelector('.bottomGrid');if(bottom?.previousElementSibling?.classList.contains('hd20DashboardSectionLabel'))bottom.previousElementSibling.remove()}
 function render(){
   removeRetiredStandardTrendLabel();
@@ -95,8 +96,12 @@ function render(){
       ?'<div class="hd20V3ReadinessMain"><strong>운영지표 데이터 상태</strong><span>'+ready.length+' / '+KPI.length+'개 연결 확인</span></div><p>확인 필요: '+missing.map(x=>x.label).join(' · ')+'</p>'
       :'<p class="hd20V3ReadinessOk">운영지표 '+KPI.length+'개 전부 정상 연결됨 · 실제 업무 성과 판정은 별도 확인이 필요합니다.</p>';
   }
+  /* 사용자 지적: "2열로 3개씩 맞추라고" — 카드 개수가 3:2:1로 다른 3개 그룹을 각자 박스로 나눠
+     3열로 배치하면(이전 방식) 카드 적은 그룹의 열이 항상 휑해 보이는 문제가 구조적으로 반복됨.
+     그룹별 박스 구분 자체를 없애고, 6개 지표 카드를 하나의 평평한 2열×3행 그리드로 배치. 소속
+     확인 영역은 각 카드 좌상단의 작은 태그(색상 그룹 범례와 동일한 라벨)로만 표시. */
   const groups=root.querySelector('.hd20DashboardPriorityGroups');
-  groups.innerHTML=GROUPS.map(g=>{const items=KPI.filter(x=>x.tab===g.key);return `<section class="hd20HealthGroup" data-domain="${g.key}"><header><div><small>확인 영역 ${g.step}</small><b>${g.label}</b><p>${g.summary}</p></div><button type="button" data-group-tab="${g.key}">업무화면 →</button></header><div class="hd20HealthGroupGrid">${items.map(x=>card(x,KPI.indexOf(x),op,monthly)).join('')}</div></section>`}).join('');
+  groups.innerHTML=`<div class="httLegend">${GROUPS.map(g=>`<span data-legend="${g.key}">${g.step} ${g.label}</span>`).join('')}</div><div class="httGrid">${KPI.map(x=>card(x,KPI.indexOf(x),op,monthly)).join('')}</div>`;
   groups.querySelectorAll('[data-group-tab]').forEach(btn=>btn.addEventListener('click',()=>gotoTab(btn.dataset.groupTab)));
 }
 function boot(){removeRetiredStandardTrendLabel();render();setTimeout(removeRetiredStandardTrendLabel,500);setTimeout(removeRetiredStandardTrendLabel,1800);['hd20-kpi-source-updated','hd20-gmes-5s-imported','hd20-gmes-5s-judged','hd20-audit-updated','hd20-action-updated'].forEach(ev=>window.addEventListener(ev,()=>setTimeout(render,0)))}
