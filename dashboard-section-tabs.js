@@ -5,7 +5,7 @@ const TABS=[
  {key:'summary',label:'종합현황',desc:'핵심 지표 · 운영 건전성 현재값',targets:['#hd20DashboardPriority','.cards']},
  {key:'improve',label:'5S 자율개선 종합',desc:'유형·월별·팀별 인당 개선건수',targets:['#hd20ImproveBoard']},
  {key:'request',label:'5S 개선요청 종합',desc:'처리 단계·팀별 완료율·처리일수',targets:['#hd20RequestBoard']},
- {key:'execution',label:'실행·유지',desc:'팀별 실행·Audit·Action',targets:['.mainGrid','#hd20OperationalBridge']},
+ {key:'execution',label:'실행·유지',desc:'팀별 실행·Audit·Action',targets:['#hd20V3Execution']},
  {key:'analysis',label:'성과·운영분석',desc:'6개 지표의 월별 추이',targets:['#hd20OpsTrend']},
  /* 현장참고: 초기 구축용 샘플(운영실적 제외)·외부 참고사진뿐이라 운영 목적이 없어 메뉴에서만 숨김(코드·데이터는 유지, apply('field')는 계속 동작) */
  {key:'field',label:'현장참고',desc:'초기 샘플·공개 현장사진',targets:['#hd20FieldShowcaseBootstrap'],hidden:true}
@@ -26,6 +26,7 @@ body.hd20DashboardImproveActive #hd20ImproveBoard .ibHead,body.hd20DashboardRequ
 body.hd20DashboardAnalysisActive #hd20OpsTrend,body.hd20DashboardExecutionActive .mainGrid{min-width:0}
 @media(max-width:760px){body.hd20DashboardSummaryActive .cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}}
 /* Enforce exclusive ownership of legacy execution panels in every non-execution dashboard. */
+body:not(.hd20DashboardExecutionActive) #hd20V3Execution{display:none!important}body.hd20DashboardExecutionActive .mainGrid,body.hd20DashboardExecutionActive #hd20OperationalBridge{display:none!important}
 body.hd20DashboardSummaryActive .mainGrid,body.hd20DashboardImproveActive .mainGrid,body.hd20DashboardRequestActive .mainGrid,body.hd20DashboardAnalysisActive .mainGrid{display:none!important}
 body.hd20DashboardSummaryActive #hd20OperationalBridge,body.hd20DashboardImproveActive #hd20OperationalBridge,body.hd20DashboardRequestActive #hd20OperationalBridge,body.hd20DashboardAnalysisActive #hd20OperationalBridge{display:none!important}
 body.hd20DashboardExecutionActive .mainGrid{grid-template-columns:minmax(0,1fr) 330px;gap:10px;margin-bottom:10px}body.hd20DashboardExecutionActive .mainGrid .chart{height:330px;padding-bottom:92px}@media(max-width:1100px){body.hd20DashboardExecutionActive .mainGrid{grid-template-columns:1fr}}@media(max-width:760px){#${ID}{overflow-x:auto;position:static}#${ID} button{flex:0 0 145px}}`;document.head.appendChild(s)}
