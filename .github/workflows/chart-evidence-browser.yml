@@ -102,6 +102,8 @@ jobs:
             const required=['계획 실행 이행률','Audit 수행률','미완료 개선조치','기한 초과 조치','효과 검증 완료율','유지 이탈·재발'];
             if(JSON.stringify(v4Labels)!==JSON.stringify(required))throw Error('V4 KPI contract mismatch '+JSON.stringify(v4Labels));
             result.executionV4={labels:v4Labels};
+            const legacyBridgeVisible=await page.evaluate(()=>{const el=document.getElementById('hd20OperationalBridge');return !!el&&getComputedStyle(el).display!=='none'&&el.getBoundingClientRect().height>0});
+            if(legacyBridgeVisible)throw Error('Legacy operational bridge duplicated in V4');
             // Verify tab ownership: only the selected section's main target is visible.
             const ownership=[['summary','#hd20DashboardPriority'],['improve','#hd20ImproveBoard'],['request','#hd20RequestBoard'],['execution','#hd20V3Execution'],['analysis','#hd20OpsTrend']];
             result.tabIsolation={};
