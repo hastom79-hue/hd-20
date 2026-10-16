@@ -1,7 +1,7 @@
 name: HD20 chart evidence browser verification
 on:
   push:
-    branches: [fix/request-board-source-denominator-20261015, feat/dashboard-v3-integrated-20261016]
+    branches: [fix/request-board-source-denominator-20261015, feat/dashboard-v3-integrated-20261016, feat/execution-v4-rebuild-20261016]
   workflow_dispatch:
 permissions:
   contents: read
@@ -16,7 +16,7 @@ jobs:
           node-version: '22'
       - run: npm install --no-save playwright@1.55.0 && npx playwright install --with-deps chromium
       - name: Static JS parsing
-        run: node --check dashboard-section-tabs.js && node --check dashboard-priority-layout.js && node --check hd20-improve-board.js && node --check hd20-request-board.js
+        run: node --check hd20-v3-execution.js && node --check dashboard-section-tabs.js && node --check dashboard-priority-layout.js && node --check hd20-improve-board.js && node --check hd20-request-board.js
       - name: Start local site
         run: python3 -m http.server 4173 >/tmp/hd20-evidence-http.log 2>&1 &
       - name: Verify chart evidence controls in Chromium
@@ -98,6 +98,10 @@ jobs:
             const executionCards=await page.evaluate(()=>{const el=document.getElementById('hd20V3Execution');return {exists:!!el,kpis:el?.querySelectorAll('[data-execution-kpi]').length||0,panels:el?.querySelectorAll('.v3exPanel').length||0}});
             if(!executionCards.exists||executionCards.kpis!==6||executionCards.panels<6)throw Error('Approved execution V3 sections missing '+JSON.stringify(executionCards));
             result.executionV3=executionCards;
+            const v4Labels=await page.locator('#hd20V3Execution [data-execution-kpi] small').allTextContents();
+            const required=['계획 실행 이행률','Audit 수행률','미완료 개선조치','기한 초과 조치','효과 검증 완료율','유지 이탈·재발'];
+            if(JSON.stringify(v4Labels)!==JSON.stringify(required))throw Error('V4 KPI contract mismatch '+JSON.stringify(v4Labels));
+            result.executionV4={labels:v4Labels};
             // Verify tab ownership: only the selected section's main target is visible.
             const ownership=[['summary','#hd20DashboardPriority'],['improve','#hd20ImproveBoard'],['request','#hd20RequestBoard'],['execution','#hd20V3Execution'],['analysis','#hd20OpsTrend']];
             result.tabIsolation={};
