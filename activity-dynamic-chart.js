@@ -2,7 +2,7 @@
 const KEY='hd20GMES5SAutoImproveRawV1';
 const CATS=['정리','정돈','청소','시각화','위험구역관리','설비 자주보전','5S 고도화'];
 const TEAM_MASTER=window.HD20ProductionTeamMaster?.teamNames?.()||[];
-const COLORS=['#4ea4ff','#5fcf86','#f0ab3c','#9f7aea','#ef6f6c','#53c7c2'];
+const COLORS=['#4ea4ff','#5fcf86','#f0ab3c','#9f7aea','#ef6f6c','#53c7c2','#7588ac'];
 function load(){try{const v=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(v)?v:[]}catch{return[]}}
 function rowDate(x){return window.HD20KPIData?.rowDate?.(x)||x.date||x.regDate||x.createdAt||x.importedAt||''}
 function typeOf(x){const raw=String(x.type||x.category||x.sType||x['5S구분']||x['활동유형']||'').replace(/\s/g,'');if(raw.includes('정리'))return'정리';if(raw.includes('정돈'))return'정돈';if(raw.includes('청소'))return'청소';if(raw.includes('시각화'))return'시각화';if(raw.includes('위험구역'))return'위험구역관리';if(raw.includes('자주보전'))return'설비 자주보전';if(raw.includes('고도화'))return'5S 고도화';return null}
