@@ -1,7 +1,7 @@
 name: HD20 chart evidence browser verification
 on:
   push:
-    branches: [fix/request-board-source-denominator-20261015, feat/dashboard-v3-integrated-20261016]
+    branches: [fix/request-board-source-denominator-20261015, feat/dashboard-v3-integrated-20261016, feat/request-dashboard-v4-20261016]
   workflow_dispatch:
 permissions:
   contents: read
@@ -16,7 +16,7 @@ jobs:
           node-version: '22'
       - run: npm install --no-save playwright@1.55.0 && npx playwright install --with-deps chromium
       - name: Static JS parsing
-        run: node --check dashboard-section-tabs.js && node --check dashboard-priority-layout.js && node --check hd20-improve-board.js && node --check hd20-request-board.js
+        run: node --check hd20-request-board.js && node --check dashboard-section-tabs.js && node --check dashboard-priority-layout.js && node --check hd20-improve-board.js && node --check hd20-request-board.js
       - name: Start local site
         run: python3 -m http.server 4173 >/tmp/hd20-evidence-http.log 2>&1 &
       - name: Verify chart evidence controls in Chromium
@@ -98,6 +98,9 @@ jobs:
             const executionCards=await page.evaluate(()=>{const el=document.getElementById('hd20V3Execution');return {exists:!!el,kpis:el?.querySelectorAll('[data-execution-kpi]').length||0,panels:el?.querySelectorAll('.v3exPanel').length||0}});
             if(!executionCards.exists||executionCards.kpis!==6||executionCards.panels<6)throw Error('Approved execution V3 sections missing '+JSON.stringify(executionCards));
             result.executionV3=executionCards;
+            const requestV4=await page.evaluate(()=>{const el=document.getElementById('hd20RequestBoard');return {kpis:el?.querySelectorAll('.rqV2Kpis .rqKpi').length,donuts:el?.querySelectorAll('.rqDonutWrap').length,bars:el?.querySelectorAll('.rqV4StatusRow').length,charts:el?.querySelectorAll('[data-evk]').length}});
+            if(requestV4.kpis!==4||requestV4.donuts!==0||requestV4.bars!==3||requestV4.charts!==6)throw Error('Request V4 redesign contract '+JSON.stringify(requestV4));
+            result.requestV4=requestV4;
             // Verify tab ownership: only the selected section's main target is visible.
             const ownership=[['summary','#hd20DashboardPriority'],['improve','#hd20ImproveBoard'],['request','#hd20RequestBoard'],['execution','#hd20V3Execution'],['analysis','#hd20OpsTrend']];
             result.tabIsolation={};
