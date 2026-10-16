@@ -35,10 +35,11 @@ function boot(){
     이미 저장된(실제 운영) 인원 마스터가 있으면 절대 덮어쓰지 않음. */
  try{
    const HC_KEY='hd20TeamHeadcountMasterV1';
-   if(!localStorage.getItem(HC_KEY)){
-     const hc=teams.map((team,i)=>({team,headcount:20+(i%6)*3}));
-     localStorage.setItem(HC_KEY,JSON.stringify(hc));
-   }
+   let hc=[];try{const parsed=JSON.parse(localStorage.getItem(HC_KEY)||'[]');if(Array.isArray(parsed))hc=parsed}catch{}
+   const known=new Set(hc.map(x=>String(x.team||'').trim()));
+   const missing=teams.filter(team=>!known.has(team));
+   if(missing.length){localStorage.setItem(HC_KEY,JSON.stringify([...hc,...missing.map(team=>({team,headcount:20+(teams.indexOf(team)%6)*3,source:SRC,isDemo:true}))]));}
+   window.HD20_DEMO_HEADCOUNT_STATUS={masterTeams:teams.length,existing:hc.length,filled:missing.length};
  }catch{}
  const now=new Date(),ymd=d=>d.toISOString().slice(0,10),days=n=>{const d=new Date(now);d.setDate(d.getDate()-n);return ymd(d)};
  const weak=team=>/중형|성능|트러블/.test(team),strong=team=>/프레임|Boom/.test(team);

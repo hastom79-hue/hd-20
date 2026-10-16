@@ -25,7 +25,9 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
 /* r1(5S 유형별 등록 현황 · 월별 등록 및 진행현황)이 3:7로 치우쳐 있어, 카테고리 5개뿐인 왼쪽은 좁게
    눌리고 12개월 중 실제 값 있는 달이 5~6개뿐인 오른쪽은 빈 축 공간이 커 보여 두 패널 사이 여백이
    불균형해 보였음(사용자 지적, 업로드 스크린샷 기준) — 1:1에 가깝게 재조정. */
-#${ID} .r1{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}#${ID} .r3{grid-template-columns:repeat(2,minmax(0,1fr))}
+#${ID} .r1{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+#${ID} .r1{width:100%;grid-template-columns:repeat(2,minmax(0,1fr))!important;align-items:stretch}#${ID} .r1>.ibPanel{width:100%;min-width:0;box-sizing:border-box}#${ID} .r1 .ibBody>svg{aspect-ratio:auto;width:100%!important;height:240px!important;max-height:240px!important}
+#${ID} .r1>.ibPanel{min-width:0;height:100%}#${ID} .r1 .ibBody{display:flex;flex-direction:column;min-width:0}#${ID} .r1 .ibBody>svg{flex:none;width:100%!important}#${ID} .r1 .ibAdvBadge{margin:8px 0 0;padding:7px 10px}#${ID} .r1 .ibLeg{margin-top:8px}#${ID} .r3{grid-template-columns:repeat(2,minmax(0,1fr))}
 #${ID} .ibPanel{border:1px solid #e3eaf0;border-radius:10px;background:#fff;overflow:hidden}
 #${ID} .ibHead{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 12px;background:#f1f5f8;border-bottom:1px solid #e3eaf0;font-size:13.5px;font-weight:900;color:#22303f}
 #${ID} .ibHead .ibEv{margin-left:auto;height:26px;border:1px solid #cfd9e2;border-radius:6px;background:#fff;color:#2c5f8a;font-size:12px;font-weight:850;padding:0 9px;cursor:pointer}#${ID} .ibHead .ibEv+em{margin-left:0}#${ID} .ibHead em{font-style:normal;font-size:12.5px;color:#14304c}#${ID} .ibHead em.pt{color:#1f6f6b}
@@ -90,7 +92,7 @@ function axis(v){const raw=v/4,p=Math.pow(10,Math.floor(Math.log10(raw))),f=raw/
 const tk=v=>String(Number(v.toFixed(3)));
 function chart({w,h=240,cats,series,stack=false,per=false,rotate=false,sel=null,colorOf=null,minSlot=36,fmt=null,hline=null,linkX=false,topPct=null,topExtra=null}){
   const F=v=>fmt?fmt(v):fx(v,per);
-  const W0=Math.max(w,cats.length*minSlot+56),slot0=(W0-56)/Math.max(1,cats.length);rotate=rotate||(slot0<58&&cats.some(c=>String(c).length>3));
+  const W0=Math.max(320,w),slot0=(W0-56)/Math.max(1,cats.length);rotate=rotate||(slot0<58&&cats.some(c=>String(c).length>3));
   const m={l:46,r:10,t:20,b:rotate?84:30},W=W0,iw=W-m.l-m.r,ih=h-m.t-m.b;
   const tot=cats.map((_,i)=>stack?series.reduce((a,s)=>a+(s.vals[i]||0),0):Math.max(...series.map(s=>s.vals[i]||0)));
   const ax=axis(Math.max(0.0001,...tot,hline?hline.value*1.05:0)),max=ax.max,yv=v=>m.t+ih-(v/max)*ih,slot=iw/Math.max(1,cats.length);
@@ -131,11 +133,11 @@ function render(box){
      그대로 두고 표현만 바꿔 해결: '5S 고도화'는 축 비교가 아닌 강조 숫자 배지로 분리 표시하고, 차트는
      서로 자릿수가 비슷한 나머지 5개 기본 유형만으로 그려 막대 높이 차이가 실제 비교에 의미 있게 함. */
   const BASIC_TYPES=TYPES.filter(t=>t!=='5S 고도화'),basicAllT=BASIC_TYPES.map(t=>rowsM.filter(r=>r.type===t).length),advIdx=TYPES.indexOf('5S 고도화'),advCnt=allT[advIdx]||0,advPct=allT.reduce((a,b)=>a+b,0)?Math.round(advCnt/allT.reduce((a,b)=>a+b,0)*1000)/10:0;
-  const A=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W*.5)-10),cats:BASIC_TYPES,per:false,minSlot:70,series:[{name:'등록 건수',vals:basicAllT,color:C.dark}]});
+  const A=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W*.5)-10),h:240,cats:BASIC_TYPES,per:false,minSlot:0,series:[{name:'등록 건수',vals:basicAllT,color:C.dark}]});
   // b) 월별 — 건수로 고정 표시. 수평전개 적용대상건수는 그 달 5S 활동 완료건수 대비 비율(%)을 값 옆에 병기하고 막대를 넓혀 값이 겹치지 않게 함
   const mo=(pred)=>Array.from({length:12},(_,i)=>rowsY.filter(r=>monthOf(r)===i+1&&pred(r)).length),rowsC=filt(D,{ignoreYear:true,ignoreMonth:true}).filter(inTeams),cy=r=>cdOf(r).slice(0,4),cm=r=>+cdOf(r).slice(5,7),confM=(a)=>Array.from({length:12},(_,i)=>a.filter(r=>r.judgeState==='확정'&&cy(r)===S.year&&cm(r)===i+1).length),ML=Array.from({length:12},(_,i)=>String(i+1).padStart(2,'0')+'월');
   const doneM=mo(r=>DONE.includes(r.status)),rollM=mo(r=>r.horizontalRollout===true),rollPct=rollM.map((v,i)=>doneM[i]?Math.round(v/doneM[i]*1000)/10:null);
-  const B=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W*.5)-10),cats:ML,per:false,minSlot:60,series:[{name:'5S 활동 완료건수',vals:doneM,color:C.dark},{name:'고도화 확정 건수',vals:confM(rowsC),color:C.amber},{name:'수평전개 적용대상건수',vals:rollM,color:C.grey,widthScale:1.5,pct:rollPct}]});
+  const B=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W*.5)-10),h:240,cats:ML,per:false,minSlot:0,series:[{name:'5S 활동 완료건수',vals:doneM,color:C.dark},{name:'고도화 확정 건수',vals:confM(rowsC),color:C.amber},{name:'수평전개 적용대상건수',vals:rollM,color:C.grey,widthScale:1.5,pct:rollPct}]});
   // c) 팀별 인당
   /* 가로축 정렬: 값(인당 건수) 기준 정렬을 쓰지 않고, 통합기준정보(표시순서) 탭에서 관리하는 생산팀 표시순서를 그대로 따름 */
   const teamOrder=(()=>{try{const v=JSON.parse(localStorage.getItem('gmes5s_team_display_order')||'null');if(Array.isArray(v)&&v.length)return v}catch{}return window.HD20ProductionTeamMaster?.teamNames?.()||null})();
@@ -172,7 +174,7 @@ function render(box){
 <label>부서 <select data-f="group">${opt(D.groups,S.group)}</select></label><label>5S 유형 <select data-f="type">${opt(TYPES,S.type)}</select></label>
 <label>고도화 확정 <select data-f="judge"><option value="">ALL</option><option value="Y"${S.judge==='Y'?' selected':''}>확정 결과만</option><option value="N"${S.judge==='N'?' selected':''}>확정 외</option></select></label><label>수평전개 <select data-f="roll"><option value="">ALL</option><option value="Y"${S.roll==='Y'?' selected':''}>적용대상</option><option value="N"${S.roll==='N'?' selected':''}>비대상</option></select></label>
 <span class="sp"></span><button type="button" class="alt" data-ib="print">프린트</button><button type="button" class="alt" data-ib="csv">엑셀다운로드</button></div>
-<div class="ibRow r1"><div class="ibPanel"><div class="ibHead">5S 유형별 등록 현황<button type="button" class="ibEv" data-evk="a">근거 데이터</button><em>${S.month?S.month.replace(/^0/,'')+'월':'연간누적'} · 건</em></div><div class="ibBody"><div class="ibAdvBadge"><b>5S 고도화 ${advCnt}건</b><span>전체 ${allT.reduce((a,b)=>a+b,0)}건 중 ${advPct}% · 판정을 거치는 별도 유형이라 그래프는 비교 가능한 5개 기본 유형만 표시</span></div>${A}<div class="ibLeg"><span>자율개선 사례는 이미 완료된 건만 등록하므로(등록=완료), 유형별로 몇 건이 등록됐는지만 봅니다. 어느 유형에서 개선 활동이 가장 활발한지 확인하세요.</span></div></div></div>
+<div class="ibRow r1"><div class="ibPanel"><div class="ibHead">5S 유형별 등록 현황<button type="button" class="ibEv" data-evk="a">근거 데이터</button><em>${S.month?S.month.replace(/^0/,'')+'월':'연간누적'} · 건</em></div><div class="ibBody">${A}<div class="ibAdvBadge"><b>5S 고도화 ${advCnt}건</b><span>전체 ${allT.reduce((a,b)=>a+b,0)}건 중 ${advPct}% · 별도 판정 유형 (그래프는 기본 5개 유형)</span></div><div class="ibLeg"><span>자율개선 사례는 이미 완료된 건만 등록하므로(등록=완료), 유형별로 몇 건이 등록됐는지만 봅니다. 어느 유형에서 개선 활동이 가장 활발한지 확인하세요.</span></div></div></div>
 <div class="ibPanel"><div class="ibHead">월별 등록 및 진행현황<button type="button" class="ibEv" data-evk="b">근거 데이터</button><em>${S.year}년 · 건 · 수평전개=그 달 완료건수 대비 %</em></div><div class="ibBody">${B}${leg([['5S 활동 완료건수',C.dark],['고도화 확정 건수',C.amber],['수평전개 적용대상건수',C.grey]])}</div></div></div>
 <div class="ibRow"><div class="ibPanel"><div class="ibHead">현장조직 팀에 대한 개선활동 현황${per?'(인당 개선건수)':'(총 건수)'}<button type="button" class="ibEv" data-evk="c">근거 데이터</button><em class="pt">당월(${String(mm).padStart(2,'0')}월) 현재 참여율 ${part.toFixed(1)}% (등록자 ${owners}명 / 총원 ${hcAll}명)</em></div><div class="ibBody">${Cc}${leg([['평균 이상 (평균 '+avg.toFixed(2)+(per?'건/인)':'건)'),C.dark],['평균 미만',C.amber]])}</div></div></div>
 <div class="ibRow r3"><div class="ibPanel"><div class="ibHead">단일 팀에 대한 연간/월별 누적 활동 실적${per?'(인당 개선건수)':''}<button type="button" class="ibEv" data-evk="d">근거 데이터</button><em>[ ${esc(S.team)} ] 연간 ${fx(dCum,per)}${unit}</em></div><div class="ibBody">${Dd}</div></div>
