@@ -64,7 +64,13 @@ function operational(s){
   const completed=act.filter(actionCompleted);
   const ontime=completed.filter(x=>{const done=asDate(pickField(x,['doneDate','completedDate','finishDate'])),due=asDate(pickField(x,['targetDate','due','dueDate','deadline']));return done&&due&&done<=due}).length;
   const timedCompleted=completed.filter(x=>pickField(x,['targetDate','due','dueDate','deadline']));
-  return{judgmentRate:pct(judged.length,judgmentScope.length),avgLead:lead.length?Math.round(lead.reduce((a,b)=>a+b,0)/lead.length*10)/10:null,maturity:levels.length?Math.round(levels.reduce((a,b)=>a+b,0)/levels.length*10)/10:null,sixRetention:sixMonthRetention(),recurrence:pct(recurred,recurrenceScope.length),actionOnTime:pct(ontime,timedCompleted.length)}
+  /* hd20-v3-execution.js('실행·유지 종합관제' 패널)가 op.execution/op.audit/op.nonconform을 기대하는데,
+   이 함수가 그 키들을 전혀 반환하지 않아 세 지표 모두 항상 '—'였음(발견: 사용자가 요청한 "현시점 웹
+   점검"으로 추적). execution(실행계획 대비 실적)·audit(계획 대비 점검 수행률)은 이 시스템에 '계획' 데이터
+   자체가 없어 임의로 숫자를 만들면 안 되므로 그대로 '—' 유지. nonconform(부적합 발생률)만은 실제 Audit
+   결과(result/finalEvaluation 필드)로 계산 가능해 추가. */
+  const auditRows=auditDraws(),auditWithResult=auditRows.filter(x=>txt(pickField(x,['result','finalEvaluation']))),nonconformCnt=auditWithResult.filter(x=>/부적합|미흡|fail|ng/i.test(txt(pickField(x,['result','finalEvaluation'])))).length;
+  return{judgmentRate:pct(judged.length,judgmentScope.length),avgLead:lead.length?Math.round(lead.reduce((a,b)=>a+b,0)/lead.length*10)/10:null,maturity:levels.length?Math.round(levels.reduce((a,b)=>a+b,0)/levels.length*10)/10:null,sixRetention:sixMonthRetention(),recurrence:pct(recurred,recurrenceScope.length),actionOnTime:pct(ontime,timedCompleted.length),nonconform:pct(nonconformCnt,auditWithResult.length)}
 }
 /* 월별 추이(읽기 전용): operational()과 같은 정의를 월 단위로 나눈 값. 기존 산식은 변경하지 않음.
    판정완료율=등록월 기준, Lead Time·수준=판정/확정월 기준, 6개월 유지율=6개월 종료월 기준,
