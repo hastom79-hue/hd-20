@@ -2,7 +2,7 @@
    조회 조건 바 → 유형별/월별 현황 → 팀별 인당 개선건수(+당월 참여율) → 선택 팀의 월별 인당 실적.
    읽기 전용: HD20KPIData.snapshot().rows(활동 원천), HD20_HEADCOUNT_MASTER(팀 인원), HD20ProductionTeamMaster(팀·그룹). */
 (()=>{'use strict';
-const ID='hd20ImproveBoard',TYPES=['정리','정돈','청소','시각화','위험구역관리','5S 고도화'],DONE=['완료','확정'];
+const ID='hd20ImproveBoard',TYPES=['정리','정돈','청소','시각화','위험구역관리','설비 자주보전','5S 고도화'],DONE=['완료','확정'];
 const C={dark:'#1f6f6b',amber:'#e0b03c',light:'#a8c7c4',grey:'#8fa3b3',ink:'#22303f',soft:'#5c6b7a',grid:'#e6ecf0'};
 const S={year:null,month:'',metric:'per',group:'',type:'',roll:'',judge:'',team:''};
 const JUDGES=['확정','판정대기','보완요청','후보','검토중','미확정'];
@@ -139,7 +139,7 @@ function render(box){
     const denom=teamsAll.reduce((sum,t)=>sum+D.hcOf(t),0);
     const rates=basicAllT.map(n=>denom>0?n/denom:0);
     const maxCount=Math.max(1,...basicAllT)*1.2,maxRate=Math.max(.01,...rates)*1.2;
-    const x=i=>46+(width-74)*(i+.5)/5, y=(v,max)=>330-v/max*300;
+    const x=i=>46+(width-74)*(i+.5)/BASIC_TYPES.length, y=(v,max)=>330-v/max*300;
     const bars=BASIC_TYPES.map((name,i)=>{
       const cx=x(i),c=basicAllT[i],r=rates[i],cy=y(c,maxCount),ry=y(r,maxRate);
       return '<rect x="'+(cx-21)+'" y="'+cy+'" width="18" height="'+(330-cy)+'" fill="#20746f"/><rect x="'+(cx+3)+'" y="'+ry+'" width="18" height="'+(330-ry)+'" fill="#d78b26"/>'+
@@ -188,7 +188,7 @@ function render(box){
 <label>부서 <select data-f="group">${opt(D.groups,S.group)}</select></label><label>5S 유형 <select data-f="type">${opt(TYPES,S.type)}</select></label>
 <label>고도화 확정 <select data-f="judge"><option value="">ALL</option><option value="Y"${S.judge==='Y'?' selected':''}>확정 결과만</option><option value="N"${S.judge==='N'?' selected':''}>확정 외</option></select></label><label>수평전개 <select data-f="roll"><option value="">ALL</option><option value="Y"${S.roll==='Y'?' selected':''}>적용대상</option><option value="N"${S.roll==='N'?' selected':''}>비대상</option></select></label>
 <span class="sp"></span><button type="button" class="alt" data-ib="print">프린트</button><button type="button" class="alt" data-ib="csv">엑셀다운로드</button></div>
-<div class="ibRow r1"><div class="ibPanel"><div class="ibHead">5S 유형별 등록건수 및 인당 개선건수<button type="button" class="ibEv" data-evk="a">근거 데이터</button><em>${S.month?S.month.replace(/^0/,'')+'월':'연간누적'} · 건</em></div><div class="ibBody">${A}<div class="ibTypeDefs"><strong>5S 유형별 활동 정의</strong><dl><div><dt>정리</dt><dd>불용·불급·잉여품 제거활동</dd></div><div><dt>정돈</dt><dd>정량·정위치 준수활동</dd></div><div><dt>청소</dt><dd>작업장 청소, 작업장 외(설비, 부대물, 유틸리티 등) 청소</dd></div><div><dt>시각화관리</dt><dd>정량·정위치 준수를 위한 표식관리, 설비·지그·작업장 등의 도색작업</dd></div><div><dt>위험구역관리</dt><dd>출입통제, 타이거마크 표식관리</dd></div></dl></div><div class="ibLeg"><span>청록색 막대: 등록건수(건) · 주황색 막대: 선택 조직 전체 인원 기준 인당 개선건수(건/인). 좌우 축 단위가 다릅니다.</span></div></div></div>
+<div class="ibRow r1"><div class="ibPanel"><div class="ibHead">5S 유형별 등록건수 및 인당 개선건수<button type="button" class="ibEv" data-evk="a">근거 데이터</button><em>${S.month?S.month.replace(/^0/,'')+'월':'연간누적'} · 건</em></div><div class="ibBody">${A}<div class="ibTypeDefs"><strong>5S 유형별 활동 정의</strong><dl><div><dt>정리</dt><dd>불용·불급·잉여품 제거활동</dd></div><div><dt>정돈</dt><dd>정량·정위치 준수활동</dd></div><div><dt>청소</dt><dd>작업장 청소, 작업장 외(설비, 부대물, 유틸리티 등) 청소</dd></div><div><dt>시각화관리</dt><dd>정량·정위치 준수를 위한 표식관리, 설비·지그·작업장 등의 도색작업</dd></div><div><dt>위험구역관리</dt><dd>출입통제, 타이거마크 표식관리</dd></div><div><dt>설비 자주보전</dt><dd>설비 자주보전 활동 (세부 기준 별도 확정)</dd></div></dl></div><div class="ibLeg"><span>청록색 막대: 등록건수(건) · 주황색 막대: 선택 조직 전체 인원 기준 인당 개선건수(건/인). 좌우 축 단위가 다릅니다.</span></div></div></div>
 <div class="ibPanel"><div class="ibHead">월별 등록 및 진행현황<button type="button" class="ibEv" data-evk="b">근거 데이터</button><em>${S.year}년 · 건 · 수평전개=그 달 완료건수 대비 %</em></div><div class="ibBody">${B}${leg([['5S 활동 완료건수',C.dark],['고도화 확정 건수',C.amber],['수평전개 적용대상건수',C.grey]])}</div></div></div>
 <div class="ibRow"><div class="ibPanel"><div class="ibHead">현장조직 팀에 대한 개선활동 현황${per?'(인당 개선건수)':'(총 건수)'}<button type="button" class="ibEv" data-evk="c">근거 데이터</button><em class="pt">당월(${String(mm).padStart(2,'0')}월) 현재 참여율 ${part.toFixed(1)}% (등록자 ${owners}명 / 총원 ${hcAll}명)</em></div><div class="ibBody">${Cc}${leg([['평균 이상 (평균 '+avg.toFixed(2)+(per?'건/인)':'건)'),C.dark],['평균 미만',C.amber]])}</div></div></div>
 <div class="ibRow r3"><div class="ibPanel"><div class="ibHead">단일 팀에 대한 연간/월별 누적 활동 실적${per?'(인당 개선건수)':''}<button type="button" class="ibEv" data-evk="d">근거 데이터</button><em>[ ${esc(S.team)} ] 연간 ${fx(dCum,per)}${unit}</em></div><div class="ibBody">${Dd}</div></div>

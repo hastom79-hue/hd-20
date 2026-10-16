@@ -1,6 +1,6 @@
 (()=>{'use strict';
 const KEY='hd20GMES5SAutoImproveRawV1',DRAW_KEY='hd20AuditRandomDrawsV1';
-const CATS=['정리','정돈','청소','시각화','위험구역관리','5S 고도화'];
+const CATS=['정리','정돈','청소','시각화','위험구역관리','설비 자주보전','5S 고도화'];
 const TEAMS=window.HD20ProductionTeamMaster?.teamNames?.()||[];
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
 const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
@@ -8,7 +8,7 @@ function load(){try{const v=JSON.parse(localStorage.getItem(KEY)||'[]');return A
 function save(v){localStorage.setItem(KEY,JSON.stringify(v))}
 function snap(){return window.HD20KPIData?.snapshot?.()||{activities:load(),candidates:[],newSecured:[],confirmed:[],maintained:[]}}
 function dateOf(x){return x?.date||x?.regDate||x?.createdAt||x?.importedAt||''}
-function catOf(x){let v=String(x?.type||x?.category||x?.sType||x?.['5S구분']||x?.['활동유형']||'정리').trim();if(v==='자주보전'||v==='습관화')v='위험구역관리';if(v==='고도화'||v==='5S고도화')v='5S 고도화';return CATS.includes(v)?v:'정리'}
+function catOf(x){let v=String(x?.type||x?.category||x?.sType||x?.['5S구분']||x?.['활동유형']||'정리').trim();if(v==='자주보전'||v==='설비자주보전')v='설비 자주보전';if(v==='습관화')v='위험구역관리';if(v==='고도화'||v==='5S고도화')v='5S 고도화';return CATS.includes(v)?v:'정리'}
 function statusOf(x){return String(x?.activityStatus||x?.status||x?.judgeState||'등록')}
 function card(title,body){return`<div class="awCard"><div class="awHead">${title}</div><div class="awBody">${body}</div></div>`}
 function filePreview(input,img){if(!input||!img)return;input.onchange=()=>{const f=input.files?.[0];if(!f)return;const r=new FileReader();r.onload=e=>{input.dataset.data=e.target.result;img.src=e.target.result;img.hidden=false};r.readAsDataURL(f)}}
