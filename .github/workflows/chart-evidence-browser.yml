@@ -102,6 +102,21 @@ jobs:
             const required=['계획 실행 이행률','Audit 수행률','미완료 개선조치','기한 초과 조치','효과 검증 완료율','유지 이탈·재발'];
             if(JSON.stringify(v4Labels)!==JSON.stringify(required))throw Error('V4 KPI contract mismatch '+JSON.stringify(v4Labels));
             result.executionV4={labels:v4Labels};
+            // Master integration: policy remains editable but the legacy policy tab is not visible.
+            await page.evaluate(()=>window.HD20_NAV?.go?.('master'));
+            await page.waitForTimeout(250);
+            const masterPolicy=await page.evaluate(()=>{
+              const factor=document.querySelector('#masterModal [data-master-tab="integrated-factor"]');
+              factor?.click();
+              const panel=document.getElementById('hd20OperatingPolicyPanel');
+              const legacy=document.querySelector('#masterModal [data-master-tab="policy"]');
+              const visible=e=>!!e&&getComputedStyle(e).display!=='none'&&e.getBoundingClientRect().height>0;
+              return {factor:visible(factor),policyPanel:visible(panel),sample:!!panel?.querySelector('[data-op-sample]'),save:!!panel?.querySelector('button'),legacyVisible:visible(legacy)};
+            });
+            if(!masterPolicy.factor||!masterPolicy.policyPanel||!masterPolicy.sample||!masterPolicy.save||masterPolicy.legacyVisible)throw Error('Integrated master policy regression '+JSON.stringify(masterPolicy));
+            result.masterPolicy=masterPolicy;
+            await page.evaluate(()=>window.HD20_NAV?.go?.('dashboard'));
+            await page.waitForTimeout(180);
             // URL-selected dashboard tab must survive reset (navigation re-entry/pageshow).
             await page.locator('#hd20DashboardSectionTabs button[data-dashboard-section="execution"]').click();
             await page.evaluate(()=>window.HD20_DASHBOARD_TABS.reset());
