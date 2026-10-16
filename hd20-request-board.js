@@ -217,7 +217,7 @@ function render(box){
     +section('02. 요청출처별 현황','요청 / 미완료',sourceBars,'a')
     +section('03. 조치 진행상태','완료 · 기한내 미완료 · 기한초과',statusDonut,'c')
     +'</div>'
-    +'<div class="ibRow">'+section('04. 조치대응팀별 이행성과','완료 / 미완료 · 팀별 건수',teamRateBars+'<details class="rqTeamDetail"><summary>팀별 상세 실적 펼치기</summary><div class="rqScroll">'+teamGrid+'</div></details>','c')+'</div>'
+    +'<div class="ibRow">'+section('04. 조치대응팀별 이행성과','완료 / 미완료 · 팀별 건수',teamRateBars+'<details class="rqTeamDetail"><summary>팀별 상세 실적 펼치기</summary><div class="rqScroll">'+teamGrid+'</div></details>','c2')+'</div>'
     +'<div class="ibRow">'+section('05. 기한초과 집중관리','현재 미완료 기준 · 지연기간별 분포','<div class="rqBands">'+['1~7일','8~14일','15일 이상'].map((x,i)=>'<div><small>'+x+'</small><b>'+delayBands[i]+'건</b></div>').join('')+'</div>'+'<div class="rqDelayStack">'+delayBands.map((n,i)=>'<span class="rqDelayBand rqDelayBand'+i+'" style="width:'+(overCases.length?100*n/overCases.length:0)+'%"></span>').join('')+'</div>'+(delayChart||'<p class="rqEmpty">현재 기한초과 대상이 없습니다.</p>'),'d')+'</div>'
     +'<div class="ibRow">'+section('06. 개선요청 상세 관리','기한초과·미완료 우선 · 미리보기 '+detailRows.length+' / '+actionAll.length,'<div class="rqScroll">'+detail+'</div>','f')+'</div>'
     +'<p class="rqCaveat">※ 요청출처는 5S모듈·생산혁신팀 HDPS파트·리더십 3종입니다. 원천에 출처 필드가 없는 경우 일부 출처는 등록자 및 Audit 연계 정보로 추정됩니다. 완료일이 없는 완료 건은 월별 완료 추이에서 제외되며 총 완료 건수에는 포함됩니다.</p>';
@@ -229,6 +229,7 @@ function render(box){
     a:['요청출처별 근거 데이터 ('+(S.month?+S.month+'월':'연간누적')+')',rowsM,evCols,evMapR],
     b:['월별 요청·완료 근거 데이터 ('+S.year+'년)',[...rowsY,...filt(D,{ignoreYear:true,ignoreMonth:true}).filter(c=>teamsAll.includes(c.team)&&isDone(c)&&String(c.doneDate||'').startsWith(S.year+'-')&&!rowsY.includes(c))],evCols,evMapR],
     c:['조치대응부서 근거 데이터 ('+(S.month?+S.month+'월':'연간누적')+')',rowsM,evCols,evMapR],
+    c2:['조치대응팀별 이행성과 근거 데이터 ('+(S.month?+S.month+'월':'연간누적')+')',rowsM,evCols,evMapR],
     d:['현재 기한초과 근거 데이터 ('+(S.month?+S.month+'월':'연간누적')+')',rowsM.filter(c=>teamsAll.includes(c.team)&&isOverdue(c,D.today)),evDelayCols,evDelayMapR],
     f:['즉시조치 대상 전체 보기 ('+(S.month?+S.month+'월':'연간누적')+')',actionAll,evCols,evMapR],
   };
