@@ -64,7 +64,43 @@ function boot(){
  /* actionCompleted()는 doneDate·action·(after 또는 afterEvidence)가 모두 있어야 '완료'로 인정하는데,
     이 데모 데이터가 after를 항상 빈 문자열로만 만들어 '기한 내 개선조치 완료율' 등 완료 기준 지표가
     데모 모드에서는 영원히 계산 불가능(분모 0)이던 결함을 발견해 완료 건에는 after도 채우도록 보강. */
- const action=[];teams.forEach((team,ti)=>{for(let i=0;i<10;i++){const isDone=!(i%6===0||i%3===0);action.push({id:`DEMO-X-${ti}-${i}`,source:SRC,team,group:groupOf(team),createdAt:days((i*5+ti)%100),dueDate:days(Math.max(0,(i*5+ti)%100-14)),status:i%6===0?'기한초과':i%3===0?'진행중':'완료',doneDate:i%6===0||i%3===0?'':days(Math.max(0,(i*5+ti)%100-18)),action:'현장 5S 개선조치 시행',after:'',afterEvidence:'',evidenceNote:isDone?'개선 후 정위치·형적관리 적용 완료 (사진 증빙은 미첨부)':'',effectVerified:i%6!==0&&i%3!==0,recurrenceState:i%5===0?'재발':'미발생',title:['정위치 보완','표준표기 개선','통로 적치 제거','Audit 재발 방지'][i%4]})}});
+ const action=[];
+ const scenarios=[
+  ['조립라인 A','유압호스 정리 및 누유 흔적 제거','호스 클램프 위치 수정·누유 점검','호스 간섭 제거 및 누유 점검표 확인'],
+  ['제관 작업장','용접 지그 주변 불용품 적치','불용 지그 분류·보관구획 재설정','불용품 반출 및 지정구획 표시 완료'],
+  ['부품 피킹존','자재 라벨과 현물 위치 불일치','랙 주소 재배치·피킹 라벨 교체','주소 일치 여부 샘플 확인'],
+  ['도장 전처리','화학물질 보관구역 경계 표시 미흡','경계선 재도색·점검표 갱신','안전표시와 보관 상태 현장 확인'],
+  ['최종검사장','검사공구 반납 위치 혼선','공구별 형적판·반납 표준 게시','검사 종료 후 정위치 확인'],
+  ['Boom 조립라인','체결공구 케이블 통로 간섭','케이블 상부 배선·고정 클립 설치','작업자 동선 간섭 제거 확인'],
+  ['프레임 제작장','절단 잔재물 분리배출 미흡','잔재물 전용함·수거 주기 지정','작업 종료 후 잔재물 분리 상태 확인'],
+  ['자재 대기구역','선입선출 표기 및 구획 불명확','입고일 표지·FIFO 구획 정비','표지 부착 및 선입선출 점검'],
+  ['품질 확인대','부적합품 격리구역 혼재','격리 태그·보관구획 분리','부적합품과 양품 구분 확인'],
+  ['공용 공구실','공용 공구 수량 기준 불명확','정량표·반납 체크시트 정비','공구 정량과 재고 일치 확인']
+ ];
+ teams.forEach((team,ti)=>{
+  const count=7+(ti*7%9);
+  const completeCount=Math.max(2,Math.round(count*(0.38+(ti*13%43)/100)));
+  for(let i=0;i<count;i++){
+   const scenario=scenarios[(ti*3+i)%scenarios.length];
+   const age=5+((ti*17+i*11)%88);
+   const isDone=i<completeCount;
+   const overdue=!isDone&&((ti+i*2)%4!==0);
+   const lateDays=overdue?3+((ti*5+i*7)%34):0;
+   const dueAge=overdue?lateDays:-1*((ti+i)%15+2);
+   const createdAge=Math.max(age,dueAge+9);
+   const dueDate=days(dueAge);
+   const finishedAge=Math.max(0,dueAge+1+((ti+i)%6));
+   const recur=isDone&&((ti*3+i)%13===0);
+   action.push({id:`DEMO-X-${ti}-${i}`,source:SRC,isDemo:true,team,group:groupOf(team),
+    createdAt:days(createdAge),dueDate,status:isDone?'완료':overdue?'기한초과':'진행중',
+    doneDate:isDone?days(finishedAge):'',action:isDone?scenario[2]:overdue?scenario[2]+' (조치 진행 중)':scenario[2]+' (착수 예정)',
+    after:isDone?scenario[3]:'',afterEvidence:'',evidenceNote:isDone?'가상 검증기록: '+scenario[3]+' (실제 사진 미첨부)':'',
+    effectVerified:isDone&&!recur&&((ti+i)%5!==0),recurrenceState:recur?'재발':'미발생',
+    title:scenario[1],problem:scenario[1],area:scenario[0],workplace:scenario[0],location:scenario[0],
+    owner:`가상담당-${String((ti+i)%9+1).padStart(2,'0')}`,priority:overdue&&lateDays>20?'High':overdue?'Medium':'Low'
+   });
+  }
+ });
  const preserve=k=>parse(k).filter(r=>!isDemo(r));localStorage.setItem(K.a,JSON.stringify([...preserve(K.a),...activity]));localStorage.setItem(K.u,JSON.stringify([...preserve(K.u),...audit]));localStorage.setItem(K.x,JSON.stringify([...preserve(K.x),...action]));localStorage.setItem(MARK,JSON.stringify({at:new Date().toISOString(),teams:teams.length,activity:activity.length,audit:audit.length,action:action.length,isolated:true,master:'HD20ProductionTeamMaster'}));
  const flag=()=>{if(document.getElementById('hd20DemoFlag'))return;const nav=document.querySelector('.beginnerNav');if(!nav)return;const el=document.createElement('div');el.id='hd20DemoFlag';el.textContent=`가상 검증데이터 · 팀 마스터 ${teams.length}개 팀 · Activity ${activity.length} / Audit ${audit.length} / Action ${action.length} · 운영DB 미저장`;el.style.cssText='padding:5px 12px;background:#eef7ff;border-bottom:1px solid #b9d9ef;color:#174e70;font-size:11px;font-weight:800';nav.insertAdjacentElement('afterend',el)};
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',flag,{once:true});else flag();
