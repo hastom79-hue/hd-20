@@ -89,6 +89,18 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
 #${ID} .rqEmpty{padding:24px;text-align:center;color:#8092a0}
 #${ID} .ibHead{flex-wrap:wrap}
 #${ID} .ibHead .ibEv{margin-left:auto}
+
+#${ID} .ibBody{overflow-x:hidden!important;max-width:100%;min-width:0}
+#${ID} .ibBody>svg{display:block;width:100%!important;height:auto!important;max-width:100%}
+#${ID} .ibPanel,#${ID} .ibRow{min-width:0;max-width:100%}
+#${ID} .rqV5TeamRank{display:grid;gap:10px;padding:12px 6px}
+#${ID} .rqV5TeamLine{display:grid;grid-template-columns:minmax(95px,1.2fr) minmax(100px,3fr) 50px 70px;gap:10px;align-items:center;font-size:12px;color:#183b55}
+#${ID} .rqV5TeamLine>span{overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-weight:700}
+#${ID} .rqV5TeamStack{display:flex;height:16px;border-radius:5px;background:#edf2f5;overflow:hidden}
+#${ID} .rqV5TeamStack i{display:block;height:100%}
+#${ID} .rqV5TeamLine strong,#${ID} .rqV5TeamLine em{text-align:right;font-variant-numeric:tabular-nums}
+#${ID} .rqV5TeamLine em{font-size:11px;color:#b44b48;font-style:normal}
+@media(max-width:750px){#${ID} .rqV5TeamLine{grid-template-columns:85px minmax(60px,1fr) 42px;gap:6px}#${ID} .rqV5TeamLine em{display:none}}
 @media(max-width:1100px){#${ID} .rqV2Kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:600px){#${ID} .rqV2Kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
