@@ -21,7 +21,11 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
 #${ID} .ibBar input{width:70px}#${ID} .ibBar .sp{flex:1}
 #${ID} .ibBar button{height:32px;border-radius:7px;border:1px solid #14304c;background:#14304c;color:#fff;font-weight:850;font-size:13px;padding:0 14px;cursor:pointer}
 #${ID} .ibBar button.alt{background:#2c5f8a;border-color:#2c5f8a}
-#${ID} .ibRow{display:grid;gap:12px;margin-top:12px}#${ID} .r1{grid-template-columns:minmax(0,3fr) minmax(0,7fr)}#${ID} .r3{grid-template-columns:repeat(2,minmax(0,1fr))}
+#${ID} .ibRow{display:grid;gap:12px;margin-top:12px;align-items:start}
+/* r1(5S 유형별 등록 현황 · 월별 등록 및 진행현황)이 3:7로 치우쳐 있어, 카테고리 5개뿐인 왼쪽은 좁게
+   눌리고 12개월 중 실제 값 있는 달이 5~6개뿐인 오른쪽은 빈 축 공간이 커 보여 두 패널 사이 여백이
+   불균형해 보였음(사용자 지적, 업로드 스크린샷 기준) — 1:1에 가깝게 재조정. */
+#${ID} .r1{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}#${ID} .r3{grid-template-columns:repeat(2,minmax(0,1fr))}
 #${ID} .ibPanel{border:1px solid #e3eaf0;border-radius:10px;background:#fff;overflow:hidden}
 #${ID} .ibHead{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 12px;background:#f1f5f8;border-bottom:1px solid #e3eaf0;font-size:13.5px;font-weight:900;color:#22303f}
 #${ID} .ibHead .ibEv{margin-left:auto;height:26px;border:1px solid #cfd9e2;border-radius:6px;background:#fff;color:#2c5f8a;font-size:12px;font-weight:850;padding:0 9px;cursor:pointer}#${ID} .ibHead .ibEv+em{margin-left:0}#${ID} .ibHead em{font-style:normal;font-size:12.5px;color:#14304c}#${ID} .ibHead em.pt{color:#1f6f6b}
@@ -103,7 +107,10 @@ function chart({w,h=240,cats,series,stack=false,per=false,rotate=false,sel=null,
       b+=`<text x="${cx}" y="${yv(tot[i])-4}" text-anchor="middle" font-size="10.5" font-weight="800" fill="${C.ink}">${F(tot[i])}</text>`;
       if(tp!==null)b+=`<text x="${cx}" y="${yv(tot[i])-17}" text-anchor="middle" font-size="9.5" font-weight="800" fill="${tp<70?'#c0392b':'#2f7a4d'}">완료 ${tp}%</text>`;
       if(tx)b+=`<text x="${cx}" y="${yv(tot[i])-19}" text-anchor="middle" font-size="9.5" font-weight="850" fill="${tx.color}">${esc(tx.text)}</text>`}
-    const ly=m.t+ih+15,isSel=sel!==null&&c===sel,lblCls=linkX?' class="hit xlbl"':'',lblAttr=linkX?` data-cat="${esc(c)}"`:'',lblFill=linkX?'#2c5f8a':(isSel?'#14304c':C.soft),lblDeco=linkX?' text-decoration="underline"':'';
+    /* linkX(클릭해서 아래 두 차트를 그 팀으로 바꾸는 드릴다운)인 x축 라벨 전부에 밑줄을 상시 표시해,
+       16개 팀명이 한꺼번에 파란 밑줄 링크처럼 보여 차트 하단이 산만했음(표현 방법 개선: 클릭 가능함은
+       hover 시 밑줄로 여전히 알 수 있게 하되 평상시엔 깔끔하게). 선택된 팀(isSel)은 강조를 위해 밑줄 유지. */
+    const ly=m.t+ih+15,isSel=sel!==null&&c===sel,lblCls=linkX?' class="hit xlbl"':'',lblAttr=linkX?` data-cat="${esc(c)}"`:'',lblFill=linkX?'#2c5f8a':(isSel?'#14304c':C.soft),lblDeco=(linkX&&isSel)?' text-decoration="underline"':'';
     b+=rotate?`<text transform="translate(${cx+4},${ly}) rotate(-45)"${lblCls}${lblAttr} text-anchor="end" font-size="11" fill="${lblFill}"${lblDeco} font-weight="${isSel?900:600}">${esc(c)}</text>`:`<text x="${cx}" y="${ly}"${lblCls}${lblAttr} text-anchor="middle" font-size="11.5" fill="${lblFill}"${lblDeco}>${esc(c)}</text>`});
   return `<svg width="${W}" height="${h}" viewBox="0 0 ${W} ${h}" role="img">${g}<line x1="${m.l}" x2="${W-m.r}" y1="${m.t+ih}" y2="${m.t+ih}" stroke="#b7c6d1"/>${b}${hline?`<line x1="${m.l}" x2="${W-m.r}" y1="${yv(hline.value)}" y2="${yv(hline.value)}" stroke="#c0392b" stroke-width="1.6" stroke-dasharray="6 4"/><text x="${W-m.r}" y="${yv(hline.value)-5}" text-anchor="end" font-size="11" font-weight="800" fill="#c0392b">${esc(hline.label)}</text>`:''}</svg>`}
 const leg=a=>`<div class="ibLeg">${a.map(x=>`<span><i style="background:${x[1]}"></i>${esc(x[0])}</span>`).join('')}</div>`;
@@ -124,11 +131,11 @@ function render(box){
      그대로 두고 표현만 바꿔 해결: '5S 고도화'는 축 비교가 아닌 강조 숫자 배지로 분리 표시하고, 차트는
      서로 자릿수가 비슷한 나머지 5개 기본 유형만으로 그려 막대 높이 차이가 실제 비교에 의미 있게 함. */
   const BASIC_TYPES=TYPES.filter(t=>t!=='5S 고도화'),basicAllT=BASIC_TYPES.map(t=>rowsM.filter(r=>r.type===t).length),advIdx=TYPES.indexOf('5S 고도화'),advCnt=allT[advIdx]||0,advPct=allT.reduce((a,b)=>a+b,0)?Math.round(advCnt/allT.reduce((a,b)=>a+b,0)*1000)/10:0;
-  const A=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W*.3)-8),cats:BASIC_TYPES,per:false,minSlot:70,series:[{name:'등록 건수',vals:basicAllT,color:C.dark}]});
+  const A=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W*.5)-10),cats:BASIC_TYPES,per:false,minSlot:70,series:[{name:'등록 건수',vals:basicAllT,color:C.dark}]});
   // b) 월별 — 건수로 고정 표시. 수평전개 적용대상건수는 그 달 5S 활동 완료건수 대비 비율(%)을 값 옆에 병기하고 막대를 넓혀 값이 겹치지 않게 함
   const mo=(pred)=>Array.from({length:12},(_,i)=>rowsY.filter(r=>monthOf(r)===i+1&&pred(r)).length),rowsC=filt(D,{ignoreYear:true,ignoreMonth:true}).filter(inTeams),cy=r=>cdOf(r).slice(0,4),cm=r=>+cdOf(r).slice(5,7),confM=(a)=>Array.from({length:12},(_,i)=>a.filter(r=>r.judgeState==='확정'&&cy(r)===S.year&&cm(r)===i+1).length),ML=Array.from({length:12},(_,i)=>String(i+1).padStart(2,'0')+'월');
   const doneM=mo(r=>DONE.includes(r.status)),rollM=mo(r=>r.horizontalRollout===true),rollPct=rollM.map((v,i)=>doneM[i]?Math.round(v/doneM[i]*1000)/10:null);
-  const B=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W*.7)-8),cats:ML,per:false,minSlot:88,series:[{name:'5S 활동 완료건수',vals:doneM,color:C.dark},{name:'고도화 확정 건수',vals:confM(rowsC),color:C.amber},{name:'수평전개 적용대상건수',vals:rollM,color:C.grey,widthScale:1.5,pct:rollPct}]});
+  const B=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W*.5)-10),cats:ML,per:false,minSlot:60,series:[{name:'5S 활동 완료건수',vals:doneM,color:C.dark},{name:'고도화 확정 건수',vals:confM(rowsC),color:C.amber},{name:'수평전개 적용대상건수',vals:rollM,color:C.grey,widthScale:1.5,pct:rollPct}]});
   // c) 팀별 인당
   /* 가로축 정렬: 값(인당 건수) 기준 정렬을 쓰지 않고, 통합기준정보(표시순서) 탭에서 관리하는 생산팀 표시순서를 그대로 따름 */
   const teamOrder=(()=>{try{const v=JSON.parse(localStorage.getItem('gmes5s_team_display_order')||'null');if(Array.isArray(v)&&v.length)return v}catch{}return window.HD20ProductionTeamMaster?.teamNames?.()||null})();
