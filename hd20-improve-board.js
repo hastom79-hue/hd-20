@@ -172,8 +172,8 @@ function render(box){
   const B=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W*.6)-10),h:360,cats:ML,per:false,minSlot:0,series:[{name:'5S 활동 완료건수',vals:doneM,color:C.dark},{name:'고도화 확정 건수',vals:confM(rowsC),color:C.amber},{name:'수평전개 적용대상건수',vals:rollM,color:C.grey,widthScale:1.5,pct:rollPct}]});
   // 월별 추이 분석: 완료된 최근 두 달을 비교하며, 모든 값은 차트와 동일한 원천 배열에서 산출
   const upgradeM=confM(rowsC);
-  const now=new Date(),currentYear=String(now.getFullYear());
-  const lastClosed=S.year===currentYear?now.getMonth():12;
+  const trendNow=new Date(),currentYear=String(trendNow.getFullYear());
+  const lastClosed=S.year===currentYear?trendNow.getMonth():12;
   const validMonths=Array.from({length:Math.max(0,lastClosed)},(_,i)=>i).filter(i=>doneM[i]>0||upgradeM[i]>0||rollM[i]>0);
   const latest=validMonths.length?validMonths[validMonths.length-1]:-1;
   const prev=latest>0?latest-1:-1;
