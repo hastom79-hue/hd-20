@@ -62,6 +62,18 @@ jobs:
               const tabLayout=await page.evaluate(id=>{const el=document.getElementById(id),r=el?.getBoundingClientRect();return {visible:!!el&&getComputedStyle(el).display!=='none'&&r.width>0,panels:el?.querySelectorAll('.ibPanel').length||0,overflow:document.documentElement.scrollWidth>innerWidth+4};},id);
               if(!tabLayout.visible||tabLayout.panels<4||tabLayout.overflow)throw Error(name+' V3 panel layout invalid '+JSON.stringify(tabLayout));
               result[name]={...result[name],layout:tabLayout};
+              if(name==='request'){
+                const trend=await page.evaluate(()=>{
+                  const svg=document.querySelector('#hd20RequestBoard .ibRow .ibPanel svg[aria-label="월별 요청·완료 추이 선 그래프"]');
+                  if(!svg)return {exists:false};
+                  const labels=[...svg.querySelectorAll('text[text-anchor="end"]')].map(el=>el.textContent.trim());
+                  const dots=[...svg.querySelectorAll('circle')].map(el=>({x:Number(el.getAttribute('cx')),y:Number(el.getAttribute('cy'))}));
+                  const box=svg.viewBox.baseVal;
+                  return {exists:true,labels,dots: dots.length,withinCanvas:dots.every(p=>Number.isFinite(p.x)&&Number.isFinite(p.y)&&p.x>=0&&p.x<=box.width&&p.y>=0&&p.y<=box.height)};
+                });
+                if(!trend.exists||trend.labels.length<2||new Set(trend.labels).size!==trend.labels.length||!trend.withinCanvas)throw Error('Request monthly trend SVG invalid '+JSON.stringify(trend));
+                result[name].monthlyTrend=trend;
+              }
               await page.screenshot({path:'v3-browser-evidence/'+(name==='improve'?'02-improve':'03-request')+'.png',fullPage:true});
               result[name].charts=[];
               const keys=await page.locator('#'+id+' [data-evk]').evaluateAll(els=>els.map(el=>el.dataset.evk));
