@@ -173,6 +173,26 @@ jobs:
               result.specialist[key]=state;
               await page.screenshot({path:'v3-browser-evidence/'+file+'.png',fullPage:true});
             }
+            // Responsive smoke check in a separate page to avoid disturbing desktop state.
+            result.responsive={};
+            const mobile=await browser.newPage({viewport:{width:390,height:844}});
+            await mobile.goto('http://127.0.0.1:4173/index.html',{waitUntil:'domcontentloaded'});
+            await mobile.waitForSelector('#hd20DashboardSectionTabs button[data-dashboard-section="summary"]',{timeout:12000});
+            await mobile.waitForTimeout(700);
+            for(const name of ['improve','request']){
+              await mobile.locator('#hd20DashboardSectionTabs button[data-dashboard-section="'+name+'"]').click();
+              await mobile.waitForTimeout(350);
+              const layout=await mobile.evaluate(id=>{
+                const root=document.getElementById(id),r=root?.getBoundingClientRect();
+                const panels=[...(root?.querySelectorAll('.ibPanel')||[])];
+                return {visible:!!r&&r.width>0&&r.height>0,documentOverflow:document.documentElement.scrollWidth>innerWidth+4,
+                  panels:panels.length,collapsed:panels.filter(p=>p.getBoundingClientRect().width<140).length};
+              },name==='improve'?'hd20ImproveBoard':'hd20RequestBoard');
+              result.responsive[name]=layout;
+              await mobile.screenshot({path:'v3-browser-evidence/06-mobile-'+name+'.png',fullPage:true});
+              if(!layout.visible||layout.panels<4||layout.collapsed)throw Error('Mobile '+name+' layout invalid '+JSON.stringify(layout));
+            }
+            await mobile.close();
             fs.writeFileSync('v3-browser-evidence/result.json',JSON.stringify({result,errors},null,2));
             console.log('EVIDENCE_RESULT',JSON.stringify({result,errors}));
             await browser.close();
