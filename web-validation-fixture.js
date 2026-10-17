@@ -149,7 +149,7 @@ function makeActivities(){
     const pf=profile(team),teamPer=Math.max(8,Math.round(per*pf.activity));
     for(let j=0;j<teamPer;j++){
       seq++;
-      const prev=chance(.08),regDay=prev?dayNum(`${Y-1}-01-01`)+ri(0,364):Y0+ri(0,Math.max(0,T0-Y0)),date=fromDay(regDay);
+      const prev=chance(.08),monthCount=Number(TODAY.slice(5,7)),monthIndex=(Math.floor(j/5)+(j%5)*3+ti)%monthCount,monthStart=dayNum(`${Y}-${pad(monthIndex+1,2)}-01`),monthEnd=Math.min(T0,dayNum(addMonths(`${Y}-${pad(monthIndex+1,2)}-01`,1))-1),regDay=prev?dayNum(`${Y-1}-01-01`)+ri(0,364):monthStart+ri(0,Math.max(0,monthEnd-monthStart)),date=fromDay(regDay);
       const advanced=j%5===4,slot=Math.floor(j/5);
       const row={id:'VALID-A-'+pad(seq,5),date,regDate:date,createdAt:date+'T09:00:00+09:00',team,group:GROUP.get(team),workplace:`${AREAS[j%AREAS.length]} ${1+Math.floor(j/AREAS.length)}`,owner:pick(NAMES),problem:`${pick(PROB)} (검증 ${seq})`,improvement:`${pick(IMP)} (검증 ${seq})`,before:pick(PHOTOS),after:pick(PHOTOS),headcount:20+ti*3,source:SRC};
       if(!advanced){
@@ -164,9 +164,9 @@ function makeActivities(){
         const r=R();
         const judgedDay=minDay(T0,regDay+ri(1,30));
         if(r<pf.confirm){
-          row.criteriaMatched=[...CRIT];row.criteriaVisual='Y';row.criteriaGreen='Y';row.criteriaSpace='Y';Object.assign(row,{candidate:true,isCandidate:true,judgeState:'확정',confirmed:true,status:chance(.1)?'유지관리':'확정',judgedAt:fromDay(judgedDay),confirmedAt:fromDay(judgedDay),level:ri(1,5)});
-          const weak=chance(pf.loss);row.maintainState=weak?pick(['미흡','중지']):'정상';row.valid=!weak;
-          if(weak){row.attrition=true;row.attritionReason=pick(['3대 요건 유지 미흡','정위치·정량 기준 이탈','Green Zone 유지 미흡','시각화·형적관리 유지 미흡']);row.attritionAt=fromDay(minDay(T0,judgedDay+ri(30,180)))}
+          row.criteriaMatched=shuffle(CRIT).slice(0,ri(1,3));{const hit=new Set(row.criteriaMatched);row.criteriaVisual=hit.has(CRIT[0])?'Y':'N';row.criteriaGreen=hit.has(CRIT[1])?'Y':'N';row.criteriaSpace=hit.has(CRIT[2])?'Y':'N'}Object.assign(row,{candidate:true,isCandidate:true,judgeState:'확정',confirmed:true,status:chance(.1)?'유지관리':'확정',judgedAt:fromDay(judgedDay),confirmedAt:fromDay(judgedDay),level:ri(1,5)});
+          const earliestLoss=judgedDay+ri(21,70),weak=earliestLoss<=T0&&chance(Math.min(.82,pf.loss*1.65));row.maintainState=weak?pick(['미흡','중지']):'정상';row.valid=!weak;
+          if(weak){row.criteriaMatched=[];row.criteriaVisual='N';row.criteriaGreen='N';row.criteriaSpace='N';row.attrition=true;row.attritionReason=pick(['충족 요건 전체 상실','정위치·정량 기준 상실','Green Zone 기준 상실','시각화·형적관리 기준 상실']);row.attritionAt=fromDay(earliestLoss+ri(0,Math.max(0,T0-earliestLoss)))}
           if(chance(.45)){row.horizontalRollout=true;row.rolloutState=pick(['수평전개중','수평전개 완료'])}
         }else{const pendingCut=Math.min(.62,pf.confirm+.24),supplementCut=Math.min(.74,pendingCut+.14),unconfirmedCut=Math.min(.84,supplementCut+.10),closedCut=Math.min(.92,unconfirmedCut+.08);
           if(r<pendingCut)Object.assign(row,{candidate:true,isCandidate:true,judgeState:'판정대기',status:'판정대기'});
