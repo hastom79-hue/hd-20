@@ -64,14 +64,12 @@ jobs:
               result[name]={...result[name],layout:tabLayout};
               if(name==='request'){
                 const trend=await page.evaluate(()=>{
-                  const svg=document.querySelector('#hd20RequestBoard .ibRow .ibPanel svg[aria-label="월별 요청·완료 추이 선 그래프"]');
-                  if(!svg)return {exists:false};
-                  const labels=[...svg.querySelectorAll('text[text-anchor="end"]')].map(el=>el.textContent.trim());
-                  const dots=[...svg.querySelectorAll('circle')].map(el=>({x:Number(el.getAttribute('cx')),y:Number(el.getAttribute('cy'))}));
-                  const box=svg.viewBox.baseVal;
-                  return {exists:true,labels,dots: dots.length,withinCanvas:dots.every(p=>Number.isFinite(p.x)&&Number.isFinite(p.y)&&p.x>=0&&p.x<=box.width&&p.y>=0&&p.y<=box.height)};
+                  const panel=[...document.querySelectorAll('#hd20RequestBoard .ibPanel')].find(el=>el.querySelector('.ibHead')?.textContent.includes('01. 월별 요청'));
+                  const svg=panel?.querySelector('svg');
+                  const bars=panel?.querySelectorAll('rect')?.length||0;
+                  return {exists:!!panel,hasChart:!!svg||!!panel?.querySelector('canvas'),barRects:bars,hasLineChart:!!panel?.querySelector('svg[aria-label="월별 요청·완료 추이 선 그래프"]')};
                 });
-                if(!trend.exists||trend.labels.length<2||new Set(trend.labels).size!==trend.labels.length||!trend.withinCanvas)throw Error('Request monthly trend SVG invalid '+JSON.stringify(trend));
+                if(!trend.exists||!trend.hasChart||trend.hasLineChart)throw Error('Request monthly approved bar chart invalid '+JSON.stringify(trend));
                 result[name].monthlyTrend=trend;
               }
               await page.screenshot({path:'v3-browser-evidence/'+(name==='improve'?'02-improve':'03-request')+'.png',fullPage:true});
