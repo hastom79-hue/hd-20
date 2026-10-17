@@ -61,6 +61,19 @@ jobs:
               if(!result[name].exists||result[name].buttons<4||result[name].exportButtons!==result[name].buttons)throw Error(name+' evidence controls mismatch '+JSON.stringify(result[name]));
               const tabLayout=await page.evaluate(id=>{const el=document.getElementById(id),r=el?.getBoundingClientRect();return {visible:!!el&&getComputedStyle(el).display!=='none'&&r.width>0,panels:el?.querySelectorAll('.ibPanel').length||0,overflow:document.documentElement.scrollWidth>innerWidth+4};},id);
               if(!tabLayout.visible||tabLayout.panels<4||tabLayout.overflow)throw Error(name+' V3 panel layout invalid '+JSON.stringify(tabLayout));
+              const panelLayout=await page.evaluate(id=>{
+                const root=document.getElementById(id),issues=[];
+                const panels=[...(root?.querySelectorAll('.ibPanel')||[])];
+                panels.forEach((p,i)=>{
+                  const r=p.getBoundingClientRect();
+                  if(r.width<160||r.height<40)issues.push({panel:i,reason:'collapsed',width:r.width,height:r.height});
+                  const head=p.querySelector('.ibHead');
+                  if(head&&head.scrollWidth>head.clientWidth+5)issues.push({panel:i,reason:'heading overflow',scroll:head.scrollWidth,client:head.clientWidth});
+                });
+                return {panelCount:panels.length,issues:issues.slice(0,10)};
+              },id);
+              if(panelLayout.issues.length)throw Error(name+' panel layout invalid '+JSON.stringify(panelLayout));
+              result[name].panelLayout=panelLayout;
               result[name]={...result[name],layout:tabLayout};
               if(name==='request'){
                 const trend=await page.evaluate(()=>{
