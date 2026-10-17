@@ -197,15 +197,7 @@ function render(box){
 
   // V2: Monthly completions use actual completion dates; backlog carries open cases from earlier periods.
   const monthlyDone=Array.from({length:12},(_,i)=>filt(D,{ignoreYear:true,ignoreMonth:true}).filter(x=>teamsAll.includes(x.team)&&isDone(x)&&String(x.doneDate||'').slice(0,7)===S.year+'-'+String(i+1).padStart(2,'0')).length);
-  /* "01 월별 요청·완료 추이"는 제목이 '추이'(흐름)인데 실제 표현은 막대그래프였음 — 6~10월에만
-     값이 있고 나머지 7개월은 빈 축이라, 막대보다 선으로 이어 그리면 어디서 늘고 줄었는지 흐름이 더
-     잘 보임(차트 종류 재검토 요청). 신규 요청·완료 두 선을 겹쳐 그려 간격(backlog)이 벌어지는지도
-     함께 보이게 함. 기존 공용 chart()(막대 전용)는 다른 화면에서도 쓰이므로 건드리지 않고, 이 섹션
-     전용 lineChart()를 새로 작성. */
-  /* 사용자 피드백: "선이 문제가 아니라 왜 선으로 표현하냐는 소리다" — 월별 '건수'는 드문드문
-     0인 달이 섞인 이산적 데이터라, 선으로 이으면 0인 달들 사이를 가로질러 억지로 '추세'처럼 보이는
-     뾰족한 스파이크 모양이 되어 오히려 왜곡된 인상을 줌(사용자: "이게 머냐 개판이다"). 막대그래프로
-     되돌림 — 같은 달에 등록/완료된 '건수'를 비교하는 데는 막대가 더 정직한 표현. */
+  // 월별 등록·완료 건수는 승인된 그룹형 막대그래프로 비교한다. 공용 차트의 건수형 Y축을 사용한다.
   const monthlyTrend=chart({w:Math.max(440,box.clientWidth-85),cats:ML,minSlot:58,series:[{name:'신규 요청',vals:regM,color:'#829db5'},{name:'완료',vals:monthlyDone,color:'#247c83'}]});
   const teamCompletion=chart({w:Math.max(440,box.clientWidth-85),h:260,cats:teamRows.map(r=>r.team),rotate:true,minSlot:64,series:[{name:'완료',vals:teamRows.map(r=>r.done),color:'#247c83'},{name:'미완료',vals:teamRows.map(r=>r.open+r.over),color:'#c69a65'}]});
   // Approved V2: three fixed source categories, proportional horizontal bars.
