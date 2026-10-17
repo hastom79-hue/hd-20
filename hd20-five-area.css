@@ -262,3 +262,7 @@ html body .app .mainGrid>.sideStack>.card.hd20ActionSummaryCard .actionList{disp
 html body .app .mainGrid>.sideStack>.card.hd20ActionSummaryCard .actionRow{min-width:0!important;min-height:44px!important;padding:10px!important;margin:0!important;justify-content:space-between!important;background:#fff!important;border:1px solid #dfe8f0!important;border-radius:8px!important}
 @media(max-width:900px){html body .app .mainGrid>.sideStack>.card.hd20ActionSummaryCard{display:block!important}html body .app .mainGrid>.sideStack>.card.hd20ActionSummaryCard .actionList{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
 @media(max-width:650px){html body .app .mainGrid>.sideStack>.card:first-child>.cardBody.donutWrap{grid-template-columns:1fr!important}html body .app .mainGrid>.sideStack>.card:first-child .dlist{grid-template-columns:1fr!important}}
+
+/* 2026-10-17: trend owner had 0px grid and 2px cards despite visible 400px+ content. */
+.app > .bottomGrid.hd20AdvancementTrend{min-height:520px!important;height:auto!important;grid-auto-rows:minmax(480px,auto)!important;align-items:stretch!important}
+.app > .bottomGrid.hd20AdvancementTrend > .card{min-height:480px!important;height:auto!important;align-self:stretch!important}
