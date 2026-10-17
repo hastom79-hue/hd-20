@@ -1,7 +1,7 @@
 name: HD20 chart evidence browser verification
 on:
   push:
-    branches: [fix/request-board-source-denominator-20261015, feat/dashboard-v3-integrated-20261016, fix/dashboard-empty-demo-data-20261016, fix/improve-all-months-demo-20261016]
+    branches: [fix/request-board-source-denominator-20261015, feat/dashboard-v3-integrated-20261016, fix/dashboard-empty-demo-data-20261016, fix/improve-all-months-demo-20261016, fix/request-linechart-axis-ticks-20261017]
   workflow_dispatch:
 permissions:
   contents: read
