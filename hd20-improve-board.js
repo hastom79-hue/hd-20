@@ -129,7 +129,7 @@ function chart({w,h=240,cats,series,stack=false,per=false,rotate=false,sel=null,
     /* linkX(클릭해서 아래 두 차트를 그 팀으로 바꾸는 드릴다운)인 x축 라벨 전부에 밑줄을 상시 표시해,
        16개 팀명이 한꺼번에 파란 밑줄 링크처럼 보여 차트 하단이 산만했음(표현 방법 개선: 클릭 가능함은
        hover 시 밑줄로 여전히 알 수 있게 하되 평상시엔 깔끔하게). 선택된 팀(isSel)은 강조를 위해 밑줄 유지. */
-    const ly=m.t+ih+15,isSel=sel!==null&&c===sel,lblCls=linkX?' class="hit xlbl"':'',lblAttr=linkX?` data-cat="${esc(c)}"`:'',lblFill=linkX?'#2c5f8a':(isSel?'#14304c':C.soft),lblDeco=(linkX&&isSel)?' text-decoration="underline"':'';
+    const ly=m.t+ih+15,isSel=sel!==null&&c===sel,lblCls=linkX?' class="hit xlbl"':'',lblAttr=linkX?` data-cat="${esc(c)}"`:'',lblFill=linkX?'#1764b5':(isSel?'#14304c':C.soft),lblDeco=linkX?' text-decoration="underline"':'';
     b+=rotate?`<text transform="translate(${cx+4},${ly}) rotate(-45)"${lblCls}${lblAttr} text-anchor="end" font-size="11" fill="${lblFill}"${lblDeco} font-weight="${isSel?900:600}">${esc(c)}</text>`:`<text x="${cx}" y="${ly}"${lblCls}${lblAttr} text-anchor="middle" font-size="11.5" fill="${lblFill}"${lblDeco}>${esc(c)}</text>`});
   return `<svg width="${W}" height="${h}" viewBox="0 0 ${W} ${h}" role="img">${g}<line x1="${m.l}" x2="${W-m.r}" y1="${m.t+ih}" y2="${m.t+ih}" stroke="#b7c6d1"/>${b}${hline?`<line x1="${m.l}" x2="${W-m.r}" y1="${yv(hline.value)}" y2="${yv(hline.value)}" stroke="#c0392b" stroke-width="1.6" stroke-dasharray="6 4"/><text x="${W-m.r}" y="${yv(hline.value)-5}" text-anchor="end" font-size="11" font-weight="800" fill="#c0392b">${esc(hline.label)}</text>`:''}</svg>`}
 const leg=a=>`<div class="ibLeg">${a.map(x=>`<span><i style="background:${x[1]}"></i>${esc(x[0])}</span>`).join('')}</div>`;
