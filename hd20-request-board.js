@@ -119,6 +119,8 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
 #${ID} .rqStack{height:15px;display:flex;background:#edf1f4;border-radius:4px;overflow:hidden;min-width:160px}
 #${ID} .rqStack span{display:block;height:100%}#${ID} .rqStackDone{background:#26847f}#${ID} .rqStackOpen{background:#e5b668}#${ID} .rqStackLate{background:#c45143}
 #${ID} .rqRateBad{color:#b03a2e;font-weight:900}#${ID} .rqRateWarn{color:#9b6500;font-weight:900}#${ID} .rqRateOk{color:#2f7a4d;font-weight:900}
+#${ID} .rqMyTeam{background:#eaf4fb!important;outline:2px solid #2c80bd;outline-offset:-2px}
+#${ID} .rqMyTeamTag{display:inline-block;margin-left:6px;padding:2px 7px;border-radius:999px;background:#2c80bd;color:#fff;font-size:10px;font-weight:900;vertical-align:middle}
 #${ID} .rqLegend{display:flex;gap:15px;flex-wrap:wrap;margin-top:12px;font-size:11px}#${ID} .rqLegend span:first-child{color:#26847f}#${ID} .rqLegend span:nth-child(2){color:#ad812f}#${ID} .rqLegend span:last-child{color:#c45143}
 #${ID} .rqMoreBtn{display:block;width:100%;margin-top:8px;padding:8px;border:1px dashed #cdd9e2;border-radius:8px;background:#f8fafb;color:#49657b;font-size:12px;font-weight:850;cursor:pointer}#${ID} .rqMoreBtn:hover{background:#eef3f6;border-color:#9fb4c2}
 #${ID} .rqHeat{display:block;border-radius:5px;padding:9px;min-width:42px;text-align:center}#${ID} .rqHeatHigh{background:#b9473b;color:#fff}#${ID} .rqHeatMid{background:#db8e72;color:#fff}#${ID} .rqHeatLow{background:#f4d7c6;color:#713e30}#${ID} .rqHeatZero{background:#f4f6f8;color:#758899}
@@ -127,7 +129,6 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
 #${ID} .rqBarItem.zero{opacity:.4}
 #${ID} .rqSourceSummary{margin:10px 0 0;padding-top:10px;border-top:1px solid #edf1f4;font-size:12px;color:#5c6b7a}#${ID} .rqSourceSummary b{color:#2c5f8a}
 #${ID} .rqSecondary{opacity:.92}#${ID} .rqSecondary .ibHead{font-size:12.5px}
-#${ID} .rqPoster{display:none}
 #${ID} .rqBarItem{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;align-items:center;font-size:12px;color:#465c6d}
 #${ID} .rqBarItem strong{font-variant-numeric:tabular-nums;font-weight:800;color:#28465b}
 #${ID} .rqBarItem .rqTrack{grid-column:1/-1;height:11px}
@@ -179,36 +180,14 @@ function render(box){
   const orderIdx=t=>{const i=teamOrder?teamOrder.indexOf(t):-1;return i<0?999:i};
   const teamRows=teamsAll.map(t=>{const a=rowsM.filter(c=>c.team===t),done=a.filter(isDone).length,over=a.filter(c=>isOverdue(c,D.today)).length,open=a.length-done-over,pct=n=>a.length?Math.round(n/a.length*1000)/10:0;
     return{team:t,total:a.length,done,open,over,pct}}).filter(r=>r.total>0).sort((a,b)=>orderIdx(a.team)-orderIdx(b.team)||a.team.localeCompare(b.team,'ko'));
-  /* 사용자 지적: "저 탭을 출력해서 현장 게시판에 팀별로 게시한다고 생각해봐라 끔찍하지 않냐" — 지금까지
-     해온 작업은 전부 "16개 팀을 한 화면/한 표에 비교하는 모니터용 대시보드"를 다듬는 것이었는데, 실제
-     요구는 전혀 다른 물건이었음: 각 팀이 자기 팀 현황판으로 떼어가 붙이는 "팀별 포스터"는 큰 표가
-     아니라 "우리 팀 숫자가 큼직하게, 전체 대비 어디쯤인지만" 보이면 됨. 조치대응팀 필터에서 특정
-     팀을 선택하면, 인쇄 시 기존 전체 비교 대시보드 대신 이 팀 전용 포스터만 보이도록 함(선택 안
-     하면 기존처럼 전체 비교 레이아웃 유지). */
-  let teamPoster='';
-  if(S.team){
-    /* filt()가 전역 S를 참조하며 S.team을 무조건 적용하는 함수라(팀을 무시하는 옵션이 없음), 포스터용
-       "전체 팀" 순위 계산에 그대로 쓰면 이미 선택된 한 팀만 남아 "전체 1개 팀 중 1위"처럼 나오는 결함이
-       있었음 — D.cases를 직접 써서 연도/월/출처/상태 필터는 유지하되 팀 필터만 우회. */
-    const yearOk=c=>String(c.date||'').slice(0,4)===S.year,monthOk=c=>!S.month||mo(c)===+S.month,
-      srcOk=c=>!S.source||sourceOf(c)===S.source,statusOk=c=>!S.status||(S.status==='기한초과'?isOverdue(c,D.today):c.status===S.status),
-      rollOk=c=>!(S.roll==='Y'&&!c.recurrence)&&!(S.roll==='N'&&c.recurrence);
-    const allCasesNoTeamFilter=D.cases.filter(c=>yearOk(c)&&monthOk(c)&&srcOk(c)&&statusOk(c)&&rollOk(c));
-    const allTeamRows=D.teams.map(t=>{const a=allCasesNoTeamFilter.filter(c=>c.team===t),done=a.filter(isDone).length,total=a.length,over=a.filter(c=>isOverdue(c,D.today)).length;return{team:t,total,done,over,rate:total?Math.round(done/total*1000)/10:null}}).filter(r=>r.total>0);
-    const ranked=[...allTeamRows].sort((a,b)=>(b.rate??-1)-(a.rate??-1));
-    const myIdx=ranked.findIndex(r=>r.team===S.team),mine=ranked[myIdx];
-    const avgRate=allTeamRows.length?Math.round(allTeamRows.reduce((s,r)=>s+(r.rate||0),0)/allTeamRows.length*10)/10:0;
-    if(mine){
-      const rank=myIdx+1,rankCls=rank<=Math.ceil(ranked.length/3)?'rqPosterGood':rank<=Math.ceil(ranked.length*2/3)?'rqPosterWarn':'rqPosterBad';
-      teamPoster=`<div class="rqPoster ${rankCls}"><div class="rqPosterTeam">${esc(S.team)}</div>
-        <div class="rqPosterMain"><div class="rqPosterBig"><small>개선요청 완료율</small><b>${mine.rate??'—'}%</b></div>
-        <div class="rqPosterRank"><small>전체 ${ranked.length}개 팀 중</small><b>${rank}위</b></div></div>
-        <div class="rqPosterCompare"><span>우리 팀 ${mine.rate??0}%</span><div class="rqPosterBar"><i style="width:${mine.rate??0}%"></i></div></div>
-        <div class="rqPosterCompare avg"><span>공장 평균 ${avgRate}%</span><div class="rqPosterBar"><i style="width:${avgRate}%"></i></div></div>
-        <div class="rqPosterFoot"><div><small>총 개선요청</small><b>${mine.total}건</b></div><div><small>완료</small><b>${mine.done}건</b></div><div><small>기한초과</small><b>${mine.over}건</b></div></div>
-        <p class="rqPosterNote">${S.month?+S.month+'월':S.year+'년 전체'} 기준 · ${rank===1?'공장 내 1위입니다. 현재 수준을 유지하세요.':rank<=Math.ceil(ranked.length/3)?'상위권입니다. 꾸준히 유지하세요.':rank<=Math.ceil(ranked.length*2/3)?'공장 평균 수준입니다. 기한초과 건부터 줄여보세요.':'하위권입니다. 기한초과 건을 우선 처리해 주세요.'}</p></div>`;
-    }
-  }
+  /* 사용자 지적 경과: "현장 게시판에 팀별로 게시한다고 생각해봐라 끔찍하지 않냐" → Claude가 "포스터
+     모드"(팀 선택 시 다른 모든 섹션을 숨기고 그 팀 혼자만 보여줌)를 만들었으나, 사용자가 다시 지적:
+     "개선요청 종합 탭에서는 공장의 현황, 타팀과 내팀의 현황 모두가 같이 다 보여져야 한다" — 즉 내 팀만
+     떼어 보여주는 게 아니라 "공장 전체 맥락 속에서 내 팀이 어디 있는지"가 항상 함께 보여야 함. 포스터
+     모드(화면을 통째로 교체)는 삭제하고, 대신 "04 조치대응팀별 이행성과" 표가 필터와 무관하게 항상
+     전체 16개 팀을 다 보여주면서, 조치대응팀 드롭다운에서 선택한 팀의 행만 강조 표시하는 방식으로
+     전환 — 공장 현황(KPI)·전체 팀 비교(04)·내 팀 강조가 한 화면/한 인쇄물에 같이 보임. */
+  const teamHighlight=S.team||null;
   // 현재 기한초과 집중관리: 완료건의 과거 지연은 제외하고, 지금 미완료이면서 기한을 넘긴 건만 집계.
   const delayRows=teamsAll.map(t=>{const a=rowsM.filter(c=>c.team===t&&!isDone(c)&&isOverdue(c,D.today)).map(c=>delayDays(c,D.today)).filter(v=>v!==null);
     return{team:t,n:a.length,avg:a.length?Math.round(a.reduce((x,y)=>x+y,0)/a.length*10)/10:0,max:a.length?Math.max(...a):0}}).filter(r=>r.n>0).sort((a,b)=>b.n-a.n||b.avg-a.avg);
@@ -281,8 +260,17 @@ function render(box){
      화면이 크게 길어지고, 다른 표(05 기한초과 집중관리)까지 같은 패턴이 반복돼 전체 탭 스크롤이 과도
      하게 길어지는 게 "전면 재검토"가 필요했던 핵심 원인 중 하나였음 — 완료율이 가장 낮은(주의 필요)
      상위 6개 팀만 기본으로 보이고, 나머지는 "더보기" 클릭 시에만 펼치도록 축소. */
-  const teamRateSorted=[...teamRows].sort((a,b)=>(a.total?a.done/a.total:0)-(b.total?b.done/b.total:0)||b.total-a.total);
-  const teamRateRow=(r,hidden)=>{const rate=r.total?Math.round(r.done/r.total*1000)/10:0;return '<tr'+(hidden?' class="rqRowMore" hidden':'')+'><td>'+esc(r.team)+'</td><td><div class="rqStack" title="완료 '+r.done+'건 / 기한 내 미완료 '+r.open+'건 / 기한초과 '+r.over+'건"><span class="rqStackDone" style="width:'+(r.total?100*r.done/r.total:0)+'%"></span><span class="rqStackOpen" style="width:'+(r.total?100*r.open/r.total:0)+'%"></span><span class="rqStackLate" style="width:'+(r.total?100*r.over/r.total:0)+'%"></span></div></td><td class="'+rateCls(rate)+'">'+rate+'%</td></tr>'};
+  /* "04 조치대응팀별 이행성과"는 teamRows(이미 S.team 필터가 걸려 있어 팀 선택 시 1줄만 남음) 대신
+     팀 필터를 우회한 전체 데이터를 써서, 조치대응팀을 선택해도 공장 전체 16개 팀 비교가 그대로
+     유지되도록 함(연도·월·출처·상태 필터는 유지). */
+  const yearOk04=c=>String(c.date||'').slice(0,4)===S.year,monthOk04=c=>!S.month||mo(c)===+S.month,
+    srcOk04=c=>!S.source||sourceOf(c)===S.source,statusOk04=c=>!S.status||(S.status==='기한초과'?isOverdue(c,D.today):c.status===S.status),
+    rollOk04=c=>!(S.roll==='Y'&&!c.recurrence)&&!(S.roll==='N'&&c.recurrence);
+  const casesAllTeams04=D.cases.filter(c=>yearOk04(c)&&monthOk04(c)&&srcOk04(c)&&statusOk04(c)&&rollOk04(c));
+  const teamRowsAllTeams=D.teams.map(t=>{const a=casesAllTeams04.filter(c=>c.team===t),done=a.filter(isDone).length,over=a.filter(c=>isOverdue(c,D.today)).length,open=a.length-done-over;
+    return{team:t,total:a.length,done,open,over}}).filter(r=>r.total>0);
+  const teamRateSorted=[...teamRowsAllTeams].sort((a,b)=>(a.total?a.done/a.total:0)-(b.total?b.done/b.total:0)||b.total-a.total);
+  const teamRateRow=(r,hidden)=>{const rate=r.total?Math.round(r.done/r.total*1000)/10:0,mine=teamHighlight&&r.team===teamHighlight;return '<tr'+(mine?' class="rqMyTeam"':hidden?' class="rqRowMore" hidden':'')+'><td>'+(mine?'<b>▶ ':'')+esc(r.team)+(mine?' <span class="rqMyTeamTag">내 팀</span></b>':'')+'</td><td><div class="rqStack" title="완료 '+r.done+'건 / 기한 내 미완료 '+r.open+'건 / 기한초과 '+r.over+'건"><span class="rqStackDone" style="width:'+(r.total?100*r.done/r.total:0)+'%"></span><span class="rqStackOpen" style="width:'+(r.total?100*r.open/r.total:0)+'%"></span><span class="rqStackLate" style="width:'+(r.total?100*r.over/r.total:0)+'%"></span></div></td><td class="'+rateCls(rate)+'">'+rate+'%</td></tr>'};
   const TEAM_SHOW=6;
   const teamRateBars='<div class="rqMatrixScroll"><table class="rqMatrix"><thead><tr><th>조치대응팀</th><th>조치 구성 비교</th><th>완료율</th></tr></thead><tbody>'+teamRateSorted.map((r,i)=>teamRateRow(r,i>=TEAM_SHOW)).join('')+'</tbody></table>'+(teamRateSorted.length>TEAM_SHOW?'<button type="button" class="rqMoreBtn" data-more="team">나머지 '+(teamRateSorted.length-TEAM_SHOW)+'개 팀 더보기 ▾</button>':'')+'<div class="rqLegend"><span>■ 완료</span><span>■ 기한 내 미완료</span><span>■ 기한초과</span></div></div>';
   const overCases=rowsM.filter(c=>teamsAll.includes(c.team)&&isOverdue(c,D.today));
@@ -312,7 +300,6 @@ function render(box){
     +section('03. 조치 진행상태','완료 · 기한내 미완료 · 기한초과',statusDonut,'c')
     +'</div>'
     +'<div class="ibRow rqPrintSkip">'+section('06. 개선요청 상세 관리','기한초과·미완료 우선 · 미리보기 '+detailRows.length+' / '+actionAll.length,'<div class="rqScroll">'+detail+'</div>','f')+'</div>'
-    +teamPoster
     +'<p class="rqCaveat">※ 요청출처는 5S모듈·생산혁신팀 HDPS파트·리더십 3종입니다. 원천에 출처 필드가 없는 경우 일부 출처는 등록자 및 Audit 연계 정보로 추정됩니다. 완료일이 없는 완료 건은 월별 완료 추이에서 제외되며 총 완료 건수에는 포함됩니다.</p>';
 
   const evCols=['요청번호','요청출처','조치대응부서','작업장','진행현황','요청일','완료예정일','완료일'],
