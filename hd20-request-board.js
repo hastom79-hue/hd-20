@@ -15,7 +15,7 @@ function lineChart({w,h=200,cats,series}){
   // Keep integer count ticks distinct, while leaving headroom above the highest value.
   const roughStep=Math.max(1,maxV/4);
   const magnitude=Math.pow(10,Math.floor(Math.log10(roughStep)));
-  const tickStep=([1,2,5,10].find(n=>n*magnitude>=roughStep)||10)*magnitude;
+  const tickStep=([1,2,2.5,5,10].find(n=>n*magnitude>=roughStep)||10)*magnitude;
   const niceMax=Math.max(4*tickStep,Math.ceil((maxV+Math.max(1,maxV*.08))/tickStep)*tickStep);
   const x=i=>m.l+(cats.length>1?i/(cats.length-1)*iw:iw/2);
   const y=v=>m.t+ih-(v/niceMax)*ih;
