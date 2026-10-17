@@ -50,8 +50,8 @@ jobs:
               await page.evaluate(()=>document.querySelector('.beginnerNav button[data-key="dashboard"]')?.click());
               await page.waitForFunction(()=>!!document.querySelector('#hd20DashboardSectionTabs button[data-dashboard-section="execution"]'),{},{timeout:10000});
               await page.evaluate(()=>document.querySelector('#hd20DashboardSectionTabs button[data-dashboard-section="execution"]')?.click()); await page.waitForTimeout(200);
-              const execution=await page.evaluate(()=>{const shown=sel=>{const el=document.querySelector(sel);return !!el&&getComputedStyle(el).display!=='none'&&el.getClientRects().length>0};return {active:window.HD20_DASHBOARD_TABS?.active?.(),priority:shown('#hd20DashboardPriority'),bridge:shown('#hd20OperationalBridge')};});
-              if(execution.active!=='execution'||execution.priority||!execution.bridge) throw new Error(`${vp.name}: execution dashboard contract ${JSON.stringify(execution)}`);
+              const execution=await page.evaluate(()=>{const shown=sel=>{const el=document.querySelector(sel);return !!el&&getComputedStyle(el).display!=='none'&&el.getClientRects().length>0};return {active:window.HD20_DASHBOARD_TABS?.active?.(),priority:shown('#hd20DashboardPriority'),bridge:shown('#hd20OperationalBridge'),v3:shown('#hd20V3Execution')};});
+              if(execution.active!=='execution'||execution.priority||execution.bridge||!execution.v3) throw new Error(`${vp.name}: execution dashboard contract ${JSON.stringify(execution)}`);
               const dashKeys=await page.locator('#hd20DashboardSectionTabs button[data-dashboard-section]').evaluateAll(xs=>xs.map(x=>x.dataset.dashboardSection));
               if(JSON.stringify(dashKeys)!==JSON.stringify(['summary','improve','request','execution','analysis'])) throw new Error(`${vp.name}: dashboard groups=${JSON.stringify(dashKeys)}`);
               const retiredLabel=await page.evaluate(()=>[...document.querySelectorAll('.hd20DashboardSectionLabel')].some(el=>/STANDARD\s*&\s*TREND|판정기준\s*·?\s*고도화\s*추이/.test(el.textContent||'')));
