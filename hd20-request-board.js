@@ -240,8 +240,9 @@ function render(box){
      누적막대 차트로 교체 — 한 팀이 한 줄, 1~7일/8~14일/15일+ 구간을 색상 길이로 바로 비교 가능. */
   const delayBarRows=delayRowsSorted.map(r=>({label:r.team,segs:r.v}));
   const delaySegColors=['#e7c477','#e0935a','#b03a2e'];
-  const delayChartTop=delayRowsSorted.length?hStackChart({w:520,rows:delayBarRows.slice(0,DELAY_SHOW),segColors:delaySegColors}):'';
-  const delayChartRest=delayBarRows.length>DELAY_SHOW?hStackChart({w:520,rows:delayBarRows.slice(DELAY_SHOW),segColors:delaySegColors}):'';
+  const halfW05=Math.max(260,Math.floor(box.clientWidth/2)-70);
+  const delayChartTop=delayRowsSorted.length?hStackChart({w:halfW05,rows:delayBarRows.slice(0,DELAY_SHOW),segColors:delaySegColors}):'';
+  const delayChartRest=delayBarRows.length>DELAY_SHOW?hStackChart({w:halfW05,rows:delayBarRows.slice(DELAY_SHOW),segColors:delaySegColors}):'';
   const delayChart=delayRowsSorted.length?'<div class="rqChartScroll">'+delayNote+'<div class="rqDelayLegend"><span style="color:'+delaySegColors[0]+'">■ 1~7일</span><span style="color:'+delaySegColors[1]+'">■ 8~14일</span><span style="color:'+delaySegColors[2]+'">■ 15일 이상</span></div>'+delayChartTop+(delayChartRest?'<div class="rqMoreChart" hidden>'+delayChartRest+'</div><button type="button" class="rqMoreBtn" data-more="delay">나머지 '+(delayBarRows.length-DELAY_SHOW)+'개 팀 더보기 ▾</button>':'')+'</div>':null;
   const activeOverdue=rowsM.filter(c=>teamsAll.includes(c.team)&&isOverdue(c,D.today));
   const delayOverallAvg=activeOverdue.length?Math.round(activeOverdue.reduce((a,c)=>a+(delayDays(c,D.today)||0),0)/activeOverdue.length*10)/10:0;
@@ -346,8 +347,12 @@ function render(box){
   /* CSS 단색 진행 막대(초록/빨강만 보이던 것) 대신, 격자선·눈금·순위가 있는 SVG 가로 막대 차트로
      교체. 완료율 기준 정렬·색상 구간(위험/주의/양호)은 기존 로직 그대로 유지. */
   const teamBarRows=teamRateSorted.map(r=>{const rate=r.total?Math.round(r.done/r.total*1000)/10:0;return{label:r.team+(teamHighlight&&r.team===teamHighlight?' ★내팀':''),v:rate,color:rate<50?'#b03a2e':rate<80?'#b7791b':'#2f7a4d'}});
-  const teamChartTop=hBarChart({w:620,rows:teamBarRows.slice(0,TEAM_SHOW),maxV:100,showRank:true});
-  const teamChartRest=teamBarRows.length>TEAM_SHOW?hBarChart({w:620,rows:teamBarRows.slice(TEAM_SHOW),maxV:100,showRank:false}):'';
+  /* "좌우 병합배치로" 지시로 04·05가 2열(rqManageRow)에 나란히 들어가게 되어, 차트 SVG 폭도 전체
+     폭이 아니라 패널이 실제 차지하는 절반 폭 기준으로 줄임(패널 폭을 미리 알 수 없는 시점이라
+     box.clientWidth의 절반에서 여백을 뺀 값으로 추정, 최소 300px 보장). */
+  const halfW=Math.max(300,Math.floor(box.clientWidth/2)-70);
+  const teamChartTop=hBarChart({w:halfW,rows:teamBarRows.slice(0,TEAM_SHOW),maxV:100,showRank:true});
+  const teamChartRest=teamBarRows.length>TEAM_SHOW?hBarChart({w:halfW,rows:teamBarRows.slice(TEAM_SHOW),maxV:100,showRank:false}):'';
   const teamRateBars='<div class="rqChartScroll">'+teamRateNote+teamChartTop+(teamChartRest?'<div class="rqMoreChart" hidden>'+teamChartRest+'</div><button type="button" class="rqMoreBtn" data-more="team">나머지 '+(teamBarRows.length-TEAM_SHOW)+'개 팀 더보기 ▾</button>':'')+'</div>';
   const overCases=rowsM.filter(c=>teamsAll.includes(c.team)&&isOverdue(c,D.today));
   const delayBands=[overCases.filter(c=>delayDays(c,D.today)<=7).length,overCases.filter(c=>delayDays(c,D.today)>=8&&delayDays(c,D.today)<=14).length,overCases.filter(c=>delayDays(c,D.today)>=15).length];
@@ -375,8 +380,14 @@ function render(box){
           표로 보이면 바로 티가 남. 표를 상시 노출하지 않고, 이미 있던 '근거 데이터' 팝업 패턴
           (EV.f→openRows)과 동일하게 버튼 클릭 시에만 그리드로 열리도록 전환. */
     +'<div class="ibRow">'+section('01. 월별 요청·완료 추이','완료일 기준 · 신규 요청과 별도 집계',monthlyTrend+leg([['신규 요청','#829db5'],['완료','#247c83']])+sourceSummary,'b')+'</div>'
-    +'<div class="ibRow rqTeamCompare">'+section('04. 조치대응팀별 이행성과','완료 / 미완료 · 팀별 건수',teamRateBars+'<details class="rqTeamDetail"><summary>팀별 상세 실적 펼치기</summary><div class="rqScroll">'+teamGrid+'</div></details>','c2')+'</div>'
-    +'<div class="ibRow">'+section('05. 기한초과 집중관리','현재 미완료 기준 · 지연기간별 분포','<div class="rqBands">'+['1~7일','8~14일','15일 이상'].map((x,i)=>'<div><small>'+x+'</small><b>'+delayBands[i]+'건</b></div>').join('')+'</div>'+'<div class="rqDelayStack">'+delayBands.map((n,i)=>'<span class="rqDelayBand rqDelayBand'+i+'" style="width:'+(overCases.length?100*n/overCases.length:0)+'%"></span>').join('')+'</div>'+(delayChart||'<p class="rqEmpty">현재 기한초과 대상이 없습니다.</p>'),'d')+'</div>'
+    /* 사용자 지시: "좌우 병합배치로" — 04·05가 각자 전체 폭을 차지하며 세로로 길게 쌓여 있던 걸,
+       둘을 한 줄(rqManageRow, 2열)에 나란히 배치. 그 안의 SVG 차트 폭(hBarChart·hStackChart)도
+       절반 폭 기준으로 미리 줄여서 생성했어야 하므로, 아래 teamChartTop 등의 w 인자를 이 블록
+       이전에 좁은 폭으로 재계산해서 넘김(바로 아래 참조). */
+    +'<div class="ibRow rqManageRow rqTeamCompare">'
+    +section('04. 조치대응팀별 이행성과','완료 / 미완료 · 팀별 건수',teamRateBars+'<details class="rqTeamDetail"><summary>팀별 상세 실적 펼치기</summary><div class="rqScroll">'+teamGrid+'</div></details>','c2')
+    +section('05. 기한초과 집중관리','현재 미완료 기준 · 지연기간별 분포','<div class="rqBands">'+['1~7일','8~14일','15일 이상'].map((x,i)=>'<div><small>'+x+'</small><b>'+delayBands[i]+'건</b></div>').join('')+'</div>'+'<div class="rqDelayStack">'+delayBands.map((n,i)=>'<span class="rqDelayBand rqDelayBand'+i+'" style="width:'+(overCases.length?100*n/overCases.length:0)+'%"></span>').join('')+'</div>'+(delayChart||'<p class="rqEmpty">현재 기한초과 대상이 없습니다.</p>'),'d')
+    +'</div>'
     +'<div class="ibRow rqPrintSkip"><button type="button" class="rqDetailOpenBtn" data-open-detail="1">📋 개선요청 상세 목록 열기 (전체 '+actionAll.length+'건)</button></div>'
     +'<p class="rqCaveat">※ 요청출처는 5S모듈·생산혁신팀 HDPS파트·리더십 3종입니다. 원천에 출처 필드가 없는 경우 일부 출처는 등록자 및 Audit 연계 정보로 추정됩니다. 완료일이 없는 완료 건은 월별 완료 추이에서 제외되며 총 완료 건수에는 포함됩니다.</p>';
 
