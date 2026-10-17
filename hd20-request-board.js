@@ -125,6 +125,8 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
 #${ID} .rqDelayStack{display:flex;height:17px;overflow:hidden;border-radius:5px;margin:3px 0 16px;background:#edf1f4}#${ID} .rqDelayBand{display:block;height:100%}#${ID} .rqDelayBand0{background:#e6ba73}#${ID} .rqDelayBand1{background:#d98454}#${ID} .rqDelayBand2{background:#b9473b}
 #${ID} .rqBars{display:grid;gap:16px;padding:10px 5px}
 #${ID} .rqBarItem.zero{opacity:.4}
+#${ID} .rqSourceSummary{margin:10px 0 0;padding-top:10px;border-top:1px solid #edf1f4;font-size:12px;color:#5c6b7a}#${ID} .rqSourceSummary b{color:#2c5f8a}
+#${ID} .rqSecondary{opacity:.92}#${ID} .rqSecondary .ibHead{font-size:12.5px}
 #${ID} .rqBarItem{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;align-items:center;font-size:12px;color:#465c6d}
 #${ID} .rqBarItem strong{font-variant-numeric:tabular-nums;font-weight:800;color:#28465b}
 #${ID} .rqBarItem .rqTrack{grid-column:1/-1;height:11px}
@@ -232,6 +234,10 @@ function render(box){
      글자·막대 트랙으로 똑같이 강조돼 "요청출처별 현황"이라는 제목과 달리 사실상 비교할 게 없어 보임
      (전면 재검토 연장) — 0건 항목은 흐리게 처리해 "실제로 비중 있는 출처가 뭔지" 한눈에 들어오게 함. */
   const sourceBars='<div class="rqBars">'+SOURCES.map(s=>{const n=rowsM.filter(c=>sourceOf(c)===s).length;return '<div class="rqBarItem'+(n===0?' zero':'')+'"><span>'+esc(s)+'</span><strong>'+n+'건</strong><div class="rqTrack"><i style="width:'+(sourceTotal?100*n/sourceTotal:0)+'%;background:#668da7"></i></div></div>'}).join('')+'</div>';
+  /* 전면 개편(사용자 확정: "이대로"): 3개 출처 중 보통 1개에만 건수가 몰려 별도 섹션(가로막대 3개)을
+     차지할 정도의 정보량이 아니라고 판단, 보조 정보 영역 안에서 한 줄 요약 문장으로 축소. */
+  const sourceCounts=SOURCES.map(s=>({s,n:rowsM.filter(c=>sourceOf(c)===s).length})).sort((a,b)=>b.n-a.n);
+  const sourceSummary=sourceTotal&&sourceCounts[0]?'<p class="rqSourceSummary">요청출처: <b>'+esc(sourceCounts[0].s)+'</b>에서 '+sourceCounts[0].n+'건('+Math.round(sourceCounts[0].n/sourceTotal*100)+'%)'+(sourceCounts[1]&&sourceCounts[1].n?' · 그 외 '+sourceCounts.slice(1).filter(x=>x.n).map(x=>esc(x.s)+' '+x.n+'건').join(' · '):'')+'</p>':'<p class="rqSourceSummary">요청출처 데이터 없음</p>';
   // Approved V2: donut summarizes the same mutually exclusive status groups as KPI cards.
   const statusParts=[{label:'완료',n:sum.done,color:'#247c83'},{label:'진행 중·미착수',n:sum.open,color:'#c69a65'},{label:'기한초과',n:sum.over,color:'#b85e52'}];
   let ringOffset=0;const ring=statusParts.map(x=>{const len=sum.total?x.n/sum.total*100:0;const s='<circle cx="75" cy="75" r="54" fill="none" stroke="'+x.color+'" stroke-width="19" pathLength="100" stroke-dasharray="'+len+' '+(100-len)+'" stroke-dashoffset="'+(-ringOffset)+'" transform="rotate(-90 75 75)"/>';ringOffset+=len;return s}).join('');
@@ -263,13 +269,17 @@ function render(box){
     +kpi('기한초과',sum.over+'건','미완료 중 기한경과',true)
     +kpi('평균 지연일',delayOverallAvg+'일','현재 기한초과 건 기준',true)
     +'</div>'
-    +'<div class="ibRow">'+section('01. 월별 요청·완료 추이','완료일 기준 · 신규 요청과 별도 집계',monthlyTrend+leg([['신규 요청','#829db5'],['완료','#247c83']]),'b')+'</div>'
-    +'<div class="ibRow rqManageRow">'
-    +'<div class="rqPrintSkip">'+section('02. 요청출처별 현황','요청 / 미완료',sourceBars,'a')+'</div>'
-    +section('03. 조치 진행상태','완료 · 기한내 미완료 · 기한초과',statusDonut,'c')
-    +'</div>'
+    /* 전면 개편(사용자 확정: "이대로") — 이 탭의 실제 목적(사용자 지시: "공장의 타팀의 현황과
+       내팀의 현황이 비교해서 보여지는 대시보드여야함")에 맞춰, '04 조치대응팀별 이행성과'(팀 비교)를
+       KPI 요약 바로 다음 최상단으로 올리고, 그와 짝을 이루는 '05 기한초과 집중관리'(어느 팀이 왜
+       급한지)를 바로 이어 배치. 의사결정에 직접 쓰이지 않는 보조 정보(01 월별추이·02 출처별·03
+       진행상태)는 그 아래로 내리고, 02는 별도 섹션 대신 한 줄 요약 문장으로 축소. */
     +'<div class="ibRow rqTeamCompare">'+section('04. 조치대응팀별 이행성과','완료 / 미완료 · 팀별 건수',teamRateBars+'<details class="rqTeamDetail"><summary>팀별 상세 실적 펼치기</summary><div class="rqScroll">'+teamGrid+'</div></details>','c2')+'</div>'
     +'<div class="ibRow">'+section('05. 기한초과 집중관리','현재 미완료 기준 · 지연기간별 분포','<div class="rqBands">'+['1~7일','8~14일','15일 이상'].map((x,i)=>'<div><small>'+x+'</small><b>'+delayBands[i]+'건</b></div>').join('')+'</div>'+'<div class="rqDelayStack">'+delayBands.map((n,i)=>'<span class="rqDelayBand rqDelayBand'+i+'" style="width:'+(overCases.length?100*n/overCases.length:0)+'%"></span>').join('')+'</div>'+(delayChart||'<p class="rqEmpty">현재 기한초과 대상이 없습니다.</p>'),'d')+'</div>'
+    +'<div class="ibRow rqManageRow rqSecondary">'
+    +section('01. 월별 요청·완료 추이','완료일 기준 · 신규 요청과 별도 집계',monthlyTrend+leg([['신규 요청','#829db5'],['완료','#247c83']])+sourceSummary,'b')
+    +section('03. 조치 진행상태','완료 · 기한내 미완료 · 기한초과',statusDonut,'c')
+    +'</div>'
     +'<div class="ibRow rqPrintSkip">'+section('06. 개선요청 상세 관리','기한초과·미완료 우선 · 미리보기 '+detailRows.length+' / '+actionAll.length,'<div class="rqScroll">'+detail+'</div>','f')+'</div>'
     +'<p class="rqCaveat">※ 요청출처는 5S모듈·생산혁신팀 HDPS파트·리더십 3종입니다. 원천에 출처 필드가 없는 경우 일부 출처는 등록자 및 Audit 연계 정보로 추정됩니다. 완료일이 없는 완료 건은 월별 완료 추이에서 제외되며 총 완료 건수에는 포함됩니다.</p>';
 

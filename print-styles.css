@@ -9,12 +9,11 @@
    게시판에서 읽을 수 있는 글자 크기를 확보. */
 @page { size: A3 landscape; margin: 8mm; }
 @media print {
-  /* "02 요청출처별 현황"도 이어서 제외 확정(사용자: "02제외") — 02가 빠지면 같은 줄(rqManageRow,
-     2열)에 "03 조치 진행상태" 도넛만 남아 절반 폭만 차지하므로, 그 줄을 1열로 바꿔 03이 자연스럽게
-     폭을 채우도록 함. */
+  /* 전면 개편(사용자 확정: "이대로") 이후 "02 요청출처별 현황"은 별도 섹션이 아니라 "01" 안의
+     한 줄 요약 문장(rqSourceSummary)으로 흡수됨 — 더 이상 rqManageRow를 1열로 강제할 필요가 없어
+     졌으므로(예전엔 02가 빠지면 03만 남아 절반 폭이 되는 문제가 있었으나, 지금은 01+03이 둘 다
+     항상 존재) 해당 규칙 제거, 2열 그대로 유지. */
   #hd20RequestBoard .rqPrintSkip { display: none !important; }
-  #hd20RequestBoard .rqManageRow { grid-template-columns: 1fr; }
-  #hd20RequestBoard .rqManageRow .rqDonutWrap { max-width: 420px; margin: 0 auto; }
   #hd20RequestBoard,
   #hd20ImproveBoard {
     column-count: 2;
@@ -47,10 +46,12 @@
      초과(1474px) — scale을 0.70까지 낮춰야 한 페이지에 들어옴. 이 경우 KPI 큰 숫자가 20px×0.70≈
      14px로 렌더되는데, 이는 처음 시도(0.76배 축소 + 폰트 10.5px였을 때의 체감 크기, 약 8px)보다
      뚜렷이 크고 일반 인쇄물 본문 수준은 유지함. */
+  /* 전면 개편(04·05를 최상단으로, 02를 요약 문장으로 흡수) 이후 재실측하니 가용 높이(약 1062px)
+     대비 여유가 상당히 생김(847px) — scale을 0.66→0.80으로 올려 글자를 한층 더 크고 선명하게. */
   #hd20RequestBoard, #hd20ImproveBoard {
-    transform: scale(0.66);
+    transform: scale(0.80);
     transform-origin: top left;
-    width: 151.5%;
+    width: 125%;
   }
 }
 @media print {
