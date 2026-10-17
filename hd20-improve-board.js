@@ -249,24 +249,44 @@ function render(box){
   if(teamSvg){
     let drag=null;
     teamSvg.style.touchAction='pan-y';
+    teamSvg.style.userSelect='none';
+    const move=e=>{
+      if(!drag||e.pointerId!==drag.pointerId)return;
+      if(Math.abs(e.clientX-drag.startX)>6||Math.abs(e.clientY-drag.startY)>6)drag.moved=true;
+      if(drag.moved){e.preventDefault();teamSvg.style.cursor='grabbing'}
+    };
+    const finish=(e,cancel=false)=>{
+      if(!drag||e.pointerId!==drag.pointerId)return;
+      const d=drag;drag=null;teamSvg.style.cursor='';
+      window.removeEventListener('pointermove',move);
+      window.removeEventListener('pointerup',up);
+      window.removeEventListener('pointercancel',abort);
+      if(cancel)return;
+      if(!d.moved){S.team=d.team;render(box);return}
+      const rect=teamSvg.getBoundingClientRect();
+      const view=teamSvg.viewBox.baseVal;
+      const x=(e.clientX-rect.left)/rect.width*view.width;
+      const fraction=Math.max(0,Math.min(.999999,(x-46)/(view.width-46-10)));
+      const dest=Math.min(tv.length-1,Math.floor(fraction*tv.length));
+      const names=tv.map(x=>x.t),from=names.indexOf(d.team);
+      if(from<0||from===dest)return;
+      names.splice(from,1);names.splice(dest,0,d.team);
+      teamChartLocalOrder=names;
+      render(box);
+    };
+    const up=e=>finish(e,false),abort=e=>finish(e,true);
     teamSvg.querySelectorAll('.hit').forEach(el=>{
       el.style.cursor='grab';
-      el.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag={team:el.dataset.cat,startX:e.clientX,moved:false};el.setPointerCapture?.(e.pointerId)});
-      el.addEventListener('pointermove',e=>{if(drag&&Math.abs(e.clientX-drag.startX)>7)drag.moved=true});
-      el.addEventListener('pointerup',e=>{
-        if(!drag)return;
-        const d=drag;drag=null;
-        if(!d.moved){S.team=d.team;render(box);return}
-        const rect=teamSvg.getBoundingClientRect(),x=(e.clientX-rect.left)/rect.width;
-        const svgWidth=Math.max(320,W-8),plotLeft=46/svgWidth,plotRight=10/svgWidth;
-        const fraction=Math.max(0,Math.min(.9999,(x-plotLeft)/(1-plotLeft-plotRight)));
-        const dest=Math.min(tv.length-1,Math.floor(fraction*tv.length));
-        const names=tv.map(x=>x.t),from=names.indexOf(d.team);
-        if(from<0)return;
-        names.splice(from,1);names.splice(dest,0,d.team);
-        teamChartLocalOrder=names;render(box);
+      el.style.userSelect='none';
+      el.addEventListener('dragstart',e=>e.preventDefault());
+      el.addEventListener('pointerdown',e=>{
+        if(e.button!==0||drag)return;
+        e.preventDefault();
+        drag={team:el.dataset.cat,startX:e.clientX,startY:e.clientY,pointerId:e.pointerId,moved:false};
+        window.addEventListener('pointermove',move,{passive:false});
+        window.addEventListener('pointerup',up);
+        window.addEventListener('pointercancel',abort);
       });
-      el.addEventListener('pointercancel',()=>{drag=null});
     });
   }
 }
