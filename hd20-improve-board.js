@@ -104,14 +104,14 @@ function filt(D,{ignoreMonth=false,ignoreYear=false}={}){
     if(S.judge==='Y'&&r.judgeState!=='확정')return false;if(S.judge==='N'&&r.judgeState==='확정')return false;if(S.type&&r.type!==S.type)return false;if(S.group&&D.groupOf(r.team)!==S.group)return false;
     if(S.roll==='Y'&&r.horizontalRollout!==true)return false;if(S.roll==='N'&&r.horizontalRollout===true)return false;return true})}
 const monthOf=r=>+String(r.date||r.regDate||'').slice(5,7);
-function axis(v){const raw=v/4,p=Math.pow(10,Math.floor(Math.log10(raw))),f=raw/p,n=f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10,step=n*p;return{step,max:Math.ceil(v/step-1e-9)*step}}
+function axis(v,{integer=false}={}){if(!Number.isFinite(v)||v<=0)return{step:1,max:4};const raw=Math.max(integer?1:0.0001,v/4),p=Math.pow(10,Math.floor(Math.log10(raw))),f=raw/p,n=f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10,step=Math.max(integer?1:0,n*p);return{step,max:Math.max(4*step,Math.ceil(v/step-1e-9)*step)}}
 const tk=v=>String(Number(v.toFixed(3)));
 function chart({w,h=240,cats,series,stack=false,per=false,rotate=false,sel=null,colorOf=null,minSlot=36,fmt=null,hline=null,linkX=false,topPct=null,topExtra=null,axisHeadroom=0,raisePlot=false}){
   const F=v=>fmt?fmt(v):fx(v,per);
   const W0=Math.max(320,w),slot0=(W0-56)/Math.max(1,cats.length);rotate=rotate||(slot0<58&&cats.some(c=>String(c).length>3));
   const m={l:46,r:10,t:raisePlot?12:20,b:rotate?84:(raisePlot?24:30)},W=W0,iw=W-m.l-m.r,ih=h-m.t-m.b;
   const tot=cats.map((_,i)=>stack?series.reduce((a,s)=>a+(s.vals[i]||0),0):Math.max(...series.map(s=>s.vals[i]||0)));
-  const dataMax=Math.max(0.0001,...tot,hline?hline.value*1.05:0),ax=axis(dataMax*(1+axisHeadroom)),max=ax.max,yv=v=>m.t+ih-(v/max)*ih,slot=iw/Math.max(1,cats.length);
+  const dataMax=Math.max(0.0001,...tot,hline?hline.value*1.05:0),integerAxis=!per&&tot.every(v=>Number.isInteger(v))&&(!hline||Number.isInteger(hline.value)),ax=axis(dataMax*(1+axisHeadroom),{integer:integerAxis}),max=ax.max,yv=v=>m.t+ih-(v/max)*ih,slot=iw/Math.max(1,cats.length);
   let g='';for(let i=0;i<=Math.round(max/ax.step);i++){const v=ax.step*i,y=yv(v);g+=`<line x1="${m.l}" x2="${W-m.r}" y1="${y}" y2="${y}" stroke="${C.grid}"/><text x="${m.l-6}" y="${y+4}" text-anchor="end" font-size="11" fill="${C.soft}">${tk(v)}</text>`}
   let b='';const n0=series.length,bw0=stack?Math.min(40,slot*.6):Math.min(24,slot*.72/n0);
   const scales=series.map(s=>s.widthScale||1),bws=scales.map(sc=>bw0*sc),gap=stack?0:Math.max(1,bw0*.08),groupW=bws.reduce((a,w)=>a+w,0)+gap*(n0-1);
