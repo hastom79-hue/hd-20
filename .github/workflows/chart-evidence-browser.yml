@@ -1,7 +1,7 @@
 name: HD20 chart evidence browser verification
 on:
   push:
-    branches: [fix/request-board-source-denominator-20261015, feat/dashboard-v3-integrated-20261016, fix/dashboard-empty-demo-data-20261016, fix/improve-all-months-demo-20261016]
+    branches: [fix/request-board-source-denominator-20261015, feat/dashboard-v3-integrated-20261016, fix/dashboard-empty-demo-data-20261016, fix/improve-all-months-demo-20261016, fix/request-linechart-axis-ticks-20261017]
   workflow_dispatch:
 permissions:
   contents: read
@@ -61,7 +61,46 @@ jobs:
               if(!result[name].exists||result[name].buttons<4||result[name].exportButtons!==result[name].buttons)throw Error(name+' evidence controls mismatch '+JSON.stringify(result[name]));
               const tabLayout=await page.evaluate(id=>{const el=document.getElementById(id),r=el?.getBoundingClientRect();return {visible:!!el&&getComputedStyle(el).display!=='none'&&r.width>0,panels:el?.querySelectorAll('.ibPanel').length||0,overflow:document.documentElement.scrollWidth>innerWidth+4};},id);
               if(!tabLayout.visible||tabLayout.panels<4||tabLayout.overflow)throw Error(name+' V3 panel layout invalid '+JSON.stringify(tabLayout));
+              const panelLayout=await page.evaluate(id=>{
+                const root=document.getElementById(id),issues=[];
+                const panels=[...(root?.querySelectorAll('.ibPanel')||[])];
+                panels.forEach((p,i)=>{
+                  const r=p.getBoundingClientRect();
+                  if(r.width<160||r.height<40)issues.push({panel:i,reason:'collapsed',width:r.width,height:r.height});
+                  const head=p.querySelector('.ibHead');
+                  if(head&&head.scrollWidth>head.clientWidth+5)issues.push({panel:i,reason:'heading overflow',scroll:head.scrollWidth,client:head.clientWidth});
+                });
+                return {panelCount:panels.length,issues:issues.slice(0,10)};
+              },id);
+              if(panelLayout.issues.length)throw Error(name+' panel layout invalid '+JSON.stringify(panelLayout));
+              result[name].panelLayout=panelLayout;
               result[name]={...result[name],layout:tabLayout};
+              if(name==='request'){
+                const trend=await page.evaluate(()=>{
+                  const panel=[...document.querySelectorAll('#hd20RequestBoard .ibPanel')].find(el=>el.querySelector('.ibHead')?.textContent.includes('01. 월별 요청'));
+                  const svg=panel?.querySelector('svg');
+                  const bars=panel?.querySelectorAll('rect')?.length||0;
+                  return {exists:!!panel,hasChart:!!svg||!!panel?.querySelector('canvas'),barRects:bars,hasLineChart:!!panel?.querySelector('svg[aria-label="월별 요청·완료 추이 선 그래프"]')};
+                });
+                if(!trend.exists||!trend.hasChart||trend.hasLineChart||trend.barRects<1)throw Error('Request monthly approved bar chart invalid '+JSON.stringify(trend));
+                result[name].monthlyTrend=trend;
+              }
+              // Check rendered SVG geometry in the actual browser, not only in isolated string tests.
+              const chartGeometry=await page.evaluate(id=>{
+                const root=document.getElementById(id),bad=[];
+                const svgs=[...(root?.querySelectorAll('svg')||[])];
+                for(let si=0;si<svgs.length;si++){
+                  const svg=svgs[si],vb=svg.viewBox.baseVal;
+                  if(!vb||vb.width<=0||vb.height<=0){bad.push({svg:si,reason:'invalid viewBox'});continue;}
+                  for(const rect of svg.querySelectorAll('rect')){
+                    const x=Number(rect.getAttribute('x')||0),y=Number(rect.getAttribute('y')||0),w=Number(rect.getAttribute('width')||0),h=Number(rect.getAttribute('height')||0);
+                    if([x,y,w,h].some(v=>!Number.isFinite(v))||x<-.5||y<-.5||x+w>vb.width+.5||y+h>vb.height+.5)bad.push({svg:si,reason:'bar outside SVG',x,y,w,h});
+                  }
+                }
+                return {svgCount:svgs.length,issues:bad.slice(0,10)};
+              },id);
+              if(chartGeometry.issues.length)throw Error(name+' chart geometry invalid '+JSON.stringify(chartGeometry));
+              result[name].chartGeometry=chartGeometry;
               await page.screenshot({path:'v3-browser-evidence/'+(name==='improve'?'02-improve':'03-request')+'.png',fullPage:true});
               result[name].charts=[];
               const keys=await page.locator('#'+id+' [data-evk]').evaluateAll(els=>els.map(el=>el.dataset.evk));
@@ -134,6 +173,26 @@ jobs:
               result.specialist[key]=state;
               await page.screenshot({path:'v3-browser-evidence/'+file+'.png',fullPage:true});
             }
+            // Responsive smoke check in a separate page to avoid disturbing desktop state.
+            result.responsive={};
+            const mobile=await browser.newPage({viewport:{width:390,height:844}});
+            await mobile.goto('http://127.0.0.1:4173/index.html',{waitUntil:'domcontentloaded'});
+            await mobile.waitForSelector('#hd20DashboardSectionTabs button[data-dashboard-section="summary"]',{timeout:12000});
+            await mobile.waitForTimeout(700);
+            for(const name of ['improve','request']){
+              await mobile.locator('#hd20DashboardSectionTabs button[data-dashboard-section="'+name+'"]').click();
+              await mobile.waitForTimeout(350);
+              const layout=await mobile.evaluate(id=>{
+                const root=document.getElementById(id),r=root?.getBoundingClientRect();
+                const panels=[...(root?.querySelectorAll('.ibPanel')||[])];
+                return {visible:!!r&&r.width>0&&r.height>0,documentOverflow:document.documentElement.scrollWidth>innerWidth+4,
+                  panels:panels.length,collapsed:panels.filter(p=>p.getBoundingClientRect().width<140).length};
+              },name==='improve'?'hd20ImproveBoard':'hd20RequestBoard');
+              result.responsive[name]=layout;
+              await mobile.screenshot({path:'v3-browser-evidence/06-mobile-'+name+'.png',fullPage:true});
+              if(!layout.visible||layout.panels<4||layout.collapsed)throw Error('Mobile '+name+' layout invalid '+JSON.stringify(layout));
+            }
+            await mobile.close();
             fs.writeFileSync('v3-browser-evidence/result.json',JSON.stringify({result,errors},null,2));
             console.log('EVIDENCE_RESULT',JSON.stringify({result,errors}));
             await browser.close();
