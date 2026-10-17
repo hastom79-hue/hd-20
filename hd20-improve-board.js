@@ -5,6 +5,7 @@
 const ID='hd20ImproveBoard',TYPES=['정리','정돈','청소','시각화','위험구역관리','설비 자주보전','5S 고도화'],DONE=['완료','확정'];
 const C={dark:'#1f6f6b',amber:'#e0b03c',light:'#a8c7c4',grey:'#8fa3b3',ink:'#22303f',soft:'#5c6b7a',grid:'#e6ecf0'};
 const S={year:null,month:'',metric:'per',group:'',type:'',roll:'',judge:'',team:''};
+let teamChartLocalOrder=null; // Dashboard-only; never writes master order.
 const JUDGES=['확정','판정대기','보완요청','후보','검토중','미확정'];
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fx=(v,per)=>per?(v>=10?v.toFixed(1):v.toFixed(2)):String(Math.round(v));
@@ -196,7 +197,8 @@ function render(box){
   /* 가로축 정렬: 값(인당 건수) 기준 정렬을 쓰지 않고, 통합기준정보(표시순서) 탭에서 관리하는 생산팀 표시순서를 그대로 따름 */
   const teamOrder=(()=>{try{const v=JSON.parse(localStorage.getItem('gmes5s_team_display_order')||'null');if(Array.isArray(v)&&v.length)return v}catch{}return window.HD20ProductionTeamMaster?.teamNames?.()||null})();
   const orderIdx=t=>{const i=teamOrder?teamOrder.indexOf(t):-1;return i<0?999:i};
-  const tv=teamsAll.map(t=>{const c=rowsM.filter(r=>r.team===t).length,h=D.hcOf(t);return{t,c,h,v:per?(h?c/h:0):c}}).sort((a,b)=>orderIdx(a.t)-orderIdx(b.t)||a.t.localeCompare(b.t,'ko'));
+  const masterSorted=teamsAll.map(t=>{const c=rowsM.filter(r=>r.team===t).length,h=D.hcOf(t);return{t,c,h,v:per?(h?c/h:0):c}}).sort((a,b)=>orderIdx(a.t)-orderIdx(b.t)||a.t.localeCompare(b.t,'ko'));
+  const tv=teamChartLocalOrder?masterSorted.slice().sort((a,b)=>{const ia=teamChartLocalOrder.indexOf(a.t),ib=teamChartLocalOrder.indexOf(b.t);return (ia<0?999:ia)-(ib<0?999:ib)||orderIdx(a.t)-orderIdx(b.t)}):masterSorted;
   if(!S.team||!tv.some(x=>x.t===S.team))S.team=tv[0]?.t||'';
   const totC=tv.reduce((a,x)=>a+x.c,0),avg=per?totC/hcAll:totC/Math.max(1,tv.length);
   /* snapshot()은 매번 원본을 새로 파싱해 매 호출마다 새 객체를 만들므로 참조 비교(Set.has)가 항상 실패함 — id로 비교 */
@@ -230,7 +232,7 @@ function render(box){
 <span class="sp"></span><button type="button" class="alt" data-ib="print">프린트</button><button type="button" class="alt" data-ib="csv">엑셀다운로드</button></div>
 <div class="ibRow r1"><div class="ibPanel"><div class="ibHead">5S 유형별 등록건수 및 인당 개선건수<button type="button" class="ibEv" data-evk="a">근거 데이터</button><em>${S.month?S.month.replace(/^0/,'')+'월':'연간누적'} · 건</em></div><div class="ibBody">${A}<div class="ibTypeDefs"><strong>5S 유형별 활동 정의</strong><dl><div><dt>정리</dt><dd>불용·불급·잉여품 제거활동</dd></div><div><dt>정돈</dt><dd>정량·정위치 준수활동</dd></div><div><dt>청소</dt><dd>작업장 청소, 작업장 외(설비, 부대물, 유틸리티 등) 청소</dd></div><div><dt>시각화관리</dt><dd>정량·정위치 준수를 위한 표식관리, 설비·지그·작업장 등의 도색작업</dd></div><div><dt>위험구역관리</dt><dd>출입통제, 타이거마크 표식관리</dd></div><div><dt>설비 자주보전</dt><dd>설비 자주보전 활동 (세부 기준 별도 확정)</dd></div></dl></div><div class="ibLeg"><span>청록색 막대: 유형별 등록건수(건, 왼쪽 축) · 주황색 수치 배지: 인당 개선건수(건/인, 선택 조직 전체 인원 기준). 인당 수치는 등록건수를 동일 인원으로 나눈 값이므로 별도 막대로 중복 표현하지 않습니다.</span></div></div></div>
 <div class="ibPanel"><div class="ibHead">월별 등록 및 진행현황<button type="button" class="ibEv" data-evk="b">근거 데이터</button><em>${S.year}년 · 건 · 수평전개=그 달 완료건수 대비 %</em></div><div class="ibBody">${B}${leg([['5S 활동 완료건수',C.dark],['고도화 확정 건수',C.amber],['수평전개 적용대상건수',C.grey]])}${trendPanel}</div></div></div>
-<div class="ibRow"><div class="ibPanel"><div class="ibHead">현장조직 팀에 대한 개선활동 현황${per?'(인당 개선건수)':'(총 건수)'}<button type="button" class="ibEv" data-evk="c">근거 데이터</button><em class="pt">당월(${String(mm).padStart(2,'0')}월) 현재 참여율 ${part.toFixed(1)}% (등록자 ${owners}명 / 총원 ${hcAll}명)</em></div><div class="ibBody">${Cc}${leg([['평균 이상 (평균 '+avg.toFixed(2)+(per?'건/인)':'건)'),C.dark],['평균 미만',C.amber]])}</div></div></div>
+<div class="ibRow"><div class="ibPanel"><div class="ibHead">현장조직 팀에 대한 개선활동 현황${per?'(인당 개선건수)':'(총 건수)'}<button type="button" class="ibEv" data-ib="resetTeamOrder" title="기준정보 기본 정렬로 복원">기본순서 복원</button><button type="button" class="ibEv" data-evk="c">근거 데이터</button><em class="pt">당월(${String(mm).padStart(2,'0')}월) 현재 참여율 ${part.toFixed(1)}% (등록자 ${owners}명 / 총원 ${hcAll}명)</em></div><div class="ibBody"><div style="font-size:11px;color:#63768a;margin:0 0 6px">팀명 또는 막대를 좌우로 드래그해 화면 순서 변경 · 기본 정렬은 기준정보 유지</div><div data-team-chart="true">${Cc}</div>${leg([['평균 이상 (평균 '+avg.toFixed(2)+(per?'건/인)':'건)'),C.dark],['평균 미만',C.amber]])}</div></div></div>
 <div class="ibRow r3"><div class="ibPanel"><div class="ibHead">단일 팀에 대한 연간/월별 누적 활동 실적${per?'(인당 개선건수)':''}<button type="button" class="ibEv" data-evk="d">근거 데이터</button><em>[ ${esc(S.team)} ] 연간 ${fx(dCum,per)}${unit}</em></div><div class="ibBody">${Dd}</div></div>
 <div class="ibPanel"><div class="ibHead">선택팀 고도화 유지·이탈 Drill-down${per?'(인당)':''}<button type="button" class="ibEv" data-evk="e">근거 데이터</button><em>[ ${esc(S.team)} ] 유지 ${curKeep}곳 · 이탈 ${lossTot}건</em></div><div class="ibBody">${E}${leg([['기존 유지','#a8c7c4'],['신규 확정',C.dark]])}${lossChart}${est?`<div class="ibLeg"><span>※ 유지 이탈 시점 기록이 없어 확정일+6개월(종료평가 시점)로 추정한 값이 ${est}건 포함됩니다. 수평전개 적용대상은 [근거 데이터]에서 확인하세요.</span></div>`:''}</div></div></div>
 <p class="ibFoot">※ 5S 활동 = GMES 원천 5S 활동 등록(상단 지표와 같은 데이터). 완료·확정 = 상태가 완료 또는 확정. 고도화 확정 = 5S 고도화 공식 판정이 '확정'인 건(확정일 기준, 상단 '신규 확보'와 같은 기준). 인당 = 건수 ÷ 팀 인원(팀 인원 마스터). 참여율 = 당월 5S 활동을 1건 이상 등록한 사람 수 ÷ 총원(${hcAll}명). 팀 막대를 누르면 아래 두 그래프가 그 팀으로 바뀝니다.</p>`;
@@ -242,7 +244,31 @@ function render(box){
   box.querySelectorAll('[data-f]').forEach(el=>el.onchange=()=>{S[el.dataset.f]=el.value;if(el.dataset.f==='group')S.team='';render(box)});
   box.querySelector('[data-ib="go"]').onclick=()=>render(box);box.querySelector('[data-ib="print"]').onclick=()=>window.print();
   box.querySelector('[data-ib="csv"]').onclick=()=>exportCsv({D,S,tv,A:{TYPES,allT},ML,dVals,per,hcAll});
-  box.querySelectorAll('svg')[2]?.querySelectorAll('.hit').forEach(el=>el.onclick=()=>{S.team=el.dataset.cat;render(box)});
+  box.querySelector('[data-ib="resetTeamOrder"]').onclick=()=>{teamChartLocalOrder=null;render(box)};
+  const teamSvg=box.querySelector('[data-team-chart] svg');
+  if(teamSvg){
+    let drag=null;
+    teamSvg.style.touchAction='pan-y';
+    teamSvg.querySelectorAll('.hit').forEach(el=>{
+      el.style.cursor='grab';
+      el.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag={team:el.dataset.cat,startX:e.clientX,moved:false};el.setPointerCapture?.(e.pointerId)});
+      el.addEventListener('pointermove',e=>{if(drag&&Math.abs(e.clientX-drag.startX)>7)drag.moved=true});
+      el.addEventListener('pointerup',e=>{
+        if(!drag)return;
+        const d=drag;drag=null;
+        if(!d.moved){S.team=d.team;render(box);return}
+        const rect=teamSvg.getBoundingClientRect(),x=(e.clientX-rect.left)/rect.width;
+        const svgWidth=Math.max(320,W-8),plotLeft=46/svgWidth,plotRight=10/svgWidth;
+        const fraction=Math.max(0,Math.min(.9999,(x-plotLeft)/(1-plotLeft-plotRight)));
+        const dest=Math.min(tv.length-1,Math.floor(fraction*tv.length));
+        const names=tv.map(x=>x.t),from=names.indexOf(d.team);
+        if(from<0)return;
+        names.splice(from,1);names.splice(dest,0,d.team);
+        teamChartLocalOrder=names;render(box);
+      });
+      el.addEventListener('pointercancel',()=>{drag=null});
+    });
+  }
 }
 function exportCsv({S,tv,A,ML,dVals,per}){
   const out=[['5S 자율개선 종합 대시보드',`${S.year}년`,S.month?S.month+'월':'연간누적','집계',per?'인당(건/인)':'총 건수']],q=x=>'"'+String(x??'').replace(/"/g,'""')+'"';
