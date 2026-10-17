@@ -121,6 +121,8 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
 #${ID} .rqRateBad{color:#b03a2e;font-weight:900}#${ID} .rqRateWarn{color:#9b6500;font-weight:900}#${ID} .rqRateOk{color:#2f7a4d;font-weight:900}
 #${ID} .rqMyTeam{background:#eaf4fb!important;outline:2px solid #2c80bd;outline-offset:-2px}
 #${ID} .rqMyTeamTag{display:inline-block;margin-left:6px;padding:2px 7px;border-radius:999px;background:#2c80bd;color:#fff;font-size:10px;font-weight:900;vertical-align:middle}
+#${ID} .rqTeamNote{margin:0 0 10px;padding:8px 12px;background:#f4f8fb;border:1px solid #dce7ee;border-radius:8px;font-size:12px;color:#49657b}
+#${ID} .rqColEmph{background:#fdf4f0}#${ID} th.rqColEmph{color:#9b3a2e;font-weight:900}
 #${ID} .rqLegend{display:flex;gap:15px;flex-wrap:wrap;margin-top:12px;font-size:11px}#${ID} .rqLegend span:first-child{color:#26847f}#${ID} .rqLegend span:nth-child(2){color:#ad812f}#${ID} .rqLegend span:last-child{color:#c45143}
 #${ID} .rqMoreBtn{display:block;width:100%;margin-top:8px;padding:8px;border:1px dashed #cdd9e2;border-radius:8px;background:#f8fafb;color:#49657b;font-size:12px;font-weight:850;cursor:pointer}#${ID} .rqMoreBtn:hover{background:#eef3f6;border-color:#9fb4c2}
 #${ID} .rqHeat{display:block;border-radius:5px;padding:9px;min-width:42px;text-align:center}#${ID} .rqHeatHigh{background:#b9473b;color:#fff}#${ID} .rqHeatMid{background:#db8e72;color:#fff}#${ID} .rqHeatLow{background:#f4d7c6;color:#713e30}#${ID} .rqHeatZero{background:#f4f6f8;color:#758899}
@@ -193,7 +195,13 @@ function render(box){
     return{team:t,n:a.length,avg:a.length?Math.round(a.reduce((x,y)=>x+y,0)/a.length*10)/10:0,max:a.length?Math.max(...a):0}}).filter(r=>r.n>0).sort((a,b)=>b.n-a.n||b.avg-a.avg);
   const delayRowsSorted=delayRows.length?delayRows.map(r=>{const c=rowsM.filter(x=>x.team===r.team&&isOverdue(x,D.today));const v=[c.filter(x=>delayDays(x,D.today)<=7).length,c.filter(x=>delayDays(x,D.today)>=8&&delayDays(x,D.today)<=14).length,c.filter(x=>delayDays(x,D.today)>=15).length];return{team:r.team,v,total:r.n}}).sort((a,b)=>b.v[2]-a.v[2]||b.total-a.total):[];
   const DELAY_SHOW=6;
-  const delayChart=delayRowsSorted.length?'<div class="rqRiskScroll"><table class="rqRiskTable"><thead><tr><th>조치대응팀</th><th>1~7일</th><th>8~14일</th><th>15일+</th><th>총 초과</th></tr></thead><tbody>'+delayRowsSorted.map((r,i)=>'<tr'+(i>=DELAY_SHOW?' class="rqRowMore" hidden':'')+'><td>'+esc(r.team)+'</td>'+r.v.map(n=>'<td><span class="rqHeat '+(n>=7?'rqHeatHigh':n>=4?'rqHeatMid':n?'rqHeatLow':'rqHeatZero')+'">'+n+'</span></td>').join('')+'<td><strong>'+r.total+'</strong></td></tr>').join('')+'</tbody></table>'+(delayRowsSorted.length>DELAY_SHOW?'<button type="button" class="rqMoreBtn" data-more="delay">나머지 '+(delayRowsSorted.length-DELAY_SHOW)+'개 팀 더보기 ▾</button>':'')+'</div>':null;
+  /* "05"도 "총 초과" 합계만 보면 여러 팀이 같은 숫자(예: 4건)로 반복돼 단조로워 보이지만, 실제로는
+     1~7일·8~14일·15일+ 구간별 분포가 팀마다 다름(합계가 같아도 '얼마나 급한 지연인지'는 다름) —
+     데이터는 그대로 두고, 가장 심각한 구간(15일+)을 표에서 시각적으로 강조해 "합계는 같아도 내용은
+     다르다"를 바로 보이게 함. 분포가 전부 똑같은지도 계산해 다르면 안내 문구로 알려줌. */
+  const delayAllSame=delayRowsSorted.length>1&&delayRowsSorted.every(r=>r.v[0]===delayRowsSorted[0].v[0]&&r.v[1]===delayRowsSorted[0].v[1]&&r.v[2]===delayRowsSorted[0].v[2]);
+  const delayNote=delayRowsSorted.length?(delayAllSame?'':'<p class="rqTeamNote">총 초과 건수가 같은 팀도 있지만, <b>15일 이상 장기 지연</b> 건수는 팀마다 다릅니다. 그 칸을 우선 확인하세요.</p>'):'';
+  const delayChart=delayRowsSorted.length?'<div class="rqRiskScroll">'+delayNote+'<table class="rqRiskTable"><thead><tr><th>조치대응팀</th><th>1~7일</th><th>8~14일</th><th class="rqColEmph">15일+</th><th>총 초과</th></tr></thead><tbody>'+delayRowsSorted.map((r,i)=>'<tr'+(i>=DELAY_SHOW?' class="rqRowMore" hidden':'')+'><td>'+esc(r.team)+'</td>'+r.v.map((n,ci)=>'<td'+(ci===2?' class="rqColEmph"':'')+'><span class="rqHeat '+(n>=7?'rqHeatHigh':n>=4?'rqHeatMid':n?'rqHeatLow':'rqHeatZero')+'">'+n+'</span></td>').join('')+'<td><strong>'+r.total+'</strong></td></tr>').join('')+'</tbody></table>'+(delayRowsSorted.length>DELAY_SHOW?'<button type="button" class="rqMoreBtn" data-more="delay">나머지 '+(delayRowsSorted.length-DELAY_SHOW)+'개 팀 더보기 ▾</button>':'')+'</div>':null;
   const activeOverdue=rowsM.filter(c=>teamsAll.includes(c.team)&&isOverdue(c,D.today));
   const delayOverallAvg=activeOverdue.length?Math.round(activeOverdue.reduce((a,c)=>a+(delayDays(c,D.today)||0),0)/activeOverdue.length*10)/10:0;
   const sum={total:teamRows.reduce((a,r)=>a+r.total,0),done:teamRows.reduce((a,r)=>a+r.done,0),open:teamRows.reduce((a,r)=>a+r.open,0),over:teamRows.reduce((a,r)=>a+r.over,0)}; // open=기한내 미완료, 전체 미완료=open+over
@@ -277,7 +285,17 @@ function render(box){
   const teamRateSorted=[...teamRowsAllTeams].sort((a,b)=>(a.total?a.done/a.total:0)-(b.total?b.done/b.total:0)||b.total-a.total);
   const teamRateRow=(r,hidden)=>{const rate=r.total?Math.round(r.done/r.total*1000)/10:0,mine=teamHighlight&&r.team===teamHighlight;return '<tr'+(mine?' class="rqMyTeam"':hidden?' class="rqRowMore" hidden':'')+'><td>'+(mine?'<b>▶ ':'')+esc(r.team)+(mine?' <span class="rqMyTeamTag">내 팀</span></b>':'')+'</td><td><div class="rqStack" title="완료 '+r.done+'건 / 기한 내 미완료 '+r.open+'건 / 기한초과 '+r.over+'건"><span class="rqStackDone" style="width:'+(r.total?100*r.done/r.total:0)+'%"></span><span class="rqStackOpen" style="width:'+(r.total?100*r.open/r.total:0)+'%"></span><span class="rqStackLate" style="width:'+(r.total?100*r.over/r.total:0)+'%"></span></div></td><td class="'+rateCls(rate)+'">'+rate+'%</td></tr>'};
   const TEAM_SHOW=6;
-  const teamRateBars='<div class="rqMatrixScroll"><table class="rqMatrix"><thead><tr><th>조치대응팀</th><th>조치 구성 비교</th><th>완료율</th></tr></thead><tbody>'+teamRateSorted.map((r,i)=>teamRateRow(r,i>=TEAM_SHOW)).join('')+'</tbody></table>'+(teamRateSorted.length>TEAM_SHOW?'<button type="button" class="rqMoreBtn" data-more="team">나머지 '+(teamRateSorted.length-TEAM_SHOW)+'개 팀 더보기 ▾</button>':'')+'<div class="rqLegend"><span>■ 완료</span><span>■ 기한 내 미완료</span><span>■ 기한초과</span></div></div>';
+  /* 사용자 지적: "여기가 가장 문제다" — (1) 범례가 '완료/기한 내 미완료/기한초과' 3색인데, 실제로는
+     전체 16개 팀 전부 open(기한 내 미완료)이 항상 0건이라 노란색이 한 번도 나타나지 않음(3색을
+     약속해놓고 2색만 쓰는 거짓 범례). (2) 16개 팀 전부 완료율이 정확히 같아(60%) "비교" 표인데
+     비교할 차이가 없어 보임. 데이터 값은 그대로 두고(사용자 확정), 실제 쓰이는 색만 범례에 남기고,
+     "전부 동일하다"는 사실 자체를 숨기지 않고 먼저 알려주는 요약 문구를 추가해 혼란 대신 바로
+     이해되게 함. */
+  const openSum=teamRateSorted.reduce((s,r)=>s+r.open,0);
+  const rates0=teamRateSorted.map(r=>r.total?Math.round(r.done/r.total*1000)/10:0);
+  const allSameRate=rates0.length>1&&rates0.every(v=>v===rates0[0]);
+  const teamRateNote=allSameRate?'<p class="rqTeamNote">현재 조건에서는 '+teamRateSorted.length+'개 팀 전부 완료율이 '+rates0[0]+'%로 동일합니다. 팀별 실질 차이는 아래 05(기한초과 지연일 분포)에서 확인하세요.</p>':'';
+  const teamRateBars='<div class="rqMatrixScroll">'+teamRateNote+'<table class="rqMatrix"><thead><tr><th>조치대응팀</th><th>조치 구성 비교</th><th>완료율</th></tr></thead><tbody>'+teamRateSorted.map((r,i)=>teamRateRow(r,i>=TEAM_SHOW)).join('')+'</tbody></table>'+(teamRateSorted.length>TEAM_SHOW?'<button type="button" class="rqMoreBtn" data-more="team">나머지 '+(teamRateSorted.length-TEAM_SHOW)+'개 팀 더보기 ▾</button>':'')+'<div class="rqLegend"><span>■ 완료</span>'+(openSum>0?'<span>■ 기한 내 미완료</span>':'')+'<span>■ 기한초과</span></div></div>';
   const overCases=rowsM.filter(c=>teamsAll.includes(c.team)&&isOverdue(c,D.today));
   const delayBands=[overCases.filter(c=>delayDays(c,D.today)<=7).length,overCases.filter(c=>delayDays(c,D.today)>=8&&delayDays(c,D.today)<=14).length,overCases.filter(c=>delayDays(c,D.today)>=15).length];
   const kpi=(label,value,detail,risk=false)=>'<div class="rqKpi'+(risk?' risk':'')+'"><small>'+label+'</small><b>'+value+'</b><span class="rqKpiHint">'+detail+'</span></div>';
