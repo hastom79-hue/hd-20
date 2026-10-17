@@ -228,7 +228,7 @@ function render(box){
      0인 달이 섞인 이산적 데이터라, 선으로 이으면 0인 달들 사이를 가로질러 억지로 '추세'처럼 보이는
      뾰족한 스파이크 모양이 되어 오히려 왜곡된 인상을 줌(사용자: "이게 머냐 개판이다"). 막대그래프로
      되돌림 — 같은 달에 등록/완료된 '건수'를 비교하는 데는 막대가 더 정직한 표현. */
-  const monthlyTrend=chart({w:Math.max(440,box.clientWidth-85),cats:ML,minSlot:58,series:[{name:'신규 요청',vals:regM,color:'#829db5'},{name:'완료',vals:monthlyDone,color:'#247c83'}]});
+  const monthlyTrend=lineChart({w:Math.max(440,box.clientWidth-85),h:240,cats:ML,series:[{name:'신규 요청',vals:regM,color:'#829db5'},{name:'완료',vals:monthlyDone,color:'#247c83'}]});
   const teamCompletion=chart({w:Math.max(440,box.clientWidth-85),h:260,cats:teamRows.map(r=>r.team),rotate:true,minSlot:64,series:[{name:'완료',vals:teamRows.map(r=>r.done),color:'#247c83'},{name:'미완료',vals:teamRows.map(r=>r.open+r.over),color:'#c69a65'}]});
   // Approved V2: three fixed source categories, proportional horizontal bars.
   const sourceTotal=rowsM.length;
