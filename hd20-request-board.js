@@ -200,6 +200,7 @@ function render(box){
   const KIT=window.HD20_BOARD_KIT;if(!KIT||!window.HD20KPIData?.actionCases){box.innerHTML='<h2>5S 개선요청 종합 대시보드</h2><p role="status">데이터 조회 모듈을 연결 중입니다.</p>';return}const {chart,leg,openRows}=KIT,D=data();
   if(!S.year||!D.years.includes(S.year))S.year=D.years.includes(String(new Date().getFullYear()))?String(new Date().getFullYear()):(D.years[D.years.length-1]||String(new Date().getFullYear()));
   const teamsAll=D.teams.filter(t=>!S.team||t===S.team),rowsY=filt(D,{ignoreMonth:true}).filter(c=>teamsAll.includes(c.team)),rowsM=S.month?rowsY.filter(c=>mo(c)===+S.month):rowsY;
+  const periodLabel=S.year+'년 '+(S.month?Number(S.month)+'월':'연간 누적');
   const allEver=D.cases.filter(c=>teamsAll.includes(c.team)),doneEver=allEver.filter(isDone),openRate=allEver.length?Math.round(doneEver.length/allEver.length*1000)/10:0;
   const doneYear=rowsY.filter(isDone),yearRate=rowsY.length?Math.round(doneYear.length/rowsY.length*1000)/10:0;
   // ① 요청출처별 — 표시 순서는 통합기준정보('요청출처 순서')에서 관리, 기본값 리더십>5S모듈>생산혁신팀 HDPS파트
@@ -208,9 +209,9 @@ function render(box){
   const A=chart({w:Math.floor((box.clientWidth-36)*.3)-8,cats:srcCats,minSlot:78,series:[{name:'요청',vals:srcReg,color:'#5c6b7a'},{name:'미완료',vals:srcOpen,color:'#e0b03c',widthScale:1.5,pct:srcOpenPct}]});
   // ② 월별
   const ML=Array.from({length:12},(_,i)=>String(i+1).padStart(2,'0')+'월');
-  const regM=Array.from({length:12},(_,i)=>rowsY.filter(c=>mo(c)===i+1).length);
-  const openM=Array.from({length:12},(_,i)=>rowsY.filter(c=>mo(c)===i+1&&!isDone(c)).length);
-  const doneM=Array.from({length:12},(_,i)=>rowsY.filter(c=>mo(c)===i+1&&isDone(c)).length);
+  const regM=Array.from({length:12},(_,i)=>rowsM.filter(c=>mo(c)===i+1).length);
+  const openM=Array.from({length:12},(_,i)=>rowsM.filter(c=>mo(c)===i+1&&!isDone(c)).length);
+  const doneM=Array.from({length:12},(_,i)=>rowsM.filter(c=>mo(c)===i+1&&isDone(c)).length);
   const donePct=doneM.map((v,i)=>regM[i]?Math.round(v/regM[i]*100):null);
   const B=chart({w:Math.floor((box.clientWidth-36)*.7)-20,cats:ML,minSlot:60,series:[{name:'요청',vals:regM,color:'#8fa3b3'},{name:'미완료',vals:openM,color:'#e0b03c',widthScale:1.5,pct:openM.map((v,i)=>regM[i]?Math.round(v/regM[i]*100):null)}]});
   // ③ 조치대응부서 진행현황
@@ -257,7 +258,8 @@ function render(box){
   const teamChart=chart({w:box.clientWidth-40,h:280,cats:backlogRows.map(r=>r.team),rotate:true,minSlot:72,topExtra:backlogExtra,
     series:[{name:'미조치 잔량',vals:backlogRows.map(r=>r.open+r.over),color:'#6f8797'}]});
   const selRows=D.cases.filter(c=>c.team===S.selTeam&&(!S.source||sourceOf(c)===S.source)),selYearRows=selRows.filter(c=>String(c.date||'').slice(0,4)===S.year);
-  const selRegM=Array.from({length:12},(_,i)=>selYearRows.filter(c=>mo(c)===i+1).length),selDoneM=Array.from({length:12},(_,i)=>selYearRows.filter(c=>mo(c)===i+1&&isDone(c)).length);
+  const selPeriodRows=S.month?selYearRows.filter(c=>mo(c)===+S.month):selYearRows;
+  const selRegM=Array.from({length:12},(_,i)=>selPeriodRows.filter(c=>mo(c)===i+1).length),selDoneM=Array.from({length:12},(_,i)=>selPeriodRows.filter(c=>mo(c)===i+1&&isDone(c)).length);
   const teamTrend=chart({w:box.clientWidth-40,h:230,cats:ML,per:false,series:[{name:'등록',vals:selRegM,color:'#8fa3b3'},{name:'완료',vals:selDoneM,color:'#1f6f6b'}]});
   const gridRow=r=>`<tr><td>${esc(r.team)}</td><td>${r.total}</td><td>${r.done}건 (${sum.total?Math.round(r.done/(r.total||1)*1000)/10:0}%)</td><td>${r.open}건</td><td>${r.over}건</td></tr>`;
   const teamGrid=`<table class="rqGrid"><thead><tr><th>조치대응부서</th><th>합계</th><th>개선완료</th><th>기한내 미완료</th><th>기한초과</th></tr></thead><tbody>
@@ -278,11 +280,11 @@ function render(box){
   const opt=(a,cur,all='ALL')=>`<option value="">${all}</option>`+a.map(x=>`<option value="${esc(x)}"${x===cur?' selected':''}>${esc(x)}</option>`).join('');
 
   // V2: Monthly completions use actual completion dates; backlog carries open cases from earlier periods.
-  const monthlyDone=Array.from({length:12},(_,i)=>filt(D,{ignoreYear:true,ignoreMonth:true}).filter(x=>teamsAll.includes(x.team)&&isDone(x)&&String(x.doneDate||'').slice(0,7)===S.year+'-'+String(i+1).padStart(2,'0')).length);
+  const monthlyDone=Array.from({length:12},(_,i)=>filt(D,{ignoreYear:true,ignoreMonth:true}).filter(x=>teamsAll.includes(x.team)&&isDone(x)&&String(x.doneDate||'').slice(0,7)===S.year+'-'+String(i+1).padStart(2,'0')&&(!S.month||i+1===+S.month)).length);
   /* 사용자 지시: "두번쨰 세로막대 너비를 조금 넓혀서 값 다음 줄바꿈을 해서 %까지 같이 표기해라" —
      '완료' 막대에 그 달 완료 건 중 기한 내 완료 비율(%)을 숫자 아래 줄바꿈으로 병기. */
   const monthlyDonePct=Array.from({length:12},(_,i)=>{
-    const done=filt(D,{ignoreYear:true,ignoreMonth:true}).filter(x=>teamsAll.includes(x.team)&&isDone(x)&&String(x.doneDate||'').slice(0,7)===S.year+'-'+String(i+1).padStart(2,'0'));
+    const done=filt(D,{ignoreYear:true,ignoreMonth:true}).filter(x=>teamsAll.includes(x.team)&&isDone(x)&&String(x.doneDate||'').slice(0,7)===S.year+'-'+String(i+1).padStart(2,'0')&&(!S.month||i+1===+S.month));
     const withDue=done.filter(x=>x.due);
     return withDue.length?Math.round(withDue.filter(x=>x.doneDate<=x.due).length/withDue.length*100):null;
   });
@@ -361,10 +363,10 @@ function render(box){
   const kpi=(label,value,detail,risk=false)=>'<div class="rqKpi'+(risk?' risk':'')+'"><small>'+label+'</small><b>'+value+'</b><span class="rqKpiHint">'+detail+'</span></div>';
   const section=(title,meta,content,key)=>'<section class="ibPanel"><div class="ibHead"><span>'+title+'</span><em>'+meta+'</em>'+(key?'<button type="button" class="ibEv" data-evk="'+key+'">근거 데이터</button>':'')+'</div><div class="ibBody">'+content+'</div></section>';
   const filters='<div class="ibBar"><label>연도 <select data-f="year">'+D.years.map(y=>'<option'+(y===S.year?' selected':'')+'>'+y+'</option>').join('')+'</select></label><label>월 <select data-f="month"><option value="">전체</option>'+Array.from({length:12},(_,i)=>{const v=String(i+1).padStart(2,'0');return '<option value="'+v+'"'+(v===S.month?' selected':'')+'>'+(i+1)+'월</option>'}).join('')+'</select></label><label>요청출처 <select data-f="source">'+opt(SOURCES,S.source)+'</select></label><label>조치대응팀 <select data-f="team">'+opt(D.teams,S.team)+'</select></label><label>진행상태 <select data-f="status">'+opt(['조치대기','진행중','완료','기한초과'],S.status)+'</select></label><label>재발 <select data-f="roll"><option value="">전체</option><option value="Y"'+(S.roll==='Y'?' selected':'')+'>있음</option><option value="N"'+(S.roll==='N'?' selected':'')+'>없음</option></select></label><button type="button" data-rq="go">조회</button><button type="button" class="alt" data-rq="reset">초기화</button><span class="sp"></span><button type="button" class="alt" data-rq="print">인쇄</button><button type="button" class="alt" data-rq="csv">엑셀 다운로드</button></div>';
-  box.innerHTML='<div class="ibTitle"><h2>개선요청 종합현황</h2></div><p class="ibNote">요청 발생 · 조치 이행 · 지연 위험 · 팀별 대응력</p>'
+  box.innerHTML='<div class="ibTitle"><h2>개선요청 종합현황</h2></div><p class="ibNote">'+esc(periodLabel)+' · 요청 발생 · 조치 이행 · 지연 위험 · 팀별 대응력</p>'
     +filters
     +'<div class="rqKpis rqV2Kpis">'
-    +kpi('총 개선요청',sum.total+'건','조회조건 전체')
+    +kpi('총 개선요청',sum.total+'건',periodLabel)
     +kpi('완료',sum.done+'건','조치 완료')
     +kpi('미완료',(sum.open+sum.over)+'건','기한내 미완료 포함')
     +kpi('완료율',pctS(sum.done)+'%','완료 / 전체')
@@ -387,7 +389,7 @@ function render(box){
        (sourceBars, 이미 정의돼 있던 걸 재사용)로 복원해 좌측에 둠. */
     +'<div class="ibRow rqSplit4060">'
     +section('요청출처별 현황','요청 그룹 기준',sourceBars,'a')
-    +section('01. 월별 요청·완료 추이','완료일 기준 · 신규 요청과 별도 집계',monthlyTrend+leg([['신규 요청','#829db5'],['완료','#247c83']]),'b')
+    +section('01. 월별 요청·완료 추이',periodLabel+' · 완료일 기준',monthlyTrend+leg([['신규 요청','#829db5'],['완료','#247c83']]),'b')
     +'</div>'
     /* 사용자 지시: "좌우 병합배치로" — 04·05가 각자 전체 폭을 차지하며 세로로 길게 쌓여 있던 걸,
        둘을 한 줄(rqManageRow, 2열)에 나란히 배치. 그 안의 SVG 차트 폭(hBarChart·hStackChart)도
@@ -405,7 +407,7 @@ function render(box){
     evDelayCols=[...evCols,'지연일수'],evDelayMapR=c=>[...evMapR(c),delayDays(c,D.today)??''];
   const EV={
     a:['요청출처별 근거 데이터 ('+(S.month?+S.month+'월':'연간누적')+')',rowsM,evCols,evMapR],
-    b:['월별 요청·완료 근거 데이터 ('+S.year+'년)',[...rowsY,...filt(D,{ignoreYear:true,ignoreMonth:true}).filter(c=>teamsAll.includes(c.team)&&isDone(c)&&String(c.doneDate||'').startsWith(S.year+'-')&&!rowsY.includes(c))],evCols,evMapR],
+    b:['월별 요청·완료 근거 데이터 ('+periodLabel+')',[...rowsM,...filt(D,{ignoreYear:true,ignoreMonth:true}).filter(c=>teamsAll.includes(c.team)&&isDone(c)&&String(c.doneDate||'').startsWith(S.year+'-')&&(!S.month||String(c.doneDate||'').slice(5,7)===S.month)&&!rowsM.includes(c))],evCols,evMapR],
     c:['조치대응부서 근거 데이터 ('+(S.month?+S.month+'월':'연간누적')+')',rowsM,evCols,evMapR],
     c2:['조치대응팀별 이행성과 근거 데이터 ('+(S.month?+S.month+'월':'연간누적')+')',rowsM,evCols,evMapR],
     d:['현재 기한초과 근거 데이터 ('+(S.month?+S.month+'월':'연간누적')+')',rowsM.filter(c=>teamsAll.includes(c.team)&&isOverdue(c,D.today)),evDelayCols,evDelayMapR],
