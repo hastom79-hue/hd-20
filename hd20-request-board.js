@@ -127,6 +127,7 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
 #${ID} .rqBarItem.zero{opacity:.4}
 #${ID} .rqSourceSummary{margin:10px 0 0;padding-top:10px;border-top:1px solid #edf1f4;font-size:12px;color:#5c6b7a}#${ID} .rqSourceSummary b{color:#2c5f8a}
 #${ID} .rqSecondary{opacity:.92}#${ID} .rqSecondary .ibHead{font-size:12.5px}
+#${ID} .rqPoster{display:none}
 #${ID} .rqBarItem{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;align-items:center;font-size:12px;color:#465c6d}
 #${ID} .rqBarItem strong{font-variant-numeric:tabular-nums;font-weight:800;color:#28465b}
 #${ID} .rqBarItem .rqTrack{grid-column:1/-1;height:11px}
@@ -178,6 +179,36 @@ function render(box){
   const orderIdx=t=>{const i=teamOrder?teamOrder.indexOf(t):-1;return i<0?999:i};
   const teamRows=teamsAll.map(t=>{const a=rowsM.filter(c=>c.team===t),done=a.filter(isDone).length,over=a.filter(c=>isOverdue(c,D.today)).length,open=a.length-done-over,pct=n=>a.length?Math.round(n/a.length*1000)/10:0;
     return{team:t,total:a.length,done,open,over,pct}}).filter(r=>r.total>0).sort((a,b)=>orderIdx(a.team)-orderIdx(b.team)||a.team.localeCompare(b.team,'ko'));
+  /* 사용자 지적: "저 탭을 출력해서 현장 게시판에 팀별로 게시한다고 생각해봐라 끔찍하지 않냐" — 지금까지
+     해온 작업은 전부 "16개 팀을 한 화면/한 표에 비교하는 모니터용 대시보드"를 다듬는 것이었는데, 실제
+     요구는 전혀 다른 물건이었음: 각 팀이 자기 팀 현황판으로 떼어가 붙이는 "팀별 포스터"는 큰 표가
+     아니라 "우리 팀 숫자가 큼직하게, 전체 대비 어디쯤인지만" 보이면 됨. 조치대응팀 필터에서 특정
+     팀을 선택하면, 인쇄 시 기존 전체 비교 대시보드 대신 이 팀 전용 포스터만 보이도록 함(선택 안
+     하면 기존처럼 전체 비교 레이아웃 유지). */
+  let teamPoster='';
+  if(S.team){
+    /* filt()가 전역 S를 참조하며 S.team을 무조건 적용하는 함수라(팀을 무시하는 옵션이 없음), 포스터용
+       "전체 팀" 순위 계산에 그대로 쓰면 이미 선택된 한 팀만 남아 "전체 1개 팀 중 1위"처럼 나오는 결함이
+       있었음 — D.cases를 직접 써서 연도/월/출처/상태 필터는 유지하되 팀 필터만 우회. */
+    const yearOk=c=>String(c.date||'').slice(0,4)===S.year,monthOk=c=>!S.month||mo(c)===+S.month,
+      srcOk=c=>!S.source||sourceOf(c)===S.source,statusOk=c=>!S.status||(S.status==='기한초과'?isOverdue(c,D.today):c.status===S.status),
+      rollOk=c=>!(S.roll==='Y'&&!c.recurrence)&&!(S.roll==='N'&&c.recurrence);
+    const allCasesNoTeamFilter=D.cases.filter(c=>yearOk(c)&&monthOk(c)&&srcOk(c)&&statusOk(c)&&rollOk(c));
+    const allTeamRows=D.teams.map(t=>{const a=allCasesNoTeamFilter.filter(c=>c.team===t),done=a.filter(isDone).length,total=a.length,over=a.filter(c=>isOverdue(c,D.today)).length;return{team:t,total,done,over,rate:total?Math.round(done/total*1000)/10:null}}).filter(r=>r.total>0);
+    const ranked=[...allTeamRows].sort((a,b)=>(b.rate??-1)-(a.rate??-1));
+    const myIdx=ranked.findIndex(r=>r.team===S.team),mine=ranked[myIdx];
+    const avgRate=allTeamRows.length?Math.round(allTeamRows.reduce((s,r)=>s+(r.rate||0),0)/allTeamRows.length*10)/10:0;
+    if(mine){
+      const rank=myIdx+1,rankCls=rank<=Math.ceil(ranked.length/3)?'rqPosterGood':rank<=Math.ceil(ranked.length*2/3)?'rqPosterWarn':'rqPosterBad';
+      teamPoster=`<div class="rqPoster ${rankCls}"><div class="rqPosterTeam">${esc(S.team)}</div>
+        <div class="rqPosterMain"><div class="rqPosterBig"><small>개선요청 완료율</small><b>${mine.rate??'—'}%</b></div>
+        <div class="rqPosterRank"><small>전체 ${ranked.length}개 팀 중</small><b>${rank}위</b></div></div>
+        <div class="rqPosterCompare"><span>우리 팀 ${mine.rate??0}%</span><div class="rqPosterBar"><i style="width:${mine.rate??0}%"></i></div></div>
+        <div class="rqPosterCompare avg"><span>공장 평균 ${avgRate}%</span><div class="rqPosterBar"><i style="width:${avgRate}%"></i></div></div>
+        <div class="rqPosterFoot"><div><small>총 개선요청</small><b>${mine.total}건</b></div><div><small>완료</small><b>${mine.done}건</b></div><div><small>기한초과</small><b>${mine.over}건</b></div></div>
+        <p class="rqPosterNote">${S.month?+S.month+'월':S.year+'년 전체'} 기준 · ${rank===1?'공장 내 1위입니다. 현재 수준을 유지하세요.':rank<=Math.ceil(ranked.length/3)?'상위권입니다. 꾸준히 유지하세요.':rank<=Math.ceil(ranked.length*2/3)?'공장 평균 수준입니다. 기한초과 건부터 줄여보세요.':'하위권입니다. 기한초과 건을 우선 처리해 주세요.'}</p></div>`;
+    }
+  }
   // 현재 기한초과 집중관리: 완료건의 과거 지연은 제외하고, 지금 미완료이면서 기한을 넘긴 건만 집계.
   const delayRows=teamsAll.map(t=>{const a=rowsM.filter(c=>c.team===t&&!isDone(c)&&isOverdue(c,D.today)).map(c=>delayDays(c,D.today)).filter(v=>v!==null);
     return{team:t,n:a.length,avg:a.length?Math.round(a.reduce((x,y)=>x+y,0)/a.length*10)/10:0,max:a.length?Math.max(...a):0}}).filter(r=>r.n>0).sort((a,b)=>b.n-a.n||b.avg-a.avg);
@@ -281,6 +312,7 @@ function render(box){
     +section('03. 조치 진행상태','완료 · 기한내 미완료 · 기한초과',statusDonut,'c')
     +'</div>'
     +'<div class="ibRow rqPrintSkip">'+section('06. 개선요청 상세 관리','기한초과·미완료 우선 · 미리보기 '+detailRows.length+' / '+actionAll.length,'<div class="rqScroll">'+detail+'</div>','f')+'</div>'
+    +teamPoster
     +'<p class="rqCaveat">※ 요청출처는 5S모듈·생산혁신팀 HDPS파트·리더십 3종입니다. 원천에 출처 필드가 없는 경우 일부 출처는 등록자 및 Audit 연계 정보로 추정됩니다. 완료일이 없는 완료 건은 월별 완료 추이에서 제외되며 총 완료 건수에는 포함됩니다.</p>';
 
   const evCols=['요청번호','요청출처','조치대응부서','작업장','진행현황','요청일','완료예정일','완료일'],
