@@ -236,7 +236,12 @@ function render(box){
      0인 달이 섞인 이산적 데이터라, 선으로 이으면 0인 달들 사이를 가로질러 억지로 '추세'처럼 보이는
      뾰족한 스파이크 모양이 되어 오히려 왜곡된 인상을 줌(사용자: "이게 머냐 개판이다"). 막대그래프로
      되돌림 — 같은 달에 등록/완료된 '건수'를 비교하는 데는 막대가 더 정직한 표현. */
-  const monthlyTrend=chart({w:Math.max(440,box.clientWidth-85),cats:ML,minSlot:58,series:[{name:'신규 요청',vals:regM,color:'#829db5'},{name:'완료',vals:monthlyDone,color:'#247c83'}]});
+  /* 사용자 지적: "데이터 비어 있게 하지마라" — 실제로는 09·10월 등에 값이 있었는데, 전면 개편 때
+     "01"을 "03"과 나란히 2열(rqManageRow)로 옮기면서 차지하는 폭이 절반으로 줄었음에도 차트 SVG
+     너비 계산은 그대로 전체 탭 폭(box.clientWidth) 기준으로 남아 있어, 차트가 패널보다 거의 2배
+     넓게 그려지고 overflow-x:auto로 가로 스크롤이 생겨 07~12월이 스크롤 밖에 가려져 있었음(겉보기엔
+     "01~06월만 있고 다 비어 있는" 것처럼 보였던 진짜 원인) — 패널의 실제 폭(절반) 기준으로 수정. */
+  const monthlyTrend=chart({w:Math.max(380,Math.floor(box.clientWidth/2)-55),cats:ML,minSlot:36,series:[{name:'신규 요청',vals:regM,color:'#829db5'},{name:'완료',vals:monthlyDone,color:'#247c83'}]});
   const teamCompletion=chart({w:Math.max(440,box.clientWidth-85),h:260,cats:teamRows.map(r=>r.team),rotate:true,minSlot:64,series:[{name:'완료',vals:teamRows.map(r=>r.done),color:'#247c83'},{name:'미완료',vals:teamRows.map(r=>r.open+r.over),color:'#c69a65'}]});
   // Approved V2: three fixed source categories, proportional horizontal bars.
   const sourceTotal=rowsM.length;
