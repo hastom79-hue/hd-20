@@ -106,10 +106,10 @@ function filt(D,{ignoreMonth=false,ignoreYear=false}={}){
 const monthOf=r=>+String(r.date||r.regDate||'').slice(5,7);
 function axis(v,{integer=false}={}){if(!Number.isFinite(v)||v<=0)return{step:1,max:4};const raw=Math.max(integer?1:0.0001,v/4),p=Math.pow(10,Math.floor(Math.log10(raw))),f=raw/p,n=f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10,step=Math.max(integer?1:0,n*p);return{step,max:Math.max(4*step,Math.ceil(v/step-1e-9)*step)}}
 const tk=v=>String(Number(v.toFixed(3)));
-function chart({w,h=240,cats,series,stack=false,per=false,rotate=false,sel=null,colorOf=null,minSlot=36,fmt=null,hline=null,linkX=false,topPct=null,topExtra=null,axisHeadroom=0,raisePlot=false}){
+function chart({w,h=240,cats,series,stack=false,per=false,rotate=false,sel=null,colorOf=null,minSlot=36,fmt=null,hline=null,linkX=false,topPct=null,topExtra=null,axisHeadroom=0,raisePlot=false,plotBottom=null}){
   const F=v=>fmt?fmt(v):fx(v,per);
   const W0=Math.max(320,w),slot0=(W0-56)/Math.max(1,cats.length);rotate=rotate||(slot0<58&&cats.some(c=>String(c).length>3));
-  const m={l:46,r:10,t:raisePlot?12:20,b:rotate?84:(raisePlot?24:30)},W=W0,iw=W-m.l-m.r,ih=h-m.t-m.b;
+  const m={l:46,r:10,t:raisePlot?12:20,b:plotBottom??(rotate?84:(raisePlot?24:30))},W=W0,iw=W-m.l-m.r,ih=h-m.t-m.b;
   const tot=cats.map((_,i)=>stack?series.reduce((a,s)=>a+(s.vals[i]||0),0):Math.max(...series.map(s=>s.vals[i]||0)));
   const dataMax=Math.max(0.0001,...tot,hline?hline.value*1.05:0),integerAxis=!per&&tot.every(v=>Number.isInteger(v))&&(!hline||Number.isInteger(hline.value)),ax=axis(tot.every(v=>v===0)&&!hline?0:dataMax*(1+Math.max(axisHeadroom,integerAxis?0.12:0)),{integer:integerAxis}),max=ax.max,yv=v=>m.t+ih-(v/max)*ih,slot=iw/Math.max(1,cats.length);
   let g='';for(let i=0;i<=Math.round(max/ax.step);i++){const v=ax.step*i,y=yv(v);g+=`<line x1="${m.l}" x2="${W-m.r}" y1="${y}" y2="${y}" stroke="${C.grid}"/><text x="${m.l-6}" y="${y+4}" text-anchor="end" font-size="11" fill="${C.soft}">${tk(v)}</text>`}
@@ -164,12 +164,12 @@ function render(box){
         '<text x="'+cx+'" y="335" text-anchor="middle" font-size="10" font-weight="700" fill="#a55f10">'+(denom>0?r.toFixed(2):'—')+'</text>';
     }).join('');
     const ticks=[0,.25,.5,.75,1].map(k=>'<line x1="46" x2="'+(width-28)+'" y1="'+(290-k*260)+'" y2="'+(290-k*260)+'" stroke="#e2e6e9"/><text x="37" y="'+(294-k*260)+'" text-anchor="end" font-size="10">'+Math.round(maxCount*k)+'</text>').join('');
-    return '<svg width="'+width+'" height="377" viewBox="0 0 '+width+' 377" role="img" aria-label="5S 유형별 등록건수 막대 및 인당 개선건수 수치 배지">'+ticks+bars+'<text x="'+(width/2)+'" y="368" text-anchor="middle" font-size="12" font-weight="700" fill="#a55f10">주황색 수치: 인당 개선건수 (건/인)</text></svg>';
+    return '<svg width="'+width+'" height="360" viewBox="0 0 '+width+' 360" role="img" aria-label="5S 유형별 등록건수 막대 및 인당 개선건수 수치 배지">'+ticks+bars+'<text x="'+(width/2)+'" y="354" text-anchor="middle" font-size="12" font-weight="700" fill="#a55f10">주황색 수치: 인당 개선건수 (건/인)</text></svg>';
   })();
   // b) 월별 — 건수로 고정 표시. 수평전개 적용대상건수는 그 달 5S 활동 완료건수 대비 비율(%)을 값 옆에 병기하고 막대를 넓혀 값이 겹치지 않게 함
   const mo=(pred)=>Array.from({length:12},(_,i)=>rowsY.filter(r=>monthOf(r)===i+1&&pred(r)).length),rowsC=filt(D,{ignoreYear:true,ignoreMonth:true}).filter(inTeams),cy=r=>cdOf(r).slice(0,4),cm=r=>+cdOf(r).slice(5,7),confM=(a)=>Array.from({length:12},(_,i)=>a.filter(r=>r.judgeState==='확정'&&cy(r)===S.year&&cm(r)===i+1).length),ML=Array.from({length:12},(_,i)=>String(i+1).padStart(2,'0')+'월');
   const doneM=mo(r=>DONE.includes(r.status)),rollM=mo(r=>r.horizontalRollout===true),rollPct=rollM.map((v,i)=>doneM[i]?Math.round(v/doneM[i]*1000)/10:null);
-  const B=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W*.6)-10),h:360,cats:ML,per:false,minSlot:0,axisHeadroom:0.08,raisePlot:true,series:[{name:'5S 활동 완료건수',vals:doneM,color:C.dark},{name:'고도화 확정 건수',vals:confM(rowsC),color:C.amber},{name:'수평전개 적용대상건수',vals:rollM,color:C.grey,widthScale:1.5,pct:rollPct}]});
+  const B=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W*.6)-10),h:360,cats:ML,per:false,minSlot:0,axisHeadroom:0.08,raisePlot:true,plotBottom:70,series:[{name:'5S 활동 완료건수',vals:doneM,color:C.dark},{name:'고도화 확정 건수',vals:confM(rowsC),color:C.amber},{name:'수평전개 적용대상건수',vals:rollM,color:C.grey,widthScale:1.5,pct:rollPct}]});
   // 월별 추이 분석: 완료된 최근 두 달을 비교하며, 모든 값은 차트와 동일한 원천 배열에서 산출
   const upgradeM=confM(rowsC);
   const trendNow=new Date(),currentYear=String(trendNow.getFullYear());
