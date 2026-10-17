@@ -155,13 +155,15 @@ function render(box){
     const rates=basicAllT.map(n=>denom>0?n/denom:0);
     const maxCount=Math.max(1,...basicAllT)*1.2;
     const x=i=>46+(width-74)*(i+.5)/BASIC_TYPES.length, y=v=>290-v/maxCount*260;
+    /* 사용자 지시: "84밑에 줄바꿈으로 인당 건수를 같이 표현할 수 있게 수정해줘 따로 저렇게 표현하지
+       말고" — 막대 위 건수(84)와 그 아래 별도 주황 배지(0.20)로 떨어져 있던 걸, 건수 바로 아래 같은
+       라벨 안에 줄바꿈으로 붙여 하나의 표기로 합침. 배지(둥근 사각형)는 제거. */
     const bars=BASIC_TYPES.map((name,i)=>{
       const cx=x(i),c=basicAllT[i],cy=y(c),r=rates[i];
       return '<rect x="'+(cx-12)+'" y="'+cy+'" width="24" height="'+(290-cy)+'" rx="2" fill="#20746f"/>'+
-        '<text x="'+cx+'" y="'+(cy-7)+'" text-anchor="middle" font-size="11" font-weight="700" fill="#173a57">'+c+'</text>'+
-        '<text x="'+cx+'" y="309" text-anchor="middle" font-size="10">'+name+'</text>'+
-        '<rect x="'+(cx-24)+'" y="320" width="48" height="23" rx="11" fill="#fff3df" stroke="#e8c48b"/>'+
-        '<text x="'+cx+'" y="335" text-anchor="middle" font-size="10" font-weight="700" fill="#a55f10">'+(denom>0?r.toFixed(2):'—')+'</text>';
+        '<text x="'+cx+'" y="'+(cy-19)+'" text-anchor="middle" font-size="11" font-weight="700" fill="#173a57">'+c+'</text>'+
+        '<text x="'+cx+'" y="'+(cy-6)+'" text-anchor="middle" font-size="10" font-weight="700" fill="#a55f10">('+(denom>0?r.toFixed(2):'—')+')</text>'+
+        '<text x="'+cx+'" y="309" text-anchor="middle" font-size="10">'+name+'</text>';
     }).join('');
     const ticks=[0,.25,.5,.75,1].map(k=>'<line x1="46" x2="'+(width-28)+'" y1="'+(290-k*260)+'" y2="'+(290-k*260)+'" stroke="#e2e6e9"/><text x="37" y="'+(294-k*260)+'" text-anchor="end" font-size="10">'+Math.round(maxCount*k)+'</text>').join('');
     return '<svg width="'+width+'" height="377" viewBox="0 0 '+width+' 377" role="img" aria-label="5S 유형별 등록건수 막대 및 인당 개선건수 수치 배지">'+ticks+bars+'<text x="'+(width/2)+'" y="368" text-anchor="middle" font-size="12" font-weight="700" fill="#a55f10">주황색 수치: 인당 개선건수 (건/인)</text></svg>';
