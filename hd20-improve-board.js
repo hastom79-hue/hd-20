@@ -106,7 +106,7 @@ function filt(D,{ignoreMonth=false,ignoreYear=false}={}){
 const monthOf=r=>+String(r.date||r.regDate||'').slice(5,7);
 function axis(v,{integer=false,tight=false}={}){if(!Number.isFinite(v)||v<=0)return{step:1,max:4};const raw=Math.max(integer?1:0.0001,v/(tight?5:4)),p=Math.pow(10,Math.floor(Math.log10(raw))),f=raw/p,n=f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10,step=Math.max(integer?1:0,n*p);return{step,max:Math.max((tight?1:4)*step,Math.ceil(v/step-1e-9)*step)}}
 const tk=v=>String(Number(v.toFixed(3)));
-function chart({w,h=240,cats,series,stack=false,per=false,rotate=false,sel=null,colorOf=null,minSlot=36,fmt=null,hline=null,linkX=false,topPct=null,topExtra=null,axisHeadroom=0,raisePlot=false,plotBottom=null,tightAxis=false}){
+function chart({w,h=240,cats,series,stack=false,per=false,rotate=false,sel=null,colorOf=null,minSlot=36,fmt=null,hline=null,linkX=false,topPct=null,topExtra=null,axisHeadroom=0,raisePlot=false,plotBottom=null,tightAxis=false,labelTotals=null}){
   const F=v=>fmt?fmt(v):fx(v,per);
   const W0=Math.max(320,w),slot0=(W0-56)/Math.max(1,cats.length);rotate=rotate||(slot0<58&&cats.some(c=>String(c).length>3));
   const m={l:46,r:10,t:raisePlot?12:20,b:plotBottom??(rotate?84:(raisePlot?24:30))},W=W0,iw=W-m.l-m.r,ih=h-m.t-m.b;
@@ -118,8 +118,8 @@ function chart({w,h=240,cats,series,stack=false,per=false,rotate=false,sel=null,
   cats.forEach((c,i)=>{const cx=m.l+slot*i+slot/2,n=n0,bw=bw0;let startX=cx-groupW/2,acc=0;
     series.forEach((s,k)=>{const v=s.vals[i]||0;const bwK=bws[k];if(v<=0){startX+=bwK+gap;return}const hh=Math.max(2,(v/max)*ih);const x=stack?cx-bwK/2:startX;const y=stack?yv(acc+v):yv(v);const col=colorOf?colorOf(c,i,k):s.color;
       b+=`<rect ${(sel!==null&&c===sel)?'stroke="#14304c" stroke-width="2"':''} x="${x}" y="${y}" width="${bwK}" height="${hh}" rx="2" fill="${col}" class="hit" data-cat="${esc(c)}"><title>${esc(c)} · ${esc(s.name)}: ${F(v)}</title></rect>`;
-      if(!stack){const hasPct=s.pct&&Number.isFinite(s.pct[i]);const pctTxt=hasPct?` (${s.pct[i]}%)`:'';
-        b+=hasPct?`<text x="${x+bwK/2}" y="${y-18}" text-anchor="middle" font-size="10.5" font-weight="800" fill="${C.ink}">${F(v)}<tspan x="${x+bwK/2}" dy="12" font-size="9">${pctTxt.trim()}</tspan></text>`:`<text x="${x+bwK/2}" y="${y-4}" text-anchor="middle" font-size="10.5" font-weight="800" fill="${C.ink}">${F(v)}</text>`}
+      if(!stack){const hasPct=s.pct&&Number.isFinite(s.pct[i]),hasTotal=Array.isArray(labelTotals)&&Number.isFinite(labelTotals[i]);const pctTxt=hasPct?` (${s.pct[i]}%)`:'';
+        b+=hasTotal?`<text x="${x+bwK/2}" y="${y-18}" text-anchor="middle" font-size="10.5" font-weight="800" fill="${C.ink}">${F(v)}<tspan x="${x+bwK/2}" dy="12" font-size="9.5">(${Math.round(labelTotals[i])}건)</tspan></text>`:hasPct?`<text x="${x+bwK/2}" y="${y-18}" text-anchor="middle" font-size="10.5" font-weight="800" fill="${C.ink}">${F(v)}<tspan x="${x+bwK/2}" dy="12" font-size="9">${pctTxt.trim()}</tspan></text>`:`<text x="${x+bwK/2}" y="${y-4}" text-anchor="middle" font-size="10.5" font-weight="800" fill="${C.ink}">${F(v)}</text>`}
       acc+=v;startX+=bwK+gap});
     if(stack&&tot[i]>0){const tp=topPct&&Number.isFinite(topPct[i])?topPct[i]:null,tx=topExtra&&topExtra[i]?topExtra[i]:null;
       b+=`<text x="${cx}" y="${yv(tot[i])-4}" text-anchor="middle" font-size="10.5" font-weight="800" fill="${C.ink}">${F(tot[i])}</text>`;
@@ -203,7 +203,7 @@ function render(box){
   const keepSet=new Set((window.HD20KPIData?.snapshot?.()?.maintained||[]).map(r=>r.id));
   /* 규칙(대시보드 공통): 목표선이 아니라 '현재 표시된 팀들의 평균' 기준으로 막대 색을 두 가지로만 나눔.
      진한색=평균 이상, 황색=평균 미만. 분기 목표는 활동 수준이 낮아 아직 기준으로 쓰지 않음(목표선 표시 안 함). */
-  const Cc=chart({w:W-8,h:290,cats:tv.map(x=>x.t),per,rotate:true,sel:S.team,minSlot:46,linkX:true,series:[{name:per?'5S 활동/총원':'5S 활동 건수',vals:tv.map(x=>x.v),color:C.dark}],colorOf:(c,i)=>tv[i].v>=avg?C.dark:C.amber});
+  const Cc=chart({w:W-8,h:290,cats:tv.map(x=>x.t),per,rotate:true,sel:S.team,minSlot:46,linkX:true,labelTotals:per?tv.map(x=>x.c):null,series:[{name:per?'5S 활동/총원':'5S 활동 건수',vals:tv.map(x=>x.v),color:C.dark}],colorOf:(c,i)=>tv[i].v>=avg?C.dark:C.amber});
   const owners=new Set(D.rows.filter(r=>String(r.date||r.regDate||'').slice(0,4)===S.year&&monthOf(r)===mm&&teamsAll.includes(r.team)&&(!S.type||r.type===S.type)).map(r=>r.owner).filter(Boolean)).size,part=(owners/hcAll*100);
   // d,e) 선택 팀 월별
   const th=D.hcOf(S.team)||1,tr=rowsY.filter(r=>r.team===S.team),tm=(pred)=>Array.from({length:12},(_,i)=>{const c=tr.filter(r=>monthOf(r)===i+1&&pred(r)).length;return per?c/th:c});
