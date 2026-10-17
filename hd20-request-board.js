@@ -7,28 +7,6 @@ const ID='hd20RequestBoard';
 const SOURCES=['5S모듈','생산혁신팀 HDPS파트','리더십'];
 const S={year:null,month:'',source:'',team:'',status:'',roll:'',selTeam:''};
 function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-/* "01 월별 요청·완료 추이" 전용 선 그래프. 공용 chart()(막대 전용, 다른 탭·섹션에서도 널리 재사용)는
-   건드리지 않고 이 섹션만 별도로 흐름(추이) 표현에 맞는 꺾은선으로 그림. */
-function lineChart({w,h=200,cats,series}){
-  const m={l:34,r:14,t:14,b:24},iw=Math.max(80,w-m.l-m.r),ih=h-m.t-m.b;
-  const maxV=Math.max(1,...series.flatMap(s=>s.vals.map(v=>v||0)));
-  // Keep integer count ticks distinct, while leaving headroom above the highest value.
-  const roughStep=Math.max(1,maxV/4);
-  const magnitude=Math.pow(10,Math.floor(Math.log10(roughStep)));
-  const tickStep=([1,2,2.5,5,10].find(n=>n*magnitude>=roughStep)||10)*magnitude;
-  const niceMax=Math.max(4*tickStep,Math.ceil((maxV+Math.max(1,maxV*.08))/tickStep)*tickStep);
-  const x=i=>m.l+(cats.length>1?i/(cats.length-1)*iw:iw/2);
-  const y=v=>m.t+ih-(v/niceMax)*ih;
-  const ticks=Array.from({length:Math.floor(niceMax/tickStep)+1},(_,i)=>i*tickStep);
-  const grid=ticks.map(t=>`<line x1="${m.l}" y1="${y(t)}" x2="${m.l+iw}" y2="${y(t)}" stroke="#eef2f5"/><text x="${m.l-6}" y="${y(t)+3}" text-anchor="end" font-size="9.5" fill="#9aa8b3">${t}</text>`).join('');
-  const xl=cats.map((c,i)=>`<text x="${x(i)}" y="${m.t+ih+15}" text-anchor="middle" font-size="9.5" fill="#9aa8b3">${esc(c)}</text>`).join('');
-  const lines=series.map(s=>{
-    const pts=s.vals.map((v,i)=>`${x(i)},${y(v||0)}`).join(' ');
-    const dots=s.vals.map((v,i)=>`<circle cx="${x(i)}" cy="${y(v||0)}" r="3" fill="${s.color}"><title>${esc(cats[i])} · ${esc(s.name)}: ${v||0}건</title></circle>`).join('');
-    return `<polyline points="${pts}" fill="none" stroke="${s.color}" stroke-width="2.3" stroke-linejoin="round" stroke-linecap="round"/>${dots}`;
-  }).join('');
-  return `<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" role="img" aria-label="월별 요청·완료 추이 선 그래프">${grid}${xl}${lines}</svg>`;
-}
 let LEADER_NAMES=null;
 function leaderNames(){
   if(LEADER_NAMES)return LEADER_NAMES;
