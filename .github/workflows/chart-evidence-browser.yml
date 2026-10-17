@@ -72,6 +72,22 @@ jobs:
                 if(!trend.exists||!trend.hasChart||trend.hasLineChart||trend.barRects<1)throw Error('Request monthly approved bar chart invalid '+JSON.stringify(trend));
                 result[name].monthlyTrend=trend;
               }
+              // Check rendered SVG geometry in the actual browser, not only in isolated string tests.
+              const chartGeometry=await page.evaluate(id=>{
+                const root=document.getElementById(id),bad=[];
+                const svgs=[...(root?.querySelectorAll('svg')||[])];
+                for(let si=0;si<svgs.length;si++){
+                  const svg=svgs[si],vb=svg.viewBox.baseVal;
+                  if(!vb||vb.width<=0||vb.height<=0){bad.push({svg:si,reason:'invalid viewBox'});continue;}
+                  for(const rect of svg.querySelectorAll('rect')){
+                    const x=Number(rect.getAttribute('x')||0),y=Number(rect.getAttribute('y')||0),w=Number(rect.getAttribute('width')||0),h=Number(rect.getAttribute('height')||0);
+                    if([x,y,w,h].some(v=>!Number.isFinite(v))||x<-.5||y<-.5||x+w>vb.width+.5||y+h>vb.height+.5)bad.push({svg:si,reason:'bar outside SVG',x,y,w,h});
+                  }
+                }
+                return {svgCount:svgs.length,issues:bad.slice(0,10)};
+              },id);
+              if(chartGeometry.issues.length)throw Error(name+' chart geometry invalid '+JSON.stringify(chartGeometry));
+              result[name].chartGeometry=chartGeometry;
               await page.screenshot({path:'v3-browser-evidence/'+(name==='improve'?'02-improve':'03-request')+'.png',fullPage:true});
               result[name].charts=[];
               const keys=await page.locator('#'+id+' [data-evk]').evaluateAll(els=>els.map(el=>el.dataset.evk));
