@@ -158,6 +158,8 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
 #${ID} .rqChartScroll{overflow-x:auto}#${ID} .rqChartScroll svg{display:block;margin:6px 0}
 #${ID} .rqDelayLegend{display:flex;gap:14px;font-size:11px;font-weight:850;margin-bottom:4px}
 #${ID} .rqMoreChart[hidden]{display:none}
+#${ID} .rqSplit4060{grid-template-columns:2fr 3fr}
+@media(max-width:900px){#${ID} .rqSplit4060{grid-template-columns:1fr}}
 #${ID} .rqLegend{display:flex;gap:15px;flex-wrap:wrap;margin-top:12px;font-size:11px}#${ID} .rqLegend span:first-child{color:#26847f}#${ID} .rqLegend span:nth-child(2){color:#ad812f}#${ID} .rqLegend span:last-child{color:#c45143}
 #${ID} .rqMoreBtn{display:block;width:100%;margin-top:8px;padding:8px;border:1px dashed #cdd9e2;border-radius:8px;background:#f8fafb;color:#49657b;font-size:12px;font-weight:850;cursor:pointer}#${ID} .rqMoreBtn:hover{background:#eef3f6;border-color:#9fb4c2}
 #${ID} .rqHeat{display:block;border-radius:5px;padding:9px;min-width:42px;text-align:center}#${ID} .rqHeatHigh{background:#b9473b;color:#fff}#${ID} .rqHeatMid{background:#db8e72;color:#fff}#${ID} .rqHeatLow{background:#f4d7c6;color:#713e30}#${ID} .rqHeatZero{background:#f4f6f8;color:#758899}
@@ -298,7 +300,7 @@ function render(box){
      너비 계산은 그대로 전체 탭 폭(box.clientWidth) 기준으로 남아 있어, 차트가 패널보다 거의 2배
      넓게 그려지고 overflow-x:auto로 가로 스크롤이 생겨 07~12월이 스크롤 밖에 가려져 있었음(겉보기엔
      "01~06월만 있고 다 비어 있는" 것처럼 보였던 진짜 원인) — 패널의 실제 폭(절반) 기준으로 수정. */
-  const monthlyTrend=chart({w:Math.max(380,box.clientWidth-85),cats:ML,minSlot:46,series:[{name:'신규 요청',vals:regM,color:'#829db5'},{name:'완료',vals:monthlyDone,color:'#247c83',widthScale:1.3,pct:monthlyDonePct}]});
+  const monthlyTrend=chart({w:Math.max(380,Math.floor(box.clientWidth*.6)-60),cats:ML,minSlot:30,series:[{name:'신규 요청',vals:regM,color:'#829db5'},{name:'완료',vals:monthlyDone,color:'#247c83',widthScale:1.3,pct:monthlyDonePct}]});
   const teamCompletion=chart({w:Math.max(440,box.clientWidth-85),h:260,cats:teamRows.map(r=>r.team),rotate:true,minSlot:64,series:[{name:'완료',vals:teamRows.map(r=>r.done),color:'#247c83'},{name:'미완료',vals:teamRows.map(r=>r.open+r.over),color:'#c69a65'}]});
   // Approved V2: three fixed source categories, proportional horizontal bars.
   const sourceTotal=rowsM.length;
@@ -379,7 +381,14 @@ function render(box){
           보여진다"는 지적 — 47·46·45...일처럼 1씩 정확히 줄어드는 가상데이터 패턴이 상시 노출된
           표로 보이면 바로 티가 남. 표를 상시 노출하지 않고, 이미 있던 '근거 데이터' 팝업 패턴
           (EV.f→openRows)과 동일하게 버튼 클릭 시에만 그리드로 열리도록 전환. */
-    +'<div class="ibRow">'+section('01. 월별 요청·완료 추이','완료일 기준 · 신규 요청과 별도 집계',monthlyTrend+leg([['신규 요청','#829db5'],['완료','#247c83']])+sourceSummary,'b')+'</div>'
+    /* 사용자 지시: "점유비율을 60%로 우측배치하고 좌측에 40%는 요청그룹기준의 차트를 배치한다" —
+       01(월별 요청·완료 추이)을 우측 60%, 요청출처(요청그룹) 기준 막대 차트를 좌측 40%에 배치.
+       기존에 한 줄 요약 문장(sourceSummary)으로 축소했던 '요청출처' 정보를 다시 작은 막대 차트
+       (sourceBars, 이미 정의돼 있던 걸 재사용)로 복원해 좌측에 둠. */
+    +'<div class="ibRow rqSplit4060">'
+    +section('요청출처별 현황','요청 그룹 기준',sourceBars,'a')
+    +section('01. 월별 요청·완료 추이','완료일 기준 · 신규 요청과 별도 집계',monthlyTrend+leg([['신규 요청','#829db5'],['완료','#247c83']]),'b')
+    +'</div>'
     /* 사용자 지시: "좌우 병합배치로" — 04·05가 각자 전체 폭을 차지하며 세로로 길게 쌓여 있던 걸,
        둘을 한 줄(rqManageRow, 2열)에 나란히 배치. 그 안의 SVG 차트 폭(hBarChart·hStackChart)도
        절반 폭 기준으로 미리 줄여서 생성했어야 하므로, 아래 teamChartTop 등의 w 인자를 이 블록
