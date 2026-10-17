@@ -12,10 +12,14 @@ function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&l
 function lineChart({w,h=200,cats,series}){
   const m={l:34,r:14,t:14,b:24},iw=Math.max(80,w-m.l-m.r),ih=h-m.t-m.b;
   const maxV=Math.max(1,...series.flatMap(s=>s.vals.map(v=>v||0)));
-  const niceMax=(()=>{const step=Math.pow(10,Math.floor(Math.log10(maxV||1)));const n=Math.ceil((maxV||1)/step)*step;return n<=0?1:n})();
+  // Keep integer count ticks distinct, while leaving headroom above the highest value.
+  const roughStep=Math.max(1,maxV/4);
+  const magnitude=Math.pow(10,Math.floor(Math.log10(roughStep)));
+  const tickStep=([1,2,5,10].find(n=>n*magnitude>=roughStep)||10)*magnitude;
+  const niceMax=Math.max(4*tickStep,Math.ceil((maxV+Math.max(1,maxV*.08))/tickStep)*tickStep);
   const x=i=>m.l+(cats.length>1?i/(cats.length-1)*iw:iw/2);
   const y=v=>m.t+ih-(v/niceMax)*ih;
-  const ticks=[0,.25,.5,.75,1].map(f=>Math.round(niceMax*f));
+  const ticks=Array.from({length:Math.floor(niceMax/tickStep)+1},(_,i)=>i*tickStep);
   const grid=ticks.map(t=>`<line x1="${m.l}" y1="${y(t)}" x2="${m.l+iw}" y2="${y(t)}" stroke="#eef2f5"/><text x="${m.l-6}" y="${y(t)+3}" text-anchor="end" font-size="9.5" fill="#9aa8b3">${t}</text>`).join('');
   const xl=cats.map((c,i)=>`<text x="${x(i)}" y="${m.t+ih+15}" text-anchor="middle" font-size="9.5" fill="#9aa8b3">${esc(c)}</text>`).join('');
   const lines=series.map(s=>{
