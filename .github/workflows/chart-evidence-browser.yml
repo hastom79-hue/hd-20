@@ -69,7 +69,7 @@ jobs:
                   const bars=panel?.querySelectorAll('rect')?.length||0;
                   return {exists:!!panel,hasChart:!!svg||!!panel?.querySelector('canvas'),barRects:bars,hasLineChart:!!panel?.querySelector('svg[aria-label="월별 요청·완료 추이 선 그래프"]')};
                 });
-                if(!trend.exists||!trend.hasChart||trend.hasLineChart)throw Error('Request monthly approved bar chart invalid '+JSON.stringify(trend));
+                if(!trend.exists||!trend.hasChart||trend.hasLineChart||trend.barRects<1)throw Error('Request monthly approved bar chart invalid '+JSON.stringify(trend));
                 result[name].monthlyTrend=trend;
               }
               await page.screenshot({path:'v3-browser-evidence/'+(name==='improve'?'02-improve':'03-request')+'.png',fullPage:true});
