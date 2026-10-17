@@ -7,6 +7,36 @@ const ID='hd20RequestBoard';
 const SOURCES=['5S모듈','생산혁신팀 HDPS파트','리더십'];
 const S={year:null,month:'',source:'',team:'',status:'',roll:'',selTeam:''};
 function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+/* 사용자 지적: "04"가 "눈에도 안들어오고... 초록색과 빨간색 색상뿐이다" — CSS만으로 그린 단색 진행
+   막대는 격자·눈금·깊이감이 전혀 없어 정보가 아니라 색 띠로만 보임. 04(완료율 비교)·05(지연일 분포)
+   둘 다 격자선·눈금·순위가 있는 진짜 SVG 가로 막대 차트로 교체해 실제 "차트"처럼 정보 밀도를 줌. */
+function hBarChart({w,rows,barH=26,gap=10,maxV=100,unit='%',showRank=false}){
+  const m={l:118,r:52,t:6,b:22},iw=Math.max(160,w-m.l-m.r),n=rows.length,h=m.t+m.b+n*(barH+gap)-gap;
+  const x=v=>m.l+Math.max(0,Math.min(1,v/maxV))*iw;
+  const ticks=[0,.25,.5,.75,1].map(f=>Math.round(maxV*f));
+  const grid=ticks.map(t=>`<line x1="${x(t)}" x2="${x(t)}" y1="${m.t}" y2="${h-m.b+4}" stroke="#eef2f5"/><text x="${x(t)}" y="${h-m.b+16}" text-anchor="middle" font-size="9.5" fill="#9aa8b3">${t}${unit==='%'?'%':''}</text>`).join('');
+  const bars=rows.map((r,i)=>{
+    const cy=m.t+i*(barH+gap),bw=Math.max(2,x(r.v)-m.l);
+    return `<text x="${m.l-10}" y="${cy+barH*.65}" text-anchor="end" font-size="11.5" fill="#22303f">${showRank?'<tspan font-weight=\"900\" fill=\"#5c6b7a\">'+(i+1)+'위 </tspan>':''}${esc(r.label)}</text>`+
+      `<rect x="${m.l}" y="${cy}" width="${iw}" height="${barH}" rx="4" fill="#f1f4f6"/>`+
+      `<rect x="${m.l}" y="${cy}" width="${bw}" height="${barH}" rx="4" fill="${r.color}"/>`+
+      `<text x="${m.l+bw+8}" y="${cy+barH*.65}" font-size="12" font-weight="900" fill="${r.color}">${r.v}${unit}</text>`;
+  }).join('');
+  return `<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" role="img" aria-label="가로 막대 비교 차트">${grid}${bars}</svg>`;
+}
+function hStackChart({w,rows,segColors,barH=24,gap=10}){
+  const m={l:118,r:14,t:6,b:0},n=rows.length,maxTot=Math.max(1,...rows.map(r=>r.segs.reduce((a,b)=>a+b,0))),iw=Math.max(160,w-m.l-m.r),h=m.t+m.b+n*(barH+gap)-gap;
+  const bars=rows.map((r,i)=>{
+    const cy=m.t+i*(barH+gap),tot=r.segs.reduce((a,b)=>a+b,0);let acc=0;
+    const segs=r.segs.map((v,si)=>{if(v<=0)return'';const sw=v/maxTot*iw,sx=m.l+acc/maxTot*iw;acc+=v;
+      return `<rect x="${sx}" y="${cy}" width="${sw}" height="${barH}" fill="${segColors[si]}"><title>${esc(r.label)} · ${['1~7일','8~14일','15일+'][si]}: ${v}건</title></rect>`+(v>=2?`<text x="${sx+sw/2}" y="${cy+barH*.68}" text-anchor="middle" font-size="10.5" font-weight="800" fill="#fff">${v}</text>`:'');
+    }).join('');
+    return `<text x="${m.l-10}" y="${cy+barH*.68}" text-anchor="end" font-size="11.5" fill="#22303f">${esc(r.label)}</text>`+
+      `<rect x="${m.l}" y="${cy}" width="${iw}" height="${barH}" rx="4" fill="#f1f4f6"/>`+segs+
+      `<text x="${m.l+iw+8}" y="${cy+barH*.68}" font-size="12" font-weight="900" fill="#9b3a2e">${tot}</text>`;
+  }).join('');
+  return `<svg viewBox="0 0 ${w+40} ${h}" width="${w+40}" height="${h}" role="img" aria-label="팀별 기한초과 지연일 분포">${bars}</svg>`;
+}
 /* "01 월별 요청·완료 추이" 전용 선 그래프. 공용 chart()(막대 전용, 다른 탭·섹션에서도 널리 재사용)는
    건드리지 않고 이 섹션만 별도로 흐름(추이) 표현에 맞는 꺾은선으로 그림. */
 function lineChart({w,h=200,cats,series}){
@@ -123,6 +153,11 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
 #${ID} .rqMyTeamTag{display:inline-block;margin-left:6px;padding:2px 7px;border-radius:999px;background:#2c80bd;color:#fff;font-size:10px;font-weight:900;vertical-align:middle}
 #${ID} .rqTeamNote{margin:0 0 10px;padding:8px 12px;background:#f4f8fb;border:1px solid #dce7ee;border-radius:8px;font-size:12px;color:#49657b}
 #${ID} .rqColEmph{background:#fdf4f0}#${ID} th.rqColEmph{color:#9b3a2e;font-weight:900}
+#${ID} .rqDetailOpenBtn{display:block;width:100%;padding:14px;border:1px solid #cfd9e2;border-radius:10px;background:#fff;color:#14304c;font-size:13.5px;font-weight:850;cursor:pointer;text-align:center}
+#${ID} .rqDetailOpenBtn:hover{background:#f4f8fb;border-color:#9fb4c2}
+#${ID} .rqChartScroll{overflow-x:auto}#${ID} .rqChartScroll svg{display:block;margin:6px 0}
+#${ID} .rqDelayLegend{display:flex;gap:14px;font-size:11px;font-weight:850;margin-bottom:4px}
+#${ID} .rqMoreChart[hidden]{display:none}
 #${ID} .rqLegend{display:flex;gap:15px;flex-wrap:wrap;margin-top:12px;font-size:11px}#${ID} .rqLegend span:first-child{color:#26847f}#${ID} .rqLegend span:nth-child(2){color:#ad812f}#${ID} .rqLegend span:last-child{color:#c45143}
 #${ID} .rqMoreBtn{display:block;width:100%;margin-top:8px;padding:8px;border:1px dashed #cdd9e2;border-radius:8px;background:#f8fafb;color:#49657b;font-size:12px;font-weight:850;cursor:pointer}#${ID} .rqMoreBtn:hover{background:#eef3f6;border-color:#9fb4c2}
 #${ID} .rqHeat{display:block;border-radius:5px;padding:9px;min-width:42px;text-align:center}#${ID} .rqHeatHigh{background:#b9473b;color:#fff}#${ID} .rqHeatMid{background:#db8e72;color:#fff}#${ID} .rqHeatLow{background:#f4d7c6;color:#713e30}#${ID} .rqHeatZero{background:#f4f6f8;color:#758899}
@@ -201,7 +236,13 @@ function render(box){
      다르다"를 바로 보이게 함. 분포가 전부 똑같은지도 계산해 다르면 안내 문구로 알려줌. */
   const delayAllSame=delayRowsSorted.length>1&&delayRowsSorted.every(r=>r.v[0]===delayRowsSorted[0].v[0]&&r.v[1]===delayRowsSorted[0].v[1]&&r.v[2]===delayRowsSorted[0].v[2]);
   const delayNote=delayRowsSorted.length?(delayAllSame?'':'<p class="rqTeamNote">총 초과 건수가 같은 팀도 있지만, <b>15일 이상 장기 지연</b> 건수는 팀마다 다릅니다. 그 칸을 우선 확인하세요.</p>'):'';
-  const delayChart=delayRowsSorted.length?'<div class="rqRiskScroll">'+delayNote+'<table class="rqRiskTable"><thead><tr><th>조치대응팀</th><th>1~7일</th><th>8~14일</th><th class="rqColEmph">15일+</th><th>총 초과</th></tr></thead><tbody>'+delayRowsSorted.map((r,i)=>'<tr'+(i>=DELAY_SHOW?' class="rqRowMore" hidden':'')+'><td>'+esc(r.team)+'</td>'+r.v.map((n,ci)=>'<td'+(ci===2?' class="rqColEmph"':'')+'><span class="rqHeat '+(n>=7?'rqHeatHigh':n>=4?'rqHeatMid':n?'rqHeatLow':'rqHeatZero')+'">'+n+'</span></td>').join('')+'<td><strong>'+r.total+'</strong></td></tr>').join('')+'</tbody></table>'+(delayRowsSorted.length>DELAY_SHOW?'<button type="button" class="rqMoreBtn" data-more="delay">나머지 '+(delayRowsSorted.length-DELAY_SHOW)+'개 팀 더보기 ▾</button>':'')+'</div>':null;
+  /* "05"도 큰 표(팀마다 4개 셀, 행 높이 커서 공간을 많이 먹음) 대신, 04와 같은 언어의 SVG 가로
+     누적막대 차트로 교체 — 한 팀이 한 줄, 1~7일/8~14일/15일+ 구간을 색상 길이로 바로 비교 가능. */
+  const delayBarRows=delayRowsSorted.map(r=>({label:r.team,segs:r.v}));
+  const delaySegColors=['#e7c477','#e0935a','#b03a2e'];
+  const delayChartTop=delayRowsSorted.length?hStackChart({w:520,rows:delayBarRows.slice(0,DELAY_SHOW),segColors:delaySegColors}):'';
+  const delayChartRest=delayBarRows.length>DELAY_SHOW?hStackChart({w:520,rows:delayBarRows.slice(DELAY_SHOW),segColors:delaySegColors}):'';
+  const delayChart=delayRowsSorted.length?'<div class="rqChartScroll">'+delayNote+'<div class="rqDelayLegend"><span style="color:'+delaySegColors[0]+'">■ 1~7일</span><span style="color:'+delaySegColors[1]+'">■ 8~14일</span><span style="color:'+delaySegColors[2]+'">■ 15일 이상</span></div>'+delayChartTop+(delayChartRest?'<div class="rqMoreChart" hidden>'+delayChartRest+'</div><button type="button" class="rqMoreBtn" data-more="delay">나머지 '+(delayBarRows.length-DELAY_SHOW)+'개 팀 더보기 ▾</button>':'')+'</div>':null;
   const activeOverdue=rowsM.filter(c=>teamsAll.includes(c.team)&&isOverdue(c,D.today));
   const delayOverallAvg=activeOverdue.length?Math.round(activeOverdue.reduce((a,c)=>a+(delayDays(c,D.today)||0),0)/activeOverdue.length*10)/10:0;
   const sum={total:teamRows.reduce((a,r)=>a+r.total,0),done:teamRows.reduce((a,r)=>a+r.done,0),open:teamRows.reduce((a,r)=>a+r.open,0),over:teamRows.reduce((a,r)=>a+r.over,0)}; // open=기한내 미완료, 전체 미완료=open+over
@@ -235,6 +276,13 @@ function render(box){
 
   // V2: Monthly completions use actual completion dates; backlog carries open cases from earlier periods.
   const monthlyDone=Array.from({length:12},(_,i)=>filt(D,{ignoreYear:true,ignoreMonth:true}).filter(x=>teamsAll.includes(x.team)&&isDone(x)&&String(x.doneDate||'').slice(0,7)===S.year+'-'+String(i+1).padStart(2,'0')).length);
+  /* 사용자 지시: "두번쨰 세로막대 너비를 조금 넓혀서 값 다음 줄바꿈을 해서 %까지 같이 표기해라" —
+     '완료' 막대에 그 달 완료 건 중 기한 내 완료 비율(%)을 숫자 아래 줄바꿈으로 병기. */
+  const monthlyDonePct=Array.from({length:12},(_,i)=>{
+    const done=filt(D,{ignoreYear:true,ignoreMonth:true}).filter(x=>teamsAll.includes(x.team)&&isDone(x)&&String(x.doneDate||'').slice(0,7)===S.year+'-'+String(i+1).padStart(2,'0'));
+    const withDue=done.filter(x=>x.due);
+    return withDue.length?Math.round(withDue.filter(x=>x.doneDate<=x.due).length/withDue.length*100):null;
+  });
   /* "01 월별 요청·완료 추이"는 제목이 '추이'(흐름)인데 실제 표현은 막대그래프였음 — 6~10월에만
      값이 있고 나머지 7개월은 빈 축이라, 막대보다 선으로 이어 그리면 어디서 늘고 줄었는지 흐름이 더
      잘 보임(차트 종류 재검토 요청). 신규 요청·완료 두 선을 겹쳐 그려 간격(backlog)이 벌어지는지도
@@ -249,7 +297,7 @@ function render(box){
      너비 계산은 그대로 전체 탭 폭(box.clientWidth) 기준으로 남아 있어, 차트가 패널보다 거의 2배
      넓게 그려지고 overflow-x:auto로 가로 스크롤이 생겨 07~12월이 스크롤 밖에 가려져 있었음(겉보기엔
      "01~06월만 있고 다 비어 있는" 것처럼 보였던 진짜 원인) — 패널의 실제 폭(절반) 기준으로 수정. */
-  const monthlyTrend=chart({w:Math.max(380,Math.floor(box.clientWidth/2)-55),cats:ML,minSlot:36,series:[{name:'신규 요청',vals:regM,color:'#829db5'},{name:'완료',vals:monthlyDone,color:'#247c83'}]});
+  const monthlyTrend=chart({w:Math.max(380,box.clientWidth-85),cats:ML,minSlot:46,series:[{name:'신규 요청',vals:regM,color:'#829db5'},{name:'완료',vals:monthlyDone,color:'#247c83',widthScale:1.3,pct:monthlyDonePct}]});
   const teamCompletion=chart({w:Math.max(440,box.clientWidth-85),h:260,cats:teamRows.map(r=>r.team),rotate:true,minSlot:64,series:[{name:'완료',vals:teamRows.map(r=>r.done),color:'#247c83'},{name:'미완료',vals:teamRows.map(r=>r.open+r.over),color:'#c69a65'}]});
   // Approved V2: three fixed source categories, proportional horizontal bars.
   const sourceTotal=rowsM.length;
@@ -295,7 +343,12 @@ function render(box){
   const rates0=teamRateSorted.map(r=>r.total?Math.round(r.done/r.total*1000)/10:0);
   const allSameRate=rates0.length>1&&rates0.every(v=>v===rates0[0]);
   const teamRateNote=allSameRate?'<p class="rqTeamNote">현재 조건에서는 '+teamRateSorted.length+'개 팀 전부 완료율이 '+rates0[0]+'%로 동일합니다. 팀별 실질 차이는 아래 05(기한초과 지연일 분포)에서 확인하세요.</p>':'';
-  const teamRateBars='<div class="rqMatrixScroll">'+teamRateNote+'<table class="rqMatrix"><thead><tr><th>조치대응팀</th><th>조치 구성 비교</th><th>완료율</th></tr></thead><tbody>'+teamRateSorted.map((r,i)=>teamRateRow(r,i>=TEAM_SHOW)).join('')+'</tbody></table>'+(teamRateSorted.length>TEAM_SHOW?'<button type="button" class="rqMoreBtn" data-more="team">나머지 '+(teamRateSorted.length-TEAM_SHOW)+'개 팀 더보기 ▾</button>':'')+'<div class="rqLegend"><span>■ 완료</span>'+(openSum>0?'<span>■ 기한 내 미완료</span>':'')+'<span>■ 기한초과</span></div></div>';
+  /* CSS 단색 진행 막대(초록/빨강만 보이던 것) 대신, 격자선·눈금·순위가 있는 SVG 가로 막대 차트로
+     교체. 완료율 기준 정렬·색상 구간(위험/주의/양호)은 기존 로직 그대로 유지. */
+  const teamBarRows=teamRateSorted.map(r=>{const rate=r.total?Math.round(r.done/r.total*1000)/10:0;return{label:r.team+(teamHighlight&&r.team===teamHighlight?' ★내팀':''),v:rate,color:rate<50?'#b03a2e':rate<80?'#b7791b':'#2f7a4d'}});
+  const teamChartTop=hBarChart({w:620,rows:teamBarRows.slice(0,TEAM_SHOW),maxV:100,showRank:true});
+  const teamChartRest=teamBarRows.length>TEAM_SHOW?hBarChart({w:620,rows:teamBarRows.slice(TEAM_SHOW),maxV:100,showRank:false}):'';
+  const teamRateBars='<div class="rqChartScroll">'+teamRateNote+teamChartTop+(teamChartRest?'<div class="rqMoreChart" hidden>'+teamChartRest+'</div><button type="button" class="rqMoreBtn" data-more="team">나머지 '+(teamBarRows.length-TEAM_SHOW)+'개 팀 더보기 ▾</button>':'')+'</div>';
   const overCases=rowsM.filter(c=>teamsAll.includes(c.team)&&isOverdue(c,D.today));
   const delayBands=[overCases.filter(c=>delayDays(c,D.today)<=7).length,overCases.filter(c=>delayDays(c,D.today)>=8&&delayDays(c,D.today)<=14).length,overCases.filter(c=>delayDays(c,D.today)>=15).length];
   const kpi=(label,value,detail,risk=false)=>'<div class="rqKpi'+(risk?' risk':'')+'"><small>'+label+'</small><b>'+value+'</b><span class="rqKpiHint">'+detail+'</span></div>';
@@ -311,18 +364,20 @@ function render(box){
     +kpi('기한초과',sum.over+'건','미완료 중 기한경과',true)
     +kpi('평균 지연일',delayOverallAvg+'일','현재 기한초과 건 기준',true)
     +'</div>'
-    /* 전면 개편(사용자 확정: "이대로") — 이 탭의 실제 목적(사용자 지시: "공장의 타팀의 현황과
-       내팀의 현황이 비교해서 보여지는 대시보드여야함")에 맞춰, '04 조치대응팀별 이행성과'(팀 비교)를
-       KPI 요약 바로 다음 최상단으로 올리고, 그와 짝을 이루는 '05 기한초과 집중관리'(어느 팀이 왜
-       급한지)를 바로 이어 배치. 의사결정에 직접 쓰이지 않는 보조 정보(01 월별추이·02 출처별·03
-       진행상태)는 그 아래로 내리고, 02는 별도 섹션 대신 한 줄 요약 문장으로 축소. */
+    /* 레이아웃 추가 조정(사용자 지시 경과):
+       1) "01 월별 요청·완료 추이"를 "이게 가장 처음에 레이아웃 상 배치되어야 한다"는 지시로 KPI
+          바로 다음 최상단으로 이동(기존엔 04·05보다 아래, 보조 정보 취급이었음).
+       2) "03 조치 진행상태"(도넛)는 "눈에 전혀 안들어오고 목적도 모르겠다"는 지적 — 실제로 상단
+          KPI(완료 96건·기한초과 64건)와 숫자가 100% 중복되고, '진행 중·미착수'는 구조적으로 항상
+          0건이라 새 정보가 전혀 없었음. 섹션 자체를 제거.
+       3) "06 개선요청 상세 관리"는 "가짜 데이터인게 너무 티나고... 팝업형태로 추출할 그리드로
+          보여진다"는 지적 — 47·46·45...일처럼 1씩 정확히 줄어드는 가상데이터 패턴이 상시 노출된
+          표로 보이면 바로 티가 남. 표를 상시 노출하지 않고, 이미 있던 '근거 데이터' 팝업 패턴
+          (EV.f→openRows)과 동일하게 버튼 클릭 시에만 그리드로 열리도록 전환. */
+    +'<div class="ibRow">'+section('01. 월별 요청·완료 추이','완료일 기준 · 신규 요청과 별도 집계',monthlyTrend+leg([['신규 요청','#829db5'],['완료','#247c83']])+sourceSummary,'b')+'</div>'
     +'<div class="ibRow rqTeamCompare">'+section('04. 조치대응팀별 이행성과','완료 / 미완료 · 팀별 건수',teamRateBars+'<details class="rqTeamDetail"><summary>팀별 상세 실적 펼치기</summary><div class="rqScroll">'+teamGrid+'</div></details>','c2')+'</div>'
     +'<div class="ibRow">'+section('05. 기한초과 집중관리','현재 미완료 기준 · 지연기간별 분포','<div class="rqBands">'+['1~7일','8~14일','15일 이상'].map((x,i)=>'<div><small>'+x+'</small><b>'+delayBands[i]+'건</b></div>').join('')+'</div>'+'<div class="rqDelayStack">'+delayBands.map((n,i)=>'<span class="rqDelayBand rqDelayBand'+i+'" style="width:'+(overCases.length?100*n/overCases.length:0)+'%"></span>').join('')+'</div>'+(delayChart||'<p class="rqEmpty">현재 기한초과 대상이 없습니다.</p>'),'d')+'</div>'
-    +'<div class="ibRow rqManageRow rqSecondary">'
-    +section('01. 월별 요청·완료 추이','완료일 기준 · 신규 요청과 별도 집계',monthlyTrend+leg([['신규 요청','#829db5'],['완료','#247c83']])+sourceSummary,'b')
-    +section('03. 조치 진행상태','완료 · 기한내 미완료 · 기한초과',statusDonut,'c')
-    +'</div>'
-    +'<div class="ibRow rqPrintSkip">'+section('06. 개선요청 상세 관리','기한초과·미완료 우선 · 미리보기 '+detailRows.length+' / '+actionAll.length,'<div class="rqScroll">'+detail+'</div>','f')+'</div>'
+    +'<div class="ibRow rqPrintSkip"><button type="button" class="rqDetailOpenBtn" data-open-detail="1">📋 개선요청 상세 목록 열기 (전체 '+actionAll.length+'건)</button></div>'
     +'<p class="rqCaveat">※ 요청출처는 5S모듈·생산혁신팀 HDPS파트·리더십 3종입니다. 원천에 출처 필드가 없는 경우 일부 출처는 등록자 및 Audit 연계 정보로 추정됩니다. 완료일이 없는 완료 건은 월별 완료 추이에서 제외되며 총 완료 건수에는 포함됩니다.</p>';
 
   const evCols=['요청번호','요청출처','조치대응부서','작업장','진행현황','요청일','완료예정일','완료일'],
@@ -339,9 +394,10 @@ function render(box){
   const downloadEvidence=(cols,rows,file)=>{const csv='\ufeff'+[cols,...rows].map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download=file+'.csv';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)};
   box.querySelectorAll('[data-evk]').forEach(b=>{const dl=document.createElement('button');dl.type='button';dl.className='ibEv';dl.textContent='엑셀 추출';dl.style.marginLeft='6px';dl.addEventListener('click',()=>{const key=b.dataset.evk;const [title,rows,columns,mapR]=EV[key];downloadEvidence(columns,rows.map(mapR),'5S_개선요청_차트_'+key);});b.insertAdjacentElement('afterend',dl)});
   box.querySelectorAll('[data-evk]').forEach(b=>{b.onclick=()=>{const [t,rows,cols,mapR]=EV[b.dataset.evk];openRows({title:t,cols,rows:rows.map(mapR),file:'5S_개선요청_근거_'+b.dataset.evk})}});
+  box.querySelector('[data-open-detail]')?.addEventListener('click',()=>{const [t,rows,cols,mapR]=EV.f;openRows({title:t,cols,rows:rows.map(mapR),file:'5S_개선요청_상세'})});
   box.querySelectorAll('[data-f]').forEach(el=>el.onchange=()=>{S[el.dataset.f]=el.value;render(box)});
   box.querySelector('[data-rq="reset"]').onclick=()=>{Object.assign(S,{year:null,month:'',source:'',team:'',status:'',roll:'',selTeam:''});render(box)};box.querySelector('[data-rq="go"]').onclick=()=>render(box);box.querySelector('[data-rq="print"]').onclick=()=>window.print();
-  box.querySelectorAll('.rqMoreBtn').forEach(btn=>btn.onclick=()=>{const table=btn.previousElementSibling;table?.querySelectorAll('tr.rqRowMore').forEach(tr=>tr.hidden=false);btn.remove()});
+  box.querySelectorAll('.rqMoreBtn').forEach(btn=>btn.onclick=()=>{const prev=btn.previousElementSibling;if(!prev)return;if(prev.classList.contains('rqMoreChart')){prev.hidden=false}else{prev.querySelectorAll('tr.rqRowMore').forEach(tr=>tr.hidden=false)}btn.remove()});
   box.querySelector('[data-rq="csv"]').onclick=()=>{
     const out=[['5S 개선요청 종합 대시보드',S.year+'년',S.month?S.month+'월':'연간누적'],[],['요청번호','요청출처','조치대응부서','작업장','진행현황','요청일','완료예정일','완료일']];
     rowsM.forEach(c=>out.push([c.id,sourceOf(c),c.team,c.workplace||'',isOverdue(c,D.today)?'기한초과':c.status,c.date||'',c.due||'',c.doneDate||'']));
