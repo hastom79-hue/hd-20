@@ -37,7 +37,7 @@ jobs:
               const page=await browser.newPage({viewport});
               const errors=[];
               page.on('pageerror',e=>errors.push(String(e)));
-              page.on('response',r=>{if(r.status()===404&&!/favicon\.ico$/i.test(new URL(r.url()).pathname))errors.push('404: '+r.url())});
+              page.on('response',r=>{if(r.status()===404&&!/favicon\.ico$/i.test(new URL(r.url()).pathname)){const u=new URL(r.url());const entry='404: '+r.request().resourceType()+' '+decodeURIComponent(u.pathname)+' (initiator: '+r.request().frame().url()+')';errors.push(entry);console.error('CURRENT_IA_MISSING_RESOURCE',entry)}});
               page.on('dialog',d=>d.accept());
               await page.route('**/*',route=>{const req=route.request(),u=new URL(req.url());if(u.hostname==='127.0.0.1'||u.hostname==='localhost')return route.continue();if(req.resourceType()==='script')return route.fulfill({status:200,contentType:'application/javascript',body:'/* HD20 CI external script stub */'});return route.abort('blockedbyclient')});
               await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'commit',timeout:15000});
