@@ -105,7 +105,7 @@ function render(){
      그룹별 박스 구분 자체를 없애고, 6개 지표 카드를 하나의 평평한 2열×3행 그리드로 배치. 소속
      확인 영역은 각 카드 좌상단의 작은 태그(색상 그룹 범례와 동일한 라벨)로만 표시. */
   const groups=root.querySelector('.hd20DashboardPriorityGroups');
-  groups.innerHTML=`<div class="httLegend">${GROUPS.map(g=>`<span data-legend="${g.key}">${g.step} ${g.label}</span>`).join('')}</div><div class="httGrid">${KPI.map(x=>card(x,KPI.indexOf(x),op,monthly)).join('')}</div>`;
+  groups.innerHTML=`<div class="httGrid">${KPI.map(x=>card(x,KPI.indexOf(x),op,monthly)).join('')}</div>`;
   groups.querySelectorAll('[data-group-tab]').forEach(btn=>btn.addEventListener('click',()=>gotoTab(btn.dataset.groupTab)));
 }
 function boot(){removeRetiredStandardTrendLabel();render();setTimeout(removeRetiredStandardTrendLabel,500);setTimeout(removeRetiredStandardTrendLabel,1800);['hd20-kpi-source-updated','hd20-gmes-5s-imported','hd20-gmes-5s-judged','hd20-audit-updated','hd20-action-updated'].forEach(ev=>window.addEventListener(ev,()=>setTimeout(render,0)))}
