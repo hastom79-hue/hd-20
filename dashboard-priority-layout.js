@@ -12,11 +12,11 @@ const GROUPS=[
 /* good(추세가 '개선'으로 판정되는 방향)·max(미니 막대그래프 축 상한)는 5번 탭(dashboard-ops-trend.js
    의 M 배열)과 동일한 값을 그대로 맞춤 — 같은 6개 지표를 다른 화면에서 다르게 해석하면 안 되므로. */
 const KPI=[
-  {key:'advRetention',label:'고도화 확정 사례의 유지율',unit:'%',tab:'advancement',hint:'공식 확정 사례 중 현재 유지 중인 비율',good:'up',max:100},
-  {key:'advAttrition',label:'고도화 확정 후 이탈률',unit:'%',tab:'advancement',hint:'공식 확정 사례 중 유지기준 이탈 비율',good:'down',max:100},
-  {key:'sixRetention',label:'Audit 후 6개월 유지율',unit:'%',tab:'audit',hint:'6개월 관리 종료 사례의 유지 비율',good:'up',max:100},
-  {key:'recurrence',label:'Audit 부적합 재발률',unit:'%',tab:'audit',hint:'동일 문제의 반복 발생 여부',good:'down',max:100},
-  {key:'actionOnTime',label:'기한 내 개선조치 완료율',unit:'%',tab:'action',hint:'개선조치 실행의 적시성',good:'up',max:100}
+  {key:'advRetention',label:'고도화 확정 사례의 유지율',unit:'%',tab:'advancement',hint:'확정 성과 유지 · 공식 확정 사례 중 현재 유지 중인 비율',good:'up',max:100},
+  {key:'advAttrition',label:'고도화 확정 후 이탈률',unit:'%',tab:'advancement',hint:'유지기준 이탈 · 공식 확정 사례 중 유지기준 이탈 비율',good:'down',max:100},
+  {key:'sixRetention',label:'Audit 후 6개월 유지율',unit:'%',tab:'audit',hint:'지속성 검증 · 6개월 관리 종료 사례의 유지 비율',good:'up',max:100},
+  {key:'recurrence',label:'Audit 부적합 재발률',unit:'%',tab:'audit',hint:'동일 문제 재발 · 동일 문제의 반복 발생 여부',good:'down',max:100},
+  {key:'actionOnTime',label:'기한 내 개선조치 완료율',unit:'%',tab:'action',hint:'문제 발생 후 조치 · 개선조치 실행의 적시성',good:'up',max:100}
 ];
 function fmt(v,k){if(v===null||v===undefined||Number.isNaN(v))return '—';const def=KPI.find(x=>x.key===k)||{};const num=def.prefix?v:(Number.isInteger(v)?v:Math.round(v*10)/10);return `${def.prefix||''}${num}${def.unit||''}`}
 function gotoTab(key){document.querySelector(`.beginnerNav button[data-key="${key}"]`)?.click()}
@@ -48,7 +48,7 @@ function ensure(){
    있어 유지)와 별도로 .hd20HealthTrendCard라는 새 클래스로 구현해 기존 스타일과 충돌시키지 않음. */
 function trendCss(){if(document.getElementById(ID+'TrendStyle'))return;const s=document.createElement('style');s.id=ID+'TrendStyle';s.textContent=`
 #${ID} .hd20HealthTrendCard{border:1px solid #e3eaf0;border-radius:12px;padding:14px 15px;background:#fbfcfd}
-#${ID} .hd20HealthTrendCard h4{margin:0;font-size:13px;color:#22303f;font-weight:850}
+#${ID} .hd20HealthTrendCard h4{margin:0;font-size:13px;color:#22303f;font-weight:850}#${ID} .httFlow{font-size:11px;color:#667b8e;margin-top:4px;font-weight:750}
 #${ID} .httBig{display:flex;align-items:baseline;gap:7px;margin:6px 0 2px}
 #${ID} .httBig b{font-size:26px;color:#14304c;letter-spacing:-.02em}#${ID} .httBig em{font-style:normal;font-size:12px;color:#5c6b7a;font-weight:800}
 #${ID} .httDelta{font-size:11.5px;font-weight:850}#${ID} .httDelta.up{color:#2f7a4d}#${ID} .httDelta.down{color:#c0392b}#${ID} .httDelta.flat{color:#7a8a97}
@@ -76,7 +76,7 @@ function card(x,i,op,monthly){
   const bars=visible.length?visible.map((v,i2)=>{const n=Number(v.v);const h=v.v===null||!Number.isFinite(n)?0:Math.max(2,Math.min(74,Math.round(n/mx*74)));return `<div class="httCol${i2===visible.length-1?' last':''}" title="${esc(visibleMonths[i2]||'')}: ${v.v===null?'표본 없음':fmt(v.v,x.key)} (표본 ${v.n}건)"><i style="height:${h}px"></i></div>`}).join(''):'';
   const mon=visibleMonths.map(mm=>`<div>${+String(mm).slice(5)}월</div>`).join('');
   const g=GROUPS.find(gg=>gg.key===x.tab);
-  return `<article class="hd20HealthTrendCard" data-kpi="${x.key}" data-tab="${x.tab}"><div class="httGroupTag">${g?g.step+' '+g.label:''}</div><h4>${x.label}</h4><div class="httBig"><b>${fmt(op[x.key],x.key)}</b></div>${delta}${bars?`<div class="httBars" style="--htt-months:${visible.length}">${bars}</div><div class="httMon" style="--htt-months:${visible.length}">${mon}</div>`:''}<div class="httFoot"><p>${x.hint}</p><button type="button" data-group-tab="${x.tab}">원인 확인 →</button></div></article>`}
+  return `<article class="hd20HealthTrendCard" data-kpi="${x.key}" data-tab="${x.tab}"><div class="httGroupTag">${g?g.step+' '+g.label:''}</div><h4>${x.label}</h4><div class="httFlow">${esc(x.hint.split(" · ")[0])}</div><div class="httBig"><b>${fmt(op[x.key],x.key)}</b></div>${delta}${bars?`<div class="httBars" style="--htt-months:${visible.length}">${bars}</div><div class="httMon" style="--htt-months:${visible.length}">${mon}</div>`:''}<div class="httFoot"><p>${x.hint}</p><button type="button" data-group-tab="${x.tab}">원인 확인 →</button></div></article>`}
 function removeRetiredStandardTrendLabel(){const bottom=document.querySelector('.bottomGrid');if(bottom?.previousElementSibling?.classList.contains('hd20DashboardSectionLabel'))bottom.previousElementSibling.remove()}
 function render(){
   removeRetiredStandardTrendLabel();
