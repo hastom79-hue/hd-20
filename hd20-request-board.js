@@ -100,6 +100,14 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
 #${ID} .ibBar button{height:32px;border-radius:7px;border:1px solid #14304c;background:#14304c;color:#fff;font-weight:850;font-size:13px;padding:0 14px;cursor:pointer}
 #${ID} .ibBar button.alt{background:#2c5f8a;border-color:#2c5f8a}
 #${ID} .ibRow{display:grid;gap:10px;margin-top:10px}#${ID} .r1{grid-template-columns:minmax(0,3fr) minmax(0,7fr)}#${ID} .rqManageRow{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+#${ID} .rqManageRow{grid-template-columns:minmax(0,1fr)}
+#${ID} .rqManageRow>.ibPanel{width:100%;min-width:0}
+#${ID} .rqManageRow .rqTeamVerticalScroll,#${ID} .rqManageRow .rqDelayVerticalScroll{overflow-x:hidden}
+#${ID} .rqManageRow .rqTeamVertical,#${ID} .rqManageRow .rqDelayVertical{min-width:0;width:100%}
+#${ID} .rqManageRow .rqTeamVerticalCols,#${ID} .rqManageRow .rqDelayVerticalCols{grid-template-columns:repeat(var(--rq-team-count),minmax(0,1fr));gap:4px}
+#${ID} .rqManageRow .rqTeamVerticalCol>span,#${ID} .rqManageRow .rqDelayVerticalCol>span{font-size:10px;overflow-wrap:anywhere}
+#${ID} .rqManageRow .rqTeamVerticalCol,#${ID} .rqManageRow .rqDelayVerticalCol{min-width:0}
+
 #${ID} .ibPanel{border:1px solid #e3eaf0;border-radius:10px;background:#fff;overflow:hidden}
 #${ID} .ibHead{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 12px;background:#f1f5f8;border-bottom:1px solid #e3eaf0;font-size:13.5px;font-weight:900;color:#22303f}
 #${ID} .ibHead em{font-style:normal;font-size:12.5px;color:#14304c}
