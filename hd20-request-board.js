@@ -67,7 +67,7 @@ function sourceOf(c){
   const raw=String(c.requestSource||c.sourceDetail||c.discoverySource||'').trim();
   if(SOURCES.includes(raw))return raw;
   if(/패트롤|patrol/i.test(raw))return '현장 패트롤 점검';
-  if(/자율\\s*5s\\s*(audit|오디트)|5s\\s*자율\\s*오디트/i.test(raw))return '자율 5S Audit';
+  if(/자율\s*5s\s*(audit|오디트)|5s\s*자율\s*오디트/i.test(raw))return '자율 5S Audit';
   if(/혁신팀.*(자율|점검)/.test(raw))return '혁신팀 자율 점검';
   if(/자율개선.*피드백|피드백.*자율개선/i.test(raw))return '5S 자율개선활동 피드백';
   // 기존 '5S모듈/생산혁신팀 HDPS파트/리더십' 값은 4대 발굴 경로를 증명하지 않으므로 추정 배분 금지.
