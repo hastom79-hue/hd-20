@@ -107,6 +107,18 @@ function boot(){
    등록돼 이미 끝났어도 괜찮지만, 미완료 건은 '최근에 발생한 지연'이어야 현실적) — 미완료 상태만
    최근 60일 이내로 등록일을 제한, 완료 건은 기존대로 1~10월 전체 분산 유지. */
 const action=[];teams.forEach((team,ti)=>{for(let i=0;i<10;i++){const isDone=!(i%6===0||i%3===0),pendingVerify=isDone&&i%9===0,isLate=i%6===0,isProgress=i%3===0,createdAt=isDone?spreadDate(i,ti,5,9):days(14+((i*7+ti*5)%46));action.push({id:`DEMO-X-${ti}-${i}`,source:SRC,team,group:groupOf(team),createdAt,dueDate:addDaysStr(createdAt,14),status:isLate?'기한초과':isProgress?'진행중':'완료',doneDate:!isDone?'':addDaysStr(createdAt,18),action:'현장 5S 개선조치 시행',after:isDone?'개선 후 정위치·형적관리 적용 완료(현장 사진 첨부)':'',afterEvidence:'',evidenceNote:isDone?'개선 후 정위치·형적관리 적용 완료 (사진 증빙은 미첨부)':'',effectVerified:isDone&&!pendingVerify,recurrenceState:pendingVerify?'':i%5===0?'재발':'미발생',title:['정위치 보완','표준표기 개선','통로 적치 제거','Audit 재발 방지'][i%4]})}});
+ /* Keep one canonical synthetic advancement population for all summary widgets. */
+ for(let i=activity.length-1;i>=0;i--){
+   const row=activity[i];
+   if(row.type==='5S 고도화'&&!String(row.id||'').startsWith('DEMO-A-ADV-REAL-'))activity.splice(i,1);
+ }
+ const approvedCases=activity.filter(r=>r.type==='5S 고도화'&&r.confirmed===true&&r.judgeState==='확정');
+ const lostCases=approvedCases.filter(r=>r.attrition===true);
+ const keptCases=approvedCases.filter(r=>r.attrition!==true);
+ const currentKey=String(now.getFullYear())+'-'+String(now.getMonth()+1).padStart(2,'0');
+ const thisMonthCases=approvedCases.filter(r=>String(r.judgedAt||'').startsWith(currentKey));
+ window.HD20_DEMO_ADVANCEMENT_AUDIT={confirmed:approvedCases.length,attrited:lostCases.length,retained:keptCases.length,currentMonth:thisMonthCases.length};
+ if(approvedCases.length!==28||lostCases.length!==11||keptCases.length!==17||thisMonthCases.length!==3)console.warn('HD20 demo advancement totals differ from approved fixture',window.HD20_DEMO_ADVANCEMENT_AUDIT);
  const preserve=k=>parse(k).filter(r=>!isDemo(r));localStorage.setItem(K.a,JSON.stringify([...preserve(K.a),...activity]));localStorage.setItem(K.u,JSON.stringify([...preserve(K.u),...audit]));localStorage.setItem(K.x,JSON.stringify([...preserve(K.x),...action]));localStorage.setItem(MARK,JSON.stringify({at:new Date().toISOString(),teams:teams.length,activity:activity.length,audit:audit.length,action:action.length,isolated:true,master:'HD20ProductionTeamMaster'}));
  const flag=()=>{if(document.getElementById('hd20DemoFlag'))return;const nav=document.querySelector('.beginnerNav');if(!nav)return;const el=document.createElement('div');el.id='hd20DemoFlag';el.textContent=`가상 검증데이터 · 팀 마스터 ${teams.length}개 팀 · Activity ${activity.length} / Audit ${audit.length} / Action ${action.length} · 운영DB 미저장`;el.style.cssText='padding:5px 12px;background:#eef7ff;border-bottom:1px solid #b9d9ef;color:#174e70;font-size:11px;font-weight:800';nav.insertAdjacentElement('afterend',el)};
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',flag,{once:true});else flag();
