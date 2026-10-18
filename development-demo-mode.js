@@ -107,6 +107,17 @@ function boot(){
    등록돼 이미 끝났어도 괜찮지만, 미완료 건은 '최근에 발생한 지연'이어야 현실적) — 미완료 상태만
    최근 60일 이내로 등록일을 제한, 완료 건은 기존대로 1~10월 전체 분산 유지. */
 const action=[];teams.forEach((team,ti)=>{for(let i=0;i<10;i++){const isDone=!(i%6===0||i%3===0),pendingVerify=isDone&&i%9===0,isLate=i%6===0,isProgress=i%3===0,createdAt=isDone?spreadDate(i,ti,5,9):days(14+((i*7+ti*5)%46));action.push({id:`DEMO-X-${ti}-${i}`,source:SRC,team,group:groupOf(team),createdAt,dueDate:addDaysStr(createdAt,14),status:isLate?'기한초과':isProgress?'진행중':'완료',doneDate:!isDone?'':addDaysStr(createdAt,18),action:'현장 5S 개선조치 시행',after:isDone?'개선 후 정위치·형적관리 적용 완료(현장 사진 첨부)':'',afterEvidence:'',evidenceNote:isDone?'개선 후 정위치·형적관리 적용 완료 (사진 증빙은 미첨부)':'',effectVerified:isDone&&!pendingVerify,recurrenceState:pendingVerify?'':i%5===0?'재발':'미발생',title:['정위치 보완','표준표기 개선','통로 적치 제거','Audit 재발 방지'][i%4]})}});
+ /* Month-balanced completed action cases for trend validation (demo only). */
+ for(let m=1;m<=now.getMonth()+1;m++){
+   for(let j=0;j<8;j++){
+     const ti=(m*5+j)%teams.length,team=teams[ti];
+     const day=Math.min(4+j*2,m===now.getMonth()+1?now.getDate():28);
+     const done=now.getFullYear()+'-'+String(m).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+     const start=addDaysStr(done,-(7+j%5));
+     const due=addDaysStr(done,j%5===0?-2:2+j%3);
+     action.push({id:'DEMO-X-MONTH-'+m+'-'+j,source:SRC,team,group:groupOf(team),createdAt:start,date:start,dueDate:due,targetDate:due,doneDate:done,status:'완료',action:'현장 정위치 및 표준표기 개선',after:'개선 후 현장 확인 완료',afterEvidence:'개선결과 확인',effectVerified:true,recurrenceState:j%6===0?'재발':'미발생',title:'월별 개선조치 검증',evidenceNote:'가상 검증 데이터 · 실제 운영실적 아님'});
+   }
+ }
  /* Populate month-scoped validation samples without inflating confirmed-case totals. */
  const localDate=(m,d)=>now.getFullYear()+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0');
  activity.filter(r=>String(r.id||'').startsWith('DEMO-A-ADV-REAL-')).forEach((r,i)=>{
@@ -130,7 +141,7 @@ const action=[];teams.forEach((team,ti)=>{for(let i=0;i<10;i++){const isDone=!(i
  /* Keep one canonical synthetic advancement population for all summary widgets. */
  for(let i=activity.length-1;i>=0;i--){
    const row=activity[i];
-   if(row.type==='5S 고도화'&&!String(row.id||'').startsWith('DEMO-A-ADV-REAL-'))activity.splice(i,1);
+   if(row.type==='5S 고도화'&&!String(row.id||'').startsWith('DEMO-A-ADV-REAL-')&&!String(row.id||'').startsWith('DEMO-A-JUDGE-QUEUE-'))activity.splice(i,1);
  }
  const approvedCases=activity.filter(r=>r.type==='5S 고도화'&&r.confirmed===true&&r.judgeState==='확정');
  const lostCases=approvedCases.filter(r=>r.attrition===true);
