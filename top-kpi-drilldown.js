@@ -3,7 +3,7 @@ const HEAD=['생산팀','작업장/공정','활동유형','활동명','등록일
 function source(){return window.HD20KPIData?.snapshot?.()||{activities:[],candidates:[],newSecured:[],confirmed:[],maintained:[],headcount:null,perPerson:null}}
 function monthConfirmed(s){const K=window.HD20KPIData,ym=String(K?.seoulDateKey?.()||'').slice(0,7);return(s.confirmed||[]).filter(x=>String(K?.confirmedDate?.(x)||'').slice(0,7)===ym)}
 function workplaceId(x){return String(x?.workplaceId||x?.workplaceCode||x?.workplace||x?.workArea||'').trim()}
-function actualLostAt(x){const v=x?.maintainLostAt||x?.maintainEndedAt||x?.maintainStoppedAt||x?.lostAt||x?.invalidatedAt||x?.attritionAt;const m=String(v||'').match(/^(20\\d{2})-(\\d{2})-(\\d{2})/);if(!m)return null;const d=new Date(+m[1],+m[2]-1,+m[3]);return d.getFullYear()===+m[1]&&d.getMonth()+1===+m[2]&&d.getDate()===+m[3]?d:null}
+function actualLostAt(x){const v=x?.maintainLostAt||x?.maintainEndedAt||x?.maintainStoppedAt||x?.lostAt||x?.invalidatedAt||x?.attritionAt;const m=String(v||'').match(/^(20\d{2})-(\d{2})-(\d{2})/);if(!m)return null;const d=new Date(+m[1],+m[2]-1,+m[3]);return d.getFullYear()===+m[1]&&d.getMonth()+1===+m[2]&&d.getDate()===+m[3]?d:null}
 function lostRows(s){return(s.confirmed||[]).filter(x=>actualLostAt(x))}
 function uniqueWorkplaces(rows){const m=new Map();for(const x of rows){const w=workplaceId(x);if(w&&!m.has(w))m.set(w,x)}return [...m.values()]}
 function workplaceEvidence(s){const confirmed=s.confirmed||[],withId=confirmed.filter(x=>workplaceId(x)),unique=uniqueWorkplaces(withId),missing=confirmed.length-withId.length;const unknownLoss=confirmed.filter(x=>!(s.maintained||[]).some(y=>y.id===x.id)&&!actualLostAt(x)).length;return{unique,missing,unknownLoss,complete:missing===0&&unknownLoss===0}}
