@@ -88,7 +88,7 @@ function sourceOf(c){
   return SOURCES[hash%4];
 }
 function css(){const prior=document.getElementById(ID+'Style');if(prior)prior.remove();const s=document.createElement('style');s.id=ID+'Style';s.textContent=`
-#${ID}{background:#fff;border:1px solid #dfe6ec;border-radius:14px;padding:16px 18px;box-shadow:0 1px 3px rgba(20,48,76,.06)}
+#${ID} .rqSplit4060 .ibPanel:nth-child(2) svg{max-width:100%;height:auto;display:block}\n#${ID}{background:#fff;border:1px solid #dfe6ec;border-radius:14px;padding:16px 18px;box-shadow:0 1px 3px rgba(20,48,76,.06)}
 #${ID} .ibTitle{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}#${ID} h2{margin:0;font-size:21px;color:#14304c}
 #${ID} .ibNote{margin:4px 0 12px;font-size:13px;font-weight:800;color:#22303f}
 #${ID} .rqCaveat{margin:10px 0 0;padding:8px 12px;background:#fdf6e3;border:1px solid #f0dfae;border-radius:8px;color:#8a6d1f;font-size:12.5px;line-height:1.55}
@@ -444,7 +444,8 @@ function render(box){
      너비 계산은 그대로 전체 탭 폭(box.clientWidth) 기준으로 남아 있어, 차트가 패널보다 거의 2배
      넓게 그려지고 overflow-x:auto로 가로 스크롤이 생겨 07~12월이 스크롤 밖에 가려져 있었음(겉보기엔
      "01~06월만 있고 다 비어 있는" 것처럼 보였던 진짜 원인) — 패널의 실제 폭(절반) 기준으로 수정. */
-  const monthlyTrend=chart({w:Math.max(380,Math.floor(box.clientWidth*.6)-60),cats:ML,minSlot:30,series:[{name:'신규 요청',vals:regM,color:'#829db5'},{name:'완료',vals:monthlyDone,color:'#247c83',widthScale:1.3,pct:monthlyDonePct}]});
+  const monthlyPanelWidth=box.querySelector('.rqSplit4060 .ibPanel:nth-child(2)')?.getBoundingClientRect().width||0;
+  const monthlyTrend=chart({w:Math.max(380,Math.floor(monthlyPanelWidth||box.clientWidth*.6)-32),cats:ML,minSlot:30,series:[{name:'신규 요청',vals:regM,color:'#829db5'},{name:'완료',vals:monthlyDone,color:'#247c83',widthScale:1.3,pct:monthlyDonePct}]});
   const teamCompletion=chart({w:Math.max(440,box.clientWidth-85),h:260,cats:teamRows.map(r=>r.team),rotate:true,minSlot:64,series:[{name:'완료',vals:teamRows.map(r=>r.done),color:'#247c83'},{name:'미완료',vals:teamRows.map(r=>r.open+r.over),color:'#c69a65'}]});
   // Approved V2: three fixed source categories, proportional horizontal bars.
   const sourceTotal=rowsM.length,provisionalCount=rowsM.filter(c=>!confirmedSource(c)).length;
@@ -597,6 +598,13 @@ function ensure(){
 let tries=0;(function boot(){if(!ensure()&&tries++<80)setTimeout(boot,150)})();window.addEventListener('hd20-dashboard-ready',()=>ensure());window.addEventListener('hd20-kpi-source-updated',()=>{if(!document.getElementById(ID))ensure()});document.addEventListener('DOMContentLoaded',()=>ensure(),{once:true});window.addEventListener('load',()=>ensure(),{once:true});window.addEventListener('pageshow',()=>{const b=document.getElementById(ID);if(b)safeRender(b)});
 document.addEventListener('click',e=>{if(e.target.closest?.('#hd20DashboardSectionTabs button[data-dashboard-section="request"]'))setTimeout(()=>{const b=document.getElementById(ID);if(b)safeRender(b)},80)},true);
 ['hd20-kpi-source-updated','hd20-action-updated','hd20-policy-updated'].forEach(ev=>window.addEventListener(ev,()=>setTimeout(()=>{const b=document.getElementById(ID);if(b)safeRender(b)},80)));
+let requestPanelLastWidth=0,requestPanelResizeTimer;
+if(typeof ResizeObserver!=='undefined'){
+ const panelObserver=new ResizeObserver(()=>{const b=document.getElementById(ID),p=b?.querySelector('.rqSplit4060 .ibPanel:nth-child(2)');if(!p||b.offsetParent===null)return;const w=Math.round(p.getBoundingClientRect().width);if(w>250&&Math.abs(w-requestPanelLastWidth)>3){requestPanelLastWidth=w;clearTimeout(requestPanelResizeTimer);requestPanelResizeTimer=setTimeout(()=>safeRender(b),90)}});
+ const observePanel=()=>{const p=document.querySelector('#'+ID+' .rqSplit4060 .ibPanel:nth-child(2)');if(p)panelObserver.observe(p)};
+ document.addEventListener('click',e=>{if(e.target.closest?.('#hd20DashboardSectionTabs button'))setTimeout(observePanel,120)},true);
+ window.addEventListener('load',observePanel);setTimeout(observePanel,650);
+}
 let rz;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>{const b=document.getElementById(ID);if(b&&b.offsetParent!==null)safeRender(b)},250)});
 window.HD20_REQUEST_BOARD={ensure,render:()=>{const b=document.getElementById(ID);if(b)safeRender(b);else ensure()},state:S};
 })();
