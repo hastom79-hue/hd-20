@@ -177,7 +177,8 @@ function render(box){
   })();
   // b) 월별 — 건수로 고정 표시. 수평전개 적용대상건수는 그 달 5S 활동 완료건수 대비 비율(%)을 값 옆에 병기하고 막대를 넓혀 값이 겹치지 않게 함
   const mo=(pred)=>Array.from({length:12},(_,i)=>rowsY.filter(r=>monthOf(r)===i+1&&pred(r)).length),rowsC=filt(D,{ignoreYear:true,ignoreMonth:true}).filter(inTeams),cy=r=>cdOf(r).slice(0,4),cm=r=>+cdOf(r).slice(5,7),confM=(a)=>Array.from({length:12},(_,i)=>a.filter(r=>r.judgeState==='확정'&&r.valid!==false&&r.attrition!==true&&cy(r)===S.year&&cm(r)===i+1).length),ML=Array.from({length:12},(_,i)=>String(i+1).padStart(2,'0')+'월');
-  const doneM=mo(r=>DONE.includes(r.status)),rollM=mo(r=>r.horizontalRollout===true),rollPct=rollM.map((v,i)=>doneM[i]?Math.round(v/doneM[i]*1000)/10:null);
+  const isRollout=r=>{const v=r.horizontalRollout??r.isHorizontalRollout??r.rolloutApplied??r.horizontalDeployment;const flag=v===true||v===1||['Y','YES','TRUE','1','적용','완료'].includes(String(v??'').trim().toUpperCase());const state=String(r.rolloutState||r.horizontalRolloutState||'').trim();return flag||['수평전개중','수평전개 완료','적용완료','완료'].includes(state)};
+  const doneM=mo(r=>DONE.includes(r.status)),rollM=mo(r=>isRollout(r)),rollPct=rollM.map((v,i)=>doneM[i]?Math.round(v/doneM[i]*1000)/10:null);
   const B=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W*.6)-10),h:284,cats:ML,per:false,minSlot:0,axisHeadroom:0.08,raisePlot:true,plotBottom:34,tightAxis:true,series:[{name:'5S 활동 완료건수',vals:doneM,color:C.dark},{name:'고도화 확정 건수',vals:confM(rowsC),color:C.amber},{name:'수평전개 적용대상건수',vals:rollM,color:C.grey,widthScale:1.5,pct:rollPct}]});
   // 월별 추이 분석: 완료된 최근 두 달을 비교하며, 모든 값은 차트와 동일한 원천 배열에서 산출
   const upgradeM=confM(rowsC);
