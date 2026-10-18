@@ -4,7 +4,7 @@
    주의(데이터 한계, 화면에도 안내): 현재 원천에는 '요청출처' 실제 필드가 없어 auditDrawId 유무로 5S모듈/생산혁신팀 HDPS파트를 추정 표기(리더십 항목은 실제 필드 연결 전까지 0). */
 (()=>{'use strict';
 const ID='hd20RequestBoard';
-const SOURCES=['5S모듈','생산혁신팀 HDPS파트','리더십'];
+const SOURCES=['현장 패트롤 점검','자율 5S Audit','혁신팀 자율 점검','5S 자율개선활동 피드백','출처 미분류'];
 const S={year:null,month:'',source:'',team:'',status:'',roll:'',selTeam:''};
 function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 /* 사용자 지적: "04"가 "눈에도 안들어오고... 초록색과 빨간색 색상뿐이다" — CSS만으로 그린 단색 진행
@@ -64,10 +64,14 @@ function leaderNames(){
   LEADER_NAMES=set;return LEADER_NAMES;
 }
 function sourceOf(c){
-  if(c.requestSource&&SOURCES.includes(c.requestSource))return c.requestSource; // 실제 필드가 들어오면 그대로 사용
-  // 리더십 = 경영진·팀장(부서장). 등록자(owner)가 생산팀장 기준정보에 등록된 팀장 이름과 일치하면 리더십으로 분류.
-  if(c.owner&&leaderNames().has(c.owner))return '리더십'; // 팀장 기준정보 + 통합기준정보(운영정책)에 등록된 경영진·공장장 명단
-  return c.auditDrawId?'생산혁신팀 HDPS파트':'5S모듈'; // 그 외엔 감사 연계=생산혁신팀, 현장 자체 등록=5S모듈로 추정
+  const raw=String(c.requestSource||c.sourceDetail||c.discoverySource||'').trim();
+  if(SOURCES.includes(raw))return raw;
+  if(/패트롤|patrol/i.test(raw))return '현장 패트롤 점검';
+  if(/자율\\s*5s\\s*(audit|오디트)|5s\\s*자율\\s*오디트/i.test(raw))return '자율 5S Audit';
+  if(/혁신팀.*(자율|점검)/.test(raw))return '혁신팀 자율 점검';
+  if(/자율개선.*피드백|피드백.*자율개선/i.test(raw))return '5S 자율개선활동 피드백';
+  // 기존 '5S모듈/생산혁신팀 HDPS파트/리더십' 값은 4대 발굴 경로를 증명하지 않으므로 추정 배분 금지.
+  return '출처 미분류';
 }
 function css(){if(document.getElementById(ID+'Style'))return;const s=document.createElement('style');s.id=ID+'Style';s.textContent=`
 #${ID}{background:#fff;border:1px solid #dfe6ec;border-radius:14px;padding:16px 18px;box-shadow:0 1px 3px rgba(20,48,76,.06)}
@@ -166,6 +170,13 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
 #${ID} .rqDelayStack{display:flex;height:17px;overflow:hidden;border-radius:5px;margin:3px 0 16px;background:#edf1f4}#${ID} .rqDelayBand{display:block;height:100%}#${ID} .rqDelayBand0{background:#e6ba73}#${ID} .rqDelayBand1{background:#d98454}#${ID} .rqDelayBand2{background:#b9473b}
 
 #${ID} .rqSplit4060>.ibPanel:first-child .ibBody{height:100%}
+
+#${ID} .rqSourceLegend{display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:9px 12px;border:1px solid #e4ebef;border-radius:8px;font-size:11px;color:#516c7c}
+#${ID} .rqSourceLegend span{display:flex;align-items:center;gap:7px}
+#${ID} .rqSourceLegend i{width:16px;height:8px;border-radius:3px;display:inline-block}
+#${ID} .rqSourcePair{display:grid;gap:6px}
+#${ID} .rqSourcePairBars{display:grid;gap:4px}
+#${ID} .rqSourcePairBars .rqTrack{height:8px}
 #${ID} .rqSourcePanel{display:flex;flex-direction:column;gap:16px;min-height:310px;height:100%;padding:4px 2px 0}
 #${ID} .rqSourceTop{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 #${ID} .rqSourceTop>div{padding:12px 14px;background:#f2f7fa;border:1px solid #e2ebf0;border-radius:10px}
@@ -331,10 +342,9 @@ function render(box){
   /* 요청출처 3개 카테고리 중 보통 1개에만 건수가 몰리고 나머지는 0건인 경우가 흔한데, 0건도 진한
      글자·막대 트랙으로 똑같이 강조돼 "요청출처별 현황"이라는 제목과 달리 사실상 비교할 게 없어 보임
      (전면 재검토 연장) — 0건 항목은 흐리게 처리해 "실제로 비중 있는 출처가 뭔지" 한눈에 들어오게 함. */
-  const sourceStats=SOURCES.map(s=>({name:s,count:rowsM.filter(c=>sourceOf(c)===s).length}));
-  const activeSources=sourceStats.filter(s=>s.count>0).length;
-  const dominantSource=sourceStats.reduce((best,s)=>s.count>best.count?s:best,sourceStats[0]);
-  const sourceBars='<div class="rqSourcePanel"><div class="rqSourceTop"><div><small>전체 요청</small><strong>'+sourceTotal.toLocaleString('ko-KR')+'<em>건</em></strong></div><div><small>요청출처 사용</small><strong>'+activeSources+'<em> / '+SOURCES.length+'개</em></strong></div></div><div class="rqBars">'+sourceStats.map((s,i)=>{const pct=sourceTotal?100*s.count/sourceTotal:0;return '<div class="rqBarItem'+(s.count===0?' zero':'')+'"><div class="rqSourceLabel"><span><b class="rqSourceIndex">'+String(i+1).padStart(2,'0')+'</b>'+esc(s.name)+'</span><strong>'+s.count.toLocaleString('ko-KR')+'건 <small>'+pct.toFixed(1)+'%</small></strong></div><div class="rqTrack"><i style="width:'+pct+'%;background:'+(i===0?'#3f7999':'#829db5')+'"></i></div></div>'}).join('')+'</div><div class="rqSourceFoot"><b>출처 분포 해석</b><p>'+(sourceTotal?(activeSources===1?'전체 요청이 '+esc(dominantSource.name)+'에 집중되어 있습니다.':esc(dominantSource.name)+' 비중이 '+(100*dominantSource.count/sourceTotal).toFixed(1)+'%로 가장 높습니다.'):'요청 데이터가 없습니다.')+'</p><span>전체 '+sourceTotal.toLocaleString('ko-KR')+'건 기준 · 요청 그룹별 중복 없는 구성비</span></div></div>';
+  const sourceStats=SOURCES.map(name=>{const items=rowsM.filter(c=>sourceOf(c)===name);return {name,count:items.length,done:items.filter(isDone).length}});
+  const activeSources=sourceStats.slice(0,4).filter(x=>x.count>0).length;
+  const sourceBars='<div class="rqSourcePanel"><div class="rqSourceTop"><div><small>개선요청 전체</small><strong>'+sourceTotal.toLocaleString('ko-KR')+'<em>건</em></strong></div><div><small>전체 완료율</small><strong>'+(sourceTotal?(100*rowsM.filter(isDone).length/sourceTotal).toFixed(1):'—')+'<em>%</em></strong></div></div><div class="rqSourceLegend"><span><i style="background:#6089a6"></i>개선요청 건수 (건)</span><span><i style="background:#279586"></i>완료 건수 (건)</span><span>완료율 = 완료 건수 ÷ 개선요청 건수 × 100</span></div><div class="rqBars">'+sourceStats.map((x,i)=>{const rate=x.count?100*x.done/x.count:0,base=sourceTotal?100*x.count/sourceTotal:0,doneWidth=sourceTotal?100*x.done/sourceTotal:0;return '<div class="rqSourcePair"><div class="rqSourceLabel"><span><b class="rqSourceIndex">'+String(i+1).padStart(2,'0')+'</b>'+esc(x.name)+'</span><strong>'+x.count+'건 · 완료 '+x.done+'건 · '+(x.count?rate.toFixed(1)+'%':'—')+'</strong></div><div class="rqSourcePairBars"><div class="rqTrack"><i style="width:'+base+'%;background:#6089a6"></i></div><div class="rqTrack"><i style="width:'+doneWidth+'%;background:#279586"></i></div></div></div>'}).join('')+'</div><div class="rqSourceFoot"><b>집계 기준</b><p>두 막대 모두 전체 요청 '+sourceTotal+'건을 동일한 100% 축으로 사용합니다. 출처가 불명확한 기존 기록은 임의로 4개 발굴 경로에 배분하지 않습니다.</p><span>출처 사용 '+activeSources+'/4개 · 미분류 '+sourceStats[4].count+'건</span></div></div>';
   /* 전면 개편(사용자 확정: "이대로"): 3개 출처 중 보통 1개에만 건수가 몰려 별도 섹션(가로막대 3개)을
      차지할 정도의 정보량이 아니라고 판단, 보조 정보 영역 안에서 한 줄 요약 문장으로 축소. */
   const sourceCounts=SOURCES.map(s=>({s,n:rowsM.filter(c=>sourceOf(c)===s).length})).sort((a,b)=>b.n-a.n);
