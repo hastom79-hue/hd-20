@@ -47,5 +47,22 @@ jobs:
             assert(html.includes(script+'?v=20261018-source-sync-1'),'cache-bust missing: '+script);
           }
           assert(loader.includes('request-source-order-master.js?v=20261018-source-sync-1'),'dynamic master cache-bust missing');
+          const vm=require('vm');
+          const sourceFunction=board.slice(board.indexOf('function sourceOf(c){'),board.indexOf('function css(){'));
+          assert(sourceFunction.startsWith('function sourceOf(c){'),'source classifier extraction failed');
+          const sandbox={SOURCES:[...sources,'출처 미분류']};
+          vm.createContext(sandbox);
+          vm.runInContext(sourceFunction+';this.classify=sourceOf;',sandbox);
+          for(const source of sources){
+            assert.strictEqual(sandbox.classify({requestSource:source}),source,'classification failed: '+source);
+          }
+          for(const old of ['5S모듈','생산혁신팀 HDPS파트','리더십','']){
+            assert.strictEqual(sandbox.classify({requestSource:old}),'출처 미분류','legacy classification must not be invented');
+          }
+          const sample=sources.map((requestSource,i)=>({requestSource,status:i<2?'완료':'조치대기'}));
+          const stats=sources.map(name=>{const rows=sample.filter(c=>sandbox.classify(c)===name);return {count:rows.length,done:rows.filter(c=>c.status==='완료').length}});
+          assert.deepStrictEqual(stats.map(x=>x.count),[1,1,1,1]);
+          assert.deepStrictEqual(stats.map(x=>x.done),[1,1,0,0]);
+          console.log('PASS: classifier runtime, unclassified legacy records, and count/completion fixture');
           console.log('PASS: four discovery sources, registration, aggregation, ordering, and cache contracts');
           NODE
