@@ -41,8 +41,8 @@ jobs:
                 await page.goto('http://127.0.0.1:4173/index.html?area=dashboard',{waitUntil:'domcontentloaded'});
                 await page.waitForFunction(()=>!!window.HD20_DASHBOARD_TABS,{timeout:25000});
                 for(const [key,id,api] of [['improve','hd20ImproveBoard','HD20_IMPROVE_BOARD'],['request','hd20RequestBoard','HD20_REQUEST_BOARD']]){
-                  await page.evaluate(key=>window.HD20_DASHBOARD_TABS.apply(key,{scroll:false}),key);
-                  await page.waitForTimeout(800);
+                  await page.evaluate(key=>{document.querySelector('.beginnerNav button[data-key="dashboard"]')?.click();window.HD20_DASHBOARD_TABS.apply(key,{scroll:false})},key);
+                  await page.waitForFunction(({key,id})=>{const el=document.getElementById(id);return window.HD20_DASHBOARD_TABS?.active?.()===key&&!!el&&el.innerHTML.length>100&&getComputedStyle(el).display!=='none'&&el.getBoundingClientRect().width>100},{key,id},{timeout:15000});
                   const state=await page.evaluate(({key,id,api})=>{
                     const el=document.getElementById(id),style=el&&getComputedStyle(el),rect=el?.getBoundingClientRect();
                     return {key,api:!!window[api],exists:!!el,children:el?.children.length||0,htmlLength:el?.innerHTML.length||0,display:style?.display,visibility:style?.visibility,width:rect?.width||0,height:rect?.height||0,active:window.HD20_DASHBOARD_TABS?.active?.()};
