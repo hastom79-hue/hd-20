@@ -174,6 +174,25 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
 #${ID} .rqSplit4060 svg{max-width:100%;height:auto}
 #${ID} .rqSplit4060 .rqSourcePanel{height:auto;min-height:0;gap:12px}
 #${ID} .rqSplit4060 .rqSourceFoot{margin-top:12px}
+#${ID} .rqSourceV3{gap:12px}
+#${ID} .rqSourceV3 .rqSourceLegend{display:flex;flex-direction:row;flex-wrap:wrap;gap:7px 15px}
+#${ID} .rqSourceColumns{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;padding:16px 4px 8px;border-bottom:1px solid #e5edf3}
+#${ID} .rqSourceColumn{min-width:0;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px}
+#${ID} .rqSourceColPlot{width:100%;height:132px;display:flex;align-items:flex-end;justify-content:center;gap:5px;border-bottom:1px solid #ccd8e2;padding:20px 0 0;box-sizing:border-box}
+#${ID} .rqSourceColBar{position:relative;width:min(24px,38%);min-height:2px;border-radius:4px 4px 0 0}
+#${ID} .rqSourceColBar.request{background:#6089a6}
+#${ID} .rqSourceColBar.done{background:#279586}
+#${ID} .rqSourceColBar b{position:absolute;bottom:calc(100% + 3px);left:50%;transform:translateX(-50%);font-size:10px;color:#24465e}
+#${ID} .rqSourceColumn>strong{font-size:11px;color:#1c415e}
+#${ID} .rqSourceColumn>small{font-size:10px;color:#6a8192}
+#${ID} .rqSourceFactorLegend{display:grid;gap:8px;border:1px solid #e3ebf1;border-radius:9px;padding:11px 12px}
+#${ID} .rqSourceFactorLegend>b{font-size:12px;color:#21445d;margin-bottom:2px}
+#${ID} .rqSourceFactorLegend>div{display:flex;align-items:flex-start;gap:9px}
+#${ID} .rqFactorIndex{background:#eaf2f8;color:#2b6385;padding:3px 5px;border-radius:5px;font-size:10px;font-weight:800}
+#${ID} .rqSourceFactorLegend strong{display:block;font-size:11px;color:#26465d}
+#${ID} .rqSourceFactorLegend small{display:block;font-size:10px;line-height:1.5;color:#6a8192}
+#${ID} .rqSourceUnclassified{margin:0;font-size:10px;color:#708393}
+
 @media(max-width:900px){#${ID} .rqSplit4060{grid-template-columns:minmax(0,1fr)}}
 
 
@@ -353,7 +372,20 @@ function render(box){
   const orderedSources=[...SOURCES.slice(0,4).filter(x=>sourceOrder.includes(x)),...SOURCES.slice(0,4).filter(x=>!sourceOrder.includes(x)),'출처 미분류'];
   const sourceStats=orderedSources.map(name=>{const items=rowsM.filter(c=>sourceOf(c)===name);return {name,count:items.length,done:items.filter(isDone).length}});
   const activeSources=sourceStats.slice(0,4).filter(x=>x.count>0).length;
-  const sourceBars='<div class="rqSourcePanel"><div class="rqSourceTop"><div><small>개선요청 전체</small><strong>'+sourceTotal.toLocaleString('ko-KR')+'<em>건</em></strong></div><div><small>전체 완료율</small><strong>'+(sourceTotal?(100*rowsM.filter(isDone).length/sourceTotal).toFixed(1):'—')+'<em>%</em></strong></div></div><div class="rqSourceLegend"><span><i style="background:#6089a6"></i>개선요청 건수 (건)</span><span><i style="background:#279586"></i>완료 건수 (건)</span><span>완료율 = 완료 건수 ÷ 개선요청 건수 × 100</span></div><div class="rqBars">'+sourceStats.map((x,i)=>{const rate=x.count?100*x.done/x.count:0,base=sourceTotal?100*x.count/sourceTotal:0,doneWidth=sourceTotal?100*x.done/sourceTotal:0;return '<div class="rqSourcePair"><div class="rqSourceLabel"><span><b class="rqSourceIndex">'+String(i+1).padStart(2,'0')+'</b>'+esc(x.name)+'</span><strong>'+x.count+'건 · 완료 '+x.done+'건 · '+(x.count?rate.toFixed(1)+'%':'—')+'</strong></div><div class="rqSourcePairBars"><div class="rqTrack"><i style="width:'+base+'%;background:#6089a6"></i></div><div class="rqTrack"><i style="width:'+doneWidth+'%;background:#279586"></i></div></div></div>'}).join('')+'</div><div class="rqSourceFoot"><b>집계 기준</b><p>두 막대 모두 전체 요청 '+sourceTotal+'건을 동일한 100% 축으로 사용합니다. 출처가 불명확한 기존 기록은 임의로 4개 발굴 경로에 배분하지 않습니다.</p><span>출처 사용 '+activeSources+'/4개 · 미분류 '+sourceStats.find(x=>x.name==='출처 미분류').count+'건</span></div></div>';
+  /* 좌측 패널: 가로막대 금지. 발굴 리소스는 범례와 정의로 설명하고,
+     요청·완료 건수는 출처별 세로 2열 막대로 비교한다. */
+  const sourceMax=Math.max(1,...sourceStats.slice(0,4).map(x=>x.count));
+  const sourceDefinitions=[
+    ['현장 패트롤 점검','현장 순회·패트롤 과정에서 확인된 5S 미흡사항'],
+    ['자율 5S Audit','생산팀 자체 5S Audit 평가에서 확인된 개선 필요사항'],
+    ['혁신팀 자율 점검','생산혁신팀의 독립 현장점검에서 발굴된 개선 필요사항'],
+    ['5S 자율개선활동 피드백','현장 자율개선활동 결과 검토·피드백 과정에서 도출된 후속 요청']
+  ];
+  const sourceBars='<div class="rqSourcePanel rqSourceV3"><div class="rqSourceTop"><div><small>개선요청 전체</small><strong>'+sourceTotal.toLocaleString('ko-KR')+'<em>건</em></strong></div><div><small>전체 완료율</small><strong>'+(sourceTotal?(100*rowsM.filter(isDone).length/sourceTotal).toFixed(1):'—')+'<em>%</em></strong></div></div>'
+    +'<div class="rqSourceLegend"><span><i style="background:#6089a6"></i>개선요청 건수 (건)</span><span><i style="background:#279586"></i>완료 건수 (건)</span><span>완료율 = 완료 건수 ÷ 개선요청 건수 × 100</span></div>'
+    +'<div class="rqSourceColumns" role="img" aria-label="4대 발굴 출처별 개선요청 및 완료 건수 세로막대 비교">'+sourceStats.slice(0,4).map((x,i)=>'<div class="rqSourceColumn"><div class="rqSourceColPlot"><div class="rqSourceColBar request" style="height:'+Math.max(0,x.count/sourceMax*100)+'%"><b>'+x.count+'</b></div><div class="rqSourceColBar done" style="height:'+Math.max(0,x.done/sourceMax*100)+'%"><b>'+x.done+'</b></div></div><strong>'+(i+1).toString().padStart(2,'0')+'</strong><small>'+(x.count?(100*x.done/x.count).toFixed(0)+'% 완료':'요청 없음')+'</small></div>').join('')+'</div>'
+    +'<div class="rqSourceFactorLegend"><b>발굴 리소스 · 범례 정의</b>'+sourceDefinitions.map((x,i)=>'<div><span class="rqFactorIndex">'+String(i+1).padStart(2,'0')+'</span><span><strong>'+esc(x[0])+'</strong><small>'+esc(x[1])+'</small></span></div>').join('')+'</div>'
+    +'<p class="rqSourceUnclassified">출처 미분류 '+sourceStats.find(x=>x.name==='출처 미분류').count+'건 · 기존 기록은 출처를 임의 추정하지 않습니다.</p></div>';
   /* 전면 개편(사용자 확정: "이대로"): 3개 출처 중 보통 1개에만 건수가 몰려 별도 섹션(가로막대 3개)을
      차지할 정도의 정보량이 아니라고 판단, 보조 정보 영역 안에서 한 줄 요약 문장으로 축소. */
   const sourceCounts=SOURCES.map(s=>({s,n:rowsM.filter(c=>sourceOf(c)===s).length})).sort((a,b)=>b.n-a.n);
