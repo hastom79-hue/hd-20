@@ -87,7 +87,7 @@ function sourceOf(c){
   let hash=2166136261;for(let i=0;i<key.length;i++)hash=Math.imul(hash^key.charCodeAt(i),16777619)>>>0;
   return SOURCES[hash%4];
 }
-function css(){if(document.getElementById(ID+'Style'))return;const s=document.createElement('style');s.id=ID+'Style';s.textContent=`
+function css(){const prior=document.getElementById(ID+'Style');if(prior)prior.remove();const s=document.createElement('style');s.id=ID+'Style';s.textContent=`
 #${ID}{background:#fff;border:1px solid #dfe6ec;border-radius:14px;padding:16px 18px;box-shadow:0 1px 3px rgba(20,48,76,.06)}
 #${ID} .ibTitle{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}#${ID} h2{margin:0;font-size:21px;color:#14304c}
 #${ID} .ibNote{margin:4px 0 12px;font-size:13px;font-weight:800;color:#22303f}
@@ -114,6 +114,9 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
 #${ID} .rqManageRow .rqTeamVerticalCol>small{margin-top:4px;font-size:10px;color:#647b8b}
 #${ID} .rqTeamChartLegend{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;padding:12px 0 5px;font-size:11px;color:#3c5b70;font-weight:750}
 #${ID} .rqTeamChartLegend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px}
+#${ID} .rqManageRow .rqTeamVerticalCol>span{color:#2467a0!important;transform:rotate(-48deg)!important;white-space:nowrap!important;overflow-wrap:normal!important;min-height:68px!important}
+#${ID} .rqManageRow .rqTeamVerticalTrack{background:repeating-linear-gradient(to top,transparent 0,transparent calc(25% - 1px),#e6edf2 calc(25% - 1px),#e6edf2 25%)!important}
+
 
 
 #${ID} .ibPanel{border:1px solid #e3eaf0;border-radius:10px;background:#fff;overflow:hidden}
