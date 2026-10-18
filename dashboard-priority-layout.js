@@ -71,7 +71,7 @@ function card(x,i,op,monthly){
   if(cur!==null&&cur!==undefined&&prev!==null&&prev!==undefined){const d=Math.round((cur-prev)*10)/10;if(d===0)delta='<span class="httDelta flat">전월과 같음</span>';else{const better=x.good==='up'?d>0:d<0;delta=`<span class="httDelta ${better?'up':'down'}">${d>0?'▲':'▼'} ${Math.abs(d).toFixed(1)}${x.unit==='%'?'%p':esc(x.unit||'')} 전월 대비 ${better?'개선':'악화'}</span>`}}
   const mx=x.max||Math.max(1,...vals.filter(v=>v!==null));
   // Show January through the current month; never display future months.
-  const now=new Date(),currentKey=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  const parts=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit'}).formatToParts(new Date());const currentKey=parts.find(p=>p.type==='year').value+'-'+parts.find(p=>p.type==='month').value;
   const visibleIndices=(monthly?.months||[]).map((m,i)=>({m,i})).filter(x=>x.m.slice(0,4)===currentKey.slice(0,4)&&x.m<=currentKey);
   const visible=visibleIndices.map(x=>arr[x.i]).filter(Boolean),visibleMonths=visibleIndices.map(x=>x.m);
   const bars=visible.length?visible.map((v,i2)=>{const n=Number(v.v);const h=v.v===null||!Number.isFinite(n)?0:Math.max(2,Math.min(74,Math.round(n/mx*74)));return `<div class="httCol${i2===visible.length-1?' last':''}" title="${esc(visibleMonths[i2]||'')}: ${v.v===null?'표본 없음':fmt(v.v,x.key)} (표본 ${v.n}건)"><span class="httValue">${v.v===null?'—':esc(fmt(v.v,x.key))}</span><i style="height:${h}px"></i></div>`}).join(''):'';
