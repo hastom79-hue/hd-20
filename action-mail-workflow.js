@@ -70,6 +70,8 @@ function applyAuditPending(a,directPayload){
     sessionStorage.removeItem('hd20AuditToActionPending');
     if(p.team&&[...$('#amTeam',a).options].some(o=>o.value===p.team||o.textContent===p.team)){$('#amTeam',a).value=p.team;syncLeader(a)}
     if(p.problem)$('#amProblem',a).value=p.problem;
+    // Audit에서 직접 전달된 요청은 발굴 출처가 명확하므로 팝업 선택값을 동기화한다.
+    if($('#amRequestSource',a))$('#amRequestSource',a).value='자율 5S Audit';
     $('#amWorkplace',a)?.focus();
     $('.amCard',a)?.scrollIntoView({behavior:'smooth',block:'start'});
   }catch(e){console.error('[audit->action prefill]',e)}
