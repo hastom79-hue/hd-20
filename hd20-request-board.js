@@ -100,6 +100,15 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
 #${ID} .rqGrid tbody tr:first-child td{font-weight:900;background:#f8fafb}#${ID} .rqGrid tbody tr:first-child td:first-child{text-align:left}
 #${ID} .rqGrid td:first-child{text-align:left;font-weight:800}
 #${ID} .rqScroll{overflow:auto;border:1px solid #edf1f4;border-radius:8px}#${ID} .ibPanel:has(.rqDetail) .rqScroll{max-height:420px}#${ID} .ibPanel:has(.rqGrid:not(.rqDetail)) .rqScroll{max-height:340px}
+#${ID} .rqDelayVerticalScroll{max-width:100%;overflow-x:auto;overflow-y:hidden;padding:8px 2px 12px;overscroll-behavior-x:contain}
+#${ID} .rqDelayVertical{min-width:max(100%,calc(var(--rq-team-count)*84px))}
+#${ID} .rqDelayVerticalLegend{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:12px;font-weight:800;margin:4px 0 12px}
+#${ID} .rqDelayVerticalCols{display:grid;grid-template-columns:repeat(var(--rq-team-count),minmax(74px,1fr));gap:8px;align-items:end}
+#${ID} .rqDelayVerticalCol{min-width:0;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
+#${ID} .rqDelayVerticalTotal{font-size:13px;color:#27445c}
+#${ID} .rqDelayVerticalTrack{width:54px;height:220px;display:flex;flex-direction:column-reverse;align-items:stretch;justify-content:flex-start;border-bottom:1px solid #bfcbd4;background:linear-gradient(to top,#f4f7f9,#fff)}
+#${ID} .rqDelayVerticalSegment{width:100%;min-height:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;box-sizing:border-box}
+#${ID} .rqDelayVerticalTeam{font-size:11px;line-height:1.3;font-weight:700;overflow-wrap:anywhere;min-height:42px;color:#344e63}
 #${ID} .rqTeamDetail{margin-top:10px;border-top:1px solid #edf1f4;padding-top:8px}#${ID} .rqTeamDetail summary{cursor:pointer;font-size:12px;font-weight:850;color:#49657b}#${ID} .rqDetail th{white-space:nowrap}#${ID} .rqDetail td{white-space:nowrap;text-align:left}
 #${ID} .ibFoot{margin:10px 2px 0;font-size:12px;color:#7a8a97}
 
@@ -304,21 +313,10 @@ function render(box){
   const delayRows=teamsAll.map(t=>{const a=rowsM.filter(c=>c.team===t&&!isDone(c)&&isOverdue(c,D.today)).map(c=>delayDays(c,D.today)).filter(v=>v!==null);
     return{team:t,n:a.length,avg:a.length?Math.round(a.reduce((x,y)=>x+y,0)/a.length*10)/10:0,max:a.length?Math.max(...a):0}}).filter(r=>r.n>0).sort((a,b)=>b.n-a.n||b.avg-a.avg);
   const delayRowsSorted=delayRows.length?delayRows.map(r=>{const c=rowsM.filter(x=>x.team===r.team&&isOverdue(x,D.today));const v=[c.filter(x=>delayDays(x,D.today)<=7).length,c.filter(x=>delayDays(x,D.today)>=8&&delayDays(x,D.today)<=14).length,c.filter(x=>delayDays(x,D.today)>=15).length];return{team:r.team,v,total:r.n}}).sort((a,b)=>b.v[2]-a.v[2]||b.total-a.total):[];
-  const DELAY_SHOW=6;
-  /* "05"도 "총 초과" 합계만 보면 여러 팀이 같은 숫자(예: 4건)로 반복돼 단조로워 보이지만, 실제로는
-     1~7일·8~14일·15일+ 구간별 분포가 팀마다 다름(합계가 같아도 '얼마나 급한 지연인지'는 다름) —
-     데이터는 그대로 두고, 가장 심각한 구간(15일+)을 표에서 시각적으로 강조해 "합계는 같아도 내용은
-     다르다"를 바로 보이게 함. 분포가 전부 똑같은지도 계산해 다르면 안내 문구로 알려줌. */
-  const delayAllSame=delayRowsSorted.length>1&&delayRowsSorted.every(r=>r.v[0]===delayRowsSorted[0].v[0]&&r.v[1]===delayRowsSorted[0].v[1]&&r.v[2]===delayRowsSorted[0].v[2]);
-  const delayNote=delayRowsSorted.length?(delayAllSame?'':'<p class="rqTeamNote">총 초과 건수가 같은 팀도 있지만, <b>15일 이상 장기 지연</b> 건수는 팀마다 다릅니다. 그 칸을 우선 확인하세요.</p>'):'';
-  /* "05"도 큰 표(팀마다 4개 셀, 행 높이 커서 공간을 많이 먹음) 대신, 04와 같은 언어의 SVG 가로
-     누적막대 차트로 교체 — 한 팀이 한 줄, 1~7일/8~14일/15일+ 구간을 색상 길이로 바로 비교 가능. */
-  const delayBarRows=delayRowsSorted.map(r=>({label:r.team,segs:r.v}));
+  // All teams displayed in a vertical stacked-column chart, without truncation or hidden rows.
   const delaySegColors=['#e7c477','#e0935a','#b03a2e'];
-  const halfW05=Math.max(260,Math.floor(box.clientWidth/2)-70);
-  const delayChartTop=delayRowsSorted.length?hStackChart({w:halfW05,rows:delayBarRows.slice(0,DELAY_SHOW),segColors:delaySegColors}):'';
-  const delayChartRest=delayBarRows.length>DELAY_SHOW?hStackChart({w:halfW05,rows:delayBarRows.slice(DELAY_SHOW),segColors:delaySegColors}):'';
-  const delayChart=delayRowsSorted.length?'<div class="rqChartScroll">'+delayNote+'<div class="rqDelayLegend"><span style="color:'+delaySegColors[0]+'">■ 1~7일</span><span style="color:'+delaySegColors[1]+'">■ 8~14일</span><span style="color:'+delaySegColors[2]+'">■ 15일 이상</span></div>'+delayChartTop+(delayChartRest?'<div class="rqMoreChart" hidden>'+delayChartRest+'</div><button type="button" class="rqMoreBtn" data-more="delay">나머지 '+(delayBarRows.length-DELAY_SHOW)+'개 팀 더보기 ▾</button>':'')+'</div>':null;
+  const delayMax=Math.max(1,...delayRowsSorted.map(r=>r.total));
+  const delayChart=delayRowsSorted.length?'<div class="rqDelayVerticalScroll"><div class="rqDelayVertical" style="--rq-team-count:'+delayRowsSorted.length+'"><div class="rqDelayVerticalLegend"><span style="color:'+delaySegColors[0]+'">■ 1~7일</span><span style="color:'+delaySegColors[1]+'">■ 8~14일</span><span style="color:'+delaySegColors[2]+'">■ 15일 이상</span></div><div class="rqDelayVerticalCols">'+delayRowsSorted.map(r=>'<div class="rqDelayVerticalCol" title="'+esc(r.team)+' · 총 '+r.total+'건"><strong class="rqDelayVerticalTotal">'+r.total+'</strong><div class="rqDelayVerticalTrack">'+r.v.map((n,i)=>n?'<span class="rqDelayVerticalSegment" style="height:'+(100*n/delayMax)+'%;background:'+delaySegColors[i]+'">'+n+'</span>':'').join('')+'</div><span class="rqDelayVerticalTeam">'+esc(r.team)+'</span></div>').join('')+'</div></div></div>':null;
   const activeOverdue=rowsM.filter(c=>teamsAll.includes(c.team)&&isOverdue(c,D.today));
   const delayOverallAvg=activeOverdue.length?Math.round(activeOverdue.reduce((a,c)=>a+(delayDays(c,D.today)||0),0)/activeOverdue.length*10)/10:0;
   const sum={total:teamRows.reduce((a,r)=>a+r.total,0),done:teamRows.reduce((a,r)=>a+r.done,0),open:teamRows.reduce((a,r)=>a+r.open,0),over:teamRows.reduce((a,r)=>a+r.over,0)}; // open=기한내 미완료, 전체 미완료=open+over
