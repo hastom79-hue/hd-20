@@ -122,11 +122,22 @@ jobs:
               await page.locator('#amSaveResponse').click();
               const updated=await page.evaluate(id=>JSON.parse(localStorage.getItem('hd20ActionCasesV2')||'[]').find(x=>x.id===id),row.id);
               assert.strictEqual(updated.status,'완료');
+              // Dashboard data adapter must see the same stored request and completed status.
+              await page.waitForFunction(()=>typeof window.HD20KPIData?.actionCases==='function',{},{timeout:15000});
+              const dashboardRows=await page.evaluate(()=>window.HD20KPIData.actionCases());
+              const dashboardRow=dashboardRows.find(x=>x.id===row.id);
+              assert(dashboardRow,'completed request missing from dashboard adapter');
+              assert.strictEqual(dashboardRow.requestSource,'현장 패트롤 점검');
+              assert.strictEqual(dashboardRow.status,'완료');
               await page.reload({waitUntil:'domcontentloaded'});
               await page.waitForSelector('#amRequestSource',{state:'attached',timeout:30000});
               const persisted=await page.evaluate(id=>JSON.parse(localStorage.getItem('hd20ActionCasesV2')||'[]').find(x=>x.id===id),row.id);
               assert.strictEqual(persisted.status,'완료');
               assert.strictEqual(persisted.requestSource,'현장 패트롤 점검');
+              await page.waitForFunction(()=>typeof window.HD20KPIData?.actionCases==='function',{},{timeout:15000});
+              const afterReload=await page.evaluate(id=>window.HD20KPIData.actionCases().find(x=>x.id===id),row.id);
+              assert(afterReload,'request missing from dashboard adapter after reload');
+              assert.strictEqual(afterReload.status,'완료');
               console.log('PASS: isolated registration -> completion -> reload persistence');
             }finally{await browser.close()}
           })().catch(e=>{console.error(e);process.exit(1)});
