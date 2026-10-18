@@ -54,19 +54,19 @@ function boot(){
  const addDaysStr=(dateStr,n)=>{const d=new Date(dateStr+'T00:00:00');d.setDate(d.getDate()+n);return d>now?ymd(now):ymd(d)};
  const weak=team=>/중형|성능|트러블/.test(team),strong=team=>/프레임|Boom/.test(team);
  const activity=[];teams.forEach((team,ti)=>{const count=weak(team)?20:strong(team)?32:28;for(let i=0;i<count;i++){const advancement=i%4===0;const criteria=advancement?(i===0||((Math.floor(i/4)+ti)%3===0)?3:2):(weak(team)?(i%3)+1:2);const approved=advancement&&criteria===3&&(i===0||(!weak(team)&&((Math.floor(i/4)+ti)%2===0)));const dropped=(advancement&&weak(team)&&i%8===0)||(approved&&i%16===0);activity.push({id:`DEMO-A-${ti}-${i}`,source:SRC,team,owner:`검증작업자-${String(ti+1).padStart(2,'0')}-${String(i%8+1).padStart(2,'0')}`,group:groupOf(team),date:spreadDate(i,ti),type:advancement?'5S 고도화':['정리','정돈','청소','시각화','위험구역관리','설비 자주보전'][i%6],area:['조립라인','자재구역','공구실','검사대'][i%4],problem:['공구 위치 불명확','통로 적치','라벨 미흡','불용품 방치'][i%4],improvement:['형적관리','Green Zone','정위치 표기','정량축소'][i%4],status:approved?'완료':dropped?'이탈':advancement?'판정대기':i%7===0?'보완':'완료',candidate:advancement&&!approved,judgeState:approved?'확정':advancement?'판정대기':'',confirmed:approved,judgedAt:approved?days(Math.max(0,((i*3+ti)%120)-(9+(i*7+ti)%18))):'',criteriaCount:criteria,criteriaMatched:criteria,maintainState:dropped?'이탈':approved?'유지':'',attrition:dropped,visualization:criteria>=1,greenZone:criteria>=2,spaceUtilization:criteria>=3});}});
- // Demo-only: each team gets a distinct confirmed-case volume and a distinct retention rate.
- // Keep the canonical KPI predicates: advancement type, confirmed=true, judgeState='확정', and attrition state.
- teams.forEach((team,ti)=>{
-   const own=activity.filter(r=>r.team===team&&r.type==='5S 고도화'&&r.confirmed===true&&r.judgeState==='확정');
-   const target=11+ti;
-   const retainedTarget=ti+1;
-   own.forEach(r=>{r.attrition=true;r.maintainState='이탈'});
-   for(let j=0;j<target-own.length;j++){
-     activity.push({id:`DEMO-A-UNIQUE-${ti}-${j}`,source:SRC,team,owner:`검증작업자-${String(ti+1).padStart(2,'0')}`,group:groupOf(team),date:days((j*7+ti)%120),type:'5S 고도화',area:['조립라인','자재구역','검사대'][j%3],problem:'고도화 유지요건 점검',improvement:'3대 요건 보완 및 유지관리',status:'완료',candidate:false,judgeState:'확정',confirmed:true,judgedAt:days((j*7+ti)%120),criteriaCount:3,criteriaMatched:3,maintainState:'이탈',attrition:true,visualization:true,greenZone:true,spaceUtilization:true});
-   }
-   const confirmed=activity.filter(r=>r.team===team&&r.type==='5S 고도화'&&r.confirmed===true&&r.judgeState==='확정');
-   confirmed.slice(0,retainedTarget).forEach(r=>{r.attrition=false;r.maintainState='유지'});
- });
+ /* Approved realistic advancement fixture: 28 confirmed, 11 attrited, 17 retained.
+    Preserve ordinary 5S activity counts and headcount; only normalize synthetic advancement cases. */
+ const existingAdv=activity.filter(r=>r.type==='5S 고도화');
+ existingAdv.forEach(r=>{r.confirmed=false;r.judgeState='판정대기';r.candidate=true;r.status='판정대기';r.attrition=false;r.maintainState='';r.judgedAt='';});
+ const totalApproved=28,attrited=11;
+ for(let i=0;i<totalApproved;i++){
+   const ti=(i*7)%teams.length,team=teams[ti];
+   const month=i>=totalApproved-3?now.getMonth()+1:1+(i%Math.max(1,now.getMonth()));
+   const day=3+((i*5)%20);
+   const confirmedDate=year+'-'+String(month).padStart(2,'0')+'-'+String(Math.min(day,month===now.getMonth()+1?now.getDate():28)).padStart(2,'0');
+   const lost=i<attrited;
+   activity.push({id:'DEMO-A-ADV-REAL-'+i,source:SRC,team,group:groupOf(team),owner:'검증작업자-'+String(ti+1).padStart(2,'0'),date:confirmedDate,type:'5S 고도화',area:['조립라인','자재구역','검사대'][i%3],problem:'5S 고도화 3대 요건 확인',improvement:'시각화·Green Zone·공간활용 개선',status:'완료',candidate:false,judgeState:'확정',confirmed:true,judgedAt:confirmedDate,criteriaCount:3,criteriaMatched:3,maintainState:lost?'이탈':'유지',attrition:lost,visualization:true,greenZone:true,spaceUtilization:true});
+ }
  /* Complete the current-year monthly chart with explicitly synthetic activity cases.
     Never invent future months; retain original records and never sync demo rows. */
  const year=now.getFullYear(),lastMonth=now.getMonth()+1;
