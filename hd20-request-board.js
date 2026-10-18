@@ -104,8 +104,8 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
 #${ID} .rqTeamVertical{min-width:max(100%,calc(var(--rq-team-count)*100px))}
 #${ID} .rqTeamVerticalCols{display:grid;grid-template-columns:repeat(var(--rq-team-count),minmax(90px,1fr));gap:10px;align-items:end}
 #${ID} .rqTeamVerticalCol{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;min-width:0}
-#${ID} .rqTeamVerticalCol>strong{font-size:13px;color:#29435a}
-#${ID} .rqTeamVerticalTrack{height:220px;width:58px;display:flex;align-items:flex-end;border-bottom:1px solid #bfcbd4;background:linear-gradient(to top,#f4f7f9,#fff)}
+#${ID} .rqTeamBarValue{position:absolute;left:50%;transform:translateX(-50%);font-size:13px;font-weight:800;color:#29435a;white-space:nowrap;line-height:1.2;z-index:1}
+#${ID} .rqTeamVerticalTrack{position:relative;height:220px;width:58px;display:flex;align-items:flex-end;border-bottom:1px solid #bfcbd4;background:linear-gradient(to top,#f4f7f9,#fff)}
 #${ID} .rqTeamVerticalTrack>span{display:block;width:100%;border-radius:4px 4px 0 0}
 #${ID} .rqTeamVerticalTrack.rqAxisCut{position:relative}
 #${ID} .rqTeamVerticalTrack.rqAxisCut:after{content:'//';position:absolute;left:-15px;bottom:-8px;color:#526a7a;font-size:15px;font-weight:900;letter-spacing:-3px;background:#fff;padding:0 3px;transform:rotate(-20deg)}
@@ -450,7 +450,7 @@ function render(box){
   const rateAxisHigh=Math.min(100,Math.max(rateAxisLow+5,Math.ceil((rateMax+Math.max(2,rateSpread*.3))/5)*5));
   const rateAxisSpan=Math.max(1,rateAxisHigh-rateAxisLow);
   const teamRateNote='<p class="rqTeamNote">세로축 '+rateAxisLow+'~'+rateAxisHigh+'%'+(rateAxisLow>0?' · 0%부터 시작하지 않는 확대축(축 절단 표시)':'')+(allSameRate?' · 현재 팀별 완료율이 동일합니다.':'')+'</p>';
-  const teamRateBars='<div class="rqTeamVerticalScroll">'+teamRateNote+'<div class="rqTeamVertical" style="--rq-team-count:'+Math.max(1,teamRateSorted.length)+'"><div class="rqTeamVerticalCols">'+teamRateSorted.map(r=>{const pct=r.total?Math.round(r.done/r.total*1000)/10:0;const color=pct<50?'#b04f4b':pct<80?'#b68b43':'#408d82';const h=r.total?Math.max(0,Math.min(100,(pct-rateAxisLow)/rateAxisSpan*100)):0;return '<div class="rqTeamVerticalCol" title="'+esc(r.team)+' · 완료 '+r.done+'/'+r.total+'건"><strong>'+pct+'%</strong><div class="rqTeamVerticalTrack'+(rateAxisLow>0?' rqAxisCut':'')+'"><span style="height:'+h+'%;background:'+color+'"></span></div><span>'+esc(r.team)+(teamHighlight===r.team?' ★':'')+'</span><small>'+r.done+'/'+r.total+'건</small></div>'}).join('')+'</div></div></div>';
+  const teamRateBars='<div class="rqTeamVerticalScroll">'+teamRateNote+'<div class="rqTeamVertical" style="--rq-team-count:'+Math.max(1,teamRateSorted.length)+'"><div class="rqTeamVerticalCols">'+teamRateSorted.map(r=>{const pct=r.total?Math.round(r.done/r.total*1000)/10:0;const color=pct<50?'#b04f4b':pct<80?'#b68b43':'#408d82';const h=r.total?Math.max(0,Math.min(100,(pct-rateAxisLow)/rateAxisSpan*100)):0;return '<div class="rqTeamVerticalCol" title="'+esc(r.team)+' · 완료 '+r.done+'/'+r.total+'건"><div class="rqTeamVerticalTrack'+(rateAxisLow>0?' rqAxisCut':'')+'"><strong class="rqTeamBarValue" style="bottom:calc('+h+'% + 5px)">'+pct+'%</strong><span style="height:'+h+'%;background:'+color+'"></span></div><span>'+esc(r.team)+(teamHighlight===r.team?' ★':'')+'</span><small>'+r.done+'/'+r.total+'건</small></div>'}).join('')+'</div></div></div>';
   const overCases=rowsM.filter(c=>teamsAll.includes(c.team)&&isOverdue(c,D.today));
   const delayBands=[overCases.filter(c=>delayDays(c,D.today)<=7).length,overCases.filter(c=>delayDays(c,D.today)>=8&&delayDays(c,D.today)<=14).length,overCases.filter(c=>delayDays(c,D.today)>=15).length];
   const kpi=(label,value,detail,risk=false)=>'<div class="rqKpi'+(risk?' risk':'')+'"><small>'+label+'</small><b>'+value+'</b><span class="rqKpiHint">'+detail+'</span></div>';
