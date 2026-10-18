@@ -52,9 +52,9 @@ function trendCss(){if(document.getElementById(ID+'TrendStyle'))return;const s=d
 #${ID} .httBig{display:flex;align-items:baseline;gap:7px;margin:6px 0 2px}
 #${ID} .httBig b{font-size:26px;color:#14304c;letter-spacing:-.02em}#${ID} .httBig em{font-style:normal;font-size:12px;color:#5c6b7a;font-weight:800}
 #${ID} .httDelta{font-size:11.5px;font-weight:850}#${ID} .httDelta.up{color:#2f7a4d}#${ID} .httDelta.down{color:#c0392b}#${ID} .httDelta.flat{color:#7a8a97}
-#${ID} .httBars{display:grid;grid-template-columns:repeat(var(--htt-months,12),minmax(0,1fr));gap:5px;align-items:end;height:80px;overflow:hidden;margin-top:9px;border-bottom:1px solid #dde5eb}
+#${ID} .httBars{display:grid;grid-template-columns:repeat(var(--htt-months,12),minmax(0,1fr));gap:5px;align-items:end;height:104px;overflow:hidden;margin-top:9px;border-bottom:1px solid #dde5eb}
 #${ID} .httCol{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;min-width:0;gap:2px}
-#${ID} .httCol i{display:block;width:60%;border-radius:3px 3px 0 0;background:#b7c6d4;min-height:2px}#${ID} .httCol.last i{background:#14304c}
+#${ID} .httCol .httValue{display:block;font-size:9px;line-height:1.15;font-weight:800;color:#566c80;white-space:nowrap;text-align:center;font-variant-numeric:tabular-nums}#${ID} .httCol.last .httValue{color:#14304c}#${ID} .httCol i{display:block;width:60%;border-radius:3px 3px 0 0;background:#b7c6d4;min-height:2px}#${ID} .httCol.last i{background:#14304c}
 #${ID} .httMon{display:grid;grid-template-columns:repeat(var(--htt-months,12),minmax(0,1fr));gap:5px;margin-top:3px;text-align:center;font-size:9.5px;color:#a0adb8}
 #${ID} .httFoot{display:flex;justify-content:space-between;align-items:flex-end;gap:8px;margin-top:9px}
 #${ID} .httFoot p{margin:0;font-size:11px;color:#7a8a97;line-height:1.5}
@@ -74,7 +74,7 @@ function card(x,i,op,monthly){
   const now=new Date(),currentKey=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
   const visibleIndices=(monthly?.months||[]).map((m,i)=>({m,i})).filter(x=>x.m.slice(0,4)===currentKey.slice(0,4)&&x.m<=currentKey);
   const visible=visibleIndices.map(x=>arr[x.i]).filter(Boolean),visibleMonths=visibleIndices.map(x=>x.m);
-  const bars=visible.length?visible.map((v,i2)=>{const n=Number(v.v);const h=v.v===null||!Number.isFinite(n)?0:Math.max(2,Math.min(74,Math.round(n/mx*74)));return `<div class="httCol${i2===visible.length-1?' last':''}" title="${esc(visibleMonths[i2]||'')}: ${v.v===null?'표본 없음':fmt(v.v,x.key)} (표본 ${v.n}건)"><i style="height:${h}px"></i></div>`}).join(''):'';
+  const bars=visible.length?visible.map((v,i2)=>{const n=Number(v.v);const h=v.v===null||!Number.isFinite(n)?0:Math.max(2,Math.min(74,Math.round(n/mx*74)));return `<div class="httCol${i2===visible.length-1?' last':''}" title="${esc(visibleMonths[i2]||'')}: ${v.v===null?'표본 없음':fmt(v.v,x.key)} (표본 ${v.n}건)"><span class="httValue">${v.v===null?'—':esc(fmt(v.v,x.key))}</span><i style="height:${h}px"></i></div>`}).join(''):'';
   const mon=visibleMonths.map(mm=>`<div>${+String(mm).slice(5)}월</div>`).join('');
   const g=GROUPS.find(gg=>gg.key===x.tab);
   return `<article class="hd20HealthTrendCard" data-kpi="${x.key}" data-tab="${x.tab}"><div class="httGroupTag">${g?g.step+' '+g.label:''}</div><h4>${x.label}</h4><div class="httFlow">${esc(x.hint.split(" · ")[0])}</div><div class="httBig"><b>${fmt(op[x.key],x.key)}</b></div>${delta}${bars?`<div class="httBars" style="--htt-months:${visible.length}">${bars}</div><div class="httMon" style="--htt-months:${visible.length}">${mon}</div>`:''}<div class="httFoot"><p>${x.hint}</p><button type="button" data-group-tab="${x.tab}">원인 확인 →</button></div></article>`}
