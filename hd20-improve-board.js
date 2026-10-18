@@ -215,8 +215,12 @@ function render(box){
   const owners=new Set(D.rows.filter(r=>String(r.date||r.regDate||'').slice(0,4)===S.year&&monthOf(r)===mm&&teamsAll.includes(r.team)&&(!S.type||r.type===S.type)).map(r=>r.owner).filter(Boolean)).size,part=(owners/hcAll*100);
   // d,e) 선택 팀 월별
   const th=D.hcOf(S.team)||1,tr=rowsY.filter(r=>r.team===S.team),tm=(pred)=>Array.from({length:12},(_,i)=>{const c=tr.filter(r=>monthOf(r)===i+1&&pred(r)).length;return per?c/th:c});
-  const dVals=tm(()=>true),dCum=dVals.reduce((a,b)=>a+b,0);
-  const Dd=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W/2)-8),cats:ML,per,series:[{name:per?'5S 활동/총원':'5S 활동 건수',vals:dVals,color:C.dark}]});
+  const dTotals=Array.from({length:12},(_,i)=>tr.filter(r=>monthOf(r)===i+1).length);
+  const dVals=per?dTotals.map(c=>c/th):dTotals;
+  const dCum=dVals.reduce((a,b)=>a+b,0);
+  // Show original monthly activity counts beneath per-person values; never infer
+  // counts by multiplying rounded per-person labels.
+  const Dd=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W/2)-8),cats:ML,per,labelTotals:per?dTotals:null,series:[{name:per?'5S 활동/총원':'5S 활동 건수',vals:dVals,color:C.dark}]});
 /* 팀별 고도화 확보 누적(기존 유지+신규, 이탈 반영). '고도화 작업장 추이'(전사)와 같은 방식을 팀 단위로 축소.
      이탈일 기록이 없으면 확정일+6개월(5S 종료평가 시점)로 추정, 아직 6개월 미도래면 이번 달로 봄. */
   const teamConf=rowsC.filter(r=>r.team===S.team&&r.judgeState==='확정'),now=new Date(),nowIdx=now.getFullYear()*12+now.getMonth();
