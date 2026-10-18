@@ -500,16 +500,16 @@ function render(box){
        기존에 한 줄 요약 문장(sourceSummary)으로 축소했던 '요청출처' 정보를 다시 작은 막대 차트
        (sourceBars, 이미 정의돼 있던 걸 재사용)로 복원해 좌측에 둠. */
     +'<div class="ibRow rqSplit4060">'
-    +section('요청출처별 현황','요청 그룹 기준',sourceBars,'a')
-    +section('01. 월별 요청·완료 추이',periodLabel+' · 완료일 기준',monthlyTrend+leg([['신규 요청','#829db5'],['완료','#247c83']]),'b')
+    +section('01. 요청출처별 현황','요청 그룹 기준',sourceBars,'a')
+    +section('02. 월별 요청·완료 추이',periodLabel+' · 완료일 기준',monthlyTrend+leg([['신규 요청','#829db5'],['완료','#247c83']]),'b')
     +'</div>'
     /* 사용자 지시: "좌우 병합배치로" — 04·05가 각자 전체 폭을 차지하며 세로로 길게 쌓여 있던 걸,
        둘을 한 줄(rqManageRow, 2열)에 나란히 배치. 그 안의 SVG 차트 폭(hBarChart·hStackChart)도
        절반 폭 기준으로 미리 줄여서 생성했어야 하므로, 아래 teamChartTop 등의 w 인자를 이 블록
        이전에 좁은 폭으로 재계산해서 넘김(바로 아래 참조). */
     +'<div class="ibRow rqManageRow rqTeamCompare">'
-    +section('04. 조치대응팀별 이행성과','완료 / 미완료 · 팀별 건수',teamOrderControl+teamRateBars+'<details class="rqTeamDetail"><summary>팀별 상세 실적 펼치기</summary><div class="rqScroll">'+teamGrid+'</div></details>','c2')
-    +section('05. 기한초과 집중관리','현재 미완료 기준 · 지연기간별 분포','<div class="rqBands">'+['1~7일','8~14일','15일 이상'].map((x,i)=>'<div><small>'+x+'</small><b>'+delayBands[i]+'건</b></div>').join('')+'</div>'+'<div class="rqDelayStack">'+delayBands.map((n,i)=>'<span class="rqDelayBand rqDelayBand'+i+'" style="width:'+(overCases.length?100*n/overCases.length:0)+'%"></span>').join('')+'</div>'+(delayChart||'<p class="rqEmpty">현재 기한초과 대상이 없습니다.</p>'),'d')
+    +section('03. 조치대응팀별 이행성과','완료 / 미완료 · 팀별 건수',teamOrderControl+teamRateBars+'<details class="rqTeamDetail"><summary>팀별 상세 실적 펼치기</summary><div class="rqScroll">'+teamGrid+'</div></details>','c2')
+    +section('04. 기한초과 집중관리','현재 미완료 기준 · 지연기간별 분포','<div class="rqBands">'+['1~7일','8~14일','15일 이상'].map((x,i)=>'<div><small>'+x+'</small><b>'+delayBands[i]+'건</b></div>').join('')+'</div>'+'<div class="rqDelayStack">'+delayBands.map((n,i)=>'<span class="rqDelayBand rqDelayBand'+i+'" style="width:'+(overCases.length?100*n/overCases.length:0)+'%"></span>').join('')+'</div>'+(delayChart||'<p class="rqEmpty">현재 기한초과 대상이 없습니다.</p>'),'d')
     +'</div>'
     +'<div class="ibRow rqPrintSkip"><button type="button" class="rqDetailOpenBtn" data-open-detail="1">📋 개선요청 상세 목록 열기 (전체 '+actionAll.length+'건)</button></div>'
     +'<p class="rqCaveat">※ 요청출처는 리더십(공장장)·5S모듈·생산혁신팀(HDPS파트) 3종입니다. 원천에 출처 필드가 없는 경우 일부 출처는 등록자 및 Audit 연계 정보로 추정됩니다. 완료일이 없는 완료 건은 월별 완료 추이에서 제외되며 총 완료 건수에는 포함됩니다.</p>';
