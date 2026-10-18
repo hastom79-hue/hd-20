@@ -225,7 +225,19 @@ function render(box){
   const dCum=dVals.reduce((a,b)=>a+b,0);
   // Show original monthly activity counts beneath per-person values; never infer
   // counts by multiplying rounded per-person labels.
-  const Dd=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W/2)-8),cats:ML,per,labelTotals:per?dTotals:null,series:[{name:per?'5S 활동/총원':'5S 활동 건수',vals:dVals,color:C.dark}]});
+  // Monthly per-person trend: actual counts remain a separate second-line label.
+  // Future months are not plotted; no source records or KPI aggregates are changed.
+  const lineNow=new Date(),lineLast=Number(S.year)<lineNow.getFullYear()?12:Number(S.year)===lineNow.getFullYear()?lineNow.getMonth()+1:0;
+  const lineW=Math.max(320,(window.__hd20BoardPrint?W-8:Math.floor(W/2)-8)),lineH=240;
+  const lineM={l:46,r:12,t:37,b:30},lineIW=lineW-lineM.l-lineM.r,lineIH=lineH-lineM.t-lineM.b;
+  const lineValues=dVals.slice(0,lineLast),lineMax=Math.max(0.01,...lineValues)*1.2;
+  const lineAxis=axis(lineMax,{integer:!per,tight:true}),lineY=v=>lineM.t+lineIH-v/lineAxis.max*lineIH;
+  const lineX=i=>lineM.l+lineIW*(i+.5)/12;
+  const lineTicks=Array.from({length:Math.round(lineAxis.max/lineAxis.step)+1},(_,i)=>{const v=i*lineAxis.step,y=lineY(v);return '<line x1="'+lineM.l+'" x2="'+(lineW-lineM.r)+'" y1="'+y+'" y2="'+y+'" stroke="'+C.grid+'"/><text x="'+(lineM.l-7)+'" y="'+(y+4)+'" text-anchor="end" font-size="11" fill="'+C.soft+'">'+tk(v)+'</text>'}).join('');
+  const linePath=lineValues.map((v,i)=>(i?'L':'M')+lineX(i).toFixed(1)+' '+lineY(v).toFixed(1)).join(' ');
+  const lineDots=lineValues.map((v,i)=>{const x=lineX(i),y=lineY(v),label=fx(v,per),count=dTotals[i];return '<circle cx="'+x+'" cy="'+y+'" r="4.5" fill="'+C.dark+'" stroke="#fff" stroke-width="1.5"><title>'+ML[i]+' · '+label+(per?'건/인':'건')+' · '+count+'건</title></circle><text x="'+x+'" y="'+(y-20)+'" text-anchor="middle" font-size="11.5" font-weight="800" fill="'+C.ink+'">'+label+(per?'<tspan x="'+x+'" dy="14" font-size="10.5" font-weight="700">('+count+'건)</tspan>':'')+'</text>'}).join('');
+  const lineMonths=ML.map((m,i)=>'<text x="'+lineX(i)+'" y="'+(lineH-9)+'" text-anchor="middle" font-size="11" fill="'+C.soft+'">'+m+'</text>').join('');
+  const Dd='<svg width="'+lineW+'" height="'+lineH+'" viewBox="0 0 '+lineW+' '+lineH+'" role="img" aria-label="선택팀 월별 인당 개선건수 꺾은선 추세 차트">'+lineTicks+(linePath?'<path d="'+linePath+'" fill="none" stroke="'+C.dark+'" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>':'')+lineDots+lineMonths+'</svg>';
   // Selected-team activity diagnostics: completed months only; current month remains provisional.
   const analysisNow=new Date(),analysisYear=Number(S.year);
   const closedCount=analysisYear<analysisNow.getFullYear()?12:analysisYear===analysisNow.getFullYear()?analysisNow.getMonth():0;
