@@ -39,15 +39,17 @@ function card(m,data,overall){
   let delta='<span class="otDelta flat">비교할 이전 값 없음</span>',bad=false;
   if(cur!==null&&prev!==null){const d=Math.round((cur-prev)*10)/10;if(d===0)delta='<span class="otDelta flat">전월과 같음</span>';else{const better=m.good==='up'?d>0:d<0;bad=!better;delta=`<span class="otDelta ${better?'up':'down'}">${d>0?'▲':'▼'} ${Math.abs(d).toFixed(1)}${esc(m.u)} 전월 대비 ${better?'개선':'악화'}</span>`}}
   const mx=m.max||Math.max(1,...vals.filter(v=>v!==null));
-  const bars=arr.map((x,i)=>{const h=x.v===null?0:Math.max(2,Math.round(x.v/mx*72));return `<div class="otCol${i===arr.length-1?' last':''}" title="${esc(data.months[i])}: ${x.v===null?'표본 없음':fmt(x.v,m.u)+esc(m.u)} (표본 ${x.n}건)"><span>${x.v===null?'-':fmt(x.v,m.u)}</span><i style="height:${h}px"></i></div>`}).join('');
-  const mon=data.months.map((mm,i)=>`<div>${+mm.slice(5)}월<small>n=${arr[i].n}</small></div>`).join('');
+  const currentMonth=Number(new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Seoul',month:'numeric'}).format(new Date()));
+  const visible=arr.slice(0,currentMonth),visibleMonths=data.months.slice(0,currentMonth);
+  const bars=visible.map((x,i)=>{const h=x.v===null?0:Math.max(2,Math.round(x.v/mx*72));return `<div class="otCol${i===visible.length-1?' last':''}" title="${esc(data.months[i])}: ${x.v===null?'표본 없음':fmt(x.v,m.u)+esc(m.u)} (표본 ${x.n}건)"><span>${x.v===null?'-':fmt(x.v,m.u)}</span><i style="height:${h}px"></i></div>`}).join('');
+  const mon=visibleMonths.map((mm,i)=>`<div>${+mm.slice(5)}월<small>n=${visible[i].n}</small></div>`).join('');
   const ov=overall?.[m.k];
-  return {bad,html:`<div class="otCard"><h3>${esc(m.t)}</h3><div class="otBig"><b>${cur===null?'-':fmt(cur,m.u)}</b><em>${esc(m.u)} ${li>=0?'· '+(+data.months[li].slice(5))+'월':''}</em></div>${delta}<div class="otBars">${bars}</div><div class="otMon">${mon}</div><div class="otFoot"><span>${esc(m.note)}${ov!==null&&ov!==undefined?`<br>전체 누적 ${fmt(ov,m.u)}${esc(m.u)}`:''}</span><button type="button" data-ot-route="${m.route}">원인 확인 →</button></div></div>`}}
+  return {bad,html:`<div class="otCard"><h3>${esc(m.t)}</h3><div class="otBig"><b>${cur===null?'-':fmt(cur,m.u)}</b><em>${esc(m.u)} ${li>=0?'· '+(+data.months[li].slice(5))+'월':''}</em></div>${delta}<div class="otBars" style="grid-template-columns:repeat(${visible.length},minmax(0,1fr))">${bars}</div><div class="otMon" style="grid-template-columns:repeat(${visible.length},minmax(0,1fr))">${mon}</div><div class="otFoot"><span>${esc(m.note)}${ov!==null&&ov!==undefined?`<br>전체 누적 ${fmt(ov,m.u)}${esc(m.u)}`:''}</span><button type="button" data-ot-route="${m.route}">원인 확인 →</button></div></div>`}}
 function render(box){
   const K=window.HD20KPIData;if(!K?.monthlyOperational)return;
   let data,overall;try{data=K.monthlyOperational(N);overall=K.operational?.(K.snapshot?.())}catch(e){box.innerHTML='<p class="otNote">추이 데이터를 계산하지 못했습니다.</p>';return}
   const cards=M.map(m=>card(m,data,overall)),badN=cards.filter(c=>c.bad).length;
-  box.innerHTML=`<div class="otHead"><small>성과·운영분석 · 월별 추이</small><h2>운영 건전성, 좋아지고 있나요?</h2><p>종합현황의 6개 지표가 당해연도 1~12월 동안 어떻게 변했는지 봅니다. 나빠진 지표는 오른쪽 아래 <b>원인 확인</b>으로 해당 업무 화면에서 조치하세요.</p><div class="otSum ${badN?'bad':'ok'}">${badN?`⚠ 전월 대비 악화된 지표 ${badN}개`:'✓ 전월 대비 악화된 지표 없음'}</div></div><div class="otGrid">${cards.map(c=>c.html).join('')}</div><p class="otNote">※ 월별 표본(n)이 적은 달은 값이 크게 흔들릴 수 있어 막대 아래에 표본 수를 함께 표시했습니다. 표본이 없는 달은 "-"입니다.</p>`;
+  box.innerHTML=`<div class="otHead"><small>성과·운영분석 · 월별 추이</small><h2>운영 건전성, 좋아지고 있나요?</h2><p>종합현황의 6개 지표가 당해연도 1월부터 현재월까지 어떻게 변했는지 봅니다. 나빠진 지표는 오른쪽 아래 <b>원인 확인</b>으로 해당 업무 화면에서 조치하세요.</p><div class="otSum ${badN?'bad':'ok'}">${badN?`⚠ 전월 대비 악화된 지표 ${badN}개`:'✓ 전월 대비 악화된 지표 없음'}</div></div><div class="otGrid">${cards.map(c=>c.html).join('')}</div><p class="otNote">※ 월별 표본(n)이 적은 달은 값이 크게 흔들릴 수 있어 막대 아래에 표본 수를 함께 표시했습니다. 표본이 없는 달은 "-"입니다.</p>`;
   box.querySelectorAll('[data-ot-route]').forEach(b=>b.onclick=()=>window.HD20_NAV?.go?.(b.dataset.otRoute));
 }
 function ensure(){
