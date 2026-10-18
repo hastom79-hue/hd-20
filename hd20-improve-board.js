@@ -58,6 +58,7 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
 #${ID} .ibLeg{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;font-size:11.5px;color:#5c6b7a;font-weight:800;padding:2px 0 6px}#${ID} .ibLossWrap{margin-top:8px;padding:8px 10px 4px;background:#fbfafa;border:1px solid #f0e4e4;border-radius:8px}
 #${ID} .ibLossLabel{display:flex;justify-content:space-between;font-size:11px;font-weight:850;color:#a0453a;margin-bottom:4px}#${ID} .ibLossLabel em{font-style:normal;color:#7a8a97;font-weight:800}#${ID} .ibSampleBanner{text-align:center;color:#9c5710;background:#fff4de;border:1px solid #efd29b;border-radius:5px;padding:5px 8px;font-size:11px;font-weight:850;margin:4px 0 8px}
 #${ID} .ibActivityAnalysis{margin-top:10px;border:1px solid #dce6ec;border-radius:9px;padding:12px;background:#fafbfc}#${ID} .ibActivityTitle{display:flex;justify-content:space-between;gap:8px;align-items:center;margin:2px 0 9px;color:#173a57;font-size:12px}#${ID} .ibActivityTitle span{font-size:10.5px;color:#718091}#${ID} .ibActivityCards,#${ID} .ibActivityDistribution{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}#${ID} .ibActivityCards{margin-bottom:14px}#${ID} .ibActivityCard{min-width:0;background:white;border:1px solid #e1e8ed;border-radius:7px;padding:10px 8px;display:flex;flex-direction:column;gap:5px}#${ID} .ibActivityCard small{font-size:10.5px;color:#65798a;font-weight:700}#${ID} .ibActivityCard b{font-size:19px;color:#173a57;overflow-wrap:anywhere}#${ID} .ibActivityCard span{font-size:10px;line-height:1.4;color:#758695}@media(max-width:600px){#${ID} .ibActivityCards,#${ID} .ibActivityDistribution{grid-template-columns:repeat(2,minmax(0,1fr))}}
+#${ID} .ibActivityAnalysis .ibActivityCards{grid-template-columns:repeat(2,minmax(0,1fr));flex:1;align-items:stretch;margin-bottom:8px}#${ID} .ibActivityAnalysis .ibActivityCard{justify-content:center;min-height:105px}#${ID} .ibActivityFoot{font-size:10.5px;color:#758695;line-height:1.5;padding-top:6px}@media(max-width:600px){#${ID} .ibActivityAnalysis .ibActivityCards{grid-template-columns:1fr}}
 #${ID} .ibLossWrap .ibLossLegend{margin-top:-3px}#${ID} .ibLossWrap .ibLossLegend .ibLeg{justify-content:center;padding:0 0 3px;gap:6px 16px;line-height:1.15}#${ID} .ibLossFormula{display:flex;flex-wrap:wrap;justify-content:center;gap:3px 16px;border-top:1px solid #e9e3e3;padding:6px 2px 2px;font-size:10.5px;line-height:1.45;color:#657487}#${ID} .ibLossFormula b{color:#42566a}#${ID} .r3{align-items:stretch}#${ID} .r3>.ibPanel{display:flex;flex-direction:column;min-width:0}#${ID} .r3>.ibPanel>.ibBody{flex:1;display:flex;flex-direction:column}#${ID} .r3>.ibPanel:first-child .ibActivityAnalysis{flex:1;display:flex;flex-direction:column;min-height:0}#${ID} .r3>.ibPanel:first-child .ibActivityCards,#${ID} .r3>.ibPanel:first-child .ibActivityDistribution{flex:1;align-items:stretch}#${ID} .r3>.ibPanel:first-child .ibActivityCard{justify-content:center}#${ID} .r3 .ibLossWrap{flex:1;display:flex;flex-direction:column;background:#fafbfc;border-color:#dce6ec;margin-top:10px;padding:12px}#${ID} .r3 .ibLossWrap .ibLossLegend{margin-top:8px;align-self:stretch}#${ID} .r3 .ibLossWrap .ibLossLegend .ibLeg{justify-content:center;align-items:center;padding:7px 0;margin:0;gap:8px 20px;border-top:1px solid #e5ebf0;border-bottom:1px solid #e5ebf0}#${ID} .r3 .ibLossWrap .ibLossLegend .ibLeg i{vertical-align:-1px}#${ID} .r3 .ibLossFormula{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:auto;padding:12px 0 0;border-top:0}#${ID} .r3 .ibLossFormula>div{min-width:0;background:#fff;border:1px solid #e1e8ed;border-radius:7px;padding:10px 8px;display:flex;flex-direction:column;gap:6px}#${ID} .r3 .ibLossFormula b{font-size:11px;color:#173a57}#${ID} .r3 .ibLossFormula span{font-size:10.5px;line-height:1.5;color:#657487}#${ID} .r3 .ibLossLabel{color:#173a57;margin-bottom:8px}@media(max-width:600px){#${ID} .r3 .ibLossFormula{grid-template-columns:1fr}}
 #${ID} .ibLossWrap>div[style*="padding:28px"]{padding:12px 10px!important;margin-top:4px!important}
 #${ID} .ibLossRow{display:flex;align-items:flex-end;gap:3px;height:38px}
@@ -226,26 +227,23 @@ function render(box){
   // counts by multiplying rounded per-person labels.
   const Dd=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W/2)-8),cats:ML,per,labelTotals:per?dTotals:null,series:[{name:per?'5S 활동/총원':'5S 활동 건수',vals:dVals,color:C.dark}]});
   // Selected-team activity diagnostics: completed months only; current month remains provisional.
-  const analysisNow=new Date(),analysisYear=Number(S.year),closedCount=analysisYear<analysisNow.getFullYear()?12:analysisYear===analysisNow.getFullYear()?analysisNow.getMonth():0;
+  const analysisNow=new Date(),analysisYear=Number(S.year);
+  const closedCount=analysisYear<analysisNow.getFullYear()?12:analysisYear===analysisNow.getFullYear()?analysisNow.getMonth():0;
   const visibleCount=analysisYear<analysisNow.getFullYear()?12:analysisYear===analysisNow.getFullYear()?analysisNow.getMonth()+1:0;
   const closedCounts=dTotals.slice(0,closedCount),visibleCounts=dTotals.slice(0,visibleCount);
-  const closedTotal=closedCounts.reduce((a,b)=>a+b,0),visibleTotal=visibleCounts.reduce((a,b)=>a+b,0);
-  const closedAvg=closedCount?closedTotal/closedCount:null;
-  const aboveCount=closedAvg===null?null:closedCounts.filter(v=>v>=closedAvg).length;
-  const belowCount=closedAvg===null?null:closedCount-aboveCount;
-  const zeroCount=closedCount?closedCounts.filter(v=>v===0).length:null;
-  const peakCount=closedCounts.length?Math.max(...closedCounts):null;
-  const peakMonths=peakCount===null?'—':closedCounts.flatMap((v,i)=>v===peakCount?[String(i+1).padStart(2,'0')+'월']:[]).join(', ');
+  const visibleTotal=visibleCounts.reduce((a,b)=>a+b,0),closedTotal=closedCounts.reduce((a,b)=>a+b,0);
+  const closedAvg=closedCount?closedTotal/closedCount:null,activeMonths=closedCounts.filter(v=>v>0).length;
+  const prevClosedCount=closedCount>=1?closedCounts[closedCount-1]:null,priorClosedCount=closedCount>=2?closedCounts[closedCount-2]:null;
+  const closedChange=priorClosedCount===null?'산정 불가':(prevClosedCount-priorClosedCount>0?'+':'')+(prevClosedCount-priorClosedCount)+'건';
+  const peakClosedCount=closedCounts.length?Math.max(...closedCounts):null;
+  const concentration=closedTotal>0&&peakClosedCount!==null?(peakClosedCount/closedTotal*100).toFixed(1)+'%':'산정 불가';
   const metricCard=(label,value,desc)=>'<div class="ibActivityCard"><small>'+label+'</small><b>'+value+'</b><span>'+desc+'</span></div>';
   const activityDiagnostics='<div class="ibActivityAnalysis"><div class="ibActivityTitle"><b>선택팀 활동 실적 분석</b><span>마감월 기준 · '+closedCount+'개월</span></div><div class="ibActivityCards">'+
-    metricCard('연간 누적',visibleTotal+'건',visibleCount+'개월 실적 · 당월 포함 시 잠정')+
-    metricCard('월평균 실적',closedAvg===null?'산정 불가':closedAvg.toFixed(1)+'건','마감월 기준')+
-    metricCard('최고 실적월',peakCount===null?'산정 불가':peakMonths,peakCount===null?'마감월 없음':peakCount+'건 · 마감월 기준')+
-    '</div><div class="ibActivityTitle"><b>월별 활동 수준 분포</b><span>마감월 월평균 대비</span></div><div class="ibActivityDistribution">'+
-    metricCard('월평균 이상',aboveCount===null?'—':aboveCount+'개월','월평균 이상인 월')+
-    metricCard('월평균 미만',belowCount===null?'—':belowCount+'개월','월평균 미만인 월')+
-    metricCard('활동 공백월',zeroCount===null?'—':zeroCount+'개월','등록 0건인 월')+
-    '</div></div>';
+    metricCard('활동 규모',visibleTotal+'건','연간 누적 · '+visibleCount+'개월'+(visibleCount>closedCount?' (당월 잠정 포함)':''))+
+    metricCard('활동 지속성',closedCount?activeMonths+'/'+closedCount+'개월':'산정 불가','활동 발생 '+activeMonths+'개월 · 공백 '+(closedCount-activeMonths)+'개월')+
+    metricCard('최근 마감월 변화',closedChange,priorClosedCount===null?'비교 가능한 마감월 부족':String(closedCount-1).padStart(2,'0')+'월 '+priorClosedCount+'건 → '+String(closedCount).padStart(2,'0')+'월 '+prevClosedCount+'건')+
+    metricCard('활동 편중',concentration,'최다 실적월 건수 ÷ 마감월 누적 건수')+
+    '</div><div class="ibActivityFoot">활동 건수와 지속성의 참고 지표이며, 활동 품질 또는 목표 달성을 의미하지 않습니다.</div></div>';
 
 /* 팀별 고도화 유지·이탈: 기록된 날짜만 사용하고 미기록 이탈일은 추정하지 않음. */
   const teamConf=rowsC.filter(r=>r.team===S.team&&r.judgeState==='확정'),now=new Date(),nowIdx=now.getFullYear()*12+now.getMonth();
