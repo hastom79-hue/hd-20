@@ -107,6 +107,26 @@ function boot(){
    등록돼 이미 끝났어도 괜찮지만, 미완료 건은 '최근에 발생한 지연'이어야 현실적) — 미완료 상태만
    최근 60일 이내로 등록일을 제한, 완료 건은 기존대로 1~10월 전체 분산 유지. */
 const action=[];teams.forEach((team,ti)=>{for(let i=0;i<10;i++){const isDone=!(i%6===0||i%3===0),pendingVerify=isDone&&i%9===0,isLate=i%6===0,isProgress=i%3===0,createdAt=isDone?spreadDate(i,ti,5,9):days(14+((i*7+ti*5)%46));action.push({id:`DEMO-X-${ti}-${i}`,source:SRC,team,group:groupOf(team),createdAt,dueDate:addDaysStr(createdAt,14),status:isLate?'기한초과':isProgress?'진행중':'완료',doneDate:!isDone?'':addDaysStr(createdAt,18),action:'현장 5S 개선조치 시행',after:isDone?'개선 후 정위치·형적관리 적용 완료(현장 사진 첨부)':'',afterEvidence:'',evidenceNote:isDone?'개선 후 정위치·형적관리 적용 완료 (사진 증빙은 미첨부)':'',effectVerified:isDone&&!pendingVerify,recurrenceState:pendingVerify?'':i%5===0?'재발':'미발생',title:['정위치 보완','표준표기 개선','통로 적치 제거','Audit 재발 방지'][i%4]})}});
+ /* Populate month-scoped validation samples without inflating confirmed-case totals. */
+ const localDate=(m,d)=>now.getFullYear()+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+ activity.filter(r=>String(r.id||'').startsWith('DEMO-A-ADV-REAL-')).forEach((r,i)=>{
+   const judged=new Date(String(r.judgedAt)+'T12:00:00');
+   judged.setDate(judged.getDate()-(3+i%8));
+   r.date=ymd(judged);r.createdAt=r.date;r.regDate=r.date;
+ });
+ for(let m=1;m<=now.getMonth()+1;m++){
+   for(let j=0;j<2;j++){
+     const ti=(m*3+j)%teams.length,team=teams[ti];
+     activity.push({id:'DEMO-A-JUDGE-QUEUE-'+m+'-'+j,source:SRC,team,group:groupOf(team),date:localDate(m,Math.min(3+j*5,now.getDate())),createdAt:localDate(m,Math.min(3+j*5,now.getDate())),type:'5S 고도화',candidate:true,confirmed:false,judgeState:'판정대기',status:'판정대기',criteriaMatched:2});
+   }
+ }
+ /* Audit dates are at least six months before the relevant maintenance outcome. */
+ audit.forEach((r,i)=>{
+   const month=1+(i%Math.max(1,now.getMonth()+1));
+   const end=new Date(now.getFullYear(),month-1,12);
+   const start=new Date(end);start.setMonth(start.getMonth()-6);
+   r.auditDate=ymd(start);r.date=ymd(end);
+ });
  /* Keep one canonical synthetic advancement population for all summary widgets. */
  for(let i=activity.length-1;i>=0;i--){
    const row=activity[i];
