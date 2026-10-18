@@ -53,10 +53,10 @@ function trendCss(){if(document.getElementById(ID+'TrendStyle'))return;const s=d
 #${ID} .httBig{display:flex;align-items:baseline;gap:7px;margin:6px 0 2px}
 #${ID} .httBig b{font-size:26px;color:#14304c;letter-spacing:-.02em}#${ID} .httBig em{font-style:normal;font-size:12px;color:#5c6b7a;font-weight:800}
 #${ID} .httDelta{font-size:11.5px;font-weight:850}#${ID} .httDelta.up{color:#2f7a4d}#${ID} .httDelta.down{color:#c0392b}#${ID} .httDelta.flat{color:#7a8a97}
-#${ID} .httBars{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;align-items:end;height:64px;margin-top:9px;border-bottom:1px solid #dde5eb}
-#${ID} .httCol{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;gap:2px}
+#${ID} .httBars{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:5px;align-items:end;height:64px;overflow:hidden;margin-top:9px;border-bottom:1px solid #dde5eb}
+#${ID} .httCol{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;min-width:0;gap:2px}
 #${ID} .httCol i{display:block;width:60%;border-radius:3px 3px 0 0;background:#b7c6d4;min-height:2px}#${ID} .httCol.last i{background:#14304c}
-#${ID} .httMon{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin-top:3px;text-align:center;font-size:9.5px;color:#a0adb8}
+#${ID} .httMon{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:5px;margin-top:3px;text-align:center;font-size:9.5px;color:#a0adb8}
 #${ID} .httFoot{display:flex;justify-content:space-between;align-items:flex-end;gap:8px;margin-top:9px}
 #${ID} .httFoot p{margin:0;font-size:11px;color:#7a8a97;line-height:1.5}
 #${ID} .httFoot button{flex:0 0 auto;border:1px solid #cfd9e2;background:#fff;color:#14304c;border-radius:9px;padding:5px 9px;font-weight:850;font-size:11.5px;cursor:pointer}
@@ -70,8 +70,12 @@ function card(x,i,op,monthly){
   let delta='<span class="httDelta flat">비교할 이전 값 없음</span>';
   if(cur!==null&&cur!==undefined&&prev!==null&&prev!==undefined){const d=Math.round((cur-prev)*10)/10;if(d===0)delta='<span class="httDelta flat">전월과 같음</span>';else{const better=x.good==='up'?d>0:d<0;delta=`<span class="httDelta ${better?'up':'down'}">${d>0?'▲':'▼'} ${Math.abs(d).toFixed(1)}${esc(x.unit||'')} 전월 대비 ${better?'개선':'악화'}</span>`}}
   const mx=x.max||Math.max(1,...vals.filter(v=>v!==null));
-  const bars=arr.length?arr.map((v,i2)=>{const h=v.v===null?0:Math.max(2,Math.round(v.v/mx*58));return `<div class="httCol${i2===arr.length-1?' last':''}" title="${esc(monthly.months[i2])}: ${v.v===null?'표본 없음':fmt(v.v,x.key)} (표본 ${v.n}건)"><i style="height:${h}px"></i></div>`}).join(''):'';
-  const mon=arr.length?monthly.months.map(mm=>`<div>${+mm.slice(5)}월</div>`).join(''):'';
+  // The mini-chart has six columns: show only the latest six months.
+  // Previously 12 data points were squeezed into six columns, producing two
+  // overlapping rows of month labels and clipped bars.
+  const visible=arr.slice(-6),visibleMonths=(monthly?.months||[]).slice(-6);
+  const bars=visible.length?visible.map((v,i2)=>{const n=Number(v.v);const h=v.v===null||!Number.isFinite(n)?0:Math.max(2,Math.min(58,Math.round(n/mx*58)));return `<div class="httCol${i2===visible.length-1?' last':''}" title="${esc(visibleMonths[i2]||'')}: ${v.v===null?'표본 없음':fmt(v.v,x.key)} (표본 ${v.n}건)"><i style="height:${h}px"></i></div>`}).join(''):'';
+  const mon=visibleMonths.map(mm=>`<div>${+String(mm).slice(5)}월</div>`).join('');
   const g=GROUPS.find(gg=>gg.key===x.tab);
   return `<article class="hd20HealthTrendCard" data-kpi="${x.key}" data-tab="${x.tab}"><div class="httGroupTag">${g?g.step+' '+g.label:''}</div><h4>${x.label}</h4><div class="httBig"><b>${fmt(op[x.key],x.key)}</b></div>${delta}${bars?`<div class="httBars">${bars}</div><div class="httMon">${mon}</div>`:''}<div class="httFoot"><p>${x.hint}</p><button type="button" data-group-tab="${x.tab}">원인 확인 →</button></div></article>`}
 function removeRetiredStandardTrendLabel(){const bottom=document.querySelector('.bottomGrid');if(bottom?.previousElementSibling?.classList.contains('hd20DashboardSectionLabel'))bottom.previousElementSibling.remove()}
