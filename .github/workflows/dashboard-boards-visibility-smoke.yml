@@ -41,7 +41,9 @@ jobs:
                 await page.goto('http://127.0.0.1:4173/index.html?area=dashboard',{waitUntil:'domcontentloaded'});
                 await page.waitForFunction(()=>!!window.HD20_DASHBOARD_TABS,{timeout:25000});
                 for(const [key,id,api] of [['improve','hd20ImproveBoard','HD20_IMPROVE_BOARD'],['request','hd20RequestBoard','HD20_REQUEST_BOARD']]){
-                  await page.evaluate(key=>{document.querySelector('.beginnerNav button[data-key="dashboard"]')?.click();window.HD20_DASHBOARD_TABS.apply(key,{scroll:false})},key);
+                  await page.evaluate(()=>window.HD20_NAV?.go?.('dashboard'));
+                  await page.waitForFunction(()=>window.HD20_NAV?.active?.()==='dashboard',null,{timeout:10000});
+                  await page.evaluate(key=>window.HD20_DASHBOARD_TABS.apply(key,{scroll:false}),key);
                   await page.waitForFunction(({key,id})=>{const el=document.getElementById(id);return window.HD20_DASHBOARD_TABS?.active?.()===key&&!!el&&el.innerHTML.length>100&&getComputedStyle(el).display!=='none'&&el.getBoundingClientRect().width>100},{key,id},{timeout:15000});
                   const state=await page.evaluate(({key,id,api})=>{
                     const el=document.getElementById(id),style=el&&getComputedStyle(el),rect=el?.getBoundingClientRect();
