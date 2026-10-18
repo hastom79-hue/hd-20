@@ -1,7 +1,5 @@
-/* 5S 개선요청 종합 대시보드 — 사용자가 첨부한 'VTB 개선요청 종합 대시보드'(HD-HiHR/DELMIA Apriso) 구성을 5S 데이터에 맞게 재구성.
-   VTB와의 차이(사용자 지시): 개선요청부서 그리드는 따로 두지 않고 '조치대응부서'에 집중. 개선요청 출처는 5S모듈·생산혁신팀 HDPS파트·리더십 3종만 존재.
-   데이터: HD20KPIData.actionCases()/seoulDateKey(), HD20ProductionTeamMaster, HD20_HEADCOUNT_MASTER. 차트 엔진은 HD20_BOARD_KIT(hd20-improve-board.js) 재사용.
-   주의(데이터 한계, 화면에도 안내): 현재 원천에는 '요청출처' 실제 필드가 없어 auditDrawId 유무로 5S모듈/생산혁신팀 HDPS파트를 추정 표기(리더십 항목은 실제 필드 연결 전까지 0). */
+/* 5S 개선요청 종합 대시보드: 개선요청 등록 팝업의 4대 발굴 출처와 동일한 기준으로 집계한다.
+   출처가 없는 과거 기록은 추정하지 않고 '출처 미분류'로 집계한다. */
 (()=>{'use strict';
 const ID='hd20RequestBoard';
 const SOURCES=['현장 패트롤 점검','자율 5S Audit','혁신팀 자율 점검','5S 자율개선활동 피드백','출처 미분류'];
@@ -438,7 +436,7 @@ function render(box){
     +section('05. 기한초과 집중관리','현재 미완료 기준 · 지연기간별 분포','<div class="rqBands">'+['1~7일','8~14일','15일 이상'].map((x,i)=>'<div><small>'+x+'</small><b>'+delayBands[i]+'건</b></div>').join('')+'</div>'+'<div class="rqDelayStack">'+delayBands.map((n,i)=>'<span class="rqDelayBand rqDelayBand'+i+'" style="width:'+(overCases.length?100*n/overCases.length:0)+'%"></span>').join('')+'</div>'+(delayChart||'<p class="rqEmpty">현재 기한초과 대상이 없습니다.</p>'),'d')
     +'</div>'
     +'<div class="ibRow rqPrintSkip"><button type="button" class="rqDetailOpenBtn" data-open-detail="1">📋 개선요청 상세 목록 열기 (전체 '+actionAll.length+'건)</button></div>'
-    +'<p class="rqCaveat">※ 요청출처는 5S모듈·생산혁신팀 HDPS파트·리더십 3종입니다. 원천에 출처 필드가 없는 경우 일부 출처는 등록자 및 Audit 연계 정보로 추정됩니다. 완료일이 없는 완료 건은 월별 완료 추이에서 제외되며 총 완료 건수에는 포함됩니다.</p>';
+    +'<p class="rqCaveat">※ 발굴 출처는 현장 패트롤 점검·자율 5S Audit·혁신팀 자율 점검·5S 자율개선활동 피드백 4종입니다. 원본 출처가 확인되지 않는 기존 요청은 출처 미분류로 별도 집계하며 임의 추정하지 않습니다. 완료일이 없는 완료 건은 월별 완료 추이에서 제외되며 총 완료 건수에는 포함됩니다.</p>';
 
   const evCols=['요청번호','요청출처','조치대응부서','작업장','진행현황','요청일','완료예정일','완료일'],
     evMapR=c=>[c.id,sourceOf(c),c.team,c.workplace||'—',c.status,c.date,c.due||'—',c.doneDate||'—'],
