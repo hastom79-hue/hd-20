@@ -150,7 +150,7 @@ function css(){const prior=document.getElementById(ID+'Style');if(prior)prior.re
 /* Chart 03: rotate category labels DOWN from the x-axis, never into the bars. */
 #${ID} .rqManageRow .rqTeamChart03Cols .rqTeamVerticalCol{grid-template-rows:172px 86px!important}
 #${ID} .rqManageRow .rqTeamChart03Cols .rqTeamVerticalCol>span{height:86px!important;min-height:86px!important;overflow:visible!important}
-#${ID} .rqManageRow .rqTeamChart03Cols .rqTeamVerticalCol>span em{top:20px!important;left:54%!important;transform:rotate(-47deg)!important;transform-origin:left top!important;white-space:nowrap!important}
+#${ID} .rqManageRow .rqTeamChart03Cols .rqTeamVerticalCol>span em{top:54px!important;left:15%!important;transform:rotate(-47deg)!important;transform-origin:left top!important;white-space:nowrap!important}
 #${ID} .ibPanel{border:1px solid #e3eaf0;border-radius:10px;background:#fff;overflow:hidden}
 #${ID} .ibHead{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 12px;background:#f1f5f8;border-bottom:1px solid #e3eaf0;font-size:13.5px;font-weight:900;color:#22303f}
 #${ID} .ibHead em{font-style:normal;font-size:12.5px;color:#14304c}
