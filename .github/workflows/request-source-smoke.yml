@@ -106,11 +106,9 @@ jobs:
               // not a full-site visual regression test.
               await page.route('**/isolated-request-e2e.html',route=>route.fulfill({
                 status:200,contentType:'text/html',
-                body:'<!doctype html><html lang="ko"><head><meta charset="utf-8"></head><body><section id="awAction"></section></body></html>'
+                body:'<!doctype html><html lang="ko"><head><meta charset="utf-8"></head><body><section id="awAction"></section><script src="/dashboard-kpi-source.js"></script><script src="/action-mail-workflow.js"></script></body></html>'
               }));
               await page.goto('http://127.0.0.1:4173/isolated-request-e2e.html',{waitUntil:'domcontentloaded'});
-              await page.addScriptTag({url:'/dashboard-kpi-source.js'});
-              await page.addScriptTag({url:'/action-mail-workflow.js'});
               await page.waitForSelector('#amRequestSource',{state:'attached',timeout:30000});
               // Confirm Audit-to-action event prefills the required discovery source.
               await page.evaluate(()=>window.dispatchEvent(new CustomEvent('hd20-audit-to-action',{detail:{problem:'CI Audit 연계 확인'}})));
