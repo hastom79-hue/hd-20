@@ -63,7 +63,7 @@ function boot(){
    const ti=(i*7)%teams.length,team=teams[ti];
    const month=i>=totalApproved-3?now.getMonth()+1:1+(i%Math.max(1,now.getMonth()));
    const day=3+((i*5)%20);
-   const confirmedDate=year+'-'+String(month).padStart(2,'0')+'-'+String(Math.min(day,month===now.getMonth()+1?now.getDate():28)).padStart(2,'0');
+   const confirmedDate=now.getFullYear()+'-'+String(month).padStart(2,'0')+'-'+String(Math.min(day,month===now.getMonth()+1?now.getDate():28)).padStart(2,'0');
    const lost=i<attrited;
    activity.push({id:'DEMO-A-ADV-REAL-'+i,source:SRC,team,group:groupOf(team),owner:'검증작업자-'+String(ti+1).padStart(2,'0'),date:confirmedDate,type:'5S 고도화',area:['조립라인','자재구역','검사대'][i%3],problem:'5S 고도화 3대 요건 확인',improvement:'시각화·Green Zone·공간활용 개선',status:'완료',candidate:false,judgeState:'확정',confirmed:true,judgedAt:confirmedDate,criteriaCount:3,criteriaMatched:3,maintainState:lost?'이탈':'유지',attrition:lost,visualization:true,greenZone:true,spaceUtilization:true});
  }
