@@ -116,7 +116,7 @@ jobs:
               const row=stored.find(x=>x.workplace==='CI 격리 작업장');
               assert(row,'request not persisted');
               assert.strictEqual(row.requestSource,'현장 패트롤 점검');
-              await page.locator('#amCaseRows [data-id]').filter({hasText:row.id}).first().click();
+              await page.locator('#amCaseRows .amCaseLink[data-id]').filter({hasText:row.id}).first().click();
               await page.locator('#amActionText').fill('CI 조치완료 검증');
               await page.locator('#amDoneStatus').selectOption('완료');
               await page.locator('#amSaveResponse').click();
