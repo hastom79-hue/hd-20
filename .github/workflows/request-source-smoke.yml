@@ -101,17 +101,16 @@ jobs:
                 if(route.request().resourceType()==='script')return route.fulfill({status:200,contentType:'application/javascript',body:'/* isolated external stub */'});
                 return route.abort();
               });
-              await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'domcontentloaded'});
-              // The ⑤ action panel is lazy-mounted by the tab router. Mount an isolated
-              // host when not yet selected, then load the real production workflow.
-              await page.evaluate(()=>{
-                if(!document.getElementById('awAction')){
-                  const host=document.createElement('section');
-                  host.id='awAction';
-                  document.body.appendChild(host);
-                }
-              });
-              await page.addScriptTag({url:'/action-mail-workflow.js?v=20261018-audit-source-2'});
+              // Isolate real production scripts from unrelated auth/tab overlays.
+              // This is a genuine browser test of the registration and KPI adapter,
+              // not a full-site visual regression test.
+              await page.route('**/isolated-request-e2e.html',route=>route.fulfill({
+                status:200,contentType:'text/html',
+                body:'<!doctype html><html lang="ko"><head><meta charset="utf-8"></head><body><section id="awAction"></section></body></html>'
+              }));
+              await page.goto('http://127.0.0.1:4173/isolated-request-e2e.html',{waitUntil:'domcontentloaded'});
+              await page.addScriptTag({url:'/dashboard-kpi-source.js'});
+              await page.addScriptTag({url:'/action-mail-workflow.js'});
               await page.waitForSelector('#amRequestSource',{state:'attached',timeout:30000});
               // Confirm Audit-to-action event prefills the required discovery source.
               await page.evaluate(()=>window.dispatchEvent(new CustomEvent('hd20-audit-to-action',{detail:{problem:'CI Audit 연계 확인'}})));
