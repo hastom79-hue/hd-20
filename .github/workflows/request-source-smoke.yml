@@ -43,9 +43,10 @@ jobs:
           assert(board.includes("'출처 미분류'"),'legacy records must remain unclassified');
           assert(board.includes('const sourceStats=orderedSources.map'),'source bars must follow master order');
           assert(board.includes('x.done/x.count'),'source completion rate must use its own request count');
-          for(const script of ['hd20-request-board.js','web-validation-fixture.js']){
-            assert(html.includes(script+'?v=20261018-source-sync-1'),'cache-bust missing: '+script);
-          }
+          assert(html.includes('hd20-request-board.js?v=20261018-vertical-legend-deploy-1'),'dashboard deploy cache-bust missing');
+          assert(html.includes('web-validation-fixture.js?v=20261018-source-sync-1'),'fixture cache-bust missing');
+          assert(board.includes('rqSourceColumns'),'vertical paired source chart missing');
+          assert(board.includes('발굴 리소스 · 범례 정의'),'resource legend definitions missing');
           assert(html.includes('action-mail-workflow.js?v=20261018-audit-source-2'),'action registration cache-bust missing');
           assert(action.includes("$('#amRequestSource',a).value='자율 5S Audit'"),'audit-linked request must preselect source');
           assert(loader.includes('request-source-order-master.js?v=20261018-source-sync-1'),'dynamic master cache-bust missing');
