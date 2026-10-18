@@ -103,6 +103,11 @@ jobs:
               });
               await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'domcontentloaded'});
               await page.waitForSelector('#amRequestSource',{state:'attached',timeout:30000});
+              // Confirm Audit-to-action event prefills the required discovery source.
+              await page.evaluate(()=>window.dispatchEvent(new CustomEvent('hd20-audit-to-action',{detail:{problem:'CI Audit 연계 확인'}})));
+              await page.waitForFunction(()=>document.querySelector('#amRequestSource')?.value==='자율 5S Audit',{},{timeout:10000});
+              assert.strictEqual(await page.locator('#amProblem').inputValue(),'CI Audit 연계 확인');
+              // Exercise explicit user selection, persistence, completion, and reload separately.
               await page.locator('#amWorkplace').fill('CI 격리 작업장');
               await page.locator('#amProblem').fill('CI 개선요청 검증');
               await page.locator('#amRequestSource').selectOption({label:'현장 패트롤 점검'});
