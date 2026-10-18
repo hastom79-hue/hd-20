@@ -600,8 +600,8 @@ document.addEventListener('click',e=>{if(e.target.closest?.('#hd20DashboardSecti
 ['hd20-kpi-source-updated','hd20-action-updated','hd20-policy-updated'].forEach(ev=>window.addEventListener(ev,()=>setTimeout(()=>{const b=document.getElementById(ID);if(b)safeRender(b)},80)));
 let requestPanelLastWidth=0,requestPanelResizeTimer;
 if(typeof ResizeObserver!=='undefined'){
- const panelObserver=new ResizeObserver(()=>{const b=document.getElementById(ID),p=b?.querySelector('.rqSplit4060 .ibPanel:nth-child(2)');if(!p||b.offsetParent===null)return;const w=Math.round(p.getBoundingClientRect().width);if(w>250&&Math.abs(w-requestPanelLastWidth)>3){requestPanelLastWidth=w;clearTimeout(requestPanelResizeTimer);requestPanelResizeTimer=setTimeout(()=>safeRender(b),90)}});
- const observePanel=()=>{const p=document.querySelector('#'+ID+' .rqSplit4060 .ibPanel:nth-child(2)');if(p)panelObserver.observe(p)};
+ const panelObserver=new ResizeObserver(()=>{const b=document.getElementById(ID),p=b?.querySelector('.rqSplit4060 .ibPanel:nth-child(2)');if(!p||b.offsetParent===null)return;const w=Math.round(p.getBoundingClientRect().width);if(w>250&&Math.abs(w-requestPanelLastWidth)>3){requestPanelLastWidth=w;clearTimeout(requestPanelResizeTimer);requestPanelResizeTimer=setTimeout(()=>{safeRender(b);observePanel()},90)}});
+ const observePanel=()=>{const p=document.querySelector('#'+ID+' .rqSplit4060 .ibPanel:nth-child(2)');if(p){panelObserver.disconnect();panelObserver.observe(p)}};
  document.addEventListener('click',e=>{if(e.target.closest?.('#hd20DashboardSectionTabs button'))setTimeout(observePanel,120)},true);
  window.addEventListener('load',observePanel);setTimeout(observePanel,650);
 }
