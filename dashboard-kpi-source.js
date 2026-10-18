@@ -70,7 +70,7 @@ function operational(s){
    자체가 없어 임의로 숫자를 만들면 안 되므로 그대로 '—' 유지. nonconform(부적합 발생률)만은 실제 Audit
    결과(result/finalEvaluation 필드)로 계산 가능해 추가. */
   const auditRows=auditDraws(),auditWithResult=auditRows.filter(x=>txt(pickField(x,['result','finalEvaluation']))),nonconformCnt=auditWithResult.filter(x=>/부적합|미흡|fail|ng/i.test(txt(pickField(x,['result','finalEvaluation'])))).length;
-  return{judgmentRate:pct(judged.length,judgmentScope.length),avgLead:lead.length?Math.round(lead.reduce((a,b)=>a+b,0)/lead.length*10)/10:null,maturity:levels.length?Math.round(levels.reduce((a,b)=>a+b,0)/levels.length*10)/10:null,sixRetention:sixMonthRetention(),recurrence:pct(recurred,recurrenceScope.length),actionOnTime:pct(ontime,timedCompleted.length),nonconform:pct(nonconformCnt,auditWithResult.length)}
+  return{advRetention:pct((s?.maintained||[]).length,(s?.confirmed||[]).length),advAttrition:pct((s?.confirmed||[]).length-(s?.maintained||[]).length,(s?.confirmed||[]).length),judgmentRate:pct(judged.length,judgmentScope.length),avgLead:lead.length?Math.round(lead.reduce((a,b)=>a+b,0)/lead.length*10)/10:null,maturity:levels.length?Math.round(levels.reduce((a,b)=>a+b,0)/levels.length*10)/10:null,sixRetention:sixMonthRetention(),recurrence:pct(recurred,recurrenceScope.length),actionOnTime:pct(ontime,timedCompleted.length),nonconform:pct(nonconformCnt,auditWithResult.length)}
 }
 /* 월별 추이(읽기 전용): operational()과 같은 정의를 월 단위로 나눈 값. 기존 산식은 변경하지 않음.
    판정완료율=등록월 기준, Lead Time·수준=판정/확정월 기준, 6개월 유지율=6개월 종료월 기준,
@@ -97,6 +97,14 @@ function monthlyOperational(n=6){
     const cl=closed.filter(x=>x.end.slice(0,7)===m);out.sixRetention.push(cell(pct(cl.filter(x=>passOf(x.d)).length,cl.length),cl.length));
     const rc=recScope.filter(x=>mk(doneOf(x))===m);out.recurrence.push(cell(pct(rc.filter(recurrenceState).length,rc.length),rc.length));
     const tm2=timed.filter(x=>mk(doneOf(x))===m);out.actionOnTime.push(cell(pct(tm2.filter(x=>{const d=asDate(doneOf(x)),u=asDate(dueOf(x));return d&&u&&d<=u}).length,tm2.length),tm2.length));
+  });
+  // Monthly confirmed-case cohorts: retained vs attrited, using confirmation month.
+  out.advRetention=[];out.advAttrition=[];
+  months.forEach(m=>{
+    const cohort=(s.confirmed||[]).filter(x=>mk(confirmedDate(x))===m);
+    const kept=cohort.filter(isMaintained).length;
+    out.advRetention.push(cell(pct(kept,cohort.length),cohort.length));
+    out.advAttrition.push(cell(pct(cohort.length-kept,cohort.length),cohort.length));
   });
   return out;
 }

@@ -5,19 +5,18 @@ const ID='hd20DashboardPriority';
    01·02가 없지?"라는 혼란을 주고 있었음(사용자 지적: "전면 재검토"). 업무 흐름 배너와 번호 체계가
    섞이지 않도록 이 카드들은 숫자 대신 단순한 그룹 순번(①②③)으로 표기해 혼동을 없앰. */
 const GROUPS=[
-  {key:'advancement',step:'①',label:'고도화·판정',summary:'등록된 사례를 공식 판정과 고도화 수준으로 확인'},
-  {key:'audit',step:'②',label:'유지·Audit',summary:'Audit 이후 6개월 유지와 부적합 재발을 확인'},
-  {key:'action',step:'③',label:'개선조치',summary:'완료기한이 지정된 개선조치의 실행상태를 확인'}
+  {key:'advancement',step:'①',label:'고도화 유지·이탈',summary:'확정된 사례의 유지와 이탈을 확인'},
+  {key:'audit',step:'②',label:'Audit 지속·재발',summary:'Audit 이후 6개월 유지와 부적합 재발을 확인'},
+  {key:'action',step:'③',label:'개선조치 적시성',summary:'완료기한이 지정된 개선조치의 실행상태를 확인'}
 ];
 /* good(추세가 '개선'으로 판정되는 방향)·max(미니 막대그래프 축 상한)는 5번 탭(dashboard-ops-trend.js
    의 M 배열)과 동일한 값을 그대로 맞춤 — 같은 6개 지표를 다른 화면에서 다르게 해석하면 안 되므로. */
 const KPI=[
-  {key:'judgmentRate',label:'공식 판정 완료율',unit:'%',tab:'advancement',hint:'판정대상 중 공식 판정 완료 비율',good:'up',max:100},
-  {key:'avgLead',label:'평균 판정 Lead Time',unit:'일',tab:'advancement',hint:'등록부터 공식 판정까지 평균 소요일',good:'down'},
-  {key:'maturity',label:'고도화 수준',prefix:'Lv.',tab:'advancement',hint:'공식 확정 사례의 현재 평균 Level',good:'up',max:5},
-  {key:'sixRetention',label:'Audit 후 6개월 유지율',unit:'%',tab:'audit',hint:'6개월 관리 종료 사례의 유지 비율',good:'up',max:100},
-  {key:'recurrence',label:'Audit 부적합 재발률',unit:'%',tab:'audit',hint:'재발여부가 기록된 개선조치 중 재발 비율',good:'down',max:100},
-  {key:'actionOnTime',label:'기한 내 개선조치 완료율',unit:'%',tab:'action',hint:'완료기한이 있는 완료 Case의 기한 내 완료 비율',good:'up',max:100}
+  {key:'advRetention',label:'고도화 확정 사례의 유지율',unit:'%',tab:'advancement',hint:'확정 성과 유지 · 공식 확정 사례 중 현재 유지 중인 비율',good:'up',max:100},
+  {key:'advAttrition',label:'고도화 확정 후 이탈률',unit:'%',tab:'advancement',hint:'유지기준 이탈 · 공식 확정 사례 중 유지기준 이탈 비율',good:'down',max:100},
+  {key:'sixRetention',label:'Audit 후 6개월 유지율',unit:'%',tab:'audit',hint:'지속성 검증 · 6개월 관리 종료 사례의 유지 비율',good:'up',max:100},
+  {key:'recurrence',label:'Audit 부적합 재발률',unit:'%',tab:'audit',hint:'동일 문제 재발 · 동일 문제의 반복 발생 여부',good:'down',max:100},
+  {key:'actionOnTime',label:'기한 내 개선조치 완료율',unit:'%',tab:'action',hint:'문제 발생 후 조치 · 개선조치 실행의 적시성',good:'up',max:100}
 ];
 function fmt(v,k){if(v===null||v===undefined||Number.isNaN(v))return '—';const def=KPI.find(x=>x.key===k)||{};const num=def.prefix?v:(Number.isInteger(v)?v:Math.round(v*10)/10);return `${def.prefix||''}${num}${def.unit||''}`}
 function gotoTab(key){document.querySelector(`.beginnerNav button[data-key="${key}"]`)?.click()}
@@ -49,7 +48,7 @@ function ensure(){
    있어 유지)와 별도로 .hd20HealthTrendCard라는 새 클래스로 구현해 기존 스타일과 충돌시키지 않음. */
 function trendCss(){if(document.getElementById(ID+'TrendStyle'))return;const s=document.createElement('style');s.id=ID+'TrendStyle';s.textContent=`
 #${ID} .hd20HealthTrendCard{border:1px solid #e3eaf0;border-radius:12px;padding:14px 15px;background:#fbfcfd}
-#${ID} .hd20HealthTrendCard h4{margin:0;font-size:13px;color:#22303f;font-weight:850}
+#${ID} .hd20HealthTrendCard h4{margin:0;font-size:13px;color:#22303f;font-weight:850}#${ID} .httFlow{font-size:11px;color:#667b8e;margin-top:4px;font-weight:750}
 #${ID} .httBig{display:flex;align-items:baseline;gap:7px;margin:6px 0 2px}
 #${ID} .httBig b{font-size:26px;color:#14304c;letter-spacing:-.02em}#${ID} .httBig em{font-style:normal;font-size:12px;color:#5c6b7a;font-weight:800}
 #${ID} .httDelta{font-size:11.5px;font-weight:850}#${ID} .httDelta.up{color:#2f7a4d}#${ID} .httDelta.down{color:#c0392b}#${ID} .httDelta.flat{color:#7a8a97}
@@ -77,7 +76,7 @@ function card(x,i,op,monthly){
   const bars=visible.length?visible.map((v,i2)=>{const n=Number(v.v);const h=v.v===null||!Number.isFinite(n)?0:Math.max(2,Math.min(74,Math.round(n/mx*74)));return `<div class="httCol${i2===visible.length-1?' last':''}" title="${esc(visibleMonths[i2]||'')}: ${v.v===null?'표본 없음':fmt(v.v,x.key)} (표본 ${v.n}건)"><i style="height:${h}px"></i></div>`}).join(''):'';
   const mon=visibleMonths.map(mm=>`<div>${+String(mm).slice(5)}월</div>`).join('');
   const g=GROUPS.find(gg=>gg.key===x.tab);
-  return `<article class="hd20HealthTrendCard" data-kpi="${x.key}" data-tab="${x.tab}"><div class="httGroupTag">${g?g.step+' '+g.label:''}</div><h4>${x.label}</h4><div class="httBig"><b>${fmt(op[x.key],x.key)}</b></div>${delta}${bars?`<div class="httBars" style="--htt-months:${visible.length}">${bars}</div><div class="httMon" style="--htt-months:${visible.length}">${mon}</div>`:''}<div class="httFoot"><p>${x.hint}</p><button type="button" data-group-tab="${x.tab}">원인 확인 →</button></div></article>`}
+  return `<article class="hd20HealthTrendCard" data-kpi="${x.key}" data-tab="${x.tab}"><div class="httGroupTag">${g?g.step+' '+g.label:''}</div><h4>${x.label}</h4><div class="httFlow">${esc(x.hint.split(" · ")[0])}</div><div class="httBig"><b>${fmt(op[x.key],x.key)}</b></div>${delta}${bars?`<div class="httBars" style="--htt-months:${visible.length}">${bars}</div><div class="httMon" style="--htt-months:${visible.length}">${mon}</div>`:''}<div class="httFoot"><p>${x.hint}</p><button type="button" data-group-tab="${x.tab}">원인 확인 →</button></div></article>`}
 function removeRetiredStandardTrendLabel(){const bottom=document.querySelector('.bottomGrid');if(bottom?.previousElementSibling?.classList.contains('hd20DashboardSectionLabel'))bottom.previousElementSibling.remove()}
 function render(){
   removeRetiredStandardTrendLabel();
