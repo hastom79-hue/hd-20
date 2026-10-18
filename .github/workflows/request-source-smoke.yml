@@ -150,7 +150,18 @@ jobs:
               console.log('PASS: isolated registration -> completion -> reload persistence');
             }catch(error){
               console.error('Browser E2E failed:',error.stack||error);
+              try{
+                await page.screenshot({path:'request-source-browser-failure.png',fullPage:true,timeout:5000});
+                console.error('Saved request-source-browser-failure.png');
+              }catch(screenshotError){console.error('Screenshot unavailable:',screenshotError.message)}
               throw error;
             }finally{await browser.close()}
           })().catch(e=>{console.error(e);process.exit(1)});
           NODE
+      - name: Upload browser failure evidence
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hd20-request-source-browser-failure
+          path: request-source-browser-failure.png
+          if-no-files-found: ignore
