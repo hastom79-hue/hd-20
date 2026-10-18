@@ -374,7 +374,7 @@ function render(box){
   const activeSources=sourceStats.slice(0,4).filter(x=>x.count>0).length;
   /* 좌측 패널: 가로막대 금지. 발굴 리소스는 범례와 정의로 설명하고,
      요청·완료 건수는 출처별 세로 2열 막대로 비교한다. */
-  const sourceMax=Math.max(1,...sourceStats.slice(0,4).map(x=>x.count));
+  const sourceMax=Math.max(1,...sourceStats.map(x=>x.count));
   const sourceDefinitions=[
     ['현장 패트롤 점검','현장 순회·패트롤 과정에서 확인된 5S 미흡사항'],
     ['자율 5S Audit','생산팀 자체 5S Audit 평가에서 확인된 개선 필요사항'],
@@ -383,7 +383,7 @@ function render(box){
   ];
   const sourceBars='<div class="rqSourcePanel rqSourceV3"><div class="rqSourceTop"><div><small>개선요청 전체</small><strong>'+sourceTotal.toLocaleString('ko-KR')+'<em>건</em></strong></div><div><small>전체 완료율</small><strong>'+(sourceTotal?(100*rowsM.filter(isDone).length/sourceTotal).toFixed(1):'—')+'<em>%</em></strong></div></div>'
     +'<div class="rqSourceLegend"><span><i style="background:#6089a6"></i>개선요청 건수 (건)</span><span><i style="background:#279586"></i>완료 건수 (건)</span><span>완료율 = 완료 건수 ÷ 개선요청 건수 × 100</span></div>'
-    +'<div class="rqSourceColumns" role="img" aria-label="4대 발굴 출처별 개선요청 및 완료 건수 세로막대 비교">'+sourceStats.slice(0,4).map((x,i)=>'<div class="rqSourceColumn"><div class="rqSourceColPlot"><div class="rqSourceColBar request" style="height:'+Math.max(0,x.count/sourceMax*100)+'%"><b>'+x.count+'</b></div><div class="rqSourceColBar done" style="height:'+Math.max(0,x.done/sourceMax*100)+'%"><b>'+x.done+'</b></div></div><strong>'+(i+1).toString().padStart(2,'0')+'</strong><small>'+(x.count?(100*x.done/x.count).toFixed(0)+'% 완료':'요청 없음')+'</small></div>').join('')+'</div>'
+    +'<div class="rqSourceColumns" role="img" aria-label="4대 발굴 출처 및 출처 미분류의 개선요청·완료 건수 비교">'+sourceStats.slice(0,4).map((x,i)=>'<div class="rqSourceColumn"><div class="rqSourceColPlot"><div class="rqSourceColBar request" style="height:'+Math.max(0,x.count/sourceMax*100)+'%"><b>'+x.count+'</b></div><div class="rqSourceColBar done" style="height:'+Math.max(0,x.done/sourceMax*100)+'%"><b>'+x.done+'</b></div></div><strong>'+(i+1).toString().padStart(2,'0')+'</strong><small>'+(x.count?(100*x.done/x.count).toFixed(0)+'% 완료':(i===4?'미분류 없음':'요청 없음'))+'</small></div>').join('')+'</div>'
     +'<div class="rqSourceFactorLegend"><b>발굴 리소스 · 범례 정의</b>'+sourceDefinitions.map((x,i)=>'<div><span class="rqFactorIndex">'+String(i+1).padStart(2,'0')+'</span><span><strong>'+esc(x[0])+'</strong><small>'+esc(x[1])+'</small></span></div>').join('')+'</div>'
     +'<p class="rqSourceUnclassified">출처 미분류 '+sourceStats.find(x=>x.name==='출처 미분류').count+'건 · 기존 기록은 출처를 임의 추정하지 않습니다.</p></div>';
   /* 전면 개편(사용자 확정: "이대로"): 3개 출처 중 보통 1개에만 건수가 몰려 별도 섹션(가로막대 3개)을
