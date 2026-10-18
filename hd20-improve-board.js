@@ -228,23 +228,31 @@ function render(box){
   // Monthly per-person trend: actual counts remain a separate second-line label.
   // Future months are not plotted; no source records or KPI aggregates are changed.
   const lineNow=new Date(),lineLast=Number(S.year)<lineNow.getFullYear()?12:Number(S.year)===lineNow.getFullYear()?lineNow.getMonth()+1:0;
-  // Monthly and annual cumulative per-person performance share one plot.
-  // Only the monthly series receives visible value labels; cumulative values appear in tooltips.
-  const lineW=Math.max(440,(window.__hd20BoardPrint?W-8:Math.floor(W/2)-8)),lineH=268;
-  const lineM={l:48,r:14,t:44,b:36},lineIW=lineW-lineM.l-lineM.r,lineIH=lineH-lineM.t-lineM.b;
+  // Approved visual: green monthly columns + blue cumulative area/line, independent axes.
+  const lineW=Math.max(680,(window.__hd20BoardPrint?W-8:Math.floor(W/2)-8)),lineH=360;
+  const lineM={l:55,r:56,t:67,b:39},lineIW=lineW-lineM.l-lineM.r,lineIH=lineH-lineM.t-lineM.b;
   const lineValues=dVals.slice(0,lineLast);
   const cumulativeValues=lineValues.map((_,i)=>lineValues.slice(0,i+1).reduce((sum,v)=>sum+v,0));
   const cumulativeTotals=dTotals.slice(0,lineLast).map((_,i)=>dTotals.slice(0,i+1).reduce((sum,v)=>sum+v,0));
-  const lineMax=Math.max(0.01,...lineValues,...cumulativeValues)*1.12;
-  const lineAxis=axis(lineMax,{integer:!per,tight:true}),lineY=v=>lineM.t+lineIH-v/lineAxis.max*lineIH;
+  const monthlyAxis=axis(Math.max(0.1,...lineValues)*1.42,{integer:!per,tight:true});
+  const cumulativeAxis=axis(Math.max(0.1,...cumulativeValues)*1.18,{integer:!per,tight:true});
+  const monthY=v=>lineM.t+lineIH-v/monthlyAxis.max*lineIH;
+  const cumY=v=>lineM.t+lineIH-v/cumulativeAxis.max*lineIH;
   const lineX=i=>lineM.l+lineIW*(i+.5)/12;
-  const lineTicks=Array.from({length:Math.round(lineAxis.max/lineAxis.step)+1},(_,i)=>{const v=i*lineAxis.step,y=lineY(v);return '<line x1="'+lineM.l+'" x2="'+(lineW-lineM.r)+'" y1="'+y+'" y2="'+y+'" stroke="'+C.grid+'"/><text x="'+(lineM.l-7)+'" y="'+(y+4)+'" text-anchor="end" font-size="11" fill="'+C.soft+'">'+tk(v)+'</text>'}).join('');
-  const linePath=values=>values.map((v,i)=>(i?'L':'M')+lineX(i).toFixed(1)+' '+lineY(v).toFixed(1)).join(' ');
-  const monthlyDots=lineValues.map((v,i)=>{const x=lineX(i),y=lineY(v),label=fx(v,per),count=dTotals[i];const labelY=y-(i%2?24:37);return '<circle cx="'+x+'" cy="'+y+'" r="4.2" fill="'+C.dark+'" stroke="#fff" stroke-width="1.5"><title>'+ML[i]+' 월간 · '+label+(per?'건/인':'건')+' · '+count+'건</title></circle><text x="'+x+'" y="'+labelY+'" text-anchor="middle" font-size="10.5" font-weight="800" fill="'+C.ink+'">'+label+(per?'<tspan x="'+x+'" dy="13" font-size="9.5" font-weight="700">('+count+'건)</tspan>':'')+'</text>'}).join('');
-  const cumulativeDots=cumulativeValues.map((v,i)=>'<circle cx="'+lineX(i)+'" cy="'+lineY(v)+'" r="3.4" fill="#3574b7" stroke="#fff" stroke-width="1"><title>'+ML[i]+' 연간 누적 · '+fx(v,per)+(per?'건/인':'건')+' · '+cumulativeTotals[i]+'건</title></circle>').join('');
-  const lineMonths=ML.map((m,i)=>'<text x="'+lineX(i)+'" y="'+(lineH-12)+'" text-anchor="middle" font-size="11" fill="'+C.soft+'">'+m+'</text>').join('');
-  const lineLegend='<g font-size="11" font-weight="700"><line x1="52" x2="77" y1="15" y2="15" stroke="'+C.dark+'" stroke-width="3"/><text x="82" y="19" fill="'+C.ink+'">월간 실적</text><line x1="165" x2="190" y1="15" y2="15" stroke="#3574b7" stroke-width="3"/><text x="195" y="19" fill="'+C.ink+'">연간 누적</text></g>';
-  const Dd='<div style="width:100%;overflow-x:auto"><svg width="'+lineW+'" height="'+lineH+'" viewBox="0 0 '+lineW+' '+lineH+'" role="img" aria-label="선택팀 월간 및 연간 누적 인당 개선건수 동시 꺾은선 차트">'+lineLegend+lineTicks+(cumulativeValues.length?'<path d="'+linePath(cumulativeValues)+'" fill="none" stroke="#3574b7" stroke-width="2.8" stroke-linejoin="round"/>':'')+(lineValues.length?'<path d="'+linePath(lineValues)+'" fill="none" stroke="'+C.dark+'" stroke-width="2.8" stroke-linejoin="round"/>':'')+cumulativeDots+monthlyDots+lineMonths+'</svg></div>';
+  const lineTicks=Array.from({length:5},(_,i)=>{const y=lineM.t+lineIH*i/4,lv=monthlyAxis.max*(1-i/4),rv=cumulativeAxis.max*(1-i/4);return '<line x1="'+lineM.l+'" x2="'+(lineW-lineM.r)+'" y1="'+y+'" y2="'+y+'" stroke="#dce6ef" stroke-dasharray="5 5"/><text x="'+(lineM.l-9)+'" y="'+(y+4)+'" text-anchor="end" font-size="12" fill="#14695f">'+fx(lv,per)+'</text><text x="'+(lineW-lineM.r+9)+'" y="'+(y+4)+'" font-size="12" fill="#3574b7">'+fx(rv,per)+'</text>'}).join('');
+  const linePath=cumulativeValues.map((v,i)=>(i?'L':'M')+lineX(i).toFixed(1)+' '+cumY(v).toFixed(1)).join(' ');
+  const areaPath=cumulativeValues.length?linePath+' L'+lineX(cumulativeValues.length-1).toFixed(1)+' '+(lineM.t+lineIH)+' L'+lineX(0).toFixed(1)+' '+(lineM.t+lineIH)+' Z':'';
+  const monthlyBars=lineValues.map((v,i)=>{const x=lineX(i),y=monthY(v),count=dTotals[i],label=fx(v,per),barW=Math.min(35,lineIW/17);return '<rect x="'+(x-barW/2)+'" y="'+y+'" width="'+barW+'" height="'+Math.max(0,lineM.t+lineIH-y)+'" rx="5" fill="#5cb2a4" opacity=".94"><title>'+ML[i]+' 월간 '+label+(per?'건/인':'건')+' ('+count+'건)</title></rect><circle cx="'+x+'" cy="'+y+'" r="5" fill="#166b60"/><text x="'+x+'" y="'+(y-23)+'" text-anchor="middle" font-size="12.5" font-weight="800" fill="#075e4b">'+label+(per?'<tspan x="'+x+'" dy="15" font-size="11">('+count+'건)</tspan>':'')+'</text>'}).join('');
+  const cumulativeDots=cumulativeValues.map((v,i)=>{const x=lineX(i),y=cumY(v);return '<circle cx="'+x+'" cy="'+y+'" r="'+(i===cumulativeValues.length-1?5.5:4)+'" fill="#3574b7" stroke="#fff" stroke-width="1.4"><title>'+ML[i]+' 연간 누적 '+fx(v,per)+(per?'건/인':'건')+' ('+cumulativeTotals[i]+'건)</title></circle><text x="'+x+'" y="'+(y-14)+'" text-anchor="middle" font-size="'+(i===cumulativeValues.length-1?15:11.5)+'" font-weight="'+(i===cumulativeValues.length-1?900:600)+'" fill="#2167b3">'+fx(v,per)+'</text>'}).join('');
+  const lineMonths=ML.map((m,i)=>'<text x="'+lineX(i)+'" y="'+(lineH-11)+'" text-anchor="middle" font-size="12" fill="#64748b">'+String(i+1).padStart(2,'0')+'월</text>').join('');
+  const lineLegend='<g font-size="12" font-weight="750"><rect x="78" y="14" width="14" height="14" rx="4" fill="#278678"/><text x="99" y="26" fill="#193047">월간 인당 개선건수</text><line x1="245" x2="275" y1="21" y2="21" stroke="#3574b7" stroke-width="3"/><circle cx="260" cy="21" r="5" fill="#3574b7"/><text x="283" y="26" fill="#193047">연간 누적 인당 개선건수</text></g>';
+  const axisTitles='<text x="8" y="48" font-size="12" font-weight="800" fill="#14695f">월간 ('+(per?'건/인':'건')+')</text><text x="'+(lineW-8)+'" y="48" text-anchor="end" font-size="12" font-weight="800" fill="#3574b7">연간 누적 ('+(per?'건/인':'건')+')</text>';
+  const svgChart='<svg width="'+lineW+'" height="'+lineH+'" viewBox="0 0 '+lineW+' '+lineH+'" role="img" aria-label="월간 세로막대와 연간 누적 꺾은선 복합 차트">'+lineLegend+axisTitles+lineTicks+(areaPath?'<path d="'+areaPath+'" fill="#3574b7" fill-opacity=".09"/>':'')+(linePath?'<path d="'+linePath+'" fill="none" stroke="#3574b7" stroke-width="2.7" stroke-linejoin="round"/>':'')+monthlyBars+cumulativeDots+lineMonths+'</svg>';
+  const activeMonths=lineValues.filter(v=>v>0).length;
+  const elapsedMonths=lineValues.length;
+  const summaryCard=(label,value,detail)=>'<div style="flex:1;min-width:145px;background:#fff;border:1px solid #dbe4ed;border-radius:10px;padding:13px 17px"><div style="font-size:12px;color:#65758a;font-weight:700">'+label+'</div><div style="font-size:24px;color:#102c48;font-weight:900;margin:5px 0">'+value+'</div><div style="font-size:11px;color:#65758a">'+detail+'</div></div>';
+  const summary='<div style="margin-top:13px;background:#f8fafc;border:1px solid #e1e8f0;border-radius:12px;padding:14px"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:11px"><strong style="font-size:15px;color:#15304b">선택팀 활동 실적 분석</strong><span style="font-size:12px;color:#68788b">마감월 기준 · '+elapsedMonths+'개월</span></div><div style="display:flex;gap:10px;flex-wrap:wrap">'+summaryCard('활동 규모',dTotals.slice(0,lineLast).reduce((a,b)=>a+b,0)+'건','연간 누적 · '+elapsedMonths+'개월')+summaryCard('활동 지속성',activeMonths+'/'+elapsedMonths+'개월','활동 발생 '+activeMonths+'개월 · 공백 '+(elapsedMonths-activeMonths)+'개월')+summaryCard('월평균 실적',fx(elapsedMonths?dCum/elapsedMonths:0,per)+(per?'건/인':'건'),'누적 '+fx(dCum,per)+(per?'건/인':'건')+' ÷ '+elapsedMonths+'개월')+'</div></div>';
+  const Dd='<div style="width:100%;overflow-x:auto">'+svgChart+'</div>'+summary;
   // Selected-team activity diagnostics: completed months only; current month remains provisional.
   const analysisNow=new Date(),analysisYear=Number(S.year);
   const closedCount=analysisYear<analysisNow.getFullYear()?12:analysisYear===analysisNow.getFullYear()?analysisNow.getMonth():0;
