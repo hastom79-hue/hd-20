@@ -285,8 +285,8 @@ function render(box){
   const demoLoss=[0,0,0,0,0,0,0,1,0,1,0,0].map((v,i)=>i<lastMonth?v:null);
   const demoDecline=[null,0,0,0,0,0,1,1,0,1,0,0].map((v,i)=>i<lastMonth?v:null);
   const lossBar=showSample
-    ?'<div class="ibSampleBanner">예시 데이터 · 화면 디자인 검증용 (실적 미반영)</div>'+chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W/2)-8),h:185,cats:ML,series:[{name:'작업사례 이탈 (예시)',vals:demoLoss,color:'#c13f36'},{name:'작업장 유지수준 하락 (예시)',vals:demoDecline,color:'#d89a35'}]})
-    :chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W/2)-8),h:185,cats:ML,series:[{name:'작업사례 이탈',vals:knownLoss?lossArr:Array(12).fill(null),color:'#c13f36'},{name:'작업장 유지수준 하락',vals:declineMonths?declineArr:Array(12).fill(null),color:'#d89a35'}]});
+    ?'<div class="ibSampleBanner">예시 데이터 · 화면 디자인 검증용 (실적 미반영)</div>'+chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W/2)-8),h:185,cats:ML,tightAxis:true,axisHeadroom:0,series:[{name:'작업사례 이탈 (예시)',vals:demoLoss,color:'#c13f36'},{name:'작업장 유지수준 하락 (예시)',vals:demoDecline,color:'#d89a35'}]})
+    :chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W/2)-8),h:185,cats:ML,tightAxis:true,axisHeadroom:0,series:[{name:'작업사례 이탈',vals:knownLoss?lossArr:Array(12).fill(null),color:'#c13f36'},{name:'작업장 유지수준 하락',vals:declineMonths?declineArr:Array(12).fill(null),color:'#d89a35'}]});
   const lossChart=`<div class="ibLossWrap"><div class="ibLossLabel">작업사례 이탈 · 작업장 유지수준 하락<em>이탈 ${knownLoss?lossTot+'건':'자료 없음'} · 유지수준 하락 ${declineMonths?declineTot+'곳':'자료 없음'}</em></div>${lossBar}<div class="ibLossLegend">${leg([['작업사례 이탈','#c13f36'],['작업장 유지수준 하락','#d89a35']])}</div><div class="ibLossFormula"><div><b>작업사례 이탈(건)</b><span>해당 월 실제 이탈일이 기록된 확정 사례 수</span></div><div><b>유지수준 하락(곳)</b><span>전월보다 유지율이 낮아진 작업장 수</span></div><div><b>작업장 유지율(%)</b><span>유지 사례 수 ÷ 누적 확정 사례 수 × 100</span></div></div></div>`;
   const opt=(a,cur,all='ALL')=>`<option value="">${all}</option>`+a.map(x=>`<option value="${esc(x)}"${x===cur?' selected':''}>${esc(x)}</option>`).join('');
   box.innerHTML=`<div class="ibTitle"><h2>5S 자율개선 종합 대시보드</h2></div><p class="ibNote">기본 조회조건은 당해년도 연간누적 데이터입니다 (월간 데이터 조회 시, 해당 월을 선택하세요)</p>
