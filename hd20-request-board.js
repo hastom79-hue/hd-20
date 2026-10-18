@@ -107,6 +107,8 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
 #${ID} .rqTeamVerticalCol>strong{font-size:13px;color:#29435a}
 #${ID} .rqTeamVerticalTrack{height:220px;width:58px;display:flex;align-items:flex-end;border-bottom:1px solid #bfcbd4;background:linear-gradient(to top,#f4f7f9,#fff)}
 #${ID} .rqTeamVerticalTrack>span{display:block;width:100%;border-radius:4px 4px 0 0}
+#${ID} .rqTeamVerticalTrack.rqAxisCut{position:relative}
+#${ID} .rqTeamVerticalTrack.rqAxisCut:after{content:'//';position:absolute;left:-15px;bottom:-8px;color:#526a7a;font-size:15px;font-weight:900;letter-spacing:-3px;background:#fff;padding:0 3px;transform:rotate(-20deg)}
 #${ID} .rqTeamVerticalCol>span{font-size:11px;font-weight:750;line-height:1.3;overflow-wrap:anywhere;min-height:30px;color:#344e63}
 #${ID} .rqTeamVerticalCol>small{font-size:10px;color:#647b8b}
 #${ID} .rqDelayVerticalScroll{max-width:100%;overflow-x:auto;overflow-y:hidden;padding:8px 2px 12px;overscroll-behavior-x:contain}
@@ -439,10 +441,16 @@ function render(box){
   const teamRateSorted=[...teamRowsAllTeams].sort((a,b)=>(a.total?a.done/a.total:0)-(b.total?b.done/b.total:0)||b.total-a.total);
   const teamRateRow=(r,hidden)=>{const rate=r.total?Math.round(r.done/r.total*1000)/10:0,mine=teamHighlight&&r.team===teamHighlight;return '<tr'+(mine?' class="rqMyTeam"':hidden?' class="rqRowMore" hidden':'')+'><td>'+(mine?'<b>▶ ':'')+esc(r.team)+(mine?' <span class="rqMyTeamTag">내 팀</span></b>':'')+'</td><td><div class="rqStack" title="완료 '+r.done+'건 / 기한 내 미완료 '+r.open+'건 / 기한초과 '+r.over+'건"><span class="rqStackDone" style="width:'+(r.total?100*r.done/r.total:0)+'%"></span><span class="rqStackOpen" style="width:'+(r.total?100*r.open/r.total:0)+'%"></span><span class="rqStackLate" style="width:'+(r.total?100*r.over/r.total:0)+'%"></span></div></td><td class="'+rateCls(rate)+'">'+rate+'%</td></tr>'};
   // Section 04: all teams in vertical columns, with no hidden six-team limit.
-  const rates0=teamRateSorted.map(r=>r.total?Math.round(r.done/r.total*1000)/10:0);
+  const rates0=teamRateSorted.filter(r=>r.total>0).map(r=>Math.round(r.done/r.total*1000)/10);
   const allSameRate=rates0.length>1&&rates0.every(v=>v===rates0[0]);
-  const teamRateNote=allSameRate?'<p class="rqTeamNote">현재 조건에서는 '+teamRateSorted.length+'개 팀의 완료율이 동일합니다.</p>':'';
-  const teamRateBars='<div class="rqTeamVerticalScroll">'+teamRateNote+'<div class="rqTeamVertical" style="--rq-team-count:'+Math.max(1,teamRateSorted.length)+'"><div class="rqTeamVerticalCols">'+teamRateSorted.map(r=>{const pct=r.total?Math.round(r.done/r.total*1000)/10:0;const color=pct<50?'#b04f4b':pct<80?'#b68b43':'#408d82';return '<div class="rqTeamVerticalCol" title="'+esc(r.team)+' · 완료 '+r.done+'/'+r.total+'건"><strong>'+pct+'%</strong><div class="rqTeamVerticalTrack"><span style="height:'+pct+'%;background:'+color+'"></span></div><span>'+esc(r.team)+(teamHighlight===r.team?' ★':'')+'</span><small>'+r.done+'/'+r.total+'건</small></div>'}).join('')+'</div></div></div>';
+  // Dynamic but honest axis: clipped baselines are explicitly marked, and the exact rate remains visible.
+  const rateMin=rates0.length?Math.min(...rates0):0,rateMax=rates0.length?Math.max(...rates0):100;
+  const rateSpread=rateMax-rateMin;
+  const rateAxisLow=rateSpread>0&&rateMin>=40?Math.max(0,Math.floor((rateMin-Math.max(2,rateSpread*.3))/5)*5):0;
+  const rateAxisHigh=Math.min(100,Math.max(rateAxisLow+5,Math.ceil((rateMax+Math.max(2,rateSpread*.3))/5)*5));
+  const rateAxisSpan=Math.max(1,rateAxisHigh-rateAxisLow);
+  const teamRateNote='<p class="rqTeamNote">세로축 '+rateAxisLow+'~'+rateAxisHigh+'%'+(rateAxisLow>0?' · 0%부터 시작하지 않는 확대축(축 절단 표시)':'')+(allSameRate?' · 현재 팀별 완료율이 동일합니다.':'')+'</p>';
+  const teamRateBars='<div class="rqTeamVerticalScroll">'+teamRateNote+'<div class="rqTeamVertical" style="--rq-team-count:'+Math.max(1,teamRateSorted.length)+'"><div class="rqTeamVerticalCols">'+teamRateSorted.map(r=>{const pct=r.total?Math.round(r.done/r.total*1000)/10:0;const color=pct<50?'#b04f4b':pct<80?'#b68b43':'#408d82';const h=r.total?Math.max(0,Math.min(100,(pct-rateAxisLow)/rateAxisSpan*100)):0;return '<div class="rqTeamVerticalCol" title="'+esc(r.team)+' · 완료 '+r.done+'/'+r.total+'건"><strong>'+pct+'%</strong><div class="rqTeamVerticalTrack'+(rateAxisLow>0?' rqAxisCut':'')+'"><span style="height:'+h+'%;background:'+color+'"></span></div><span>'+esc(r.team)+(teamHighlight===r.team?' ★':'')+'</span><small>'+r.done+'/'+r.total+'건</small></div>'}).join('')+'</div></div></div>';
   const overCases=rowsM.filter(c=>teamsAll.includes(c.team)&&isOverdue(c,D.today));
   const delayBands=[overCases.filter(c=>delayDays(c,D.today)<=7).length,overCases.filter(c=>delayDays(c,D.today)>=8&&delayDays(c,D.today)<=14).length,overCases.filter(c=>delayDays(c,D.today)>=15).length];
   const kpi=(label,value,detail,risk=false)=>'<div class="rqKpi'+(risk?' risk':'')+'"><small>'+label+'</small><b>'+value+'</b><span class="rqKpiHint">'+detail+'</span></div>';
