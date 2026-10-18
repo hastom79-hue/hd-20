@@ -15,7 +15,7 @@
  *   - 팀장 마스터(이메일)는 건드리지 않음.
  */
 (()=>{'use strict';
-const V=11,SRC='web-validation-fixture';
+const V=12,SRC='web-validation-fixture';
 const P=new URL(location.href).searchParams;
 const MODE=P.get('validation'),EDGE=P.get('edge')==='1';
 const SCALE=Math.min(5,Math.max(1,parseInt(P.get('scale')||'1',10)||1));
