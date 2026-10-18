@@ -287,23 +287,12 @@ function render(box){
     declineArr.push(compared?declined:null)
   }
   const divE=v=>v===null?null:(per?v/th:v),curKeep=teamConf.filter(r=>keepSet.has(r.id)).length;
-  // Demo only for missing Jan-Aug history. Actual months and source KPIs are unchanged.
-  const earlyMonths=Math.min(8,lastMonth),missingEarly=earlyMonths>0&&exArr.slice(0,earlyMonths).every(v=>!v)&&nwArr.slice(0,earlyMonths).every(v=>!v);
-  const sampleExisting=[0,1,1,2,2,3,3,4],sampleNew=[1,1,2,1,2,1,2,1];
-  const displayExisting=exArr.map((v,i)=>missingEarly&&i<earlyMonths?sampleExisting[i]:v);
-  const displayNew=nwArr.map((v,i)=>missingEarly&&i<earlyMonths?sampleNew[i]:v);
-  const E=(missingEarly?'<div class="ibSampleBanner">1~8월 예시 데이터 · 차트 검증용 (실적 미반영)</div>':'')+chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W/2)-8),cats:ML,per:false,stack:false,series:[{name:'기존 유지(현상태 기준)',vals:displayExisting,color:'#a8c7c4'},{name:'신규 확정',vals:displayNew,color:C.dark}]});
+  // Render only selected team's real, dated records. Never insert shared fixed demo arrays.
+  const E=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W/2)-8),cats:ML,per:false,stack:false,series:[{name:'기존 유지(현상태 기준)',vals:exArr,color:'#a8c7c4'},{name:'신규 확정',vals:nwArr,color:C.dark}]});
   const knownLoss=lossArr.some(v=>Number.isFinite(v)&&v>0),declineMonths=declineArr.filter(Number.isFinite).length;
   const lossTot=lossArr.reduce((a,b)=>a+(Number.isFinite(b)?b:0),0);
   const declineTot=declineArr.reduce((a,b)=>a+(Number.isFinite(b)?b:0),0);
-  // UI-only fixture when source lacks dated attrition / workplace history.
-  // Never mutate source records, KPI totals, evidence exports or production metrics.
-  const showSample=!knownLoss&&!declineMonths;
-  const demoLoss=[0,1,0,1,0,1,0,1,0,1,0,0].map((v,i)=>i<lastMonth?v:null);
-  const demoDecline=[null,0,1,0,1,0,1,1,0,1,0,0].map((v,i)=>i<lastMonth?v:null);
-  const lossBar=showSample
-    ?'<div class="ibSampleBanner">예시 데이터 · 화면 디자인 검증용 (실적 미반영)</div>'+chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W/2)-8),h:185,cats:ML,tightAxis:true,axisHeadroom:0,series:[{name:'작업사례 이탈 (예시)',vals:demoLoss,color:'#c13f36'},{name:'작업장 유지수준 하락 (예시)',vals:demoDecline,color:'#d89a35'}]})
-    :chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W/2)-8),h:185,cats:ML,tightAxis:true,axisHeadroom:0,series:[{name:'작업사례 이탈',vals:knownLoss?lossArr:Array(12).fill(null),color:'#c13f36'},{name:'작업장 유지수준 하락',vals:declineMonths?declineArr:Array(12).fill(null),color:'#d89a35'}]});
+  const lossBar=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W/2)-8),h:185,cats:ML,tightAxis:true,axisHeadroom:0,series:[{name:'작업사례 이탈',vals:lossArr,color:'#c13f36'},{name:'작업장 유지수준 하락',vals:declineArr,color:'#d89a35'}]});
   const lossChart=`<div class="ibLossWrap"><div class="ibLossLabel">작업사례 이탈 · 작업장 유지수준 하락<em>이탈 ${knownLoss?lossTot+'건':'자료 없음'} · 유지수준 하락 ${declineMonths?declineTot+'곳':'자료 없음'}</em></div>${lossBar}<div class="ibLossLegend">${leg([['작업사례 이탈','#c13f36'],['작업장 유지수준 하락','#d89a35']])}</div><div class="ibLossFormula"><div><b>작업사례 이탈(건)</b><span>해당 월 실제 이탈일이 기록된 확정 사례 수</span></div><div><b>유지수준 하락(곳)</b><span>전월보다 유지율이 낮아진 작업장 수</span></div><div><b>작업장 유지율(%)</b><span>유지 사례 수 ÷ 누적 확정 사례 수 × 100</span></div></div></div>`;
   const opt=(a,cur,all='ALL')=>`<option value="">${all}</option>`+a.map(x=>`<option value="${esc(x)}"${x===cur?' selected':''}>${esc(x)}</option>`).join('');
   box.innerHTML=`<div class="ibTitle"><h2>5S 자율개선 종합 대시보드</h2></div><p class="ibNote">기본 조회조건은 당해년도 연간누적 데이터입니다 (월간 데이터 조회 시, 해당 월을 선택하세요)</p>
