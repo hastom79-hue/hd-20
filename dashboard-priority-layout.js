@@ -65,9 +65,10 @@ function card(x,i,op,monthly){
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const arr=monthly?(monthly[x.key]||[]):[],vals=arr.map(v=>v.v),known=vals.map((v,i2)=>v===null?null:i2).filter(i2=>i2!==null);
   const li=known.length?known[known.length-1]:-1,pi=known.length>1?known[known.length-2]:-1;
-  const cur=op[x.key],prev=pi>=0?vals[pi]:null;
+  // Compare like-for-like monthly cohorts, never a lifetime KPI with a monthly percentage.
+  const cur=li>=0?vals[li]:null,prev=pi>=0?vals[pi]:null;
   let delta='<span class="httDelta flat">비교할 이전 값 없음</span>';
-  if(cur!==null&&cur!==undefined&&prev!==null&&prev!==undefined){const d=Math.round((cur-prev)*10)/10;if(d===0)delta='<span class="httDelta flat">전월과 같음</span>';else{const better=x.good==='up'?d>0:d<0;delta=`<span class="httDelta ${better?'up':'down'}">${d>0?'▲':'▼'} ${Math.abs(d).toFixed(1)}${esc(x.unit||'')} 전월 대비 ${better?'개선':'악화'}</span>`}}
+  if(cur!==null&&cur!==undefined&&prev!==null&&prev!==undefined){const d=Math.round((cur-prev)*10)/10;if(d===0)delta='<span class="httDelta flat">전월과 같음</span>';else{const better=x.good==='up'?d>0:d<0;delta=`<span class="httDelta ${better?'up':'down'}">${d>0?'▲':'▼'} ${Math.abs(d).toFixed(1)}${x.unit==='%'?'%p':esc(x.unit||'')} 전월 대비 ${better?'개선':'악화'}</span>`}}
   const mx=x.max||Math.max(1,...vals.filter(v=>v!==null));
   // Show January through the current month; never display future months.
   const now=new Date(),currentKey=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');

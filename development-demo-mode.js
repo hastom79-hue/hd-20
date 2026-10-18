@@ -114,8 +114,12 @@ const action=[];teams.forEach((team,ti)=>{for(let i=0;i<10;i++){const isDone=!(i
      const day=Math.min(4+j*2,m===now.getMonth()+1?now.getDate():28);
      const done=now.getFullYear()+'-'+String(m).padStart(2,'0')+'-'+String(day).padStart(2,'0');
      const start=addDaysStr(done,-(7+j%5));
-     const due=addDaysStr(done,(j+m)%4===0?-2-(j%3):2+(j%3));
-     action.push({id:'DEMO-X-MONTH-'+m+'-'+j,source:SRC,team,group:groupOf(team),createdAt:start,date:start,dueDate:due,targetDate:due,doneDate:done,status:'완료',action:'현장 정위치 및 표준표기 개선',after:'개선 후 현장 확인 완료',afterEvidence:'개선결과 확인',effectVerified:true,recurrenceState:j%6===0?'재발':'미발생',title:'월별 개선조치 검증',evidenceNote:'가상 검증 데이터 · 실제 운영실적 아님'});
+     /* Month-specific variation: deliberate changes in on-time performance, not a repeated 75% pattern. */
+     const monthlyLate=[5,3,6,2,4,1,5,3,6,2,4,3];
+     const lateCount=monthlyLate[(m-1)%monthlyLate.length];
+     const isLate=((j*5+m*3)%8)<lateCount;
+     const due=addDaysStr(done,isLate?-(1+(j%4)):(2+(j%4)));
+     action.push({id:'DEMO-X-MONTH-'+m+'-'+j,source:SRC,team,group:groupOf(team),createdAt:start,date:start,dueDate:due,targetDate:due,doneDate:done,status:'완료',action:'현장 정위치 및 표준표기 개선',after:'개선 후 현장 확인 완료',afterEvidence:'개선결과 확인',effectVerified:true,recurrenceState:((j*3+m*5)%8)<[3,1,4,2,5,1,3,2,4,1,3,2][(m-1)%12]?'재발':'미발생',title:'월별 개선조치 검증',evidenceNote:'가상 검증 데이터 · 실제 운영실적 아님'});
    }
  }
  /* Populate month-scoped validation samples without inflating confirmed-case totals. */
