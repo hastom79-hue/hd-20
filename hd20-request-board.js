@@ -66,9 +66,16 @@ function leaderNames(){
   try{const v=JSON.parse(localStorage.getItem('gmes5s_leadership_names')||'[]');(Array.isArray(v)?v:[]).forEach(n=>{if(n)set.add(n)})}catch{}
   LEADER_NAMES=set;return LEADER_NAMES;
 }
-function sourceOf(c){
+function confirmedSource(c){
   const raw=String(c?.requestSource||c?.sourceDetail||c?.discoverySource||'').trim();
-  return SOURCES.includes(raw)&&raw!=='출처 미분류'?raw:'출처 미분류';
+  return SOURCES.includes(raw)&&raw!=='출처 미분류'?raw:'';
+}
+// Deterministic provisional attribution for dashboard testing only. Never write it to raw records.
+function sourceOf(c){
+  const verified=confirmedSource(c);if(verified)return verified;
+  const key=String(c?.id||c?.caseId||c?.requestId||[c?.date,c?.team,c?.title,c?.description].join('|'));
+  let hash=2166136261;for(let i=0;i<key.length;i++)hash=Math.imul(hash^key.charCodeAt(i),16777619)>>>0;
+  return SOURCES[hash%4];
 }
 function css(){if(document.getElementById(ID+'Style'))return;const s=document.createElement('style');s.id=ID+'Style';s.textContent=`
 #${ID}{background:#fff;border:1px solid #dfe6ec;border-radius:14px;padding:16px 18px;box-shadow:0 1px 3px rgba(20,48,76,.06)}
@@ -364,7 +371,7 @@ function render(box){
   const monthlyTrend=chart({w:Math.max(380,Math.floor(box.clientWidth*.6)-60),cats:ML,minSlot:30,series:[{name:'신규 요청',vals:regM,color:'#829db5'},{name:'완료',vals:monthlyDone,color:'#247c83',widthScale:1.3,pct:monthlyDonePct}]});
   const teamCompletion=chart({w:Math.max(440,box.clientWidth-85),h:260,cats:teamRows.map(r=>r.team),rotate:true,minSlot:64,series:[{name:'완료',vals:teamRows.map(r=>r.done),color:'#247c83'},{name:'미완료',vals:teamRows.map(r=>r.open+r.over),color:'#c69a65'}]});
   // Approved V2: three fixed source categories, proportional horizontal bars.
-  const sourceTotal=rowsM.length;
+  const sourceTotal=rowsM.length,provisionalCount=rowsM.filter(c=>!confirmedSource(c)).length;
   /* 요청출처 3개 카테고리 중 보통 1개에만 건수가 몰리고 나머지는 0건인 경우가 흔한데, 0건도 진한
      글자·막대 트랙으로 똑같이 강조돼 "요청출처별 현황"이라는 제목과 달리 사실상 비교할 게 없어 보임
      (전면 재검토 연장) — 0건 항목은 흐리게 처리해 "실제로 비중 있는 출처가 뭔지" 한눈에 들어오게 함. */
@@ -383,9 +390,9 @@ function render(box){
   ];
   const sourceBars='<div class="rqSourcePanel rqSourceV3"><div class="rqSourceTop"><div><small>개선요청 전체</small><strong>'+sourceTotal.toLocaleString('ko-KR')+'<em>건</em></strong></div><div><small>전체 완료율</small><strong>'+(sourceTotal?(100*rowsM.filter(isDone).length/sourceTotal).toFixed(1):'—')+'<em>%</em></strong></div></div>'
     +'<div class="rqSourceLegend"><span><i style="background:#6089a6"></i>개선요청 건수 (건)</span><span><i style="background:#279586"></i>완료 건수 (건)</span><span>완료율 = 완료 건수 ÷ 개선요청 건수 × 100</span></div>'
-    +'<div class="rqSourceColumns" role="img" aria-label="4대 발굴 출처 및 출처 미분류의 개선요청·완료 건수 비교">'+sourceStats.slice(0,4).map((x,i)=>'<div class="rqSourceColumn"><div class="rqSourceColPlot"><div class="rqSourceColBar request" style="height:'+Math.max(0,x.count/sourceMax*100)+'%"><b>'+x.count+'</b></div><div class="rqSourceColBar done" style="height:'+Math.max(0,x.done/sourceMax*100)+'%"><b>'+x.done+'</b></div></div><strong>'+(i+1).toString().padStart(2,'0')+'</strong><small>'+(x.count?(100*x.done/x.count).toFixed(0)+'% 완료':(i===4?'미분류 없음':'요청 없음'))+'</small></div>').join('')+'</div>'
+    +'<div class="rqSourceColumns" role="img" aria-label="4대 발굴 출처별 개선요청 및 완료 건수 비교, 임시 배정 포함">'+sourceStats.slice(0,4).map((x,i)=>'<div class="rqSourceColumn"><div class="rqSourceColPlot"><div class="rqSourceColBar request" style="height:'+Math.max(0,x.count/sourceMax*100)+'%"><b>'+x.count+'</b></div><div class="rqSourceColBar done" style="height:'+Math.max(0,x.done/sourceMax*100)+'%"><b>'+x.done+'</b></div></div><strong>'+(i+1).toString().padStart(2,'0')+'</strong><small>'+(x.count?(100*x.done/x.count).toFixed(0)+'% 완료':(i===4?'미분류 없음':'요청 없음'))+'</small></div>').join('')+'</div>'
     +'<div class="rqSourceFactorLegend"><b>발굴 리소스 · 범례 정의</b>'+sourceDefinitions.map((x,i)=>'<div><span class="rqFactorIndex">'+String(i+1).padStart(2,'0')+'</span><span><strong>'+esc(x[0])+'</strong><small>'+esc(x[1])+'</small></span></div>').join('')+'</div>'
-    +'<p class="rqSourceUnclassified">출처 미분류 '+sourceStats.find(x=>x.name==='출처 미분류').count+'건 · 기존 기록은 출처를 임의 추정하지 않습니다.</p></div>';
+    +'<p class="rqSourceUnclassified">검증용 임시 출처 배정 '+provisionalCount+'건 · 원본 출처가 확인되지 않은 건은 ID 기반으로 4개 출처에 임시 배정했습니다. 실제 발굴 출처가 아니며 원본은 수정하지 않습니다.</p></div>';
   /* 전면 개편(사용자 확정: "이대로"): 3개 출처 중 보통 1개에만 건수가 몰려 별도 섹션(가로막대 3개)을
      차지할 정도의 정보량이 아니라고 판단, 보조 정보 영역 안에서 한 줄 요약 문장으로 축소. */
   const sourceCounts=SOURCES.map(s=>({s,n:rowsM.filter(c=>sourceOf(c)===s).length})).sort((a,b)=>b.n-a.n);
