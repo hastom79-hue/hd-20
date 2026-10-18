@@ -229,21 +229,28 @@ function render(box){
   const teamRows=teamConf.map(r=>{const c=asDate(cdOf(r)),l=asDate(r.maintainLostAt||r.maintainEndedAt||r.maintainStoppedAt||r.lostAt||r.invalidatedAt||r.attritionAt);return{w:placeOf(r),ci:c?monthIdx(c):null,li:l?monthIdx(l):null,maintaining:keepSet.has(r.id)};}).filter(r=>r.ci!==null);
   const est=teamRows.filter(r=>!r.maintaining&&r.li===null).length;
   const cyy=+S.year,exArr=[],nwArr=[],cumArr=[],lossArr=[],declineArr=[];
-  for(let m=0;m<12;m++){const mi=cyy*12+m;const maintained=r=>r.li===null?r.maintaining:r.li>mi;
-    exArr.push(teamRows.filter(r=>r.ci<mi&&maintained(r)).length);
-    nwArr.push(teamRows.filter(r=>r.ci===mi&&maintained(r)).length);
+  // Unknown loss dates must not erase all historical confirmations. Display
+  // historical confirmations as provisional, not verified retention.
+  const unknownRows=teamRows.filter(r=>!r.maintaining&&r.li===null);
+  const datedLossRows=teamRows.filter(r=>r.li!==null);
+  const workplaceRows=teamRows.filter(r=>r.w);
+  const provisional=[];
+  for(let m=0;m<12;m++){const mi=cyy*12+m;const active=r=>r.li===null?true:r.li>mi;
+    exArr.push(teamRows.filter(r=>r.ci<mi&&active(r)).length);
+    nwArr.push(teamRows.filter(r=>r.ci===mi&&active(r)).length);
+    provisional.push(teamRows.filter(r=>r.ci<=mi&&!r.maintaining&&r.li===null).length);
     cumArr.push(exArr[m]+nwArr[m]);
     lossArr.push(teamRows.filter(r=>r.li===mi&&r.ci<=mi).length);
     if(m===0||mi>nowIdx){declineArr.push(null);continue}
-    const workplaces=[...new Set(teamRows.map(r=>r.w).filter(Boolean))];
-    const ratio=(w,at)=>{const cohort=teamRows.filter(r=>r.w===w&&r.ci<=at);return cohort.length?cohort.filter(r=>r.li===null?r.maintaining:r.li>at).length/cohort.length:null};
+    const workplaces=[...new Set(workplaceRows.map(r=>r.w))];
+    const ratio=(w,at)=>{const cohort=teamRows.filter(r=>r.w===w&&r.ci<=at);if(!cohort.length||cohort.some(r=>!r.maintaining&&r.li===null))return null;return cohort.filter(r=>r.li===null||r.li>at).length/cohort.length};
     let compared=0,declined=0;for(const w of workplaces){const prev=ratio(w,mi-1),curr=ratio(w,mi);if(prev===null||curr===null)continue;compared++;if(curr<prev)declined++}declineArr.push(compared?declined:null)
   }
   const divE=v=>per?v/th:v,curKeep=teamConf.filter(r=>keepSet.has(r.id)).length;
   const E=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W/2)-8),cats:ML,per,stack:false,series:[{name:'기존 유지',vals:exArr.map(divE),labelTotals:per?exArr:null,color:'#a8c7c4'},{name:'신규 확정',vals:nwArr.map(divE),labelTotals:per?nwArr:null,color:C.dark}]});
   const lossTot=lossArr.reduce((a,b)=>a+b,0),declineTot=declineArr.filter(Number.isFinite).reduce((a,b)=>a+b,0);
   const lossBar=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W/2)-8),h:185,cats:ML,series:[{name:'사례 이탈',vals:lossArr,color:'#c13f36'},{name:'작업장 유지수준 하락',vals:declineArr,color:'#d89a35'}]});
-  const lossChart=`<div class="ibLossWrap"><div class="ibLossLabel">이탈·유지수준 하락<em>사례 이탈 ${lossTot}건 · 작업장 하락 ${declineTot}곳(월별 합산)</em></div>${lossBar}${leg([['사례 이탈','#c13f36'],['작업장 유지수준 하락','#d89a35']])}<div class="ibLeg"><span>사례 이탈: 실제 이탈일 기준 · 작업장 유지수준 하락: 전월 대비 유지율이 낮아진 작업장 수. 비교 자료가 없으면 집계 제외.</span></div></div>`;
+  const lossChart=`<div class="ibLossWrap"><div class="ibLossLabel">이탈·유지수준 하락<em>사례 이탈 ${lossTot}건 · 작업장 하락 ${declineTot}곳(월별 합산)</em></div>${lossBar}${leg([['사례 이탈','#c13f36'],['작업장 유지수준 하락','#d89a35']])}<div class="ibLeg"><span>사례 이탈: 실제 이탈일 기준 · 작업장 유지수준 하락: 전월 대비 유지율이 낮아진 작업장 수. 비교 자료가 없으면 집계 제외. 기록된 이탈일 ${datedLossRows.length}건 · 작업장 식별자 ${workplaceRows.length}건 · 미확정 이탈시점 ${unknownRows.length}건.</span></div></div>`;
   const opt=(a,cur,all='ALL')=>`<option value="">${all}</option>`+a.map(x=>`<option value="${esc(x)}"${x===cur?' selected':''}>${esc(x)}</option>`).join('');
   box.innerHTML=`<div class="ibTitle"><h2>5S 자율개선 종합 대시보드</h2></div><p class="ibNote">기본 조회조건은 당해년도 연간누적 데이터입니다 (월간 데이터 조회 시, 해당 월을 선택하세요)</p>
 <div class="ibKpis"><div class="ibKpi"><small>5S 활동</small><b>${totC}건</b></div><div class="ibKpi"><small>${per?'인당 활동':'팀 평균 활동'}</small><b>${avg.toFixed(2)}${per?'건/인':'건'}</b></div><div class="ibKpi"><small>당월 참여율</small><b>${part.toFixed(1)}%</b></div></div>
@@ -257,7 +264,7 @@ function render(box){
 <div class="ibPanel"><div class="ibHead">월별 등록 및 진행현황<button type="button" class="ibEv" data-evk="b">근거 데이터</button><em>${S.year}년 · 건 · 수평전개=그 달 완료건수 대비 %</em></div><div class="ibBody"><div class="ibMonthlyCompact">${B}${leg([['5S 활동 완료건수',C.dark],['고도화 확정 건수',C.amber],['수평전개 적용대상건수',C.grey]])}</div>${trendPanel}</div></div></div>
 <div class="ibRow"><div class="ibPanel"><div class="ibHead">현장조직 팀에 대한 개선활동 현황${per?'(인당 개선건수)':'(총 건수)'}<button type="button" class="ibEv" data-ib="saveTeamOrder" title="현재 차트 팀 순서를 기준정보 표시순서에 저장">${teamChartOrderDirty?'순서 저장 *':'순서 저장'}</button><button type="button" class="ibEv" data-ib="resetTeamOrder" title="기준정보 기본 정렬로 복원">기본순서 복원</button><button type="button" class="ibEv" data-evk="c">근거 데이터</button><em class="pt">당월(${String(mm).padStart(2,'0')}월) 현재 참여율 ${part.toFixed(1)}% (등록자 ${owners}명 / 총원 ${hcAll}명)</em></div><div class="ibBody"><div style="font-size:11px;color:#63768a;margin:0 0 6px">팀명 또는 막대를 좌우로 드래그해 화면 순서 변경 · 순서 저장 시 통합기준정보 표시순서에 즉시 반영</div><div data-team-chart="true">${Cc}</div>${leg([['평균 이상 (평균 '+avg.toFixed(2)+(per?'건/인)':'건)'),C.dark],['평균 미만',C.amber]])}</div></div></div>
 <div class="ibRow r3"><div class="ibPanel"><div class="ibHead">단일 팀에 대한 연간/월별 누적 활동 실적${per?'(인당 개선건수)':''}<button type="button" class="ibEv" data-evk="d">근거 데이터</button><em>[ ${esc(S.team)} ] 연간 ${fx(dCum,per)}${unit}</em></div><div class="ibBody">${Dd}</div></div>
-<div class="ibPanel"><div class="ibHead">선택팀 고도화 유지·이탈 Drill-down${per?'(인당)':''}<button type="button" class="ibEv" data-evk="e">근거 데이터</button><em>[ ${esc(S.team)} ] 유지 ${curKeep}곳 · 이탈 ${lossTot}건</em></div><div class="ibBody">${E}${leg([['기존 유지','#a8c7c4'],['신규 확정',C.dark]])}${lossChart}${est?`<div class="ibLeg"><span>※ 이탈일 미기록 ${est}건은 임의 월에 배정하지 않았습니다. 수평전개 적용대상은 [근거 데이터]에서 확인하세요.</span></div>`:''}</div></div></div>
+<div class="ibPanel"><div class="ibHead">선택팀 고도화 유지·이탈 Drill-down${per?'(인당)':''}<button type="button" class="ibEv" data-evk="e">근거 데이터</button><em>[ ${esc(S.team)} ] 유지 ${curKeep}곳 · 이탈 ${lossTot}건</em></div><div class="ibBody">${E}${leg([['기존 유지','#a8c7c4'],['신규 확정',C.dark]])}${lossChart}${est?`<div class="ibLeg"><span>※ 이탈일 미기록 ${est}건은 임의 월에 배정하지 않았습니다. 상단 과거 유지 막대에는 이탈 시점을 알 수 없는 확정 사례가 잠정 포함되며, 실제 유지 확정값이 아닙니다. 수평전개 적용대상은 [근거 데이터]에서 확인하세요.</span></div>`:''}</div></div></div>
 <p class="ibFoot">※ 5S 활동 = GMES 원천 5S 활동 등록(상단 지표와 같은 데이터). 완료·확정 = 상태가 완료 또는 확정. 고도화 확정 = 5S 고도화 공식 판정이 '확정'인 건(확정일 기준, 상단 '신규 확보'와 같은 기준). 인당 = 건수 ÷ 팀 인원(팀 인원 마스터). 참여율 = 당월 5S 활동을 1건 이상 등록한 사람 수 ÷ 총원(${hcAll}명). 팀 막대를 누르면 아래 두 그래프가 그 팀으로 바뀝니다.</p>`;
   const cols=['등록일','팀','5S 유형','등록자','문제점','개선내용','상태','고도화 판정','확정일','수평전개'],mapR=r=>[String(r.date||r.regDate||'').slice(0,10),r.team,r.type,r.owner,r.problem,r.improvement,r.status,r.judgeState||'',r.judgeState==='확정'?cdOf(r):'',r.horizontalRollout===true?'대상':''],sortT=a=>[...a].sort((x,y)=>String(x.team).localeCompare(String(y.team),'ko')||String(y.date).localeCompare(String(x.date)));
   const EV={a:['5S 유형별 근거 데이터 ('+(S.month?+S.month+'월':'연간누적')+')',rowsM],b:['월별 근거 데이터 ('+S.year+'년)',rowsY],c:['팀별 근거 데이터 ('+(S.month?+S.month+'월':'연간누적')+')',sortT(rowsM)],d:['선택 팀 근거 데이터 · '+S.team,tr],e:['선택 팀 고도화 확정·수평전개 근거 · '+S.team,teamConf.filter(r=>cy(r)===S.year)]};
