@@ -60,6 +60,17 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
 #${ID} .ibLossRow{display:flex;align-items:flex-end;gap:3px;height:38px}
 #${ID} .ibLossCol{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:2px;min-width:0}
 #${ID} .ibLossBar{width:60%;background:#c0392b;border-radius:2px 2px 0 0;min-height:2px}
+#${ID} .ibLossRow{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));height:auto;gap:4px;align-items:end}
+#${ID} .ibLossPair{display:flex;align-items:flex-end;justify-content:center;gap:3px;height:54px;width:100%;border-bottom:1px solid #d8dfe6}
+#${ID} .ibLossBarPair{position:relative;width:min(16px,42%);min-height:2px;border-radius:2px 2px 0 0}
+#${ID} .ibLossBarPair.confirmed{background:#bf3e33}
+#${ID} .ibLossBarPair.estimated{background:#dba879}
+#${ID} .ibLossBarPair b{position:absolute;bottom:calc(100% + 2px);left:50%;transform:translateX(-50%);font-size:10px;color:#713c35}
+#${ID} .ibLossCol small{font-size:10px;color:#788999}
+#${ID} .ibLossLegend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:10px;color:#6c7c8b;margin:4px 0 8px}
+#${ID} .ibLossLegend i{display:inline-block;width:9px;height:9px;margin-right:5px;border-radius:2px}
+#${ID} .ibLossLegend i.confirmed{background:#bf3e33}
+#${ID} .ibLossLegend i.estimated{background:#dba879}
 #${ID} .ibLossCol b{font-size:10px;color:#a0453a;font-weight:850;height:12px}#${ID} .ibLeg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
 #${ID} svg text{font-family:inherit}#${ID} .hit{cursor:pointer}#${ID} .hit:hover{opacity:.85}
 #${ID} .ibFoot{margin:10px 2px 0;font-size:12px;color:#7a8a97}
@@ -224,13 +235,13 @@ function render(box){
 /* 팀별 고도화 확보 누적(기존 유지+신규, 이탈 반영). '고도화 작업장 추이'(전사)와 같은 방식을 팀 단위로 축소.
      이탈일 기록이 없으면 확정일+6개월(5S 종료평가 시점)로 추정, 아직 6개월 미도래면 이번 달로 봄. */
   const teamConf=rowsC.filter(r=>r.team===S.team&&r.judgeState==='확정'),now=new Date(),nowIdx=now.getFullYear()*12+now.getMonth();
-  let est=0;const teamRows=teamConf.map(r=>{const c=cdOf(r),ci=+c.slice(0,4)*12+(+c.slice(5,7)-1);let li=null;if(!keepSet.has(r.id)){const lc=r.maintainLostAt||r.maintainEndedAt||r.maintainStoppedAt||r.lostAt||r.invalidatedAt;if(lc){const d=new Date(lc);li=d.getFullYear()*12+d.getMonth()}else{li=ci+6;est++}if(li>nowIdx)li=nowIdx}return{ci,li}});
-  const cyy=+S.year,exArr=[],nwArr=[],cumArr=[],lossArr=[];for(let m=0;m<12;m++){const mi=cyy*12+m;exArr.push(teamRows.filter(r=>r.ci<mi&&!(r.li!==null&&r.li<=mi)).length);nwArr.push(teamRows.filter(r=>r.ci===mi&&!(r.li!==null&&r.li<=mi)).length);cumArr.push(exArr[m]+nwArr[m]);lossArr.push(teamRows.filter(r=>r.li!==null&&r.li===mi&&r.ci<mi).length)}
+  let est=0;const teamRows=teamConf.map(r=>{const c=cdOf(r),ci=+c.slice(0,4)*12+(+c.slice(5,7)-1);let li=null,estimated=false;if(!keepSet.has(r.id)){const lc=r.maintainLostAt||r.maintainEndedAt||r.maintainStoppedAt||r.lostAt||r.invalidatedAt;if(lc){const d=new Date(lc);li=d.getFullYear()*12+d.getMonth()}else{li=ci+6;est++;estimated=true}if(li>nowIdx)li=nowIdx}return{ci,li,estimated}});
+  const cyy=+S.year,exArr=[],nwArr=[],cumArr=[],lossArr=[],lossConfirmed=[],lossEstimated=[];for(let m=0;m<12;m++){const mi=cyy*12+m;exArr.push(teamRows.filter(r=>r.ci<mi&&!(r.li!==null&&r.li<=mi)).length);nwArr.push(teamRows.filter(r=>r.ci===mi&&!(r.li!==null&&r.li<=mi)).length);cumArr.push(exArr[m]+nwArr[m]);const lost=teamRows.filter(r=>r.li!==null&&r.li===mi&&r.ci<mi);lossArr.push(lost.length);lossConfirmed.push(lost.filter(r=>!r.estimated).length);lossEstimated.push(lost.filter(r=>r.estimated).length)}
   const divE=v=>per?v/th:v,curKeep=teamConf.filter(r=>keepSet.has(r.id)).length;
   const E=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W/2)-8),cats:ML,per,stack:false,series:[{name:'기존 유지',vals:exArr.map(divE),labelTotals:per?exArr:null,color:'#a8c7c4'},{name:'신규 확정',vals:nwArr.map(divE),labelTotals:per?nwArr:null,color:C.dark}]});
-  const lossMax=Math.max(1,...lossArr),lossTot=lossArr.reduce((a,b)=>a+b,0);
-  const lossRow=ML.map((m,i)=>{const v=lossArr[i],h=Math.round(v/lossMax*26);return `<div class="ibLossCol" title="${m} 이탈 ${v}건"><div class="ibLossBar" style="height:${h}px;opacity:${v?1:0}"></div><b>${v||''}</b></div>`}).join('');
-  const lossChart=`<div class="ibLossWrap"><div class="ibLossLabel">이탈(그 달에 유지 종료됨)<em>연간 ${lossTot}건</em></div><div class="ibLossRow">${lossRow}</div></div>`;
+  const lossMax=Math.max(1,...lossConfirmed,...lossEstimated),lossTot=lossArr.reduce((a,b)=>a+b,0),confirmedTot=lossConfirmed.reduce((a,b)=>a+b,0),estimatedTot=lossEstimated.reduce((a,b)=>a+b,0);
+  const lossRow=ML.map((m,i)=>{const confirmed=lossConfirmed[i],estimated=lossEstimated[i];const bar=(v,type)=>'<div class="ibLossBarPair '+type+'" style="height:'+Math.round(v/lossMax*34)+'px;opacity:'+(v?1:0)+'" title="'+m+' '+(type==='confirmed'?'실제 이탈':'추정 이탈')+' '+v+'건"><b>'+(v||'')+'</b></div>';return '<div class="ibLossCol" title="'+m+' 실제 '+confirmed+'건 · 추정 '+estimated+'건"><div class="ibLossPair">'+bar(confirmed,'confirmed')+bar(estimated,'estimated')+'</div><small>'+m+'</small></div>'}).join('');
+  const lossChart='<div class="ibLossWrap"><div class="ibLossLabel">이탈 현황 (실제 기록 / 시점 추정)<em>연간 '+lossTot+'건 · 실제 '+confirmedTot+'건 / 추정 '+estimatedTot+'건</em></div><div class="ibLossLegend"><span><i class="confirmed"></i>실제 이탈 (종료일 기록)</span><span><i class="estimated"></i>추정 이탈 (종료일 미기록)</span></div><div class="ibLossRow">'+lossRow+'</div></div>';
   const opt=(a,cur,all='ALL')=>`<option value="">${all}</option>`+a.map(x=>`<option value="${esc(x)}"${x===cur?' selected':''}>${esc(x)}</option>`).join('');
   box.innerHTML=`<div class="ibTitle"><h2>5S 자율개선 종합 대시보드</h2></div><p class="ibNote">기본 조회조건은 당해년도 연간누적 데이터입니다 (월간 데이터 조회 시, 해당 월을 선택하세요)</p>
 <div class="ibKpis"><div class="ibKpi"><small>5S 활동</small><b>${totC}건</b></div><div class="ibKpi"><small>${per?'인당 활동':'팀 평균 활동'}</small><b>${avg.toFixed(2)}${per?'건/인':'건'}</b></div><div class="ibKpi"><small>당월 참여율</small><b>${part.toFixed(1)}%</b></div></div>
