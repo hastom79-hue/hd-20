@@ -102,6 +102,16 @@ jobs:
                 return route.abort();
               });
               await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'domcontentloaded'});
+              // The ⑤ action panel is lazy-mounted by the tab router. Mount an isolated
+              // host when not yet selected, then load the real production workflow.
+              await page.evaluate(()=>{
+                if(!document.getElementById('awAction')){
+                  const host=document.createElement('section');
+                  host.id='awAction';
+                  document.body.appendChild(host);
+                }
+              });
+              await page.addScriptTag({url:'/action-mail-workflow.js?v=20261018-audit-source-2'});
               await page.waitForSelector('#amRequestSource',{state:'attached',timeout:30000});
               // Confirm Audit-to-action event prefills the required discovery source.
               await page.evaluate(()=>window.dispatchEvent(new CustomEvent('hd20-audit-to-action',{detail:{problem:'CI Audit 연계 확인'}})));
