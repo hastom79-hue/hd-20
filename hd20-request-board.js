@@ -396,7 +396,7 @@ function render(box){
   const delayRows=teamsAll.map(t=>{const a=rowsM.filter(c=>c.team===t&&!isDone(c)&&isOverdue(c,D.today)).map(c=>delayDays(c,D.today)).filter(v=>v!==null);
     return{team:t,n:a.length,avg:a.length?Math.round(a.reduce((x,y)=>x+y,0)/a.length*10)/10:0,max:a.length?Math.max(...a):0}}).filter(r=>r.n>0).sort((a,b)=>b.n-a.n||b.avg-a.avg);
   let delayRowsSorted=delayRows.length?delayRows.map(r=>{const c=rowsM.filter(x=>x.team===r.team&&isOverdue(x,D.today));const v=[c.filter(x=>delayDays(x,D.today)<=7).length,c.filter(x=>delayDays(x,D.today)>=8&&delayDays(x,D.today)<=14).length,c.filter(x=>delayDays(x,D.today)>=15).length];return{team:r.team,v,total:r.n}}).sort((a,b)=>b.v[2]-a.v[2]||b.total-a.total):[];
-  delayRowsSorted=orderedTeams(delayRowsSorted,D.teams);
+  delayRowsSorted=delayRowsSorted.sort((a,b)=>b.v[2]-a.v[2]||b.total-a.total);
   // Three grouped bars per team, one for each overdue band; never stack.
   const delaySegColors=['#d3d9df','#a5b0bb','#536779'];
   const delayObservedMax=Math.max(0,...delayRowsSorted.flatMap(r=>r.v).filter(v=>Number.isFinite(v)&&v>0));
