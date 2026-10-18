@@ -37,7 +37,7 @@ body.hd20DashboardExecutionActive .mainGrid{grid-template-columns:minmax(0,1fr) 
 function labelBefore(el){const p=el?.previousElementSibling;return p?.classList?.contains('hd20DashboardSectionLabel')?p:null}
 function dashboardVisible(){return window.HD20_NAV?.active?.()==='dashboard'}
 function enforceHiddenField(){const el=document.getElementById('hd20FieldShowcaseBootstrap');if(!el)return;fieldGuardBusy=true;try{if(active!=='field'){el.classList.add('hd20DashboardSectionHidden');labelBefore(el)?.classList.add('hd20DashboardSectionHidden')}else{el.classList.remove('hd20DashboardSectionHidden')}}finally{fieldGuardBusy=false}}
-function allTargets(){return [...new Set(TABS.flatMap(t=>t.targets).flatMap(sel=>[...document.querySelectorAll(sel)]))]}
+function allTargets(){return [...new Set([...TABS.flatMap(t=>t.targets),'.mainGrid','#hd20OperationalBridge'].flatMap(sel=>[...document.querySelectorAll(sel)]))]}
 function setMode(key){const modes=new Set(TABS.map(t=>t.key).concat(['field']));modes.forEach(k=>document.body.classList.toggle(`hd20Dashboard${k[0].toUpperCase()+k.slice(1)}Active`,key===k))}
 function normalizeLegacyVisibility(el,key){el.classList.remove('hd20SubHidden');labelBefore(el)?.classList.remove('hd20SubHidden');let p=el.parentElement;while(p&&p!==document.body){p.classList.remove('hd20SubHidden');if(p.classList.contains('app'))break;p=p.parentElement}}
 function restoreTargetAncestors(el){let p=el.parentElement;while(p&&p!==document.body){if(!allTargets().includes(p))p.classList.remove('hd20DashboardSectionHidden');if(p.classList.contains('app'))break;p=p.parentElement}}
