@@ -1738,3 +1738,7 @@ Canonical Store는 다음을 기준으로 한다.
 - 최신 배포 확인: 94ef68d9 revision의 GitHub Pages build/deployment run 37400692107 SUCCESS (2026-10-06T01:46:18Z).
 - 일반 runtime/browser smoke는 최신 revision에서도 steps=[] / runner_id=0으로 종료되어 assertion이 실행되지 않음. 이는 현재 앱 assertion 실패 증거가 아니라 runner 미배정 상태이며, 실제 browser smoke 실행 전까지 RC 최종 PASS는 선언하지 않음.
 - 주요 커밋: e0fbaa58, 61335d22, 5ac72ac6, 627e3949, 37eb4776, f85fd85f, 2e4a9002, 32414e22, 94ef68d9, 2ab51171.
+
+
+## 2026-10-18 월별 이탈일 집계 수정
+실제 사례별 기록 이탈일만 해당 월에 집계합니다. 6개월 후 또는 현재 월 추정값 배정을 제거했습니다. 이탈일 미기록 사례는 별도 안내합니다. JS 구문검사 완료, CI 미확인.
