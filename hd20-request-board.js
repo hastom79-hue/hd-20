@@ -164,6 +164,28 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
 #${ID} .rqMoreBtn{display:block;width:100%;margin-top:8px;padding:8px;border:1px dashed #cdd9e2;border-radius:8px;background:#f8fafb;color:#49657b;font-size:12px;font-weight:850;cursor:pointer}#${ID} .rqMoreBtn:hover{background:#eef3f6;border-color:#9fb4c2}
 #${ID} .rqHeat{display:block;border-radius:5px;padding:9px;min-width:42px;text-align:center}#${ID} .rqHeatHigh{background:#b9473b;color:#fff}#${ID} .rqHeatMid{background:#db8e72;color:#fff}#${ID} .rqHeatLow{background:#f4d7c6;color:#713e30}#${ID} .rqHeatZero{background:#f4f6f8;color:#758899}
 #${ID} .rqDelayStack{display:flex;height:17px;overflow:hidden;border-radius:5px;margin:3px 0 16px;background:#edf1f4}#${ID} .rqDelayBand{display:block;height:100%}#${ID} .rqDelayBand0{background:#e6ba73}#${ID} .rqDelayBand1{background:#d98454}#${ID} .rqDelayBand2{background:#b9473b}
+
+#${ID} .rqSplit4060>.ibPanel:first-child .ibBody{height:100%}
+#${ID} .rqSourcePanel{display:flex;flex-direction:column;gap:16px;min-height:310px;height:100%;padding:4px 2px 0}
+#${ID} .rqSourceTop{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+#${ID} .rqSourceTop>div{padding:12px 14px;background:#f2f7fa;border:1px solid #e2ebf0;border-radius:10px}
+#${ID} .rqSourceTop small{display:block;font-size:11px;color:#617587;font-weight:700;margin-bottom:5px}
+#${ID} .rqSourceTop strong{font-size:22px;line-height:1.2;color:#193d59;font-weight:850}
+#${ID} .rqSourceTop em{font-size:12px;font-style:normal;font-weight:700;margin-left:3px;color:#617587}
+#${ID} .rqSourcePanel .rqBars{gap:14px;padding:0}
+#${ID} .rqSourcePanel .rqBarItem{display:block;opacity:1}
+#${ID} .rqSourcePanel .rqBarItem.zero{opacity:.68}
+#${ID} .rqSourceLabel{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px;font-size:12px}
+#${ID} .rqSourceLabel>span{display:flex;align-items:center;gap:7px;min-width:0}
+#${ID} .rqSourceIndex{font-size:10px;color:#7293a6;font-weight:850}
+#${ID} .rqSourceLabel strong{white-space:nowrap;color:#254b66}
+#${ID} .rqSourceLabel small{margin-left:5px;color:#6b8798;font-weight:650}
+#${ID} .rqSourcePanel .rqTrack{height:10px;border-radius:6px}
+#${ID} .rqSourceFoot{margin-top:auto;padding:13px 14px;background:#f7f9fb;border:1px solid #e8edf1;border-radius:10px;color:#344e62}
+#${ID} .rqSourceFoot b{font-size:12px}
+#${ID} .rqSourceFoot p{margin:6px 0 8px;font-size:12px;line-height:1.5}
+#${ID} .rqSourceFoot span{font-size:10.5px;color:#718797}
+@media(max-width:900px){#${ID} .rqSourcePanel{min-height:0}}
 #${ID} .rqBars{display:grid;gap:16px;padding:10px 5px}
 #${ID} .rqBarItem.zero{opacity:.4}
 #${ID} .rqSourceSummary{margin:10px 0 0;padding-top:10px;border-top:1px solid #edf1f4;font-size:12px;color:#5c6b7a}#${ID} .rqSourceSummary b{color:#2c5f8a}
@@ -309,7 +331,10 @@ function render(box){
   /* 요청출처 3개 카테고리 중 보통 1개에만 건수가 몰리고 나머지는 0건인 경우가 흔한데, 0건도 진한
      글자·막대 트랙으로 똑같이 강조돼 "요청출처별 현황"이라는 제목과 달리 사실상 비교할 게 없어 보임
      (전면 재검토 연장) — 0건 항목은 흐리게 처리해 "실제로 비중 있는 출처가 뭔지" 한눈에 들어오게 함. */
-  const sourceBars='<div class="rqBars">'+SOURCES.map(s=>{const n=rowsM.filter(c=>sourceOf(c)===s).length;return '<div class="rqBarItem'+(n===0?' zero':'')+'"><span>'+esc(s)+'</span><strong>'+n+'건</strong><div class="rqTrack"><i style="width:'+(sourceTotal?100*n/sourceTotal:0)+'%;background:#668da7"></i></div></div>'}).join('')+'</div>';
+  const sourceStats=SOURCES.map(s=>({name:s,count:rowsM.filter(c=>sourceOf(c)===s).length}));
+  const activeSources=sourceStats.filter(s=>s.count>0).length;
+  const dominantSource=sourceStats.reduce((best,s)=>s.count>best.count?s:best,sourceStats[0]);
+  const sourceBars='<div class="rqSourcePanel"><div class="rqSourceTop"><div><small>전체 요청</small><strong>'+sourceTotal.toLocaleString('ko-KR')+'<em>건</em></strong></div><div><small>요청출처 사용</small><strong>'+activeSources+'<em> / '+SOURCES.length+'개</em></strong></div></div><div class="rqBars">'+sourceStats.map((s,i)=>{const pct=sourceTotal?100*s.count/sourceTotal:0;return '<div class="rqBarItem'+(s.count===0?' zero':'')+'"><div class="rqSourceLabel"><span><b class="rqSourceIndex">'+String(i+1).padStart(2,'0')+'</b>'+esc(s.name)+'</span><strong>'+s.count.toLocaleString('ko-KR')+'건 <small>'+pct.toFixed(1)+'%</small></strong></div><div class="rqTrack"><i style="width:'+pct+'%;background:'+(i===0?'#3f7999':'#829db5')+'"></i></div></div>'}).join('')+'</div><div class="rqSourceFoot"><b>출처 분포 해석</b><p>'+(sourceTotal?(activeSources===1?'전체 요청이 '+esc(dominantSource.name)+'에 집중되어 있습니다.':esc(dominantSource.name)+' 비중이 '+(100*dominantSource.count/sourceTotal).toFixed(1)+'%로 가장 높습니다.'):'요청 데이터가 없습니다.')+'</p><span>전체 '+sourceTotal.toLocaleString('ko-KR')+'건 기준 · 요청 그룹별 중복 없는 구성비</span></div></div>';
   /* 전면 개편(사용자 확정: "이대로"): 3개 출처 중 보통 1개에만 건수가 몰려 별도 섹션(가로막대 3개)을
      차지할 정도의 정보량이 아니라고 판단, 보조 정보 영역 안에서 한 줄 요약 문장으로 축소. */
   const sourceCounts=SOURCES.map(s=>({s,n:rowsM.filter(c=>sourceOf(c)===s).length})).sort((a,b)=>b.n-a.n);
