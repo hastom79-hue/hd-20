@@ -57,6 +57,7 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
 #${ID} .ibBody{padding:8px 8px 4px;overflow-x:auto}
 #${ID} .ibLeg{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;font-size:11.5px;color:#5c6b7a;font-weight:800;padding:2px 0 6px}#${ID} .ibLossWrap{margin-top:8px;padding:8px 10px 4px;background:#fbfafa;border:1px solid #f0e4e4;border-radius:8px}
 #${ID} .ibLossLabel{display:flex;justify-content:space-between;font-size:11px;font-weight:850;color:#a0453a;margin-bottom:4px}#${ID} .ibLossLabel em{font-style:normal;color:#7a8a97;font-weight:800}
+#${ID} .ibActivityAnalysis{margin-top:10px;border:1px solid #dce6ec;border-radius:9px;padding:12px;background:#fafbfc}#${ID} .ibActivityTitle{display:flex;justify-content:space-between;gap:8px;align-items:center;margin:2px 0 9px;color:#173a57;font-size:12px}#${ID} .ibActivityTitle span{font-size:10.5px;color:#718091}#${ID} .ibActivityCards,#${ID} .ibActivityDistribution{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}#${ID} .ibActivityCards{margin-bottom:14px}#${ID} .ibActivityCard{min-width:0;background:white;border:1px solid #e1e8ed;border-radius:7px;padding:10px 8px;display:flex;flex-direction:column;gap:5px}#${ID} .ibActivityCard small{font-size:10.5px;color:#65798a;font-weight:700}#${ID} .ibActivityCard b{font-size:19px;color:#173a57;overflow-wrap:anywhere}#${ID} .ibActivityCard span{font-size:10px;line-height:1.4;color:#758695}@media(max-width:600px){#${ID} .ibActivityCards,#${ID} .ibActivityDistribution{grid-template-columns:repeat(2,minmax(0,1fr))}}
 #${ID} .ibLossWrap .ibLossLegend{margin-top:-3px}#${ID} .ibLossWrap .ibLossLegend .ibLeg{justify-content:center;padding:0 0 3px;gap:6px 16px;line-height:1.15}#${ID} .ibLossFormula{display:flex;flex-wrap:wrap;justify-content:center;gap:3px 16px;border-top:1px solid #e9e3e3;padding:6px 2px 2px;font-size:10.5px;line-height:1.45;color:#657487}#${ID} .ibLossFormula b{color:#42566a}#${ID} .ibLossWrap>div[style*="padding:28px"]{padding:12px 10px!important;margin-top:4px!important}
 #${ID} .ibLossRow{display:flex;align-items:flex-end;gap:3px;height:38px}
 #${ID} .ibLossCol{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:2px;min-width:0}
@@ -223,6 +224,28 @@ function render(box){
   // Show original monthly activity counts beneath per-person values; never infer
   // counts by multiplying rounded per-person labels.
   const Dd=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W/2)-8),cats:ML,per,labelTotals:per?dTotals:null,series:[{name:per?'5S 활동/총원':'5S 활동 건수',vals:dVals,color:C.dark}]});
+  // Selected-team activity diagnostics: completed months only; current month remains provisional.
+  const analysisNow=new Date(),analysisYear=Number(S.year),closedCount=analysisYear<analysisNow.getFullYear()?12:analysisYear===analysisNow.getFullYear()?analysisNow.getMonth():0;
+  const visibleCount=analysisYear<analysisNow.getFullYear()?12:analysisYear===analysisNow.getFullYear()?analysisNow.getMonth()+1:0;
+  const closedCounts=dTotals.slice(0,closedCount),visibleCounts=dTotals.slice(0,visibleCount);
+  const closedTotal=closedCounts.reduce((a,b)=>a+b,0),visibleTotal=visibleCounts.reduce((a,b)=>a+b,0);
+  const closedAvg=closedCount?closedTotal/closedCount:null;
+  const aboveCount=closedAvg===null?null:closedCounts.filter(v=>v>=closedAvg).length;
+  const belowCount=closedAvg===null?null:closedCount-aboveCount;
+  const zeroCount=closedCount?closedCounts.filter(v=>v===0).length:null;
+  const peakCount=closedCounts.length?Math.max(...closedCounts):null;
+  const peakMonths=peakCount===null?'—':closedCounts.flatMap((v,i)=>v===peakCount?[String(i+1).padStart(2,'0')+'월']:[]).join(', ');
+  const metricCard=(label,value,desc)=>'<div class="ibActivityCard"><small>'+label+'</small><b>'+value+'</b><span>'+desc+'</span></div>';
+  const activityDiagnostics='<div class="ibActivityAnalysis"><div class="ibActivityTitle"><b>선택팀 활동 실적 분석</b><span>마감월 기준 · '+closedCount+'개월</span></div><div class="ibActivityCards">'+
+    metricCard('연간 누적',visibleTotal+'건',visibleCount+'개월 실적 · 당월 포함 시 잠정')+
+    metricCard('월평균 실적',closedAvg===null?'산정 불가':closedAvg.toFixed(1)+'건','마감월 기준')+
+    metricCard('최고 실적월',peakCount===null?'산정 불가':peakMonths,peakCount===null?'마감월 없음':peakCount+'건 · 마감월 기준')+
+    '</div><div class="ibActivityTitle"><b>월별 활동 수준 분포</b><span>마감월 월평균 대비</span></div><div class="ibActivityDistribution">'+
+    metricCard('월평균 이상',aboveCount===null?'—':aboveCount+'개월','월평균 이상인 월')+
+    metricCard('월평균 미만',belowCount===null?'—':belowCount+'개월','월평균 미만인 월')+
+    metricCard('활동 공백월',zeroCount===null?'—':zeroCount+'개월','등록 0건인 월')+
+    '</div></div>';
+
 /* 팀별 고도화 유지·이탈: 기록된 날짜만 사용하고 미기록 이탈일은 추정하지 않음. */
   const teamConf=rowsC.filter(r=>r.team===S.team&&r.judgeState==='확정'),now=new Date(),nowIdx=now.getFullYear()*12+now.getMonth();
   const asDate=v=>{const m=String(v||'').match(/^(20\d{2})-(\d{2})-(\d{2})/);if(!m)return null;const d=new Date(+m[1],+m[2]-1,+m[3]);return d.getFullYear()===+m[1]&&d.getMonth()+1===+m[2]&&d.getDate()===+m[3]?d:null};
@@ -269,7 +292,7 @@ function render(box){
 <div class="ibRow r1"><div class="ibPanel"><div class="ibHead">5S 유형별 등록건수 및 인당 개선건수<button type="button" class="ibEv" data-evk="a">근거 데이터</button><em>${S.month?S.month.replace(/^0/,'')+'월':'연간누적'} · 건</em></div><div class="ibBody">${A}<div class="ibTypeDefs"><strong>5S 유형별 활동 정의</strong><dl><div><dt>정리</dt><dd>불용·불급·잉여품 제거활동</dd></div><div><dt>정돈</dt><dd>정량·정위치 준수활동</dd></div><div><dt>청소</dt><dd>작업장 청소, 작업장 외(설비, 부대물, 유틸리티 등) 청소</dd></div><div><dt>시각화관리</dt><dd>정량·정위치 준수를 위한 표식관리, 설비·지그·작업장 등의 도색작업</dd></div><div><dt>위험구역관리</dt><dd>출입통제, 타이거마크 표식관리</dd></div><div><dt>설비 자주보전</dt><dd>설비 자주보전 활동 (세부 기준 별도 확정)</dd></div></dl></div></div></div>
 <div class="ibPanel"><div class="ibHead">월별 등록 및 진행현황<button type="button" class="ibEv" data-evk="b">근거 데이터</button><em>${S.year}년 · 건 · 수평전개=그 달 완료건수 대비 %</em></div><div class="ibBody"><div class="ibMonthlyCompact">${B}${leg([['5S 활동 완료건수',C.dark],['고도화 확정 건수',C.amber],['수평전개 적용대상건수',C.grey]])}</div>${trendPanel}</div></div></div>
 <div class="ibRow"><div class="ibPanel"><div class="ibHead">현장조직 팀에 대한 개선활동 현황${per?'(인당 개선건수)':'(총 건수)'}<button type="button" class="ibEv" data-ib="saveTeamOrder" title="현재 차트 팀 순서를 기준정보 표시순서에 저장">${teamChartOrderDirty?'순서 저장 *':'순서 저장'}</button><button type="button" class="ibEv" data-ib="resetTeamOrder" title="기준정보 기본 정렬로 복원">기본순서 복원</button><button type="button" class="ibEv" data-evk="c">근거 데이터</button><em class="pt">당월(${String(mm).padStart(2,'0')}월) 현재 참여율 ${part.toFixed(1)}% (등록자 ${owners}명 / 총원 ${hcAll}명)</em></div><div class="ibBody"><div style="font-size:11px;color:#63768a;margin:0 0 6px">팀명 또는 막대를 좌우로 드래그해 화면 순서 변경 · 순서 저장 시 통합기준정보 표시순서에 즉시 반영</div><div data-team-chart="true">${Cc}</div>${leg([['평균 이상 (평균 '+avg.toFixed(2)+(per?'건/인)':'건)'),C.dark],['평균 미만',C.amber]])}</div></div></div>
-<div class="ibRow r3"><div class="ibPanel"><div class="ibHead">단일 팀에 대한 연간/월별 누적 활동 실적${per?'(인당 개선건수)':''}<button type="button" class="ibEv" data-evk="d">근거 데이터</button><em>[ ${esc(S.team)} ] 연간 ${fx(dCum,per)}${unit}</em></div><div class="ibBody">${Dd}</div></div>
+<div class="ibRow r3"><div class="ibPanel"><div class="ibHead">단일 팀에 대한 연간/월별 누적 활동 실적${per?'(인당 개선건수)':''}<button type="button" class="ibEv" data-evk="d">근거 데이터</button><em>[ ${esc(S.team)} ] 연간 ${fx(dCum,per)}${unit}</em></div><div class="ibBody">${Dd}${activityDiagnostics}</div></div>
 <div class="ibPanel"><div class="ibHead">선택팀 고도화 유지·이탈 Drill-down<button type="button" class="ibEv" data-evk="e">근거 데이터</button><em>[ ${esc(S.team)} ] 유지 ${curKeep}건 · 이탈 ${knownLoss?lossTot+'건':'자료 없음'}</em></div><div class="ibBody">${E}${leg([['기존 유지','#a8c7c4'],['신규 확정',C.dark]])}${lossChart}</div></div></div>
 <p class="ibFoot">※ 5S 활동 = GMES 원천 5S 활동 등록(상단 지표와 같은 데이터). 완료·확정 = 상태가 완료 또는 확정. 고도화 확정 = 5S 고도화 공식 판정이 '확정'인 건(확정일 기준, 상단 '신규 확보'와 같은 기준). 인당 = 건수 ÷ 팀 인원(팀 인원 마스터). 참여율 = 당월 5S 활동을 1건 이상 등록한 사람 수 ÷ 총원(${hcAll}명). 팀 막대를 누르면 아래 두 그래프가 그 팀으로 바뀝니다.</p>`;
   const cols=['등록일','팀','5S 유형','등록자','문제점','개선내용','상태','고도화 판정','확정일','수평전개'],mapR=r=>[String(r.date||r.regDate||'').slice(0,10),r.team,r.type,r.owner,r.problem,r.improvement,r.status,r.judgeState||'',r.judgeState==='확정'?cdOf(r):'',r.horizontalRollout===true?'대상':''],sortT=a=>[...a].sort((x,y)=>String(x.team).localeCompare(String(y.team),'ko')||String(y.date).localeCompare(String(x.date)));
