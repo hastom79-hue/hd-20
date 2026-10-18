@@ -152,12 +152,15 @@ const action=[];teams.forEach((team,ti)=>{for(let i=0;i<10;i++){const isDone=!(i
    const fixed=rows.filter(r=>r.confirmed===true);
    const monthOf=r=>Number(String(r.date||'').slice(5,7));
    const occupied=new Set(fixed.map(monthOf).filter(m=>m>=1&&m<=elapsedMonths));
-   const target=Math.min(elapsedMonths,Math.max(5,elapsedMonths-1-(ti%4)));
+   const sparseTeam=/성능|트러블슈팅|자재운영/.test(team);
+   const requestedMonths=/성능/.test(team)?1:/트러블슈팅|자재운영/.test(team)?2:null;
+   const target=requestedMonths?Math.min(elapsedMonths,requestedMonths):Math.min(elapsedMonths,Math.max(5,elapsedMonths-1-(ti%4)));
    const preference=Array.from({length:elapsedMonths},(_,i)=>i+1)
      .sort((a,b)=>((a*7+ti*11)%17)-((b*7+ti*11)%17)||a-b);
-   for(const month of preference){if(occupied.size>=target)break;occupied.add(month);}
+   if(sparseTeam)occupied.clear();
+   for(const month of (sparseTeam?[1,Math.min(6,elapsedMonths)]:preference)){if(occupied.size>=target)break;occupied.add(month);}
    const chosen=[...occupied].sort((a,b)=>a-b);
-   rows.filter(r=>r.confirmed!==true).forEach((r,i)=>{
+   rows.filter(r=>sparseTeam||r.confirmed!==true).forEach((r,i)=>{
      const month=chosen[i%chosen.length];
      const day=Math.min(3+((i*5+ti*3)%23),month===elapsedMonths?now.getDate():28);
      const date=now.getFullYear()+'-'+String(month).padStart(2,'0')+'-'+String(day).padStart(2,'0');
