@@ -132,9 +132,9 @@ function addMonths(s,n){const[y,m,d]=s.split('-').map(Number),t=y*12+(m-1)+n,ny=
 function rng(seed){let a=seed>>>0;return()=>{a=(a+0x6D2B79F5)>>>0;let t=a;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}}
 const R=rng(20260921);
 const ri=(a,b)=>a+Math.floor(R()*(b-a+1)),pick=a=>a[Math.floor(R()*a.length)],chance=p=>R()<p;
-/* 요청출처(5S모듈/생산혁신팀 HDPS파트/리더십) 실제 필드를 현실적 비율로 직접 부여.
-   현장 자체 등록(5S모듈)이 다수, Audit을 운영하는 생산혁신팀 HDPS파트가 그다음, 경영진·팀장(리더십)이 소수지만 0은 아니게. */
-const pickSource=()=>{const r=R();return r<.55?'5S모듈':r<.85?'생산혁신팀 HDPS파트':'리더십'};
+/* 검증 전용 가상데이터: 개선요청 등록 팝업과 동일한 4대 발굴 경로를 사용한다.
+   비율은 검증을 위한 시뮬레이션일 뿐 실제 운영 성과를 의미하지 않는다. */
+const pickSource=()=>{const r=R();return r<.30?'현장 패트롤 점검':r<.55?'자율 5S Audit':r<.78?'혁신팀 자율 점검':'5S 자율개선활동 피드백'};
 /* 고정 횟수만 난수를 소비하는 셔플 (sort(()=>R()-.5)는 엔진마다 호출 횟수가 달라 재현성이 깨짐) */
 const shuffle=arr=>{const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(R()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 const pad=(n,w)=>String(n).padStart(w,'0');
