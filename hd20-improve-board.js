@@ -221,10 +221,9 @@ function render(box){
   // Show original monthly activity counts beneath per-person values; never infer
   // counts by multiplying rounded per-person labels.
   const Dd=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W/2)-8),cats:ML,per,labelTotals:per?dTotals:null,series:[{name:per?'5S 활동/총원':'5S 활동 건수',vals:dVals,color:C.dark}]});
-/* 팀별 고도화 확보 누적(기존 유지+신규, 이탈 반영). '고도화 작업장 추이'(전사)와 같은 방식을 팀 단위로 축소.
-     이탈일 기록이 없으면 확정일+6개월(5S 종료평가 시점)로 추정, 아직 6개월 미도래면 이번 달로 봄. */
+/* 팀별 고도화 유지·이탈: 기록된 날짜만 사용하고 미기록 이탈일은 추정하지 않음. */
   const teamConf=rowsC.filter(r=>r.team===S.team&&r.judgeState==='확정'),now=new Date(),nowIdx=now.getFullYear()*12+now.getMonth();
-  const asDate=v=>{const m=String(v||'').match(/^(20\\d{2})-(\\d{2})-(\\d{2})/);if(!m)return null;const d=new Date(+m[1],+m[2]-1,+m[3]);return d.getFullYear()===+m[1]&&d.getMonth()+1===+m[2]&&d.getDate()===+m[3]?d:null};
+  const asDate=v=>{const m=String(v||'').match(/^(20\d{2})-(\d{2})-(\d{2})/);if(!m)return null;const d=new Date(+m[1],+m[2]-1,+m[3]);return d.getFullYear()===+m[1]&&d.getMonth()+1===+m[2]&&d.getDate()===+m[3]?d:null};
   const monthIdx=d=>d.getFullYear()*12+d.getMonth();
   const placeOf=r=>String(r.workplaceId||r.workplace||r.workArea||r.area||'').trim();
   const teamRows=teamConf.map(r=>{const c=asDate(cdOf(r)),l=asDate(r.maintainLostAt||r.maintainEndedAt||r.maintainStoppedAt||r.lostAt||r.invalidatedAt||r.attritionAt);return{w:placeOf(r),ci:c?monthIdx(c):null,li:l?monthIdx(l):null,maintaining:keepSet.has(r.id)};}).filter(r=>r.ci!==null);
