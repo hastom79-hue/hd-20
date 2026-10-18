@@ -119,6 +119,15 @@ function css(){const prior=document.getElementById(ID+'Style');if(prior)prior.re
 
 
 
+
+#${ID} .rqManageRow .rqTeamChart03Cols{position:relative;gap:4px;padding:12px 0 0;background:repeating-linear-gradient(to top,transparent 0,transparent 51px,#e7edf2 52px,#e7edf2 53px,transparent 54px);background-size:100% 210px;background-repeat:no-repeat}
+#${ID} .rqManageRow .rqTeamChart03Cols .rqTeamVerticalCol{display:grid;grid-template-rows:210px 86px 20px;justify-items:center;align-items:start;gap:0;min-width:0;overflow:visible}
+#${ID} .rqManageRow .rqTeamChart03Cols .rqTeamVerticalTrack{height:210px;width:min(32px,55%);background:transparent!important;border-bottom:1px solid #b9cbd8}
+#${ID} .rqManageRow .rqTeamChart03Cols .rqTeamVerticalCol>span{box-sizing:border-box;display:block;width:100%;height:86px;min-height:86px!important;margin:0;padding:10px 0 0 50%;font-size:10px;line-height:1.1;color:#2467a0!important;white-space:nowrap!important;overflow:visible;overflow-wrap:normal!important;text-align:left;transform:none!important;writing-mode:initial}
+#${ID} .rqManageRow .rqTeamChart03Cols .rqTeamVerticalCol>span{transform:translateX(0)!important}
+#${ID} .rqManageRow .rqTeamChart03Cols .rqTeamVerticalCol>span{font-style:normal}
+#${ID} .rqManageRow .rqTeamChart03Cols .rqTeamVerticalCol>small{margin:0;font-size:10px}
+#${ID} .rqManageRow .rqTeamChart03Cols .rqTeamBarValue{font-size:11px}
 #${ID} .ibPanel{border:1px solid #e3eaf0;border-radius:10px;background:#fff;overflow:hidden}
 #${ID} .ibHead{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 12px;background:#f1f5f8;border-bottom:1px solid #e3eaf0;font-size:13.5px;font-weight:900;color:#22303f}
 #${ID} .ibHead em{font-style:normal;font-size:12.5px;color:#14304c}
@@ -489,7 +498,7 @@ function render(box){
   const rateAxisSpan=Math.max(1,rateAxisHigh-rateAxisLow);
   const teamRateNote='<p class="rqTeamNote">세로축 '+rateAxisLow+'~'+rateAxisHigh+'%'+(rateAxisLow>0?' · 0%부터 시작하지 않는 확대축(축 절단 표시)':'')+(allSameRate?' · 현재 팀별 완료율이 동일합니다.':'')+'</p>';
   const teamOrderControl='<div class="rqOrderTools"><span>기준정보 팀 순서 · 드래그 또는 ◀ ▶ 이동</span><button type="button" data-team-order-save>정렬순서 저장</button><button type="button" data-team-order-reset>기준정보 순서 복원</button></div>';
-  const teamRateBars='<div class="rqTeamVerticalScroll">'+teamRateNote+'<div class="rqTeamVertical" style="--rq-team-count:'+Math.max(1,teamRateSorted.length)+'"><div class="rqTeamVerticalCols">'+teamRateSorted.map(r=>{const pct=r.total?Math.round(r.done/r.total*1000)/10:0;const color=pct<50?'#b04f4b':pct<80?'#b68b43':'#408d82';const h=r.total?Math.max(0,Math.min(100,(pct-rateAxisLow)/rateAxisSpan*100)):0;return '<div class="rqTeamVerticalCol" draggable="true" data-team-axis="'+esc(r.team)+'" title="'+esc(r.team)+' · 완료 '+r.done+'/'+r.total+'건"><div class="rqTeamVerticalTrack'+(rateAxisLow>0?' rqAxisCut':'')+'">'+(r.total>0&&pct>0?'<strong class="rqTeamBarValue" style="bottom:calc('+h+'% + 5px)">'+pct+'%</strong>':'')+'<span style="height:'+h+'%;background:'+color+'"></span></div><span>'+esc(r.team)+(teamHighlight===r.team?' ★':'')+'</span><small>'+r.done+'/'+r.total+'건</small></div>'}).join('')+'</div></div><div class="rqTeamChartLegend"><span><i style="background:#b04f4b"></i>50% 미만</span><span><i style="background:#b68b43"></i>50~80% 미만</span><span><i style="background:#408d82"></i>80% 이상</span></div></div>';
+  const teamRateBars='<div class="rqTeamVerticalScroll">'+teamRateNote+'<div class="rqTeamVertical" style="--rq-team-count:'+Math.max(1,teamRateSorted.length)+'"><div class="rqTeamVerticalCols rqTeamChart03Cols">'+teamRateSorted.map(r=>{const pct=r.total?Math.round(r.done/r.total*1000)/10:0;const color=pct>=80?'#21756e':'#e1af37';const h=r.total?Math.max(0,Math.min(100,(pct-rateAxisLow)/rateAxisSpan*100)):0;return '<div class="rqTeamVerticalCol" draggable="true" data-team-axis="'+esc(r.team)+'" title="'+esc(r.team)+' · 완료 '+r.done+'/'+r.total+'건"><div class="rqTeamVerticalTrack'+(rateAxisLow>0?' rqAxisCut':'')+'">'+(r.total>0&&pct>0?'<strong class="rqTeamBarValue" style="bottom:calc('+h+'% + 5px)">'+pct+'%</strong>':'')+'<span style="height:'+h+'%;background:'+color+'"></span></div><span>'+esc(r.team)+(teamHighlight===r.team?' ★':'')+'</span><small>'+r.done+'/'+r.total+'건</small></div>'}).join('')+'</div></div><div class="rqTeamChartLegend"><span><i style="background:#e1af37"></i>80% 미만</span><span><i style="background:#21756e"></i>80% 이상</span></div></div>';
   const overCases=rowsM.filter(c=>teamsAll.includes(c.team)&&isOverdue(c,D.today));
   const delayBands=[overCases.filter(c=>delayDays(c,D.today)<=7).length,overCases.filter(c=>delayDays(c,D.today)>=8&&delayDays(c,D.today)<=14).length,overCases.filter(c=>delayDays(c,D.today)>=15).length];
   const kpi=(label,value,detail,risk=false)=>'<div class="rqKpi'+(risk?' risk':'')+'"><small>'+label+'</small><b>'+value+'</b><span class="rqKpiHint">'+detail+'</span></div>';
