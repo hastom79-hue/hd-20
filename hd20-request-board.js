@@ -237,7 +237,8 @@ function render(box){
   const allEver=D.cases.filter(c=>teamsAll.includes(c.team)),doneEver=allEver.filter(isDone),openRate=allEver.length?Math.round(doneEver.length/allEver.length*1000)/10:0;
   const doneYear=rowsY.filter(isDone),yearRate=rowsY.length?Math.round(doneYear.length/rowsY.length*1000)/10:0;
   // ① 요청출처별 — 표시 순서는 통합기준정보('요청출처 순서')에서 관리, 기본값 리더십>5S모듈>생산혁신팀 HDPS파트
-  const srcCats=window.HD20_REQUEST_SOURCE_ORDER?.get?.()||SOURCES,srcReg=srcCats.map(s=>rowsM.filter(c=>sourceOf(c)===s).length),srcOpen=srcCats.map(s=>rowsM.filter(c=>sourceOf(c)===s&&!isDone(c)).length);
+  const storedSourceOrder=window.HD20_REQUEST_SOURCE_ORDER?.get?.()||[];
+  const srcCats=[...SOURCES.slice(0,4).filter(x=>storedSourceOrder.includes(x)),...SOURCES.slice(0,4).filter(x=>!storedSourceOrder.includes(x)),'출처 미분류'],srcReg=srcCats.map(s=>rowsM.filter(c=>sourceOf(c)===s).length),srcOpen=srcCats.map(s=>rowsM.filter(c=>sourceOf(c)===s&&!isDone(c)).length);
   const srcOpenPct=srcCats.map((s,i)=>srcReg[i]?Math.round(srcOpen[i]/srcReg[i]*1000)/10:null);
   const A=chart({w:Math.floor((box.clientWidth-36)*.3)-8,cats:srcCats,minSlot:78,series:[{name:'요청',vals:srcReg,color:'#5c6b7a'},{name:'미완료',vals:srcOpen,color:'#e0b03c',widthScale:1.5,pct:srcOpenPct}]});
   // ② 월별
