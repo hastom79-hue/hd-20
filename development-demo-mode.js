@@ -143,20 +143,32 @@ const action=[];teams.forEach((team,ti)=>{for(let i=0;i<10;i++){const isDone=!(i
    const row=activity[i];
    if(row.type==='5S 고도화'&&!String(row.id||'').startsWith('DEMO-A-ADV-REAL-')&&!String(row.id||'').startsWith('DEMO-A-JUDGE-QUEUE-'))activity.splice(i,1);
  }
- /* Team-specific active months: avoid identical 10/10 continuity across all teams.
-    Reassign dates only for synthetic ordinary activities; leave confirmed cases intact. */
+ /* Team-level demo continuity: reserve months already occupied by confirmed cases,
+    then distribute all non-confirmed synthetic activity into the same selected months.
+    This prevents candidate/ordinary rows from filling every month again. */
+ const demoContinuityAudit=[];
  teams.forEach((team,ti)=>{
-   const activeCount=Math.max(5,elapsedMonths-(ti%5));
-   const activeMonths=Array.from({length:elapsedMonths},(_,i)=>i+1)
-     .filter(m=>((m*7+ti*3)%elapsedMonths)<activeCount);
-   const chosen=activeMonths.length?activeMonths:[1];
-   const teamRows=activity.filter(r=>r.source===SRC&&r.team===team&&r.type!=='5S 고도화');
-   teamRows.forEach((r,i)=>{
+   const rows=activity.filter(r=>r.source===SRC&&r.team===team);
+   const fixed=rows.filter(r=>r.confirmed===true);
+   const monthOf=r=>Number(String(r.date||'').slice(5,7));
+   const occupied=new Set(fixed.map(monthOf).filter(m=>m>=1&&m<=elapsedMonths));
+   const target=Math.min(elapsedMonths,Math.max(5,elapsedMonths-1-(ti%4)));
+   const preference=Array.from({length:elapsedMonths},(_,i)=>i+1)
+     .sort((a,b)=>((a*7+ti*11)%17)-((b*7+ti*11)%17)||a-b);
+   for(const month of preference){if(occupied.size>=target)break;occupied.add(month);}
+   const chosen=[...occupied].sort((a,b)=>a-b);
+   rows.filter(r=>r.confirmed!==true).forEach((r,i)=>{
      const month=chosen[i%chosen.length];
      const day=Math.min(3+((i*5+ti*3)%23),month===elapsedMonths?now.getDate():28);
-     r.date=now.getFullYear()+'-'+String(month).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+     const date=now.getFullYear()+'-'+String(month).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+     r.date=date;
+     if(r.createdAt)r.createdAt=date;
+     if(r.regDate)r.regDate=date;
    });
+   const actual=new Set(rows.map(monthOf).filter(m=>m>=1&&m<=elapsedMonths));
+   demoContinuityAudit.push({team,activeMonths:actual.size,elapsedMonths,activityCount:rows.length,months:[...actual].sort((a,b)=>a-b)});
  });
+ window.HD20_DEMO_TEAM_CONTINUITY_AUDIT=demoContinuityAudit;
  const approvedCases=activity.filter(r=>r.type==='5S 고도화'&&r.confirmed===true&&r.judgeState==='확정');
  const lostCases=approvedCases.filter(r=>r.attrition===true);
  const keptCases=approvedCases.filter(r=>r.attrition!==true);
