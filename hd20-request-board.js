@@ -187,6 +187,12 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
 #${ID} .rqSourceColumn{min-width:0;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px}
 #${ID} .rqSourceColPlot{width:100%;height:132px;display:flex;align-items:flex-end;justify-content:center;gap:5px;border-bottom:1px solid #ccd8e2;padding:20px 0 0;box-sizing:border-box}
 #${ID} .rqSourceColBar{position:relative;width:min(24px,38%);min-height:2px;border-radius:4px 4px 0 0}
+
+#${ID} .rqSourceV3 .rqSourceColBar.done{width:min(32px,44%)}
+#${ID} .rqSourceV3 .rqSourceColBar.done b{display:flex;flex-direction:column;align-items:center;gap:1px;white-space:nowrap;line-height:1.15}
+#${ID} .rqSourceV3 .rqSourceColBar.done b small{font-size:9px;font-weight:750;color:#338a79}
+#${ID} .rqSourceV3 .rqSourceColPlot{padding-top:36px}
+#${ID} .rqSourceV3 .rqSourceAxisLabel{font-size:10px;line-height:1.35;color:#27455d;overflow-wrap:anywhere;min-height:30px;max-width:100%}
 #${ID} .rqSourceColBar.request{background:#6089a6}
 #${ID} .rqSourceColBar.done{background:#279586}
 #${ID} .rqSourceColBar b{position:absolute;bottom:calc(100% + 3px);left:50%;transform:translateX(-50%);font-size:10px;color:#24465e}
@@ -392,7 +398,7 @@ function render(box){
   ];
   const sourceBars='<div class="rqSourcePanel rqSourceV3"><div class="rqSourceTop"><div><small>개선요청 전체</small><strong>'+sourceTotal.toLocaleString('ko-KR')+'<em>건</em></strong></div><div><small>전체 완료율</small><strong>'+(sourceTotal?(100*rowsM.filter(isDone).length/sourceTotal).toFixed(1):'—')+'<em>%</em></strong></div></div>'
     +'<div class="rqSourceLegend"><span><i style="background:#6089a6"></i>개선요청 건수 (건)</span><span><i style="background:#279586"></i>완료 건수 (건)</span><span>완료율 = 완료 건수 ÷ 개선요청 건수 × 100</span></div>'
-    +'<div class="rqSourceColumns" role="img" aria-label="4대 발굴 출처별 개선요청 및 완료 건수 비교, 임시 배정 포함">'+sourceStats.slice(0,4).map((x,i)=>'<div class="rqSourceColumn"><div class="rqSourceColPlot"><div class="rqSourceColBar request" style="height:'+Math.max(0,x.count/sourceMax*100)+'%"><b>'+x.count+'</b></div><div class="rqSourceColBar done" style="height:'+Math.max(0,x.done/sourceMax*100)+'%"><b>'+x.done+'</b></div></div><strong>'+(i+1).toString().padStart(2,'0')+'</strong><small>'+(x.count?(100*x.done/x.count).toFixed(0)+'% 완료':(i===4?'미분류 없음':'요청 없음'))+'</small></div>').join('')+'</div>'
+    +'<div class="rqSourceColumns" role="img" aria-label="4대 발굴 출처별 개선요청 및 완료 건수 비교, 임시 배정 포함">'+sourceStats.slice(0,4).map((x,i)=>'<div class="rqSourceColumn"><div class="rqSourceColPlot"><div class="rqSourceColBar request" style="height:'+Math.max(0,x.count/sourceMax*100)+'%"><b>'+x.count+'</b></div><div class="rqSourceColBar done" style="height:'+Math.max(0,x.done/sourceMax*100)+'%"><b>'+x.done+'<small>'+(x.count?'('+Math.round(100*x.done/x.count)+'%)':'(—)')+'</small></b></div></div><strong class="rqSourceAxisLabel">'+esc(x.name)+'</strong></div>').join('')+'</div>'
     +'<div class="rqSourceFactorLegend"><b>발굴 리소스 · 범례 정의</b>'+sourceDefinitions.map((x,i)=>'<div><span class="rqFactorIndex">'+String(i+1).padStart(2,'0')+'</span><span><strong>'+esc(x[0])+'</strong><small>'+esc(x[1])+'</small></span></div>').join('')+'</div>'
     +'<p class="rqSourceUnclassified">검증용 임시 출처 배정 '+provisionalCount+'건 · 4개 출처 합계 '+sourceCountCheck+'건 · 원본 출처가 확인되지 않은 건은 ID 기반으로 4개 출처에 임시 배정했습니다. 실제 발굴 출처가 아니며 원본은 수정하지 않습니다.</p></div>';
   /* 전면 개편(사용자 확정: "이대로"): 3개 출처 중 보통 1개에만 건수가 몰려 별도 섹션(가로막대 3개)을
