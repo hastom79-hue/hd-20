@@ -130,7 +130,7 @@ const action=[];teams.forEach((team,ti)=>{for(let i=0;i<10;i++){const isDone=!(i
  /* Keep one canonical synthetic advancement population for all summary widgets. */
  for(let i=activity.length-1;i>=0;i--){
    const row=activity[i];
-   if(row.type==='5S 고도화'&&!String(row.id||'').startsWith('DEMO-A-ADV-REAL-'))activity.splice(i,1);
+   if(row.type==='5S 고도화'&&!String(row.id||'').startsWith('DEMO-A-ADV-REAL-')&&!String(row.id||'').startsWith('DEMO-A-JUDGE-QUEUE-'))activity.splice(i,1);
  }
  const approvedCases=activity.filter(r=>r.type==='5S 고도화'&&r.confirmed===true&&r.judgeState==='확정');
  const lostCases=approvedCases.filter(r=>r.attrition===true);
