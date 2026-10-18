@@ -99,7 +99,7 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
 #${ID} .ibBar .sp{flex:1}
 #${ID} .ibBar button{height:32px;border-radius:7px;border:1px solid #14304c;background:#14304c;color:#fff;font-weight:850;font-size:13px;padding:0 14px;cursor:pointer}
 #${ID} .ibBar button.alt{background:#2c5f8a;border-color:#2c5f8a}
-#${ID} .ibRow{display:grid;gap:10px;margin-top:10px}#${ID} .r1{grid-template-columns:minmax(0,3fr) minmax(0,7fr)}#${ID} .rqManageRow{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+#${ID} .ibRow{display:grid;gap:10px;margin-top:10px}#${ID} .r1{grid-template-columns:minmax(0,3fr) minmax(0,7fr)}#${ID} .rqManageRow{grid-template-columns:minmax(0,1fr)!important}
 #${ID} .rqManageRow{grid-template-columns:minmax(0,1fr)}
 #${ID} .rqManageRow>.ibPanel{width:100%;min-width:0}
 #${ID} .rqManageRow .rqTeamVerticalScroll,#${ID} .rqManageRow .rqDelayVerticalScroll{overflow-x:hidden}
@@ -516,7 +516,7 @@ function render(box){
        둘을 한 줄(rqManageRow, 2열)에 나란히 배치. 그 안의 SVG 차트 폭(hBarChart·hStackChart)도
        절반 폭 기준으로 미리 줄여서 생성했어야 하므로, 아래 teamChartTop 등의 w 인자를 이 블록
        이전에 좁은 폭으로 재계산해서 넘김(바로 아래 참조). */
-    +'<div class="ibRow rqManageRow rqTeamCompare">'
+    +'<div class="ibRow rqManageRow rqTeamCompare" style="grid-template-columns:minmax(0,1fr)">'
     +section('03. 조치대응팀별 이행성과','완료 / 미완료 · 팀별 건수',teamOrderControl+teamRateBars+'<details class="rqTeamDetail"><summary>팀별 상세 실적 펼치기</summary><div class="rqScroll">'+teamGrid+'</div></details>','c2')
     +section('04. 기한초과 집중관리','현재 미완료 기준 · 지연기간별 분포','<div class="rqBands">'+['1~7일','8~14일','15일 이상'].map((x,i)=>'<div><small>'+x+'</small><b>'+delayBands[i]+'건</b></div>').join('')+'</div>'+'<div class="rqDelayStack">'+delayBands.map((n,i)=>'<span class="rqDelayBand rqDelayBand'+i+'" style="width:'+(overCases.length?100*n/overCases.length:0)+'%"></span>').join('')+'</div>'+(delayChart||'<p class="rqEmpty">현재 기한초과 대상이 없습니다.</p>'),'d')
     +'</div>'
