@@ -79,6 +79,16 @@ function boot(){
      activity.push({id:`DEMO-A-MONTH-${year}-${String(m).padStart(2,'0')}-${n}`,source:SRC,team,group:groupOf(team),owner:`검증작업자-${String(ti+1).padStart(2,'0')}-${n%8+1}`,date:`${year}-${String(m).padStart(2,'0')}-${String(Math.min(now.getDate(),2+(n*3)%25)).padStart(2,'0')}`,type:kind,area:['조립라인','자재구역','검사대','공구실'][(m+n)%4],problem:['불용품 잔존','공구 정위치 미준수','통로 적치','시각표기 누락'][(m+n)%4],improvement:['불용품 제거','형적관리 보완','통로 구획','표준 라벨 부착'][(m+n)%4],status:'완료',horizontalRollout:(m+n)%4===0,confirmed:false,judgeState:'',evidenceNote:'월별 차트 공백 보완용 가상 검증 사례 · 운영실적 아님'});
    }
  }
+ /* Synthetic monthly rollout counts: non-monotonic, never exceeding eligible completions. */
+ const rolloutByMonth=[9,14,7,12,10,19,13,24,17,21,0,0];
+ for(let month=1;month<=lastMonth;month++){
+   const key=year+'-'+String(month).padStart(2,'0');
+   const eligible=activity.filter(row=>row.source===SRC&&row.status==='완료'&&row.type!=='5S 고도화'&&String(row.date||'').startsWith(key));
+   eligible.forEach(row=>{row.horizontalRollout=false;row.rolloutApplied=false;row.rolloutState='';});
+   const target=Math.min(eligible.length,rolloutByMonth[month-1]);
+   eligible.sort((a,b)=>String(a.id).localeCompare(String(b.id)));
+   for(let i=0;i<target;i++){eligible[i].horizontalRollout=true;eligible[i].rolloutApplied=true;eligible[i].rolloutState='수평전개 완료';}
+ }
  const audit=[];teams.forEach((team,ti)=>{for(let i=0;i<8;i++)audit.push({id:`DEMO-U-${ti}-${i}`,source:SRC,team,group:groupOf(team),date:days((i*7+ti)%150),auditDate:days(210+(i*7+ti)%150),finalEvaluation:i%5===0?'미흡':'적합',status:i%5===0?'재발':i%3===0?'관리중':'완료',result:i%5===0?'부적합':'적합',score:72+((ti*3+i*5)%27)});});
  /* actionCompleted()는 doneDate·action·(after 또는 afterEvidence)가 모두 있어야 '완료'로 인정하는데,
     이 데모 데이터가 after를 항상 빈 문자열로만 만들어 '기한 내 개선조치 완료율' 등 완료 기준 지표가
