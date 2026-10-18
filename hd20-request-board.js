@@ -7,7 +7,7 @@ const ID='hd20RequestBoard';
    매칭과 sourceOf(c)===s 집계가 깨지지 않음(아래 sourceOf() 함께 수정).
    병합 메모: 다른 세션이 같은 지점을 완전히 다른 4+1종 분류(현장 패트롤 점검 등)로 변경했으나, 이
    커밋 시점 사용자의 명시적 지시("리더십(공장장)·5S모듈·생산혁신팀(HDPS파트)")를 우선 반영. */
-const SOURCES=['리더십(공장장)','5S모듈','생산혁신팀(HDPS파트)'];
+const SOURCES=['현장 패트롤 점검','자율 5S Audit','혁신팀 자율 점검','5S 자율개선활동 피드백','출처 미분류'];
 const S={year:null,month:'',source:'',team:'',status:'',roll:'',selTeam:''};
 function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 /* 사용자 지적: "04"가 "눈에도 안들어오고... 초록색과 빨간색 색상뿐이다" — CSS만으로 그린 단색 진행
@@ -67,10 +67,8 @@ function leaderNames(){
   LEADER_NAMES=set;return LEADER_NAMES;
 }
 function sourceOf(c){
-  if(c.requestSource&&SOURCES.includes(c.requestSource))return c.requestSource; // 실제 필드가 들어오면 그대로 사용
-  // 리더십 = 경영진·팀장(부서장). 등록자(owner)가 생산팀장 기준정보에 등록된 팀장 이름과 일치하면 리더십으로 분류.
-  if(c.owner&&leaderNames().has(c.owner))return '리더십(공장장)'; // 팀장 기준정보 + 통합기준정보(운영정책)에 등록된 경영진·공장장 명단
-  return c.auditDrawId?'생산혁신팀(HDPS파트)':'5S모듈'; // 그 외엔 감사 연계=생산혁신팀, 현장 자체 등록=5S모듈로 추정
+  const raw=String(c?.requestSource||c?.sourceDetail||c?.discoverySource||'').trim();
+  return SOURCES.includes(raw)&&raw!=='출처 미분류'?raw:'출처 미분류';
 }
 function css(){if(document.getElementById(ID+'Style'))return;const s=document.createElement('style');s.id=ID+'Style';s.textContent=`
 #${ID}{background:#fff;border:1px solid #dfe6ec;border-radius:14px;padding:16px 18px;box-shadow:0 1px 3px rgba(20,48,76,.06)}
@@ -168,7 +166,16 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
 #${ID} .rqHeat{display:block;border-radius:5px;padding:9px;min-width:42px;text-align:center}#${ID} .rqHeatHigh{background:#b9473b;color:#fff}#${ID} .rqHeatMid{background:#db8e72;color:#fff}#${ID} .rqHeatLow{background:#f4d7c6;color:#713e30}#${ID} .rqHeatZero{background:#f4f6f8;color:#758899}
 #${ID} .rqDelayStack{display:flex;height:17px;overflow:hidden;border-radius:5px;margin:3px 0 16px;background:#edf1f4}#${ID} .rqDelayBand{display:block;height:100%}#${ID} .rqDelayBand0{background:#e6ba73}#${ID} .rqDelayBand1{background:#d98454}#${ID} .rqDelayBand2{background:#b9473b}
 
-#${ID} .rqSplit4060>.ibPanel:first-child .ibBody{height:100%}
+/* Screenshot regression: align both panels to content rather than stretching the
+   left card to the chart's height; constrain SVG to its own column. */
+#${ID} .rqSplit4060{grid-template-columns:minmax(0,2fr) minmax(0,3fr);align-items:start;gap:14px}
+#${ID} .rqSplit4060>.ibPanel{min-width:0;width:100%;box-sizing:border-box}
+#${ID} .rqSplit4060>.ibPanel .ibBody{height:auto;min-width:0;box-sizing:border-box;overflow-x:hidden}
+#${ID} .rqSplit4060 svg{max-width:100%;height:auto}
+#${ID} .rqSplit4060 .rqSourcePanel{height:auto;min-height:0;gap:12px}
+#${ID} .rqSplit4060 .rqSourceFoot{margin-top:12px}
+@media(max-width:900px){#${ID} .rqSplit4060{grid-template-columns:minmax(0,1fr)}}
+
 
 #${ID} .rqSourceLegend{display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:9px 12px;border:1px solid #e4ebef;border-radius:8px;font-size:11px;color:#516c7c}
 #${ID} .rqSourceLegend span{display:flex;align-items:center;gap:7px}
