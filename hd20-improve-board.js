@@ -49,7 +49,7 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
    눌리고 12개월 중 실제 값 있는 달이 5~6개뿐인 오른쪽은 빈 축 공간이 커 보여 두 패널 사이 여백이
    불균형해 보였음(사용자 지적, 업로드 스크린샷 기준) — 1:1에 가깝게 재조정. */
 #${ID} .r1{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
-#${ID} .r1{width:100%;grid-template-columns:minmax(0,2fr) minmax(0,3fr)!important;align-items:stretch}#${ID} .r1>.ibPanel{width:100%;min-width:0;box-sizing:border-box}#${ID} .r1 .ibBody>svg{aspect-ratio:auto;width:100%!important;height:360px!important;max-height:none!important}
+#${ID} .r1{width:100%;grid-template-columns:minmax(0,2fr) minmax(0,3fr)!important;align-items:stretch}#${ID} .r1>.ibPanel{width:100%;min-width:0;box-sizing:border-box}#${ID} .r1 .ibBody>svg{aspect-ratio:auto;width:100%!important;height:330px!important;max-height:none!important}
 #${ID} .r1>.ibPanel{min-width:0;height:100%}#${ID} .r1 .ibBody{display:flex;flex-direction:column;min-width:0}#${ID} .r1 .ibBody>svg{flex:none;width:100%!important}#${ID} .r1 .ibAdvBadge{margin:8px 0 0;padding:7px 10px}#${ID} .r1 .ibLeg{margin-top:8px}#${ID} .r3{grid-template-columns:repeat(2,minmax(0,1fr))}
 #${ID} .ibPanel{border:1px solid #e3eaf0;border-radius:10px;background:#fff;overflow:hidden}
 #${ID} .ibHead{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 12px;background:#f1f5f8;border-bottom:1px solid #e3eaf0;font-size:13.5px;font-weight:900;color:#22303f}
@@ -174,7 +174,7 @@ function render(box){
         '<text x="'+cx+'" y="309" text-anchor="middle" font-size="10">'+name+'</text>';
     }).join('');
     const ticks=[0,.25,.5,.75,1].map(k=>'<line x1="46" x2="'+(width-28)+'" y1="'+(290-k*260)+'" y2="'+(290-k*260)+'" stroke="#e2e6e9"/><text x="37" y="'+(294-k*260)+'" text-anchor="end" font-size="10">'+Math.round(maxCount*k)+'</text>').join('');
-    return '<svg width="'+width+'" height="360" viewBox="0 0 '+width+' 360" role="img" aria-label="5S 유형별 등록건수 막대 및 인당 개선건수 수치 배지">'+ticks+bars+'</svg>';
+    return '<svg width="'+width+'" height="330" viewBox="0 0 '+width+' 330" role="img" aria-label="5S 유형별 등록건수 막대 및 인당 개선건수 수치 배지">'+ticks+bars+'</svg>';
   })();
   // b) 월별 — 건수로 고정 표시. 수평전개 적용대상건수는 그 달 5S 활동 완료건수 대비 비율(%)을 값 옆에 병기하고 막대를 넓혀 값이 겹치지 않게 함
   const mo=(pred)=>Array.from({length:12},(_,i)=>rowsY.filter(r=>monthOf(r)===i+1&&pred(r)).length),rowsC=filt(D,{ignoreYear:true,ignoreMonth:true}).filter(inTeams),cy=r=>cdOf(r).slice(0,4),cm=r=>+cdOf(r).slice(5,7),confM=(a)=>Array.from({length:12},(_,i)=>a.filter(r=>r.judgeState==='확정'&&r.valid!==false&&r.attrition!==true&&cy(r)===S.year&&cm(r)===i+1).length),ML=Array.from({length:12},(_,i)=>String(i+1).padStart(2,'0')+'월');
