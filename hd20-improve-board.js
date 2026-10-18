@@ -228,29 +228,33 @@ function render(box){
   const placeOf=r=>String(r.workplaceId||r.workplace||r.workArea||r.area||'').trim();
   const teamRows=teamConf.map(r=>{const c=asDate(cdOf(r)),l=asDate(r.maintainLostAt||r.maintainEndedAt||r.maintainStoppedAt||r.lostAt||r.invalidatedAt||r.attritionAt);return{w:placeOf(r),ci:c?monthIdx(c):null,li:l?monthIdx(l):null,maintaining:keepSet.has(r.id)};}).filter(r=>r.ci!==null);
   const est=teamRows.filter(r=>!r.maintaining&&r.li===null).length;
-  const cyy=+S.year,exArr=[],nwArr=[],cumArr=[],lossArr=[],declineArr=[];
-  // Unknown loss dates must not erase all historical confirmations. Display
-  // historical confirmations as provisional, not verified retention.
+  const cyy=+S.year,exArr=[],nwArr=[],lossArr=[],declineArr=[],pendingArr=[];
   const unknownRows=teamRows.filter(r=>!r.maintaining&&r.li===null);
   const datedLossRows=teamRows.filter(r=>r.li!==null);
   const workplaceRows=teamRows.filter(r=>r.w);
-  const provisional=[];
-  for(let m=0;m<12;m++){const mi=cyy*12+m;const active=r=>r.li===null?true:r.li>mi;
+  const knownWorkplaces=[...new Set(workplaceRows.map(r=>r.w))].length;
+  const lastMonth=cyy<now.getFullYear()?12:cyy===now.getFullYear()?now.getMonth()+1:0;
+  for(let m=0;m<12;m++){
+    const mi=cyy*12+m;
+    if(m>=lastMonth){exArr.push(null);nwArr.push(null);lossArr.push(null);declineArr.push(null);pendingArr.push(null);continue}
+    const active=r=>r.li===null?r.maintaining:r.li>mi;
     exArr.push(teamRows.filter(r=>r.ci<mi&&active(r)).length);
     nwArr.push(teamRows.filter(r=>r.ci===mi&&active(r)).length);
-    provisional.push(teamRows.filter(r=>r.ci<=mi&&!r.maintaining&&r.li===null).length);
-    cumArr.push(exArr[m]+nwArr[m]);
+    pendingArr.push(teamRows.filter(r=>r.ci<=mi&&!r.maintaining&&r.li===null).length);
     lossArr.push(teamRows.filter(r=>r.li===mi&&r.ci<=mi).length);
-    if(m===0||mi>nowIdx){declineArr.push(null);continue}
-    const workplaces=[...new Set(workplaceRows.map(r=>r.w))];
+    if(m===0){declineArr.push(null);continue}
     const ratio=(w,at)=>{const cohort=teamRows.filter(r=>r.w===w&&r.ci<=at);if(!cohort.length||cohort.some(r=>!r.maintaining&&r.li===null))return null;return cohort.filter(r=>r.li===null||r.li>at).length/cohort.length};
-    let compared=0,declined=0;for(const w of workplaces){const prev=ratio(w,mi-1),curr=ratio(w,mi);if(prev===null||curr===null)continue;compared++;if(curr<prev)declined++}declineArr.push(compared?declined:null)
+    let compared=0,declined=0;
+    for(const w of new Set(workplaceRows.map(r=>r.w))){const prev=ratio(w,mi-1),curr=ratio(w,mi);if(prev===null||curr===null)continue;compared++;if(curr<prev)declined++}
+    declineArr.push(compared?declined:null)
   }
-  const divE=v=>per?v/th:v,curKeep=teamConf.filter(r=>keepSet.has(r.id)).length;
-  const E=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W/2)-8),cats:ML,per,stack:false,series:[{name:'기존 유지',vals:exArr.map(divE),labelTotals:per?exArr:null,color:'#a8c7c4'},{name:'신규 확정',vals:nwArr.map(divE),labelTotals:per?nwArr:null,color:C.dark}]});
-  const lossTot=lossArr.reduce((a,b)=>a+b,0),declineTot=declineArr.filter(Number.isFinite).reduce((a,b)=>a+b,0),knownLoss=teamRows.filter(r=>r.li!==null).length,knownWorkplaces=[...new Set(teamRows.map(r=>r.w).filter(Boolean))].length,declineMonths=declineArr.filter(Number.isFinite).length;
-  const lossBar=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W/2)-8),h:185,cats:ML,series:[{name:'사례 이탈',vals:lossArr,color:'#c13f36'},{name:'작업장 유지수준 하락',vals:declineArr,color:'#d89a35'}]});
-  const lossChart=`<div class="ibLossWrap"><div class="ibLossLabel">이탈·유지수준 하락<em>사례 이탈 ${knownLoss?lossTot+'건':'집계 불가'} · 작업장 하락 ${declineMonths?declineTot+'곳(월별 합산)':'집계 불가'}</em></div>${lossBar}${leg([['사례 이탈','#c13f36'],['작업장 유지수준 하락','#d89a35']])}<div class="ibLeg"><span>사례 이탈: 실제 이탈일 기준 · 작업장 유지수준 하락: 전월 대비 유지율이 낮아진 작업장 수. 비교 자료가 없으면 집계 제외. 기록된 이탈일 ${datedLossRows.length}건 · 작업장 식별자 ${workplaceRows.length}건(${knownWorkplaces}개 작업장) · 비교 가능 월 ${declineMonths}개 · 미확정 이탈시점 ${unknownRows.length}건. ${!knownLoss?'실제 이탈일 데이터가 없어 사례 이탈은 0건으로 확정할 수 없습니다. ':''}${!declineMonths?'작업장별 유지율 비교 데이터가 없어 하락 건수를 0으로 확정할 수 없습니다.':''}</span></div></div>`;
+  const divE=v=>v===null?null:(per?v/th:v),curKeep=teamConf.filter(r=>keepSet.has(r.id)).length;
+  const E=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W/2)-8),cats:ML,per,stack:false,series:[{name:'기존 유지(현상태 기준)',vals:exArr.map(divE),labelTotals:per?exArr:null,color:'#a8c7c4'},{name:'신규 확정',vals:nwArr.map(divE),labelTotals:per?nwArr:null,color:C.dark}]});
+  const knownLoss=datedLossRows.length,declineMonths=declineArr.filter(Number.isFinite).length;
+  const lossTot=lossArr.reduce((a,b)=>a+(Number.isFinite(b)?b:0),0);
+  const declineTot=declineArr.reduce((a,b)=>a+(Number.isFinite(b)?b:0),0);
+  const lossBar=knownLoss||declineMonths?chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W/2)-8),h:185,cats:ML,series:[{name:'작업사례 이탈',vals:knownLoss?lossArr:Array(12).fill(null),color:'#c13f36'},{name:'작업장 유지수준 하락',vals:declineMonths?declineArr:Array(12).fill(null),color:'#d89a35'}]}):'<div style="padding:28px 16px;text-align:center;color:#657b90;border:1px dashed #cbd5df;border-radius:10px;margin-top:10px"><strong style="display:block;color:#233e56;font-size:15px">월별 이탈·유지수준 하락 집계 불가</strong><span style="display:block;margin-top:8px">실제 이탈일 또는 작업장별 비교 가능한 유지이력 데이터가 없습니다. 0건으로 확정하지 않습니다.</span></div>';
+  const lossChart=`<div class="ibLossWrap"><div class="ibLossLabel">작업사례 이탈 · 작업장 유지수준 하락<em>작업사례 이탈 ${knownLoss?lossTot+'건':'집계 불가'} · 작업장 하락 ${declineMonths?declineTot+'곳(월별 합산)':'집계 불가'}</em></div>${lossBar}${leg([['작업사례 이탈','#c13f36'],['작업장 유지수준 하락','#d89a35']])}<div class="ibLeg"><span>작업사례 이탈은 실제 이탈일 기준, 작업장 유지수준 하락은 전월 대비 유지율 하락 작업장 수 기준입니다. 이탈일 기록 ${datedLossRows.length}건 · 식별된 작업장 ${knownWorkplaces}곳 · 비교 가능 월 ${declineMonths}개 · 이탈시점 미기록 ${unknownRows.length}건. 상단 유지 실적은 현재 상태를 과거 월에 소급 적용한 참고값이며 월말 실적 확정값이 아닙니다. 미래 월은 표시하지 않습니다.</span></div></div>`;
   const opt=(a,cur,all='ALL')=>`<option value="">${all}</option>`+a.map(x=>`<option value="${esc(x)}"${x===cur?' selected':''}>${esc(x)}</option>`).join('');
   box.innerHTML=`<div class="ibTitle"><h2>5S 자율개선 종합 대시보드</h2></div><p class="ibNote">기본 조회조건은 당해년도 연간누적 데이터입니다 (월간 데이터 조회 시, 해당 월을 선택하세요)</p>
 <div class="ibKpis"><div class="ibKpi"><small>5S 활동</small><b>${totC}건</b></div><div class="ibKpi"><small>${per?'인당 활동':'팀 평균 활동'}</small><b>${avg.toFixed(2)}${per?'건/인':'건'}</b></div><div class="ibKpi"><small>당월 참여율</small><b>${part.toFixed(1)}%</b></div></div>
