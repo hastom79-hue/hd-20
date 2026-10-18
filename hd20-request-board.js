@@ -396,7 +396,7 @@ function render(box){
   const delayRows=teamsAll.map(t=>{const a=rowsM.filter(c=>c.team===t&&!isDone(c)&&isOverdue(c,D.today)).map(c=>delayDays(c,D.today)).filter(v=>v!==null);
     return{team:t,n:a.length,avg:a.length?Math.round(a.reduce((x,y)=>x+y,0)/a.length*10)/10:0,max:a.length?Math.max(...a):0}}).filter(r=>r.n>0).sort((a,b)=>b.n-a.n||b.avg-a.avg);
   let delayRowsSorted=delayRows.length?delayRows.map(r=>{const c=rowsM.filter(x=>x.team===r.team&&isOverdue(x,D.today));const v=[c.filter(x=>delayDays(x,D.today)<=7).length,c.filter(x=>delayDays(x,D.today)>=8&&delayDays(x,D.today)<=14).length,c.filter(x=>delayDays(x,D.today)>=15).length];return{team:r.team,v,total:r.n}}).sort((a,b)=>b.v[2]-a.v[2]||b.total-a.total):[];
-  delayRowsSorted=delayRowsSorted.sort((a,b)=>b.v[2]-a.v[2]||b.total-a.total);
+  delayRowsSorted=orderedTeams(delayRowsSorted,D.teams);
   // Three grouped bars per team, one for each overdue band; never stack.
   const delaySegColors=['#d3d9df','#a5b0bb','#536779'];
   const delayObservedMax=Math.max(0,...delayRowsSorted.flatMap(r=>r.v).filter(v=>Number.isFinite(v)&&v>0));
@@ -524,7 +524,7 @@ function render(box){
   const rateAxisHigh=Math.min(100,Math.max(rateAxisLow+5,Math.ceil((rateMax+Math.max(2,rateSpread*.3))/5)*5));
   const rateAxisSpan=Math.max(1,rateAxisHigh-rateAxisLow);
   const teamRateNote='';
-  const teamOrderControl='<div class="rqOrderTools"><span>기준정보 팀 순서 · 드래그 또는 ◀ ▶ 이동</span><button type="button" data-team-order-save>정렬순서 저장</button><button type="button" data-team-order-reset>기준정보 순서 복원</button></div>';
+  const teamOrderControl='<div class="rqOrderTools"><span>팀 순서 변경 후 저장 · 복원은 즉시 저장</span><button type="button" data-team-order-save>정렬순서 저장</button><button type="button" data-team-order-reset>기준정보 순서 복원</button></div>';
   const teamRateBars='<div class="rqTeamVerticalScroll">'+teamRateNote+'<div class="rqTeamVertical" style="--rq-team-count:'+Math.max(1,teamRateSorted.length)+'"><div class="rqTeamAxisTicks">'+[0,1,2,3,4].map(i=>'<span style="bottom:'+i*25+'%">'+(rateAxisLow+rateAxisSpan*i/4).toFixed(rateAxisSpan%4?1:0)+'%</span>').join('')+'</div><div class="rqTeamVerticalCols rqTeamChart03Cols">'+teamRateSorted.map(r=>{const pct=r.total?Math.round(r.done/r.total*1000)/10:0;const color=pct>=80?'#21756e':'#e1af37';const h=r.total?Math.max(0,Math.min(100,(pct-rateAxisLow)/rateAxisSpan*100)):0;return '<div class="rqTeamVerticalCol" draggable="true" data-team-axis="'+esc(r.team)+'" title="'+esc(r.team)+' · 완료 '+r.done+'/'+r.total+'건"><div class="rqTeamVerticalTrack'+(rateAxisLow>0?' rqAxisCut':'')+'">'+(r.total>0&&pct>0?'<strong class="rqTeamBarValue" style="bottom:calc('+h+'% + 5px)">'+pct+'%<small class="rqTeamBarCount">('+r.done+'/'+r.total+'건)</small></strong>':'')+'<span style="height:'+h+'%;background:'+color+'"></span></div><span><em>'+esc(r.team)+(teamHighlight===r.team?' ★':'')+'</em></span></div>'}).join('')+'</div></div><div class="rqTeamChartLegend"><span><i style="background:#e1af37"></i>80% 미만</span><span><i style="background:#21756e"></i>80% 이상</span></div></div>';
   const overCases=rowsM.filter(c=>teamsAll.includes(c.team)&&isOverdue(c,D.today));
   const delayBands=[overCases.filter(c=>delayDays(c,D.today)<=7).length,overCases.filter(c=>delayDays(c,D.today)>=8&&delayDays(c,D.today)<=14).length,overCases.filter(c=>delayDays(c,D.today)>=15).length];
@@ -594,7 +594,7 @@ function render(box){
     col.addEventListener('drop',e=>{e.preventDefault();const from=draggedTeam||e.dataTransfer.getData('text/plain');if(moveTeam(from,col.dataset.teamAxis,D.teams))render(box)});
   });
   const saveOrder=box.querySelector('[data-team-order-save]');if(saveOrder)saveOrder.onclick=()=>{if(saveTeamOrder(D.teams))render(box);else alert('이 브라우저에 정렬순서를 저장할 수 없습니다.')};
-  const resetOrder=box.querySelector('[data-team-order-reset]');if(resetOrder)resetOrder.onclick=()=>{draftTeamOrder=[...D.teams];render(box)};
+  const resetOrder=box.querySelector('[data-team-order-reset]');if(resetOrder)resetOrder.onclick=()=>{draftTeamOrder=[...D.teams];if(saveTeamOrder(D.teams)){render(box)}else alert('기준정보 순서를 저장할 수 없습니다.')};
   box.querySelectorAll('[data-f]').forEach(el=>{el.onchange=()=>{if(el.dataset.f==='month'){const raw=el.value.trim();if(raw!==''&&(!/^\\d{1,2}$/.test(raw)||Number(raw)<1||Number(raw)>12)){el.setCustomValidity('월은 1~12 사이의 숫자로 입력해 주세요.');el.reportValidity();return;}el.setCustomValidity('');S.month=raw?String(Number(raw)).padStart(2,'0'):'';}else S[el.dataset.f]=el.value;render(box)};if(el.dataset.f==='month')el.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();el.blur()}})});
   box.querySelector('[data-rq="reset"]').onclick=()=>{Object.assign(S,{year:null,month:'',source:'',team:'',status:'',roll:'',selTeam:''});render(box)};box.querySelector('[data-rq="go"]').onclick=()=>render(box);box.querySelector('[data-rq="print"]').onclick=()=>window.print();
   box.querySelectorAll('.rqMoreBtn').forEach(btn=>btn.onclick=()=>{const prev=btn.previousElementSibling;if(!prev)return;if(prev.classList.contains('rqMoreChart')){prev.hidden=false}else{prev.querySelectorAll('tr.rqRowMore').forEach(tr=>tr.hidden=false)}btn.remove()});
