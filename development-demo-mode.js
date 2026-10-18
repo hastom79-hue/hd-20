@@ -143,6 +143,20 @@ const action=[];teams.forEach((team,ti)=>{for(let i=0;i<10;i++){const isDone=!(i
    const row=activity[i];
    if(row.type==='5S 고도화'&&!String(row.id||'').startsWith('DEMO-A-ADV-REAL-')&&!String(row.id||'').startsWith('DEMO-A-JUDGE-QUEUE-'))activity.splice(i,1);
  }
+ /* Team-specific active months: avoid identical 10/10 continuity across all teams.
+    Reassign dates only for synthetic ordinary activities; leave confirmed cases intact. */
+ teams.forEach((team,ti)=>{
+   const activeCount=Math.max(5,elapsedMonths-(ti%5));
+   const activeMonths=Array.from({length:elapsedMonths},(_,i)=>i+1)
+     .filter(m=>((m*7+ti*3)%elapsedMonths)<activeCount);
+   const chosen=activeMonths.length?activeMonths:[1];
+   const teamRows=activity.filter(r=>r.source===SRC&&r.team===team&&r.type!=='5S 고도화');
+   teamRows.forEach((r,i)=>{
+     const month=chosen[i%chosen.length];
+     const day=Math.min(3+((i*5+ti*3)%23),month===elapsedMonths?now.getDate():28);
+     r.date=now.getFullYear()+'-'+String(month).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+   });
+ });
  const approvedCases=activity.filter(r=>r.type==='5S 고도화'&&r.confirmed===true&&r.judgeState==='확정');
  const lostCases=approvedCases.filter(r=>r.attrition===true);
  const keptCases=approvedCases.filter(r=>r.attrition!==true);
