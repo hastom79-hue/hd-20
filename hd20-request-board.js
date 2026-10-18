@@ -379,6 +379,8 @@ function render(box){
   const orderedSources=[...SOURCES.slice(0,4).filter(x=>sourceOrder.includes(x)),...SOURCES.slice(0,4).filter(x=>!sourceOrder.includes(x)),'출처 미분류'];
   const sourceStats=orderedSources.map(name=>{const items=rowsM.filter(c=>sourceOf(c)===name);return {name,count:items.length,done:items.filter(isDone).length}});
   const activeSources=sourceStats.slice(0,4).filter(x=>x.count>0).length;
+  const sourceCountCheck=sourceStats.slice(0,4).reduce((n,x)=>n+x.count,0);
+  if(sourceCountCheck!==sourceTotal)console.warn('HD20 request source totals mismatch',sourceCountCheck,sourceTotal);
   /* 좌측 패널: 가로막대 금지. 발굴 리소스는 범례와 정의로 설명하고,
      요청·완료 건수는 출처별 세로 2열 막대로 비교한다. */
   const sourceMax=Math.max(1,...sourceStats.map(x=>x.count));
@@ -392,7 +394,7 @@ function render(box){
     +'<div class="rqSourceLegend"><span><i style="background:#6089a6"></i>개선요청 건수 (건)</span><span><i style="background:#279586"></i>완료 건수 (건)</span><span>완료율 = 완료 건수 ÷ 개선요청 건수 × 100</span></div>'
     +'<div class="rqSourceColumns" role="img" aria-label="4대 발굴 출처별 개선요청 및 완료 건수 비교, 임시 배정 포함">'+sourceStats.slice(0,4).map((x,i)=>'<div class="rqSourceColumn"><div class="rqSourceColPlot"><div class="rqSourceColBar request" style="height:'+Math.max(0,x.count/sourceMax*100)+'%"><b>'+x.count+'</b></div><div class="rqSourceColBar done" style="height:'+Math.max(0,x.done/sourceMax*100)+'%"><b>'+x.done+'</b></div></div><strong>'+(i+1).toString().padStart(2,'0')+'</strong><small>'+(x.count?(100*x.done/x.count).toFixed(0)+'% 완료':(i===4?'미분류 없음':'요청 없음'))+'</small></div>').join('')+'</div>'
     +'<div class="rqSourceFactorLegend"><b>발굴 리소스 · 범례 정의</b>'+sourceDefinitions.map((x,i)=>'<div><span class="rqFactorIndex">'+String(i+1).padStart(2,'0')+'</span><span><strong>'+esc(x[0])+'</strong><small>'+esc(x[1])+'</small></span></div>').join('')+'</div>'
-    +'<p class="rqSourceUnclassified">검증용 임시 출처 배정 '+provisionalCount+'건 · 원본 출처가 확인되지 않은 건은 ID 기반으로 4개 출처에 임시 배정했습니다. 실제 발굴 출처가 아니며 원본은 수정하지 않습니다.</p></div>';
+    +'<p class="rqSourceUnclassified">검증용 임시 출처 배정 '+provisionalCount+'건 · 4개 출처 합계 '+sourceCountCheck+'건 · 원본 출처가 확인되지 않은 건은 ID 기반으로 4개 출처에 임시 배정했습니다. 실제 발굴 출처가 아니며 원본은 수정하지 않습니다.</p></div>';
   /* 전면 개편(사용자 확정: "이대로"): 3개 출처 중 보통 1개에만 건수가 몰려 별도 섹션(가로막대 3개)을
      차지할 정도의 정보량이 아니라고 판단, 보조 정보 영역 안에서 한 줄 요약 문장으로 축소. */
   const sourceCounts=SOURCES.map(s=>({s,n:rowsM.filter(c=>sourceOf(c)===s).length})).sort((a,b)=>b.n-a.n);
@@ -485,7 +487,7 @@ function render(box){
     +'<div class="ibRow rqPrintSkip"><button type="button" class="rqDetailOpenBtn" data-open-detail="1">📋 개선요청 상세 목록 열기 (전체 '+actionAll.length+'건)</button></div>'
     +'<p class="rqCaveat">※ 요청출처는 리더십(공장장)·5S모듈·생산혁신팀(HDPS파트) 3종입니다. 원천에 출처 필드가 없는 경우 일부 출처는 등록자 및 Audit 연계 정보로 추정됩니다. 완료일이 없는 완료 건은 월별 완료 추이에서 제외되며 총 완료 건수에는 포함됩니다.</p>';
 
-  const evCols=['요청번호','요청출처','조치대응부서','작업장','진행현황','요청일','완료예정일','완료일'],
+  const evCols=['요청번호','요청출처(검증용 포함)','출처확인상태','조치대응부서','작업장','진행현황','요청일','완료예정일','완료일'],
     evMapR=c=>[c.id,sourceOf(c),c.team,c.workplace||'—',c.status,c.date,c.due||'—',c.doneDate||'—'],
     evDelayCols=[...evCols,'지연일수'],evDelayMapR=c=>[...evMapR(c),delayDays(c,D.today)??''];
   const EV={
@@ -505,7 +507,7 @@ function render(box){
   box.querySelectorAll('.rqMoreBtn').forEach(btn=>btn.onclick=()=>{const prev=btn.previousElementSibling;if(!prev)return;if(prev.classList.contains('rqMoreChart')){prev.hidden=false}else{prev.querySelectorAll('tr.rqRowMore').forEach(tr=>tr.hidden=false)}btn.remove()});
   box.querySelector('[data-rq="csv"]').onclick=()=>{
     const out=[['5S 개선요청 종합 대시보드',S.year+'년',S.month?S.month+'월':'연간누적'],[],['요청번호','요청출처','조치대응부서','작업장','진행현황','요청일','완료예정일','완료일']];
-    rowsM.forEach(c=>out.push([c.id,sourceOf(c),c.team,c.workplace||'',isOverdue(c,D.today)?'기한초과':c.status,c.date||'',c.due||'',c.doneDate||'']));
+    rowsM.forEach(c=>out.push([c.id,sourceOf(c),confirmedSource(c)?'원본 확인':'검증용 임시 배정',c.team,c.workplace||'',isOverdue(c,D.today)?'기한초과':c.status,c.date||'',c.due||'',c.doneDate||'']));
     const text='\ufeff'+out.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n'),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:'text/csv;charset=utf-8'}));a.download=`5S_개선요청종합_${S.year}${S.month||''}.csv`;document.body.appendChild(a);a.click();a.remove()};
 }
 function safeRender(box){if(!box)return;try{render(box)}catch(error){console.error('HD20 request board render error',error);box.textContent='5S 개선요청 종합 대시보드 표시 오류: '+String(error?.message||error)}}
@@ -514,7 +516,7 @@ function ensure(){
   if(!box){const anchor=document.getElementById('hd20ImproveBoard')||document.getElementById('hd20DashboardPriority')||document.querySelector('.cards')||document.getElementById('hd20DashboardSectionTabs');if(!anchor)return false;box=document.createElement('section');box.id=ID;anchor.insertAdjacentElement('afterend',box);
     const T=window.HD20_DASHBOARD_TABS;if(T?.apply)T.apply(T.active?.()||'summary',{scroll:false})}
   safeRender(box);return true}
-let tries=0;(function boot(){if(!ensure()&&tries++<80)setTimeout(boot,150)})();window.addEventListener('hd20-dashboard-ready',()=>ensure());window.addEventListener('hd20-kpi-source-updated',()=>{if(!document.getElementById(ID))ensure()});document.addEventListener('DOMContentLoaded',()=>ensure(),{once:true});window.addEventListener('load',()=>ensure(),{once:true});
+let tries=0;(function boot(){if(!ensure()&&tries++<80)setTimeout(boot,150)})();window.addEventListener('hd20-dashboard-ready',()=>ensure());window.addEventListener('hd20-kpi-source-updated',()=>{if(!document.getElementById(ID))ensure()});document.addEventListener('DOMContentLoaded',()=>ensure(),{once:true});window.addEventListener('load',()=>ensure(),{once:true});window.addEventListener('pageshow',()=>{const b=document.getElementById(ID);if(b)safeRender(b)});
 document.addEventListener('click',e=>{if(e.target.closest?.('#hd20DashboardSectionTabs button[data-dashboard-section="request"]'))setTimeout(()=>{const b=document.getElementById(ID);if(b)safeRender(b)},80)},true);
 ['hd20-kpi-source-updated','hd20-action-updated','hd20-policy-updated'].forEach(ev=>window.addEventListener(ev,()=>setTimeout(()=>{const b=document.getElementById(ID);if(b)safeRender(b)},80)));
 let rz;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>{const b=document.getElementById(ID);if(b&&b.offsetParent!==null)safeRender(b)},250)});
