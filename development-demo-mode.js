@@ -175,6 +175,26 @@ const action=[];teams.forEach((team,ti)=>{for(let i=0;i<10;i++){const isDone=!(i
    demoContinuityAudit.push({team,activeMonths:actual.size,elapsedMonths,activityCount:rows.length,months:[...actual].sort((a,b)=>a-b)});
  });
  window.HD20_DEMO_TEAM_CONTINUITY_AUDIT=demoContinuityAudit;
+ /* Keep retention/attrition coherent with actual demo team activity continuity.
+    Preserve the approved 28 confirmed / 11 attrited / 17 maintained totals. */
+ const continuityByTeam=new Map(demoContinuityAudit.map(r=>[r.team,r.activeMonths]));
+ const approvedPopulation=activity.filter(r=>r.source===SRC&&r.confirmed===true&&r.judgeState==='확정');
+ const attritionPriority=[...approvedPopulation].sort((a,b)=>{
+   const am=continuityByTeam.get(a.team)??elapsedMonths,bm=continuityByTeam.get(b.team)??elapsedMonths;
+   return am-bm||String(a.id).localeCompare(String(b.id));
+ });
+ const attritedIds=new Set(attritionPriority.slice(0,11).map(r=>r.id));
+ approvedPopulation.forEach(r=>{
+   const lost=attritedIds.has(r.id);
+   r.attrition=lost;
+   r.maintainState=lost?'이탈':'유지';
+   r.auditState=lost?'이탈':'유지';
+   r.status=lost?'이탈':'완료';
+ });
+ window.HD20_DEMO_RETENTION_CONTINUITY_AUDIT=demoContinuityAudit.map(x=>{
+   const confirmed=approvedPopulation.filter(r=>r.team===x.team);
+   return {...x,confirmed:confirmed.length,attrited:confirmed.filter(r=>r.attrition===true).length,maintained:confirmed.filter(r=>r.attrition!==true).length};
+ });
  const approvedCases=activity.filter(r=>r.type==='5S 고도화'&&r.confirmed===true&&r.judgeState==='확정');
  const lostCases=approvedCases.filter(r=>r.attrition===true);
  const keptCases=approvedCases.filter(r=>r.attrition!==true);
