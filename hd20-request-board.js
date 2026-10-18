@@ -140,6 +140,11 @@ function css(){const prior=document.getElementById(ID+'Style');if(prior)prior.re
 #${ID} .rqManageRow .rqTeamChart03Cols .rqTeamVerticalCol>span{height:72px;min-height:72px!important}
 #${ID} .rqManageRow .rqTeamChart03Cols .rqTeamVerticalCol>span em{top:9px}
 #${ID} .rqManageRow .rqTeamChart03Cols .rqTeamBarValue{font-size:11px}
+
+#${ID} .rqManageRow .rqTeamChart03Cols .rqTeamVerticalCol{grid-template-rows:172px 96px 20px!important}
+#${ID} .rqManageRow .rqTeamChart03Cols .rqTeamVerticalCol>span{position:relative!important;display:block!important;height:96px!important;min-height:96px!important;width:100%!important;margin:0!important;padding:0!important;overflow:visible!important;transform:none!important}
+#${ID} .rqManageRow .rqTeamChart03Cols .rqTeamVerticalCol>span em{position:absolute!important;top:18px!important;left:50%!important;display:block!important;transform:rotate(-47deg)!important;transform-origin:left top!important;white-space:nowrap!important;line-height:1.2!important}
+#${ID} .rqManageRow .rqTeamChart03Cols .rqTeamVerticalCol>small{margin-top:0!important}
 #${ID} .ibPanel{border:1px solid #e3eaf0;border-radius:10px;background:#fff;overflow:hidden}
 #${ID} .ibHead{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 12px;background:#f1f5f8;border-bottom:1px solid #e3eaf0;font-size:13.5px;font-weight:900;color:#22303f}
 #${ID} .ibHead em{font-style:normal;font-size:12.5px;color:#14304c}
