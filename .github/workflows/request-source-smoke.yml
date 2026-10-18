@@ -1,0 +1,51 @@
+name: HD20 request-source integration smoke
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'action-mail-workflow.js'
+      - 'hd20-request-board.js'
+      - 'request-source-order-master.js'
+      - 'web-validation-fixture.js'
+      - 'final-layout-polish.js'
+      - 'index.html'
+      - '.github/workflows/request-source-smoke.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check JavaScript syntax
+        run: |
+          for file in action-mail-workflow.js hd20-request-board.js request-source-order-master.js web-validation-fixture.js final-layout-polish.js; do
+            node --check "$file"
+          done
+      - name: Verify registration, dashboard, fixture and cache contracts
+        run: |
+          node <<'NODE'
+          const fs=require('fs'),assert=require('assert');
+          const read=p=>fs.readFileSync(p,'utf8');
+          const action=read('action-mail-workflow.js'),board=read('hd20-request-board.js'),master=read('request-source-order-master.js'),fixture=read('web-validation-fixture.js'),html=read('index.html'),loader=read('final-layout-polish.js');
+          const sources=['현장 패트롤 점검','자율 5S Audit','혁신팀 자율 점검','5S 자율개선활동 피드백'];
+          for(const source of sources){
+            assert(action.includes('<option>'+source+'</option>'),'registration missing: '+source);
+            assert(board.includes("'"+source+"'"),'dashboard missing: '+source);
+            assert(master.includes("'"+source+"'"),'master missing: '+source);
+            assert(fixture.includes("'"+source+"'"),'fixture missing: '+source);
+          }
+          assert(action.includes('id="amRequestSource" required'),'registration source must be required');
+          assert(action.includes('workplace,requestSource,leader:'),'registration must persist requestSource');
+          assert(action.includes('hd20-action-updated'),'registration must signal refresh');
+          assert(board.includes('c.requestSource||c.sourceDetail||c.discoverySource'),'dashboard must read stored source');
+          assert(board.includes("'출처 미분류'"),'legacy records must remain unclassified');
+          assert(board.includes('const sourceStats=orderedSources.map'),'source bars must follow master order');
+          assert(board.includes('x.done/x.count'),'source completion rate must use its own request count');
+          for(const script of ['action-mail-workflow.js','hd20-request-board.js','web-validation-fixture.js']){
+            assert(html.includes(script+'?v=20261018-source-sync-1'),'cache-bust missing: '+script);
+          }
+          assert(loader.includes('request-source-order-master.js?v=20261018-source-sync-1'),'dynamic master cache-bust missing');
+          console.log('PASS: four discovery sources, registration, aggregation, ordering, and cache contracts');
+          NODE
