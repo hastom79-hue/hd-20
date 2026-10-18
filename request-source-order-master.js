@@ -1,9 +1,7 @@
-/* 통합기준정보에 '요청출처 순서' 탭 추가: 5S 개선요청 종합 대시보드 ①번 차트의 가로축(요청출처) 표시 순서를
-   관리자가 직접 정할 수 있게 함. 기본값은 리더십 > 5S모듈 > 생산혁신팀 HDPS파트. operating-policy-master.js와
-   같은 방식(기존 masterModal에 탭·패널을 동적으로 덧붙임)으로 구현. */
+/* 통합기준정보 요청출처 순서: 등록 팝업 및 대시보드의 4대 발굴 경로와 동일한 기준을 사용한다. */
 (()=>{'use strict';
 const ID='hd20SourceOrderPanel',STYLE='hd20SourceOrderStyle',KEY='gmes5s_request_source_order';
-const DEFAULT=['리더십','5S모듈','생산혁신팀 HDPS파트'];
+const DEFAULT=['현장 패트롤 점검','자율 5S Audit','혁신팀 자율 점검','5S 자율개선활동 피드백'];
 function order(){try{const v=JSON.parse(localStorage.getItem(KEY)||'null');return Array.isArray(v)&&v.length===DEFAULT.length&&DEFAULT.every(s=>v.includes(s))?v:[...DEFAULT]}catch{return[...DEFAULT]}}
 let cur=order();
 function css(){if(document.getElementById(STYLE))return;const s=document.createElement('style');s.id=STYLE;s.textContent=`#${ID}{display:none;padding:4px 0 8px}

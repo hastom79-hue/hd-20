@@ -112,7 +112,7 @@ window.HD20_VALIDATION_MODE=true;window.HD20_VALIDATION_ISOLATED=true;
 
 /* ---------- 도우미 ---------- */
 /* app.js 팀 마스터(표시 순서 + 소속)와 동일하게 유지할 것 */
-const TEAM_DEFS=[['대형Att.팀','조립1팀'],['대형메인팀','조립1팀'],['대형상부팀','조립1팀'],['프레임제작팀','조립2팀'],['Boom제작팀','조립2팀'],['중형상부1팀','조립1팀'],['중형상부2팀','조립1팀'],['중형하부팀','조립1팀'],['중형Att팀','조립1팀'],['중형메인팀','조립1팀'],['휠로더Front팀','조립2팀'],['휠로더리어팀','조립2팀'],['휠로더메인팀','조립2팀'],['초대형조립팀','조립2팀'],['성능팀','조립1팀'],['트러블슈팅팀','조립1팀']];
+const TEAM_DEFS=[['대형Att.팀','조립1팀'],['대형메인팀','조립1팀'],['대형상부팀','조립1팀'],['프레임제작팀','조립2팀'],['Boom제작팀','조립2팀'],['중형상부1팀','조립1팀'],['중형상부2팀','조립1팀'],['중형하부팀','조립1팀'],['중형Att팀','조립1팀'],['중형메인팀','조립1팀'],['휠로더Front팀','조립2팀'],['휠로더리어팀','조립2팀'],['휠로더메인팀','조립2팀'],['초대형조립팀','조립2팀'],['성능팀','조립1팀'],['트러블슈팅팀','조립1팀'],['옵션조립팀','미지정']];
 const TEAMS=TEAM_DEFS.map(d=>d[0]),GROUP=new Map(TEAM_DEFS);
 const TYPES=['정리','정돈','청소','시각화','위험구역관리'];
 const AREAS=['A라인','B라인','자재창고','공구실','검사대','도장부스','용접구역','조립1구역','조립2구역','물류통로','포장구역','정비실'];
@@ -132,9 +132,9 @@ function addMonths(s,n){const[y,m,d]=s.split('-').map(Number),t=y*12+(m-1)+n,ny=
 function rng(seed){let a=seed>>>0;return()=>{a=(a+0x6D2B79F5)>>>0;let t=a;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}}
 const R=rng(20260921);
 const ri=(a,b)=>a+Math.floor(R()*(b-a+1)),pick=a=>a[Math.floor(R()*a.length)],chance=p=>R()<p;
-/* 요청출처(5S모듈/생산혁신팀 HDPS파트/리더십) 실제 필드를 현실적 비율로 직접 부여.
-   현장 자체 등록(5S모듈)이 다수, Audit을 운영하는 생산혁신팀 HDPS파트가 그다음, 경영진·팀장(리더십)이 소수지만 0은 아니게. */
-const pickSource=()=>{const r=R();return r<.55?'5S모듈':r<.85?'생산혁신팀 HDPS파트':'리더십'};
+/* 검증 전용 가상데이터: 개선요청 등록 팝업과 동일한 4대 발굴 경로를 사용한다.
+   비율은 검증을 위한 시뮬레이션일 뿐 실제 운영 성과를 의미하지 않는다. */
+const pickSource=()=>{const r=R();return r<.30?'현장 패트롤 점검':r<.55?'자율 5S Audit':r<.78?'혁신팀 자율 점검':'5S 자율개선활동 피드백'};
 /* 고정 횟수만 난수를 소비하는 셔플 (sort(()=>R()-.5)는 엔진마다 호출 횟수가 달라 재현성이 깨짐) */
 const shuffle=arr=>{const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(R()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 const pad=(n,w)=>String(n).padStart(w,'0');
@@ -149,7 +149,7 @@ function makeActivities(){
     const pf=profile(team),teamPer=Math.max(8,Math.round(per*pf.activity));
     for(let j=0;j<teamPer;j++){
       seq++;
-      const prev=chance(.08),regDay=prev?dayNum(`${Y-1}-01-01`)+ri(0,364):Y0+ri(0,Math.max(0,T0-Y0)),date=fromDay(regDay);
+      const prev=chance(.08),monthCount=Number(TODAY.slice(5,7)),monthIndex=(Math.floor(j/5)+(j%5)*3+ti)%monthCount,monthStart=dayNum(`${Y}-${pad(monthIndex+1,2)}-01`),monthEnd=Math.min(T0,dayNum(addMonths(`${Y}-${pad(monthIndex+1,2)}-01`,1))-1),regDay=prev?dayNum(`${Y-1}-01-01`)+ri(0,364):monthStart+ri(0,Math.max(0,monthEnd-monthStart)),date=fromDay(regDay);
       const advanced=j%5===4,slot=Math.floor(j/5);
       const row={id:'VALID-A-'+pad(seq,5),date,regDate:date,createdAt:date+'T09:00:00+09:00',team,group:GROUP.get(team),workplace:`${AREAS[j%AREAS.length]} ${1+Math.floor(j/AREAS.length)}`,owner:pick(NAMES),problem:`${pick(PROB)} (검증 ${seq})`,improvement:`${pick(IMP)} (검증 ${seq})`,before:pick(PHOTOS),after:pick(PHOTOS),headcount:20+ti*3,source:SRC};
       if(!advanced){
@@ -164,9 +164,9 @@ function makeActivities(){
         const r=R();
         const judgedDay=minDay(T0,regDay+ri(1,30));
         if(r<pf.confirm){
-          row.criteriaMatched=[...CRIT];row.criteriaVisual='Y';row.criteriaGreen='Y';row.criteriaSpace='Y';Object.assign(row,{candidate:true,isCandidate:true,judgeState:'확정',confirmed:true,status:chance(.1)?'유지관리':'확정',judgedAt:fromDay(judgedDay),confirmedAt:fromDay(judgedDay),level:ri(1,5)});
-          const weak=chance(pf.loss);row.maintainState=weak?pick(['미흡','중지']):'정상';row.valid=!weak;
-          if(weak){row.attrition=true;row.attritionReason=pick(['3대 요건 유지 미흡','정위치·정량 기준 이탈','Green Zone 유지 미흡','시각화·형적관리 유지 미흡']);row.attritionAt=fromDay(minDay(T0,judgedDay+ri(30,180)))}
+          row.criteriaMatched=shuffle(CRIT).slice(0,ri(1,3));{const hit=new Set(row.criteriaMatched);row.criteriaVisual=hit.has(CRIT[0])?'Y':'N';row.criteriaGreen=hit.has(CRIT[1])?'Y':'N';row.criteriaSpace=hit.has(CRIT[2])?'Y':'N'}Object.assign(row,{candidate:true,isCandidate:true,judgeState:'확정',confirmed:true,status:chance(.1)?'유지관리':'확정',judgedAt:fromDay(judgedDay),confirmedAt:fromDay(judgedDay),level:ri(1,5)});
+          const earliestLoss=judgedDay+ri(21,70),weak=earliestLoss<=T0&&chance(Math.min(.82,pf.loss*1.65));row.maintainState=weak?pick(['미흡','중지']):'정상';row.valid=!weak;
+          if(weak){row.criteriaMatched=[];row.criteriaVisual='N';row.criteriaGreen='N';row.criteriaSpace='N';row.attrition=true;row.attritionReason=pick(['충족 요건 전체 상실','정위치·정량 기준 상실','Green Zone 기준 상실','시각화·형적관리 기준 상실']);row.attritionAt=fromDay(earliestLoss+ri(0,Math.max(0,T0-earliestLoss)))}
           if(chance(.45)){row.horizontalRollout=true;row.rolloutState=pick(['수평전개중','수평전개 완료'])}
         }else{const pendingCut=Math.min(.62,pf.confirm+.24),supplementCut=Math.min(.74,pendingCut+.14),unconfirmedCut=Math.min(.84,supplementCut+.10),closedCut=Math.min(.92,unconfirmedCut+.08);
           if(r<pendingCut)Object.assign(row,{candidate:true,isCandidate:true,judgeState:'판정대기',status:'판정대기'});

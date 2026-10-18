@@ -1,12 +1,12 @@
-/* 5S 개선요청 종합 대시보드 — 사용자가 첨부한 'VTB 개선요청 종합 대시보드'(HD-HiHR/DELMIA Apriso) 구성을 5S 데이터에 맞게 재구성.
-   VTB와의 차이(사용자 지시): 개선요청부서 그리드는 따로 두지 않고 '조치대응부서'에 집중. 개선요청 출처는 5S모듈·생산혁신팀 HDPS파트·리더십 3종만 존재.
-   데이터: HD20KPIData.actionCases()/seoulDateKey(), HD20ProductionTeamMaster, HD20_HEADCOUNT_MASTER. 차트 엔진은 HD20_BOARD_KIT(hd20-improve-board.js) 재사용.
-   주의(데이터 한계, 화면에도 안내): 현재 원천에는 '요청출처' 실제 필드가 없어 auditDrawId 유무로 5S모듈/생산혁신팀 HDPS파트를 추정 표기(리더십 항목은 실제 필드 연결 전까지 0). */
+/* 5S 개선요청 종합 대시보드: 개선요청 등록 팝업의 4대 발굴 출처와 동일한 기준으로 집계한다.
+   출처가 없는 과거 기록은 추정하지 않고 '출처 미분류'로 집계한다. */
 (()=>{'use strict';
 const ID='hd20RequestBoard';
 /* 사용자 지시: "요청그룹은 리더십(공장장), 5S모듈, 생산혁신팀(HDPS파트)로 표현한다" — 표기와 순서를
    사용자 지정대로 맞춤. sourceOf()의 반환 문자열도 반드시 이 배열과 동일하게 맞춰야 SOURCES.includes()
-   매칭과 sourceOf(c)===s 집계가 깨지지 않음(아래 sourceOf() 함께 수정). */
+   매칭과 sourceOf(c)===s 집계가 깨지지 않음(아래 sourceOf() 함께 수정).
+   병합 메모: 다른 세션이 같은 지점을 완전히 다른 4+1종 분류(현장 패트롤 점검 등)로 변경했으나, 이
+   커밋 시점 사용자의 명시적 지시("리더십(공장장)·5S모듈·생산혁신팀(HDPS파트)")를 우선 반영. */
 const SOURCES=['리더십(공장장)','5S모듈','생산혁신팀(HDPS파트)'];
 const S={year:null,month:'',source:'',team:'',status:'',roll:'',selTeam:''};
 function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
@@ -167,6 +167,35 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
 #${ID} .rqMoreBtn{display:block;width:100%;margin-top:8px;padding:8px;border:1px dashed #cdd9e2;border-radius:8px;background:#f8fafb;color:#49657b;font-size:12px;font-weight:850;cursor:pointer}#${ID} .rqMoreBtn:hover{background:#eef3f6;border-color:#9fb4c2}
 #${ID} .rqHeat{display:block;border-radius:5px;padding:9px;min-width:42px;text-align:center}#${ID} .rqHeatHigh{background:#b9473b;color:#fff}#${ID} .rqHeatMid{background:#db8e72;color:#fff}#${ID} .rqHeatLow{background:#f4d7c6;color:#713e30}#${ID} .rqHeatZero{background:#f4f6f8;color:#758899}
 #${ID} .rqDelayStack{display:flex;height:17px;overflow:hidden;border-radius:5px;margin:3px 0 16px;background:#edf1f4}#${ID} .rqDelayBand{display:block;height:100%}#${ID} .rqDelayBand0{background:#e6ba73}#${ID} .rqDelayBand1{background:#d98454}#${ID} .rqDelayBand2{background:#b9473b}
+
+#${ID} .rqSplit4060>.ibPanel:first-child .ibBody{height:100%}
+
+#${ID} .rqSourceLegend{display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:9px 12px;border:1px solid #e4ebef;border-radius:8px;font-size:11px;color:#516c7c}
+#${ID} .rqSourceLegend span{display:flex;align-items:center;gap:7px}
+#${ID} .rqSourceLegend i{width:16px;height:8px;border-radius:3px;display:inline-block}
+#${ID} .rqSourcePair{display:grid;gap:6px}
+#${ID} .rqSourcePairBars{display:grid;gap:4px}
+#${ID} .rqSourcePairBars .rqTrack{height:8px}
+#${ID} .rqSourcePanel{display:flex;flex-direction:column;gap:16px;min-height:310px;height:100%;padding:4px 2px 0}
+#${ID} .rqSourceTop{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+#${ID} .rqSourceTop>div{padding:12px 14px;background:#f2f7fa;border:1px solid #e2ebf0;border-radius:10px}
+#${ID} .rqSourceTop small{display:block;font-size:11px;color:#617587;font-weight:700;margin-bottom:5px}
+#${ID} .rqSourceTop strong{font-size:22px;line-height:1.2;color:#193d59;font-weight:850}
+#${ID} .rqSourceTop em{font-size:12px;font-style:normal;font-weight:700;margin-left:3px;color:#617587}
+#${ID} .rqSourcePanel .rqBars{gap:14px;padding:0}
+#${ID} .rqSourcePanel .rqBarItem{display:block;opacity:1}
+#${ID} .rqSourcePanel .rqBarItem.zero{opacity:.68}
+#${ID} .rqSourceLabel{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px;font-size:12px}
+#${ID} .rqSourceLabel>span{display:flex;align-items:center;gap:7px;min-width:0}
+#${ID} .rqSourceIndex{font-size:10px;color:#7293a6;font-weight:850}
+#${ID} .rqSourceLabel strong{white-space:nowrap;color:#254b66}
+#${ID} .rqSourceLabel small{margin-left:5px;color:#6b8798;font-weight:650}
+#${ID} .rqSourcePanel .rqTrack{height:10px;border-radius:6px}
+#${ID} .rqSourceFoot{margin-top:auto;padding:13px 14px;background:#f7f9fb;border:1px solid #e8edf1;border-radius:10px;color:#344e62}
+#${ID} .rqSourceFoot b{font-size:12px}
+#${ID} .rqSourceFoot p{margin:6px 0 8px;font-size:12px;line-height:1.5}
+#${ID} .rqSourceFoot span{font-size:10.5px;color:#718797}
+@media(max-width:900px){#${ID} .rqSourcePanel{min-height:0}}
 #${ID} .rqBars{display:grid;gap:16px;padding:10px 5px}
 #${ID} .rqBarItem.zero{opacity:.4}
 #${ID} .rqSourceSummary{margin:10px 0 0;padding-top:10px;border-top:1px solid #edf1f4;font-size:12px;color:#5c6b7a}#${ID} .rqSourceSummary b{color:#2c5f8a}
@@ -203,17 +232,19 @@ function render(box){
   const KIT=window.HD20_BOARD_KIT;if(!KIT||!window.HD20KPIData?.actionCases){box.innerHTML='<h2>5S 개선요청 종합 대시보드</h2><p role="status">데이터 조회 모듈을 연결 중입니다.</p>';return}const {chart,leg,openRows}=KIT,D=data();
   if(!S.year||!D.years.includes(S.year))S.year=D.years.includes(String(new Date().getFullYear()))?String(new Date().getFullYear()):(D.years[D.years.length-1]||String(new Date().getFullYear()));
   const teamsAll=D.teams.filter(t=>!S.team||t===S.team),rowsY=filt(D,{ignoreMonth:true}).filter(c=>teamsAll.includes(c.team)),rowsM=S.month?rowsY.filter(c=>mo(c)===+S.month):rowsY;
+  const periodLabel=S.year+'년 '+(S.month?Number(S.month)+'월':'연간 누적');
   const allEver=D.cases.filter(c=>teamsAll.includes(c.team)),doneEver=allEver.filter(isDone),openRate=allEver.length?Math.round(doneEver.length/allEver.length*1000)/10:0;
   const doneYear=rowsY.filter(isDone),yearRate=rowsY.length?Math.round(doneYear.length/rowsY.length*1000)/10:0;
   // ① 요청출처별 — 표시 순서는 통합기준정보('요청출처 순서')에서 관리, 기본값 리더십>5S모듈>생산혁신팀 HDPS파트
-  const srcCats=window.HD20_REQUEST_SOURCE_ORDER?.get?.()||SOURCES,srcReg=srcCats.map(s=>rowsM.filter(c=>sourceOf(c)===s).length),srcOpen=srcCats.map(s=>rowsM.filter(c=>sourceOf(c)===s&&!isDone(c)).length);
+  const storedSourceOrder=window.HD20_REQUEST_SOURCE_ORDER?.get?.()||[];
+  const srcCats=[...SOURCES.slice(0,4).filter(x=>storedSourceOrder.includes(x)),...SOURCES.slice(0,4).filter(x=>!storedSourceOrder.includes(x)),'출처 미분류'],srcReg=srcCats.map(s=>rowsM.filter(c=>sourceOf(c)===s).length),srcOpen=srcCats.map(s=>rowsM.filter(c=>sourceOf(c)===s&&!isDone(c)).length);
   const srcOpenPct=srcCats.map((s,i)=>srcReg[i]?Math.round(srcOpen[i]/srcReg[i]*1000)/10:null);
   const A=chart({w:Math.floor((box.clientWidth-36)*.3)-8,cats:srcCats,minSlot:78,series:[{name:'요청',vals:srcReg,color:'#5c6b7a'},{name:'미완료',vals:srcOpen,color:'#e0b03c',widthScale:1.5,pct:srcOpenPct}]});
   // ② 월별
   const ML=Array.from({length:12},(_,i)=>String(i+1).padStart(2,'0')+'월');
-  const regM=Array.from({length:12},(_,i)=>rowsY.filter(c=>mo(c)===i+1).length);
-  const openM=Array.from({length:12},(_,i)=>rowsY.filter(c=>mo(c)===i+1&&!isDone(c)).length);
-  const doneM=Array.from({length:12},(_,i)=>rowsY.filter(c=>mo(c)===i+1&&isDone(c)).length);
+  const regM=Array.from({length:12},(_,i)=>rowsM.filter(c=>mo(c)===i+1).length);
+  const openM=Array.from({length:12},(_,i)=>rowsM.filter(c=>mo(c)===i+1&&!isDone(c)).length);
+  const doneM=Array.from({length:12},(_,i)=>rowsM.filter(c=>mo(c)===i+1&&isDone(c)).length);
   const donePct=doneM.map((v,i)=>regM[i]?Math.round(v/regM[i]*100):null);
   const B=chart({w:Math.floor((box.clientWidth-36)*.7)-20,cats:ML,minSlot:60,series:[{name:'요청',vals:regM,color:'#8fa3b3'},{name:'미완료',vals:openM,color:'#e0b03c',widthScale:1.5,pct:openM.map((v,i)=>regM[i]?Math.round(v/regM[i]*100):null)}]});
   // ③ 조치대응부서 진행현황
@@ -260,7 +291,8 @@ function render(box){
   const teamChart=chart({w:box.clientWidth-40,h:280,cats:backlogRows.map(r=>r.team),rotate:true,minSlot:72,topExtra:backlogExtra,
     series:[{name:'미조치 잔량',vals:backlogRows.map(r=>r.open+r.over),color:'#6f8797'}]});
   const selRows=D.cases.filter(c=>c.team===S.selTeam&&(!S.source||sourceOf(c)===S.source)),selYearRows=selRows.filter(c=>String(c.date||'').slice(0,4)===S.year);
-  const selRegM=Array.from({length:12},(_,i)=>selYearRows.filter(c=>mo(c)===i+1).length),selDoneM=Array.from({length:12},(_,i)=>selYearRows.filter(c=>mo(c)===i+1&&isDone(c)).length);
+  const selPeriodRows=S.month?selYearRows.filter(c=>mo(c)===+S.month):selYearRows;
+  const selRegM=Array.from({length:12},(_,i)=>selPeriodRows.filter(c=>mo(c)===i+1).length),selDoneM=Array.from({length:12},(_,i)=>selPeriodRows.filter(c=>mo(c)===i+1&&isDone(c)).length);
   const teamTrend=chart({w:box.clientWidth-40,h:230,cats:ML,per:false,series:[{name:'등록',vals:selRegM,color:'#8fa3b3'},{name:'완료',vals:selDoneM,color:'#1f6f6b'}]});
   const gridRow=r=>`<tr><td>${esc(r.team)}</td><td>${r.total}</td><td>${r.done}건 (${sum.total?Math.round(r.done/(r.total||1)*1000)/10:0}%)</td><td>${r.open}건</td><td>${r.over}건</td></tr>`;
   const teamGrid=`<table class="rqGrid"><thead><tr><th>조치대응부서</th><th>합계</th><th>개선완료</th><th>기한내 미완료</th><th>기한초과</th></tr></thead><tbody>
@@ -281,11 +313,11 @@ function render(box){
   const opt=(a,cur,all='ALL')=>`<option value="">${all}</option>`+a.map(x=>`<option value="${esc(x)}"${x===cur?' selected':''}>${esc(x)}</option>`).join('');
 
   // V2: Monthly completions use actual completion dates; backlog carries open cases from earlier periods.
-  const monthlyDone=Array.from({length:12},(_,i)=>filt(D,{ignoreYear:true,ignoreMonth:true}).filter(x=>teamsAll.includes(x.team)&&isDone(x)&&String(x.doneDate||'').slice(0,7)===S.year+'-'+String(i+1).padStart(2,'0')).length);
+  const monthlyDone=Array.from({length:12},(_,i)=>filt(D,{ignoreYear:true,ignoreMonth:true}).filter(x=>teamsAll.includes(x.team)&&isDone(x)&&String(x.doneDate||'').slice(0,7)===S.year+'-'+String(i+1).padStart(2,'0')&&(!S.month||i+1===+S.month)).length);
   /* 사용자 지시: "두번쨰 세로막대 너비를 조금 넓혀서 값 다음 줄바꿈을 해서 %까지 같이 표기해라" —
      '완료' 막대에 그 달 완료 건 중 기한 내 완료 비율(%)을 숫자 아래 줄바꿈으로 병기. */
   const monthlyDonePct=Array.from({length:12},(_,i)=>{
-    const done=filt(D,{ignoreYear:true,ignoreMonth:true}).filter(x=>teamsAll.includes(x.team)&&isDone(x)&&String(x.doneDate||'').slice(0,7)===S.year+'-'+String(i+1).padStart(2,'0'));
+    const done=filt(D,{ignoreYear:true,ignoreMonth:true}).filter(x=>teamsAll.includes(x.team)&&isDone(x)&&String(x.doneDate||'').slice(0,7)===S.year+'-'+String(i+1).padStart(2,'0')&&(!S.month||i+1===+S.month));
     const withDue=done.filter(x=>x.due);
     return withDue.length?Math.round(withDue.filter(x=>x.doneDate<=x.due).length/withDue.length*100):null;
   });
@@ -310,7 +342,11 @@ function render(box){
   /* 요청출처 3개 카테고리 중 보통 1개에만 건수가 몰리고 나머지는 0건인 경우가 흔한데, 0건도 진한
      글자·막대 트랙으로 똑같이 강조돼 "요청출처별 현황"이라는 제목과 달리 사실상 비교할 게 없어 보임
      (전면 재검토 연장) — 0건 항목은 흐리게 처리해 "실제로 비중 있는 출처가 뭔지" 한눈에 들어오게 함. */
-  const sourceBars='<div class="rqBars">'+SOURCES.map(s=>{const n=rowsM.filter(c=>sourceOf(c)===s).length;return '<div class="rqBarItem'+(n===0?' zero':'')+'"><span>'+esc(s)+'</span><strong>'+n+'건</strong><div class="rqTrack"><i style="width:'+(sourceTotal?100*n/sourceTotal:0)+'%;background:#668da7"></i></div></div>'}).join('')+'</div>';
+  const sourceOrder=window.HD20_REQUEST_SOURCE_ORDER?.get?.()||[];
+  const orderedSources=[...SOURCES.slice(0,4).filter(x=>sourceOrder.includes(x)),...SOURCES.slice(0,4).filter(x=>!sourceOrder.includes(x)),'출처 미분류'];
+  const sourceStats=orderedSources.map(name=>{const items=rowsM.filter(c=>sourceOf(c)===name);return {name,count:items.length,done:items.filter(isDone).length}});
+  const activeSources=sourceStats.slice(0,4).filter(x=>x.count>0).length;
+  const sourceBars='<div class="rqSourcePanel"><div class="rqSourceTop"><div><small>개선요청 전체</small><strong>'+sourceTotal.toLocaleString('ko-KR')+'<em>건</em></strong></div><div><small>전체 완료율</small><strong>'+(sourceTotal?(100*rowsM.filter(isDone).length/sourceTotal).toFixed(1):'—')+'<em>%</em></strong></div></div><div class="rqSourceLegend"><span><i style="background:#6089a6"></i>개선요청 건수 (건)</span><span><i style="background:#279586"></i>완료 건수 (건)</span><span>완료율 = 완료 건수 ÷ 개선요청 건수 × 100</span></div><div class="rqBars">'+sourceStats.map((x,i)=>{const rate=x.count?100*x.done/x.count:0,base=sourceTotal?100*x.count/sourceTotal:0,doneWidth=sourceTotal?100*x.done/sourceTotal:0;return '<div class="rqSourcePair"><div class="rqSourceLabel"><span><b class="rqSourceIndex">'+String(i+1).padStart(2,'0')+'</b>'+esc(x.name)+'</span><strong>'+x.count+'건 · 완료 '+x.done+'건 · '+(x.count?rate.toFixed(1)+'%':'—')+'</strong></div><div class="rqSourcePairBars"><div class="rqTrack"><i style="width:'+base+'%;background:#6089a6"></i></div><div class="rqTrack"><i style="width:'+doneWidth+'%;background:#279586"></i></div></div></div>'}).join('')+'</div><div class="rqSourceFoot"><b>집계 기준</b><p>두 막대 모두 전체 요청 '+sourceTotal+'건을 동일한 100% 축으로 사용합니다. 출처가 불명확한 기존 기록은 임의로 4개 발굴 경로에 배분하지 않습니다.</p><span>출처 사용 '+activeSources+'/4개 · 미분류 '+sourceStats.find(x=>x.name==='출처 미분류').count+'건</span></div></div>';
   /* 전면 개편(사용자 확정: "이대로"): 3개 출처 중 보통 1개에만 건수가 몰려 별도 섹션(가로막대 3개)을
      차지할 정도의 정보량이 아니라고 판단, 보조 정보 영역 안에서 한 줄 요약 문장으로 축소. */
   const sourceCounts=SOURCES.map(s=>({s,n:rowsM.filter(c=>sourceOf(c)===s).length})).sort((a,b)=>b.n-a.n);
@@ -363,11 +399,11 @@ function render(box){
   const delayBands=[overCases.filter(c=>delayDays(c,D.today)<=7).length,overCases.filter(c=>delayDays(c,D.today)>=8&&delayDays(c,D.today)<=14).length,overCases.filter(c=>delayDays(c,D.today)>=15).length];
   const kpi=(label,value,detail,risk=false)=>'<div class="rqKpi'+(risk?' risk':'')+'"><small>'+label+'</small><b>'+value+'</b><span class="rqKpiHint">'+detail+'</span></div>';
   const section=(title,meta,content,key)=>'<section class="ibPanel"><div class="ibHead"><span>'+title+'</span><em>'+meta+'</em>'+(key?'<button type="button" class="ibEv" data-evk="'+key+'">근거 데이터</button>':'')+'</div><div class="ibBody">'+content+'</div></section>';
-  const filters='<div class="ibBar"><label>연도 <select data-f="year">'+D.years.map(y=>'<option'+(y===S.year?' selected':'')+'>'+y+'</option>').join('')+'</select></label><label>월 <select data-f="month"><option value="">전체</option>'+Array.from({length:12},(_,i)=>{const v=String(i+1).padStart(2,'0');return '<option value="'+v+'"'+(v===S.month?' selected':'')+'>'+(i+1)+'월</option>'}).join('')+'</select></label><label>요청출처 <select data-f="source">'+opt(SOURCES,S.source)+'</select></label><label>조치대응팀 <select data-f="team">'+opt(D.teams,S.team)+'</select></label><label>진행상태 <select data-f="status">'+opt(['조치대기','진행중','완료','기한초과'],S.status)+'</select></label><label>재발 <select data-f="roll"><option value="">전체</option><option value="Y"'+(S.roll==='Y'?' selected':'')+'>있음</option><option value="N"'+(S.roll==='N'?' selected':'')+'>없음</option></select></label><button type="button" data-rq="go">조회</button><button type="button" class="alt" data-rq="reset">초기화</button><span class="sp"></span><button type="button" class="alt" data-rq="print">인쇄</button><button type="button" class="alt" data-rq="csv">엑셀 다운로드</button></div>';
-  box.innerHTML='<div class="ibTitle"><h2>개선요청 종합현황</h2></div><p class="ibNote">요청 발생 · 조치 이행 · 지연 위험 · 팀별 대응력</p>'
+  const filters='<div class="ibBar"><label>연도 <select data-f="year">'+D.years.map(y=>'<option'+(y===S.year?' selected':'')+'>'+y+'</option>').join('')+'</select></label><label>월 <input data-f="month" type="number" min="1" max="12" step="1" inputmode="numeric" placeholder="전체" aria-label="조회 월 직접 입력 (1~12, 공란은 연간 전체)" title="1~12 입력 · 공란은 연간 전체" value="'+(S.month?Number(S.month):'')+'" style="width:66px;min-width:66px;box-sizing:border-box;text-align:center"></label><label>요청출처 <select data-f="source">'+opt(SOURCES,S.source)+'</select></label><label>조치대응팀 <select data-f="team">'+opt(D.teams,S.team)+'</select></label><label>진행상태 <select data-f="status">'+opt(['조치대기','진행중','완료','기한초과'],S.status)+'</select></label><label>재발 <select data-f="roll"><option value="">전체</option><option value="Y"'+(S.roll==='Y'?' selected':'')+'>있음</option><option value="N"'+(S.roll==='N'?' selected':'')+'>없음</option></select></label><button type="button" data-rq="go">조회</button><button type="button" class="alt" data-rq="reset">초기화</button><span class="sp"></span><button type="button" class="alt" data-rq="print">인쇄</button><button type="button" class="alt" data-rq="csv">엑셀 다운로드</button></div>';
+  box.innerHTML='<div class="ibTitle"><h2>개선요청 종합현황</h2></div><p class="ibNote">'+esc(periodLabel)+' · 요청 발생 · 조치 이행 · 지연 위험 · 팀별 대응력</p>'
     +filters
     +'<div class="rqKpis rqV2Kpis">'
-    +kpi('총 개선요청',sum.total+'건','조회조건 전체')
+    +kpi('총 개선요청',sum.total+'건',periodLabel)
     +kpi('완료',sum.done+'건','조치 완료')
     +kpi('미완료',(sum.open+sum.over)+'건','기한내 미완료 포함')
     +kpi('완료율',pctS(sum.done)+'%','완료 / 전체')
@@ -390,7 +426,7 @@ function render(box){
        (sourceBars, 이미 정의돼 있던 걸 재사용)로 복원해 좌측에 둠. */
     +'<div class="ibRow rqSplit4060">'
     +section('요청출처별 현황','요청 그룹 기준',sourceBars,'a')
-    +section('01. 월별 요청·완료 추이','완료일 기준 · 신규 요청과 별도 집계',monthlyTrend+leg([['신규 요청','#829db5'],['완료','#247c83']]),'b')
+    +section('01. 월별 요청·완료 추이',periodLabel+' · 완료일 기준',monthlyTrend+leg([['신규 요청','#829db5'],['완료','#247c83']]),'b')
     +'</div>'
     /* 사용자 지시: "좌우 병합배치로" — 04·05가 각자 전체 폭을 차지하며 세로로 길게 쌓여 있던 걸,
        둘을 한 줄(rqManageRow, 2열)에 나란히 배치. 그 안의 SVG 차트 폭(hBarChart·hStackChart)도
@@ -408,7 +444,7 @@ function render(box){
     evDelayCols=[...evCols,'지연일수'],evDelayMapR=c=>[...evMapR(c),delayDays(c,D.today)??''];
   const EV={
     a:['요청출처별 근거 데이터 ('+(S.month?+S.month+'월':'연간누적')+')',rowsM,evCols,evMapR],
-    b:['월별 요청·완료 근거 데이터 ('+S.year+'년)',[...rowsY,...filt(D,{ignoreYear:true,ignoreMonth:true}).filter(c=>teamsAll.includes(c.team)&&isDone(c)&&String(c.doneDate||'').startsWith(S.year+'-')&&!rowsY.includes(c))],evCols,evMapR],
+    b:['월별 요청·완료 근거 데이터 ('+periodLabel+')',[...rowsM,...filt(D,{ignoreYear:true,ignoreMonth:true}).filter(c=>teamsAll.includes(c.team)&&isDone(c)&&String(c.doneDate||'').startsWith(S.year+'-')&&(!S.month||String(c.doneDate||'').slice(5,7)===S.month)&&!rowsM.includes(c))],evCols,evMapR],
     c:['조치대응부서 근거 데이터 ('+(S.month?+S.month+'월':'연간누적')+')',rowsM,evCols,evMapR],
     c2:['조치대응팀별 이행성과 근거 데이터 ('+(S.month?+S.month+'월':'연간누적')+')',rowsM,evCols,evMapR],
     d:['현재 기한초과 근거 데이터 ('+(S.month?+S.month+'월':'연간누적')+')',rowsM.filter(c=>teamsAll.includes(c.team)&&isOverdue(c,D.today)),evDelayCols,evDelayMapR],
@@ -418,7 +454,7 @@ function render(box){
   box.querySelectorAll('[data-evk]').forEach(b=>{const dl=document.createElement('button');dl.type='button';dl.className='ibEv';dl.textContent='엑셀 추출';dl.style.marginLeft='6px';dl.addEventListener('click',()=>{const key=b.dataset.evk;const [title,rows,columns,mapR]=EV[key];downloadEvidence(columns,rows.map(mapR),'5S_개선요청_차트_'+key);});b.insertAdjacentElement('afterend',dl)});
   box.querySelectorAll('[data-evk]').forEach(b=>{b.onclick=()=>{const [t,rows,cols,mapR]=EV[b.dataset.evk];openRows({title:t,cols,rows:rows.map(mapR),file:'5S_개선요청_근거_'+b.dataset.evk})}});
   box.querySelector('[data-open-detail]')?.addEventListener('click',()=>{const [t,rows,cols,mapR]=EV.f;openRows({title:t,cols,rows:rows.map(mapR),file:'5S_개선요청_상세'})});
-  box.querySelectorAll('[data-f]').forEach(el=>el.onchange=()=>{S[el.dataset.f]=el.value;render(box)});
+  box.querySelectorAll('[data-f]').forEach(el=>{el.onchange=()=>{if(el.dataset.f==='month'){const raw=el.value.trim();if(raw!==''&&(!/^\\d{1,2}$/.test(raw)||Number(raw)<1||Number(raw)>12)){el.setCustomValidity('월은 1~12 사이의 숫자로 입력해 주세요.');el.reportValidity();return;}el.setCustomValidity('');S.month=raw?String(Number(raw)).padStart(2,'0'):'';}else S[el.dataset.f]=el.value;render(box)};if(el.dataset.f==='month')el.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();el.blur()}})});
   box.querySelector('[data-rq="reset"]').onclick=()=>{Object.assign(S,{year:null,month:'',source:'',team:'',status:'',roll:'',selTeam:''});render(box)};box.querySelector('[data-rq="go"]').onclick=()=>render(box);box.querySelector('[data-rq="print"]').onclick=()=>window.print();
   box.querySelectorAll('.rqMoreBtn').forEach(btn=>btn.onclick=()=>{const prev=btn.previousElementSibling;if(!prev)return;if(prev.classList.contains('rqMoreChart')){prev.hidden=false}else{prev.querySelectorAll('tr.rqRowMore').forEach(tr=>tr.hidden=false)}btn.remove()});
   box.querySelector('[data-rq="csv"]').onclick=()=>{

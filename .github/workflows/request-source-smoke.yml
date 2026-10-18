@@ -1,0 +1,167 @@
+name: HD20 request-source integration smoke
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'action-mail-workflow.js'
+      - 'hd20-request-board.js'
+      - 'request-source-order-master.js'
+      - 'web-validation-fixture.js'
+      - 'final-layout-polish.js'
+      - 'index.html'
+      - '.github/workflows/request-source-smoke.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check JavaScript syntax
+        run: |
+          for file in action-mail-workflow.js hd20-request-board.js request-source-order-master.js web-validation-fixture.js final-layout-polish.js; do
+            node --check "$file"
+          done
+      - name: Verify registration, dashboard, fixture and cache contracts
+        run: |
+          node <<'NODE'
+          const fs=require('fs'),assert=require('assert');
+          const read=p=>fs.readFileSync(p,'utf8');
+          const action=read('action-mail-workflow.js'),board=read('hd20-request-board.js'),master=read('request-source-order-master.js'),fixture=read('web-validation-fixture.js'),html=read('index.html'),loader=read('final-layout-polish.js');
+          const sources=['현장 패트롤 점검','자율 5S Audit','혁신팀 자율 점검','5S 자율개선활동 피드백'];
+          for(const source of sources){
+            assert(action.includes('<option>'+source+'</option>'),'registration missing: '+source);
+            assert(board.includes("'"+source+"'"),'dashboard missing: '+source);
+            assert(master.includes("'"+source+"'"),'master missing: '+source);
+            assert(fixture.includes("'"+source+"'"),'fixture missing: '+source);
+          }
+          assert(action.includes('id="amRequestSource" required'),'registration source must be required');
+          assert(action.includes('workplace,requestSource,leader:'),'registration must persist requestSource');
+          assert(action.includes('hd20-action-updated'),'registration must signal refresh');
+          assert(board.includes('c.requestSource||c.sourceDetail||c.discoverySource'),'dashboard must read stored source');
+          assert(board.includes("'출처 미분류'"),'legacy records must remain unclassified');
+          assert(board.includes('const sourceStats=orderedSources.map'),'source bars must follow master order');
+          assert(board.includes('x.done/x.count'),'source completion rate must use its own request count');
+          for(const script of ['hd20-request-board.js','web-validation-fixture.js']){
+            assert(html.includes(script+'?v=20261018-source-sync-1'),'cache-bust missing: '+script);
+          }
+          assert(html.includes('action-mail-workflow.js?v=20261018-audit-source-2'),'action registration cache-bust missing');
+          assert(action.includes("$('#amRequestSource',a).value='자율 5S Audit'"),'audit-linked request must preselect source');
+          assert(loader.includes('request-source-order-master.js?v=20261018-source-sync-1'),'dynamic master cache-bust missing');
+          const vm=require('vm');
+          const sourceFunction=board.slice(board.indexOf('function sourceOf(c){'),board.indexOf('function css(){'));
+          assert(sourceFunction.startsWith('function sourceOf(c){'),'source classifier extraction failed');
+          const sandbox={SOURCES:[...sources,'출처 미분류']};
+          vm.createContext(sandbox);
+          vm.runInContext(sourceFunction+';this.classify=sourceOf;',sandbox);
+          for(const source of sources){
+            assert.strictEqual(sandbox.classify({requestSource:source}),source,'classification failed: '+source);
+          }
+          for(const old of ['5S모듈','생산혁신팀 HDPS파트','리더십','']){
+            assert.strictEqual(sandbox.classify({requestSource:old}),'출처 미분류','legacy classification must not be invented');
+          }
+          const sample=sources.map((requestSource,i)=>({requestSource,status:i<2?'완료':'조치대기'}));
+          const stats=sources.map(name=>{const rows=sample.filter(c=>sandbox.classify(c)===name);return {count:rows.length,done:rows.filter(c=>c.status==='완료').length}});
+          assert.deepStrictEqual(stats.map(x=>x.count),[1,1,1,1]);
+          assert.deepStrictEqual(stats.map(x=>x.done),[1,1,0,0]);
+          console.log('PASS: classifier runtime, unclassified legacy records, and count/completion fixture');
+          console.log('PASS: four discovery sources, registration, aggregation, ordering, and cache contracts');
+          NODE
+
+  browser-registration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install isolated browser
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Serve local checkout
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/hd20-request-http.log 2>&1 &
+          for i in {1..30}; do curl -fsS http://127.0.0.1:4173/index.html >/dev/null && exit 0; sleep 1; done
+          cat /tmp/hd20-request-http.log; exit 1
+      - name: Exercise registration, completion and reload
+        run: |
+          node <<'NODE'
+          const {chromium}=require('playwright'),assert=require('assert');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            try{
+              const page=await browser.newPage({viewport:{width:1440,height:900}});
+              page.on('dialog',dialog=>dialog.accept());
+              page.on('pageerror',error=>console.error('[browser pageerror]',error.message));
+              page.on('console',msg=>{if(msg.type()==='error')console.error('[browser console]',msg.text())});
+              await page.route('**/*',route=>{
+                const u=new URL(route.request().url());
+                if(['127.0.0.1','localhost'].includes(u.hostname))return route.continue();
+                if(route.request().resourceType()==='script')return route.fulfill({status:200,contentType:'application/javascript',body:'/* isolated external stub */'});
+                return route.abort();
+              });
+              // Isolate real production scripts from unrelated auth/tab overlays.
+              // This is a genuine browser test of the registration and KPI adapter,
+              // not a full-site visual regression test.
+              await page.route('**/isolated-request-e2e.html',route=>route.fulfill({
+                status:200,contentType:'text/html',
+                body:'<!doctype html><html lang="ko"><head><meta charset="utf-8"></head><body><section id="awAction"></section><script src="/dashboard-kpi-source.js"></script><script src="/action-mail-workflow.js"></script></body></html>'
+              }));
+              await page.goto('http://127.0.0.1:4173/isolated-request-e2e.html',{waitUntil:'domcontentloaded'});
+              await page.waitForSelector('#amRequestSource',{state:'attached',timeout:30000});
+              // Confirm Audit-to-action event prefills the required discovery source.
+              await page.evaluate(()=>window.dispatchEvent(new CustomEvent('hd20-audit-to-action',{detail:{problem:'CI Audit 연계 확인'}})));
+              await page.waitForFunction(()=>document.querySelector('#amRequestSource')?.value==='자율 5S Audit',{},{timeout:10000});
+              assert.strictEqual(await page.locator('#amProblem').inputValue(),'CI Audit 연계 확인');
+              // Exercise explicit user selection, persistence, completion, and reload separately.
+              await page.locator('#amWorkplace').fill('CI 격리 작업장');
+              await page.locator('#amProblem').fill('CI 개선요청 검증');
+              await page.locator('#amRequestSource').selectOption({label:'현장 패트롤 점검'});
+              await page.locator('#amDraft').click();
+              const stored=await page.evaluate(()=>JSON.parse(localStorage.getItem('hd20ActionCasesV2')||'[]'));
+              const row=stored.find(x=>x.workplace==='CI 격리 작업장');
+              assert(row,'request not persisted');
+              assert.strictEqual(row.requestSource,'현장 패트롤 점검');
+              await page.locator('#amCaseRows .amCaseLink[data-id]').filter({hasText:row.id}).first().click();
+              await page.locator('#amActionText').fill('CI 조치완료 검증');
+              await page.locator('#amDoneStatus').selectOption('완료');
+              await page.locator('#amSaveResponse').click();
+              const updated=await page.evaluate(id=>JSON.parse(localStorage.getItem('hd20ActionCasesV2')||'[]').find(x=>x.id===id),row.id);
+              assert.strictEqual(updated.status,'완료');
+              // Dashboard data adapter must see the same stored request and completed status.
+              await page.waitForFunction(()=>typeof window.HD20KPIData?.actionCases==='function',{},{timeout:15000});
+              const dashboardRows=await page.evaluate(()=>window.HD20KPIData.actionCases());
+              const dashboardRow=dashboardRows.find(x=>x.id===row.id);
+              assert(dashboardRow,'completed request missing from dashboard adapter');
+              assert.strictEqual(dashboardRow.requestSource,'현장 패트롤 점검');
+              assert.strictEqual(dashboardRow.status,'완료');
+              await page.reload({waitUntil:'domcontentloaded'});
+              await page.waitForSelector('#amRequestSource',{state:'attached',timeout:30000});
+              const persisted=await page.evaluate(id=>JSON.parse(localStorage.getItem('hd20ActionCasesV2')||'[]').find(x=>x.id===id),row.id);
+              assert.strictEqual(persisted.status,'완료');
+              assert.strictEqual(persisted.requestSource,'현장 패트롤 점검');
+              await page.waitForFunction(()=>typeof window.HD20KPIData?.actionCases==='function',{},{timeout:15000});
+              const afterReload=await page.evaluate(id=>window.HD20KPIData.actionCases().find(x=>x.id===id),row.id);
+              assert(afterReload,'request missing from dashboard adapter after reload');
+              assert.strictEqual(afterReload.status,'완료');
+              console.log('PASS: isolated registration -> completion -> reload persistence');
+            }catch(error){
+              console.error('Browser E2E failed:',error.stack||error);
+              try{
+                await page.screenshot({path:'request-source-browser-failure.png',fullPage:true,timeout:5000});
+                console.error('Saved request-source-browser-failure.png');
+              }catch(screenshotError){console.error('Screenshot unavailable:',screenshotError.message)}
+              throw error;
+            }finally{await browser.close()}
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+      - name: Upload browser failure evidence
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hd20-request-source-browser-failure
+          path: request-source-browser-failure.png
+          if-no-files-found: ignore
