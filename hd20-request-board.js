@@ -9,6 +9,16 @@ const ID='hd20RequestBoard';
    커밋 시점 사용자의 명시적 지시("리더십(공장장)·5S모듈·생산혁신팀(HDPS파트)")를 우선 반영. */
 const SOURCES=['현장 패트롤 점검','자율 5S Audit','혁신팀 자율 점검','5S 자율개선활동 피드백','출처 미분류'];
 const S={year:null,month:'',source:'',team:'',status:'',roll:'',selTeam:''};
+const TEAM_ORDER_KEY='hd20:master:improvement-request-team-order:v1';
+let draftTeamOrder=null;
+function getTeamOrder(masterTeams){
+  let saved=[];try{const raw=JSON.parse(localStorage.getItem(TEAM_ORDER_KEY)||'[]');if(Array.isArray(raw))saved=raw.filter(x=>typeof x==='string')}catch(e){}
+  const base=Array.isArray(draftTeamOrder)?draftTeamOrder:saved;
+  return [...new Set([...base.filter(t=>masterTeams.includes(t)),...masterTeams])];
+}
+function orderedTeams(rows,masterTeams){const order=getTeamOrder(masterTeams);return [...rows].sort((a,b)=>order.indexOf(a.team)-order.indexOf(b.team))}
+function saveTeamOrder(masterTeams){const order=getTeamOrder(masterTeams);try{localStorage.setItem(TEAM_ORDER_KEY,JSON.stringify(order))}catch(e){return false}draftTeamOrder=null;window.dispatchEvent(new CustomEvent('hd20-team-master-order-updated',{detail:{teams:order,source:'improvement-request'}}));return true}
+function moveTeam(from,to,masterTeams){const order=getTeamOrder(masterTeams),a=order.indexOf(from),b=order.indexOf(to);if(a<0||b<0||a===b)return false;order.splice(b,0,order.splice(a,1)[0]);draftTeamOrder=order;return true}
 function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 /* 사용자 지적: "04"가 "눈에도 안들어오고... 초록색과 빨간색 색상뿐이다" — CSS만으로 그린 단색 진행
    막대는 격자·눈금·깊이감이 전혀 없어 정보가 아니라 색 띠로만 보임. 04(완료율 비교)·05(지연일 분포)
@@ -100,6 +110,11 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
 #${ID} .rqGrid tbody tr:first-child td{font-weight:900;background:#f8fafb}#${ID} .rqGrid tbody tr:first-child td:first-child{text-align:left}
 #${ID} .rqGrid td:first-child{text-align:left;font-weight:800}
 #${ID} .rqScroll{overflow:auto;border:1px solid #edf1f4;border-radius:8px}#${ID} .ibPanel:has(.rqDetail) .rqScroll{max-height:420px}#${ID} .ibPanel:has(.rqGrid:not(.rqDetail)) .rqScroll{max-height:340px}
+#${ID} .rqOrderTools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 0 12px;font-size:12px;color:#476177}
+#${ID} .rqOrderTools button{border:1px solid #c8d5df;background:#f5f8fa;border-radius:6px;padding:5px 8px;font-size:12px;font-weight:700;color:#264761}
+#${ID} [data-team-axis]{cursor:grab}
+#${ID} .rqAxisMove{display:flex;gap:4px}
+#${ID} .rqAxisMove button{font-size:10px;border:1px solid #d4dfe7;border-radius:5px;background:#fff;padding:3px 6px;color:#38536b}
 #${ID} .rqTeamVerticalScroll{max-width:100%;overflow-x:auto;overflow-y:hidden;padding:8px 2px 12px}
 #${ID} .rqTeamVertical{min-width:max(100%,calc(var(--rq-team-count)*100px))}
 #${ID} .rqTeamVerticalCols{display:grid;grid-template-columns:repeat(var(--rq-team-count),minmax(90px,1fr));gap:10px;align-items:end}
@@ -326,13 +341,14 @@ function render(box){
   // 현재 기한초과 집중관리: 완료건의 과거 지연은 제외하고, 지금 미완료이면서 기한을 넘긴 건만 집계.
   const delayRows=teamsAll.map(t=>{const a=rowsM.filter(c=>c.team===t&&!isDone(c)&&isOverdue(c,D.today)).map(c=>delayDays(c,D.today)).filter(v=>v!==null);
     return{team:t,n:a.length,avg:a.length?Math.round(a.reduce((x,y)=>x+y,0)/a.length*10)/10:0,max:a.length?Math.max(...a):0}}).filter(r=>r.n>0).sort((a,b)=>b.n-a.n||b.avg-a.avg);
-  const delayRowsSorted=delayRows.length?delayRows.map(r=>{const c=rowsM.filter(x=>x.team===r.team&&isOverdue(x,D.today));const v=[c.filter(x=>delayDays(x,D.today)<=7).length,c.filter(x=>delayDays(x,D.today)>=8&&delayDays(x,D.today)<=14).length,c.filter(x=>delayDays(x,D.today)>=15).length];return{team:r.team,v,total:r.n}}).sort((a,b)=>b.v[2]-a.v[2]||b.total-a.total):[];
+  let delayRowsSorted=delayRows.length?delayRows.map(r=>{const c=rowsM.filter(x=>x.team===r.team&&isOverdue(x,D.today));const v=[c.filter(x=>delayDays(x,D.today)<=7).length,c.filter(x=>delayDays(x,D.today)>=8&&delayDays(x,D.today)<=14).length,c.filter(x=>delayDays(x,D.today)>=15).length];return{team:r.team,v,total:r.n}}).sort((a,b)=>b.v[2]-a.v[2]||b.total-a.total):[];
+  delayRowsSorted=orderedTeams(delayRowsSorted,D.teams);
   // Three grouped bars per team, one for each overdue band; never stack.
   const delaySegColors=['#508a9a','#df9b48','#a94d49'];
   const delayObservedMax=Math.max(0,...delayRowsSorted.flatMap(r=>r.v).filter(v=>Number.isFinite(v)&&v>0));
   const delayStep=delayObservedMax<=5?1:delayObservedMax<=20?2:delayObservedMax<=50?5:10;
   const delayMax=Math.max(1,Math.ceil((delayObservedMax+Math.max(1,delayObservedMax*.12))/delayStep)*delayStep);
-  const delayChart=delayRowsSorted.length?'<div class="rqDelayVerticalLegend" aria-label="기한초과 지연기간별 범례"><span style="color:'+delaySegColors[0]+'">■ 1~7일</span><span style="color:'+delaySegColors[1]+'">■ 8~14일</span><span style="color:'+delaySegColors[2]+'">■ 15일 이상</span></div><div class="rqDelayVerticalScroll"><div class="rqDelayVertical" style="--rq-team-count:'+delayRowsSorted.length+'"><div class="rqDelayVerticalCols">'+delayRowsSorted.map(r=>'<div class="rqDelayVerticalCol" title="'+esc(r.team)+' · 총 '+r.total+'건"><div class="rqDelayVerticalGroup">'+r.v.map((count,i)=>'<div class="rqDelayVerticalBarCell"><div class="rqDelayVerticalBarTrack">'+(Number.isFinite(count)&&count>0?'<strong class="rqDelayVerticalValue" style="bottom:calc('+(100*count/delayMax)+'% + 5px)">'+count+'</strong><span class="rqDelayVerticalSingleBar" style="height:'+(100*count/delayMax)+'%;background:'+delaySegColors[i]+'"></span>':'')+'</div></div>').join('')+'</div><span class="rqDelayVerticalTeam">'+esc(r.team)+'</span><small>합계 '+r.total+'건</small></div>').join('')+'</div></div></div>':null;
+  const delayChart=delayRowsSorted.length?'<div class="rqDelayVerticalLegend" aria-label="기한초과 지연기간별 범례"><span style="color:'+delaySegColors[0]+'">■ 1~7일</span><span style="color:'+delaySegColors[1]+'">■ 8~14일</span><span style="color:'+delaySegColors[2]+'">■ 15일 이상</span></div><div class="rqDelayVerticalScroll"><div class="rqDelayVertical" style="--rq-team-count:'+delayRowsSorted.length+'"><div class="rqDelayVerticalCols">'+delayRowsSorted.map(r=>'<div class="rqDelayVerticalCol" draggable="true" data-team-axis="'+esc(r.team)+'" title="'+esc(r.team)+' · 총 '+r.total+'건"><div class="rqDelayVerticalGroup">'+r.v.map((count,i)=>'<div class="rqDelayVerticalBarCell"><div class="rqDelayVerticalBarTrack">'+(Number.isFinite(count)&&count>0?'<strong class="rqDelayVerticalValue" style="bottom:calc('+(100*count/delayMax)+'% + 5px)">'+count+'</strong><span class="rqDelayVerticalSingleBar" style="height:'+(100*count/delayMax)+'%;background:'+delaySegColors[i]+'"></span>':'')+'</div></div>').join('')+'</div><span class="rqDelayVerticalTeam">'+esc(r.team)+'</span><small>합계 '+r.total+'건</small></div>').join('')+'</div></div></div>':null;
   const activeOverdue=rowsM.filter(c=>teamsAll.includes(c.team)&&isOverdue(c,D.today));
   const delayOverallAvg=activeOverdue.length?Math.round(activeOverdue.reduce((a,c)=>a+(delayDays(c,D.today)||0),0)/activeOverdue.length*10)/10:0;
   const sum={total:teamRows.reduce((a,r)=>a+r.total,0),done:teamRows.reduce((a,r)=>a+r.done,0),open:teamRows.reduce((a,r)=>a+r.open,0),over:teamRows.reduce((a,r)=>a+r.over,0)}; // open=기한내 미완료, 전체 미완료=open+over
@@ -440,7 +456,8 @@ function render(box){
   const casesAllTeams04=D.cases.filter(c=>yearOk04(c)&&monthOk04(c)&&srcOk04(c)&&statusOk04(c)&&rollOk04(c));
   const teamRowsAllTeams=D.teams.map(t=>{const a=casesAllTeams04.filter(c=>c.team===t),done=a.filter(isDone).length,over=a.filter(c=>isOverdue(c,D.today)).length,open=a.length-done-over;
     return{team:t,total:a.length,done,open,over}}).filter(r=>r.total>0);
-  const teamRateSorted=[...teamRowsAllTeams].sort((a,b)=>(a.total?a.done/a.total:0)-(b.total?b.done/b.total:0)||b.total-a.total);
+  let teamRateSorted=[...teamRowsAllTeams].sort((a,b)=>(a.total?a.done/a.total:0)-(b.total?b.done/b.total:0)||b.total-a.total);
+  teamRateSorted=orderedTeams(teamRateSorted,D.teams);
   const teamRateRow=(r,hidden)=>{const rate=r.total?Math.round(r.done/r.total*1000)/10:0,mine=teamHighlight&&r.team===teamHighlight;return '<tr'+(mine?' class="rqMyTeam"':hidden?' class="rqRowMore" hidden':'')+'><td>'+(mine?'<b>▶ ':'')+esc(r.team)+(mine?' <span class="rqMyTeamTag">내 팀</span></b>':'')+'</td><td><div class="rqStack" title="완료 '+r.done+'건 / 기한 내 미완료 '+r.open+'건 / 기한초과 '+r.over+'건"><span class="rqStackDone" style="width:'+(r.total?100*r.done/r.total:0)+'%"></span><span class="rqStackOpen" style="width:'+(r.total?100*r.open/r.total:0)+'%"></span><span class="rqStackLate" style="width:'+(r.total?100*r.over/r.total:0)+'%"></span></div></td><td class="'+rateCls(rate)+'">'+rate+'%</td></tr>'};
   // Section 04: all teams in vertical columns, with no hidden six-team limit.
   const rates0=teamRateSorted.filter(r=>r.total>0).map(r=>Math.round(r.done/r.total*1000)/10);
@@ -452,7 +469,8 @@ function render(box){
   const rateAxisHigh=Math.min(100,Math.max(rateAxisLow+5,Math.ceil((rateMax+Math.max(2,rateSpread*.3))/5)*5));
   const rateAxisSpan=Math.max(1,rateAxisHigh-rateAxisLow);
   const teamRateNote='<p class="rqTeamNote">세로축 '+rateAxisLow+'~'+rateAxisHigh+'%'+(rateAxisLow>0?' · 0%부터 시작하지 않는 확대축(축 절단 표시)':'')+(allSameRate?' · 현재 팀별 완료율이 동일합니다.':'')+'</p>';
-  const teamRateBars='<div class="rqTeamVerticalScroll">'+teamRateNote+'<div class="rqTeamVertical" style="--rq-team-count:'+Math.max(1,teamRateSorted.length)+'"><div class="rqTeamVerticalCols">'+teamRateSorted.map(r=>{const pct=r.total?Math.round(r.done/r.total*1000)/10:0;const color=pct<50?'#b04f4b':pct<80?'#b68b43':'#408d82';const h=r.total?Math.max(0,Math.min(100,(pct-rateAxisLow)/rateAxisSpan*100)):0;return '<div class="rqTeamVerticalCol" title="'+esc(r.team)+' · 완료 '+r.done+'/'+r.total+'건"><div class="rqTeamVerticalTrack'+(rateAxisLow>0?' rqAxisCut':'')+'">'+(r.total>0&&pct>0?'<strong class="rqTeamBarValue" style="bottom:calc('+h+'% + 5px)">'+pct+'%</strong>':'')+'<span style="height:'+h+'%;background:'+color+'"></span></div><span>'+esc(r.team)+(teamHighlight===r.team?' ★':'')+'</span><small>'+r.done+'/'+r.total+'건</small></div>'}).join('')+'</div></div></div>';
+  const teamOrderControl='<div class="rqOrderTools"><span>기준정보 팀 순서 · 드래그 또는 ◀ ▶ 이동</span><button type="button" data-team-order-save>정렬순서 저장</button><button type="button" data-team-order-reset>기준정보 순서 복원</button></div>';
+  const teamRateBars='<div class="rqTeamVerticalScroll">'+teamRateNote+'<div class="rqTeamVertical" style="--rq-team-count:'+Math.max(1,teamRateSorted.length)+'"><div class="rqTeamVerticalCols">'+teamRateSorted.map(r=>{const pct=r.total?Math.round(r.done/r.total*1000)/10:0;const color=pct<50?'#b04f4b':pct<80?'#b68b43':'#408d82';const h=r.total?Math.max(0,Math.min(100,(pct-rateAxisLow)/rateAxisSpan*100)):0;return '<div class="rqTeamVerticalCol" draggable="true" data-team-axis="'+esc(r.team)+'" title="'+esc(r.team)+' · 완료 '+r.done+'/'+r.total+'건"><div class="rqTeamVerticalTrack'+(rateAxisLow>0?' rqAxisCut':'')+'">'+(r.total>0&&pct>0?'<strong class="rqTeamBarValue" style="bottom:calc('+h+'% + 5px)">'+pct+'%</strong>':'')+'<span style="height:'+h+'%;background:'+color+'"></span></div><span>'+esc(r.team)+(teamHighlight===r.team?' ★':'')+'</span><small>'+r.done+'/'+r.total+'건</small></div>'}).join('')+'</div></div></div>';
   const overCases=rowsM.filter(c=>teamsAll.includes(c.team)&&isOverdue(c,D.today));
   const delayBands=[overCases.filter(c=>delayDays(c,D.today)<=7).length,overCases.filter(c=>delayDays(c,D.today)>=8&&delayDays(c,D.today)<=14).length,overCases.filter(c=>delayDays(c,D.today)>=15).length];
   const kpi=(label,value,detail,risk=false)=>'<div class="rqKpi'+(risk?' risk':'')+'"><small>'+label+'</small><b>'+value+'</b><span class="rqKpiHint">'+detail+'</span></div>';
@@ -491,7 +509,7 @@ function render(box){
        절반 폭 기준으로 미리 줄여서 생성했어야 하므로, 아래 teamChartTop 등의 w 인자를 이 블록
        이전에 좁은 폭으로 재계산해서 넘김(바로 아래 참조). */
     +'<div class="ibRow rqManageRow rqTeamCompare">'
-    +section('04. 조치대응팀별 이행성과','완료 / 미완료 · 팀별 건수',teamRateBars+'<details class="rqTeamDetail"><summary>팀별 상세 실적 펼치기</summary><div class="rqScroll">'+teamGrid+'</div></details>','c2')
+    +section('04. 조치대응팀별 이행성과','완료 / 미완료 · 팀별 건수',teamOrderControl+teamRateBars+'<details class="rqTeamDetail"><summary>팀별 상세 실적 펼치기</summary><div class="rqScroll">'+teamGrid+'</div></details>','c2')
     +section('05. 기한초과 집중관리','현재 미완료 기준 · 지연기간별 분포','<div class="rqBands">'+['1~7일','8~14일','15일 이상'].map((x,i)=>'<div><small>'+x+'</small><b>'+delayBands[i]+'건</b></div>').join('')+'</div>'+'<div class="rqDelayStack">'+delayBands.map((n,i)=>'<span class="rqDelayBand rqDelayBand'+i+'" style="width:'+(overCases.length?100*n/overCases.length:0)+'%"></span>').join('')+'</div>'+(delayChart||'<p class="rqEmpty">현재 기한초과 대상이 없습니다.</p>'),'d')
     +'</div>'
     +'<div class="ibRow rqPrintSkip"><button type="button" class="rqDetailOpenBtn" data-open-detail="1">📋 개선요청 상세 목록 열기 (전체 '+actionAll.length+'건)</button></div>'
@@ -512,6 +530,16 @@ function render(box){
   box.querySelectorAll('[data-evk]').forEach(b=>{const dl=document.createElement('button');dl.type='button';dl.className='ibEv';dl.textContent='엑셀 추출';dl.style.marginLeft='6px';dl.addEventListener('click',()=>{const key=b.dataset.evk;const [title,rows,columns,mapR]=EV[key];downloadEvidence(columns,rows.map(mapR),'5S_개선요청_차트_'+key);});b.insertAdjacentElement('afterend',dl)});
   box.querySelectorAll('[data-evk]').forEach(b=>{b.onclick=()=>{const [t,rows,cols,mapR]=EV[b.dataset.evk];openRows({title:t,cols,rows:rows.map(mapR),file:'5S_개선요청_근거_'+b.dataset.evk})}});
   box.querySelector('[data-open-detail]')?.addEventListener('click',()=>{const [t,rows,cols,mapR]=EV.f;openRows({title:t,cols,rows:rows.map(mapR),file:'5S_개선요청_상세'})});
+  // Both sections use the same team-master ordering; changes are previews until explicitly saved.
+  box.querySelectorAll('[data-team-step]').forEach(btn=>btn.onclick=()=>{const order=getTeamOrder(D.teams),i=order.indexOf(btn.dataset.team),j=i+Number(btn.dataset.teamStep);if(j<0||j>=order.length)return;moveTeam(btn.dataset.team,order[j],D.teams);render(box)});
+  let draggedTeam='';
+  box.querySelectorAll('[data-team-axis]').forEach(col=>{
+    col.addEventListener('dragstart',e=>{draggedTeam=col.dataset.teamAxis;e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',draggedTeam)});
+    col.addEventListener('dragover',e=>{e.preventDefault();e.dataTransfer.dropEffect='move'});
+    col.addEventListener('drop',e=>{e.preventDefault();const from=draggedTeam||e.dataTransfer.getData('text/plain');if(moveTeam(from,col.dataset.teamAxis,D.teams))render(box)});
+  });
+  const saveOrder=box.querySelector('[data-team-order-save]');if(saveOrder)saveOrder.onclick=()=>{if(saveTeamOrder(D.teams))render(box);else alert('이 브라우저에 정렬순서를 저장할 수 없습니다.')};
+  const resetOrder=box.querySelector('[data-team-order-reset]');if(resetOrder)resetOrder.onclick=()=>{draftTeamOrder=[...D.teams];render(box)};
   box.querySelectorAll('[data-f]').forEach(el=>{el.onchange=()=>{if(el.dataset.f==='month'){const raw=el.value.trim();if(raw!==''&&(!/^\\d{1,2}$/.test(raw)||Number(raw)<1||Number(raw)>12)){el.setCustomValidity('월은 1~12 사이의 숫자로 입력해 주세요.');el.reportValidity();return;}el.setCustomValidity('');S.month=raw?String(Number(raw)).padStart(2,'0'):'';}else S[el.dataset.f]=el.value;render(box)};if(el.dataset.f==='month')el.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();el.blur()}})});
   box.querySelector('[data-rq="reset"]').onclick=()=>{Object.assign(S,{year:null,month:'',source:'',team:'',status:'',roll:'',selTeam:''});render(box)};box.querySelector('[data-rq="go"]').onclick=()=>render(box);box.querySelector('[data-rq="print"]').onclick=()=>window.print();
   box.querySelectorAll('.rqMoreBtn').forEach(btn=>btn.onclick=()=>{const prev=btn.previousElementSibling;if(!prev)return;if(prev.classList.contains('rqMoreChart')){prev.hidden=false}else{prev.querySelectorAll('tr.rqRowMore').forEach(tr=>tr.hidden=false)}btn.remove()});
