@@ -112,6 +112,9 @@ const action=[];teams.forEach((team,ti)=>{for(let i=0;i<10;i++){const isDone=!(i
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',flag,{once:true});else flag();
  window.dispatchEvent(new CustomEvent('hd20-gmes-5s-imported'));
  window.dispatchEvent(new CustomEvent('hd20-kpi-source-updated'));
+ /* Re-notify after downstream dashboard listeners are registered (script loads before KPI modules). */
+ const notifyAfterLoad=()=>{window.dispatchEvent(new CustomEvent('hd20-gmes-5s-imported'));window.dispatchEvent(new CustomEvent('hd20-kpi-source-updated'));window.HD20KPIData?.signal?.();};
+ if(document.readyState==='complete')setTimeout(notifyAfterLoad,0);else window.addEventListener('load',notifyAfterLoad,{once:true});
  if(!sessionStorage.getItem('hd20DemoSeedReloaded')){sessionStorage.setItem('hd20DemoSeedReloaded','1');location.reload()}
 }
 boot();
