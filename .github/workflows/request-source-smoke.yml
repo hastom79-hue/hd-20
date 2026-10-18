@@ -68,3 +68,61 @@ jobs:
           console.log('PASS: classifier runtime, unclassified legacy records, and count/completion fixture');
           console.log('PASS: four discovery sources, registration, aggregation, ordering, and cache contracts');
           NODE
+
+  browser-registration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install isolated browser
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Serve local checkout
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/hd20-request-http.log 2>&1 &
+          for i in {1..30}; do curl -fsS http://127.0.0.1:4173/index.html >/dev/null && exit 0; sleep 1; done
+          cat /tmp/hd20-request-http.log; exit 1
+      - name: Exercise registration, completion and reload
+        run: |
+          node <<'NODE'
+          const {chromium}=require('playwright'),assert=require('assert');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            try{
+              const page=await browser.newPage({viewport:{width:1440,height:900}});
+              page.on('dialog',dialog=>dialog.accept());
+              await page.route('**/*',route=>{
+                const u=new URL(route.request().url());
+                if(['127.0.0.1','localhost'].includes(u.hostname))return route.continue();
+                if(route.request().resourceType()==='script')return route.fulfill({status:200,contentType:'application/javascript',body:'/* isolated external stub */'});
+                return route.abort();
+              });
+              await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'domcontentloaded'});
+              await page.waitForSelector('#amRequestSource',{state:'attached',timeout:30000});
+              await page.locator('#amWorkplace').fill('CI 격리 작업장');
+              await page.locator('#amProblem').fill('CI 개선요청 검증');
+              await page.locator('#amRequestSource').selectOption({label:'현장 패트롤 점검'});
+              await page.locator('#amDraft').click();
+              const stored=await page.evaluate(()=>JSON.parse(localStorage.getItem('hd20ActionCasesV2')||'[]'));
+              const row=stored.find(x=>x.workplace==='CI 격리 작업장');
+              assert(row,'request not persisted');
+              assert.strictEqual(row.requestSource,'현장 패트롤 점검');
+              await page.locator('#amCaseRows [data-id]').filter({hasText:row.id}).first().click();
+              await page.locator('#amActionText').fill('CI 조치완료 검증');
+              await page.locator('#amDoneStatus').selectOption('완료');
+              await page.locator('#amSaveResponse').click();
+              const updated=await page.evaluate(id=>JSON.parse(localStorage.getItem('hd20ActionCasesV2')||'[]').find(x=>x.id===id),row.id);
+              assert.strictEqual(updated.status,'완료');
+              await page.reload({waitUntil:'domcontentloaded'});
+              await page.waitForSelector('#amRequestSource',{state:'attached',timeout:30000});
+              const persisted=await page.evaluate(id=>JSON.parse(localStorage.getItem('hd20ActionCasesV2')||'[]').find(x=>x.id===id),row.id);
+              assert.strictEqual(persisted.status,'완료');
+              assert.strictEqual(persisted.requestSource,'현장 패트롤 점검');
+              console.log('PASS: isolated registration -> completion -> reload persistence');
+            }finally{await browser.close()}
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
