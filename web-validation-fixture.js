@@ -144,7 +144,7 @@ const minDay=(a,b)=>Math.min(a,b);
 function makeActivities(){
   const per=60*SCALE,out=[];let seq=0;
   /* 현장 운영 현실 반영: 설비 선진화에 따른 외관상 수준과 실제 5S/OS 실행량을 분리한다. */
-  const profile=team=>/^중형/.test(team)?{activity:.58,confirm:.17,loss:.52}:/^(대형|휠로더|초대형)/.test(team)?{activity:1.18,confirm:.34,loss:.27}:/^(프레임|Boom)/.test(team)?{activity:1.30,confirm:.39,loss:.22}:/^(성능|트러블슈팅)/.test(team)?{activity:.48,confirm:.14,loss:.58}:{activity:1,confirm:.30,loss:.32};
+  const profile=team=>/^중형/.test(team)?{activity:.58,confirm:.025,loss:.52}:/^(대형|휠로더|초대형)/.test(team)?{activity:1.18,confirm:.055,loss:.27}:/^(프레임|Boom)/.test(team)?{activity:1.30,confirm:.065,loss:.22}:/^(성능|트러블슈팅)/.test(team)?{activity:.48,confirm:.02,loss:.58}:{activity:1,confirm:.045,loss:.32};
   TEAMS.forEach((team,ti)=>{
     const pf=profile(team),teamPer=Math.max(8,Math.round(per*pf.activity));
     for(let j=0;j<teamPer;j++){
@@ -164,7 +164,8 @@ function makeActivities(){
         const r=R();
         const judgedDay=minDay(T0,regDay+ri(1,30));
         if(r<pf.confirm){
-          row.criteriaMatched=shuffle(CRIT).slice(0,ri(1,3));{const hit=new Set(row.criteriaMatched);row.criteriaVisual=hit.has(CRIT[0])?'Y':'N';row.criteriaGreen=hit.has(CRIT[1])?'Y':'N';row.criteriaSpace=hit.has(CRIT[2])?'Y':'N'}Object.assign(row,{candidate:true,isCandidate:true,judgeState:'확정',confirmed:true,status:chance(.1)?'유지관리':'확정',judgedAt:fromDay(judgedDay),confirmedAt:fromDay(judgedDay),level:ri(1,5)});
+          // Official confirmation requires all three criteria, never a random 1/3 or 2/3.
+          row.criteriaMatched=[...CRIT];{const hit=new Set(row.criteriaMatched);row.criteriaVisual=hit.has(CRIT[0])?'Y':'N';row.criteriaGreen=hit.has(CRIT[1])?'Y':'N';row.criteriaSpace=hit.has(CRIT[2])?'Y':'N'}Object.assign(row,{candidate:true,isCandidate:true,judgeState:'확정',confirmed:true,status:chance(.1)?'유지관리':'확정',judgedAt:fromDay(judgedDay),confirmedAt:fromDay(judgedDay),level:ri(1,5)});
           const earliestLoss=judgedDay+ri(21,70),weak=earliestLoss<=T0&&chance(Math.min(.82,pf.loss*1.65));row.maintainState=weak?pick(['미흡','중지']):'정상';row.valid=!weak;
           if(weak){row.criteriaMatched=[];row.criteriaVisual='N';row.criteriaGreen='N';row.criteriaSpace='N';row.attrition=true;row.attritionReason=pick(['충족 요건 전체 상실','정위치·정량 기준 상실','Green Zone 기준 상실','시각화·형적관리 기준 상실']);row.attritionAt=fromDay(earliestLoss+ri(0,Math.max(0,T0-earliestLoss)))}
           if(chance(.45)){row.horizontalRollout=true;row.rolloutState=pick(['수평전개중','수평전개 완료'])}
