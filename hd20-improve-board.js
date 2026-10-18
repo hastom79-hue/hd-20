@@ -116,7 +116,7 @@ const tk=v=>String(Number(v.toFixed(3)));
 function chart({w,h=240,cats,series,stack=false,per=false,rotate=false,sel=null,colorOf=null,minSlot=36,fmt=null,hline=null,linkX=false,topPct=null,topExtra=null,axisHeadroom=0,raisePlot=false,plotBottom=null,tightAxis=false,labelTotals=null}){
   const F=v=>fmt?fmt(v):fx(v,per);
   const W0=Math.max(320,w),slot0=(W0-56)/Math.max(1,cats.length);rotate=rotate||(slot0<58&&cats.some(c=>String(c).length>3));
-  const m={l:46,r:10,t:raisePlot?12:20,b:plotBottom??(rotate?84:(raisePlot?24:30))},W=W0,iw=W-m.l-m.r,ih=h-m.t-m.b;
+  const m={l:46,r:10,t:Array.isArray(labelTotals)?32:(raisePlot?12:20),b:plotBottom??(rotate?84:(raisePlot?24:30))},W=W0,iw=W-m.l-m.r,ih=h-m.t-m.b;
   const tot=cats.map((_,i)=>stack?series.reduce((a,s)=>a+(s.vals[i]||0),0):Math.max(...series.map(s=>s.vals[i]||0)));
   const dataMax=Math.max(0.0001,...tot,hline?hline.value*1.05:0),integerAxis=!per&&tot.every(v=>Number.isInteger(v))&&(!hline||Number.isInteger(hline.value)),ax=axis(tot.every(v=>v===0)&&!hline?0:dataMax*(1+Math.max(axisHeadroom,integerAxis?0.12:0)),{integer:integerAxis,tight:tightAxis}),max=ax.max,yv=v=>m.t+ih-(v/max)*ih,slot=iw/Math.max(1,cats.length);
   let g='';for(let i=0;i<=Math.round(max/ax.step);i++){const v=ax.step*i,y=yv(v);g+=`<line x1="${m.l}" x2="${W-m.r}" y1="${y}" y2="${y}" stroke="${C.grid}"/><text x="${m.l-6}" y="${y+4}" text-anchor="end" font-size="11" fill="${C.soft}">${tk(v)}</text>`}
@@ -129,7 +129,7 @@ function chart({w,h=240,cats,series,stack=false,per=false,rotate=false,sel=null,
         b+=hasTotal?`<text x="${x+bwK/2}" y="${y-18}" text-anchor="middle" font-size="10.5" font-weight="800" fill="${C.ink}">${F(v)}<tspan x="${x+bwK/2}" dy="12" font-size="9.5">(${Math.round(labelTotals[i])}건)</tspan></text>`:hasPct?`<text x="${x+bwK/2}" y="${y-18}" text-anchor="middle" font-size="10.5" font-weight="800" fill="${C.ink}">${F(v)}<tspan x="${x+bwK/2}" dy="12" font-size="9">${pctTxt.trim()}</tspan></text>`:`<text x="${x+bwK/2}" y="${y-4}" text-anchor="middle" font-size="10.5" font-weight="800" fill="${C.ink}">${F(v)}</text>`}
       acc+=v;startX+=bwK+gap});
     if(stack&&tot[i]>0){const tp=topPct&&Number.isFinite(topPct[i])?topPct[i]:null,tx=topExtra&&topExtra[i]?topExtra[i]:null;
-      b+=`<text x="${cx}" y="${yv(tot[i])-4}" text-anchor="middle" font-size="10.5" font-weight="800" fill="${C.ink}">${F(tot[i])}</text>`;
+      b+=Array.isArray(labelTotals)&&Number.isFinite(labelTotals[i])?`<text x="${cx}" y="${yv(tot[i])-18}" text-anchor="middle" font-size="10.5" font-weight="800" fill="${C.ink}">${F(tot[i])}<tspan x="${cx}" dy="12" font-size="9.5">(${Math.round(labelTotals[i])}건)</tspan></text>`:`<text x="${cx}" y="${yv(tot[i])-4}" text-anchor="middle" font-size="10.5" font-weight="800" fill="${C.ink}">${F(tot[i])}</text>`;
       if(tp!==null)b+=`<text x="${cx}" y="${yv(tot[i])-17}" text-anchor="middle" font-size="9.5" font-weight="800" fill="${tp<70?'#c0392b':'#2f7a4d'}">완료 ${tp}%</text>`;
       if(tx)b+=`<text x="${cx}" y="${yv(tot[i])-19}" text-anchor="middle" font-size="9.5" font-weight="850" fill="${tx.color}">${esc(tx.text)}</text>`}
     /* linkX(클릭해서 아래 두 차트를 그 팀으로 바꾸는 드릴다운)인 x축 라벨 전부에 밑줄을 상시 표시해,
@@ -227,7 +227,7 @@ function render(box){
   let est=0;const teamRows=teamConf.map(r=>{const c=cdOf(r),ci=+c.slice(0,4)*12+(+c.slice(5,7)-1);let li=null;if(!keepSet.has(r.id)){const lc=r.maintainLostAt||r.maintainEndedAt||r.maintainStoppedAt||r.lostAt||r.invalidatedAt;if(lc){const d=new Date(lc);li=d.getFullYear()*12+d.getMonth()}else{li=ci+6;est++}if(li>nowIdx)li=nowIdx}return{ci,li}});
   const cyy=+S.year,exArr=[],nwArr=[],cumArr=[],lossArr=[];for(let m=0;m<12;m++){const mi=cyy*12+m;exArr.push(teamRows.filter(r=>r.ci<mi&&!(r.li!==null&&r.li<=mi)).length);nwArr.push(teamRows.filter(r=>r.ci===mi&&!(r.li!==null&&r.li<=mi)).length);cumArr.push(exArr[m]+nwArr[m]);lossArr.push(teamRows.filter(r=>r.li!==null&&r.li===mi&&r.ci<mi).length)}
   const divE=v=>per?v/th:v,curKeep=teamConf.filter(r=>keepSet.has(r.id)).length;
-  const E=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W/2)-8),cats:ML,per,stack:true,series:[{name:'기존 유지',vals:exArr.map(divE),color:'#a8c7c4'},{name:'신규 확정',vals:nwArr.map(divE),color:C.dark}]});
+  const E=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W/2)-8),cats:ML,per,stack:true,labelTotals:per?cumArr:null,series:[{name:'기존 유지',vals:exArr.map(divE),color:'#a8c7c4'},{name:'신규 확정',vals:nwArr.map(divE),color:C.dark}]});
   const lossMax=Math.max(1,...lossArr),lossTot=lossArr.reduce((a,b)=>a+b,0);
   const lossRow=ML.map((m,i)=>{const v=lossArr[i],h=Math.round(v/lossMax*26);return `<div class="ibLossCol" title="${m} 이탈 ${v}건"><div class="ibLossBar" style="height:${h}px;opacity:${v?1:0}"></div><b>${v||''}</b></div>`}).join('');
   const lossChart=`<div class="ibLossWrap"><div class="ibLossLabel">이탈(그 달에 유지 종료됨)<em>연간 ${lossTot}건</em></div><div class="ibLossRow">${lossRow}</div></div>`;
