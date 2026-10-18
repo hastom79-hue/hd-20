@@ -183,13 +183,13 @@ function css(){const prior=document.getElementById(ID+'Style');if(prior)prior.re
 #${ID} .rqDelayVerticalScroll{max-width:100%;overflow-x:auto;overflow-y:hidden;padding:8px 2px 12px;overscroll-behavior-x:contain}
 #${ID} .rqDelayVertical{min-width:max(100%,calc(var(--rq-team-count)*116px))}
 #${ID} .rqDelayVerticalLegend{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:12px;font-weight:800;margin:4px 0 14px;padding:4px 2px;position:relative;max-width:100%}
-#${ID} .rqDelayVerticalCols{display:grid;grid-template-columns:repeat(var(--rq-team-count),minmax(106px,1fr));gap:10px;align-items:end}
+#${ID} .rqDelayVerticalCols{display:grid;grid-template-columns:repeat(var(--rq-team-count),minmax(106px,1fr));gap:14px;align-items:end}
 #${ID} .rqDelayVerticalCol{min-width:0;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
-#${ID} .rqDelayVerticalGroup{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;width:100%;align-items:end}
+#${ID} .rqDelayVerticalGroup{display:grid;grid-template-columns:repeat(3,10px);justify-content:center;gap:3px;width:100%;align-items:end}
 #${ID} .rqDelayVerticalBarCell{min-width:0;display:flex;flex-direction:column;align-items:stretch;gap:4px}
 #${ID} .rqDelayVerticalValue{position:absolute;left:50%;transform:translateX(-50%);font-size:11px;font-weight:800;color:#29435a;line-height:1.2;white-space:nowrap}
 #${ID} .rqDelayVerticalBarTrack{position:relative;height:180px;display:flex;align-items:flex-end;border-bottom:1px solid #bfcbd4;background:linear-gradient(to top,#f4f7f9,#fff)}
-#${ID} .rqDelayVerticalSingleBar{display:block;width:100%;min-height:0;border-radius:3px 3px 0 0}
+#${ID} .rqDelayVerticalSingleBar{display:block;width:100%;min-height:0;border-radius:2px 2px 0 0}
 #${ID} .rqDelayVerticalTeam{font-size:11px;line-height:1.3;font-weight:700;overflow-wrap:anywhere;min-height:28px;color:#344e63}
 #${ID} .rqDelayVerticalCol>small{font-size:10px;color:#667d8c}
 #${ID} .rqTeamDetail{margin-top:10px;border-top:1px solid #edf1f4;padding-top:8px}#${ID} .rqTeamDetail summary{cursor:pointer;font-size:12px;font-weight:850;color:#49657b}#${ID} .rqDetail th{white-space:nowrap}#${ID} .rqDetail td{white-space:nowrap;text-align:left}
@@ -263,7 +263,7 @@ function css(){const prior=document.getElementById(ID+'Style');if(prior)prior.re
 #${ID} .rqLegend{display:flex;gap:15px;flex-wrap:wrap;margin-top:12px;font-size:11px}#${ID} .rqLegend span:first-child{color:#26847f}#${ID} .rqLegend span:nth-child(2){color:#ad812f}#${ID} .rqLegend span:last-child{color:#c45143}
 #${ID} .rqMoreBtn{display:block;width:100%;margin-top:8px;padding:8px;border:1px dashed #cdd9e2;border-radius:8px;background:#f8fafb;color:#49657b;font-size:12px;font-weight:850;cursor:pointer}#${ID} .rqMoreBtn:hover{background:#eef3f6;border-color:#9fb4c2}
 #${ID} .rqHeat{display:block;border-radius:5px;padding:9px;min-width:42px;text-align:center}#${ID} .rqHeatHigh{background:#b9473b;color:#fff}#${ID} .rqHeatMid{background:#db8e72;color:#fff}#${ID} .rqHeatLow{background:#f4d7c6;color:#713e30}#${ID} .rqHeatZero{background:#f4f6f8;color:#758899}
-#${ID} .rqDelayStack{display:flex;height:10px;overflow:hidden;border-radius:5px;margin:3px 0 12px;background:#edf1f4}#${ID} .rqDelayBand{display:block;height:100%}#${ID} .rqDelayBand0{background:#d3d9df}#${ID} .rqDelayBand1{background:#a5b0bb}#${ID} .rqDelayBand2{background:#536779}
+#${ID} .rqDelayStack{display:flex;height:10px;overflow:hidden;border-radius:5px;margin:3px 0 12px;background:#edf1f4}#${ID} .rqDelayBand{display:block;height:100%}#${ID} .rqDelayBand0{background:#d7dee5}#${ID} .rqDelayBand1{background:#e1af37}#${ID} .rqDelayBand2{background:#21756e}
 
 /* Screenshot regression: align both panels to content rather than stretching the
    left card to the chart's height; constrain SVG to its own column. */
@@ -398,7 +398,7 @@ function render(box){
   let delayRowsSorted=delayRows.length?delayRows.map(r=>{const c=rowsM.filter(x=>x.team===r.team&&isOverdue(x,D.today));const v=[c.filter(x=>delayDays(x,D.today)<=7).length,c.filter(x=>delayDays(x,D.today)>=8&&delayDays(x,D.today)<=14).length,c.filter(x=>delayDays(x,D.today)>=15).length];return{team:r.team,v,total:r.n}}).sort((a,b)=>b.v[2]-a.v[2]||b.total-a.total):[];
   delayRowsSorted=orderedTeams(delayRowsSorted,D.teams);
   // Three grouped bars per team, one for each overdue band; never stack.
-  const delaySegColors=['#d3d9df','#a5b0bb','#536779'];
+  const delaySegColors=['#d7dee5','#e1af37','#21756e'];
   const delayObservedMax=Math.max(0,...delayRowsSorted.flatMap(r=>r.v).filter(v=>Number.isFinite(v)&&v>0));
   const delayStep=delayObservedMax<=5?1:delayObservedMax<=20?2:delayObservedMax<=50?5:10;
   const delayMax=Math.max(1,Math.ceil((delayObservedMax+Math.max(1,delayObservedMax*.12))/delayStep)*delayStep);
