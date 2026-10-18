@@ -109,6 +109,15 @@ function css(){if(document.getElementById(ID+'Style'))return;const s=document.cr
 #${ID} .rqDelayVerticalTrack{width:54px;height:220px;display:flex;flex-direction:column-reverse;align-items:stretch;justify-content:flex-start;border-bottom:1px solid #bfcbd4;background:linear-gradient(to top,#f4f7f9,#fff)}
 #${ID} .rqDelayVerticalSegment{width:100%;min-height:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;box-sizing:border-box}
 #${ID} .rqDelayVerticalTeam{font-size:11px;line-height:1.3;font-weight:700;overflow-wrap:anywhere;min-height:42px;color:#344e63}
+#${ID} .rqTeamVerticalScroll{overflow-x:auto;overflow-y:hidden;max-width:100%;padding:10px 2px 12px}
+#${ID} .rqTeamVertical{min-width:max(100%,calc(var(--rq-team-count)*84px))}
+#${ID} .rqTeamVerticalCols{display:grid;grid-template-columns:repeat(var(--rq-team-count),minmax(74px,1fr));gap:8px;align-items:end}
+#${ID} .rqTeamVerticalCol{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;min-width:0}
+#${ID} .rqTeamVerticalCol>strong{font-size:13px;color:#27445c}
+#${ID} .rqTeamVerticalTrack{height:220px;width:54px;display:flex;align-items:flex-end;background:linear-gradient(to top,#f4f7f9,#fff);border-bottom:1px solid #bfcbd4}
+#${ID} .rqTeamVerticalTrack>span{display:block;width:100%;border-radius:4px 4px 0 0}
+#${ID} .rqTeamVerticalCol>span{font-size:11px;line-height:1.3;font-weight:700;overflow-wrap:anywhere;min-height:42px}
+#${ID} .rqTeamVerticalCol>small{font-size:10px;color:#637c8d}
 #${ID} .rqTeamDetail{margin-top:10px;border-top:1px solid #edf1f4;padding-top:8px}#${ID} .rqTeamDetail summary{cursor:pointer;font-size:12px;font-weight:850;color:#49657b}#${ID} .rqDetail th{white-space:nowrap}#${ID} .rqDetail td{white-space:nowrap;text-align:left}
 #${ID} .ibFoot{margin:10px 2px 0;font-size:12px;color:#7a8a97}
 
@@ -426,27 +435,10 @@ function render(box){
     return{team:t,total:a.length,done,open,over}}).filter(r=>r.total>0);
   const teamRateSorted=[...teamRowsAllTeams].sort((a,b)=>(a.total?a.done/a.total:0)-(b.total?b.done/b.total:0)||b.total-a.total);
   const teamRateRow=(r,hidden)=>{const rate=r.total?Math.round(r.done/r.total*1000)/10:0,mine=teamHighlight&&r.team===teamHighlight;return '<tr'+(mine?' class="rqMyTeam"':hidden?' class="rqRowMore" hidden':'')+'><td>'+(mine?'<b>▶ ':'')+esc(r.team)+(mine?' <span class="rqMyTeamTag">내 팀</span></b>':'')+'</td><td><div class="rqStack" title="완료 '+r.done+'건 / 기한 내 미완료 '+r.open+'건 / 기한초과 '+r.over+'건"><span class="rqStackDone" style="width:'+(r.total?100*r.done/r.total:0)+'%"></span><span class="rqStackOpen" style="width:'+(r.total?100*r.open/r.total:0)+'%"></span><span class="rqStackLate" style="width:'+(r.total?100*r.over/r.total:0)+'%"></span></div></td><td class="'+rateCls(rate)+'">'+rate+'%</td></tr>'};
-  const TEAM_SHOW=6;
-  /* 사용자 지적: "여기가 가장 문제다" — (1) 범례가 '완료/기한 내 미완료/기한초과' 3색인데, 실제로는
-     전체 16개 팀 전부 open(기한 내 미완료)이 항상 0건이라 노란색이 한 번도 나타나지 않음(3색을
-     약속해놓고 2색만 쓰는 거짓 범례). (2) 16개 팀 전부 완료율이 정확히 같아(60%) "비교" 표인데
-     비교할 차이가 없어 보임. 데이터 값은 그대로 두고(사용자 확정), 실제 쓰이는 색만 범례에 남기고,
-     "전부 동일하다"는 사실 자체를 숨기지 않고 먼저 알려주는 요약 문구를 추가해 혼란 대신 바로
-     이해되게 함. */
-  const openSum=teamRateSorted.reduce((s,r)=>s+r.open,0);
   const rates0=teamRateSorted.map(r=>r.total?Math.round(r.done/r.total*1000)/10:0);
   const allSameRate=rates0.length>1&&rates0.every(v=>v===rates0[0]);
-  const teamRateNote=allSameRate?'<p class="rqTeamNote">현재 조건에서는 '+teamRateSorted.length+'개 팀 전부 완료율이 '+rates0[0]+'%로 동일합니다. 팀별 실질 차이는 아래 05(기한초과 지연일 분포)에서 확인하세요.</p>':'';
-  /* CSS 단색 진행 막대(초록/빨강만 보이던 것) 대신, 격자선·눈금·순위가 있는 SVG 가로 막대 차트로
-     교체. 완료율 기준 정렬·색상 구간(위험/주의/양호)은 기존 로직 그대로 유지. */
-  const teamBarRows=teamRateSorted.map(r=>{const rate=r.total?Math.round(r.done/r.total*1000)/10:0;return{label:r.team+(teamHighlight&&r.team===teamHighlight?' ★내팀':''),v:rate,color:rate<50?'#b03a2e':rate<80?'#b7791b':'#2f7a4d'}});
-  /* "좌우 병합배치로" 지시로 04·05가 2열(rqManageRow)에 나란히 들어가게 되어, 차트 SVG 폭도 전체
-     폭이 아니라 패널이 실제 차지하는 절반 폭 기준으로 줄임(패널 폭을 미리 알 수 없는 시점이라
-     box.clientWidth의 절반에서 여백을 뺀 값으로 추정, 최소 300px 보장). */
-  const halfW=Math.max(300,Math.floor(box.clientWidth/2)-70);
-  const teamChartTop=hBarChart({w:halfW,rows:teamBarRows.slice(0,TEAM_SHOW),maxV:100,showRank:true});
-  const teamChartRest=teamBarRows.length>TEAM_SHOW?hBarChart({w:halfW,rows:teamBarRows.slice(TEAM_SHOW),maxV:100,showRank:false}):'';
-  const teamRateBars='<div class="rqChartScroll">'+teamRateNote+teamChartTop+(teamChartRest?'<div class="rqMoreChart" hidden>'+teamChartRest+'</div><button type="button" class="rqMoreBtn" data-more="team">나머지 '+(teamBarRows.length-TEAM_SHOW)+'개 팀 더보기 ▾</button>':'')+'</div>';
+  const teamRateNote=allSameRate?'<p class="rqTeamNote">현재 조건에서는 '+teamRateSorted.length+'개 팀 완료율이 동일합니다.</p>':'';
+  const teamRateBars='<div class="rqTeamVerticalScroll">'+teamRateNote+'<div class="rqTeamVertical" style="--rq-team-count:'+teamRateSorted.length+'"><div class="rqTeamVerticalCols">'+teamRateSorted.map(r=>{const pct=r.total?Math.round(r.done/r.total*1000)/10:0;const color=pct<50?'#b03a2e':pct<80?'#b7791b':'#2f7a4d';return '<div class="rqTeamVerticalCol" title="'+esc(r.team)+' · 완료 '+r.done+'/'+r.total+'건"><strong>'+pct+'%</strong><div class="rqTeamVerticalTrack"><span style="height:'+pct+'%;background:'+color+'"></span></div><span>'+esc(r.team)+(teamHighlight===r.team?' ★':'')+'</span><small>'+r.done+'/'+r.total+'건</small></div>'}).join('')+'</div></div></div>';
   const overCases=rowsM.filter(c=>teamsAll.includes(c.team)&&isOverdue(c,D.today));
   const delayBands=[overCases.filter(c=>delayDays(c,D.today)<=7).length,overCases.filter(c=>delayDays(c,D.today)>=8&&delayDays(c,D.today)<=14).length,overCases.filter(c=>delayDays(c,D.today)>=15).length];
   const kpi=(label,value,detail,risk=false)=>'<div class="rqKpi'+(risk?' risk':'')+'"><small>'+label+'</small><b>'+value+'</b><span class="rqKpiHint">'+detail+'</span></div>';
