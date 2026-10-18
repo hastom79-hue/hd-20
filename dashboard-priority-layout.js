@@ -5,19 +5,18 @@ const ID='hd20DashboardPriority';
    01·02가 없지?"라는 혼란을 주고 있었음(사용자 지적: "전면 재검토"). 업무 흐름 배너와 번호 체계가
    섞이지 않도록 이 카드들은 숫자 대신 단순한 그룹 순번(①②③)으로 표기해 혼동을 없앰. */
 const GROUPS=[
-  {key:'advancement',step:'①',label:'고도화·판정',summary:'등록된 사례를 공식 판정과 고도화 수준으로 확인'},
-  {key:'audit',step:'②',label:'유지·Audit',summary:'Audit 이후 6개월 유지와 부적합 재발을 확인'},
-  {key:'action',step:'③',label:'개선조치',summary:'완료기한이 지정된 개선조치의 실행상태를 확인'}
+  {key:'advancement',step:'①',label:'고도화 유지·이탈',summary:'확정된 사례의 유지와 이탈을 확인'},
+  {key:'audit',step:'②',label:'Audit 지속·재발',summary:'Audit 이후 6개월 유지와 부적합 재발을 확인'},
+  {key:'action',step:'③',label:'개선조치 적시성',summary:'완료기한이 지정된 개선조치의 실행상태를 확인'}
 ];
 /* good(추세가 '개선'으로 판정되는 방향)·max(미니 막대그래프 축 상한)는 5번 탭(dashboard-ops-trend.js
    의 M 배열)과 동일한 값을 그대로 맞춤 — 같은 6개 지표를 다른 화면에서 다르게 해석하면 안 되므로. */
 const KPI=[
-  {key:'judgmentRate',label:'공식 판정 완료율',unit:'%',tab:'advancement',hint:'판정대상 중 공식 판정 완료 비율',good:'up',max:100},
-  {key:'avgLead',label:'평균 판정 Lead Time',unit:'일',tab:'advancement',hint:'등록부터 공식 판정까지 평균 소요일',good:'down'},
-  {key:'maturity',label:'고도화 수준',prefix:'Lv.',tab:'advancement',hint:'공식 확정 사례의 현재 평균 Level',good:'up',max:5},
+  {key:'advRetention',label:'고도화 확정 사례의 유지율',unit:'%',tab:'advancement',hint:'공식 확정 사례 중 현재 유지 중인 비율',good:'up',max:100},
+  {key:'advAttrition',label:'고도화 확정 후 이탈률',unit:'%',tab:'advancement',hint:'공식 확정 사례 중 유지기준 이탈 비율',good:'down',max:100},
   {key:'sixRetention',label:'Audit 후 6개월 유지율',unit:'%',tab:'audit',hint:'6개월 관리 종료 사례의 유지 비율',good:'up',max:100},
-  {key:'recurrence',label:'Audit 부적합 재발률',unit:'%',tab:'audit',hint:'재발여부가 기록된 개선조치 중 재발 비율',good:'down',max:100},
-  {key:'actionOnTime',label:'기한 내 개선조치 완료율',unit:'%',tab:'action',hint:'완료기한이 있는 완료 Case의 기한 내 완료 비율',good:'up',max:100}
+  {key:'recurrence',label:'Audit 부적합 재발률',unit:'%',tab:'audit',hint:'동일 문제의 반복 발생 여부',good:'down',max:100},
+  {key:'actionOnTime',label:'기한 내 개선조치 완료율',unit:'%',tab:'action',hint:'개선조치 실행의 적시성',good:'up',max:100}
 ];
 function fmt(v,k){if(v===null||v===undefined||Number.isNaN(v))return '—';const def=KPI.find(x=>x.key===k)||{};const num=def.prefix?v:(Number.isInteger(v)?v:Math.round(v*10)/10);return `${def.prefix||''}${num}${def.unit||''}`}
 function gotoTab(key){document.querySelector(`.beginnerNav button[data-key="${key}"]`)?.click()}
