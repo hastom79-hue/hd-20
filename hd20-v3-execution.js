@@ -28,7 +28,7 @@ function annualChart(actions,year){
  const completed=months.map(m=>actions.filter(x=>isDone(x)&&completedDate(x).startsWith(year+'-'+String(m).padStart(2,'0'))).length);
  const validEffects=actions.filter(x=>verified(x)&&(x.effectVerifiedAt||x.effectDate||x.verifiedAt));
  const effect=months.map(m=>validEffects.filter(x=>month({completedAt:x.effectVerifiedAt||x.effectDate||x.verifiedAt})===year+'-'+String(m).padStart(2,'0')).length);
- const max=Math.max(1,...completed,...effect);
+ const trend=completed.map((_,i)=>{const from=Math.max(0,i-2);return completed.slice(from,i+1).reduce((a,b)=>a+b,0)/(i-from+1)});const max=Math.max(1,...completed,...trend);
  const w=960,h=236,left=34,right=12,top=16,bottom=36,plotW=w-left-right,plotH=h-top-bottom;
  const x=i=>left+(i+.5)*plotW/12,y=v=>top+plotH*(1-v/max);
  const grid=[0,.25,.5,.75,1].map(f=>'<line x1="'+left+'" x2="'+(w-right)+'" y1="'+(top+plotH*f)+'" y2="'+(top+plotH*f)+'" stroke="#e8eef2"/>').join('');
@@ -37,8 +37,8 @@ function annualChart(actions,year){
  const dots=(values,color)=>values.map((v,i)=>isFuture(i)?'':'<circle cx="'+x(i)+'" cy="'+y(v)+'" r="3" fill="'+color+'"/>').join('');
  const labels=months.map((m,i)=>'<text x="'+x(i)+'" y="'+(h-10)+'" font-size="12" text-anchor="middle" fill="'+(isFuture(i)?'#9aaab4':'#546b7b')+'">'+m+'월</text>').join('');
  const future=months.map((m,i)=>isFuture(i)?'<rect x="'+(x(i)-plotW/24)+'" y="'+top+'" width="'+(plotW/12)+'" height="'+plotH+'" fill="#f5f7f9" opacity=".7"/>':'').join('');
- const effectLine=validEffects.length?'<path d="'+path(effect)+'" fill="none" stroke="#e1af37" stroke-width="2.5" vector-effect="non-scaling-stroke"/>'+dots(effect,'#e1af37'):'';
- return '<h3>'+year+'년 월별 실행 완료'+(validEffects.length?'·효과검증 완료':'')+' 추이</h3><div class="v3exAnnualWrap"><svg class="v3exAnnualSvg" viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none" role="img" aria-label="'+year+'년 1월부터 12월까지 실행 실적">'+grid+future+'<path d="'+path(completed)+'" fill="none" stroke="#21756e" stroke-width="2.5" vector-effect="non-scaling-stroke"/>'+dots(completed,'#21756e')+effectLine+labels+'</svg></div><p class="v3exNote">● 실행 완료(완료일 기준)'+(validEffects.length?' · ● 효과검증 완료(검증일 기준)':' · 효과검증 완료일 이력이 없어 두 번째 계열 미표시')+' · 미래 월은 미집계 · 과거 0건은 미입력 가능성 별도 확인</p>';
+ const bars=completed.map((v,i)=>isFuture(i)?'':'<rect x="'+(x(i)-plotW/48)+'" y="'+y(v)+'" width="'+plotW/24+'" height="'+(top+plotH-y(v))+'" rx="2" fill="#6ca5a2"/>').join('');const trendLine='<path d="'+path(trend)+'" fill="none" stroke="#d69d31" stroke-width="2.5" vector-effect="non-scaling-stroke"/>'+dots(trend,'#d69d31');
+ return '<h3>'+year+'년 월별 실행 완료 건수 및 3개월 이동평균</h3><div class="v3exAnnualWrap"><svg class="v3exAnnualSvg" viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none" role="img" aria-label="'+year+'년 1월부터 12월까지 실행 완료 막대와 이동평균 추세선">'+grid+future+bars+trendLine+labels+'</svg></div><p class="v3exNote"><span style="color:#6ca5a2">■</span> 실행 완료 건수(완료일 기준) · <span style="color:#d69d31">●</span> 최근 최대 3개월 이동평균(완료 건수) · 미래 월 미집계 · 당월 진행 중</p>';
 }
 function monthlyComboChart(actions,year){
  const now=new Date(), months=Array.from({length:12},(_,i)=>i+1),w=960,h=236,l=42,r=15,t=18,b=38,pw=w-l-r,ph=h-t-b;
