@@ -106,7 +106,12 @@ function boot(){
    안 끝난 것처럼 보여 평균 지연일이 100일을 넘는 비현실적인 값이 나왔음(완료 건은 과거 아무 때나
    등록돼 이미 끝났어도 괜찮지만, 미완료 건은 '최근에 발생한 지연'이어야 현실적) — 미완료 상태만
    최근 60일 이내로 등록일을 제한, 완료 건은 기존대로 1~10월 전체 분산 유지. */
-const action=[];teams.forEach((team,ti)=>{for(let i=0;i<10;i++){const isDone=!(i%6===0||i%3===0),pendingVerify=isDone&&i%9===0,isLate=i%6===0,isProgress=i%3===0,createdAt=isDone?spreadDate(i,ti,5,9):days(14+((i*7+ti*5)%46));action.push({id:`DEMO-X-${ti}-${i}`,source:SRC,team,group:groupOf(team),createdAt,dueDate:addDaysStr(createdAt,14),status:isLate?'기한초과':isProgress?'진행중':'완료',doneDate:!isDone?'':addDaysStr(createdAt,11+((ti*3+i*7)%11)),action:'현장 5S 개선조치 시행',after:isDone?'개선 후 정위치·형적관리 적용 완료(현장 사진 첨부)':'',afterEvidence:'',evidenceNote:isDone?'개선 후 정위치·형적관리 적용 완료 (사진 증빙은 미첨부)':'',effectVerified:isDone&&!pendingVerify,recurrenceState:pendingVerify?'':i%5===0?'재발':'미발생',title:['정위치 보완','표준표기 개선','통로 적치 제거','Audit 재발 방지'][i%4]})}});
+/* 사용자 지시(딥 리서치 전수 검증): "가상데이터마저도 동기화되어야 한다" — action(개선조치) 레코드에
+   auditDrawId가 전혀 없어, "Audit·유지점검 ③ 6개월 유지검증" 화면이 Audit ID 정확 일치로 개선요청을
+   집계할 때 항상 0건으로 나오고 있었음(대시보드 요약 수치 "Audit 후 6개월 유지율 75%"는 다른 계산
+   경로를 쓰므로 정상 표시되지만, 그 근거가 되어야 할 상세 화면은 텅 비어 모순돼 보였음). audit 배열
+   (팀당 8건, i=0~7)과 동일 팀의 action(팀당 10건, i=0~9)을 i%8로 매핑해 연결. */
+const action=[];teams.forEach((team,ti)=>{for(let i=0;i<10;i++){const isDone=!(i%6===0||i%3===0),pendingVerify=isDone&&i%9===0,isLate=i%6===0,isProgress=i%3===0,createdAt=isDone?spreadDate(i,ti,5,9):days(14+((i*7+ti*5)%46));action.push({id:`DEMO-X-${ti}-${i}`,source:SRC,team,group:groupOf(team),auditDrawId:`DEMO-U-${ti}-${i%8}`,createdAt,dueDate:addDaysStr(createdAt,14),status:isLate?'기한초과':isProgress?'진행중':'완료',doneDate:!isDone?'':addDaysStr(createdAt,11+((ti*3+i*7)%11)),action:'현장 5S 개선조치 시행',after:isDone?'개선 후 정위치·형적관리 적용 완료(현장 사진 첨부)':'',afterEvidence:'',evidenceNote:isDone?'개선 후 정위치·형적관리 적용 완료 (사진 증빙은 미첨부)':'',effectVerified:isDone&&!pendingVerify,recurrenceState:pendingVerify?'':i%5===0?'재발':'미발생',title:['정위치 보완','표준표기 개선','통로 적치 제거','Audit 재발 방지'][i%4]})}});
  /* Active 5S teams: adjust synthetic RAW action records (not chart-only overrides).
     Preserve all IDs and denominators; completed records remain explicitly demo-seed. */
  const activeTeamPatterns=[/중형하부/,/대형메인|대형메인팀/,/휠로더/];
