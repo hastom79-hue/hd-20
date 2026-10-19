@@ -1,7 +1,9 @@
 (()=>{'use strict';
 const ID='performanceConversionAnalysis',KEY='hd20GMES5SAutoImproveRawV1';
 const TEAMS=window.HD20ProductionTeamMaster?.teamNames?.()||[];
-const TYPES=['정리','정돈','청소','시각화','위험구역관리','5S 고도화'];
+/* 딥 리서치 전수 검증: 다른 7종 목록(audit-checklist-master.js·audit-checklist-enhance.js·
+   master-context-final.js)과 동기화 — '설비 자주보전' 추가. */
+const TYPES=['정리','정돈','청소','시각화','위험구역관리','설비 자주보전','5S 고도화'];
 const FALLBACK_LEGACY_TEST_IDS=new Set('DRAW-1788010755791,DRAW-1788010759290,DRAW-1788010760070,DRAW-1788010760500,DRAW-1788010760921,DRAW-1788010761360,DRAW-1788011635587,DRAW-1788011636106,DRAW-1788011636356,DRAW-1788011636538,DRAW-1788011636773,DRAW-1788011636931,DRAW-1788011637126,DRAW-1788011637396,DRAW-1788011637597,DRAW-1788011637788,DRAW-1788011637966,DRAW-1788011638138,DRAW-1788011638487,DRAW-1788011638656,DRAW-1788011638846'.split(','));
 function validationMode(){return new URL(location.href).searchParams.get('validation')==='1'}
 function nonProd(x){if(!x||typeof x!=='object')return false;const source=String(x.source||'').trim().toLowerCase(),id=String(x.id||'').trim().toUpperCase(),sourceCaseId=String(x.sourceCaseId||'').trim().toUpperCase(),email=String(x.email||'').trim().toLowerCase();return x.isDemo===true||x.isTest===true||source==='demo-seed'||source==='e2e-fixture'||source==='web-validation-fixture'||id.startsWith('DEMO-')||id.startsWith('E2E-')||id.startsWith('VALID-')||id.includes('AUTO-DEMO-')||sourceCaseId.startsWith('DEMO-')||sourceCaseId.startsWith('E2E-')||sourceCaseId.startsWith('VALID-')||email.endsWith('@hd-hyundai-demo.co.kr')||/^teamlead\d+@example\.com$/i.test(email)||FALLBACK_LEGACY_TEST_IDS.has(id)}
