@@ -23,7 +23,13 @@ function recurrence(x){if(x?.recurrence===true)return true;const v=txt(x?.recurr
 function closedLoopRecurrence(x){return isDone(x)&&effectVerified(x)&&recurrence(x)}
 function auditId(x){return txt(x?.id||x?.drawId||x?.auditDrawId)}
 function actionSourceId(x){return txt(x?.auditDrawId||x?.sourceCaseId)}
-function metrics(area,sub){const acts=read(STORES.activity),audits=read(STORES.audit),actions=read(STORES.action);const candidates=acts.filter(advancementCandidate),confirmed=acts.filter(advancementConfirmed),doneActions=actions.filter(isDone),linkedActions=actions.filter(a=>{const id=actionSourceId(a);return !!id&&audits.some(d=>auditId(d)===id)}),retentionRiskAudits=audits.filter(d=>{const id=auditId(d),finalState=txt(d.finalEvaluation||d.auditFinalState);if(/미흡|부적합|실패|해제|중지/.test(finalState))return true;return !!id&&actions.some(a=>actionSourceId(a)===id&&closedLoopRecurrence(a))});const map={
+/* 딥 리서치 전수 검증: "① 문제·개선 등록" 화면에서 상단 요약 카드("전체 활동 411건")는 연도 필터
+   없이 DB 전체를 세고, 바로 아래 목록("410건 (전체 410건)")은 window.HD20KPIData.snapshot()을 통해
+   "올해(연간누적)" 필터가 걸린 값을 써서, 같은 화면 안에서 서로 다른 기준의 숫자가 1건 차이로 혼재돼
+   있었음(실제로는 "DEMO-A-ADV-REAL-0"이 2025-12-31 작년 날짜라 올해 필터에서 제외되는 것이 원인 —
+   데이터 자체는 정상이지만 표시 기준이 안 맞았음). 대시보드가 "당해년도 연간누적"을 전사 기준으로
+   쓰고 있으므로, 이 화면의 상단 카드도 같은 연도 필터가 적용된 snapshot().activities로 통일. */
+function metrics(area,sub){const acts=(window.HD20KPIData?.snapshot?.()?.activities)||read(STORES.activity),audits=read(STORES.audit),actions=read(STORES.action);const candidates=acts.filter(advancementCandidate),confirmed=acts.filter(advancementConfirmed),doneActions=actions.filter(isDone),linkedActions=actions.filter(a=>{const id=actionSourceId(a);return !!id&&audits.some(d=>auditId(d)===id)}),retentionRiskAudits=audits.filter(d=>{const id=auditId(d),finalState=txt(d.finalEvaluation||d.auditFinalState);if(/미흡|부적합|실패|해제|중지/.test(finalState))return true;return !!id&&actions.some(a=>actionSourceId(a)===id&&closedLoopRecurrence(a))});const map={
 'dashboard.summary':[['5S 활동',acts.length,'건'],['판정 대기',candidates.filter(x=>!advancementConfirmed(x)).length,'건'],['Audit 대기',audits.filter(x=>!x.auditDate).length,'건'],['기한경과',actions.filter(overdue).length,'건']],
 'dashboard.analysis':[['완료 활동',acts.filter(isDone).length,'건'],['공식확정',confirmed.length,'건'],['6개월 관리',audits.filter(x=>x.auditDate&&!x.finalEvaluation).length,'건'],['재발',actions.filter(closedLoopRecurrence).length,'건']],
 /* 자율개선 사례는 완료된 건만 등록하므로(등록=완료), 완료/진행 구분 대신 고도화 판정 진행 상태를 보여줌 */

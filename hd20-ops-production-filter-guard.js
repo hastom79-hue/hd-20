@@ -19,8 +19,12 @@ function recur(x){return window.HD20KPIData?.recurrenceState?.(x)??false}
 function closedRecur(x){return done(x)&&effect(x)&&recur(x)}
 function auditId(x){return txt(x?.id||x?.drawId||x?.auditDrawId)}
 function actionAuditId(x){return txt(x?.auditDrawId||x?.sourceCaseId)}
+/* 딥 리서치 전수 검증: hd20-ops-v2.js에 "activity.manage" 정의를 먼저 수정했으나 화면이 그대로였음
+   — 같은 키가 이 파일(production-filter-guard, 실제 소비처)에도 독립 정의돼 있어 연도 필터 없는
+   read(KEYS.activity)를 그대로 쓰고 있었기 때문. 대시보드·목록이 쓰는 연도 필터(snapshot().activities)
+   로 통일. */
 function metrics(area,sub){
- const acts=read(KEYS.activity),audits=read(KEYS.audit),actions=read(KEYS.action),candidates=acts.filter(candidate),confirmedRows=acts.filter(confirmed),doneActions=actions.filter(done);
+ const acts=(window.HD20KPIData?.snapshot?.()?.activities)||read(KEYS.activity),audits=read(KEYS.audit),actions=read(KEYS.action),candidates=acts.filter(candidate),confirmedRows=acts.filter(confirmed),doneActions=actions.filter(done);
  const linked=actions.filter(a=>{const id=actionAuditId(a);return !!id&&audits.some(d=>auditId(d)===id)});
  const retentionRisk=audits.filter(d=>{const fs=txt(d.finalEvaluation||d.auditFinalState),id=auditId(d);return /미흡|부적합|실패|해제|중지/.test(fs)||(!!id&&actions.some(a=>actionAuditId(a)===id&&closedRecur(a)))});
  const map={
