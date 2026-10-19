@@ -3,7 +3,11 @@ const ID='hd20IntegratedMasterFactors',STYLE='hd20IntegratedMasterFactorsStyle';
 const TEAM_KEY='gmes5s_team_org_master_v1',TARGET_KEY='gmes5s_team_targets_v1',HIST_KEY='gmes5s_team_target_history_v1',FACTOR_KEY='gmes5s_work_factor_master_v1',MAIL_KEY='gmes5s_mailing_master_v1';
 const TEAMS=window.HD20ProductionTeamMaster?.teamNames?.()||[];
 const GROUP_OF=t=>window.HD20ProductionTeamMaster?.groupOf?.(t)||'미분류';
-const SOURCES=['리더십','5S모듈','생산혁신팀 HDPS파트'];
+/* 딥 리서치 전수 검증: "운영기준 ③ 요청출처" 기준정보 관리 화면의 라벨이 탭3(hd20-request-board.js)
+   에서 사용자가 확정한 표기("요청그룹은 리더십(공장장), 5S모듈, 생산혁신팀(HDPS파트)로 표현한다")와
+   괄호 유무가 달라 불일치했음(운영기준: '리더십'·'생산혁신팀 HDPS파트' vs 탭3: '리더십(공장장)'·
+   '생산혁신팀(HDPS파트)') — 동일 표기로 통일. */
+const SOURCES=['리더십(공장장)','5S모듈','생산혁신팀(HDPS파트)'];
 const FACTORS={업무유형:['5S 활동','고도화','개선요청','Audit','개선조치','기타'],요청출처:SOURCES,업무단계:['요청','검토','실행','검증','완료','재발관리'],업무상태:['미착수','진행','완료','보류','수행불가','미확인'],우선순위:['긴급','높음','보통','낮음'],리스크:['높음','중간','낮음','미평가'],진척판정:['0% 미착수','1~49% 진행','50~99% 진행','100% 완료','수행불가','미확인']};
 const MAIL=Array.from({length:7},(_,i)=>({id:String(i+1).padStart(2,'0'),cadence:'미설정',recipient:'',cc:'',target:'',condition:'미설정',enabled:false}));
 const read=(k,d)=>{try{const v=JSON.parse(localStorage.getItem(k)||'null');return v==null?d:v}catch{return d}};const write=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
