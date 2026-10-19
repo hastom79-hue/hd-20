@@ -39,7 +39,7 @@ function annualChart(actions,year){
 }
 function monthlyComboChart(actions,year){
  const now=new Date(), months=Array.from({length:12},(_,i)=>i+1),w=960,h=236,l=42,r=15,t=18,b=38,pw=w-l-r,ph=h-t-b;
- const iso=v=>{const d=str(v);const m=d.match(/^(20\d{2})[-/.](0?[1-9]|1[0-2])[-/.](0?[1-9]|[12]\d|3[01])/);return m?m[1]+'-'+m[2].padStart(2,'0')+'-'+m[3].padStart(2,'0'):''};
+ const iso=v=>{const d=str(v);const m=d.match(/^(20\d{2})[-/.](0?[1-9]|1[0-2])[-/.](3[01]|[12]\d|0?[1-9])(?=$|[^0-9])/);return m?m[1]+'-'+m[2].padStart(2,'0')+'-'+m[3].padStart(2,'0'):''};
  const created=x=>iso(x.createdAt||x.regDate||x.registeredAt||x.date);
  const finished=x=>iso(x.doneDate||x.completedAt||x.completionDate);
  const registration=months.map(m=>actions.filter(x=>created(x).startsWith(year+'-'+String(m).padStart(2,'0'))).length);
