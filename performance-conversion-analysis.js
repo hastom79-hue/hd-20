@@ -1,6 +1,6 @@
 (()=>{'use strict';
 const ID='performanceConversionAnalysis',KEY='hd20GMES5SAutoImproveRawV1';
-const TEAMS=window.HD20ProductionTeamMaster?.teamNames?.()||[];
+const TEAMS=()=>window.HD20ProductionTeamMaster?.teamNames?.()||[];
 /* 딥 리서치 전수 검증: 다른 7종 목록(audit-checklist-master.js·audit-checklist-enhance.js·
    master-context-final.js)과 동기화 — '설비 자주보전' 추가. */
 const TYPES=['정리','정돈','청소','시각화','위험구역관리','설비 자주보전','5S 고도화'];
@@ -13,7 +13,7 @@ const isCandidate=x=>{const api=window.HD20KPIData;if(api?.isCandidate)return ap
 const isConfirmed=x=>{const api=window.HD20KPIData;if(api?.isConfirmed)return api.isConfirmed(x);return !!x&&typeOf(x)==='5S 고도화'&&x.confirmed===true&&String(x.judgeState||'').trim()==='확정'};
 const isMaintained=x=>{const api=window.HD20KPIData;if(api?.isMaintained)return api.isMaintained(x);return isConfirmed(x)&&x?.attrition!==true&&x?.valid!==false&&!/중지|미흡|이탈|재점검|부적합|해제|실패/i.test(String(x?.maintainState||x?.auditState||x?.status||''))};
 function esc(v){return String(v??'—').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
-function teamRows(){const d=load().filter(x=>typeOf(x)==='5S 고도화');return TEAMS.map(team=>{const activity=d.filter(x=>String(x.team||'').trim()===team);return{team,activity,candidate:activity.filter(isCandidate),confirmed:activity.filter(isConfirmed),maintained:activity.filter(isMaintained)}})}
+function teamRows(){const d=load().filter(x=>typeOf(x)==='5S 고도화');return TEAMS().map(team=>{const activity=d.filter(x=>String(x.team||'').trim()===team);return{team,activity,candidate:activity.filter(isCandidate),confirmed:activity.filter(isConfirmed),maintained:activity.filter(isMaintained)}})}
 function totals(){const rr=teamRows();return{rr,activity:rr.reduce((s,x)=>s+x.activity.length,0),candidate:rr.reduce((s,x)=>s+x.candidate.length,0),confirmed:rr.reduce((s,x)=>s+x.confirmed.length,0),maintained:rr.reduce((s,x)=>s+x.maintained.length,0)}}
 function setText(id,v){const el=document.getElementById(id);if(el)el.textContent=v}
 function openMap(){if(window.HD20MaturityMap?.open)window.HD20MaturityMap.open();else window.dispatchEvent(new CustomEvent('hd20-open-maturity-map'))}

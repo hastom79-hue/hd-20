@@ -1,9 +1,9 @@
 (()=>{'use strict';
 const STYLE='actionMailWorkflowStyle',CASE_KEY='hd20ActionCasesV2',TEAM_KEY='hd20TeamLeaderMasterV1';
-const TEAMS=window.HD20ProductionTeamMaster?.teamNames?.()||[];
+const TEAMS=()=>window.HD20ProductionTeamMaster?.teamNames?.()||[];
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
 const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-function teams(){try{const v=JSON.parse(localStorage.getItem(TEAM_KEY)||'[]');return Array.isArray(v)&&v.length?v:TEAMS.map(team=>({team,leader:'미지정',email:''}))}catch{return TEAMS.map(team=>({team,leader:'미지정',email:''}))}}
+function teams(){try{const v=JSON.parse(localStorage.getItem(TEAM_KEY)||'[]');return Array.isArray(v)&&v.length?v:TEAMS().map(team=>({team,leader:'미지정',email:''}))}catch{return TEAMS().map(team=>({team,leader:'미지정',email:''}))}}
 function saveTeams(v){localStorage.setItem(TEAM_KEY,JSON.stringify(v))}
 function cases(){try{const v=JSON.parse(localStorage.getItem(CASE_KEY)||'[]');return Array.isArray(v)?v:[]}catch{return[]}}
 function saveCases(v){localStorage.setItem(CASE_KEY,JSON.stringify(v))}
