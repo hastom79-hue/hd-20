@@ -28,7 +28,7 @@ function annualChart(actions,year){
  const completed=months.map(m=>actions.filter(x=>isDone(x)&&completedDate(x).startsWith(year+'-'+String(m).padStart(2,'0'))).length);
  const validEffects=actions.filter(x=>verified(x)&&(x.effectVerifiedAt||x.effectDate||x.verifiedAt));
  const effect=months.map(m=>validEffects.filter(x=>month({completedAt:x.effectVerifiedAt||x.effectDate||x.verifiedAt})===year+'-'+String(m).padStart(2,'0')).length);
- const trend=completed.map((_,i)=>{const from=Math.max(0,i-2);return completed.slice(from,i+1).reduce((a,b)=>a+b,0)/(i-from+1)});const max=Math.max(1,...completed,...trend);
+ const trend=completed.map((_,i)=>{const from=Math.max(0,i-2);return completed.slice(from,i+1).reduce((a,b)=>a+b,0)/(i-from+1)});const max=Math.max(1,...completed,...trend)*1.18;
  const w=960,h=236,left=34,right=12,top=16,bottom=36,plotW=w-left-right,plotH=h-top-bottom;
  const x=i=>left+(i+.5)*plotW/12,y=v=>top+plotH*(1-v/max);
  const grid=[0,.25,.5,.75,1].map(f=>'<line x1="'+left+'" x2="'+(w-right)+'" y1="'+(top+plotH*f)+'" y2="'+(top+plotH*f)+'" stroke="#e8eef2"/>').join('');
@@ -37,7 +37,7 @@ function annualChart(actions,year){
  const dots=(values,color)=>values.map((v,i)=>isFuture(i)?'':'<circle cx="'+x(i)+'" cy="'+y(v)+'" r="3" fill="'+color+'"/>').join('');
  const labels=months.map((m,i)=>'<text x="'+x(i)+'" y="'+(h-10)+'" font-size="12" text-anchor="middle" fill="'+(isFuture(i)?'#9aaab4':'#546b7b')+'">'+m+'월</text>').join('');
  const future=months.map((m,i)=>isFuture(i)?'<rect x="'+(x(i)-plotW/24)+'" y="'+top+'" width="'+(plotW/12)+'" height="'+plotH+'" fill="#f5f7f9" opacity=".7"/>':'').join('');
- const bars=completed.map((v,i)=>isFuture(i)?'':'<rect x="'+(x(i)-plotW/48)+'" y="'+y(v)+'" width="'+plotW/24+'" height="'+(top+plotH-y(v))+'" rx="2" fill="#6ca5a2"/>').join('');const trendLine='<path d="'+path(trend)+'" fill="none" stroke="#d69d31" stroke-width="2.5" vector-effect="non-scaling-stroke"/>'+dots(trend,'#d69d31');
+ const bars=completed.map((v,i)=>isFuture(i)?'':'<rect x="'+(x(i)-plotW/48)+'" y="'+y(v)+'" width="'+plotW/24+'" height="'+(top+plotH-y(v))+'" rx="2" fill="#6ca5a2"/><text x="'+x(i)+'" y="'+(y(v)+14)+'" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">'+v+'</text>').join('');const trendLine='<path d="'+path(trend)+'" fill="none" stroke="#d69d31" stroke-width="2.5" vector-effect="non-scaling-stroke"/>'+dots(trend,'#d69d31')+trend.map((v,i)=>isFuture(i)?'':'<text x="'+x(i)+'" y="'+Math.max(12,y(v)-9)+'" text-anchor="middle" font-size="11" font-weight="700" fill="#a66c13" stroke="#fff" stroke-width="3" paint-order="stroke">'+v.toFixed(1)+'</text>').join('');
  return '<h3>'+year+'년 월별 실행 완료 건수 및 3개월 이동평균</h3><div class="v3exAnnualWrap"><svg class="v3exAnnualSvg" viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none" role="img" aria-label="'+year+'년 1월부터 12월까지 실행 완료 막대와 이동평균 추세선">'+grid+future+bars+trendLine+labels+'</svg></div><p class="v3exNote"><span style="color:#6ca5a2">■</span> 실행 완료 건수(완료일 기준) · <span style="color:#d69d31">●</span> 최근 최대 3개월 이동평균(완료 건수) · 미래 월 미집계 · 당월 진행 중</p>';
 }
 function monthlyComboChart(actions,year){
@@ -48,12 +48,12 @@ function monthlyComboChart(actions,year){
  const completion=months.map(m=>actions.filter(x=>isDone(x)&&finished(x).startsWith(year+'-'+String(m).padStart(2,'0'))).length);
  const backlog=months.map(m=>{const monthEnd=year+'-'+String(m).padStart(2,'0')+'-'+String(new Date(year,m,0).getDate()).padStart(2,'0');const end=(year===now.getFullYear()&&m===now.getMonth()+1)?[now.getFullYear(),String(now.getMonth()+1).padStart(2,'0'),String(now.getDate()).padStart(2,'0')].join('-'):monthEnd;return actions.filter(x=>{const c=created(x),f=finished(x);return c&&c<=end&&(!f||f>end)}).length});
  const future=i=>year>now.getFullYear()||(year===now.getFullYear()&&i+1>now.getMonth()+1);
- const max=Math.max(1,...registration,...completion,...backlog.filter((_,i)=>!future(i)));
+ const max=Math.max(1,...registration,...completion,...backlog.filter((_,i)=>!future(i)))*1.2;
  const x=i=>l+(i+.5)*pw/12,y=v=>t+ph*(1-v/max);
  const grids=[0,.25,.5,.75,1].map(f=>'<line x1="'+l+'" x2="'+(w-r)+'" y1="'+(t+ph*f)+'" y2="'+(t+ph*f)+'" stroke="#e8eef2"/>').join('');
- const bars=months.map((m,i)=>{if(future(i))return '<rect x="'+(x(i)-pw/24)+'" y="'+t+'" width="'+pw/12+'" height="'+ph+'" fill="#f5f7f9"/>';const bw=pw/12*.25;return '<rect x="'+(x(i)-bw-2)+'" y="'+y(registration[i])+'" width="'+bw+'" height="'+(t+ph-y(registration[i]))+'" fill="#a6c5ce" rx="2"/><rect x="'+(x(i)+2)+'" y="'+y(completion[i])+'" width="'+bw+'" height="'+(t+ph-y(completion[i]))+'" fill="#247a73" rx="2"/>'}).join('');
+ const bars=months.map((m,i)=>{if(future(i))return '<rect x="'+(x(i)-pw/24)+'" y="'+t+'" width="'+pw/12+'" height="'+ph+'" fill="#f5f7f9"/>';const bw=pw/12*.25;return '<rect x="'+(x(i)-bw-2)+'" y="'+y(registration[i])+'" width="'+bw+'" height="'+(t+ph-y(registration[i]))+'" fill="#a6c5ce" rx="2"/><text x="'+(x(i)-bw/2-2)+'" y="'+Math.max(12,y(registration[i])-5)+'" text-anchor="middle" font-size="11" font-weight="600" fill="#567b89">'+registration[i]+'</text><rect x="'+(x(i)+2)+'" y="'+y(completion[i])+'" width="'+bw+'" height="'+(t+ph-y(completion[i]))+'" fill="#247a73" rx="2"/><text x="'+(x(i)+2+bw/2)+'" y="'+Math.max(12,y(completion[i])-5)+'" text-anchor="middle" font-size="11" font-weight="600" fill="#247a73">'+completion[i]+'</text>'}).join('');
  let path='',active=false;months.forEach((m,i)=>{if(future(i)){active=false;return}path+=(active?' L':' M')+x(i)+' '+y(backlog[i]);active=true});
- const dots=months.map((m,i)=>future(i)?'':'<circle cx="'+x(i)+'" cy="'+y(backlog[i])+'" r="3.5" fill="#d69d31"/>').join('');
+ const dots=months.map((m,i)=>future(i)?'':'<circle cx="'+x(i)+'" cy="'+y(backlog[i])+'" r="3.5" fill="#d69d31"/><text x="'+x(i)+'" y="'+Math.max(12,y(backlog[i])-10)+'" text-anchor="middle" font-size="11" font-weight="700" fill="#a66c13" stroke="#fff" stroke-width="3" paint-order="stroke">'+backlog[i]+'</text>').join('');
  const labels=months.map((m,i)=>'<text x="'+x(i)+'" y="'+(h-10)+'" font-size="12" text-anchor="middle" fill="'+(future(i)?'#9aaab4':'#546b7b')+'">'+m+'월</text>').join('');
  return '<h3>'+year+'년 월별 개선조치 등록·완료 및 미완료 잔량</h3><div class="v3exAnnualWrap"><svg class="v3exAnnualSvg" viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none" role="img" aria-label="월별 등록 완료 건수와 월말 미완료 잔량">'+grids+bars+'<path d="'+path+'" fill="none" stroke="#d69d31" stroke-width="2.5" vector-effect="non-scaling-stroke"/>'+dots+labels+'</svg></div><p class="v3exNote"><span style="color:#729eae">■</span> 등록(등록일) · <span style="color:#247a73">■</span> 완료(완료일) · <span style="color:#d69d31">●</span> 미완료 잔량(과거 월말·당월 현재 기준) · 날짜 미기록은 제외 · 미래 월 미집계</p>';
 }
