@@ -10,7 +10,7 @@ function nonProd(x){if(window.HD20KPIData?.isNonProdRow)return window.HD20KPIDat
 function rows(){try{const a=JSON.parse(localStorage.getItem(STORE)||'[]');if(!Array.isArray(a))return[];if(window.HD20_DEMO_MODE)return a;return a.filter(x=>!nonProd(x))}catch{return[]}}
 function done(x){return /완료|확정|종료|종결|close|done/i.test(txt(x?.status))}
 function seoulDate(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())}
-function due(x){return txt(x?.due||x?.targetDate||x?.deadline).slice(0,10)}
+function due(x){return txt(x?.dueDate||x?.due||x?.targetDate||x?.deadline).slice(0,10)}
 function overdue(x){const d=due(x);return !!d&&!done(x)&&d<seoulDate()}
 function effect(x){if(x?.effectVerified===true)return true;const v=txt(x?.effectState||x?.effectResult);if(!v||/대기|미검증|미흡|부적합|무효|false|^0$|^N$/i.test(v))return false;return /^(유효|적합|효과확인|효과확인완료|검증완료|완료|true|1|Y)$/i.test(v)}
 function recur(x){if(x?.recurrence===true)return true;const v=txt(x?.recurrenceState);if(!v||/^(미발생|없음|미재발|false|0|N)$/i.test(v))return false;return /^(재발|발생|true|1|Y)$/i.test(v)}

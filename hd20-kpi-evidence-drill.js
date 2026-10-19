@@ -11,7 +11,7 @@ function done(x){return /완료|확정|종료|종결|close|done/i.test(status(x)
 function advancementType(x){const v=txt(x?.type||x?.category||x?.sType||x?.['5S구분']||x?.['활동유형']);return v==='5S 고도화'||v==='고도화'||v==='5S고도화'}
 function candidate(x){return window.HD20KPIData?.isCandidate?.(x) ?? (!!x&&advancementType(x)&&(x.candidate===true||x.isCandidate===true||(x.judgeState||x.status)&&!/^미확정$/.test(txt(x.judgeState||x.status))&&/판정대기|보완요청|확정|후보|검토|대기/.test(txt(x.judgeState||x.status))))}
 function confirmed(x){return window.HD20KPIData?.isConfirmed?.(x) ?? (!!x&&advancementType(x)&&x.confirmed===true&&txt(x.judgeState)==='확정')}
-function due(x){return txt(x?.due||x?.targetDate||x?.deadline).slice(0,10)}
+function due(x){return txt(x?.dueDate||x?.due||x?.targetDate||x?.deadline).slice(0,10)}
 function overdue(x){const d=due(x);return !!d&&!done(x)&&d<today()}
 function effect(x){if(x?.effectVerified===true)return true;const v=txt(x?.effectState??x?.effectResult);if(['미흡','부적합','무효','대기','미검증','효과확인대기','false','0','N','n'].includes(v))return false;return['유효','적합','검증완료','효과확인','효과확인완료','완료','true','1','Y','y'].includes(v)}
 function recur(x){if(x?.recurrence===true)return true;const v=txt(x?.recurrenceState);if(['미발생','없음','미재발','false','0','N','n'].includes(v))return false;return['재발','발생','true','1','Y','y'].includes(v)}

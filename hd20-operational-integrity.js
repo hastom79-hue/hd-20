@@ -9,7 +9,7 @@ function status(x){return txt(x?.status||x?.activityStatus||x?.judgeState||x?.au
 function isDone(x){return /완료|확정|종료|종결|close|done/i.test(status(x))}
 function seoulDate(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())}
 function utcDate(){return new Date().toISOString().slice(0,10)}
-function overdue(x){const d=txt(x?.due||x?.targetDate||x?.deadline);return !!d&&!isDone(x)&&d<seoulDate()}
+function overdue(x){const d=txt(x?.dueDate||x?.due||x?.targetDate||x?.deadline);return !!d&&!isDone(x)&&d<seoulDate()}
 function effectVerified(x){if(x?.effectVerified===true)return true;const v=txt(x?.effectState||x?.effectResult);if(!v||/대기|미검증|미흡|부적합|무효|false|^0$|^N$/i.test(v))return false;return /^(유효|적합|효과확인|효과확인완료|검증완료|완료|true|1|Y)$/i.test(v)}
 function recurrence(x){if(x?.recurrence===true)return true;const v=txt(x?.recurrenceState);if(!v||/^(미발생|없음|미재발|false|0|N)$/i.test(v))return false;return /^(재발|발생|true|1|Y)$/i.test(v)}
 function completedVerified(rows){return rows.filter(x=>isDone(x)&&effectVerified(x))}

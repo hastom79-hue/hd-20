@@ -9,7 +9,11 @@ function candidate(x){return window.HD20KPIData?.isCandidate?.(x)??false}
 function confirmed(x){return window.HD20KPIData?.isConfirmed?.(x)??false}
 function maintained(x){return window.HD20KPIData?.isMaintained?.(x)??false}
 function weakMaintain(x){return confirmed(x)&&(/미흡|부적합|중지|해제|실패/.test(txt(x.maintainState||x.auditState||x.status))||x.valid===false)}
-function overdue(x){const d=txt(x?.due||x?.targetDate||x?.deadline).slice(0,10),today=window.HD20KPIData?.seoulDateKey?.()||new Date().toISOString().slice(0,10);return !!d&&!done(x)&&d<today}
+/* 딥 리서치 전수 검증: 동일 버그(due만 보고 실제 필드명 dueDate를 안 봄)가 이 파일에도 중복돼 있었음
+   — "① 개선요청·실행" 화면이 실제로 소비하는 action.manage 정의가 hd20-ops-v2.js가 아니라 이 파일
+   (production-filter-guard, 운영 데이터 필터링 레이어로 더 나중에 적용되는 쪽)이었기 때문에, 앞서
+   hd20-ops-v2.js만 고쳤을 때는 화면에 반영되지 않았음. */
+function overdue(x){const d=txt(x?.dueDate||x?.due||x?.targetDate||x?.deadline).slice(0,10),today=window.HD20KPIData?.seoulDateKey?.()||new Date().toISOString().slice(0,10);return !!d&&!done(x)&&d<today}
 function effect(x){return window.HD20KPIData?.effectVerified?.(x)??false}
 function recur(x){return window.HD20KPIData?.recurrenceState?.(x)??false}
 function closedRecur(x){return done(x)&&effect(x)&&recur(x)}

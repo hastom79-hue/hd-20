@@ -95,7 +95,7 @@ function advancementCandidate(x){if(window.HD20KPIData?.isCandidate)return windo
 function advancementConfirmed(x){return window.HD20KPIData?.isConfirmed?.(x) ?? (!!x&&advancementType(x)&&x.confirmed===true&&txt(x.judgeState)==='확정')}
 function advancementMaintained(x){const api=window.HD20KPIData;if(api?.isMaintained)return api.isMaintained(x);return advancementConfirmed(x)&&x?.attrition!==true&&x?.valid!==false&&!/중지|미흡|이탈|재점검|부적합|해제|실패/i.test(txt(x?.maintainState||x?.auditState||x?.status))}
 function advancementAttrition(x){return advancementConfirmed(x)&&!advancementMaintained(x)}
-function dueOf(x){return txt(x?.due||x?.targetDate||x?.deadline).slice(0,10)}
+function dueOf(x){return txt(x?.dueDate||x?.due||x?.targetDate||x?.deadline).slice(0,10)}
 function actionState(x){const d=dueOf(x);if(doneStatus(x))return'완료';if(d&&d<seoulDate())return'기한경과';return d?'진행중':'기한미정'}
 function effectVerified(x){if(x?.effectVerified===true)return true;const v=txt(x?.effectState??x?.effectResult);if(['미흡','부적합','무효','대기','미검증','효과확인대기','false','0','N','n'].includes(v))return false;return['유효','적합','검증완료','효과확인','효과확인완료','완료','true','1','Y','y'].includes(v)}
 function recurrenceConfirmed(x){if(x?.recurrence===true)return true;const v=txt(x?.recurrenceState??x?.recurrent??x?.['재발여부']);if(['미발생','없음','미재발','false','0','N','n'].includes(v))return false;return['재발','발생','true','1','Y','y'].includes(v)}
