@@ -19,10 +19,13 @@ function team(x){return str(x.team||x.teamName||x.ownerTeam||x.department||x['�
    추이' 패널이 데이터가 있어도 항상 "해당 분석에 필요한 유효한 원천데이터가 없습니다"로 고정 표시
    되던 진짜 원인. 정상적인 단일 이스케이프(\d)로 수정. */
 function month(x){const d=str(x.auditDate||x.completedAt||x.completionDate||x.createdAt||x.date||x.registeredAt);const m=d.match(/^(20\d{2})[-/.](0?[1-9]|1[0-2])/);return m?m[1]+'-'+m[2].padStart(2,'0'):null}
+function normalizedDate(v){const m=str(v).match(/^(20\d{2})[-/.](0?[1-9]|1[0-2])[-/.](3[01]|[12]\d|0?[1-9])(?=$|[^0-9])/);return m?m[1]+'-'+m[2].padStart(2,'0')+'-'+m[3].padStart(2,'0'):''}
+function completedDate(x){return normalizedDate(x.doneDate||x.completedAt||x.completionDate)}
+function registeredDate(x){return normalizedDate(x.createdAt||x.regDate||x.registeredAt||x.date)}
 function annualChart(actions,year){
  const now=new Date(),currentYear=now.getFullYear(),currentMonth=now.getMonth()+1;
  const months=Array.from({length:12},(_,i)=>i+1);
- const completed=months.map(m=>actions.filter(x=>isDone(x)&&month({completedAt:x.completedAt||x.completionDate||x.doneDate})===year+'-'+String(m).padStart(2,'0')).length);
+ const completed=months.map(m=>actions.filter(x=>isDone(x)&&completedDate(x).startsWith(year+'-'+String(m).padStart(2,'0'))).length);
  const validEffects=actions.filter(x=>verified(x)&&(x.effectVerifiedAt||x.effectDate||x.verifiedAt));
  const effect=months.map(m=>validEffects.filter(x=>month({completedAt:x.effectVerifiedAt||x.effectDate||x.verifiedAt})===year+'-'+String(m).padStart(2,'0')).length);
  const max=Math.max(1,...completed,...effect);
@@ -39,12 +42,11 @@ function annualChart(actions,year){
 }
 function monthlyComboChart(actions,year){
  const now=new Date(), months=Array.from({length:12},(_,i)=>i+1),w=960,h=236,l=42,r=15,t=18,b=38,pw=w-l-r,ph=h-t-b;
- const iso=v=>{const d=str(v);const m=d.match(/^(20\d{2})[-/.](0?[1-9]|1[0-2])[-/.](3[01]|[12]\d|0?[1-9])(?=$|[^0-9])/);return m?m[1]+'-'+m[2].padStart(2,'0')+'-'+m[3].padStart(2,'0'):''};
- const created=x=>iso(x.createdAt||x.regDate||x.registeredAt||x.date);
- const finished=x=>iso(x.doneDate||x.completedAt||x.completionDate);
+ const created=registeredDate;
+ const finished=completedDate;
  const registration=months.map(m=>actions.filter(x=>created(x).startsWith(year+'-'+String(m).padStart(2,'0'))).length);
  const completion=months.map(m=>actions.filter(x=>isDone(x)&&finished(x).startsWith(year+'-'+String(m).padStart(2,'0'))).length);
- const backlog=months.map(m=>{const monthEnd=year+'-'+String(m).padStart(2,'0')+'-'+String(new Date(year,m,0).getDate()).padStart(2,'0');const end=(year===now.getFullYear()&&m===now.getMonth()+1)?now.toISOString().slice(0,10):monthEnd;return actions.filter(x=>{const c=created(x),f=finished(x);return c&&c<=end&&(!f||f>end)}).length});
+ const backlog=months.map(m=>{const monthEnd=year+'-'+String(m).padStart(2,'0')+'-'+String(new Date(year,m,0).getDate()).padStart(2,'0');const end=(year===now.getFullYear()&&m===now.getMonth()+1)?[now.getFullYear(),String(now.getMonth()+1).padStart(2,'0'),String(now.getDate()).padStart(2,'0')].join('-'):monthEnd;return actions.filter(x=>{const c=created(x),f=finished(x);return c&&c<=end&&(!f||f>end)}).length});
  const future=i=>year>now.getFullYear()||(year===now.getFullYear()&&i+1>now.getMonth()+1);
  const max=Math.max(1,...registration,...completion,...backlog.filter((_,i)=>!future(i)));
  const x=i=>l+(i+.5)*pw/12,y=v=>t+ph*(1-v/max);
@@ -74,7 +76,7 @@ function syncExecutionVisibility(){const el=document.getElementById(ID);if(!el)r
 function suppressLegacy(){const active=document.body.classList.contains('hd20DashboardExecutionActive');const legacy=document.querySelector('.mainGrid');if(legacy)legacy.style.setProperty('display',active?'none':'','important');const bridge=document.getElementById('hd20OperationalBridge');if(bridge)bridge.style.setProperty('display',active?'none':'','important')}
 function sourceActions(){let primary=[];try{primary=window.HD20KPIData?.actionCases?.()||[]}catch(e){console.warn('[HD20 실행유지] 공식 데이터 조회 실패',e)}const local=rows('hd20ActionCasesV2');return Array.isArray(primary)&&primary.length?primary:local}
 function render(){const el=ensure();if(!el)return;syncExecutionVisibility();suppressLegacy();const op=window.HD20KPIData?.operational?.(window.HD20KPIData?.snapshot?.())||{};const audits=rows('hd20AuditRandomDrawsV1'),actions=sourceActions(),today=new Date().toISOString().slice(0,10);const done=actions.filter(isDone),late=actions.filter(x=>date(x)&&date(x)<today&&!isDone(x)),recur=actions.filter(recurrence),effect=actions.filter(verified);
-const completionDate=x=>str(x.doneDate||x.completedAt||x.completionDate).slice(0,10);
+const completionDate=completedDate;
 const dueActions=actions.filter(x=>date(x)&&date(x)<=today);
 const onTimeCount=dueActions.filter(x=>isDone(x)&&completionDate(x)&&completionDate(x)<=date(x)).length;
 const judgedDone=done.filter(x=>typeof x.effectVerified==='boolean'||str(x.effectState??x.effectResult));
