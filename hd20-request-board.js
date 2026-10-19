@@ -102,8 +102,8 @@ function css(){const prior=document.getElementById(ID+'Style');if(prior)prior.re
 #${ID} .ibRow{display:grid;gap:10px;margin-top:10px}#${ID} .r1{grid-template-columns:minmax(0,3fr) minmax(0,7fr)}#${ID} .rqManageRow{grid-template-columns:minmax(0,1fr)!important}
 #${ID} .rqManageRow{grid-template-columns:minmax(0,1fr)}
 #${ID} .rqManageRow>.ibPanel{width:100%;min-width:0}
-#${ID} .rqManageRow .rqTeamVerticalScroll,#${ID} .rqManageRow .rqDelayVerticalScroll{overflow-x:auto;scrollbar-width:thin}
-#${ID} .rqManageRow .rqTeamVertical{min-width:max(100%,calc(var(--rq-team-count)*100px));width:max-content}#${ID} .rqManageRow .rqDelayVertical{min-width:max(100%,calc(var(--rq-team-count)*116px));width:max-content}
+#${ID} .rqManageRow .rqTeamVerticalScroll{overflow-x:auto;scrollbar-width:thin}#${ID} .rqManageRow .rqDelayVerticalScroll{overflow-x:hidden}
+#${ID} .rqManageRow .rqTeamVertical{min-width:max(100%,calc(var(--rq-team-count)*100px));width:max-content}#${ID} .rqManageRow .rqDelayVertical{min-width:0;width:100%}
 #${ID} .rqManageRow .rqTeamVerticalCols,#${ID} .rqManageRow .rqDelayVerticalCols{grid-template-columns:repeat(var(--rq-team-count),minmax(0,1fr));gap:4px}
 #${ID} .rqManageRow .rqTeamVerticalCol>span,#${ID} .rqManageRow .rqDelayVerticalCol>span{font-size:10px;overflow-wrap:anywhere}
 #${ID} .rqManageRow .rqTeamVerticalCol,#${ID} .rqManageRow .rqDelayVerticalCol{min-width:0}
@@ -180,12 +180,12 @@ function css(){const prior=document.getElementById(ID+'Style');if(prior)prior.re
 #${ID} .rqTeamVerticalTrack.rqAxisCut:after{content:'//';position:absolute;left:-15px;bottom:-8px;color:#526a7a;font-size:15px;font-weight:900;letter-spacing:-3px;background:#fff;padding:0 3px;transform:rotate(-20deg)}
 #${ID} .rqTeamVerticalCol>span{font-size:11px;font-weight:750;line-height:1.3;overflow-wrap:anywhere;min-height:30px;color:#344e63}
 #${ID} .rqTeamVerticalCol>small{font-size:10px;color:#647b8b}
-#${ID} .rqDelayVerticalScroll{max-width:100%;overflow-x:auto;overflow-y:hidden;padding:8px 2px 12px;overscroll-behavior-x:contain}
-#${ID} .rqDelayVertical{min-width:max(100%,calc(var(--rq-team-count)*116px))}
+#${ID} .rqDelayVerticalScroll{max-width:100%;overflow-x:hidden;overflow-y:hidden;padding:8px 2px 12px}
+#${ID} .rqDelayVertical{min-width:0;width:100%}
 #${ID} .rqDelayVerticalLegend{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:12px;font-weight:800;margin:4px 0 14px;padding:4px 2px;position:relative;max-width:100%}
-#${ID} .rqDelayVerticalCols{display:grid;grid-template-columns:repeat(var(--rq-team-count),minmax(106px,1fr));gap:14px;align-items:end}
+#${ID} .rqDelayVerticalCols{display:grid;grid-template-columns:repeat(var(--rq-team-count),minmax(0,1fr));gap:4px;align-items:end}
 #${ID} .rqDelayVerticalCol{min-width:0;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
-#${ID} .rqDelayVerticalGroup{display:grid;grid-template-columns:repeat(3,10px);justify-content:center;gap:3px;width:100%;align-items:end}
+#${ID} .rqDelayVerticalGroup{display:grid;grid-template-columns:repeat(3,minmax(0,8px));justify-content:center;gap:2px;width:100%;align-items:end}
 #${ID} .rqDelayVerticalBarCell{min-width:0;display:flex;flex-direction:column;align-items:stretch;gap:4px}
 #${ID} .rqDelayVerticalValue{position:absolute;left:50%;transform:translateX(-50%);font-size:11px;font-weight:800;color:#29435a;line-height:1.2;white-space:nowrap}
 #${ID} .rqDelayVerticalBarTrack{position:relative;height:180px;display:flex;align-items:flex-end;border-bottom:1px solid #bfcbd4;background:linear-gradient(to top,#f4f7f9,#fff)}
