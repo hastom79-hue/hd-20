@@ -46,7 +46,7 @@ function monthlyComboChart(actions,year){
  const finished=completedDate;
  const registration=months.map(m=>actions.filter(x=>created(x).startsWith(year+'-'+String(m).padStart(2,'0'))).length);
  const completion=months.map(m=>actions.filter(x=>isDone(x)&&finished(x).startsWith(year+'-'+String(m).padStart(2,'0'))).length);
- const backlog=months.map(m=>{const monthEnd=year+'-'+String(m).padStart(2,'0')+'-'+String(new Date(year,m,0).getDate()).padStart(2,'0');const end=(year===now.getFullYear()&&m===now.getMonth()+1)?[now.getFullYear(),String(now.getMonth()+1).padStart(2,'0'),String(now.getDate()).padStart(2,'0')].join('-'):monthEnd;return actions.filter(x=>{const c=created(x),f=finished(x);return c&&c<=end&&(!f||f>end)}).length});
+ const backlog=months.map(m=>{const monthEnd=year+'-'+String(m).padStart(2,'0')+'-'+String(new Date(year,m,0).getDate()).padStart(2,'0');const end=(year===now.getFullYear()&&m===now.getMonth()+1)?[now.getFullYear(),String(now.getMonth()+1).padStart(2,'0'),String(now.getDate()).padStart(2,'0')].join('-'):monthEnd;return actions.filter(x=>{const c=created(x),f=finished(x);return c&&c<=end&&(f?f>end:!isDone(x))}).length});
  const future=i=>year>now.getFullYear()||(year===now.getFullYear()&&i+1>now.getMonth()+1);
  const max=Math.max(1,...registration,...completion,...backlog.filter((_,i)=>!future(i)))*1.2;
  const x=i=>l+(i+.5)*pw/12,y=v=>t+ph*(1-v/max);
@@ -55,7 +55,7 @@ function monthlyComboChart(actions,year){
  let path='',active=false;months.forEach((m,i)=>{if(future(i)){active=false;return}path+=(active?' L':' M')+x(i)+' '+y(backlog[i]);active=true});
  const dots=months.map((m,i)=>future(i)?'':'<circle cx="'+x(i)+'" cy="'+y(backlog[i])+'" r="3.5" fill="#d69d31"/>').join('');
  const labels=months.map((m,i)=>'<text x="'+x(i)+'" y="'+(h-10)+'" font-size="12" text-anchor="middle" fill="'+(future(i)?'#9aaab4':'#546b7b')+'">'+m+'월</text>').join('');
- return '<h3>'+year+'년 월별 개선조치 등록·완료 및 미완료 잔량</h3><div class="v3exAnnualWrap"><svg class="v3exAnnualSvg" viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none" role="img" aria-label="월별 등록 완료 건수와 월말 미완료 잔량">'+grids+bars+'<path d="'+path+'" fill="none" stroke="#d69d31" stroke-width="2.5" vector-effect="non-scaling-stroke"/>'+dots+labels+'</svg></div><p class="v3exNote"><span style="color:#729eae">■</span> 등록(등록일) · <span style="color:#247a73">■</span> 완료(완료일) · <span style="color:#d69d31">●</span> 미완료 잔량(과거 월말·당월 현재 기준) · 날짜 미기록은 제외 · 미래 월 미집계</p>';
+ return '<h3>'+year+'년 월별 개선조치 등록·완료 및 미완료 잔량</h3><div class="v3exAnnualWrap"><svg class="v3exAnnualSvg" viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none" role="img" aria-label="월별 등록 완료 건수와 월말 미완료 잔량">'+grids+bars+'<path d="'+path+'" fill="none" stroke="#d69d31" stroke-width="2.5" vector-effect="non-scaling-stroke"/>'+dots+labels+'</svg></div><p class="v3exNote"><span style="color:#729eae">■</span> 등록(등록일) · <span style="color:#247a73">■</span> 완료(완료일) · <span style="color:#d69d31">●</span> 미완료 잔량(과거 월말·당월 현재 기준) · 완료일 누락된 완료과제는 잔량에서 제외 · 미래 월 미집계</p>';
 }
 function recurrenceChart(actions,year){
  const now=new Date(),months=Array.from({length:12},(_,i)=>i+1),w=720,h=208,l=28,r=12,t=14,b=32;
