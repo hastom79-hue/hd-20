@@ -37,6 +37,24 @@ function annualChart(actions,year){
  const effectLine=validEffects.length?'<path d="'+path(effect)+'" fill="none" stroke="#e1af37" stroke-width="2.5" vector-effect="non-scaling-stroke"/>'+dots(effect,'#e1af37'):'';
  return '<h3>'+year+'년 월별 실행 완료'+(validEffects.length?'·효과검증 완료':'')+' 추이</h3><div class="v3exAnnualWrap"><svg class="v3exAnnualSvg" viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none" role="img" aria-label="'+year+'년 1월부터 12월까지 실행 실적">'+grid+future+'<path d="'+path(completed)+'" fill="none" stroke="#21756e" stroke-width="2.5" vector-effect="non-scaling-stroke"/>'+dots(completed,'#21756e')+effectLine+labels+'</svg></div><p class="v3exNote">● 실행 완료(완료일 기준)'+(validEffects.length?' · ● 효과검증 완료(검증일 기준)':' · 효과검증 완료일 이력이 없어 두 번째 계열 미표시')+' · 미래 월은 미집계 · 과거 0건은 미입력 가능성 별도 확인</p>';
 }
+function monthlyComboChart(actions,year){
+ const now=new Date(), months=Array.from({length:12},(_,i)=>i+1),w=960,h=236,l=42,r=15,t=18,b=38,pw=w-l-r,ph=h-t-b;
+ const iso=v=>{const d=str(v);const m=d.match(/^(20\\d{2})[-/.](0?[1-9]|1[0-2])[-/.](0?[1-9]|[12]\\d|3[01])/);return m?m[1]+'-'+m[2].padStart(2,'0')+'-'+m[3].padStart(2,'0'):''};
+ const created=x=>iso(x.createdAt||x.regDate||x.registeredAt||x.date);
+ const finished=x=>iso(x.doneDate||x.completedAt||x.completionDate);
+ const registration=months.map(m=>actions.filter(x=>created(x).startsWith(year+'-'+String(m).padStart(2,'0'))).length);
+ const completion=months.map(m=>actions.filter(x=>isDone(x)&&finished(x).startsWith(year+'-'+String(m).padStart(2,'0'))).length);
+ const backlog=months.map(m=>{const end=year+'-'+String(m).padStart(2,'0')+'-31';return actions.filter(x=>{const c=created(x),f=finished(x);return c&&c<=end&&(!f||f>end)}).length});
+ const future=i=>year>now.getFullYear()||(year===now.getFullYear()&&i+1>now.getMonth()+1);
+ const max=Math.max(1,...registration,...completion,...backlog.filter((_,i)=>!future(i)));
+ const x=i=>l+(i+.5)*pw/12,y=v=>t+ph*(1-v/max);
+ const grids=[0,.25,.5,.75,1].map(f=>'<line x1="'+l+'" x2="'+(w-r)+'" y1="'+(t+ph*f)+'" y2="'+(t+ph*f)+'" stroke="#e8eef2"/>').join('');
+ const bars=months.map((m,i)=>{if(future(i))return '<rect x="'+(x(i)-pw/24)+'" y="'+t+'" width="'+pw/12+'" height="'+ph+'" fill="#f5f7f9"/>';const bw=pw/12*.25;return '<rect x="'+(x(i)-bw-2)+'" y="'+y(registration[i])+'" width="'+bw+'" height="'+(t+ph-y(registration[i]))+'" fill="#a6c5ce" rx="2"/><rect x="'+(x(i)+2)+'" y="'+y(completion[i])+'" width="'+bw+'" height="'+(t+ph-y(completion[i]))+'" fill="#247a73" rx="2"/>'}).join('');
+ let path='',active=false;months.forEach((m,i)=>{if(future(i)){active=false;return}path+=(active?' L':' M')+x(i)+' '+y(backlog[i]);active=true});
+ const dots=months.map((m,i)=>future(i)?'':'<circle cx="'+x(i)+'" cy="'+y(backlog[i])+'" r="3.5" fill="#d69d31"/>').join('');
+ const labels=months.map((m,i)=>'<text x="'+x(i)+'" y="'+(h-10)+'" font-size="12" text-anchor="middle" fill="'+(future(i)?'#9aaab4':'#546b7b')+'">'+m+'월</text>').join('');
+ return '<h3>'+year+'년 월별 개선조치 등록·완료 및 미완료 잔량</h3><div class="v3exAnnualWrap"><svg class="v3exAnnualSvg" viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none" role="img" aria-label="월별 등록 완료 건수와 월말 미완료 잔량">'+grids+bars+'<path d="'+path+'" fill="none" stroke="#d69d31" stroke-width="2.5" vector-effect="non-scaling-stroke"/>'+dots+labels+'</svg></div><p class="v3exNote"><span style="color:#729eae">■</span> 등록(등록일) · <span style="color:#247a73">■</span> 완료(완료일) · <span style="color:#d69d31">●</span> 월말 미완료 잔량(등록일·완료일 기준) · 날짜 미기록은 제외 · 미래 월 미집계</p>';
+}
 function recurrenceChart(actions,year){
  const now=new Date(),months=Array.from({length:12},(_,i)=>i+1),w=720,h=208,l=28,r=12,t=14,b=32;
  const recorded=actions.filter(x=>recurrence(x)&&(x.recurrenceDate||x.recurredAt||x.recurrenceAt));
@@ -61,7 +79,7 @@ let guide=el.querySelector('.v3exFormulaGuide');if(!guide){guide=document.create
 guide=el.querySelector('.v3exFormulaGuide');if(guide){guide.innerHTML='<summary>계산식 · 집계기준 안내 (핵심 KPI 4개)</summary><div style="overflow-x:auto"><table><tbody>'+metrics.map(m=>'<tr><td><b>'+escapeHtml(m[1])+'</b></td><td>'+escapeHtml(m[2])+'</td></tr>').join('')+'</tbody></table></div><p>기한 내 조치율은 완료기한이 도래한 조치 중 기한 내 실제 완료된 건을 집계합니다. 실행·Audit 계획 원천자료가 없으면 —로 표시합니다. 6개월 유지율과 부적합 재발률은 기존 공식 KPI의 검증 대상 기준을 따릅니다. 부적합 발생률은 Audit 상세분석에서 확인합니다.</p>';}
 const selectedYear=Number(document.querySelector('[data-year]')?.value)||Number(window.HD20KPIData?.snapshot?.()?.year)||new Date().getFullYear();
 el.querySelector('.v3exFullTrend').innerHTML=annualChart(actions,selectedYear);
-el.querySelector('.v3exRetentionTrend').innerHTML=recurrenceChart(actions,selectedYear);
+el.querySelector('.v3exRetentionTrend').innerHTML=monthlyComboChart(actions,selectedYear);
 const tbody=el.querySelector('.v3exFocus tbody');
 const priority=actions.filter(x=>late.includes(x)||recurrence(x)||(isDone(x)&&!verified(x))).sort((a,b)=>Number(recurrence(b))-Number(recurrence(a))||Number(late.includes(b))-Number(late.includes(a))||str(date(a)).localeCompare(str(date(b)))).slice(0,5);
 tbody.innerHTML=priority.length?priority.map((x,i)=>'<tr><td>'+(i+1)+'</td><td>'+escapeHtml(team(x))+'</td><td>'+(recurrence(x)?'재발':late.includes(x)?'기한 초과':'효과검증 미기록')+'</td><td>'+escapeHtml(date(x)||'기한 미지정')+'</td><td>'+escapeHtml(verified(x)?'효과 확인':'확인 필요')+'</td></tr>').join(''):'<tr><td colspan="5">근거가 확인된 개입 필요 과제가 없습니다.</td></tr>';
