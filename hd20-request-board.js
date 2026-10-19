@@ -397,6 +397,12 @@ function render(box){
     return{team:t,n:a.length,avg:a.length?Math.round(a.reduce((x,y)=>x+y,0)/a.length*10)/10:0,max:a.length?Math.max(...a):0}}).sort((a,b)=>b.n-a.n||b.avg-a.avg);
   let delayRowsSorted=delayRows.length?delayRows.map(r=>{const c=rowsM.filter(x=>x.team===r.team&&isOverdue(x,D.today));const v=[c.filter(x=>delayDays(x,D.today)<=7).length,c.filter(x=>delayDays(x,D.today)>=8&&delayDays(x,D.today)<=14).length,c.filter(x=>delayDays(x,D.today)>=15).length];return{team:r.team,v,total:r.n}}).sort((a,b)=>b.v[2]-a.v[2]||b.total-a.total):[];
   delayRowsSorted=orderedTeams(delayRowsSorted,D.teams);
+  // The axis is master-driven: zero-record teams and newly added teams must not disappear.
+  const axisTeams=D.teams.filter(t=>!S.team||t===S.team);
+  const axisMap=new Map(delayRowsSorted.map(r=>[r.team,r]));
+  delayRowsSorted=orderedTeams(axisTeams.map(t=>axisMap.get(t)||{team:t,v:[0,0,0],total:0}),D.teams);
+  const missingAxisTeams=axisTeams.filter(t=>!delayRowsSorted.some(r=>r.team===t));
+  if(missingAxisTeams.length)console.error('Chart 04 team axis mismatch',missingAxisTeams);
   // Three grouped bars per team, one for each overdue band; never stack.
   const delaySegColors=['#d7dee5','#e1af37','#21756e'];
   const delayObservedMax=Math.max(0,...delayRowsSorted.flatMap(r=>r.v).filter(v=>Number.isFinite(v)&&v>0));
