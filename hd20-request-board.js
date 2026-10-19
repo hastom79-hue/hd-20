@@ -392,24 +392,6 @@ function render(box){
      전체 16개 팀을 다 보여주면서, 조치대응팀 드롭다운에서 선택한 팀의 행만 강조 표시하는 방식으로
      전환 — 공장 현황(KPI)·전체 팀 비교(04)·내 팀 강조가 한 화면/한 인쇄물에 같이 보임. */
   const teamHighlight=S.team||null;
-  // 현재 기한초과 집중관리: 완료건의 과거 지연은 제외하고, 지금 미완료이면서 기한을 넘긴 건만 집계.
-  const delayRows=teamsAll.map(t=>{const a=rowsM.filter(c=>c.team===t&&!isDone(c)&&isOverdue(c,D.today)).map(c=>delayDays(c,D.today)).filter(v=>v!==null);
-    return{team:t,n:a.length,avg:a.length?Math.round(a.reduce((x,y)=>x+y,0)/a.length*10)/10:0,max:a.length?Math.max(...a):0}}).sort((a,b)=>b.n-a.n||b.avg-a.avg);
-  let delayRowsSorted=delayRows.length?delayRows.map(r=>{const c=rowsM.filter(x=>x.team===r.team&&isOverdue(x,D.today));const v=[c.filter(x=>delayDays(x,D.today)<=7).length,c.filter(x=>delayDays(x,D.today)>=8&&delayDays(x,D.today)<=14).length,c.filter(x=>delayDays(x,D.today)>=15).length];return{team:r.team,v,total:r.n}}).sort((a,b)=>b.v[2]-a.v[2]||b.total-a.total):[];
-  delayRowsSorted=orderedTeams(delayRowsSorted,D.teams);
-  // The axis is master-driven: zero-record teams and newly added teams must not disappear.
-  const axisTeams=D.teams.filter(t=>!S.team||t===S.team);
-  const axisMap=new Map(delayRowsSorted.map(r=>[r.team,r]));
-  delayRowsSorted=orderedTeams(axisTeams.map(t=>axisMap.get(t)||{team:t,v:[0,0,0],total:0}),D.teams);
-  if(axisTeams.length!==delayRowsSorted.length||new Set(delayRowsSorted.map(r=>r.team)).size!==axisTeams.length)console.error('Chart 04 team master count mismatch',{expected:axisTeams.length,actual:delayRowsSorted.length});
-  const missingAxisTeams=axisTeams.filter(t=>!delayRowsSorted.some(r=>r.team===t));
-  if(missingAxisTeams.length)console.error('Chart 04 team axis mismatch',missingAxisTeams);
-  // Three grouped bars per team, one for each overdue band; never stack.
-  const delaySegColors=['#d7dee5','#e1af37','#21756e'];
-  const delayObservedMax=Math.max(0,...delayRowsSorted.flatMap(r=>r.v).filter(v=>Number.isFinite(v)&&v>0));
-  const delayStep=delayObservedMax<=5?1:delayObservedMax<=20?2:delayObservedMax<=50?5:10;
-  const delayMax=Math.max(1,Math.ceil((delayObservedMax+Math.max(1,delayObservedMax*.12))/delayStep)*delayStep);
-  const delayChart=delayRowsSorted.length?'<div class="rqDelayVerticalLegend" aria-label="기한초과 지연기간별 범례"><span style="color:'+delaySegColors[0]+'">■ 1~7일</span><span style="color:'+delaySegColors[1]+'">■ 8~14일</span><span style="color:'+delaySegColors[2]+'">■ 15일 이상</span></div><div class="rqDelayVerticalScroll"><div class="rqDelayVertical" style="--rq-team-count:'+delayRowsSorted.length+'"><div class="rqDelayVerticalCols">'+delayRowsSorted.map(r=>'<div class="rqDelayVerticalCol" draggable="true" data-team-axis="'+esc(r.team)+'" title="'+esc(r.team)+' · 총 '+r.total+'건"><div class="rqDelayVerticalGroup">'+r.v.map((count,i)=>'<div class="rqDelayVerticalBarCell"><div class="rqDelayVerticalBarTrack">'+(Number.isFinite(count)&&count>0?'<strong class="rqDelayVerticalValue" style="bottom:calc('+(100*count/delayMax)+'% + 5px)">'+count+'</strong><span class="rqDelayVerticalSingleBar" style="height:'+(100*count/delayMax)+'%;background:'+delaySegColors[i]+'"></span>':'')+'</div></div>').join('')+'</div><span class="rqDelayVerticalTeam"><em>'+esc(r.team)+'</em></span></div>').join('')+'</div></div></div>':null;
   const activeOverdue=rowsM.filter(c=>teamsAll.includes(c.team)&&isOverdue(c,D.today));
   const delayOverallAvg=activeOverdue.length?Math.round(activeOverdue.reduce((a,c)=>a+(delayDays(c,D.today)||0),0)/activeOverdue.length*10)/10:0;
   const sum={total:teamRows.reduce((a,r)=>a+r.total,0),done:teamRows.reduce((a,r)=>a+r.done,0),open:teamRows.reduce((a,r)=>a+r.open,0),over:teamRows.reduce((a,r)=>a+r.over,0)}; // open=기한내 미완료, 전체 미완료=open+over
@@ -572,7 +554,7 @@ function render(box){
        이전에 좁은 폭으로 재계산해서 넘김(바로 아래 참조). */
     +'<div class="ibRow rqManageRow rqTeamCompare" style="grid-template-columns:minmax(0,1fr)">'
     +section('03. 조치대응팀별 이행성과','완료 / 미완료 · 팀별 건수',teamOrderControl+teamRateBars+'<details class="rqTeamDetail"><summary>팀별 상세 실적 펼치기</summary><div class="rqScroll">'+teamGrid+'</div></details>','c2')
-    +section('04. 기한초과 집중관리','현재 미완료 기준 · 지연기간별 분포','<div class="rqBands">'+['1~7일','8~14일','15일 이상'].map((x,i)=>'<div><small>'+x+'</small><b>'+delayBands[i]+'건</b></div>').join('')+'</div>'+'<div class="rqDelayStack">'+delayBands.map((n,i)=>'<span class="rqDelayBand rqDelayBand'+i+'" style="width:'+(overCases.length?100*n/overCases.length:0)+'%"></span>').join('')+'</div>'+(delayChart||'<p class="rqEmpty">현재 기한초과 대상이 없습니다.</p>'),'d')
+
     +'</div>'
     +'<div class="ibRow rqPrintSkip"><button type="button" class="rqDetailOpenBtn" data-open-detail="1">📋 개선요청 상세 목록 열기 (전체 '+actionAll.length+'건)</button></div>'
     +'<p class="rqCaveat">※ 요청출처는 리더십(공장장)·5S모듈·생산혁신팀(HDPS파트) 3종입니다. 원천에 출처 필드가 없는 경우 일부 출처는 등록자 및 Audit 연계 정보로 추정됩니다. 완료일이 없는 완료 건은 월별 완료 추이에서 제외되며 총 완료 건수에는 포함됩니다.</p>';
