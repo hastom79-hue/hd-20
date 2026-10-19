@@ -61,9 +61,16 @@ function operational(s){
   const levels=(s?.confirmed||[]).map(levelOf).filter(Number.isFinite);
   const act=actionCases(),verified=act.filter(x=>actionDone(x)&&effectVerified(x)),recurrenceScope=verified.filter(recurrenceObserved);
   const recurred=recurrenceScope.filter(recurrenceState).length;
-  const completed=act.filter(actionCompleted);
-  const ontime=completed.filter(x=>{const done=asDate(pickField(x,['doneDate','completedDate','finishDate'])),due=asDate(pickField(x,['targetDate','due','dueDate','deadline']));return done&&due&&done<=due}).length;
-  const timedCompleted=completed.filter(x=>pickField(x,['targetDate','due','dueDate','deadline']));
+  /* 사용자 확정: "대시보드랑 전부 B 기준으로 바꿔줘" — 딥 리서치 전수 검증에서 "기한 내 (개선)조치
+     완료율"이 대시보드(A: 분모='완료된 건 중 목표일 있는 것', 49.8%)와 "04 실행·유지"
+     (B: 분모='기한이 이미 도래한 전체 건, 미완료 포함', 38.5%)가 서로 다른 계산식을 쓰고 있어 같은
+     이름의 지표가 다른 값을 내는 모순이 있었음. 사용자가 더 엄격한 B(미완료·기한초과도 분모에 포함해
+     '실패'로 반영)를 전사 표준으로 채택 — 대시보드도 이 정의로 통일. completed(완료 건)가 아니라
+     dueActions(기한이 오늘 이전인 모든 건)를 분모로, 그중 완료+기한내완료만 분자로 삼음. */
+  const today=seoulDateKey();
+  const dueActions=act.filter(x=>{const due=asDate(pickField(x,['targetDate','due','dueDate','deadline']));return due&&seoulDateKey(due)<=today});
+  const ontime=dueActions.filter(x=>{const done=asDate(pickField(x,['doneDate','completedDate','finishDate'])),due=asDate(pickField(x,['targetDate','due','dueDate','deadline']));return actionCompleted(x)&&done&&due&&done<=due}).length;
+  const timedCompleted=dueActions;
   /* hd20-v3-execution.js('실행·유지 종합관제' 패널)가 op.execution/op.audit/op.nonconform을 기대하는데,
    이 함수가 그 키들을 전혀 반환하지 않아 세 지표 모두 항상 '—'였음(발견: 사용자가 요청한 "현시점 웹
    점검"으로 추적). execution(실행계획 대비 실적)·audit(계획 대비 점검 수행률)은 이 시스템에 '계획' 데이터
@@ -74,7 +81,7 @@ function operational(s){
 }
 /* 월별 추이(읽기 전용): operational()과 같은 정의를 월 단위로 나눈 값. 기존 산식은 변경하지 않음.
    판정완료율=등록월 기준, Lead Time·수준=판정/확정월 기준, 6개월 유지율=6개월 종료월 기준,
-   재발률·기한 내 완료율=조치 완료월 기준. 각 값에 표본 수(n)를 함께 반환. */
+   재발률=조치 완료월 기준, 기한 내 완료율=기한월 기준(B기준, 미완료 포함). 각 값에 표본 수(n)를 함께 반환. */
 function monthlyOperational(n=6){
   const s=snapshot(),today=seoulDateKey(),ty=+today.slice(0,4),tm=+today.slice(5,7),months=[];
   if(n===12){for(let m=1;m<=12;m++)months.push(`${ty}-${String(m).padStart(2,'0')}`)}else{for(let i=n-1;i>=0;i--){const t=ty*12+(tm-1)-i;months.push(`${Math.floor(t/12)}-${String(t%12+1).padStart(2,'0')}`)}}
@@ -85,7 +92,11 @@ function monthlyOperational(n=6){
   const isJudged=x=>['확정','보완요청','미확정'].includes(String(x.judgeState||'').trim())&&!!judgeOf(x);
   const act=actionCases(),verified=act.filter(x=>actionDone(x)&&effectVerified(x)),recScope=verified.filter(recurrenceObserved),completed=act.filter(actionCompleted);
   const doneOf=x=>pickField(x,['doneDate','completedDate','finishDate']),dueOf=x=>pickField(x,['targetDate','due','dueDate','deadline']);
-  const timed=completed.filter(x=>dueOf(x));
+  /* 사용자 확정(B기준): 월별 추이도 operational()과 같은 정의로 통일. 기존엔 "그 달에 완료된 건들
+     중 기한 내 완료 비율"(완료월 기준, timed=completed만)이었는데, B기준은 미완료 건도 분모에
+     포함해야 하므로 "그 달에 기한이 도래한(완료 여부 무관) 전체 건"으로 그룹 기준 자체를 완료월→
+     기한월로 변경(미완료 건은 완료월이 없어 기존 방식으로는 애초에 집계가 불가능했음). */
+  const dueActions=act.filter(x=>{const d=asDate(dueOf(x));return d&&seoulDateKey(d)<=today});
   const passOf=d=>{const id=auditId(d),linked=id?act.filter(a=>actionAuditId(a)===id):[];const unresolved=linked.some(a=>!actionDone(a)),recurrent=linked.some(closedLoopRecurrence),fs=txt(d.finalEvaluation||d.auditFinalState),failed=fs==='미흡'||['부적합','실패','해제','중지'].includes(fs);return !unresolved&&!recurrent&&!failed};
   const closed=auditDraws().filter(d=>d.auditDate).map(d=>({d,end:addMonthsKey(d.auditDate,6)})).filter(x=>x.end&&x.end<today);
   const cell=(v,c)=>({v:v??null,n:c});
@@ -96,7 +107,7 @@ function monthlyOperational(n=6){
     const lv=(s.confirmed||[]).filter(x=>mk(confirmedDate(x))===m).map(levelOf).filter(Number.isFinite);out.maturity.push(cell(avg(lv),lv.length));
     const cl=closed.filter(x=>x.end.slice(0,7)===m);out.sixRetention.push(cell(pct(cl.filter(x=>passOf(x.d)).length,cl.length),cl.length));
     const rc=recScope.filter(x=>mk(doneOf(x))===m);out.recurrence.push(cell(pct(rc.filter(recurrenceState).length,rc.length),rc.length));
-    const tm2=timed.filter(x=>mk(doneOf(x))===m);out.actionOnTime.push(cell(pct(tm2.filter(x=>{const d=asDate(doneOf(x)),u=asDate(dueOf(x));return d&&u&&d<=u}).length,tm2.length),tm2.length));
+    const tm2=dueActions.filter(x=>mk(dueOf(x))===m);out.actionOnTime.push(cell(pct(tm2.filter(x=>{const d=asDate(doneOf(x)),u=asDate(dueOf(x));return actionCompleted(x)&&d&&u&&d<=u}).length,tm2.length),tm2.length));
   });
   // Monthly confirmed-case cohorts: retained vs attrited, using confirmation month.
   out.advRetention=[];out.advAttrition=[];
