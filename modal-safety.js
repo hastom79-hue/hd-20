@@ -2,7 +2,17 @@
      커밋에서 결정됨) — 이 안전장치가 #masterModal을 다시 position:fixed 중앙 920px 모달로 강제해, 탭으로
      고쳤던 레이아웃이 '떠 있는 모달 카드'로 되돌아가 있던 것을 발견해 레이아웃 강제(중앙 정렬·고정폭·
      overflow:hidden) 부분만 제거. ESC/바깥 클릭 닫기 등 나머지 안전장치 동작은 그대로 유지. */
-  s.textContent=`#masterModal .modalHead{position:sticky!important;top:0!important;z-index:5!important;display:flex!important;justify-content:space-between!important;align-items:center!important;background:#fff!important;padding:15px 18px!important}#closeMaster{display:grid!important;place-items:center!important;flex:0 0 38px!important;width:38px!important;height:38px!important;border:1px solid #d5e0e8!important;border-radius:9px!important;background:#f7fafc!important;color:#183850!important;font-size:27.5px!important;font-weight:800!important;cursor:pointer!important}#closeMaster:hover{background:#eaf4fb!important;color:#0f5f96!important}#masterModal .masterTabs{flex:0 0 auto!important;margin:0!important;padding:10px 18px!important;border-bottom:1px solid #e6edf2!important;background:#fff!important}#masterOrderPanel,#masterTargetPanel{min-height:0!important;overflow:auto!important;padding:0 18px 14px!important;scrollbar-gutter:stable}#masterModal .orderList{max-height:none!important;overflow:visible!important}#masterModal .modalFoot{position:sticky!important;bottom:0!important;z-index:5!important;flex:0 0 auto!important;background:#fff!important;border-top:1px solid #e6edf2!important;border-bottom:0!important;padding:12px 18px!important}`;document.head.appendChild(s);/* 사용자 지적: "[운영기준]탭도 전체 엉망진창이고 편의성도 없고 관리도 어렵고" — 추적 결과, "운영기준"이
+  s.textContent=`
+/* 사용자 지적: "[운영기준]텝도 전체 엉망진창이고 편의성도 없고 관리도 어렵고" — 전체 페이지 스크린샷
+   으로 확인한 결과, "① 조직/팀"(신버전, 정렬·담당자·이메일·기준인원 통합 테이블) 바로 아래에
+   master-info-modal.js가 처음부터 만들어 둔 구버전 "표시순서" 패널(masterOrderPanel, 19개 팀의
+   '순서'만 입력하는 테이블)이 display:block 기본값으로 실제 화면에 그대로 보이고 있었음 — 같은 화면
+   안에 "팀 순서를 설정하는 UI"가 사실상 두 번 나오는 명백한 중복. 같은 계열의 구버전 패널 5개
+   (표시순서·인당목표·운영정책·요청출처 순서·팀장메일)와 그 탭 버튼을 전부 화면에서 숨겨 신버전
+   (① 조직/팀~운영정책, integrated-master-factors.js)만 남김. */
+#masterOrderPanel,#masterTargetPanel,#hd20OperatingPolicyPanel,#hd20SourceOrderPanel,#hd20TeamLeaderMasterPanel{display:none!important}
+#masterModal .masterTabs [data-master-tab]{display:none!important}
+#masterModal .modalHead{position:sticky!important;top:0!important;z-index:5!important;display:flex!important;justify-content:space-between!important;align-items:center!important;background:#fff!important;padding:15px 18px!important}#closeMaster{display:grid!important;place-items:center!important;flex:0 0 38px!important;width:38px!important;height:38px!important;border:1px solid #d5e0e8!important;border-radius:9px!important;background:#f7fafc!important;color:#183850!important;font-size:27.5px!important;font-weight:800!important;cursor:pointer!important}#closeMaster:hover{background:#eaf4fb!important;color:#0f5f96!important}#masterModal .masterTabs{flex:0 0 auto!important;margin:0!important;padding:10px 18px!important;border-bottom:1px solid #e6edf2!important;background:#fff!important}#masterOrderPanel,#masterTargetPanel{min-height:0!important;overflow:auto!important;padding:0 18px 14px!important;scrollbar-gutter:stable}#masterModal .orderList{max-height:none!important;overflow:visible!important}#masterModal .modalFoot{position:sticky!important;bottom:0!important;z-index:5!important;flex:0 0 auto!important;background:#fff!important;border-top:1px solid #e6edf2!important;border-bottom:0!important;padding:12px 18px!important}`;document.head.appendChild(s);/* 사용자 지적: "[운영기준]탭도 전체 엉망진창이고 편의성도 없고 관리도 어렵고" — 추적 결과, "운영기준"이
    이미 다른 5개 메인 탭과 동일한 '탭 전체 화면'으로 전환돼 있었는데(위 주석 참고), 유독 이 탭에만
    '×(닫기)' 버튼이 남아있어 사용자가 누르면 close()가 modal의 .on 클래스만 지워 화면이 통째로 사라지고
    상단 탭은 여전히 '운영기준'이 활성 표시된 채 콘텐츠만 텅 빈 상태가 됐음(다른 탭엔 이런 '닫기' 개념
