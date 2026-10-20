@@ -114,12 +114,20 @@ function render(){css();const el=ensure(),d=data();
       const slotX=q.x0+(q.x1-q.x0)*fx,slotY=q.y1-(q.y1-q.y0)*fy;
       // actual coordinates remain the primary signal; slot packing only prevents unreadable overlap.
       const actualX=Math.max(q.x0,Math.min(q.x1,t.attrition)),actualY=Math.max(q.y0,Math.min(q.y1,t.level));
-      displayByTeam.set(t.team,{x:actualX*.72+slotX*.28,y:actualY*.72+slotY*.28});
+      /* 재점검: 이탈도 0%·실행수준 고값처럼 같은 팀 여럿이 거의 동일 좌표(실제값)에서 시작하면,
+         실제좌표 비중(.72)이 너무 커서 격자 슬롯(.28)이 충분히 못 벌려 세로로 쌓인 채 남아있었음
+         — 슬롯(격자) 비중을 과반으로 올려 밀집 그룹을 먼저 넓게 펼치고, 실제값은 보조 신호로만 반영. */
+      displayByTeam.set(t.team,{x:actualX*.4+slotX*.6,y:actualY*.4+slotY*.6});
     });
   });
   const displayPoint=(t,teamIdx)=>{
     const p=displayByTeam.get(t.team)||{x:t.attrition,y:t.level};
-    const bx=t.attrition<50?[3,48]:[52,97],by=t.level>=60?[62,96]:[5,58];
+    /* 사용자 재지적: 라벨을 불투명하게 만든 뒤에도 (1) 세로로 쌓인 라벨 상자가 서로 완전히 겹쳐
+       뒤쪽 라벨이 아예 가려지고, (2) 우측 끝(x≈97%) 라벨이 매트릭스 밖으로 잘려나가는 문제가 남아
+       있었음 — 우측 경계를 97→90으로 당겨 라벨 폭(최대 145px)이 밖으로 안 나가게 하고, 충돌 회피
+       임계값(아래)도 라벨 상자의 실제 세로 높이(2줄, 약 34px ≈ 매트릭스 높이의 18~20%)에 맞춰 크게
+       늘림. */
+    const bx=t.attrition<50?[3,48]:[52,90],by=t.level>=60?[62,96]:[5,58];
     let x=Math.max(bx[0],Math.min(bx[1],p.x)),y=Math.max(by[0],Math.min(by[1],p.y));
     /* 기존 충돌 회피는 버블 원(점)끼리만 7%×5% 이내를 겹침으로 봤는데, 버블 옆에 붙는 팀명 라벨(최대
        145px, 버블 폭보다 훨씬 넓음)까지 포함하면 여전히 겹쳐 보이는 것을 실측으로 확인 — 판정 기준을
@@ -130,16 +138,23 @@ function render(){css();const el=ensure(),d=data();
        중첩) → 팀 인덱스를 시작 각도에 섞어(황금각 137.5도 간격) 같은 출발점이라도 팀마다 서로 다른
        방향의 나선을 그리게 해 충돌 확률을 크게 낮춤 */
     const origX=x,origY=y,baseAng=(teamIdx*137.5)%360;
-    for(let pass=0;pass<40;pass++){
-      if(!placed.some(v=>Math.abs(v.x-x)<22&&Math.abs(v.y-y)<13))break;
-      const ang=(baseAng+pass*47)*Math.PI/180,step=9+pass*2.1;
+    for(let pass=0;pass<60;pass++){
+      if(!placed.some(v=>Math.abs(v.x-x)<24&&Math.abs(v.y-y)<20))break;
+      const ang=(baseAng+pass*47)*Math.PI/180,step=11+pass*2.4;
       x=origX+Math.cos(ang)*step;y=origY+Math.sin(ang)*step*.6;
       x=Math.max(bx[0],Math.min(bx[1],x));y=Math.max(by[0],Math.min(by[1],y));
     }
     placed.push({x,y});return{x,y};
   };
   enriched.forEach((t,i)=>{
-    const pt={x:Math.max(0,Math.min(100,t.attrition)),y:Math.max(0,Math.min(100,t.level))},px=pt.x,py=pt.y,key=Math.round(px)+'|'+Math.round(py),dup=coordSeen[key]||0;coordSeen[key]=dup+1;
+    /* 핵심 결함 발견: displayPoint()에 사분면 슬롯 배치 + 황금각 나선 충돌회피까지 공들여 구현해
+       놓고도, 정작 이 아래에서 dot.style.left/bottom에 그 반환값이 아니라 보정 전 원본 좌표(pt.x,
+       pt.y = t.attrition, t.level 그대로)를 쓰고 있어 displayPoint()가 호출조차 안 되는 완전한
+       죽은 코드였음 — 그래서 라벨 배경을 바꾸고 충돌회피 임계값을 아무리 조정해도 화면이 전혀
+       바뀌지 않았던 것. key(좌표 중복 카운트)는 원본 좌표 기준을 유지하되, 실제 표시 좌표만
+       displayPoint()의 보정값으로 교체. */
+    const pt={x:Math.max(0,Math.min(100,t.attrition)),y:Math.max(0,Math.min(100,t.level))},key=Math.round(pt.x)+'|'+Math.round(pt.y),dup=coordSeen[key]||0;coordSeen[key]=dup+1;
+    const disp=displayPoint(t,i),px=disp.x,py=disp.y;
     const dot=document.createElement('button');dot.type='button';dot.className='mmtBubble';dot.style.left=px+'%';dot.style.bottom=py+'%';dot.style.setProperty('--mmt-color',colorOf(t));dot.style.setProperty('--label-shift','0px');dot.dataset.coordKey=key;dot.dataset.actualX=t.attrition;dot.dataset.actualY=t.level;
     dot.innerHTML='<i></i><span><b>'+esc(t.team)+'</b><small>'+t.maintained+'/'+t.confirmed+' · '+(t.rate===null?'—':t.rate+'%')+'</small></span>';
     dot.title=t.team+' · 이탈도 '+t.attrition+'% · 고도화 실행수준 '+t.level+'% (유지 '+t.retention+'% · Case축적 '+t.volume+'% · 전환 '+t.conversion+'% · 활동량 '+t.activity+'%)';matrix.appendChild(dot);
