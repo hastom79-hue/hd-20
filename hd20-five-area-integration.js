@@ -25,7 +25,7 @@ function integrateAdvancement(){
   }
 }
 function masterUtility(){
-  const btn=document.getElementById('openMaster');if(btn){btn.textContent='⑥ 운영기준';btn.title='팀·담당자·목표·정책·표시기준 관리'}
+  const btn=document.getElementById('openMaster');if(btn){btn.textContent='⑥ 통합기준정보';btn.title='팀·담당자·목표·정책·표시기준 관리'}
 }
 function normalizeLabels(){document.querySelectorAll('#performanceConversionAnalysis').forEach(root=>{root.querySelectorAll('*').forEach(el=>{if(el.children.length===0&&el.textContent?.includes('5S고도화'))el.textContent=el.textContent.replaceAll('5S고도화','5S 고도화')})})}
 function normalizeUnmappedLines(){document.querySelectorAll('#awWorkplace [data-live-workplace-line] tr').forEach(tr=>{const cell=tr.querySelector('td:first-child');if(cell&&cell.textContent.trim()==='—'){cell.textContent='미분류/라인 매핑 필요';cell.dataset.hd20UnmappedLine='1';cell.title='원천데이터에 명시적 라인 정보가 없어 임의 추론하지 않습니다.'}})}
