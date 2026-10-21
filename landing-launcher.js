@@ -62,8 +62,8 @@ function open(){
   el.innerHTML=`<div class="hd20LnBox" role="dialog" aria-modal="true" aria-label="빠른 등록 선택">
     <div class="hd20LnHead"><b>오늘 등록할 내용을 선택하세요</b><span>선택 후 바로 해당 등록 화면으로 이동합니다 · 배경은 전체 조회 화면입니다</span></div>
     <div class="hd20LnRow">
-      <div class="hd20LnCard left" data-ln="activity"><div class="ic">🧹</div><b>자율개선 등록</b><small>현장에서 발견한 5S 문제·개선활동을<br>BEFORE/AFTER 사진과 함께 등록</small></div>
-      <div class="hd20LnCard right" data-ln="action"><div class="ic">📨</div><b>개선요청 등록</b><small>Audit·현장에서 발생한 개선요청을<br>담당팀장에게 등록·발송</small></div>
+      <div class="hd20LnCard left" data-ln="activity"><div class="ic">🧹</div><b>자율개선 등록</b><small>현장팀에서 자체적으로 개선한<br>활동을 등록하는 창구입니다</small></div>
+      <div class="hd20LnCard right" data-ln="action"><div class="ic">📨</div><b>개선요청 등록</b><small>4개의 발굴 경로를 통해 3개 요청그룹에서<br>현장팀으로 개선조치 요청사항을 등록하는 창구입니다</small></div>
     </div>
     <div class="hd20LnFoot"><button type="button" data-ln="skip">건너뛰고 전체 조회 화면 바로 보기</button></div>
   </div>`;
