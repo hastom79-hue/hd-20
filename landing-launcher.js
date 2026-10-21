@@ -27,33 +27,54 @@ function css(){
   #hd20Launcher .hd20LnFoot button{border:0;background:transparent;color:#7c92a5;font-size:12.5px;cursor:pointer;text-decoration:underline}
   @media(max-width:560px){#hd20Launcher .hd20LnRow{grid-template-columns:1fr}}
   `;
+  s.textContent+=`#hd20LauncherOverview{margin:12px 0;padding:16px;border:1px solid #dce6ed;border-radius:12px;background:#fff;color:#17394f}#hd20LauncherOverview .hd20LnOverviewHead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}#hd20LauncherOverview .hd20LnOverviewHead b{font-size:16px}#hd20LauncherOverview .hd20LnOverviewHead small{color:#637c8c}#hd20LauncherOverview .hd20LnOverviewGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}#hd20LauncherOverview .hd20LnOverviewCol{min-width:0;border:1px solid #e2ebf0;border-radius:9px;padding:12px}#hd20LauncherOverview .hd20LnOverviewTop{display:flex;justify-content:space-between;margin-bottom:8px}#hd20LauncherOverview table{width:100%;border-collapse:collapse;font-size:12px}#hd20LauncherOverview th,#hd20LauncherOverview td{padding:6px 4px;border-bottom:1px solid #eef2f5;text-align:left}#hd20LauncherOverview button{margin-top:10px;padding:7px 12px;border:1px solid #b6d3dc;border-radius:7px;background:#f3f9fb;cursor:pointer;color:#174765}body:has(.app.awFocused) #hd20LauncherOverview{display:none}@media(max-width:760px){#hd20LauncherOverview .hd20LnOverviewGrid{grid-template-columns:1fr}#hd20LauncherOverview .hd20LnOverviewHead{display:block}}`;
   document.head.appendChild(s);
 }
 function close(){document.getElementById('hd20Launcher')?.remove();try{sessionStorage.setItem(SEEN_KEY,'1')}catch{}}
-function clickWhenReady(findFn,tries){
-  tries=tries||0;
-  const el=findFn();
-  if(el){el.click();return true}
-  if(tries>40)return false;
-  setTimeout(()=>clickWhenReady(findFn,tries+1),75);
-  return null;
+function clickWhenReady(findFn,tries=0){
+ const el=findFn();if(el){el.click();return true}
+ if(tries>=50){console.warn('[HD20 launcher] 등록 화면을 찾지 못했습니다');return false}
+ setTimeout(()=>clickWhenReady(findFn,tries+1),100);return null;
+}
+function navigate(area){
+ if(window.HD20_NAV?.go)window.HD20_NAV.go(area);
+ else document.querySelector('.beginnerNav button[data-key="'+area+'"]')?.click();
 }
 function goActivityRegister(){
-  close();
-  const tabBtn=()=>[...document.querySelectorAll('.beginnerNav button')].find(x=>x.textContent.includes('현장활동'));
-  const b=tabBtn();if(b)b.click();
-  setTimeout(()=>{
-    clickWhenReady(()=>[...document.querySelectorAll('button')].find(x=>x.textContent.includes('5S 신규등록')));
-  },350);
+ close();navigate('activity');
+ setTimeout(()=>clickWhenReady(()=>document.querySelector('#awActivity [data-aw="new"]')),120);
 }
 function goActionRegister(){
-  close();
-  const tabBtn=()=>[...document.querySelectorAll('.beginnerNav button')].find(x=>x.textContent.includes('개선조치'));
-  const b=tabBtn();if(b)b.click();
-  setTimeout(()=>{
-    clickWhenReady(()=>[...document.querySelectorAll('button')].find(x=>x.textContent.includes('개선요청 등록')));
-  },350);
+ close();navigate('action');
+ setTimeout(()=>clickWhenReady(()=>document.getElementById('hd20ActionRegisterBtn')),120);
 }
+function getRows(key){try{const a=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(a)?a:[]}catch{return[]}}
+function sourceRows(){
+ let snap={},actions=[];try{snap=window.HD20KPIData?.snapshot?.()||{}}catch{}
+ try{actions=window.HD20KPIData?.actionCases?.()||[]}catch{}
+ const activities=Array.isArray(snap.activities)&&snap.activities.length?snap.activities:getRows('hd20GMES5SAutoImproveRawV1');
+ if(!Array.isArray(actions)||!actions.length)actions=getRows('hd20ActionCasesV2');
+ return {activities,actions};
+}
+function escapeText(x){return String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function rowDate(x){return String(x?.date||x?.regDate||x?.createdAt||x?.registeredAt||'').slice(0,10)}
+function rowTeam(x){return String(x?.team||x?.teamName||x?.ownerTeam||x?.department||'팀 미지정')}
+function rowStatus(x){return String(x?.activityStatus||x?.status||x?.auditState||'등록')}
+function renderOverview(){
+ const root=document.getElementById('hd20LauncherOverview');if(!root)return;
+ const {activities,actions}=sourceRows();
+ const column=(title,rows,area)=>'<section class="hd20LnOverviewCol"><div class="hd20LnOverviewTop"><b>'+title+'</b><strong>'+rows.length+'건</strong></div><table><thead><tr><th>등록일</th><th>담당 팀</th><th>상태</th></tr></thead><tbody>'+([...rows].sort((a,b)=>rowDate(b).localeCompare(rowDate(a))).slice(0,5).map(x=>'<tr><td>'+escapeText(rowDate(x)||'—')+'</td><td>'+escapeText(rowTeam(x))+'</td><td>'+escapeText(rowStatus(x))+'</td></tr>').join('')||'<tr><td colspan="3">등록된 데이터 없음</td></tr>')+'</tbody></table><button type="button" data-ln-route="'+area+'">해당 루트 전체 조회 →</button></section>';
+ root.innerHTML='<div class="hd20LnOverviewHead"><b>자율개선 · 개선요청 통합 조회</b><small>두 등록 루트의 원천 데이터를 한 화면에서 조회합니다. 최근 등록 각 5건</small></div><div class="hd20LnOverviewGrid">'+column('자율개선',activities,'activity')+column('개선요청',actions,'action')+'</div>';
+ root.querySelectorAll('[data-ln-route]').forEach(btn=>btn.onclick=()=>navigate(btn.dataset.lnRoute));
+}
+function ensureOverview(){
+ if(document.getElementById('hd20LauncherOverview'))return;
+ const nav=document.querySelector('.beginnerNav');if(!nav)return;
+ const el=document.createElement('section');el.id='hd20LauncherOverview';el.setAttribute('aria-label','자율개선과 개선요청 통합 조회');nav.insertAdjacentElement('afterend',el);
+ el.addEventListener('click',e=>{if(e.target.closest('[data-ln-route]'))return});
+ renderOverview();
+}
+function openOverview(){close();navigate('dashboard');ensureOverview();renderOverview();document.getElementById('hd20LauncherOverview')?.scrollIntoView({block:'start',behavior:'smooth'})}
 function open(){
   if(document.getElementById('hd20Launcher'))return;
   css();
@@ -70,17 +91,20 @@ function open(){
   document.body.appendChild(el);
   el.querySelector('[data-ln="activity"]').addEventListener('click',goActivityRegister);
   el.querySelector('[data-ln="action"]').addEventListener('click',goActionRegister);
-  el.querySelector('[data-ln="skip"]').addEventListener('click',close);
+  el.querySelector('[data-ln="skip"]').addEventListener('click',openOverview);
   el.addEventListener('click',e=>{if(e.target===el)close()});
   document.addEventListener('keydown',function esc(e){if(e.key==='Escape'){close();document.removeEventListener('keydown',esc)}});
 }
 function boot(){
+  ['hd20-kpi-source-updated','hd20-action-updated','hd20-activity-updated','hd20-dashboard-ready','hd20-nav-area-changed'].forEach(e=>window.addEventListener(e,()=>{ensureOverview();renderOverview()}));
+  window.addEventListener('storage',renderOverview);
+  setTimeout(()=>{ensureOverview();renderOverview()},1800);
   let seen=false;try{seen=sessionStorage.getItem(SEEN_KEY)==='1'}catch{}
-  if(seen)return;
+  if(seen){setTimeout(()=>{ensureOverview();renderOverview()},250);return;}
   // 메인 네비게이션이 그려질 때까지 대기한 뒤(배경이 "전체 조회 화면"으로 먼저 자리잡은 상태) 팝업을 띄움
   const tryOpen=(n)=>{
     n=n||0;
-    if(document.querySelector('.beginnerNav button')){open();return}
+    if(document.querySelector('.beginnerNav button')){ensureOverview();renderOverview();open();return}
     if(n>60)return;
     setTimeout(()=>tryOpen(n+1),100);
   };
