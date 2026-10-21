@@ -16,7 +16,12 @@ const SOURCES=['리더십(공장장)','5S모듈','생산혁신팀(HDPS파트)'];
    저장 키(DISCOVERY_KEY)도 request-source-order-master.js와 동일하게 유지해 그 파일이 만드는
    구버전 숨김 패널과 이 신버전 탭이 같은 데이터를 공유함(둘 중 하나만 써도 됨, 중복 저장소 아님). */
 const DISCOVERY_SOURCES=['현장 패트롤 점검','자율 5S Audit','혁신팀 자율 점검','5S 자율개선활동 피드백'],DISCOVERY_KEY='gmes5s_request_source_order';
-const FACTORS={업무유형:['5S 활동','고도화','개선요청','Audit','개선조치','기타'],요청출처:SOURCES,업무단계:['요청','검토','실행','검증','완료','재발관리'],업무상태:['미착수','진행','완료','보류','수행불가','미확인'],우선순위:['긴급','높음','보통','낮음'],리스크:['높음','중간','낮음','미평가'],진척판정:['0% 미착수','1~49% 진행','50~99% 진행','100% 완료','수행불가','미확인']};
+/* 사용자 지시: "작업장과 세부위치, 등록자 등 정보는 기준정보와 연동되어 등록자가 편의성을 갖도록"
+   — 기존 "④ 업무/팩터"(키:구분자(|) 목록 저장, 어디서도 안 읽히던 죽은 설정이었음)와 동일한 패턴을
+   그대로 재사용해 "작업장"·"세부위치" 두 항목을 추가. 이번엔 activity-workflow.js(자율개선 등록)·
+   action-mail-workflow.js(개선요청 등록) 두 팝업이 실제로 이 목록을 읽어 드롭다운으로 쓰도록 연결해
+   "죽은 설정"을 "살아있는 설정"으로 전환. */
+const FACTORS={업무유형:['5S 활동','고도화','개선요청','Audit','개선조치','기타'],요청출처:SOURCES,업무단계:['요청','검토','실행','검증','완료','재발관리'],업무상태:['미착수','진행','완료','보류','수행불가','미확인'],우선순위:['긴급','높음','보통','낮음'],리스크:['높음','중간','낮음','미평가'],진척판정:['0% 미착수','1~49% 진행','50~99% 진행','100% 완료','수행불가','미확인'],작업장:['조립라인 A','조립라인 B','용접라인','도장라인','자재창고','출하장'],세부위치:['1구역','2구역','3구역','통로','작업대','보관랙']};
 const MAIL=Array.from({length:7},(_,i)=>({id:String(i+1).padStart(2,'0'),cadence:'미설정',recipient:'',cc:'',target:'',condition:'미설정',enabled:false}));
 const read=(k,d)=>{try{const v=JSON.parse(localStorage.getItem(k)||'null');return v==null?d:v}catch{return d}};const write=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
 function leaders(){const a=read('hd20TeamLeaderMasterV1',[]);return Object.fromEntries((Array.isArray(a)?a:[]).map(x=>[x.team,{leader:x.leader||'미지정',email:x.email||''}]))}
