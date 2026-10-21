@@ -17,7 +17,16 @@ function setAxis(max){const root=document.querySelector('.adcY');if(!root)return
 function countBy(rows,team,type,month){return rows.filter(x=>(!team||x.team===team)&&(!type||typeOf(x)===type)&&(!month||monthKey(rowDate(x))===month)).length}
 function render(){const team=document.getElementById('adcTeam')?.value||'all',type=document.getElementById('adcType')?.value||'all',plot=document.getElementById('adcPlot'),note=document.getElementById('adcNote');if(!plot)return;const rows=load().filter(x=>typeOf(x)),typeIdx=CATS.indexOf(type),selectedType=typeIdx>=0?type:null;if(team==='all'){
   /* 팀 비교: 총 건수가 아니라 '인당 개선건수' 순위(가로 막대 1색). 총 건수·인원은 보조 표시, 토글로 총 건수 순위도 확인 */
-  const HC=window.HD20_HEADCOUNT_MASTER||[],hcOf=t=>{const v=Number(HC.find(h=>h.team===t)?.headcount);return Number.isFinite(v)&&v>0?v:null};
+  /* 근본 원인 발견(사용자 지시: "화면이 쓸모있어야" — 실측 중 "생산팀별 5S 유형 활동현황" 막대가
+     19개 팀 전부 0%로 텅 비어 보이는 것을 발견): window.HD20_HEADCOUNT_MASTER는
+     web-validation-fixture.js에서만 설정되는데, 그 파일은 "?validation=1일 때만 작동하는 explicit-only
+     픽스처"로 설계돼 있어(주석: "일반 배포는 development-demo-mode.js가 담당") 일반 접속에서는 이
+     전역변수 자체가 끝내 채워지지 않음. 반면 development-demo-mode.js는 데이터를 전역변수가 아니라
+     localStorage('hd20TeamHeadcountMasterV1')에 저장하고, dashboard-kpi-source.js 등 정상 작동하는
+     다른 화면들은 전부 이 localStorage를 우선 읽고 전역변수는 폴백으로만 쓰는 구조 — 이 파일만
+     전역변수에 직접 의존해 항상 비어 있었음. 다른 화면들과 동일하게 localStorage 우선으로 통일. */
+  const HCL=(()=>{try{const v=JSON.parse(localStorage.getItem('hd20TeamHeadcountMasterV1')||'[]');return Array.isArray(v)?v:[]}catch{return[]}})();
+  const HC=HCL.length?HCL:(window.HD20_HEADCOUNT_MASTER||[]),hcOf=t=>{const v=Number(HC.find(h=>h.team===t)?.headcount);return Number.isFinite(v)&&v>0?v:null};
   const cats=selectedType?[selectedType]:CATS,mode=window.__adcMode==='total'?'total':'per';
   const list=TEAM_MASTER().map(t=>{const cnt=cats.reduce((n,c)=>n+countBy(rows,t,c,null),0),hc=hcOf(t);return{t,cnt,hc,per:hc?cnt/hc:null}});
   const sumCnt=list.reduce((n,x)=>n+x.cnt,0),sumHc=list.reduce((n,x)=>n+(x.hc||0),0),avg=sumHc?sumCnt/sumHc:null;
