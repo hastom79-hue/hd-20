@@ -11,7 +11,15 @@
    (표시순서·인당목표·운영정책·요청출처 순서·팀장메일)와 그 탭 버튼을 전부 화면에서 숨겨 신버전
    (① 조직/팀~운영정책, integrated-master-factors.js)만 남김. */
 #masterOrderPanel,#masterTargetPanel,#hd20OperatingPolicyPanel,#hd20SourceOrderPanel,#hd20TeamLeaderMasterPanel{display:none!important}
-#masterModal .masterTabs [data-master-tab]{display:none!important}
+/* 긴급 수정(2차): ":not([data-master-tab^=integrated-])" 방식으로 바꿨더니 이번엔 "운영정책"
+   (data-master-tab="policy", integrated- 접두사를 안 쓰는 별도 신버전 탭 — operating-policy-
+   master.js가 생성)까지 걸려 숨겨지는 결함이 재발. "숨길 대상"을 추측하는 부정 선택자 대신, 실제로
+   숨겨야 할 구버전 탭 4개(표시순서·인당목표·팀장메일·요청출처 순서)의 정확한 data-master-tab 값만
+   명시적으로 나열 — 앞으로 신버전 탭이 어떤 이름을 쓰든 이 목록에 없으면 안전하게 보임. */
+#masterModal .masterTabs [data-master-tab="order"],
+#masterModal .masterTabs [data-master-tab="target"],
+#masterModal .masterTabs [data-master-tab="leader"],
+#masterModal .masterTabs [data-master-tab="sourceOrder"]{display:none!important}
 #masterModal .modalHead{position:sticky!important;top:0!important;z-index:5!important;display:flex!important;justify-content:space-between!important;align-items:center!important;background:#fff!important;padding:15px 18px!important}#closeMaster{display:grid!important;place-items:center!important;flex:0 0 38px!important;width:38px!important;height:38px!important;border:1px solid #d5e0e8!important;border-radius:9px!important;background:#f7fafc!important;color:#183850!important;font-size:27.5px!important;font-weight:800!important;cursor:pointer!important}#closeMaster:hover{background:#eaf4fb!important;color:#0f5f96!important}#masterModal .masterTabs{flex:0 0 auto!important;margin:0!important;padding:10px 18px!important;border-bottom:1px solid #e6edf2!important;background:#fff!important}#masterOrderPanel,#masterTargetPanel{min-height:0!important;overflow:auto!important;padding:0 18px 14px!important;scrollbar-gutter:stable}#masterModal .orderList{max-height:none!important;overflow:visible!important}#masterModal .modalFoot{position:sticky!important;bottom:0!important;z-index:5!important;flex:0 0 auto!important;background:#fff!important;border-top:1px solid #e6edf2!important;border-bottom:0!important;padding:12px 18px!important}`;document.head.appendChild(s);/* 사용자 지적: "[운영기준]탭도 전체 엉망진창이고 편의성도 없고 관리도 어렵고" — 추적 결과, "운영기준"이
    이미 다른 5개 메인 탭과 동일한 '탭 전체 화면'으로 전환돼 있었는데(위 주석 참고), 유독 이 탭에만
    '×(닫기)' 버튼이 남아있어 사용자가 누르면 close()가 modal의 .on 클래스만 지워 화면이 통째로 사라지고
