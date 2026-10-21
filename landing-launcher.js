@@ -63,7 +63,7 @@ function open(){
     <div class="hd20LnHead"><b>오늘 등록할 내용을 선택하세요</b><span>선택 후 바로 해당 등록 화면으로 이동합니다 · 배경은 전체 조회 화면입니다</span></div>
     <div class="hd20LnRow">
       <div class="hd20LnCard left" data-ln="activity"><div class="ic">🧹</div><b>자율개선 등록</b><small>현장팀에서 자체적으로 개선한<br>활동을 등록하는 창구입니다</small></div>
-      <div class="hd20LnCard right" data-ln="action"><div class="ic">📨</div><b>개선요청 등록</b><small>현장 패트롤 점검·자율 5S Audit·혁신팀 자율 점검·5S<br>자율개선활동 피드백 등 4가지 경로로 발굴된 사항을,<br>리더십(공장장)·5S모듈·생산혁신팀(HDPS파트) 3개<br>그룹이 현장팀에 개선조치를 요청하는 창구입니다</small></div>
+      <div class="hd20LnCard right" data-ln="action"><div class="ic">📨</div><b>개선요청 등록</b><small>공장장·5S모듈조직·혁신팀으로부터 현장 패트롤<br>점검·자율 5S Audit·혁신팀 자율 점검·5S 자율개선<br>활동 피드백 등 다양한 루트로 도출된 개선조치<br>요청사항을 현장팀에 등록하는 창구입니다</small></div>
     </div>
     <div class="hd20LnFoot"><button type="button" data-ln="skip">건너뛰고 전체 조회 화면 바로 보기</button></div>
   </div>`;
