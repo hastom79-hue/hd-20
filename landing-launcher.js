@@ -68,7 +68,7 @@ function renderOverview(){
  root.querySelectorAll('[data-ln-route]').forEach(btn=>btn.onclick=()=>navigate(btn.dataset.lnRoute));
 }
 function ensureOverview(){
- if(document.getElementById('hd20LauncherOverview'))return;
+ css();if(document.getElementById('hd20LauncherOverview'))return;
  const nav=document.querySelector('.beginnerNav');if(!nav)return;
  const el=document.createElement('section');el.id='hd20LauncherOverview';el.setAttribute('aria-label','자율개선과 개선요청 통합 조회');nav.insertAdjacentElement('afterend',el);
  el.addEventListener('click',e=>{if(e.target.closest('[data-ln-route]'))return});
@@ -98,6 +98,7 @@ function open(){
 function boot(){
   ['hd20-kpi-source-updated','hd20-action-updated','hd20-activity-updated','hd20-dashboard-ready','hd20-nav-area-changed'].forEach(e=>window.addEventListener(e,()=>{ensureOverview();renderOverview()}));
   window.addEventListener('storage',renderOverview);
+  setInterval(()=>{if(window.HD20_NAV?.active?.()==='dashboard')renderOverview()},5000);
   setTimeout(()=>{ensureOverview();renderOverview()},1800);
   let seen=false;try{seen=sessionStorage.getItem(SEEN_KEY)==='1'}catch{}
   if(seen){setTimeout(()=>{ensureOverview();renderOverview()},250);return;}
