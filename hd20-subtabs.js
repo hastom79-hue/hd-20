@@ -82,9 +82,22 @@ function visibleTable(t){if(!t||t.closest('#hd20UniversalGridModal'))return fals
 function tableTitle(t,i){return t.closest('.awCard,.card,.pcCard,.auditDraw,.audit6m,.auditClosedLoop')?.querySelector('.awHead,.cardHead h2,.pcHead,h3,h2,b')?.textContent?.trim()||`상세 데이터 ${i+1}`}
 function collectVisible(area){const roots=area==='advancement'?[$('#performanceConversionAnalysis'),$('#awWorkplace')]:[currentRoot(area)];const seen=new Set(),sets=[];roots.filter(Boolean).forEach(root=>$$('table',root).forEach(t=>{if(!visibleTable(t)||seen.has(t))return;seen.add(t);sets.push({title:tableTitle(t,sets.length),table:t.cloneNode(true)})}));return sets}
 const FALLBACK_LEGACY_TEST_IDS=new Set('DRAW-1788010755791,DRAW-1788010759290,DRAW-1788010760070,DRAW-1788010760500,DRAW-1788010760921,DRAW-1788010761360,DRAW-1788011635587,DRAW-1788011636106,DRAW-1788011636356,DRAW-1788011636538,DRAW-1788011636773,DRAW-1788011636931,DRAW-1788011637126,DRAW-1788011637396,DRAW-1788011637597,DRAW-1788011637788,DRAW-1788011637966,DRAW-1788011638138,DRAW-1788011638487,DRAW-1788011638656,DRAW-1788011638846'.split(','));
-function validationMode(){const v=new URL(location.href).searchParams.get('validation');return v!=='0'&&v!=='off'}
+/* 중대 버그 발견(사용자 지시로 고도화 탭 서브탭 재검토 중): 이 파일만 validationMode()가
+   "?validation=0 또는 off가 아니면 항상 검증모드"라는 반대 로직이었음(dashboard-kpi-source.js·
+   performance-conversion-analysis.js는 올바르게 "?validation=1일 때만 검증모드"). 그 결과
+   readStore()가 일반 접속(쿼리 파라미터 없음)에서도 항상 "web-validation-fixture" source만 남기고
+   실제 가상 데모 데이터(source:'demo-seed' 등)를 전부 걸러내, 이 함수를 쓰는 "⑦ 확정·표준화·
+   수평전개" 탭의 "확정 Case 표준화·수평전개·유지관리" 섹션이 늘 0건으로만 보였음(상단 요약 카드는
+   다른 올바른 소스를 써서 27건으로 정상 표시 — 같은 화면 안에서 공식확정 27건 vs 0건으로 보이던
+   모순의 원인). 다른 두 파일과 동일한 올바른 로직으로 통일. */
+function validationMode(){return new URL(location.href).searchParams.get('validation')==='1'}
 function nonProdRow(x){if(!x||typeof x!=='object')return false;const source=String(x.source||'').trim().toLowerCase(),id=String(x.id||'').trim().toUpperCase(),sourceCaseId=String(x.sourceCaseId||'').trim().toUpperCase(),email=String(x.email||'').trim().toLowerCase();return x.isDemo===true||x.isTest===true||source==='demo-seed'||source==='e2e-fixture'||source==='web-validation-fixture'||id.startsWith('DEMO-')||id.startsWith('E2E-')||id.startsWith('VALID-')||id.includes('AUTO-DEMO-')||sourceCaseId.startsWith('DEMO-')||sourceCaseId.startsWith('E2E-')||sourceCaseId.startsWith('VALID-')||email.endsWith('@hd-hyundai-demo.co.kr')||/^teamlead\d+@example\.com$/i.test(email)||FALLBACK_LEGACY_TEST_IDS.has(id)}
-function readStore(k){try{const v=JSON.parse(localStorage.getItem(k)||'[]');if(!Array.isArray(v))return[];if(k!=='hd20GMES5SAutoImproveRawV1')return v;return validationMode()?v.filter(x=>x?.source==='web-validation-fixture'):v.filter(x=>!nonProdRow(x))}catch{return[]}}
+/* 추가 원인 발견: validationMode() 로직을 바로잡은 뒤에도 "⑦" 탭이 여전히 0건이었음 — nonProdRow(x)가
+   source==='demo-seed'·id가 'DEMO-'로 시작하는 행을 전부 "비프로덕션"으로 걸러내는데,
+   dashboard-kpi-source.js의 동일 역할 함수 load()는 "window.HD20_DEMO_MODE===true일 때는 demo-seed를
+   예외로 허용"하는 조건이 있어 대시보드는 정상 작동했던 반면, 이 파일의 readStore()에는 그 예외가
+   빠져 있어 이 데모 환경 자체에서도 항상 빈 배열이 되고 있었음 — 동일한 예외 조건을 추가. */
+function readStore(k){try{const v=JSON.parse(localStorage.getItem(k)||'[]');if(!Array.isArray(v))return[];if(k!=='hd20GMES5SAutoImproveRawV1')return v;return validationMode()?v.filter(x=>x?.source==='web-validation-fixture'):v.filter(x=>(window.HD20_DEMO_MODE===true&&x?.source==='demo-seed')||!nonProdRow(x))}catch{return[]}}
 function txt(v){return String(v??'').trim()}
 function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function display(v){return v===0?'0':v===false?'false':txt(v)||'—'}
