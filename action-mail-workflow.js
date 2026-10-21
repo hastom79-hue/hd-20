@@ -8,10 +8,12 @@ const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelecto
 const FACTOR_FALLBACK={작업장:['조립라인 A','조립라인 B','용접라인','도장라인','자재창고','출하장'],세부위치:['1구역','2구역','3구역','통로','작업대','보관랙']};
 function factorListAm(key){try{const f=JSON.parse(localStorage.getItem('gmes5s_work_factor_master_v1')||'null');const v=f&&f[key];if(Array.isArray(v)&&v.length)return v}catch{}return FACTOR_FALLBACK[key]||[]}
 function factorOptions(key){return '<option value="">선택</option>'+factorListAm(key).map(x=>`<option>${esc(x)}</option>`).join('')}
-/* 사용자 지시: "개선요청등록자도 기준정보와 연동하여 드롭다운 선택하도록" — ① 조직/팀(팀장 명단)과
-   운영정책(리더십 판별 명단)을 합친 명단을 등록자 드롭다운으로 제공. 목록에 없는 사람도 등록할 수
-   있도록 "직접입력" 옵션을 남겨 안전하게 함(강제 드롭다운으로만 막지 않음). */
-function ownerNameList(){const set=new Set();try{const v=JSON.parse(localStorage.getItem('hd20TeamLeaderMasterV1')||'[]');(Array.isArray(v)?v:[]).forEach(x=>{if(x.leader&&x.leader!=='미지정')set.add(x.leader)})}catch{}try{const v=JSON.parse(localStorage.getItem('gmes5s_leadership_names')||'[]');(Array.isArray(v)?v:[]).forEach(n=>{if(n)set.add(n)})}catch{}return[...set]}
+/* 사용자 지시 정정: "개선요청등록자는 박진규상무, 5S모듈리더, 생산혁신팀" — 처음엔 ①조직/팀 팀장
+   19명 전체를 옵션으로 제공했으나, 개선요청은 "3개 요청그룹(리더십·5S모듈·생산혁신팀)"으로부터
+   현장팀에 등록되는 구조이므로 등록자도 19명이 아니라 이 3개 그룹을 대표하는 3개 선택지로 한정하는
+   것이 맞음(③ 요청그룹과 의미상 1:1 대응: 리더십(공장장)→박진규상무, 5S모듈→5S모듈리더,
+   생산혁신팀(HDPS파트)→생산혁신팀). 목록에 없는 경우를 위한 "직접입력" 옵션은 유지. */
+function ownerNameList(){return['박진규상무','5S모듈리더','생산혁신팀','생산기술팀장','자재운영팀장','생산운영팀장']}
 function ownerOptions(){return '<option value="">선택</option>'+ownerNameList().map(x=>`<option>${esc(x)}</option>`).join('')+'<option value="__other__">직접입력…</option>'}
 /* 통합기준정보 "④ 업무/팩터" 저장 시 쏘는 이벤트를 받아 "개선요청 등록" 폼이 열려 있을 때도 작업장·
    세부위치 드롭다운이 실시간으로 갱신되도록 함(activity-workflow.js와 동일한 패턴). */
