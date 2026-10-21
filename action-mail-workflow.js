@@ -13,7 +13,13 @@ function css(){if(document.getElementById(STYLE))return;const s=document.createE
 function filePreview(input,img){if(!input||!img)return;input.onchange=()=>{const f=input.files?.[0];if(!f)return;const r=new FileReader();r.onload=e=>{input.dataset.data=e.target.result;img.src=e.target.result;img.hidden=false};r.readAsDataURL(f)}}
 function deepLink(id){const u=new URL(location.href);u.searchParams.set('actionId',id);u.hash='action-response';return u.toString()}
 function mailFields(c){const subject=`[5S 개선요청] ${c.team} / ${c.workplace} / ${c.id}`,body=`생산팀장님,\n\n다음 발굴 경로에서 개선조치 요청이 등록되었습니다.\n\n- 발굴 출처: ${c.requestSource||'미분류'}\n\n- 요청번호: ${c.id}\n- 작업장: ${c.workplace}\n- 생산팀: ${c.team}\n- 미흡사항: ${c.problem}\n- 조치기한: ${c.due||'-'}\n\n아래 시스템 URL로 접속하여 개선 후 조치사항과 AFTER 사진을 등록해 주세요.\n${deepLink(c.id)}\n\n울산캠퍼스 5S 활동관리 시스템`;return{subject,body}}
-function openMail(c){if(!c.email){alert('해당 생산팀장의 실제 이메일이 기준정보에 등록되지 않았습니다. 기준정보에서 먼저 등록해 주세요.');return}const{subject,body}=mailFields(c);location.href=`mailto:${encodeURIComponent(c.email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`}
+/* 사용자 지시: "④ 업무/팩터, ⑤ 메일링이 죽은 설정이니 실제로 연결해라" — "⑤ 메일링" 탭에서 저장한
+   참조자(CC)가 지금까지 세 발송 경로(메일 앱/Outlook 웹/자동발송) 어디에도 전혀 반영되지 않고
+   있었음. "⑤ 메일링" 7개 슬롯 중 "사용" 체크된 첫 번째 행의 참조자를 공통 CC로 적용 — 7개 슬롯은
+   특정 업무유형에 고정 매핑되지 않는 범용 규칙이라, 가장 안전하고 모호하지 않은 연결은 "관리자가
+   켜 둔 첫 번째 규칙을 전역 CC 정책으로 쓰는 것"으로 판단. */
+function mailingCc(){try{const rows=JSON.parse(localStorage.getItem('gmes5s_mailing_master_v1')||'[]');const r=Array.isArray(rows)?rows.find(x=>x?.enabled&&String(x?.cc||'').trim()):null;return r?String(r.cc).trim():''}catch{return''}}
+function openMail(c){if(!c.email){alert('해당 생산팀장의 실제 이메일이 기준정보에 등록되지 않았습니다. 기준정보에서 먼저 등록해 주세요.');return}const{subject,body}=mailFields(c),cc=mailingCc();location.href=`mailto:${encodeURIComponent(c.email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`+(cc?`&cc=${encodeURIComponent(cc)}`:'')}
 /* Outlook Web compose deep link: opens outlook.office.com (or the desktop
  * app, if the OS has registered it for this URL) with the compose window
  * pre-filled, exactly like the mailto: path -- still requires the user to
@@ -22,7 +28,7 @@ function openMail(c){if(!c.email){alert('해당 생산팀장의 실제 이메일
  * Graph's send-mail API cannot be called safely from client-side JS alone,
  * so real auto-send is out of scope. This is the closest same-safety
  * integration achievable from a GitHub Pages-hosted static app. */
-function openOutlookWeb(c){if(!c.email){alert('해당 생산팀장의 실제 이메일이 기준정보에 등록되지 않았습니다. 기준정보에서 먼저 등록해 주세요.');return}const{subject,body}=mailFields(c);const url=`https://outlook.office.com/mail/deeplink/compose?to=${encodeURIComponent(c.email)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;window.open(url,'_blank','noopener')}
+function openOutlookWeb(c){if(!c.email){alert('해당 생산팀장의 실제 이메일이 기준정보에 등록되지 않았습니다. 기준정보에서 먼저 등록해 주세요.');return}const{subject,body}=mailFields(c),cc=mailingCc();const url=`https://outlook.office.com/mail/deeplink/compose?to=${encodeURIComponent(c.email)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`+(cc?`&cc=${encodeURIComponent(cc)}`:'');window.open(url,'_blank','noopener')}
 /* 실제 자동발송: EmailJS(사용자가 직접 연결한 Outlook 계정)를 통해 편집
  * 화면 없이 즉시 발송한다. mailto:/Outlook 딥링크와 달리 사용자가 "보내기"를
  * 다시 누를 필요가 없으므로, 실수로 대량발송되는 것을 막기 위해 발송 전
@@ -36,7 +42,7 @@ async function sendAutoMail(c,btn){
   const original=btn?btn.textContent:'';
   if(btn){btn.disabled=true;btn.textContent='발송 중…'}
   try{
-    await emailjs.send(cfg.serviceId,cfg.templateId,{to_email:c.email,subject,message:body,name:'5S 활동관리 시스템'});
+    await emailjs.send(cfg.serviceId,cfg.templateId,{to_email:c.email,cc_email:mailingCc(),subject,message:body,name:'5S 활동관리 시스템'});
     if(btn){btn.textContent='✓ 발송완료';btn.classList.add('sent')}
     else alert(`${c.email} 주소로 메일을 발송했습니다.`);
   }catch(err){
