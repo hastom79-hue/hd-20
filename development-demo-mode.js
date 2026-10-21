@@ -41,6 +41,41 @@ function boot(){
    if(missing.length){localStorage.setItem(HC_KEY,JSON.stringify([...hc,...missing.map(team=>({team,headcount:20+(teams.indexOf(team)%6)*3,source:SRC,isDemo:true}))]));}
    window.HD20_DEMO_HEADCOUNT_STATUS={masterTeams:teams.length,existing:hc.length,filled:missing.length};
  }catch{}
+ /* 사용자 지시: "통합기준정보 탭을 체계적으로 정리하고 모든 데이터들을 다른탭 기준으로 채워넣어라"
+    — 담당자·이메일·인당목표·메일링이 전부 "미지정"/"미설정"으로 비어 있어 등록자 편의성(등록자
+    자동채움·메일 CC 등)이 작동하지 않던 상태를 보강. 이미 저장된(실제 운영) 값이 있으면 절대
+    덮어쓰지 않고, 비어 있는 팀/슬롯만 채움. */
+ try{
+   const ORG_KEY='gmes5s_team_org_master_v1',LEAD_KEY='hd20TeamLeaderMasterV1',TARGET_KEY='gmes5s_team_targets_v1',MAIL_KEY='gmes5s_mailing_master_v1';
+   const surnames=['김','이','박','최','정','강','조','윤','장','임','한','오','서','신','권','황','안','송','전'];
+   const given=['민준','서연','도윤','하윤','시우','지호','수아','예준','지원','유진','준서','하은','건우','서준','다은','우진','소율','재민','아린','태영'];
+   let org={};try{org=JSON.parse(localStorage.getItem(ORG_KEY)||'{}')||{}}catch{}
+   let orgChanged=false;
+   teams.forEach((t,i)=>{
+     if(org[t]&&org[t].leader&&org[t].leader!=='미지정'&&org[t].email)return;
+     const si=i%surnames.length;
+     org[t]={active:org[t]?.active??true,order:org[t]?.order??(i+1),leader:`${surnames[si]}${given[si]} 팀장`,email:`team${String(i+1).padStart(2,'0')}@hd-hyundai-demo.co.kr`,headcount:org[t]?.headcount??(18+(i%10)*3)};
+     orgChanged=true;
+   });
+   if(orgChanged){localStorage.setItem(ORG_KEY,JSON.stringify(org));localStorage.setItem(LEAD_KEY,JSON.stringify(teams.map(t=>({team:t,leader:org[t].leader,email:org[t].email}))))}
+   let tg={};try{tg=JSON.parse(localStorage.getItem(TARGET_KEY)||'{}')||{}}catch{}
+   let tgChanged=false;
+   teams.forEach((t,i)=>{
+     if(tg[t]&&tg[t].Q1!=null)return;
+     const base=0.6+(i%5)*0.08;
+     tg[t]={Q1:Math.round(base*100)/100,Q2:Math.round((base+0.1)*100)/100,Q3:Math.round((base+0.2)*100)/100,Q4:Math.round((base+0.3)*100)/100};
+     tgChanged=true;
+   });
+   if(tgChanged)localStorage.setItem(TARGET_KEY,JSON.stringify(tg));
+   let mail=null;try{mail=JSON.parse(localStorage.getItem(MAIL_KEY)||'null')}catch{}
+   if(!Array.isArray(mail)||!mail.some(r=>r?.enabled)){
+     const base=Array.isArray(mail)&&mail.length===7?mail:Array.from({length:7},(_,i)=>({id:String(i+1).padStart(2,'0'),cadence:'미설정',recipient:'',cc:'',target:'',condition:'미설정',enabled:false}));
+     base[0]={id:'01',cadence:'주간(매주 월요일)',recipient:'5s-weekly@hd-hyundai-demo.co.kr',cc:'factory-lead@hd-hyundai-demo.co.kr',target:'전체 생산팀장',condition:'매주 월요일 09:00 · 전주 개선요청 현황 요약',enabled:true};
+     base[1]={id:'02',cadence:'월간(매월 1일)',recipient:'5s-monthly@hd-hyundai-demo.co.kr',cc:'factory-lead@hd-hyundai-demo.co.kr',target:'공장장·5S모듈·생산혁신팀',condition:'매월 1일 · 전월 고도화 확정·유지율 리포트',enabled:true};
+     base[2]={id:'03',cadence:'즉시(발생 시)',recipient:'audit-alert@hd-hyundai-demo.co.kr',cc:'',target:'Audit 대상 생산팀장',condition:'Risk 가중 Audit 대상 추출 직후',enabled:true};
+     localStorage.setItem(MAIL_KEY,JSON.stringify(base));
+   }
+ }catch(e){console.error('[demo-seed] master-factors fill failed',e)}
  const now=new Date(),ymd=d=>d.toISOString().slice(0,10),days=n=>{const d=new Date(now);d.setDate(d.getDate()-n);return ymd(d)};
  /* 사용자 지적: "한달에 요청사항이 96건이 될 수가 없다 현실적으로 데이터값 보정하라" — 기존
     date:days((i*3+ti)%120)은 "오늘로부터 0~119일 전" 좁은 구간(약 4개월)에만 몰려 특정 달(9월)에
