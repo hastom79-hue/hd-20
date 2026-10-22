@@ -93,9 +93,10 @@ function ensureOverview(){
  el.addEventListener('click',e=>{if(e.target.closest('[data-ln-route]'))return});
  renderOverview();
 }
-function openOverview(){close();ensureOverview();document.body.classList.add('hd20UnifiedLanding');const grid=document.getElementById('hd20LauncherOverview');grid?.classList.add('hd20LnVisible');renderOverview();if(grid){grid.style.setProperty('display','block','important');grid.style.setProperty('visibility','visible','important');grid.scrollTop=0}}
+function openOverview(){close();window.HD20_NAV?.go?.('unified');ensureOverview();document.body.classList.add('hd20UnifiedLanding');const grid=document.getElementById('hd20LauncherOverview');grid?.classList.add('hd20LnVisible');renderOverview();if(grid){grid.style.setProperty('display','block','important');grid.style.setProperty('visibility','visible','important');grid.scrollTop=0}}
 function open(){
   if(document.getElementById('hd20Launcher'))return;
+  window.HD20_NAV?.go?.('unified');
   ensureOverview();document.body.classList.add('hd20UnifiedLanding');document.getElementById('hd20LauncherOverview')?.classList.add('hd20LnVisible');renderOverview();
   css();
   const el=document.createElement('div');
@@ -121,10 +122,11 @@ function open(){
   document.addEventListener('keydown',function esc(e){if(e.key==='Escape'){openOverview();document.removeEventListener('keydown',esc)}});
 }
 function boot(){
-  window.addEventListener('hd20-nav-area-changed',e=>{if(e.detail?.area!=='dashboard'){document.body.classList.remove('hd20UnifiedLanding');document.getElementById('hd20LauncherOverview')?.classList.remove('hd20LnVisible')}});
+  window.addEventListener('hd20-open-unified-grid',()=>{ensureOverview();document.body.classList.add('hd20UnifiedLanding');const grid=document.getElementById('hd20LauncherOverview');grid?.classList.add('hd20LnVisible');renderOverview()});
+  window.addEventListener('hd20-nav-area-changed',e=>{if(e.detail?.area!=='unified'){document.body.classList.remove('hd20UnifiedLanding');document.getElementById('hd20LauncherOverview')?.classList.remove('hd20LnVisible')}});
   ['hd20-kpi-source-updated','hd20-action-updated','hd20-activity-updated','hd20-dashboard-ready','hd20-nav-area-changed'].forEach(e=>window.addEventListener(e,()=>{ensureOverview();renderOverview()}));
   window.addEventListener('storage',renderOverview);
-  setInterval(()=>{if(window.HD20_NAV?.active?.()==='dashboard'&&!document.activeElement?.matches?.('#hd20LauncherOverview input'))renderOverview()},5000);
+  setInterval(()=>{if(window.HD20_NAV?.active?.()==='unified'&&!document.activeElement?.matches?.('#hd20LauncherOverview input'))renderOverview()},5000);
   setTimeout(()=>{ensureOverview();renderOverview()},1800);
   let seen=false;try{seen=sessionStorage.getItem(SEEN_KEY)==='1'}catch{}
   // 새로고침 때도 팝업을 표시합니다.
