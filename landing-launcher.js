@@ -93,7 +93,7 @@ function ensureOverview(){
  el.addEventListener('click',e=>{if(e.target.closest('[data-ln-route]'))return});
  renderOverview();
 }
-function openOverview(){close();window.HD20_NAV?.go?.('dashboard');ensureOverview();document.body.classList.add('hd20UnifiedLanding');document.getElementById('hd20LauncherOverview')?.classList.add('hd20LnVisible');renderOverview();requestAnimationFrame(()=>document.getElementById('hd20LauncherOverview')?.scrollIntoView({block:'start',behavior:'instant'}))}
+function openOverview(){close();ensureOverview();document.body.classList.add('hd20UnifiedLanding');document.getElementById('hd20LauncherOverview')?.classList.add('hd20LnVisible');renderOverview();requestAnimationFrame(()=>document.getElementById('hd20LauncherOverview')?.scrollIntoView({block:'start',behavior:'instant'}))}
 function open(){
   if(document.getElementById('hd20Launcher'))return;
   ensureOverview();document.body.classList.add('hd20UnifiedLanding');document.getElementById('hd20LauncherOverview')?.classList.add('hd20LnVisible');renderOverview();
@@ -124,6 +124,7 @@ function boot(){
   window.addEventListener('hd20-nav-area-changed',e=>{if(e.detail?.area!=='dashboard'){document.body.classList.remove('hd20UnifiedLanding');document.getElementById('hd20LauncherOverview')?.classList.remove('hd20LnVisible')}});
   ['hd20-kpi-source-updated','hd20-action-updated','hd20-activity-updated','hd20-dashboard-ready','hd20-nav-area-changed'].forEach(e=>window.addEventListener(e,()=>{ensureOverview();renderOverview()}));
   window.addEventListener('storage',renderOverview);
+  document.addEventListener('click',e=>{if(e.target.closest('[data-ln-open-grid]'))openOverview()});
   setInterval(()=>{if(window.HD20_NAV?.active?.()==='dashboard'&&!document.activeElement?.matches?.('#hd20LauncherOverview input'))renderOverview()},5000);
   setTimeout(()=>{ensureOverview();renderOverview()},1800);
   let seen=false;try{seen=sessionStorage.getItem(SEEN_KEY)==='1'}catch{}
