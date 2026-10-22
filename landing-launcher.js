@@ -123,6 +123,7 @@ function open(){
   el.addEventListener('click',e=>{if(e.target===el)openOverview()});
   document.addEventListener('keydown',function esc(e){if(e.key==='Escape'){openOverview();document.removeEventListener('keydown',esc)}});
 }
+window.HD20_LAUNCHER={openOverview,openRegister:open,renderOverview};
 function boot(){
   window.addEventListener('hd20-nav-area-changed',e=>{if(e.detail?.area!=='dashboard'){document.body.classList.remove('hd20UnifiedLanding');document.getElementById('hd20LauncherOverview')?.classList.remove('hd20LnVisible')}});
   ['hd20-kpi-source-updated','hd20-action-updated','hd20-activity-updated','hd20-dashboard-ready','hd20-nav-area-changed'].forEach(e=>window.addEventListener(e,()=>{ensureOverview();renderOverview()}));
