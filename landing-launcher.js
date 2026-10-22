@@ -46,7 +46,7 @@ function navigate(area){
  else document.querySelector('.beginnerNav button[data-key="'+area+'"]')?.click();
 }
 function goActivityRegister(){
- close();navigate('activity');
+ close();navigate('activity');window.HD20_SUBNAV?.select?.('activity','manage');
  setTimeout(()=>clickWhenReady(()=>document.querySelector('#awActivity [data-aw="new"]')),120);
 }
 function goActionRegister(){
