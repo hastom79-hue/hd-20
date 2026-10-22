@@ -96,7 +96,7 @@ function ensureOverview(){
  el.addEventListener('click',e=>{if(e.target.closest('[data-ln-route]'))return});
  renderOverview();
 }
-function openOverview(){close();window.HD20_NAV?.go?.('activity');try{const u=new URL(location.href);if(u.searchParams.get('sub')==='unified'){u.searchParams.delete('sub');history.replaceState(null,'',u)}}catch{}ensureOverview();document.body.classList.remove('hd20UnifiedLanding');const grid=document.getElementById('hd20LauncherOverview');grid?.classList.add('hd20LnVisible');renderOverview();if(grid){grid.style.setProperty('display','block','important');grid.style.setProperty('visibility','visible','important');grid.scrollTop=0;grid.scrollIntoView({block:'start',behavior:'instant'})}}
+function openOverview(){close();window.HD20_NAV?.go?.('activity');try{const u=new URL(location.href);if(u.searchParams.get('sub')==='unified'){u.searchParams.delete('sub');history.replaceState(null,'',u)}}catch{}ensureOverview();document.body.classList.remove('hd20UnifiedLanding');const grid=document.getElementById('hd20LauncherOverview');grid?.classList.add('hd20LnVisible');renderOverview();if(grid){grid.style.setProperty('display','block','important');grid.style.setProperty('visibility','visible','important');document.querySelector('.app')?.classList.remove('awFocused');document.getElementById('awActivity')?.classList.remove('on');document.getElementById('awAction')?.classList.remove('on');grid.scrollTop=0;grid.scrollIntoView({block:'start',behavior:'instant'})}}
 function open(){
   if(document.getElementById('hd20Launcher'))return;
   ensureOverview();document.body.classList.remove('hd20UnifiedLanding');document.getElementById('hd20LauncherOverview')?.classList.add('hd20LnVisible');GRID.route='all';GRID.page=1;renderOverview();
