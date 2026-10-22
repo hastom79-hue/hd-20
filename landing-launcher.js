@@ -92,8 +92,13 @@ function open(){
   el.querySelector('[data-ln="activity"]').addEventListener('click',goActivityRegister);
   el.querySelector('[data-ln="action"]').addEventListener('click',goActionRegister);
   el.querySelector('[data-ln="skip"]').addEventListener('click',openOverview);
-  el.addEventListener('click',e=>{if(e.target===el)close()});
-  document.addEventListener('keydown',function esc(e){if(e.key==='Escape'){close();document.removeEventListener('keydown',esc)}});
+  /* 사용자 지시: "이 팝업창이 닫히면 바로 뒤에 전체 자율개선 등록조회 탭과 개선요청 등록 조회탭이
+     연동되어 보여져야 한다" — 다른 세션이 "건너뛰기" 버튼에만 openOverview()(통합 조회 패널)를
+     연결해 뒀고, 배경(오버레이) 클릭·ESC로 닫을 때는 close()만 호출해 통합 조회 없이 그냥 원래
+     화면(대시보드)으로 남아 있었음. 카드 선택(자율개선/개선요청)은 그 등록 화면으로 바로 이동하는
+     게 원래 의도이므로 그대로 두고, 배경 클릭·ESC는 "건너뛰기"와 동일하게 통합 조회가 뜨도록 통일. */
+  el.addEventListener('click',e=>{if(e.target===el)openOverview()});
+  document.addEventListener('keydown',function esc(e){if(e.key==='Escape'){openOverview();document.removeEventListener('keydown',esc)}});
 }
 function boot(){
   ['hd20-kpi-source-updated','hd20-action-updated','hd20-activity-updated','hd20-dashboard-ready','hd20-nav-area-changed'].forEach(e=>window.addEventListener(e,()=>{ensureOverview();renderOverview()}));
