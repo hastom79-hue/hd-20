@@ -27,7 +27,20 @@ function css(){
   #hd20Launcher .hd20LnFoot button{border:0;background:transparent;color:#7c92a5;font-size:12.5px;cursor:pointer;text-decoration:underline}
   @media(max-width:560px){#hd20Launcher .hd20LnRow{grid-template-columns:1fr}}
   `;
-  s.textContent+=`#hd20LauncherOverview{margin:12px 0;padding:16px;border:1px solid #dce6ed;border-radius:12px;background:#fff;color:#17394f}#hd20LauncherOverview .hd20LnOverviewHead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}#hd20LauncherOverview .hd20LnOverviewHead b{font-size:16px}#hd20LauncherOverview .hd20LnOverviewHead small{color:#637c8c}#hd20LauncherOverview .hd20LnOverviewGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}#hd20LauncherOverview .hd20LnOverviewCol{min-width:0;border:1px solid #e2ebf0;border-radius:9px;padding:12px}#hd20LauncherOverview .hd20LnOverviewTop{display:flex;justify-content:space-between;margin-bottom:8px}#hd20LauncherOverview table{width:100%;border-collapse:collapse;font-size:12px}#hd20LauncherOverview th,#hd20LauncherOverview td{padding:6px 4px;border-bottom:1px solid #eef2f5;text-align:left}#hd20LauncherOverview button{margin-top:10px;padding:7px 12px;border:1px solid #b6d3dc;border-radius:7px;background:#f3f9fb;cursor:pointer;color:#174765}body:has(.app.awFocused) #hd20LauncherOverview{display:none}@media(max-width:760px){#hd20LauncherOverview .hd20LnOverviewGrid{grid-template-columns:1fr}#hd20LauncherOverview .hd20LnOverviewHead{display:block}}`;
+  s.textContent+=`#hd20LauncherOverview{margin:12px 0;padding:16px;border:1px solid #dce6ed;border-radius:12px;background:#fff;color:#17394f}#hd20LauncherOverview .hd20LnOverviewHead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}#hd20LauncherOverview .hd20LnOverviewHead b{font-size:16px}#hd20LauncherOverview .hd20LnOverviewHead small{color:#637c8c}#hd20LauncherOverview .hd20LnOverviewGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}#hd20LauncherOverview .hd20LnOverviewCol{min-width:0;border:1px solid #e2ebf0;border-radius:9px;padding:12px}#hd20LauncherOverview .hd20LnOverviewTop{display:flex;justify-content:space-between;margin-bottom:8px}#hd20LauncherOverview table{width:100%;border-collapse:collapse;font-size:12px}#hd20LauncherOverview th,#hd20LauncherOverview td{padding:6px 4px;border-bottom:1px solid #eef2f5;text-align:left}#hd20LauncherOverview button{margin-top:10px;padding:7px 12px;border:1px solid #b6d3dc;border-radius:7px;background:#f3f9fb;cursor:pointer;color:#174765}
+#hd20LauncherOverview .hd20LnOverviewBar{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+#hd20LauncherOverview .hd20LnOverviewBar select,#hd20LauncherOverview .hd20LnOverviewBar input{padding:6px 8px;border:1px solid #c8d9e5;border-radius:7px;font-size:12.5px}
+#hd20LauncherOverview .hd20LnOverviewBar input{flex:1;min-width:140px}
+#hd20LauncherOverview .hd20LnOvCount{font-size:12px;color:#7c92a5;white-space:nowrap}
+#hd20LauncherOverview .hd20LnOverviewTableWrap{max-height:360px;overflow:auto;border:1px solid #e2ebf0;border-radius:9px}
+#hd20LauncherOverview .hd20LnOverviewTableWrap table{font-size:12px}
+#hd20LauncherOverview .hd20LnOverviewTableWrap thead th{position:sticky;top:0;background:#f3f7fa;z-index:1}
+#hd20LauncherOverview .hd20LnOvTitle{max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#hd20LauncherOverview .hd20LnKind{display:inline-block;padding:2px 7px;border-radius:999px;font-size:10.5px;font-weight:800}
+#hd20LauncherOverview .hd20LnKind.a{background:#e4f0fb;color:#1a5fa0}
+#hd20LauncherOverview .hd20LnKind.b{background:#fdeee0;color:#a2561a}
+#hd20LauncherOverview .hd20LnOverviewFoot{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+body:has(.app.awFocused) #hd20LauncherOverview{display:none}@media(max-width:760px){#hd20LauncherOverview .hd20LnOverviewGrid{grid-template-columns:1fr}#hd20LauncherOverview .hd20LnOverviewHead{display:block}}`;
   document.head.appendChild(s);
 }
 function close(){document.getElementById('hd20Launcher')?.remove();try{sessionStorage.setItem(SEEN_KEY,'1')}catch{}}
@@ -60,12 +73,39 @@ function escapeText(x){return String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;',
 function rowDate(x){return String(x?.date||x?.regDate||x?.createdAt||x?.registeredAt||'').slice(0,10)}
 function rowTeam(x){return String(x?.team||x?.teamName||x?.ownerTeam||x?.department||'팀 미지정')}
 function rowStatus(x){return String(x?.activityStatus||x?.status||x?.auditState||'등록')}
+/* 사용자 지시(업로드한 실제 사내 시스템 'HDPS Aprise' 참고 사진): "팝업창 종료 후 이런화면이 필요함"
+   — 다수 컬럼(구분·팀·작업팀·작업위치·제목·등록자·부서 등)과 필터, 많은 행을 한 번에 보여주는 밀도
+   높은 종합 그리드. 기존 "최근 5건씩 2열 미니 표"를 "자율개선+개선요청을 하나로 합친 단일 종합
+   그리드"(구분 필터·검색·더 많은 컬럼·더보기 페이지네이션)로 재구성. */
+let OV_STATE={filter:'all',q:'',limit:30};
+function unifiedRows(){
+  const {activities,actions}=sourceRows();
+  const a=activities.map(x=>({kind:'자율개선',date:rowDate(x),team:rowTeam(x),workplace:x.workplace||'—',spot:x.spot||'—',owner:x.owner||'—',title:x.problem||x.improvement||'—',status:rowStatus(x)}));
+  const b=actions.map(x=>({kind:'개선요청',date:rowDate(x),team:rowTeam(x),workplace:x.workplace||'—',spot:x.spot||'—',owner:x.owner||'—',title:x.problem||'—',status:rowStatus(x)}));
+  return [...a,...b].sort((p,q)=>q.date.localeCompare(p.date));
+}
 function renderOverview(){
  const root=document.getElementById('hd20LauncherOverview');if(!root)return;
- const {activities,actions}=sourceRows();
- const column=(title,rows,area)=>'<section class="hd20LnOverviewCol"><div class="hd20LnOverviewTop"><b>'+title+'</b><strong>'+rows.length+'건</strong></div><table><thead><tr><th>등록일</th><th>담당 팀</th><th>상태</th></tr></thead><tbody>'+([...rows].sort((a,b)=>rowDate(b).localeCompare(rowDate(a))).slice(0,5).map(x=>'<tr><td>'+escapeText(rowDate(x)||'—')+'</td><td>'+escapeText(rowTeam(x))+'</td><td>'+escapeText(rowStatus(x))+'</td></tr>').join('')||'<tr><td colspan="3">등록된 데이터 없음</td></tr>')+'</tbody></table><button type="button" data-ln-route="'+area+'">해당 루트 전체 조회 →</button></section>';
- root.innerHTML='<div class="hd20LnOverviewHead"><b>자율개선 · 개선요청 통합 조회</b><small>두 등록 루트의 원천 데이터를 한 화면에서 조회합니다. 최근 등록 각 5건</small></div><div class="hd20LnOverviewGrid">'+column('자율개선',activities,'activity')+column('개선요청',actions,'action')+'</div>';
+ const all=unifiedRows();
+ const filtered=all.filter(r=>(OV_STATE.filter==='all'||r.kind===OV_STATE.filter)&&(!OV_STATE.q||(r.title+r.team+r.workplace+r.owner).includes(OV_STATE.q)));
+ const shown=filtered.slice(0,OV_STATE.limit);
+ const cntA=all.filter(r=>r.kind==='자율개선').length,cntB=all.filter(r=>r.kind==='개선요청').length;
+ root.innerHTML=`
+  <div class="hd20LnOverviewHead"><b>자율개선 · 개선요청 통합 조회</b><small>두 등록 루트의 원천 데이터를 한 화면에서 조회합니다 · 전체 ${all.length}건(자율개선 ${cntA} · 개선요청 ${cntB})</small></div>
+  <div class="hd20LnOverviewBar">
+    <select id="hd20LnOvFilter"><option value="all">전체 구분</option><option value="자율개선">자율개선만</option><option value="개선요청">개선요청만</option></select>
+    <input id="hd20LnOvSearch" type="text" placeholder="팀·작업장·등록자·내용 검색">
+    <span class="hd20LnOvCount">표시 ${shown.length} / ${filtered.length}건</span>
+  </div>
+  <div class="hd20LnOverviewTableWrap"><table><thead><tr><th>구분</th><th>등록일</th><th>생산팀</th><th>작업장</th><th>세부위치</th><th>등록자</th><th>내용</th><th>상태</th></tr></thead><tbody>${
+    shown.map(r=>`<tr><td><span class="hd20LnKind ${r.kind==='자율개선'?'a':'b'}">${r.kind}</span></td><td>${escapeText(r.date||'—')}</td><td>${escapeText(r.team)}</td><td>${escapeText(r.workplace)}</td><td>${escapeText(r.spot)}</td><td>${escapeText(r.owner)}</td><td class="hd20LnOvTitle">${escapeText(r.title)}</td><td>${escapeText(r.status)}</td></tr>`).join('')||'<tr><td colspan="8">조건에 맞는 데이터가 없습니다</td></tr>'
+  }</tbody></table></div>
+  <div class="hd20LnOverviewFoot">${filtered.length>shown.length?'<button type="button" id="hd20LnOvMore">더 보기 (+30)</button>':''}<button type="button" data-ln-route="activity">자율개선 전체 조회 →</button><button type="button" data-ln-route="action">개선요청 전체 조회 →</button></div>`;
  root.querySelectorAll('[data-ln-route]').forEach(btn=>btn.onclick=()=>navigate(btn.dataset.lnRoute));
+ const fSel=root.querySelector('#hd20LnOvFilter'),sInp=root.querySelector('#hd20LnOvSearch'),moreBtn=root.querySelector('#hd20LnOvMore');
+ if(fSel){fSel.value=OV_STATE.filter;fSel.onchange=()=>{OV_STATE.filter=fSel.value;OV_STATE.limit=30;renderOverview()}}
+ if(sInp){sInp.value=OV_STATE.q;sInp.oninput=()=>{OV_STATE.q=sInp.value.trim();OV_STATE.limit=30;renderOverview();root.querySelector('#hd20LnOvSearch')?.focus()}}
+ if(moreBtn)moreBtn.onclick=()=>{OV_STATE.limit+=30;renderOverview()};
 }
 function ensureOverview(){
  css();if(document.getElementById('hd20LauncherOverview'))return;
