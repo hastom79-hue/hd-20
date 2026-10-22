@@ -42,6 +42,6 @@ function init(){if(initialized)return;const nav=document.querySelector('.beginne
   const legacyArea=normalizeDeepLink(raw);
   if(raw&&AREAS.includes(legacyArea)){if(sub)window.__HD20_RESTORE_SUB=sub;if(legacyArea==='dashboard')goDashboard(nav,section||'');else go(legacyArea,nav);return}
   go('dashboard',nav)}
-window.HD20_NAV={go:key=>{const nav=document.querySelector('.beginnerNav');if(!nav)return;const k=normalizeDeepLink(key);if(['maturitymap','map','maturity'].includes(k)){window.__HD20_RESTORE_SUB='map';go('advancement',nav);setTimeout(()=>window.HD20_SUBNAV?.select?.('advancement','map'),0);return}go(k,nav)},active:()=>activeKey,areas:['dashboard','activity','advancement','audit','action','master'],ready:()=>initialized};
+window.HD20_NAV={go:key=>{const nav=document.querySelector('.beginnerNav');if(!nav)return;const k=normalizeDeepLink(key);if(['maturitymap','map','maturity'].includes(k)){window.__HD20_RESTORE_SUB='map';go('advancement',nav);setTimeout(()=>window.HD20_SUBNAV?.select?.('advancement','map'),0);return}go(k,nav)},active:()=>activeKey,areas:['unified','dashboard','activity','advancement','audit','action','master'],ready:()=>initialized};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else setTimeout(init,0);
 })();
