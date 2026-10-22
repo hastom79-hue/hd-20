@@ -29,6 +29,7 @@ function css(){
   `;
   s.textContent+=`#hd20LauncherOverview{margin:12px 0;padding:16px;border:1px solid #dce6ed;border-radius:12px;background:#fff;color:#17394f}#hd20LauncherOverview .hd20LnOverviewHead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}#hd20LauncherOverview .hd20LnOverviewHead b{font-size:16px}#hd20LauncherOverview .hd20LnOverviewHead small{color:#637c8c}#hd20LauncherOverview .hd20LnOverviewGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}#hd20LauncherOverview .hd20LnOverviewCol{min-width:0;border:1px solid #e2ebf0;border-radius:9px;padding:12px}#hd20LauncherOverview .hd20LnOverviewTop{display:flex;justify-content:space-between;margin-bottom:8px}#hd20LauncherOverview table{width:100%;border-collapse:collapse;font-size:12px}#hd20LauncherOverview th,#hd20LauncherOverview td{padding:6px 4px;border-bottom:1px solid #eef2f5;text-align:left}#hd20LauncherOverview button{margin-top:10px;padding:7px 12px;border:1px solid #b6d3dc;border-radius:7px;background:#f3f9fb;cursor:pointer;color:#174765}body:has(.app.awFocused) #hd20LauncherOverview{display:none}@media(max-width:760px){#hd20LauncherOverview .hd20LnOverviewGrid{grid-template-columns:1fr}#hd20LauncherOverview .hd20LnOverviewHead{display:block}}`;
   s.textContent+=`#hd20LauncherOverview .hd20LnGridTools{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin:12px 0}#hd20LauncherOverview .hd20LnCounts,#hd20LauncherOverview .hd20LnFilters{display:flex;align-items:center;gap:9px;flex-wrap:wrap}#hd20LauncherOverview .hd20LnCounts span{padding:7px 10px;background:#f1f6f9;border-radius:7px;font-size:12px}#hd20LauncherOverview .hd20LnFilters input,#hd20LauncherOverview .hd20LnFilters select{height:34px;padding:5px 9px;border:1px solid #cbd9e2;border-radius:6px;background:white}#hd20LauncherOverview .hd20LnTableScroll{width:100%;overflow-x:auto}#hd20LauncherOverview .hd20LnDataTable{width:100%;border-collapse:collapse;font-size:12px;white-space:nowrap}#hd20LauncherOverview .hd20LnDataTable th{background:#eaf1f5;color:#24445c}#hd20LauncherOverview .hd20LnDataTable th,#hd20LauncherOverview .hd20LnDataTable td{padding:10px 9px;border-bottom:1px solid #e5edf2;text-align:left}#hd20LauncherOverview .hd20LnDataTable td:nth-child(5){max-width:330px;overflow:hidden;text-overflow:ellipsis}#hd20LauncherOverview .hd20LnEmpty{text-align:center!important;padding:26px!important}#hd20LauncherOverview .hd20LnPager{display:flex;justify-content:space-between;align-items:center;margin-top:12px;font-size:12px;color:#60788b}#hd20LauncherOverview .hd20LnPager button:disabled{opacity:.35;cursor:default}`;
+  s.textContent+=`body.hd20UnifiedLanding .app>*:not(.top):not(.beginnerNav):not(#hd20LauncherOverview):not(script){display:none!important}body.hd20UnifiedLanding #hd20LauncherOverview{display:block!important;visibility:visible!important;opacity:1!important;height:auto!important;min-height:380px!important;overflow:visible!important;margin-top:14px!important}body.hd20UnifiedLanding .app{display:block!important}#hd20LauncherOverview .hd20LnTableScroll{min-height:260px}`;
   document.head.appendChild(s);
 }
 function close(){document.getElementById('hd20Launcher')?.remove();try{sessionStorage.setItem(SEEN_KEY,'1')}catch{}}
@@ -38,6 +39,7 @@ function clickWhenReady(findFn,tries=0){
  setTimeout(()=>clickWhenReady(findFn,tries+1),100);return null;
 }
 function navigate(area){
+ document.body.classList.remove('hd20UnifiedLanding');
  if(window.HD20_NAV?.go)window.HD20_NAV.go(area);
  else document.querySelector('.beginnerNav button[data-key="'+area+'"]')?.click();
 }
@@ -90,9 +92,10 @@ function ensureOverview(){
  el.addEventListener('click',e=>{if(e.target.closest('[data-ln-route]'))return});
  renderOverview();
 }
-function openOverview(){close();navigate('dashboard');ensureOverview();renderOverview();document.getElementById('hd20LauncherOverview')?.scrollIntoView({block:'start',behavior:'smooth'})}
+function openOverview(){close();window.HD20_NAV?.go?.('dashboard');ensureOverview();document.body.classList.add('hd20UnifiedLanding');renderOverview();requestAnimationFrame(()=>document.getElementById('hd20LauncherOverview')?.scrollIntoView({block:'start',behavior:'instant'}))}
 function open(){
   if(document.getElementById('hd20Launcher'))return;
+  ensureOverview();document.body.classList.add('hd20UnifiedLanding');renderOverview();
   css();
   const el=document.createElement('div');
   el.id='hd20Launcher';
@@ -117,6 +120,7 @@ function open(){
   document.addEventListener('keydown',function esc(e){if(e.key==='Escape'){openOverview();document.removeEventListener('keydown',esc)}});
 }
 function boot(){
+  window.addEventListener('hd20-nav-area-changed',e=>{if(e.detail?.area!=='dashboard')document.body.classList.remove('hd20UnifiedLanding')});
   ['hd20-kpi-source-updated','hd20-action-updated','hd20-activity-updated','hd20-dashboard-ready','hd20-nav-area-changed'].forEach(e=>window.addEventListener(e,()=>{ensureOverview();renderOverview()}));
   window.addEventListener('storage',renderOverview);
   setInterval(()=>{if(window.HD20_NAV?.active?.()==='dashboard'&&!document.activeElement?.matches?.('#hd20LauncherOverview input'))renderOverview()},5000);
