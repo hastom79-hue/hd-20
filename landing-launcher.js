@@ -15,7 +15,7 @@ function css(){
   #hd20Launcher .hd20LnHead{text-align:center;margin-bottom:20px}
   #hd20Launcher .hd20LnHead b{display:block;font-size:19px;color:#0f2d4a;font-weight:900}
   #hd20Launcher .hd20LnHead span{display:block;margin-top:6px;font-size:13px;color:#5c7489}
-  #hd20Launcher .hd20LnRoute{display:block;margin-top:9px;font-size:12px;line-height:1.65;color:#526b80;font-weight:500}\n  #hd20Launcher .hd20LnRow{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  #hd20Launcher .hd20LnRoute{display:block;margin-top:9px;font-size:12px;line-height:1.65;color:#526b80;font-weight:500}\n  #hd20Launcher .hd20LnCard{display:flex;flex-direction:column;justify-content:space-between;gap:20px;min-height:210px;cursor:default}\n  #hd20Launcher .hd20LnCardContent{flex:1;display:flex;flex-direction:column;justify-content:center}\n  #hd20Launcher .hd20LnRegisterBtn{display:block;width:100%;padding:13px 10px;border:0;border-radius:8px;background:#1769e8;color:white;font-size:14px;font-weight:800;cursor:pointer}\n  #hd20Launcher .hd20LnRegisterBtn:hover{background:#0f53bf}\n  #hd20Launcher .hd20LnRow{display:grid;grid-template-columns:1fr 1fr;gap:16px}
   #hd20Launcher .hd20LnCard{border:1.5px solid #dfe8ee;border-radius:13px;padding:22px 16px;text-align:center;cursor:pointer;background:#f8fbfd;transition:transform .12s,box-shadow .12s,border-color .12s}
   #hd20Launcher .hd20LnCard:hover{transform:translateY(-2px);box-shadow:0 10px 22px rgba(20,60,100,.14);border-color:#2c5f8a}
   #hd20Launcher .hd20LnCard .ic{font-size:30px;margin-bottom:8px}
@@ -106,8 +106,8 @@ function open(){
   el.innerHTML=`<div class="hd20LnBox" role="dialog" aria-modal="true" aria-label="빠른 등록 선택">
     <div class="hd20LnHead"><b>개선활동 등록</b><span>등록 유형을 선택하면 해당 화면으로 이동합니다.</span></div>
     <div class="hd20LnRow">
-      <div class="hd20LnCard left" data-ln="activity"><div class="ic">🧹</div><b>자율개선 등록</b><small>현장팀이 자율적으로 발굴하고 직접 실행한<br>개선활동을 등록합니다.</small></div>
-      <div class="hd20LnCard right" data-ln="action"><div class="ic">📨</div><b>개선요청 등록</b><small>공장장·5S 모듈조직·혁신팀 등의 점검 및 피드백으로<br>발굴된 개선조치 요청사항을 현장팀에 등록합니다.<br><span class="hd20LnRoute">현장 패트롤 · 자율 5S Audit · 혁신팀 자율점검<br>5S 자율개선 활동 피드백</span></small></div>
+      <div class="hd20LnCard left"><div class="hd20LnCardContent"><small>현장팀이 자율적으로 발굴하고 직접 실행한<br>개선활동을 등록합니다.</small></div><button type="button" class="hd20LnRegisterBtn" data-ln="activity">자율개선 등록하기 →</button></div>
+      <div class="hd20LnCard right"><div class="hd20LnCardContent"><small>공장장·5S 모듈조직·혁신팀 등의 점검 및 피드백으로<br>발굴된 개선조치 요청사항을 현장팀에 등록합니다.<br><span class="hd20LnRoute">현장 패트롤 · 자율 5S Audit · 혁신팀 자율점검<br>5S 자율개선 활동 피드백</span></small></div><button type="button" class="hd20LnRegisterBtn" data-ln="action">개선요청 등록하기 →</button></div>
     </div>
     <div class="hd20LnFoot"><button type="button" data-ln="skip">전체 개선활동 조회하기</button></div>
   </div>`;
