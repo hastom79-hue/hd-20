@@ -31,7 +31,7 @@ function css(){
   s.textContent+=`#hd20LauncherOverview .hd20LnGridTools{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin:12px 0}#hd20LauncherOverview .hd20LnCounts,#hd20LauncherOverview .hd20LnFilters{display:flex;align-items:center;gap:9px;flex-wrap:wrap}#hd20LauncherOverview .hd20LnCounts span{padding:7px 10px;background:#f1f6f9;border-radius:7px;font-size:12px}#hd20LauncherOverview .hd20LnFilters input,#hd20LauncherOverview .hd20LnFilters select{height:34px;padding:5px 9px;border:1px solid #cbd9e2;border-radius:6px;background:white}#hd20LauncherOverview .hd20LnTableScroll{width:100%;overflow-x:auto}#hd20LauncherOverview .hd20LnDataTable{width:100%;border-collapse:collapse;font-size:12px;white-space:nowrap}#hd20LauncherOverview .hd20LnDataTable th{background:#eaf1f5;color:#24445c}#hd20LauncherOverview .hd20LnDataTable th,#hd20LauncherOverview .hd20LnDataTable td{padding:10px 9px;border-bottom:1px solid #e5edf2;text-align:left}#hd20LauncherOverview .hd20LnDataTable td:nth-child(5){max-width:330px;overflow:hidden;text-overflow:ellipsis}#hd20LauncherOverview .hd20LnEmpty{text-align:center!important;padding:26px!important}#hd20LauncherOverview .hd20LnPager{display:flex;justify-content:space-between;align-items:center;margin-top:12px;font-size:12px;color:#60788b}#hd20LauncherOverview .hd20LnPager button:disabled{opacity:.35;cursor:default}`;
   s.textContent+=`#hd20LauncherOverview .hd20LnThreeTabs{display:flex;gap:0;border-bottom:2px solid #cddce6;margin:0 0 22px;position:sticky;top:0;background:#fff;z-index:2}#hd20LauncherOverview .hd20LnThreeTabs button{flex:1;padding:15px 12px;background:#f7fafc;border:0;border-bottom:3px solid transparent;font-size:15px;font-weight:700;color:#567086;cursor:pointer}#hd20LauncherOverview .hd20LnThreeTabs button.on{color:#125889;border-bottom-color:#1773b5;background:white}#hd20Launcher{backdrop-filter:none}#hd20Launcher .hd20LnBox{width:min(850px,94vw)}#hd20LauncherOverview{scroll-margin-top:14px}`;
   /* 긴급 복구: 전체 앱을 숨기거나 고정 오버레이로 덮는 CSS 제거 */
-  s.textContent+=`#hd20LauncherOverview{display:none}#hd20LauncherOverview.hd20LnVisible{display:block;position:relative;z-index:auto;max-width:1500px;margin:20px auto;padding:20px;background:white}#hd20LauncherOverview .hd20LnTableScroll{overflow:auto;max-height:70vh}#hd20LauncherOverview [data-ln-exit-grid]{background:#173a57;color:white}`;
+  s.textContent+=`body #hd20LauncherOverview{display:none}#hd20LauncherOverview.hd20LnVisible{display:block;position:relative;z-index:auto;max-width:1500px;margin:20px auto;padding:20px;background:white}#hd20LauncherOverview .hd20LnTableScroll{overflow:auto;max-height:70vh}#hd20LauncherOverview [data-ln-exit-grid]{background:#173a57;color:white}`;
   document.head.appendChild(s);
 }
 function close(){document.getElementById('hd20Launcher')?.remove();try{sessionStorage.setItem(SEEN_KEY,'1')}catch{}}
@@ -40,9 +40,9 @@ function clickWhenReady(findFn,tries=0){
  if(tries>=50){console.warn('[HD20 launcher] 등록 화면을 찾지 못했습니다');return false}
  setTimeout(()=>clickWhenReady(findFn,tries+1),100);return null;
 }
+function hideOverview(){const grid=document.getElementById('hd20LauncherOverview');if(!grid)return;grid.classList.remove('hd20LnVisible');grid.style.removeProperty('display');grid.style.removeProperty('visibility');document.body.classList.remove('hd20UnifiedLanding')}
 function navigate(area){
- document.body.classList.remove('hd20UnifiedLanding');
- document.getElementById('hd20LauncherOverview')?.classList.remove('hd20LnVisible');
+ hideOverview();
  if(window.HD20_NAV?.go)window.HD20_NAV.go(area);
  else document.querySelector('.beginnerNav button[data-key="'+area+'"]')?.click();
 }
@@ -82,7 +82,7 @@ function renderOverview(){
  '<div class="hd20LnCounts"><span>전체 <b>'+records.length+'</b></span><span>자율개선 <b>'+activities.length+'</b></span><span>개선요청 <b>'+actions.length+'</b></span><span>검색 결과 <b>'+filtered.length+'</b></span></div>'+
  '<div class="hd20LnTableScroll"><table class="hd20LnDataTable"><thead><tr><th>번호</th><th>등록 구분</th><th>등록일</th><th>담당 팀</th><th>등록 내용</th><th>상태</th><th>조회</th></tr></thead><tbody>'+ (shown.map((x,i)=>'<tr>'+cell((GRID.page-1)*GRID.size+i+1)+cell(x.__route)+cell(rowDate(x))+cell(rowTeam(x))+cell(x.title||x.subject||x.description||x.content||x.issue||x.activityName||x.item||'내용 미입력')+cell(rowStatus(x))+'<td><button type="button" data-ln-route="'+x.__area+'">열기</button></td></tr>').join('')||'<tr><td colspan="7" class="hd20LnEmpty">조회된 데이터가 없습니다.</td></tr>')+'</tbody></table></div>'+
  '<div class="hd20LnPager"><span>조회 '+filtered.length+'건 · '+GRID.page+' / '+pages+' 페이지</span><div><button type="button" data-ln-prev '+(GRID.page<=1?'disabled':'')+'>이전</button><button type="button" data-ln-next '+(GRID.page>=pages?'disabled':'')+'>다음</button></div></div>';
- root.querySelector('[data-ln-exit-grid]')?.addEventListener('click',()=>{document.body.classList.remove('hd20UnifiedLanding');root.classList.remove('hd20LnVisible');root.style.removeProperty('display');root.style.removeProperty('visibility');navigate('dashboard');try{const u=new URL(location.href);u.searchParams.delete('sub');history.replaceState(null,'',u)}catch{}});
+ root.querySelector('[data-ln-exit-grid]')?.addEventListener('click',()=>{document.body.classList.remove('hd20UnifiedLanding');hideOverview();navigate('dashboard');try{const u=new URL(location.href);u.searchParams.delete('sub');history.replaceState(null,'',u)}catch{}});
  root.querySelectorAll('[data-ln-tab]').forEach(btn=>btn.onclick=()=>{GRID.route=btn.dataset.lnTab;GRID.query='';GRID.page=1;renderOverview()});
  root.querySelector('[data-ln-filter]').value=GRID.route;
  root.querySelector('[data-ln-filter]').onchange=e=>{GRID.route=e.target.value;GRID.page=1;renderOverview()};
@@ -99,7 +99,7 @@ function ensureOverview(){
  el.addEventListener('click',e=>{if(e.target.closest('[data-ln-route]'))return});
  renderOverview();
 }
-function openOverview(){close();window.HD20_NAV?.go?.('activity');try{const u=new URL(location.href);if(u.searchParams.get('sub')==='unified'){u.searchParams.delete('sub');history.replaceState(null,'',u)}}catch{}ensureOverview();document.body.classList.remove('hd20UnifiedLanding');const grid=document.getElementById('hd20LauncherOverview');grid?.classList.add('hd20LnVisible');renderOverview();if(grid){grid.style.setProperty('display','block','important');grid.style.setProperty('visibility','visible','important');document.querySelector('.app')?.classList.remove('awFocused');document.getElementById('awActivity')?.classList.remove('on');document.getElementById('awAction')?.classList.remove('on');grid.scrollTop=0;grid.scrollIntoView({block:'start',behavior:'instant'})}}
+function openOverview(){close();window.HD20_NAV?.go?.('activity');try{const u=new URL(location.href);if(u.searchParams.get('sub')==='unified'){u.searchParams.delete('sub');history.replaceState(null,'',u)}}catch{}ensureOverview();document.body.classList.remove('hd20UnifiedLanding');const grid=document.getElementById('hd20LauncherOverview');grid?.classList.add('hd20LnVisible');renderOverview();if(grid){grid.style.removeProperty('display');grid.style.removeProperty('visibility');document.querySelector('.app')?.classList.remove('awFocused');document.getElementById('awActivity')?.classList.remove('on');document.getElementById('awAction')?.classList.remove('on');grid.scrollTop=0;grid.scrollIntoView({block:'start',behavior:'instant'})}}
 function open(){
   if(document.getElementById('hd20Launcher'))return;
   ensureOverview();document.body.classList.remove('hd20UnifiedLanding');document.getElementById('hd20LauncherOverview')?.classList.add('hd20LnVisible');GRID.route='all';GRID.page=1;renderOverview();
@@ -127,7 +127,7 @@ function open(){
 }
 window.HD20_LAUNCHER={openOverview,openRegister:open,renderOverview};
 function boot(){
-  window.addEventListener('hd20-nav-area-changed',e=>{if(e.detail?.area!=='dashboard'){document.body.classList.remove('hd20UnifiedLanding');document.getElementById('hd20LauncherOverview')?.classList.remove('hd20LnVisible')}});
+  window.addEventListener('hd20-nav-area-changed',e=>{if(e.detail?.area!=='activity')hideOverview()});
   ['hd20-kpi-source-updated','hd20-action-updated','hd20-activity-updated','hd20-dashboard-ready','hd20-nav-area-changed'].forEach(e=>window.addEventListener(e,()=>{ensureOverview();renderOverview()}));
   window.addEventListener('storage',renderOverview);
   setInterval(()=>{if(window.HD20_NAV?.active?.()==='dashboard'&&!document.activeElement?.matches?.('#hd20LauncherOverview input'))renderOverview()},5000);
