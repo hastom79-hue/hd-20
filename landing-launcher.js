@@ -122,7 +122,7 @@ function boot(){
   setInterval(()=>{if(window.HD20_NAV?.active?.()==='dashboard'&&!document.activeElement?.matches?.('#hd20LauncherOverview input'))renderOverview()},5000);
   setTimeout(()=>{ensureOverview();renderOverview()},1800);
   let seen=false;try{seen=sessionStorage.getItem(SEEN_KEY)==='1'}catch{}
-  if(seen){setTimeout(()=>{ensureOverview();renderOverview()},250);return;}
+  // 새로고침 때도 팝업을 표시합니다.
   /* 사용자 지적: "로그인 후 런처 팝업이 안 떠요" — 원인 발견: supabase-auth.js는 로그인 화면
      (<html class="hd20-auth-pending">)을 띄워 둔 채로도 .beginnerNav 버튼을 DOM에 미리 그려 놓고
      CSS로만 숨겨 두는데, 이 런처는 "버튼이 DOM에 있는지"만 폴링해서 로그인 완료 전(로그인 화면이
