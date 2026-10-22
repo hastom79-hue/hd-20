@@ -122,7 +122,7 @@ function open(){
 }
 function boot(){
   window.addEventListener('hd20-open-unified-grid',()=>{ensureOverview();document.body.classList.add('hd20UnifiedLanding');const grid=document.getElementById('hd20LauncherOverview');grid?.classList.add('hd20LnVisible');renderOverview()});
-  window.addEventListener('hd20-close-unified-grid',()=>{document.body.classList.remove('hd20UnifiedLanding');document.getElementById('hd20LauncherOverview')?.classList.remove('hd20LnVisible')});
+  window.addEventListener('hd20-close-unified-grid',()=>{if(document.getElementById('hd20Launcher'))return;document.body.classList.remove('hd20UnifiedLanding');document.getElementById('hd20LauncherOverview')?.classList.remove('hd20LnVisible')});
   window.addEventListener('hd20-nav-area-changed',e=>{if(e.detail?.area!=='activity'){document.body.classList.remove('hd20UnifiedLanding');document.getElementById('hd20LauncherOverview')?.classList.remove('hd20LnVisible')}});
   ['hd20-kpi-source-updated','hd20-action-updated','hd20-activity-updated','hd20-dashboard-ready','hd20-nav-area-changed'].forEach(e=>window.addEventListener(e,()=>{ensureOverview();renderOverview()}));
   window.addEventListener('storage',renderOverview);
