@@ -104,12 +104,12 @@ function open(){
   const el=document.createElement('div');
   el.id='hd20Launcher';
   el.innerHTML=`<div class="hd20LnBox" role="dialog" aria-modal="true" aria-label="빠른 등록 선택">
-    <div class="hd20LnHead"><b>오늘 등록할 내용을 선택하세요</b><span>선택 후 바로 해당 등록 화면으로 이동합니다 · 배경은 전체 조회 화면입니다</span></div>
+    <div class="hd20LnHead"><b>개선활동 등록</b><span>등록 유형을 선택하면 해당 화면으로 이동합니다.</span></div>
     <div class="hd20LnRow">
-      <div class="hd20LnCard left" data-ln="activity"><div class="ic">🧹</div><b>자율개선 등록</b><small>현장팀에서 자체적으로 개선한<br>활동을 등록하는 창구입니다</small></div>
-      <div class="hd20LnCard right" data-ln="action"><div class="ic">📨</div><b>개선요청 등록</b><small>공장장·5S모듈조직·혁신팀으로부터 현장 패트롤<br>점검·자율 5S Audit·혁신팀 자율 점검·5S 자율개선<br>활동 피드백 등 다양한 루트로 도출된 개선조치<br>요청사항을 현장팀에 등록하는 창구입니다</small></div>
+      <div class="hd20LnCard left" data-ln="activity"><div class="ic">🧹</div><b>자율개선 등록</b><small>현장팀이 자율적으로 발굴·실행한<br>개선활동을 등록합니다.</small></div>
+      <div class="hd20LnCard right" data-ln="action"><div class="ic">📨</div><b>개선요청 등록</b><small>현장점검·5S Audit 등에서 발굴된<br>개선 요청사항을 등록합니다.</small></div>
     </div>
-    <div class="hd20LnFoot"><button type="button" data-ln="skip">건너뛰고 전체 조회 화면 바로 보기</button></div>
+    <div class="hd20LnFoot"><button type="button" data-ln="skip">전체 개선활동 조회하기</button></div>
   </div>`;
   document.body.appendChild(el);
   el.querySelector('[data-ln="activity"]').addEventListener('click',goActivityRegister);
