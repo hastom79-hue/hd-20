@@ -142,7 +142,7 @@ function dashboardMapOpen(){
     b.setAttribute('aria-selected',String(active));
   });
   let result=false;
-  try{result=openStable()}catch(error){console.error('Maturity map render failed',error);el.innerHTML='<div role="alert" style="padding:20px;background:#fff;border:1px solid #d9e5ed;border-radius:12px"><strong>고도화 맵 데이터 렌더링 오류</strong><p>화면 전환은 정상적으로 처리됐지만 맵 데이터 표시 중 오류가 발생했습니다. 개발자 콘솔을 확인해 주세요.</p></div>'}
+  try{result=openStable()}catch(error){console.error('Maturity map render failed',error);const detail=document.createElement('pre');detail.style.cssText='white-space:pre-wrap;overflow-wrap:anywhere;color:#a33b3b;font-size:12px';detail.textContent=String(error?.name||'Error')+': '+String(error?.message||error);el.innerHTML='<div role="alert" style="padding:20px;background:#fff;border:1px solid #d9e5ed;border-radius:12px"><strong>고도화 맵 데이터 렌더링 오류</strong><p>렌더링 중 예외가 발생했습니다. 아래 오류 내용을 확인해 주세요.</p></div>';el.firstElementChild.appendChild(detail)}
   el.hidden=false;el.classList.add('on');
   el.style.setProperty('display','block','important');
   return result;
