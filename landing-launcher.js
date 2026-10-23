@@ -99,16 +99,16 @@ function renderOverview(){
  root.querySelector('[data-ln-next]').onclick=()=>{GRID.page++;renderOverview()};
  root.querySelectorAll('[data-ln-detail]').forEach(btn=>btn.onclick=()=>{const x=shown[Number(btn.dataset.lnDetail)];if(!x)return;let modal=document.getElementById('hd20LnDetailModal');if(!modal){modal=document.createElement('div');modal.id='hd20LnDetailModal';document.body.appendChild(modal)}const fields=[['개선번호',improvementId(x)||'미부여'],['등록 구분',x.__route],['등록일',rowDate(x)],['담당 팀',rowTeam(x)],['상태',rowStatus(x)],['등록 내용',x.title||x.subject||x.description||x.content||x.issue||x.activityName||x.item||'내용 미입력']];modal.innerHTML='<div class="hd20LnDetailShade" data-ln-close></div><section class="hd20LnDetailPanel" role="dialog" aria-modal="true" aria-label="개선 상세조회"><header><b>개선 상세조회</b><button type="button" data-ln-close>닫기 ×</button></header><div class="hd20LnDetailFields">'+fields.map(f=>'<div><strong>'+escapeText(f[0])+'</strong><span>'+escapeText(f[1])+'</span></div>').join('')+'</div></section>';modal.querySelectorAll('[data-ln-close]').forEach(b=>b.onclick=()=>modal.remove())});
 }
-function ensureOverview(){
+function ensureOverview(deferRender=false){
  css();if(document.getElementById('hd20LauncherOverview'))return;
  const el=document.createElement('section');el.id='hd20LauncherOverview';el.setAttribute('aria-label','자율개선과 개선요청 통합 조회');(document.querySelector('.app > .beginnerNav')||document.querySelector('.beginnerNav')||document.querySelector('.top'))?.insertAdjacentElement('afterend',el) || document.body.appendChild(el);
  el.addEventListener('click',e=>{if(e.target.closest('[data-ln-route]'))return});
- renderOverview();
+ if(!deferRender)renderOverview();
 }
 function openOverview(){if(overviewOpening)return;overviewOpening=true;try{close();if(window.HD20_NAV?.active?.()!=='activity')window.HD20_NAV?.go?.('activity');try{const u=new URL(location.href);if(u.searchParams.get('sub')==='unified'){u.searchParams.delete('sub');history.replaceState(null,'',u)}}catch{}ensureOverview();document.body.classList.remove('hd20UnifiedLanding');const grid=document.getElementById('hd20LauncherOverview');grid?.classList.add('hd20LnVisible');document.body.classList.add('hd20InquiryActive');renderOverview();if(grid){grid.style.removeProperty('display');grid.style.removeProperty('visibility');document.querySelector('.app')?.classList.remove('awFocused');document.getElementById('awActivity')?.classList.remove('on');document.getElementById('awAction')?.classList.remove('on');grid.scrollTop=0;window.scrollTo(0,0)}}finally{overviewOpening=false}}
 function open(){
   if(document.getElementById('hd20Launcher'))return;
-  ensureOverview();document.body.classList.remove('hd20UnifiedLanding');document.getElementById('hd20LauncherOverview')?.classList.add('hd20LnVisible');document.body.classList.add('hd20InquiryActive');GRID.route='all';GRID.page=1;
+  ensureOverview(true);document.body.classList.remove('hd20UnifiedLanding');document.getElementById('hd20LauncherOverview')?.classList.add('hd20LnVisible');document.body.classList.add('hd20InquiryActive');GRID.route='all';GRID.page=1;
   css();
   const el=document.createElement('div');
   el.id='hd20Launcher';
