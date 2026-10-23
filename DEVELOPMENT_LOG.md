@@ -1814,3 +1814,12 @@ Canonical Store는 다음을 기준으로 한다.
 - hd20-maturity-map-tab.js: 실제 대시보드 탭 바에 '고도화 맵' 버튼을 추가하고 표시/숨김 연결 및 섹션 직접 링크 처리. 커밋 c583ac53.
 - index.html: 두 스크립트 캐시 v33 갱신. 커밋 b97af7a8.
 - 검증: 변경 JavaScript 구문검사 통과, GitHub 파일 갱신 확인. 실제 Pages 화면·새로고침·탭 전환은 미검증. 
+
+
+## 2026-10-23 고도화 맵 정식 대시보드 탭 통합 (v42)
+- 실제 탭 소유자 dashboard-section-tabs.js 확인: 미등록 map 요청을 summary로 치환하던 것이 핵심 충돌 원인.
+- 정식 TABS에 map 추가, #hd20MaturityMapTab을 화면 전환 대상에 등록, map 선택 시 전용 렌더러 호출 및 타 탭 복귀 시 닫기.
+- hd20-maturity-map-tab.js에서 중복 버튼 주입 및 중복 클릭 이벤트 제거.
+- 배포 캐시: final-layout-polish.js에서 dashboard-section-tabs.js v42, index.html에서 고도화 맵 v42.
+- 변경 커밋: 95647eb5, 71504b42, b83acb83, e5870cc7.
+- 검증 상태: JS 구문검사 통과. 실행 환경에서 GitHub Pages DNS 접근 실패하여 실제 브라우저 배포 동작은 미검증. 정상 동작 판정 보류.
