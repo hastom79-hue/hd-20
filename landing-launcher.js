@@ -163,7 +163,7 @@ function boot(){
     if(document.querySelector('.hd20AuthGate.on'))return;
     if(document.getElementById('hd20Launcher'))return;
     launchScheduled=true;
-    setTimeout(()=>{try{open()}catch(err){console.error('[HD20 launcher]',err);hideOverview()}},100);
+    setTimeout(()=>{try{open()}catch(err){console.error('[HD20 launcher]',err);hideOverview()}},0);
   }
   window.addEventListener('hd20-auth-bypass',showInitialLauncher,{once:true});
   window.addEventListener('hd20-auth-success',showInitialLauncher,{once:true});
