@@ -167,7 +167,9 @@ function boot(){
   }
   window.addEventListener('hd20-auth-bypass',showInitialLauncher,{once:true});
   window.addEventListener('hd20-auth-success',showInitialLauncher,{once:true});
-  setTimeout(showInitialLauncher,1200);
+  // 인증 완료가 스크립트 초기화보다 먼저 발생한 경우에도 즉시 팝업을 요청한다.
+  if(window.HD20_AUTH_BYPASS&&!document.documentElement.classList.contains('hd20-auth-pending'))showInitialLauncher();
+  setTimeout(showInitialLauncher,250);
   // 복구 우선: 초기 로드에서 통합조회 자동 생성/화면 은닉을 하지 않는다.
   // 메뉴 클릭 후에만 조회를 생성하며, 조회 렌더 오류가 나도 기본 앱은 남는다.
   // 팝업은 사용자가 명시적으로 신규등록을 선택했을 때만 연다.
