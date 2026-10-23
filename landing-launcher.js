@@ -32,6 +32,7 @@ function css(){
   s.textContent+=`#hd20LauncherOverview .hd20LnThreeTabs{display:flex;gap:0;border-bottom:2px solid #cddce6;margin:0 0 22px;position:sticky;top:0;background:#fff;z-index:2}#hd20LauncherOverview .hd20LnThreeTabs button{flex:1;padding:15px 12px;background:#f7fafc;border:0;border-bottom:3px solid transparent;font-size:15px;font-weight:700;color:#567086;cursor:pointer}#hd20LauncherOverview .hd20LnThreeTabs button.on{color:#125889;border-bottom-color:#1773b5;background:white}#hd20Launcher{backdrop-filter:none}#hd20Launcher .hd20LnBox{width:min(850px,94vw)}#hd20LauncherOverview{scroll-margin-top:14px}`;
   /* 긴급 복구: 전체 앱을 숨기거나 고정 오버레이로 덮는 CSS 제거 */
   s.textContent+=`body #hd20LauncherOverview{display:none}#hd20LauncherOverview.hd20LnVisible{display:block;position:relative;z-index:auto;max-width:1500px;margin:20px auto;padding:20px;background:white}#hd20LauncherOverview .hd20LnTableScroll{overflow:auto;max-height:70vh}#hd20LauncherOverview [data-ln-exit-grid]{background:#173a57;color:white}`;
+  s.textContent+=`body.hd20InquiryActive #hd20LauncherOverview.hd20LnVisible{display:block}body.hd20InquiryActive .app{display:none!important}body.hd20InquiryActive #hd20LauncherOverview{margin-bottom:24px}`;
   document.head.appendChild(s);
 }
 function close(){document.getElementById('hd20Launcher')?.remove();try{sessionStorage.setItem(SEEN_KEY,'1')}catch{}}
@@ -40,7 +41,7 @@ function clickWhenReady(findFn,tries=0){
  if(tries>=50){console.warn('[HD20 launcher] 등록 화면을 찾지 못했습니다');return false}
  setTimeout(()=>clickWhenReady(findFn,tries+1),100);return null;
 }
-function hideOverview(){const grid=document.getElementById('hd20LauncherOverview');if(!grid)return;grid.classList.remove('hd20LnVisible');grid.style.removeProperty('display');grid.style.removeProperty('visibility');document.body.classList.remove('hd20UnifiedLanding')}
+function hideOverview(){document.body.classList.remove('hd20InquiryActive');const grid=document.getElementById('hd20LauncherOverview');if(!grid)return;grid.classList.remove('hd20LnVisible');grid.style.removeProperty('display');grid.style.removeProperty('visibility');document.body.classList.remove('hd20UnifiedLanding')}
 function navigate(area){
  hideOverview();
  if(window.HD20_NAV?.go)window.HD20_NAV.go(area);
@@ -99,10 +100,10 @@ function ensureOverview(){
  el.addEventListener('click',e=>{if(e.target.closest('[data-ln-route]'))return});
  renderOverview();
 }
-function openOverview(){close();window.HD20_NAV?.go?.('activity');try{const u=new URL(location.href);if(u.searchParams.get('sub')==='unified'){u.searchParams.delete('sub');history.replaceState(null,'',u)}}catch{}ensureOverview();document.body.classList.remove('hd20UnifiedLanding');const grid=document.getElementById('hd20LauncherOverview');grid?.classList.add('hd20LnVisible');renderOverview();if(grid){grid.style.removeProperty('display');grid.style.removeProperty('visibility');document.querySelector('.app')?.classList.remove('awFocused');document.getElementById('awActivity')?.classList.remove('on');document.getElementById('awAction')?.classList.remove('on');grid.scrollTop=0;grid.scrollIntoView({block:'start',behavior:'instant'})}}
+function openOverview(){close();window.HD20_NAV?.go?.('activity');try{const u=new URL(location.href);if(u.searchParams.get('sub')==='unified'){u.searchParams.delete('sub');history.replaceState(null,'',u)}}catch{}ensureOverview();document.body.classList.remove('hd20UnifiedLanding');const grid=document.getElementById('hd20LauncherOverview');grid?.classList.add('hd20LnVisible');document.body.classList.add('hd20InquiryActive');renderOverview();if(grid){grid.style.removeProperty('display');grid.style.removeProperty('visibility');document.querySelector('.app')?.classList.remove('awFocused');document.getElementById('awActivity')?.classList.remove('on');document.getElementById('awAction')?.classList.remove('on');grid.scrollTop=0;grid.scrollIntoView({block:'start',behavior:'instant'})}}
 function open(){
   if(document.getElementById('hd20Launcher'))return;
-  ensureOverview();document.body.classList.remove('hd20UnifiedLanding');document.getElementById('hd20LauncherOverview')?.classList.add('hd20LnVisible');GRID.route='all';GRID.page=1;renderOverview();
+  ensureOverview();document.body.classList.remove('hd20UnifiedLanding');document.getElementById('hd20LauncherOverview')?.classList.add('hd20LnVisible');document.body.classList.add('hd20InquiryActive');GRID.route='all';GRID.page=1;renderOverview();
   css();
   const el=document.createElement('div');
   el.id='hd20Launcher';
