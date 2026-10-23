@@ -100,7 +100,7 @@ function ensureOverview(){
  el.addEventListener('click',e=>{if(e.target.closest('[data-ln-route]'))return});
  renderOverview();
 }
-function openOverview(){close();window.HD20_NAV?.go?.('activity');try{const u=new URL(location.href);if(u.searchParams.get('sub')==='unified'){u.searchParams.delete('sub');history.replaceState(null,'',u)}}catch{}ensureOverview();document.body.classList.remove('hd20UnifiedLanding');const grid=document.getElementById('hd20LauncherOverview');grid?.classList.add('hd20LnVisible');document.body.classList.add('hd20InquiryActive');renderOverview();if(grid){grid.style.removeProperty('display');grid.style.removeProperty('visibility');document.querySelector('.app')?.classList.remove('awFocused');document.getElementById('awActivity')?.classList.remove('on');document.getElementById('awAction')?.classList.remove('on');grid.scrollTop=0;grid.scrollIntoView({block:'start',behavior:'instant'})}}
+function openOverview(){close();if(window.HD20_NAV?.active?.()!=='activity')window.HD20_NAV?.go?.('activity');try{const u=new URL(location.href);if(u.searchParams.get('sub')==='unified'){u.searchParams.delete('sub');history.replaceState(null,'',u)}}catch{}ensureOverview();document.body.classList.remove('hd20UnifiedLanding');const grid=document.getElementById('hd20LauncherOverview');grid?.classList.add('hd20LnVisible');document.body.classList.add('hd20InquiryActive');renderOverview();if(grid){grid.style.removeProperty('display');grid.style.removeProperty('visibility');document.querySelector('.app')?.classList.remove('awFocused');document.getElementById('awActivity')?.classList.remove('on');document.getElementById('awAction')?.classList.remove('on');grid.scrollTop=0;window.scrollTo(0,0)}}
 function open(){
   if(document.getElementById('hd20Launcher'))return;
   ensureOverview();document.body.classList.remove('hd20UnifiedLanding');document.getElementById('hd20LauncherOverview')?.classList.add('hd20LnVisible');document.body.classList.add('hd20InquiryActive');GRID.route='all';GRID.page=1;renderOverview();
@@ -136,10 +136,10 @@ function boot(){
     setTimeout(()=>{if(window.HD20_NAV?.active?.()==='activity')openOverview()},0);
   },true);
   window.addEventListener('hd20-nav-area-changed',e=>{if(e.detail?.area!=='activity')hideOverview()});
-  ['hd20-kpi-source-updated','hd20-action-updated','hd20-activity-updated','hd20-dashboard-ready','hd20-nav-area-changed'].forEach(e=>window.addEventListener(e,()=>{ensureOverview();renderOverview()}));
-  window.addEventListener('storage',renderOverview);
-  setInterval(()=>{if(window.HD20_NAV?.active?.()==='dashboard'&&!document.activeElement?.matches?.('#hd20LauncherOverview input'))renderOverview()},5000);
-  setTimeout(()=>{ensureOverview();renderOverview()},1800);
+  ['hd20-kpi-source-updated','hd20-action-updated','hd20-activity-updated'].forEach(e=>window.addEventListener(e,()=>{if(document.body.classList.contains('hd20InquiryActive'))renderOverview()}));
+  window.addEventListener('storage',()=>{if(document.body.classList.contains('hd20InquiryActive'))renderOverview()});
+
+  setTimeout(()=>{ensureOverview()},1800);
   let seen=false;try{seen=sessionStorage.getItem(SEEN_KEY)==='1'}catch{}
   // 새로고침 때도 팝업을 표시합니다.
   /* 사용자 지적: "로그인 후 런처 팝업이 안 떠요" — 원인 발견: supabase-auth.js는 로그인 화면
