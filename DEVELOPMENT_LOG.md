@@ -1832,3 +1832,9 @@ Canonical Store는 다음을 기준으로 한다.
 - JavaScript 정적 구문검사 통과. 실제 브라우저 검증 및 Pages 반영 확인은 미완료.
 
 - 후속 보완: 개선조치 > 효과·재발 검증현황에 이미 계산하던 효과검증 완료 및 재발 확인 건수 노출. 가상값 생성 없음. hd20-subtabs.js 커밋 a721c03c. JS 구문검사 통과. 실제 Pages 브라우저 검증은 미완료. 대시보드 변경 없음.
+
+
+## 2026-10-24 Audit 종료·재조치 판정 표시 안전장치
+- hd20-subtabs.js: 종료평가 패널이 없을 때만 Audit 영역에 읽기 전용 fallback 생성. 기존 hd20AuditRandomDrawsV1의 finalEvaluation 입력/미입력 현황 표시. 판정·재조치 데이터 자동생성/수정 없음.
+- 기존 종료평가 패널이 존재하면 덮어쓰지 않도록 dataset.hd20Fallback 가드 적용. 커밋 7f7d31a4, 6b9f0e34.
+- 대시보드 관련 코드 변경 없음. JS 구문검사 통과, 실제 Pages 반영·브라우저 표시 검증 미완료.
