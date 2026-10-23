@@ -77,8 +77,7 @@ function render(){css();const el=ensure(),d=data();
   const order=new Map(master.map((name,i)=>[name,i]));
   teams.sort((a,b)=>(order.get(a.team)??9999)-(order.get(b.team)??9999)||a.team.localeCompare(b.team,'ko'));
   /* Risk quadrant: X = exited / confirmed, Y = official confirmed case count. */
-  const maxCount=Math.max(1,...teams.map(t=>t.confirmed));
-  const yMax=Math.max(2,Math.ceil(maxCount*1.2));
+  // The stacked comparison does not use the legacy quadrant axes.
   bars.style.cssText='padding:14px 14px 8px;overflow:hidden;max-width:100%';
   const chart=document.createElement('div');chart.className='mmtRiskMap';
   chart.innerHTML='<div class="mmtRiskLegend"><span><i style="background:#2d9669"></i>유지 안정</span><span><i style="background:#dca342"></i>관리 주의</span><span><i style="background:#d4544e"></i>이탈 집중</span><span>원 크기 = 이탈 건수 · 클릭 = 팀별 사례</span></div><div class="mmtRiskPlot"></div><p class="mmtRiskNote">가로축: 공식확정 후 이탈률(%) · 세로축: 총 공식확정 사례(건) · 점은 생산팀을 나타냅니다. 확정 0건 팀은 하단에 별도 표시합니다.</p>';
