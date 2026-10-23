@@ -222,8 +222,8 @@ function render(box){if(!document.getElementById('hd20DrillGridCss')){const st=d
   // Team names across X axis in all-teams mode; months in selected-team mode.
   // Source-grounded comparisons: do not count application targets as formally adopted.
   const maturityRegistration=r=>String(r.date||r.regDate||r.createdAt||'').slice(0,10);
-  const maturitySelected=!!maturityDrillTeam&&tv.some(t=>t.t===maturityDrillTeam);
-  const maturityCats=maturitySelected?ML:tv.map(t=>t.t);
+  const maturitySelected=true;const maturityDrillTeamSelected=S.team&&tv.some(t=>t.t===S.team)?S.team:(tv[0]?.t||'');
+  const maturityCats=ML;
   const rolloutCandidate=r=>{const v=r.horizontalRollout??r.isHorizontalRollout??r.rolloutApplied??r.horizontalDeployment;return v===true||v===1||['Y','YES','TRUE','1','적용','완료'].includes(String(v??'').trim().toUpperCase())||['수평전개중','수평전개 완료','적용완료','완료','후보','채택'].includes(String(r.rolloutState||r.horizontalRolloutState||'').trim())};
   const rolloutAdopted=r=>rolloutCandidate(r)&&['채택','공식채택','승인','확정'].includes(String(r.rolloutDecision||r.rolloutJudgeState||r.horizontalRolloutDecision||r.horizontalRolloutState||'').trim());
   const maturityCandidate=r=>r.type==='5S 고도화';
@@ -231,14 +231,14 @@ function render(box){if(!document.getElementById('hd20DrillGridCss')){const st=d
   const compareChart=(kind)=>{
     const isRoll=kind==='rollout',candidate=isRoll?rolloutCandidate:maturityCandidate,adopted=isRoll?rolloutAdopted:maturityAdopted;
     const rows=rowsC.filter(candidate),found=rows.filter(r=>maturityRegistration(r).slice(0,4)===S.year),accepted=rows.filter(r=>adopted(r)&&cy(r)===S.year);
-    const counts=(items,acceptedSeries)=>maturitySelected?ML.map((_,i)=>items.filter(r=>r.team===maturityDrillTeam&&(acceptedSeries?cm(r):+maturityRegistration(r).slice(5,7))===i+1).length):tv.map(t=>items.filter(r=>r.team===t.t).length);
+    const counts=(items,acceptedSeries)=>maturitySelected?ML.map((_,i)=>items.filter(r=>r.team===maturityDrillTeamSelected&&(acceptedSeries?cm(r):+maturityRegistration(r).slice(5,7))===i+1).length):tv.map(t=>items.filter(r=>r.team===t.t).length);
     const foundCounts=counts(found,false),acceptedCounts=counts(accepted,true);
-    const toValues=arr=>arr.map((n,i)=>{const headcount=maturitySelected?tv.find(t=>t.t===maturityDrillTeam)?.h:tv[i].h;return headcount?n/headcount:0});
+    const toValues=arr=>arr.map((n,i)=>{const headcount=tv.find(t=>t.t===maturityDrillTeamSelected)?.h;return headcount?n/headcount:0});
     const name=isRoll?'수평전개':'고도화';
-    const graph=chart({w:Math.max(480,maturitySelected?520:tv.length*49),h:285,cats:maturityCats,series:[{name:'발굴',vals:toValues(foundCounts),labelTotals:foundCounts,color:'#298c80'},{name:'채택',vals:toValues(acceptedCounts),labelTotals:acceptedCounts,color:'#3579b5'}],per:!maturitySelected,rotate:!maturitySelected,minSlot:maturitySelected?38:49,linkX:!maturitySelected,tightAxis:true,axisHeadroom:.12});
-    return '<div class="ibMaturityPanel"><div class="ibHead">'+name+' 발굴 대비 채택 <em>'+(maturitySelected?esc(maturityDrillTeam)+' · 월별 인당 건수 (총건수)':'팀별 인당 건수 (총건수)')+'</em></div><div class="ibMaturityChart">'+graph+'</div><div class="ibMaturityLegend"><span>■ 발굴</span><span>■ 채택</span></div></div>';
+    const graph=chart({w:Math.max(480,Math.floor(W/2)-28),h:285,cats:maturityCats,series:[{name:'발굴',vals:toValues(foundCounts),labelTotals:foundCounts,color:'#298c80'},{name:'채택',vals:toValues(acceptedCounts),labelTotals:acceptedCounts,color:'#3579b5'}],per:true,rotate:false,minSlot:38,linkX:false,tightAxis:true,axisHeadroom:.12});
+    return '<div class="ibMaturityPanel"><div class="ibHead">'+name+' 발굴 대비 채택 <em>'+(maturitySelected?esc(maturityDrillTeamSelected)+' · 월별 인당 건수 (총건수)':'팀별 인당 건수 (총건수)')+'</em></div><div class="ibMaturityChart">'+graph+'</div><div class="ibMaturityLegend"><span>■ 발굴</span><span>■ 채택</span></div></div>';
   };
-  const maturityRight='<div class="ibMaturityRight"><div class="ibMaturityControls">'+(maturitySelected?'<button type="button" data-maturity-all>전체 팀 보기</button>':'<span>팀명을 클릭하면 월별 실적으로 전환됩니다.</span>')+'</div>'+compareChart('rollout')+compareChart('maturity')+'</div>';
+  const maturityRight='<div class="ibMaturityRight">'+compareChart('rollout')+compareChart('maturity')+'</div>';
   const totC=tv.reduce((a,x)=>a+x.c,0),avg=per?totC/hcAll:totC/Math.max(1,tv.length);
   /* snapshot()은 매번 원본을 새로 파싱해 매 호출마다 새 객체를 만들므로 참조 비교(Set.has)가 항상 실패함 — id로 비교 */
   const keepSet=new Set((window.HD20KPIData?.snapshot?.()?.maintained||[]).map(r=>r.id));
@@ -344,8 +344,6 @@ ${maturityRight}</div>
   box.querySelectorAll('[data-evk]').forEach(b=>{const dl=document.createElement('button');dl.type='button';dl.className='ibEv';dl.textContent='엑셀 추출';dl.style.marginLeft='6px';dl.addEventListener('click',()=>{const key=b.dataset.evk;const [title,rows]=EV[key];downloadEvidence(cols,rows.map(mapR),'5S_자율개선_차트_'+key);});b.insertAdjacentElement('afterend',dl)});
   box.querySelectorAll('[data-evk]').forEach(b=>b.onclick=()=>{const [t,a]=EV[b.dataset.evk];openRows({title:t,cols,rows:a.map(mapR),file:'5S_자율개선_근거_'+b.dataset.evk})});
   box.querySelectorAll('[data-f]').forEach(el=>el.onchange=()=>{if(el.dataset.f==='month'){const v=el.value.trim();if(v!==''&&(!/^\d{1,2}$/.test(v)||Number(v)<1||Number(v)>12)){el.setCustomValidity('1~12 사이의 월을 입력하세요.');el.reportValidity();return}el.setCustomValidity('');S.month=v?String(Number(v)).padStart(2,'0'):'';}else S[el.dataset.f]=el.value;if(el.dataset.f==='group')S.team='';render(box)});
-  box.querySelector('[data-maturity-all]')?.addEventListener('click',()=>{maturityDrillTeam='';render(box)});
-  box.querySelectorAll('.ibMaturityRight [data-cat]').forEach(el=>el.addEventListener('click',()=>{const team=el.getAttribute('data-cat');if(tv.some(t=>t.t===team)){maturityDrillTeam=team;S.team=team;render(box)}}));
   box.querySelector('[data-ib="go"]').onclick=()=>render(box);box.querySelector('[data-ib="print"]').onclick=()=>window.print();
   box.querySelector('[data-ib="csv"]').onclick=()=>exportCsv({D,S,tv,A:{TYPES,allT},ML,dVals,per,hcAll});
   box.querySelector('[data-ib="saveTeamOrder"]').onclick=()=>{
