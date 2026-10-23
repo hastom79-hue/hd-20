@@ -117,7 +117,7 @@ function render(){css();const el=ensure(),d=data();
     $$('[data-mmt-case]',row).forEach((button,ci)=>button.onclick=()=>openCase(t.cases[ci]));
     caseRows.appendChild(row);
   });
-  plot.appendChild(svg);cases.replaceChildren(caseRows);
+  cases.replaceChildren(caseRows);
   const kpiCols=['생산팀','작업장/사례','등록일','판정일','판정상태'],kpiMapR=x=>[x.team||'—',x.workplace||x.title||x.id||'—',txt(x.date||x.regDate||x.createdAt).slice(0,10)||'—',txt(x.judgedAt||x.confirmedAt||x.judgeDate).slice(0,10)||'—',x.judgeState||'—'];
   const KPI_EV={new:['올해 신규 공식확정 근거',newSecuredRows],conf:['누적 공식확정 근거',d.confirmed],keep:['현재 유지 근거',d.maintained]};
   $$('[data-mmtk]',el).forEach(b=>b.onclick=()=>{const [t,rows]=KPI_EV[b.dataset.mmtk];window.HD20_BOARD_KIT?.openRows?.({title:t,cols:kpiCols,rows:rows.map(kpiMapR),file:'고도화맵_'+b.dataset.mmtk})});
