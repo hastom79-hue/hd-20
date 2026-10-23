@@ -189,27 +189,7 @@ function maturityDashboardCss(){
   document.head.appendChild(st);
 }
 window.HD20_MATURITY_DASHBOARD={open:dashboardMapOpen,close:dashboardMapClose};
-function ensureDashboardMapTab(){
-  const bar=document.getElementById('hd20DashboardSectionTabs');if(!bar)return;
-  let btn=bar.querySelector('[data-dashboard-section="map"]');
-  if(!btn){btn=document.createElement('button');btn.type='button';btn.dataset.dashboardSection='map';btn.textContent='고도화 맵';bar.appendChild(btn)}
-}
-document.addEventListener('click',e=>{
-  const b=e.target.closest?.('#hd20DashboardSectionTabs button');
-  if(!b)return;
-  if(b.dataset.dashboardSection==='map'){
-    e.preventDefault();e.stopImmediatePropagation();
-    const u=new URL(location.href);u.searchParams.set('area','dashboard');u.searchParams.set('section','map');u.searchParams.delete('sub');history.replaceState(null,'',u);
-    dashboardMapOpen();
-  }else dashboardMapClose();
-},true);
-window.addEventListener('hd20-subtab-changed',e=>{if(e.detail?.area!=='dashboard')dashboardMapClose()});
-function bootDashboardMap(){
-  ensureDashboardMapTab();
-  const bar=document.getElementById('hd20DashboardSectionTabs');
-  if(bar){new MutationObserver(ensureDashboardMapTab).observe(bar,{childList:true});}
-  if(new URLSearchParams(location.search).get('section')==='map')requestAnimationFrame(dashboardMapOpen);
-}
+function bootDashboardMap(){if(new URLSearchParams(location.search).get('section')==='map')window.HD20_DASHBOARD_TABS?.apply?.('map',{scroll:false})}
 document.readyState==='loading'?document.addEventListener('DOMContentLoaded',bootDashboardMap,{once:true}):bootDashboardMap();
 
 window.addEventListener('hd20-open-maturity-map-tab',openStable);window.addEventListener('hd20-close-maturity-map-tab',hide);['hd20-kpi-source-updated','hd20-gmes-5s-imported','hd20-gmes-5s-judged'].forEach(e=>window.addEventListener(e,refresh));document.addEventListener('keydown',e=>{if(e.key==='Escape')$('.mmtDetail.on')?.classList.remove('on')});
