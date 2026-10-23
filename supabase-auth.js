@@ -24,5 +24,7 @@ function showBootError(error){console.error('[HD20 AUTH] bootstrap failed',error
 async function handleExpiredCompanySession(){if(sessionExpiryHandling)return;sessionExpiryHandling=true;try{localStorage.removeItem(MAIL_SESSION_KEY);clearUser();loading().classList.add('hide');document.documentElement.classList.remove('hd20-auth-pending');renderMailGate()}finally{sessionExpiryHandling=false}}
 function bindSlidingSession(){['click','keydown','touchstart'].forEach(ev=>document.addEventListener(ev,extendMailSession,{passive:true}));document.addEventListener('visibilitychange',()=>{if(!document.hidden){const s=readMailSession();if(s)extendMailSession();else handleExpiredCompanySession()}});setInterval(()=>{const s=readMailSession();if(!s){handleExpiredCompanySession();return}renderSessionChip(s)},60000)}
 async function boot(){try{if(['127.0.0.1','localhost'].includes(location.hostname)){window.HD20_AUTH_BYPASS=true;document.documentElement.classList.remove('hd20-auth-pending');document.body.style.overflow='';window.dispatchEvent(new CustomEvent('hd20-auth-bypass'));return}loading();invalidPopup();bindSlidingSession();const s=readMailSession();if(!s){document.documentElement.classList.remove('hd20-auth-pending');loading().classList.add('hide');renderMailGate();return}loading().classList.add('hide');enterApp(s)}catch(e){showBootError(e)}}
-document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot,{once:true}):boot();
+// 인증 UI는 동적으로 생성되므로 DOMContentLoaded까지 기다릴 필요가 없다.
+// body가 존재하는 시점에 바로 인증 상태를 확정해 팝업 실행을 앞당긴다.
+if(document.body)boot();else document.addEventListener('DOMContentLoaded',boot,{once:true});
 })();
