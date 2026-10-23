@@ -1806,3 +1806,11 @@ Canonical Store는 다음을 기준으로 한다.
 - hd20-subtabs.js: 대시보드 하위 탭에 '고도화 맵' 추가, 고도화·표준화의 기존 맵 화면 노출 제거, 대시보드 map 선택 시 기존 맵 표시 및 다른 KPI 패널 숨김. 커밋 101eee2f.
 - index.html: 고도화 맵 v32 / 하위 탭 v20 캐시 갱신. 커밋 289133ff.
 - 검증: 수정 JavaScript 구문검사 통과. 실제 GitHub Pages 반영·화면 전환·새로고침·상세 팝업은 미검증. 기존 고도화/표준화 탭의 구 메뉴 항목은 추후 제거 필요.
+
+
+## 2026-10-23 대시보드 고도화 맵 미노출 원인 및 수정 (v33)
+- 원인: 실제 대시보드 하위 탭은 section 라우팅/hd20DashboardSectionTabs를 사용하지만 앞선 변경은 sub 라우팅/hd20Subnav에 추가하여 화면 미노출.
+- beginner-navigation.js: section=map 및 기존 sub=map URL을 정규화해 고도화 맵 열기. 커밋 2cfacc53.
+- hd20-maturity-map-tab.js: 실제 대시보드 탭 바에 '고도화 맵' 버튼을 추가하고 표시/숨김 연결 및 섹션 직접 링크 처리. 커밋 c583ac53.
+- index.html: 두 스크립트 캐시 v33 갱신. 커밋 b97af7a8.
+- 검증: 변경 JavaScript 구문검사 통과, GitHub 파일 갱신 확인. 실제 Pages 화면·새로고침·탭 전환은 미검증. 
