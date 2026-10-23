@@ -121,7 +121,7 @@ function open(){
   </div>`;
   document.body.appendChild(el);
   // 팝업을 먼저 표시하고 대량 통합조회 데이터 구성은 다음 작업으로 미룬다.
-  setTimeout(()=>{if(document.getElementById('hd20Launcher')===el){try{renderOverview()}catch(err){console.error('[HD20 launcher background]',err)}}},0);
+  requestAnimationFrame(()=>setTimeout(()=>{if(document.getElementById('hd20Launcher')===el){try{renderOverview()}catch(err){console.error('[HD20 launcher background]',err)}}},30));
   el.querySelector('[data-ln="activity"]').addEventListener('click',goActivityRegister);
   el.querySelector('[data-ln="action"]').addEventListener('click',goActionRegister);
   el.querySelector('[data-ln-close]').addEventListener('click',openOverview);
@@ -174,5 +174,5 @@ function boot(){
   // 로그인/새로고침에서 자동 팝업을 열지 않아 조회 탭과 화면 충돌을 방지한다.
 
 }
-document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot,{once:true}):boot();
+boot();
 })();
