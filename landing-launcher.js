@@ -128,6 +128,13 @@ function open(){
 }
 window.HD20_LAUNCHER={openOverview,openRegister:open,renderOverview};
 function boot(){
+  // 상위 '자율개선등록 / 개선조치등록' 메뉴 클릭은 기존 업무관리 패널이 아니라 통합조회로 진입.
+  // 등록 팝업 내부 버튼 및 HD20_NAV.go('activity') 내부 호출에는 개입하지 않는다.
+  document.addEventListener('click',e=>{
+    const tab=e.target?.closest?.('.beginnerNav button[data-key="activity"]');
+    if(!tab)return;
+    setTimeout(()=>{if(window.HD20_NAV?.active?.()==='activity')openOverview()},0);
+  },true);
   window.addEventListener('hd20-nav-area-changed',e=>{if(e.detail?.area!=='activity')hideOverview()});
   ['hd20-kpi-source-updated','hd20-action-updated','hd20-activity-updated','hd20-dashboard-ready','hd20-nav-area-changed'].forEach(e=>window.addEventListener(e,()=>{ensureOverview();renderOverview()}));
   window.addEventListener('storage',renderOverview);
