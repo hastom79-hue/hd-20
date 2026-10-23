@@ -135,11 +135,11 @@ function boot(){
     if(!tab)return;
     setTimeout(()=>{if(window.HD20_NAV?.active?.()==='activity')openOverview()},0);
   },true);
-  window.addEventListener('hd20-nav-area-changed',e=>{if(e.detail?.area!=='activity')hideOverview()});
+  window.addEventListener('hd20-nav-area-changed',e=>{if(e.detail?.area!=='activity'){hideOverview();return}if(document.getElementById('hd20Launcher'))return;setTimeout(()=>{if(window.HD20_NAV?.active?.()==='activity'&&!document.getElementById('hd20Launcher')&&!document.querySelector('.awRegisterModal.on,#hd20ActionRegisterModal.on'))openOverview()},0)});
   ['hd20-kpi-source-updated','hd20-action-updated','hd20-activity-updated'].forEach(e=>window.addEventListener(e,()=>{if(document.body.classList.contains('hd20InquiryActive'))renderOverview()}));
   window.addEventListener('storage',()=>{if(document.body.classList.contains('hd20InquiryActive'))renderOverview()});
 
-  setTimeout(()=>{ensureOverview()},1800);
+  setTimeout(()=>{ensureOverview();if(window.HD20_NAV?.active?.()==='activity'&&!document.getElementById('hd20Launcher'))openOverview()},500);
   // 팝업은 사용자가 명시적으로 신규등록을 선택했을 때만 연다.
   // 로그인/새로고침에서 자동 팝업을 열지 않아 조회 탭과 화면 충돌을 방지한다.
 
