@@ -1823,3 +1823,10 @@ Canonical Store는 다음을 기준으로 한다.
 - 배포 캐시: final-layout-polish.js에서 dashboard-section-tabs.js v42, index.html에서 고도화 맵 v42.
 - 변경 커밋: 95647eb5, 71504b42, b83acb83, e5870cc7.
 - 검증 상태: JS 구문검사 통과. 실행 환경에서 GitHub Pages DNS 접근 실패하여 실제 브라우저 배포 동작은 미검증. 정상 동작 판정 보류.
+
+
+## 2026-10-23 비대시보드 안정성 보완
+- 사용자 지시: 대시보드 전체(고도화 맵 포함) 수정 금지. 이후 작업은 나머지 탭에 한정.
+- 개선조치·완료관리: hd20-subtabs.js ensureActionVerify()에서 기준 요소 부재 시 검증 패널이 DOM에 삽입되지 않는 결함 보완. anchor가 없으면 #awAction 내부에 직접 append. 커밋 d5d402b4.
+- 대시보드 관련 함수·레이아웃·데이터는 수정하지 않음.
+- JavaScript 정적 구문검사 통과. 실제 브라우저 검증 및 Pages 반영 확인은 미완료.
