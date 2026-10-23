@@ -160,16 +160,56 @@ function signature(){const d=data(),a=api();const teamSig=teamStats(d).map(t=>[t
 function refresh(){clearTimeout(refreshTimer);refreshTimer=setTimeout(()=>{if(window.HD20_NAV?.active?.()!=='dashboard')return;const sig=signature();if(sig===lastRenderSig)return;lastRenderSig=sig;show()},250)}
 function openStable(){if(window.HD20_NAV?.active?.()!=='dashboard'){hide();return false}const sig=signature(),el=document.getElementById(ID);if(el&&el.dataset.renderSig===sig){el.classList.add('on');el.hidden=false;lastRenderSig=sig;return true}const ok=show(),node=document.getElementById(ID);if(node)node.dataset.renderSig=sig;lastRenderSig=sig;return ok}
 window.HD20_MATURITY_MAP_TAB={show:openStable,hide,open:openStable,close,render,data,teamStats,openCase};
-function dashboardMapOpen(){maturityDashboardCss();const el=ensure();document.querySelector('.app')?.classList.remove('awFocused');const bar=document.getElementById('hd20DashboardSectionTabs');bar?.querySelectorAll('button').forEach(b=>{const active=b.dataset.dashboardSection==='map';b.classList.toggle('active',active);b.classList.toggle('on',active);b.setAttribute('aria-selected',String(active))});document.body.classList.add('hd20MaturityDashboardMode');['.cards','.mainGrid','.bottomGrid','#hd20DashboardPriority','#hd20OperationalBridge'].forEach(sel=>{const e=$(sel);if(e)e.style.setProperty('display','none','important')});const result=openStable();if(el){el.classList.add('on');el.style.setProperty('display','block','important');el.style.setProperty('visibility','visible','important');el.hidden=false}return result}
-function dashboardMapClose(){document.body.classList.remove('hd20MaturityDashboardMode');hide();const el=document.getElementById(ID);el?.style.removeProperty('display');el?.style.removeProperty('visibility')}
-function maturityDashboardCss(){if(document.getElementById('hd20MaturityDashboardModeStyle'))return;const st=document.createElement('style');st.id='hd20MaturityDashboardModeStyle';st.textContent='body.hd20MaturityDashboardMode #hd20MaturityMapTab{display:block!important;visibility:visible!important;position:relative!important;z-index:10!important;min-height:300px!important}body.hd20MaturityDashboardMode .app>.cards,body.hd20MaturityDashboardMode .app>.mainGrid,body.hd20MaturityDashboardMode .app>.bottomGrid{display:none!important}body.hd20MaturityDashboardMode #hd20DashboardSectionTabs button[data-dashboard-section="map"]{background:#2875ed!important;color:#fff!important}';document.head.appendChild(st)}
+function dashboardMapOpen(){
+  maturityDashboardCss();
+  const el=ensure(),bar=document.getElementById('hd20DashboardSectionTabs');
+  if(bar&&el.previousElementSibling!==bar)bar.insertAdjacentElement('afterend',el);
+  document.body.classList.add('hd20MaturityDashboardMode');
+  document.querySelector('.app')?.classList.remove('awFocused');
+  bar?.querySelectorAll('button').forEach(b=>{
+    const active=b.dataset.dashboardSection==='map';
+    b.classList.toggle('active',active);b.classList.toggle('on',active);
+    b.setAttribute('aria-selected',String(active));
+  });
+  const result=openStable();
+  el.hidden=false;el.classList.add('on');
+  el.style.setProperty('display','block','important');
+  return result;
+}
+function dashboardMapClose(){
+  document.body.classList.remove('hd20MaturityDashboardMode');
+  hide();
+  document.getElementById(ID)?.style.removeProperty('display');
+}
+function maturityDashboardCss(){
+  if(document.getElementById('hd20MaturityDashboardModeStyle'))return;
+  const st=document.createElement('style');st.id='hd20MaturityDashboardModeStyle';
+  st.textContent='body.hd20MaturityDashboardMode #hd20MaturityMapTab{display:block!important;visibility:visible!important;position:relative!important;z-index:2!important;width:100%!important;min-height:360px!important}body.hd20MaturityDashboardMode #hd20DashboardSectionTabs~*:not(#hd20MaturityMapTab){display:none!important}body.hd20MaturityDashboardMode #hd20DashboardSectionTabs [data-dashboard-section="map"]{background:#2875ed!important;color:#fff!important}';
+  document.head.appendChild(st);
+}
 window.HD20_MATURITY_DASHBOARD={open:dashboardMapOpen,close:dashboardMapClose};
-window.addEventListener('pageshow',()=>{if(new URLSearchParams(location.search).get('section')==='map')setTimeout(dashboardMapOpen,100)});
-function ensureDashboardMapTab(){const bar=document.getElementById('hd20DashboardSectionTabs');if(!bar)return;let btn=bar.querySelector('[data-dashboard-section="map"]');if(!btn){btn=document.createElement('button');btn.type='button';btn.dataset.dashboardSection='map';btn.textContent='고도화 맵';bar.appendChild(btn)}if(btn.dataset.maturityBound==='1')return;btn.dataset.maturityBound='1';/* dashboard map clicks handled once by delegated capture listener below */}
-document.addEventListener('click',e=>{const b=e.target.closest?.('#hd20DashboardSectionTabs [data-dashboard-section="map"]');if(!b)return;e.preventDefault();e.stopImmediatePropagation();const u=new URL(location.href);u.searchParams.set('area','dashboard');u.searchParams.set('section','map');u.searchParams.delete('sub');history.replaceState(null,'',u);dashboardMapOpen();requestAnimationFrame(dashboardMapOpen)},true);
-document.addEventListener('click',e=>{const b=e.target.closest?.('#hd20DashboardSectionTabs button');if(b&&b.dataset.dashboardSection!=='map')dashboardMapClose()},true);
+function ensureDashboardMapTab(){
+  const bar=document.getElementById('hd20DashboardSectionTabs');if(!bar)return;
+  let btn=bar.querySelector('[data-dashboard-section="map"]');
+  if(!btn){btn=document.createElement('button');btn.type='button';btn.dataset.dashboardSection='map';btn.textContent='고도화 맵';bar.appendChild(btn)}
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest?.('#hd20DashboardSectionTabs button');
+  if(!b)return;
+  if(b.dataset.dashboardSection==='map'){
+    e.preventDefault();e.stopImmediatePropagation();
+    const u=new URL(location.href);u.searchParams.set('area','dashboard');u.searchParams.set('section','map');u.searchParams.delete('sub');history.replaceState(null,'',u);
+    dashboardMapOpen();
+  }else dashboardMapClose();
+},true);
 window.addEventListener('hd20-subtab-changed',e=>{if(e.detail?.area!=='dashboard')dashboardMapClose()});
-const tabObserver=new MutationObserver(()=>ensureDashboardMapTab());document.readyState==='loading'?document.addEventListener('DOMContentLoaded',()=>{ensureDashboardMapTab();tabObserver.observe(document.body,{childList:true,subtree:true})},{once:true}):setTimeout(()=>{ensureDashboardMapTab();tabObserver.observe(document.body,{childList:true,subtree:true})},0);
+function bootDashboardMap(){
+  ensureDashboardMapTab();
+  const bar=document.getElementById('hd20DashboardSectionTabs');
+  if(bar){new MutationObserver(ensureDashboardMapTab).observe(bar,{childList:true});}
+  if(new URLSearchParams(location.search).get('section')==='map')requestAnimationFrame(dashboardMapOpen);
+}
+document.readyState==='loading'?document.addEventListener('DOMContentLoaded',bootDashboardMap,{once:true}):bootDashboardMap();
 
 window.addEventListener('hd20-open-maturity-map-tab',openStable);window.addEventListener('hd20-close-maturity-map-tab',hide);['hd20-kpi-source-updated','hd20-gmes-5s-imported','hd20-gmes-5s-judged'].forEach(e=>window.addEventListener(e,refresh));document.addEventListener('keydown',e=>{if(e.key==='Escape')$('.mmtDetail.on')?.classList.remove('on')});
 function boot(){css();const el=ensure();if(!el.isConnected){console.warn('HD20 maturity map mount pending');return}try{render()}catch(error){console.error('HD20 maturity map initial render failed',error)}el.hidden=true}window.addEventListener('hd20-kpi-source-updated',()=>{const el=document.getElementById(ID);if(!el||!el.hidden)return;try{render();el.hidden=true}catch(error){console.error('HD20 maturity map background refresh failed',error)}});document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot,{once:true}):boot();
