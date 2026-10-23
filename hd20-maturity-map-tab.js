@@ -131,20 +131,14 @@ function render(){css();const el=ensure(),d=data();
   if(empty.length){const p=document.createElement('p');p.className='mmtRiskNote';p.textContent='공식확정 0건 (맵 좌표 제외): '+empty.join(' · ');chart.appendChild(p)}
   plot.appendChild(svg);
   const caseRows=document.createDocumentFragment();
-  teams.forEach((t,i)=>{
-    const center=left+step*(i+.5),confirmed=t.confirmed,maintained=Math.min(t.maintained,confirmed),exited=Math.max(0,confirmed-maintained);
-    const x1=center-barW-2,x2=center+2,h1=confirmed/ceiling*plotH,hM=maintained/ceiling*plotH,hE=exited/ceiling*plotH;
-    if(confirmed){node('rect',{x:x1,y:base-h1,width:barW,height:h1,rx:1,fill:'#477cb7'});node('text',{x:x1+barW/2,y:base-h1-6,'text-anchor':'middle','font-size':10,fill:'#284d78'},confirmed)}
-    if(maintained)node('rect',{x:x2,y:base-hM,width:barW,height:hM,rx:1,fill:'#2d9669'});
-    if(exited)node('rect',{x:x2,y:base-hM-hE,width:barW,height:hE,rx:1,fill:'#d4544e'});
-    if(confirmed)node('text',{x:x2+barW/2,y:base-hM-hE-6,'text-anchor':'middle','font-size':10,fill:exited?'#b83b36':'#246c50'},exited?`${maintained}·${exited}`:maintained);
-    if(exited){node('rect',{x:center-step*.44,y:top-24,width:step*.88,height:18,rx:8,fill:'#fff0ee'});node('text',{x:center,y:top-11,'text-anchor':'middle','font-size':10,'font-weight':700,fill:'#bd433b'},`이탈 ${exited}`)}
-    const label=node('text',{x:center+5,y:base+12,transform:`rotate(45 ${center+5} ${base+12})`,'font-size':Math.min(11,Math.max(9,step*.17)),fill:'#40586b'},t.team);
-    const hit=node('rect',{x:center-step*.49,y:top,width:step*.98,height:H-top-10,fill:'transparent',style:'cursor:pointer'});
-    const title=document.createElementNS(ns,'title');title.textContent=`${t.team}: 확정 ${confirmed}건, 유지 ${maintained}건, 이탈 ${exited}건`;hit.appendChild(title);
-    hit.addEventListener('click',()=>openTeamPopup(t));
-    const row=document.createElement('div');row.innerHTML=`<button type="button" class="mmtTeam"><b>${esc(t.team)}</b><span>확정 ${confirmed}</span><span>유지 ${maintained}</span><span>이탈 ${exited}</span></button><div class="mmtTeamCases" hidden>${t.cases.length?t.cases.map((x,ci)=>`<div class="mmtCase"><button type="button" data-mmt-case="${ci}"><b>${esc(x.workplace||x.title||x.id||'공식확정 Case')}</b></button></div>`).join(''):'<div class="mmtEmpty">공식확정 Case 없음</div>'}</div>`;
-    const btn=$('.mmtTeam',row),list=$('.mmtTeamCases',row);btn.onclick=()=>{ $$('.mmtTeamCases',cases).forEach(v=>v.hidden=true);list.hidden=false };$$('[data-mmt-case]',row).forEach((b,ci)=>b.onclick=()=>openCase(t.cases[ci]));caseRows.appendChild(row);
+  teams.forEach(t=>{
+    const confirmed=t.confirmed,maintained=Math.min(t.maintained,confirmed),exited=Math.max(0,confirmed-maintained);
+    const row=document.createElement('div');
+    row.innerHTML=`<button type="button" class="mmtTeam"><b>${esc(t.team)}</b><span>확정 ${confirmed}</span><span>유지 ${maintained}</span><span>이탈 ${exited}</span></button><div class="mmtTeamCases" hidden>${t.cases.length?t.cases.map((x,ci)=>`<div class="mmtCase"><button type="button" data-mmt-case="${ci}"><b>${esc(x.workplace||x.title||x.id||'공식확정 Case')}</b></button></div>`).join(''):'<div class="mmtEmpty">공식확정 Case 없음</div>'}</div>`;
+    const btn=$('.mmtTeam',row),list=$('.mmtTeamCases',row);
+    btn.onclick=()=>{$$('.mmtTeamCases',cases).forEach(v=>v.hidden=true);list.hidden=false};
+    $$('[data-mmt-case]',row).forEach((button,ci)=>button.onclick=()=>openCase(t.cases[ci]));
+    caseRows.appendChild(row);
   });
   plot.appendChild(svg);cases.replaceChildren(caseRows);
   const kpiCols=['생산팀','작업장/사례','등록일','판정일','판정상태'],kpiMapR=x=>[x.team||'—',x.workplace||x.title||x.id||'—',txt(x.date||x.regDate||x.createdAt).slice(0,10)||'—',txt(x.judgedAt||x.confirmedAt||x.judgeDate).slice(0,10)||'—',x.judgeState||'—'];
