@@ -48,7 +48,7 @@ function openTeamPopup(t){const m=ensurePopup();m.querySelector('.mcpHead b').te
   body.innerHTML=t.cases.length?t.cases.map((x,ci)=>`<div class="mmtCase"><button type="button" data-mcp-case="${ci}"><b>${esc(x.workplace||x.title||x.id||'공식확정 Case')}</b><small>${esc(txt(x.judgedAt||x.confirmedAt||x.judgeDate||x.date).slice(0,10)||'—')} · ${esc(x.maintainState||x.auditState||x.status||'유지상태 미기재')}</small></button></div>`).join(''):'<div class="mmtEmpty">공식 확정 Case 없음</div>';
   body.querySelectorAll('[data-mcp-case]').forEach((b,ci)=>b.onclick=()=>openCase(t.cases[ci]));
   m.classList.add('on')}
-function ensure(){let el=document.getElementById(ID);if(el)return el;el=document.createElement('section');el.id=ID;el.dataset.dashboardSection='maturity';const host=document.querySelector('.app');const anchor=host?.querySelector('.mainGrid')||host?.querySelector('.cards');if(host)host.insertBefore(el,anchor||host.firstChild);else document.body.appendChild(el);return el}
+function ensure(){let el=document.getElementById(ID);if(el)return el;el=document.createElement('section');el.id=ID;el.dataset.dashboardSection='map';const host=document.querySelector('.app');const anchor=host?.querySelector('.mainGrid')||host?.querySelector('.cards');if(host)host.insertBefore(el,anchor||host.firstChild);else document.body.appendChild(el);return el}
 function detailModal(){let m=$('.mmtDetail');if(m)return m;m=document.createElement('div');m.className='mmtDetail';m.innerHTML='<div class="mmtDetailBox"><div class="mmtDetailHead"><div><small>OFFICIAL ADVANCEMENT CASE</small><b>고도화 공식확정 Case</b></div><button type="button">×</button></div><div class="mmtDetailGrid"></div></div>';document.body.appendChild(m);const close=()=>m.classList.remove('on');m.querySelector('button').onclick=close;m.onclick=e=>{if(e.target===m)close()};return m}
 function openCase(x){const m=detailModal(),g=$('.mmtDetailGrid',m),fields=[['Activity ID',x.id||x.activityId],['생산팀',x.team],['작업장/사례',x.workplace||x.title],['고도화 유형',x.type||x.category],['현장 등록일',txt(x.date||x.importedAt).slice(0,10)],['판정일',txt(x.judgedAt||x.confirmedAt||x.judgeDate).slice(0,10)],['판정자',x.judgeOwner||x.judgeBy||x.confirmedBy],['공식판정',x.judgeState],['유지상태',x.maintainState||x.auditState||x.status||'—'],['확정사유',x.judgeReason||'—']];g.innerHTML=fields.map(([k,v])=>`<div class="mmtField"><small>${esc(k)}</small><b>${esc(v||'—')}</b></div>`).join('');m.classList.add('on')}
 function render(){css();const el=ensure(),d=data();
@@ -171,7 +171,8 @@ function dashboardMapOpen(){
     b.classList.toggle('active',active);b.classList.toggle('on',active);
     b.setAttribute('aria-selected',String(active));
   });
-  const result=openStable();
+  let result=false;
+  try{result=show()}catch(error){console.error('Maturity map render failed',error);el.innerHTML='<div role="alert" style="padding:20px;background:#fff;border:1px solid #d9e5ed;border-radius:12px"><strong>고도화 맵 데이터 렌더링 오류</strong><p>화면 전환은 정상적으로 처리됐지만 맵 데이터 표시 중 오류가 발생했습니다. 개발자 콘솔을 확인해 주세요.</p></div>'}
   el.hidden=false;el.classList.add('on');
   el.style.setProperty('display','block','important');
   return result;
