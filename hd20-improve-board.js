@@ -233,10 +233,10 @@ function render(box){if(!document.getElementById('hd20DrillGridCss')){const st=d
     const rows=rowsC.filter(candidate),found=rows.filter(r=>maturityRegistration(r).slice(0,4)===S.year),accepted=rows.filter(r=>adopted(r)&&cy(r)===S.year);
     const counts=(items,acceptedSeries)=>maturitySelected?ML.map((_,i)=>items.filter(r=>r.team===maturityDrillTeam&&(acceptedSeries?cm(r):+maturityRegistration(r).slice(5,7))===i+1).length):tv.map(t=>items.filter(r=>r.team===t.t).length);
     const foundCounts=counts(found,false),acceptedCounts=counts(accepted,true);
-    const toValues=arr=>maturitySelected?arr:arr.map((n,i)=>tv[i].h?n/tv[i].h:0);
+    const toValues=arr=>arr.map((n,i)=>{const headcount=maturitySelected?tv.find(t=>t.t===maturityDrillTeam)?.h:tv[i].h;return headcount?n/headcount:0});
     const name=isRoll?'수평전개':'고도화';
-    const graph=chart({w:Math.max(480,maturitySelected?520:tv.length*49),h:245,cats:maturityCats,series:[{name:'발굴',vals:toValues(foundCounts),color:'#298c80'},{name:'채택',vals:toValues(acceptedCounts),color:'#3579b5'}],per:!maturitySelected,rotate:!maturitySelected,minSlot:maturitySelected?38:49,linkX:!maturitySelected,tightAxis:true,axisHeadroom:.12});
-    return '<div class="ibMaturityPanel"><div class="ibHead">'+name+' 발굴 대비 채택 <em>'+(maturitySelected?esc(maturityDrillTeam)+' · 월별 건수':'팀별 인당 건수')+'</em></div><div class="ibMaturityChart">'+graph+'</div><div class="ibMaturityLegend"><span>■ 발굴</span><span>■ 채택</span></div></div>';
+    const graph=chart({w:Math.max(480,maturitySelected?520:tv.length*49),h:285,cats:maturityCats,series:[{name:'발굴',vals:toValues(foundCounts),labelTotals:foundCounts,color:'#298c80'},{name:'채택',vals:toValues(acceptedCounts),labelTotals:acceptedCounts,color:'#3579b5'}],per:!maturitySelected,rotate:!maturitySelected,minSlot:maturitySelected?38:49,linkX:!maturitySelected,tightAxis:true,axisHeadroom:.12});
+    return '<div class="ibMaturityPanel"><div class="ibHead">'+name+' 발굴 대비 채택 <em>'+(maturitySelected?esc(maturityDrillTeam)+' · 월별 인당 건수 (총건수)':'팀별 인당 건수 (총건수)')+'</em></div><div class="ibMaturityChart">'+graph+'</div><div class="ibMaturityLegend"><span>■ 발굴</span><span>■ 채택</span></div></div>';
   };
   const maturityRight='<div class="ibMaturityRight"><div class="ibMaturityControls">'+(maturitySelected?'<button type="button" data-maturity-all>전체 팀 보기</button>':'<span>팀명을 클릭하면 월별 실적으로 전환됩니다.</span>')+'</div>'+compareChart('rollout')+compareChart('maturity')+'</div>';
   const totC=tv.reduce((a,x)=>a+x.c,0),avg=per?totC/hcAll:totC/Math.max(1,tv.length);
