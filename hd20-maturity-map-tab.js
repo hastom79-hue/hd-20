@@ -79,7 +79,8 @@ function render(){css();const el=ensure(),d=data();
   const maxCount=Math.max(1,...teams.map(t=>t.confirmed));
   const ceiling=Math.max(1,Math.ceil(maxCount/5)*5);
   bars.style.cssText='padding:18px 12px 12px;min-height:0;overflow:hidden;max-width:100%';
-  if(!document.getElementById('mmtCompareStyles')){const st=document.createElement('style');st.id='mmtCompareStyles';st.textContent='.mmtCompareLegend{display:flex;gap:18px;flex-wrap:wrap;margin:0 0 10px;font-size:12px;color:#40586b}.mmtCompareLegend span{display:inline-flex;align-items:center;gap:5px}.mmtCompareLegend i{display:inline-block;width:11px;height:11px;border-radius:2px}.mmtCompareNote{font-size:11px;color:#657b8a;margin:4px 0 0}.mmtTeamCompareChart{width:100%;overflow:hidden}';document.head.appendChild(st)}\n  const chart=document.createElement('div');chart.className='mmtTeamCompareChart';
+  if(!document.getElementById('mmtCompareStyles')){const st=document.createElement('style');st.id='mmtCompareStyles';st.textContent='.mmtCompareLegend{display:flex;gap:18px;flex-wrap:wrap;margin:0 0 10px;font-size:12px;color:#40586b}.mmtCompareLegend span{display:inline-flex;align-items:center;gap:5px}.mmtCompareLegend i{display:inline-block;width:11px;height:11px;border-radius:2px}.mmtCompareNote{font-size:11px;color:#657b8a;margin:4px 0 0}.mmtTeamCompareChart{width:100%;overflow:hidden}';document.head.appendChild(st)}
+  const chart=document.createElement('div');chart.className='mmtTeamCompareChart';
   chart.innerHTML='<div class="mmtCompareLegend"><span><i style="background:#477cb7"></i>총 확정사례</span><span><i style="background:#2d9669"></i>유지사례</span><span><i style="background:#d4544e"></i>이탈사례</span></div><div class="mmtComparePlot"></div><p class="mmtCompareNote">팀별 왼쪽: 총 확정사례 · 오른쪽: 유지 + 이탈 누적 · 팀 선택 시 공식확정 사례 상세</p>';
   bars.replaceChildren(chart);
   const plot=$('.mmtComparePlot',chart);
