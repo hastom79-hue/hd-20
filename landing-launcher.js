@@ -97,7 +97,7 @@ function renderOverview(){
  root.querySelector('[data-ln-reset]').onclick=()=>{GRID={route:'all',query:'',team:'all',status:'all',from:'',to:'',page:1,size:20};renderOverview()};
  root.querySelector('[data-ln-prev]').onclick=()=>{GRID.page--;renderOverview()};
  root.querySelector('[data-ln-next]').onclick=()=>{GRID.page++;renderOverview()};
- root.querySelectorAll('[data-ln-route]').forEach(btn=>btn.onclick=()=>navigate(btn.dataset.lnRoute));
+ root.querySelectorAll('[data-ln-detail]').forEach(btn=>btn.onclick=()=>{const x=shown[Number(btn.dataset.lnDetail)];if(!x)return;let modal=document.getElementById('hd20LnDetailModal');if(!modal){modal=document.createElement('div');modal.id='hd20LnDetailModal';document.body.appendChild(modal)}const fields=[['개선번호',improvementId(x)||'미부여'],['등록 구분',x.__route],['등록일',rowDate(x)],['담당 팀',rowTeam(x)],['상태',rowStatus(x)],['등록 내용',x.title||x.subject||x.description||x.content||x.issue||x.activityName||x.item||'내용 미입력']];modal.innerHTML='<div class="hd20LnDetailShade" data-ln-close></div><section class="hd20LnDetailPanel" role="dialog" aria-modal="true" aria-label="개선 상세조회"><header><b>개선 상세조회</b><button type="button" data-ln-close>닫기 ×</button></header><div class="hd20LnDetailFields">'+fields.map(f=>'<div><strong>'+escapeText(f[0])+'</strong><span>'+escapeText(f[1])+'</span></div>').join('')+'</div></section>';modal.querySelectorAll('[data-ln-close]').forEach(b=>b.onclick=()=>modal.remove())});
 }
 function ensureOverview(){
  css();if(document.getElementById('hd20LauncherOverview'))return;
