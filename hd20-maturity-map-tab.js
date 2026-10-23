@@ -77,19 +77,19 @@ function render(){css();const el=ensure(),d=data();
   const order=new Map(master.map((name,i)=>[name,i]));
   teams.sort((a,b)=>(order.get(a.team)??9999)-(order.get(b.team)??9999)||a.team.localeCompare(b.team,'ko'));
   const maxCount=Math.max(1,...teams.map(t=>t.confirmed));
-  const ceiling=Math.max(1,Math.ceil(maxCount/5)*5);
+  const ceiling=Math.max(1,Math.ceil(maxCount*1.15));
   bars.style.cssText='padding:18px 12px 12px;min-height:0;overflow:hidden;max-width:100%';
   if(!document.getElementById('mmtCompareStyles')){const st=document.createElement('style');st.id='mmtCompareStyles';st.textContent='.mmtCompareLegend{display:flex;gap:18px;flex-wrap:wrap;margin:0 0 10px;font-size:12px;color:#40586b}.mmtCompareLegend span{display:inline-flex;align-items:center;gap:5px}.mmtCompareLegend i{display:inline-block;width:11px;height:11px;border-radius:2px}.mmtCompareNote{font-size:11px;color:#657b8a;margin:4px 0 0}.mmtTeamCompareChart{width:100%;overflow:hidden}';document.head.appendChild(st)}
   const chart=document.createElement('div');chart.className='mmtTeamCompareChart';
   chart.innerHTML='<div class="mmtCompareLegend"><span><i style="background:#477cb7"></i>총 확정사례</span><span><i style="background:#2d9669"></i>유지사례</span><span><i style="background:#d4544e"></i>이탈사례</span></div><div class="mmtComparePlot"></div><p class="mmtCompareNote">팀별 왼쪽: 총 확정사례 · 오른쪽: 유지 + 이탈 누적 · 팀 선택 시 공식확정 사례 상세</p>';
   bars.replaceChildren(chart);
   const plot=$('.mmtComparePlot',chart);
-  const W=1200,H=440,left=38,right=12,top=30,bottom=135,base=H-bottom,plotH=base-top,step=(W-left-right)/Math.max(1,teams.length),barW=Math.max(5,Math.min(16,step*.28));
+  const W=1200,H=360,left=38,right=12,top=36,bottom=105,base=H-bottom,plotH=base-top,step=(W-left-right)/Math.max(1,teams.length),barW=Math.max(7,Math.min(21,step*.31));
   const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
   svg.setAttribute('viewBox',`0 0 ${W} ${H}`);svg.setAttribute('role','img');svg.setAttribute('aria-label','생산팀별 총 확정사례 및 유지·이탈 누적막대');svg.style.cssText='width:100%;height:auto;display:block;overflow:visible';
   const ns='http://www.w3.org/2000/svg';
   function node(tag,attrs,content){const e=document.createElementNS(ns,tag);Object.entries(attrs).forEach(([k,v])=>e.setAttribute(k,String(v)));if(content!==undefined)e.textContent=String(content);svg.appendChild(e);return e}
-  for(let i=0;i<=5;i++){const val=Math.round(ceiling*i/5),y=base-val/ceiling*plotH;node('line',{x1:left,y1:y,x2:W-right,y2:y,stroke:'#e2eaf0'});node('text',{x:left-7,y:y+4,'text-anchor':'end','font-size':11,fill:'#62778a'},val)}
+  for(let i=0;i<=ceiling;i++){const val=i,y=base-val/ceiling*plotH;node('line',{x1:left,y1:y,x2:W-right,y2:y,stroke:'#e2eaf0'});node('text',{x:left-7,y:y+4,'text-anchor':'end','font-size':11,fill:'#62778a'},val)}
   const caseRows=document.createDocumentFragment();
   teams.forEach((t,i)=>{
     const center=left+step*(i+.5),confirmed=t.confirmed,maintained=Math.min(t.maintained,confirmed),exited=Math.max(0,confirmed-maintained);
@@ -97,7 +97,8 @@ function render(){css();const el=ensure(),d=data();
     if(confirmed){node('rect',{x:x1,y:base-h1,width:barW,height:h1,rx:1,fill:'#477cb7'});node('text',{x:x1+barW/2,y:base-h1-6,'text-anchor':'middle','font-size':10,fill:'#284d78'},confirmed)}
     if(maintained)node('rect',{x:x2,y:base-hM,width:barW,height:hM,rx:1,fill:'#2d9669'});
     if(exited)node('rect',{x:x2,y:base-hM-hE,width:barW,height:hE,rx:1,fill:'#d4544e'});
-    if(confirmed)node('text',{x:x2+barW/2,y:base-hM-hE-6,'text-anchor':'middle','font-size':10,fill:'#246c50'},confirmed);
+    if(confirmed)node('text',{x:x2+barW/2,y:base-hM-hE-6,'text-anchor':'middle','font-size':10,fill:exited?'#b83b36':'#246c50'},exited?`${maintained}·${exited}`:maintained);
+    if(exited){node('rect',{x:center-step*.44,y:top-24,width:step*.88,height:18,rx:8,fill:'#fff0ee'});node('text',{x:center,y:top-11,'text-anchor':'middle','font-size':10,'font-weight':700,fill:'#bd433b'},`이탈 ${exited}`)}
     const label=node('text',{x:center+5,y:base+12,transform:`rotate(45 ${center+5} ${base+12})`,'font-size':Math.min(11,Math.max(9,step*.17)),fill:'#40586b'},t.team);
     const hit=node('rect',{x:center-step*.49,y:top,width:step*.98,height:H-top-10,fill:'transparent',style:'cursor:pointer'});
     const title=document.createElementNS(ns,'title');title.textContent=`${t.team}: 확정 ${confirmed}건, 유지 ${maintained}건, 이탈 ${exited}건`;hit.appendChild(title);
