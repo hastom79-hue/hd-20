@@ -99,23 +99,35 @@ function render(){css();const el=ensure(),d=data();
   node('text',{x:L+PW*.75,y:T+PH-15,'text-anchor':'middle','font-size':13,fill:'#ab7c3e'},'초기 이탈 관리');
   node('text',{x:L+PW/2,y:H-15,'text-anchor':'middle','font-size':13,'font-weight':600,fill:'#344e65'},'공식확정 후 이탈률 (%) →');
   node('text',{x:15,y:T+PH/2,transform:`rotate(-90 15 ${T+PH/2})`,'text-anchor':'middle','font-size':13,'font-weight':600,fill:'#344e65'},'공식확정 사례 (건)');
-  const located=new Map(),empty=[];
-  teams.forEach((t,i)=>{
-    const total=t.confirmed,kept=Math.min(t.maintained,total),lost=Math.max(0,total-kept);
-    if(!total){empty.push(t.team);return}
-    const rate=100*lost/total,key=rate.toFixed(1)+'|'+total,used=located.get(key)||0;located.set(key,used+1);
-    const angle=used*2.39996,offset=used?Math.min(25,7*Math.sqrt(used)):0;
-    const cx=Math.max(L+15,Math.min(W-R-15,x(rate)+Math.cos(angle)*offset)),cy=Math.max(T+35,Math.min(T+PH-20,y(total)+Math.sin(angle)*offset));
-    const color=lost===0?'#2d9669':rate>=50?'#d4544e':'#dca342',radius=lost?Math.min(19,9+lost*3):8;
-    const g=node('g',{style:'cursor:pointer',tabindex:'0',role:'button','aria-label':`${t.team}: 확정 ${total}, 유지 ${kept}, 이탈 ${lost}, 이탈률 ${rate.toFixed(1)}%`});
-    node('circle',{cx,cy,r:radius+3,fill:'#fff',stroke:color,'stroke-width':1.5},undefined,g);
-    node('circle',{cx,cy,r:radius,fill:color,opacity:.92},undefined,g);
-    node('text',{x:cx,y:cy+4,'text-anchor':'middle','font-size':11,'font-weight':700,fill:'#fff'},lost||'',g);
-    const textY=cy-radius-10-(used%2)*13;
-    node('text',{x:cx,y:Math.max(T+43,textY),'text-anchor':'middle','font-size':11,'font-weight':600,fill:'#344e65'},t.team,g);
-    const title=document.createElementNS(ns,'title');title.textContent=`${t.team} · 확정 ${total}건 / 유지 ${kept}건 / 이탈 ${lost}건 · 이탈률 ${rate.toFixed(1)}%`;g.appendChild(title);
-    g.addEventListener('click',()=>openTeamPopup(t));g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openTeamPopup(t)}});
+  const grouped=new Map(),empty=[];
+  teams.forEach(t=>{
+    if(!t.confirmed){empty.push(t.team);return}
+    const lost=Math.max(0,t.confirmed-Math.min(t.maintained,t.confirmed)),rate=100*lost/t.confirmed,key=rate.toFixed(3)+'|'+t.confirmed;
+    if(!grouped.has(key))grouped.set(key,{rate,total:t.confirmed,lost,teams:[]});
+    grouped.get(key).teams.push(t);
   });
+  const groups=[...grouped.values()].sort((a,b)=>a.rate-b.rate||b.total-a.total);
+  const list=document.createElement('div');list.className='mmtRiskGroups';
+  list.innerHTML='<div class="mmtRiskGroupsTitle">동일 좌표별 생산팀 현황 <small>그룹을 선택하면 팀별 상세를 확인할 수 있습니다</small></div>';
+  groups.forEach((item,index)=>{
+    const cx=x(item.rate),cy=y(item.total),color=item.lost===0?'#2d9669':item.rate>=50?'#d4544e':'#dca342',n=item.teams.length,radius=Math.min(27,11+Math.max(item.lost,0)*3+Math.min(8,n));
+    const g=node('g',{style:'cursor:pointer',tabindex:'0',role:'button','aria-label':`좌표 그룹 ${index+1}: ${n}개 팀, 확정 ${item.total}건, 이탈률 ${item.rate.toFixed(1)}%`});
+    node('circle',{cx,cy,r:radius+3,fill:'#fff',stroke:color,'stroke-width':1.5},undefined,g);
+    node('circle',{cx,cy,r:radius,fill:color},undefined,g);
+    node('text',{x:cx,y:cy+4,'text-anchor':'middle','font-size':12,'font-weight':700,fill:'#fff'},n>1?n:item.lost,g);
+    const label=n>1?`${n}개 팀`:item.teams[0].team;
+    node('text',{x:cx,y:cy-radius-12,'text-anchor':'middle','font-size':12,'font-weight':700,fill:'#304c64'},label,g);
+    const title=document.createElementNS(ns,'title');title.textContent=`${item.teams.map(t=>t.team).join(', ')} · 확정 ${item.total}건 / 이탈 ${item.lost}건 / 이탈률 ${item.rate.toFixed(1)}%`;g.appendChild(title);
+    const card=document.createElement('details');card.className='mmtRiskGroup';
+    const summary=document.createElement('summary');summary.textContent=`${item.rate.toFixed(0)}% 이탈 · 확정 ${item.total}건 · ${n}개 팀`;card.appendChild(summary);
+    const body=document.createElement('div');body.className='mmtRiskGroupTeams';
+    item.teams.forEach(t=>{const btn=document.createElement('button');btn.type='button';btn.textContent=`${t.team} · 유지 ${t.maintained} / 이탈 ${Math.max(0,t.confirmed-t.maintained)}`;btn.addEventListener('click',()=>openTeamPopup(t));body.appendChild(btn)});
+    card.appendChild(body);list.appendChild(card);
+    const activate=()=>{list.querySelectorAll('details').forEach(d=>d.open=false);card.open=true;card.scrollIntoView({block:'nearest',behavior:'smooth'})};
+    g.addEventListener('click',activate);g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();activate()}});
+  });
+  chart.appendChild(list);
+  if(!document.getElementById('mmtRiskGroupStyles')){const st=document.createElement('style');st.id='mmtRiskGroupStyles';st.textContent='.mmtRiskGroups{margin:12px 0 4px;padding:12px 14px;background:#f7fafc;border:1px solid #dfe9f0;border-radius:10px}.mmtRiskGroupsTitle{font-weight:700;color:#244763;margin-bottom:9px}.mmtRiskGroupsTitle small{font-weight:400;color:#6b8090;margin-left:8px}.mmtRiskGroup{display:inline-block;vertical-align:top;margin:4px 8px 4px 0;padding:7px 10px;border:1px solid #d6e3eb;border-radius:8px;background:#fff}.mmtRiskGroup summary{cursor:pointer;font-size:12px;color:#294a63}.mmtRiskGroupTeams{display:flex;flex-direction:column;gap:5px;padding:8px 0 0}.mmtRiskGroupTeams button{text-align:left;background:#f1f6fa;border:1px solid #dbe7ed;border-radius:5px;padding:6px;cursor:pointer;color:#244763}';document.head.appendChild(st)}
   if(empty.length){const p=document.createElement('p');p.className='mmtRiskNote';p.textContent='공식확정 0건 (맵 좌표 제외): '+empty.join(' · ');chart.appendChild(p)}
   plot.appendChild(svg);
   const caseRows=document.createDocumentFragment();
