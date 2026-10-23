@@ -137,9 +137,18 @@ function boot(){
   document.addEventListener('click',e=>{
     const tab=e.target?.closest?.('.beginnerNav button[data-key="activity"]');
     if(!tab)return;
-    setTimeout(()=>{if(!internalRegistrationNavigation&&window.HD20_NAV?.active?.()==='activity')openOverview()},0);
+    setTimeout(()=>{if(!internalRegistrationNavigation&&window.HD20_NAV?.active?.()==='activity'&&!document.getElementById('hd20Launcher')){try{openOverview()}catch(err){console.error('[HD20 inquiry]',err);hideOverview()}}},0);
   },true);
-  window.addEventListener('hd20-nav-area-changed',e=>{if(e.detail?.area!=='activity')hideOverview()});
+  window.addEventListener('hd20-nav-area-changed',e=>{
+    if(e.detail?.area!=='activity'){hideOverview();return}
+    if(internalRegistrationNavigation||document.getElementById('hd20Launcher'))return;
+    setTimeout(()=>{
+      if(internalRegistrationNavigation||document.getElementById('hd20Launcher'))return;
+      if(window.HD20_NAV?.active?.()==='activity'&&!document.body.classList.contains('hd20InquiryActive')){
+        try{openOverview()}catch(err){console.error('[HD20 inquiry]',err);hideOverview()}
+      }
+    },30);
+  });
   ['hd20-kpi-source-updated','hd20-action-updated','hd20-activity-updated'].forEach(e=>window.addEventListener(e,()=>{if(document.body.classList.contains('hd20InquiryActive'))renderOverview()}));
   window.addEventListener('storage',()=>{if(document.body.classList.contains('hd20InquiryActive'))renderOverview()});
 
