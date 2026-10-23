@@ -151,7 +151,7 @@ function open(){return show()}
 function close(){return hide()}
 let refreshTimer=0,lastRenderSig='';
 function signature(){const d=data(),a=api();const teamSig=teamStats(d).map(t=>[t.team,t.candidates,t.confirmed,t.maintained].join('~')).join('|');const stateSig=d.confirmed.map(x=>[txt(x.id||x.activityId||x.caseId||x.workplace||x.title),(a?.isMaintained||fallbackMaintained)(x)?1:0,txt(x.maintainState||x.auditState||x.status),x.attrition===true?1:0,x.valid===false?0:1].join('~')).sort().join('|');return [d.rows.length,d.candidates.length,d.confirmed.length,d.maintained.length,teamSig,stateSig].join(':')}
-function refresh(){clearTimeout(refreshTimer);refreshTimer=setTimeout(()=>{if(window.HD20_NAV?.active?.()!=='dashboard')return;const sig=signature();if(sig===lastRenderSig)return;lastRenderSig=sig;show()},250)}
+function refresh(){clearTimeout(refreshTimer);refreshTimer=setTimeout(()=>{const el=document.getElementById(ID);if(window.HD20_NAV?.active?.()!=='dashboard'||!el||el.hidden||!el.classList.contains('on'))return;const sig=signature();if(sig===lastRenderSig)return;try{show();lastRenderSig=sig;el.dataset.renderSig=sig}catch(error){console.error('Maturity map refresh failed',error)}},500)}
 function openStable(){if(window.HD20_NAV?.active?.()!=='dashboard'){hide();return false}const sig=signature(),el=document.getElementById(ID);if(el&&el.dataset.renderSig===sig){el.classList.add('on');el.hidden=false;lastRenderSig=sig;return true}const ok=show(),node=document.getElementById(ID);if(node)node.dataset.renderSig=sig;lastRenderSig=sig;return ok}
 window.HD20_MATURITY_MAP_TAB={show:openStable,hide,open:openStable,close,render,data,teamStats,openCase};
 function dashboardMapOpen(){
@@ -166,7 +166,7 @@ function dashboardMapOpen(){
     b.setAttribute('aria-selected',String(active));
   });
   let result=false;
-  try{result=show()}catch(error){console.error('Maturity map render failed',error);el.innerHTML='<div role="alert" style="padding:20px;background:#fff;border:1px solid #d9e5ed;border-radius:12px"><strong>고도화 맵 데이터 렌더링 오류</strong><p>화면 전환은 정상적으로 처리됐지만 맵 데이터 표시 중 오류가 발생했습니다. 개발자 콘솔을 확인해 주세요.</p></div>'}
+  try{result=openStable()}catch(error){console.error('Maturity map render failed',error);el.innerHTML='<div role="alert" style="padding:20px;background:#fff;border:1px solid #d9e5ed;border-radius:12px"><strong>고도화 맵 데이터 렌더링 오류</strong><p>화면 전환은 정상적으로 처리됐지만 맵 데이터 표시 중 오류가 발생했습니다. 개발자 콘솔을 확인해 주세요.</p></div>'}
   el.hidden=false;el.classList.add('on');
   el.style.setProperty('display','block','important');
   return result;
