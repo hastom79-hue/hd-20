@@ -6,6 +6,7 @@
 (()=>{'use strict';
 const SEEN_KEY='hd20LandingLauncherSeenV1';
 let internalRegistrationNavigation=false;
+let overviewOpening=false;
 function css(){
   if(document.getElementById('hd20LauncherStyle'))return;
   const s=document.createElement('style');
@@ -51,11 +52,11 @@ function navigate(area){
 }
 function goActivityRegister(){
  close();navigate('activity');window.HD20_SUBNAV?.select?.('activity','manage');
- setTimeout(()=>clickWhenReady(()=>document.querySelector('#awActivity [data-aw="new"]')),120);
+ setTimeout(()=>{clickWhenReady(()=>document.querySelector('#awActivity [data-aw="new"]'));internalRegistrationNavigation=false},120);
 }
 function goActionRegister(){
  close();navigate('action');
- setTimeout(()=>clickWhenReady(()=>document.getElementById('hd20ActionRegisterBtn')),120);
+ setTimeout(()=>{clickWhenReady(()=>document.getElementById('hd20ActionRegisterBtn'));internalRegistrationNavigation=false},120);
 }
 function getRows(key){try{const a=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(a)?a:[]}catch{return[]}}
 function sourceRows(){
@@ -103,7 +104,7 @@ function ensureOverview(){
  el.addEventListener('click',e=>{if(e.target.closest('[data-ln-route]'))return});
  renderOverview();
 }
-function openOverview(){close();if(window.HD20_NAV?.active?.()!=='activity')window.HD20_NAV?.go?.('activity');try{const u=new URL(location.href);if(u.searchParams.get('sub')==='unified'){u.searchParams.delete('sub');history.replaceState(null,'',u)}}catch{}ensureOverview();document.body.classList.remove('hd20UnifiedLanding');const grid=document.getElementById('hd20LauncherOverview');grid?.classList.add('hd20LnVisible');document.body.classList.add('hd20InquiryActive');renderOverview();if(grid){grid.style.removeProperty('display');grid.style.removeProperty('visibility');document.querySelector('.app')?.classList.remove('awFocused');document.getElementById('awActivity')?.classList.remove('on');document.getElementById('awAction')?.classList.remove('on');grid.scrollTop=0;window.scrollTo(0,0)}}
+function openOverview(){if(overviewOpening)return;overviewOpening=true;try{close();if(window.HD20_NAV?.active?.()!=='activity')window.HD20_NAV?.go?.('activity');try{const u=new URL(location.href);if(u.searchParams.get('sub')==='unified'){u.searchParams.delete('sub');history.replaceState(null,'',u)}}catch{}ensureOverview();document.body.classList.remove('hd20UnifiedLanding');const grid=document.getElementById('hd20LauncherOverview');grid?.classList.add('hd20LnVisible');document.body.classList.add('hd20InquiryActive');renderOverview();if(grid){grid.style.removeProperty('display');grid.style.removeProperty('visibility');document.querySelector('.app')?.classList.remove('awFocused');document.getElementById('awActivity')?.classList.remove('on');document.getElementById('awAction')?.classList.remove('on');grid.scrollTop=0;window.scrollTo(0,0)}}finally{overviewOpening=false}}
 function open(){
   if(document.getElementById('hd20Launcher'))return;
   ensureOverview();document.body.classList.remove('hd20UnifiedLanding');document.getElementById('hd20LauncherOverview')?.classList.add('hd20LnVisible');document.body.classList.add('hd20InquiryActive');GRID.route='all';GRID.page=1;renderOverview();
@@ -136,9 +137,9 @@ function boot(){
   document.addEventListener('click',e=>{
     const tab=e.target?.closest?.('.beginnerNav button[data-key="activity"]');
     if(!tab)return;
-    setTimeout(()=>{if(window.HD20_NAV?.active?.()==='activity')openOverview()},0);
+    setTimeout(()=>{if(!internalRegistrationNavigation&&window.HD20_NAV?.active?.()==='activity')openOverview()},0);
   },true);
-  window.addEventListener('hd20-nav-area-changed',e=>{if(e.detail?.area!=='activity'){hideOverview();return}if(internalRegistrationNavigation||document.getElementById('hd20Launcher'))return;setTimeout(()=>{if(!internalRegistrationNavigation&&window.HD20_NAV?.active?.()==='activity'&&!document.getElementById('hd20Launcher')&&!document.querySelector('.awRegisterModal.on,#hd20ActionRegisterModal.on'))openOverview()},0)});
+  window.addEventListener('hd20-nav-area-changed',e=>{if(e.detail?.area!=='activity')hideOverview()});
   ['hd20-kpi-source-updated','hd20-action-updated','hd20-activity-updated'].forEach(e=>window.addEventListener(e,()=>{if(document.body.classList.contains('hd20InquiryActive'))renderOverview()}));
   window.addEventListener('storage',()=>{if(document.body.classList.contains('hd20InquiryActive'))renderOverview()});
 
