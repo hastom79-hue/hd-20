@@ -1830,3 +1830,5 @@ Canonical Store는 다음을 기준으로 한다.
 - 개선조치·완료관리: hd20-subtabs.js ensureActionVerify()에서 기준 요소 부재 시 검증 패널이 DOM에 삽입되지 않는 결함 보완. anchor가 없으면 #awAction 내부에 직접 append. 커밋 d5d402b4.
 - 대시보드 관련 함수·레이아웃·데이터는 수정하지 않음.
 - JavaScript 정적 구문검사 통과. 실제 브라우저 검증 및 Pages 반영 확인은 미완료.
+
+- 후속 보완: 개선조치 > 효과·재발 검증현황에 이미 계산하던 효과검증 완료 및 재발 확인 건수 노출. 가상값 생성 없음. hd20-subtabs.js 커밋 a721c03c. JS 구문검사 통과. 실제 Pages 브라우저 검증은 미완료. 대시보드 변경 없음.
