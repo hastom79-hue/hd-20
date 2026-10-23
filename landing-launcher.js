@@ -113,7 +113,7 @@ function ensureOverview(deferRender=false){
  el.addEventListener('click',e=>{if(e.target.closest('[data-ln-route]'))return});
  if(!deferRender)renderOverview();
 }
-function openOverview(){if(overviewOpening)return;overviewOpening=true;try{close();if(window.HD20_NAV?.active?.()!=='activity')window.HD20_NAV?.go?.('activity');try{const u=new URL(location.href);if(u.searchParams.get('sub')==='unified'){u.searchParams.delete('sub');history.replaceState(null,'',u)}}catch{}ensureOverview();document.body.classList.remove('hd20UnifiedLanding');const grid=document.getElementById('hd20LauncherOverview');grid?.classList.add('hd20LnVisible');document.body.classList.add('hd20InquiryActive');renderOverview();if(grid){grid.style.removeProperty('display');grid.style.removeProperty('visibility');document.querySelector('.app')?.classList.remove('awFocused');document.getElementById('awActivity')?.classList.remove('on');document.getElementById('awAction')?.classList.remove('on');grid.scrollTop=0;window.scrollTo(0,0)}}finally{overviewOpening=false}}
+function openOverview(){if(overviewOpening)return;overviewOpening=true;try{close();if(window.HD20_NAV?.active?.()!=='activity')window.HD20_NAV?.go?.('activity');try{const u=new URL(location.href);if(u.searchParams.get('sub')==='unified'){u.searchParams.delete('sub');history.replaceState(null,'',u)}}catch{}ensureOverview(true);document.body.classList.remove('hd20UnifiedLanding');const grid=document.getElementById('hd20LauncherOverview');grid?.classList.add('hd20LnVisible');document.body.classList.add('hd20InquiryActive');renderOverview();if(grid){grid.style.removeProperty('display');grid.style.removeProperty('visibility');document.querySelector('.app')?.classList.remove('awFocused');document.getElementById('awActivity')?.classList.remove('on');document.getElementById('awAction')?.classList.remove('on');grid.scrollTop=0;window.scrollTo(0,0)}}finally{overviewOpening=false}}
 function open(){
   if(document.getElementById('hd20Launcher'))return;
   ensureOverview(true);document.body.classList.remove('hd20UnifiedLanding');document.getElementById('hd20LauncherOverview')?.classList.add('hd20LnVisible');document.body.classList.add('hd20InquiryActive');GRID.route='all';GRID.page=1;
@@ -129,7 +129,7 @@ function open(){
   </div>`;
   document.body.appendChild(el);
   // 팝업을 먼저 표시하고 대량 통합조회 데이터 구성은 다음 작업으로 미룬다.
-  requestAnimationFrame(()=>setTimeout(()=>{if(document.getElementById('hd20Launcher')===el){try{renderOverview()}catch(err){console.error('[HD20 launcher background]',err)}}},30));
+  // 팝업 표시 중에는 통합조회 대량 테이블을 렌더링하지 않는다. 닫을 때만 조회한다.
   el.querySelector('[data-ln="activity"]').addEventListener('click',goActivityRegister);
   el.querySelector('[data-ln="action"]').addEventListener('click',goActionRegister);
   el.querySelector('[data-ln-close]').addEventListener('click',openOverview);
