@@ -124,7 +124,7 @@ function open(){
      화면(대시보드)으로 남아 있었음. 카드 선택(자율개선/개선요청)은 그 등록 화면으로 바로 이동하는
      게 원래 의도이므로 그대로 두고, 배경 클릭·ESC는 "건너뛰기"와 동일하게 통합 조회가 뜨도록 통일. */
   el.addEventListener('click',e=>{if(e.target===el)openOverview()});
-  document.addEventListener('keydown',function esc(e){if(e.key==='Escape'){openOverview();document.removeEventListener('keydown',esc)}});
+  document.addEventListener('keydown',function esc(e){if(e.key!=='Escape')return;if(!document.getElementById('hd20Launcher')){document.removeEventListener('keydown',esc);return}document.removeEventListener('keydown',esc);openOverview()});
 }
 window.HD20_LAUNCHER={openOverview,openRegister:open,renderOverview};
 function boot(){
@@ -140,29 +140,9 @@ function boot(){
   window.addEventListener('storage',()=>{if(document.body.classList.contains('hd20InquiryActive'))renderOverview()});
 
   setTimeout(()=>{ensureOverview()},1800);
-  let seen=false;try{seen=sessionStorage.getItem(SEEN_KEY)==='1'}catch{}
-  // 새로고침 때도 팝업을 표시합니다.
-  /* 사용자 지적: "로그인 후 런처 팝업이 안 떠요" — 원인 발견: supabase-auth.js는 로그인 화면
-     (<html class="hd20-auth-pending">)을 띄워 둔 채로도 .beginnerNav 버튼을 DOM에 미리 그려 놓고
-     CSS로만 숨겨 두는데, 이 런처는 "버튼이 DOM에 있는지"만 폴링해서 로그인 완료 전(로그인 화면이
-     아직 떠 있는 상태)에 먼저 열려버렸음. 그 열린 런처는 로그인 게이트 뒤에 가려 사용자 눈엔 전혀
-     안 보인 채로 조용히 떠 있었던 것 — 로그인 완료 시 supabase-auth.js가 쏘는 'hd20-auth-bypass'
-     이벤트(또는 이미 로그인/로컬 환경이라 window.HD20_AUTH_BYPASS가 true인 경우)를 먼저 기다렸다가
-     그 이후에만 열리도록 게이트를 추가. */
-  const afterAuth=(fn)=>{
-    if(window.HD20_AUTH_BYPASS===true){fn();return}
-    const onAuth=()=>{window.removeEventListener('hd20-auth-bypass',onAuth);fn()};
-    window.addEventListener('hd20-auth-bypass',onAuth);
-    setTimeout(()=>{window.removeEventListener('hd20-auth-bypass',onAuth);fn()},15000);
-  };
-  // 메인 네비게이션이 그려질 때까지 대기한 뒤(배경이 "전체 조회 화면"으로 먼저 자리잡은 상태) 팝업을 띄움
-  const tryOpen=(n)=>{
-    n=n||0;
-    if(document.querySelector('.beginnerNav button')){ensureOverview();renderOverview();open();return}
-    if(n>60)return;
-    setTimeout(()=>tryOpen(n+1),100);
-  };
-  afterAuth(()=>tryOpen());
+  // 팝업은 사용자가 명시적으로 신규등록을 선택했을 때만 연다.
+  // 로그인/새로고침에서 자동 팝업을 열지 않아 조회 탭과 화면 충돌을 방지한다.
+
 }
 document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot,{once:true}):boot();
 })();
