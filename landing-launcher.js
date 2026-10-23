@@ -5,6 +5,7 @@
    버튼을 그대로 재사용(클릭 시뮬레이션)해, 등록 로직 자체는 전혀 새로 만들지 않고 100% 재사용한다. */
 (()=>{'use strict';
 const SEEN_KEY='hd20LandingLauncherSeenV1';
+let internalRegistrationNavigation=false;
 function css(){
   if(document.getElementById('hd20LauncherStyle'))return;
   const s=document.createElement('style');
@@ -43,6 +44,7 @@ function clickWhenReady(findFn,tries=0){
 }
 function hideOverview(){document.body.classList.remove('hd20InquiryActive');const grid=document.getElementById('hd20LauncherOverview');if(!grid)return;grid.classList.remove('hd20LnVisible');grid.style.removeProperty('display');grid.style.removeProperty('visibility');document.body.classList.remove('hd20UnifiedLanding')}
 function navigate(area){
+ if(area==='activity'||area==='action')internalRegistrationNavigation=true;
  hideOverview();
  if(window.HD20_NAV?.go)window.HD20_NAV.go(area);
  else document.querySelector('.beginnerNav button[data-key="'+area+'"]')?.click();
@@ -78,11 +80,12 @@ function renderOverview(){
  const pages=Math.max(1,Math.ceil(filtered.length/GRID.size));GRID.page=Math.min(GRID.page,pages);
  const shown=filtered.slice((GRID.page-1)*GRID.size,GRID.page*GRID.size);
  const cell=(v)=>'<td>'+escapeText(v||'—')+'</td>';
- root.innerHTML='<nav class="hd20LnThreeTabs" aria-label="개선활동 등록 이력 조회"><button type="button" data-ln-tab="all" class="'+(GRID.route==='all'?'on':'')+'">① 총괄조회</button><button type="button" data-ln-tab="activity" class="'+(GRID.route==='activity'?'on':'')+'">② 자체개선 조회</button><button type="button" data-ln-tab="action" class="'+(GRID.route==='action'?'on':'')+'">③ 개선요청 조회</button></nav><div class="hd20LnOverviewHead"><b>자율개선 · 개선요청 통합 데이터 조회</b><div><button type="button" data-ln-exit-grid>통합조회 닫기 · 기존 메뉴로 돌아가기</button> <small>원천 등록 이력 통합 · 전체 '+records.length+'건</small></div></div>'+
+ root.innerHTML='<nav class="hd20LnThreeTabs" aria-label="개선활동 등록 이력 조회"><button type="button" data-ln-tab="all" class="'+(GRID.route==='all'?'on':'')+'">① 총괄조회</button><button type="button" data-ln-tab="activity" class="'+(GRID.route==='activity'?'on':'')+'">② 자체개선 조회</button><button type="button" data-ln-tab="action" class="'+(GRID.route==='action'?'on':'')+'">③ 개선요청 조회</button></nav><div class="hd20LnOverviewHead"><b>자율개선 · 개선요청 통합 데이터 조회</b><div><button type="button" data-ln-new-register style="background:#1967e8;color:#fff;border:0;border-radius:8px;padding:12px 18px;font-weight:800;cursor:pointer;margin-right:10px">+ 신규등록</button><button type="button" data-ln-exit-grid>통합조회 닫기 · 기존 메뉴로 돌아가기</button> <small>원천 등록 이력 통합 · 전체 '+records.length+'건</small></div></div>'+
  '<div class="hd20LnGridTools"><div class="hd20LnFilters"><label>등록 구분 <select aria-label="등록 구분" data-ln-filter>'+option('all','전체 구분',GRID.route==='all')+option('activity','자율개선',GRID.route==='activity')+option('action','개선요청',GRID.route==='action')+'</select></label><label>팀 <select aria-label="팀" data-ln-team>'+option('all','전체 팀',GRID.team==='all')+teams.map(t=>option(t,t,GRID.team===t)).join('')+'</select></label><label>진행 상태 <select aria-label="진행 상태" data-ln-status>'+option('all','전체 상태',GRID.status==='all')+statuses.map(t=>option(t,t,GRID.status===t)).join('')+'</select></label><label>시작일 <input type="date" data-ln-from value="'+escapeText(GRID.from)+'"></label><label>종료일 <input type="date" data-ln-to value="'+escapeText(GRID.to)+'"></label><input aria-label="통합 검색" data-ln-search placeholder="등록일·팀·상태·내용 검색" value="'+escapeText(GRID.query)+'"><button type="button" data-ln-search-btn>조회</button><button type="button" data-ln-reset>초기화</button></div></div>'+
  '<div class="hd20LnCounts"><span>전체 <b>'+records.length+'</b></span><span>자율개선 <b>'+activities.length+'</b></span><span>개선요청 <b>'+actions.length+'</b></span><span>검색 결과 <b>'+filtered.length+'</b></span></div>'+
  '<div class="hd20LnTableScroll"><table class="hd20LnDataTable"><thead><tr><th>번호</th><th>등록 구분</th><th>등록일</th><th>담당 팀</th><th>등록 내용</th><th>상태</th><th>조회</th></tr></thead><tbody>'+ (shown.map((x,i)=>'<tr>'+cell((GRID.page-1)*GRID.size+i+1)+cell(x.__route)+cell(rowDate(x))+cell(rowTeam(x))+cell(x.title||x.subject||x.description||x.content||x.issue||x.activityName||x.item||'내용 미입력')+cell(rowStatus(x))+'<td><button type="button" data-ln-route="'+x.__area+'">열기</button></td></tr>').join('')||'<tr><td colspan="7" class="hd20LnEmpty">조회된 데이터가 없습니다.</td></tr>')+'</tbody></table></div>'+
  '<div class="hd20LnPager"><span>조회 '+filtered.length+'건 · '+GRID.page+' / '+pages+' 페이지</span><div><button type="button" data-ln-prev '+(GRID.page<=1?'disabled':'')+'>이전</button><button type="button" data-ln-next '+(GRID.page>=pages?'disabled':'')+'>다음</button></div></div>';
+ root.querySelector('[data-ln-new-register]')?.addEventListener('click',open);
  root.querySelector('[data-ln-exit-grid]')?.addEventListener('click',()=>{document.body.classList.remove('hd20UnifiedLanding');hideOverview();navigate('dashboard');try{const u=new URL(location.href);u.searchParams.delete('sub');history.replaceState(null,'',u)}catch{}});
  root.querySelectorAll('[data-ln-tab]').forEach(btn=>btn.onclick=()=>{GRID.route=btn.dataset.lnTab;GRID.query='';GRID.page=1;renderOverview()});
  root.querySelector('[data-ln-filter]').value=GRID.route;
@@ -135,7 +138,7 @@ function boot(){
     if(!tab)return;
     setTimeout(()=>{if(window.HD20_NAV?.active?.()==='activity')openOverview()},0);
   },true);
-  window.addEventListener('hd20-nav-area-changed',e=>{if(e.detail?.area!=='activity'){hideOverview();return}if(document.getElementById('hd20Launcher'))return;setTimeout(()=>{if(window.HD20_NAV?.active?.()==='activity'&&!document.getElementById('hd20Launcher')&&!document.querySelector('.awRegisterModal.on,#hd20ActionRegisterModal.on'))openOverview()},0)});
+  window.addEventListener('hd20-nav-area-changed',e=>{if(e.detail?.area!=='activity'){hideOverview();return}if(internalRegistrationNavigation||document.getElementById('hd20Launcher'))return;setTimeout(()=>{if(!internalRegistrationNavigation&&window.HD20_NAV?.active?.()==='activity'&&!document.getElementById('hd20Launcher')&&!document.querySelector('.awRegisterModal.on,#hd20ActionRegisterModal.on'))openOverview()},0)});
   ['hd20-kpi-source-updated','hd20-action-updated','hd20-activity-updated'].forEach(e=>window.addEventListener(e,()=>{if(document.body.classList.contains('hd20InquiryActive'))renderOverview()}));
   window.addEventListener('storage',()=>{if(document.body.classList.contains('hd20InquiryActive'))renderOverview()});
 
