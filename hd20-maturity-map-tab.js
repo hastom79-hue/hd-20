@@ -64,7 +64,7 @@ function render(){css();const el=ensure(),d=data();
   if(filterMode!=='all'){
     teams=teams.map(t=>{const matched=t.cases.filter(matchCase);return{...t,maintained:matched.length,confirmed:t.cases.length,rate:t.cases.length?Math.round(matched.length/t.cases.length*1000)/10:null,cases:matched}}).filter(t=>t.maintained>0).sort((a,b)=>b.maintained-a.maintained||a.team.localeCompare(b.team,'ko'));
   }
-  const sumC=d.candidates.length,sumF=d.confirmed.length,sumM=d.maintained.length,sumL=Math.max(0,sumF-sumM),rate=sumF?Math.round(sumM/sumF*1000)/10:null,conv=sumC?Math.round(sumF/sumC*1000)/10:null,newSecuredRows=window.HD20KPIData?.snapshot?.().newSecured||[],newF=newSecuredRows.length,maxMaintained=Math.max(1,...teams.map(x=>x.maintained),1);el.innerHTML=`<div class="mmtHero"><div><small>고도화 현황</small><h2>고도화 맵</h2><p>생산혁신팀 + 5S 모듈의 공식판정 결과와 현재 유지·이탈 상태를 생산팀별로 비교하고 공식 확정 Case까지 Drill-down합니다. (후보는 성과가 아니며 조건 충족수만으로 자동확정하지 않음)</p></div><div><small>판정기준</small><b>KPI Canonical 동일판정 · 공식확정만 성과 반영</b></div></div><div class="mmtRuleLegend" aria-label="고도화 작업사례 판정 및 유지 이탈 범례"><div><b>인정 · 3대 요건 중 1개 이상</b><span>1·2·3개 충족 모두 고도화 작업사례로 인정합니다. 충족 개수는 수준 정보이며, 충족 요건이 늘어도 별도 사례로 중복 집계하지 않습니다.</span></div><div><b>유지 · 인정 상태의 지속</b><span>개별 사례(Case)마다 판정합니다. 해당 사례에 충족 요건이 1개 이상 남으면 유지이며, 3→2→1개 감소는 수준 하락 이력입니다. 오래 유지한 개별 사례를 우수하게 평가합니다.</span></div><div><b>이탈 · 충족 요건 0개</b><span>개별 사례가 마지막 충족 요건까지 잃어 0개가 되는 순간 해당 1건이 이탈합니다. 같은 팀의 다른 사례가 유지 중이어도 이탈을 기록합니다. 재진입 시 이력은 보존합니다.</span></div></div><div class="mmtFlowSummary"><b>후보 ${sumC}</b><span>→ 공식확정 ${sumF} (${conv===null?'—':conv+'%'})</span><span>→ 현재 유지 ${sumM} (${rate===null?'—':rate+'%'})</span><strong>확정 후 이탈 ${sumL}</strong></div><div class="mmtKpis"><button type="button" class="mmtKpi" data-mmtk="new"><small>올해 신규 공식확정</small><b>${newF}</b></button><button type="button" class="mmtKpi" data-mmtk="conf"><small>누적 공식확정</small><b>${sumF}</b></button><button type="button" class="mmtKpi" data-mmtk="keep"><small>현재 유지</small><b>${sumM}</b></button><div class="mmtKpi"><small>유지율 (현재 유지 ÷ 공식확정)</small><b>${rate===null?'—':rate+'%'}</b></div></div><div class="mmtWrap"><section class="mmtMapCard"><div class="mmtHead"><b>팀별 고도화 위험도 사분면 맵</b><span>대시보드 팀 마스터 순서 · 총 확정사례 / 유지+이탈 누적막대</span></div><div class="mmtBars"></div><div class="mmtTreeLeg mmtLegendDetail" hidden><span><i style="background:#df3e3e"></i><b>집중 고도화</b><small>고도화 수준 낮음 · 이탈도 높음 → 이탈 원인 확인 및 재고도화 우선</small></span><span><i style="background:#d8a20b"></i><b>보완 필요</b><small>이탈은 낮으나 고도화 수준 낮음 → 실행·Case 축적 중심 보완</small></span><span><i style="background:#15966a"></i><b>안정 운영</b><small>고도화 수준 높음 · 이탈도 낮음 → 현 수준 유지 및 일상관리 강화</small></span><span><i style="background:#1688c9"></i><b>우수 유지</b><small>고도화 수준 높으나 이탈 신호 존재 → 이탈 항목 집중 점검</small></span></div></section><section class="mmtCaseCard"><div class="mmtHead"><b>팀별 공식확정 Case</b><span>팀 선택 → Case 상세</span></div><div class="mmtCases"></div></section></div><div class="maturityMapBody"></div>`;
+  const sumC=d.candidates.length,sumF=d.confirmed.length,sumM=d.maintained.length,sumL=Math.max(0,sumF-sumM),rate=sumF?Math.round(sumM/sumF*1000)/10:null,conv=sumC?Math.round(sumF/sumC*1000)/10:null,newSecuredRows=window.HD20KPIData?.snapshot?.().newSecured||[],newF=newSecuredRows.length,maxMaintained=Math.max(1,...teams.map(x=>x.maintained),1);el.innerHTML=`<div class="mmtHero"><div><small>고도화 현황</small><h2>고도화 맵</h2><p>생산혁신팀 + 5S 모듈의 공식판정 결과와 현재 유지·이탈 상태를 생산팀별로 비교하고 공식 확정 Case까지 Drill-down합니다. (후보는 성과가 아니며 조건 충족수만으로 자동확정하지 않음)</p></div><div><small>판정기준</small><b>KPI Canonical 동일판정 · 공식확정만 성과 반영</b></div></div><div class="mmtRuleLegend" aria-label="고도화 작업사례 판정 및 유지 이탈 범례"><div><b>인정 · 3대 요건 중 1개 이상</b><span>1·2·3개 충족 모두 고도화 작업사례로 인정합니다. 충족 개수는 수준 정보이며, 충족 요건이 늘어도 별도 사례로 중복 집계하지 않습니다.</span></div><div><b>유지 · 인정 상태의 지속</b><span>개별 사례(Case)마다 판정합니다. 해당 사례에 충족 요건이 1개 이상 남으면 유지이며, 3→2→1개 감소는 수준 하락 이력입니다. 오래 유지한 개별 사례를 우수하게 평가합니다.</span></div><div><b>이탈 · 충족 요건 0개</b><span>개별 사례가 마지막 충족 요건까지 잃어 0개가 되는 순간 해당 1건이 이탈합니다. 같은 팀의 다른 사례가 유지 중이어도 이탈을 기록합니다. 재진입 시 이력은 보존합니다.</span></div></div><div class="mmtFlowSummary"><b>후보 ${sumC}</b><span>→ 공식확정 ${sumF} (${conv===null?'—':conv+'%'})</span><span>→ 현재 유지 ${sumM} (${rate===null?'—':rate+'%'})</span><strong>확정 후 이탈 ${sumL}</strong></div><div class="mmtKpis"><button type="button" class="mmtKpi" data-mmtk="new"><small>올해 신규 공식확정</small><b>${newF}</b></button><button type="button" class="mmtKpi" data-mmtk="conf"><small>누적 공식확정</small><b>${sumF}</b></button><button type="button" class="mmtKpi" data-mmtk="keep"><small>현재 유지</small><b>${sumM}</b></button><div class="mmtKpi"><small>유지율 (현재 유지 ÷ 공식확정)</small><b>${rate===null?'—':rate+'%'}</b></div></div><div class="mmtWrap"><section class="mmtMapCard"><div class="mmtHead"><b>생산팀별 고도화 공식확정·유지·이탈 비교</b><span>팀 마스터 순서 · 누적막대 및 이탈률 · 팀 클릭 시 공식확정 Case 조회</span></div><div class="mmtBars"></div><div class="mmtTreeLeg mmtLegendDetail" hidden><span><i style="background:#df3e3e"></i><b>집중 고도화</b><small>고도화 수준 낮음 · 이탈도 높음 → 이탈 원인 확인 및 재고도화 우선</small></span><span><i style="background:#d8a20b"></i><b>보완 필요</b><small>이탈은 낮으나 고도화 수준 낮음 → 실행·Case 축적 중심 보완</small></span><span><i style="background:#15966a"></i><b>안정 운영</b><small>고도화 수준 높음 · 이탈도 낮음 → 현 수준 유지 및 일상관리 강화</small></span><span><i style="background:#1688c9"></i><b>우수 유지</b><small>고도화 수준 높으나 이탈 신호 존재 → 이탈 항목 집중 점검</small></span></div></section><section class="mmtCaseCard"><div class="mmtHead"><b>팀별 공식확정 Case</b><span>팀 선택 → Case 상세</span></div><div class="mmtCases"></div></section></div><div class="maturityMapBody"></div>`;
   /* '공식 판정'(gmes-5s-case-import.js의 체크박스+확정 버튼 UI)이 예전 구버전 '고도화 맵' 모달
      (.ipMap 클릭 시 열리던 팝업) 안의 .maturityMapBody에만 붙게 돼 있어, 지금의 '① 유지·이탈
      포트폴리오' 화면(이 파일)에는 그 컨테이너 자체가 없어 판정 기능이 완전히 마운트되지 못하고
@@ -84,52 +84,29 @@ function render(){css();const el=ensure(),d=data();
   chart.innerHTML='<div class="mmtRiskLegend"><span><i style="background:#2d9669"></i>유지 안정</span><span><i style="background:#dca342"></i>관리 주의</span><span><i style="background:#d4544e"></i>이탈 집중</span><span>원 크기 = 이탈 건수 · 클릭 = 팀별 사례</span></div><div class="mmtRiskPlot"></div><p class="mmtRiskNote">가로축: 공식확정 후 이탈률(%) · 세로축: 총 공식확정 사례(건) · 점은 생산팀을 나타냅니다. 확정 0건 팀은 하단에 별도 표시합니다.</p>';
   bars.replaceChildren(chart);
   if(!document.getElementById('mmtRiskStyles')){const st=document.createElement('style');st.id='mmtRiskStyles';st.textContent='.mmtRiskLegend{display:flex;gap:18px;flex-wrap:wrap;margin:0 0 8px;color:#496176;font-size:12px}.mmtRiskLegend span{display:inline-flex;align-items:center;gap:5px}.mmtRiskLegend i{width:10px;height:10px;border-radius:50%;display:inline-block}.mmtRiskNote{font-size:11px;color:#63798a;margin:7px 0 0}.mmtRiskMap{width:100%;overflow:hidden}';document.head.appendChild(st)}
-  const plot=$('.mmtRiskPlot',chart),ns='http://www.w3.org/2000/svg',W=1200,H=530,L=78,R=45,T=58,B=90,PW=W-L-R,PH=H-T-B;
-  const svg=document.createElementNS(ns,'svg');svg.setAttribute('viewBox',`0 0 ${W} ${H}`);svg.setAttribute('role','img');svg.setAttribute('aria-label','팀별 고도화 이탈률과 공식확정 건수 위험도 사분면 맵');svg.style.cssText='display:block;width:100%;height:auto';
-  function node(tag,attrs,label,parent=svg){const e=document.createElementNS(ns,tag);Object.entries(attrs).forEach(([k,v])=>e.setAttribute(k,String(v)));if(label!==undefined)e.textContent=String(label);parent.appendChild(e);return e}
-  const xCut=50,yCut=Math.max(1,Math.ceil(maxCount/2));
-  const x=v=>L+v/100*PW,y=v=>T+PH-v/yMax*PH;
-  const zones=[{x:L,y:T,w:PW/2,h:y(yCut)-T,c:'#eef7f1'},{x:L+PW/2,y:T,w:PW/2,h:y(yCut)-T,c:'#fff0ed'},{x:L,y:y(yCut),w:PW/2,h:T+PH-y(yCut),c:'#f5f8fb'},{x:L+PW/2,y:y(yCut),w:PW/2,h:T+PH-y(yCut),c:'#fff8ed'}];
-  zones.forEach(z=>node('rect',{x:z.x,y:z.y,width:z.w,height:z.h,fill:z.c}));
-  for(let v=0;v<=100;v+=25){node('line',{x1:x(v),x2:x(v),y1:T,y2:T+PH,stroke:'#dce5eb','stroke-dasharray':v===50?'6 4':'2 5'});node('text',{x:x(v),y:T+PH+23,'text-anchor':'middle','font-size':12,fill:'#64798c'},v+'%')}
-  for(let v=0;v<=yMax;v++){if(yMax>12&&v%Math.ceil(yMax/6)!==0)continue;node('line',{x1:L,x2:W-R,y1:y(v),y2:y(v),stroke:'#dce5eb'});node('text',{x:L-12,y:y(v)+4,'text-anchor':'end','font-size':12,fill:'#64798c'},v)}
-  node('text',{x:L+PW/4,y:T+23,'text-anchor':'middle','font-size':14,'font-weight':700,fill:'#347354'},'성과 유지·축적');
-  node('text',{x:L+PW*.75,y:T+23,'text-anchor':'middle','font-size':14,'font-weight':700,fill:'#ba514b'},'이탈 집중 관리');
-  node('text',{x:L+PW/4,y:T+PH-15,'text-anchor':'middle','font-size':13,fill:'#6d8291'},'확정 사례 축적 필요');
-  node('text',{x:L+PW*.75,y:T+PH-15,'text-anchor':'middle','font-size':13,fill:'#ab7c3e'},'초기 이탈 관리');
-  node('text',{x:L+PW/2,y:H-15,'text-anchor':'middle','font-size':13,'font-weight':600,fill:'#344e65'},'공식확정 후 이탈률 (%) →');
-  node('text',{x:15,y:T+PH/2,transform:`rotate(-90 15 ${T+PH/2})`,'text-anchor':'middle','font-size':13,'font-weight':600,fill:'#344e65'},'공식확정 사례 (건)');
-  const grouped=new Map(),empty=[];
+  // Approved team-level comparison: confirmed = maintained + exited.
+  // Preserve official case data and team drill-down; no inferred cases.
+  chart.innerHTML='<div class="mmtRiskLegend"><span><i style="background:#2d9669"></i>현재 유지</span><span><i style="background:#d4544e"></i>이탈</span><span>막대 길이 = 공식확정 사례 · 우측 = 이탈률</span></div><div class="mmtTeamCompare" role="group" aria-label="생산팀별 공식확정 유지 이탈 비교"></div>';
+  const compare=$('.mmtTeamCompare',chart);
+  const maxConfirmed=Math.max(1,...teams.map(t=>t.confirmed));
+  const header=document.createElement('div');header.className='mmtCompareHeader';header.innerHTML='<b>생산팀</b><b>공식확정 사례 (유지 / 이탈)</b><b>이탈률</b>';compare.appendChild(header);
   teams.forEach(t=>{
-    if(!t.confirmed){empty.push(t.team);return}
-    const lost=Math.max(0,t.confirmed-Math.min(t.maintained,t.confirmed)),rate=100*lost/t.confirmed,key=rate.toFixed(3)+'|'+t.confirmed;
-    if(!grouped.has(key))grouped.set(key,{rate,total:t.confirmed,lost,teams:[]});
-    grouped.get(key).teams.push(t);
+    const confirmed=t.confirmed,maintained=Math.min(t.maintained,confirmed),exited=Math.max(0,confirmed-maintained);
+    const rate=confirmed?Math.round(exited/confirmed*1000)/10:null;
+    const row=document.createElement('button');row.type='button';row.className='mmtCompareRow';
+    row.setAttribute('aria-label',t.team+' 공식확정 '+confirmed+'건, 유지 '+maintained+'건, 이탈 '+exited+'건, 이탈률 '+(rate===null?'해당 없음':rate+'%'));
+    const team=document.createElement('strong');team.className='mmtCompareTeam';team.textContent=t.team;
+    const track=document.createElement('span');track.className='mmtCompareTrack';
+    const fill=document.createElement('span');fill.className='mmtCompareFill';
+    fill.style.width=(confirmed/maxConfirmed*100)+'%';
+    if(confirmed){const keep=document.createElement('span');keep.className='mmtCompareKeep';keep.style.width=(maintained/confirmed*100)+'%';const lost=document.createElement('span');lost.className='mmtCompareLost';lost.style.width=(exited/confirmed*100)+'%';fill.append(keep,lost)}
+    track.appendChild(fill);
+    const values=document.createElement('span');values.className='mmtCompareValues';values.textContent='확정 '+confirmed+' · 유지 '+maintained+' · 이탈 '+exited;
+    const bar=document.createElement('span');bar.className='mmtCompareBar';bar.append(track,values);
+    const pct=document.createElement('b');pct.className='mmtCompareRate';pct.textContent=rate===null?'—':rate.toFixed(1)+'%';
+    row.append(team,bar,pct);row.addEventListener('click',()=>openTeamPopup(t));compare.appendChild(row);
   });
-  const groups=[...grouped.values()].sort((a,b)=>a.rate-b.rate||b.total-a.total);
-  const list=document.createElement('div');list.className='mmtRiskGroups';
-  list.innerHTML='<div class="mmtRiskGroupsTitle">동일 좌표별 생산팀 현황 <small>그룹을 선택하면 팀별 상세를 확인할 수 있습니다</small></div>';
-  groups.forEach((item,index)=>{
-    const cx=x(item.rate),cy=y(item.total),color=item.lost===0?'#2d9669':item.rate>=50?'#d4544e':'#dca342',n=item.teams.length,radius=Math.min(27,11+Math.max(item.lost,0)*3+Math.min(8,n));
-    const g=node('g',{style:'cursor:pointer',tabindex:'0',role:'button','aria-label':`좌표 그룹 ${index+1}: ${n}개 팀, 확정 ${item.total}건, 이탈률 ${item.rate.toFixed(1)}%`});
-    node('circle',{cx,cy,r:radius+3,fill:'#fff',stroke:color,'stroke-width':1.5},undefined,g);
-    node('circle',{cx,cy,r:radius,fill:color},undefined,g);
-    node('text',{x:cx,y:cy+4,'text-anchor':'middle','font-size':12,'font-weight':700,fill:'#fff'},n>1?n:item.lost,g);
-    const label=n>1?`${n}개 팀`:item.teams[0].team;
-    node('text',{x:cx,y:cy-radius-12,'text-anchor':'middle','font-size':12,'font-weight':700,fill:'#304c64'},label,g);
-    const title=document.createElementNS(ns,'title');title.textContent=`${item.teams.map(t=>t.team).join(', ')} · 확정 ${item.total}건 / 이탈 ${item.lost}건 / 이탈률 ${item.rate.toFixed(1)}%`;g.appendChild(title);
-    const card=document.createElement('details');card.className='mmtRiskGroup';
-    const summary=document.createElement('summary');summary.textContent=`${item.rate.toFixed(0)}% 이탈 · 확정 ${item.total}건 · ${n}개 팀`;card.appendChild(summary);
-    const body=document.createElement('div');body.className='mmtRiskGroupTeams';
-    item.teams.forEach(t=>{const btn=document.createElement('button');btn.type='button';btn.textContent=`${t.team} · 유지 ${t.maintained} / 이탈 ${Math.max(0,t.confirmed-t.maintained)}`;btn.addEventListener('click',()=>openTeamPopup(t));body.appendChild(btn)});
-    card.appendChild(body);list.appendChild(card);
-    const activate=()=>{list.querySelectorAll('details').forEach(d=>d.open=false);card.open=true;card.scrollIntoView({block:'nearest',behavior:'smooth'})};
-    g.addEventListener('click',activate);g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();activate()}});
-  });
-  chart.appendChild(list);
-  if(!document.getElementById('mmtRiskGroupStyles')){const st=document.createElement('style');st.id='mmtRiskGroupStyles';st.textContent='.mmtRiskGroups{margin:12px 0 4px;padding:12px 14px;background:#f7fafc;border:1px solid #dfe9f0;border-radius:10px}.mmtRiskGroupsTitle{font-weight:700;color:#244763;margin-bottom:9px}.mmtRiskGroupsTitle small{font-weight:400;color:#6b8090;margin-left:8px}.mmtRiskGroup{display:inline-block;vertical-align:top;margin:4px 8px 4px 0;padding:7px 10px;border:1px solid #d6e3eb;border-radius:8px;background:#fff}.mmtRiskGroup summary{cursor:pointer;font-size:12px;color:#294a63}.mmtRiskGroupTeams{display:flex;flex-direction:column;gap:5px;padding:8px 0 0}.mmtRiskGroupTeams button{text-align:left;background:#f1f6fa;border:1px solid #dbe7ed;border-radius:5px;padding:6px;cursor:pointer;color:#244763}';document.head.appendChild(st)}
-  if(empty.length){const p=document.createElement('p');p.className='mmtRiskNote';p.textContent='공식확정 0건 (맵 좌표 제외): '+empty.join(' · ');chart.appendChild(p)}
-  plot.appendChild(svg);
+  if(!document.getElementById('mmtCompareStyles')){const st=document.createElement('style');st.id='mmtCompareStyles';st.textContent='.mmtTeamCompare{width:100%;padding:8px 0}.mmtCompareHeader,.mmtCompareRow{display:grid;grid-template-columns:minmax(115px,1.1fr) minmax(220px,4fr) minmax(68px,.7fr);align-items:center;gap:14px}.mmtCompareHeader{font-size:12px;color:#577086;padding:10px 14px;border-bottom:1px solid #d9e5ed}.mmtCompareRow{width:100%;border:0;border-bottom:1px solid #e8eef2;background:#fff;text-align:left;padding:12px 14px;cursor:pointer;color:#173b55}.mmtCompareRow:hover,.mmtCompareRow:focus-visible{background:#f0f7fb;outline-offset:-2px}.mmtCompareTeam{font-size:13px;overflow-wrap:anywhere}.mmtCompareBar{display:flex;align-items:center;gap:12px;min-width:0}.mmtCompareTrack{display:block;flex:1;min-width:80px;height:18px;background:#eef2f5;border-radius:4px;overflow:hidden}.mmtCompareFill{display:flex;height:100%;min-width:0}.mmtCompareKeep{background:#2d9669;height:100%}.mmtCompareLost{background:#d4544e;height:100%}.mmtCompareValues{font-size:11px;color:#486176;white-space:nowrap}.mmtCompareRate{text-align:right;font-size:13px;color:#a63f3a}@media(max-width:700px){.mmtCompareHeader,.mmtCompareRow{grid-template-columns:90px minmax(120px,1fr) 52px;gap:7px}.mmtCompareBar{flex-direction:column;align-items:stretch;gap:3px}.mmtCompareValues{white-space:normal;font-size:10px}.mmtCompareHeader{font-size:10px}}';document.head.appendChild(st)}
   const caseRows=document.createDocumentFragment();
   teams.forEach(t=>{
     const confirmed=t.confirmed,maintained=Math.min(t.maintained,confirmed),exited=Math.max(0,confirmed-maintained);
