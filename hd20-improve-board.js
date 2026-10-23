@@ -5,6 +5,7 @@
 const ID='hd20ImproveBoard',TYPES=['정리','정돈','청소','시각화','위험구역관리','설비 자주보전','5S 고도화'],DONE=['완료','확정'];
 const C={dark:'#1f6f6b',amber:'#e0b03c',light:'#a8c7c4',grey:'#8fa3b3',ink:'#22303f',soft:'#5c6b7a',grid:'#e6ecf0'};
 const S={year:null,month:'',metric:'per',group:'',type:'',roll:'',judge:'',team:''};
+let maturityDrillTeam='';
 const TEAM_CHART_ORDER_KEY='hd20_improve_team_chart_order_v1';
 let teamChartLocalOrder=null,teamChartOrderDirty=false; // Unsaved drag order; save writes shared reference order.
 // Reference-information team order remains authoritative on page load.
@@ -225,18 +226,18 @@ function render(box){if(!document.getElementById('hd20DrillGridCss')){const st=d
   const maturityRows=rowsC.filter(maturityCandidate);
   const maturityFound=maturityRows.filter(r=>maturityRegistration(r).slice(0,4)===S.year);
   const maturityAdoptedRows=maturityRows.filter(r=>maturityAdopted(r)&&cy(r)===S.year);
-  const maturitySelected=S.team&&S.team!=='ALL'&&tv.some(t=>t.t===S.team);
+  const maturitySelected=!!maturityDrillTeam&&tv.some(t=>t.t===maturityDrillTeam);
   const maturityCats=maturitySelected?ML:tv.map(t=>t.t);
   const maturityCount=(adopted)=>maturitySelected
-    ?ML.map((_,i)=>(adopted?maturityAdoptedRows:maturityFound).filter(r=>r.team===S.team&&(adopted?cm(r):+maturityRegistration(r).slice(5,7))===i+1).length)
+    ?ML.map((_,i)=>(adopted?maturityAdoptedRows:maturityFound).filter(r=>r.team===maturityDrillTeam&&(adopted?cm(r):+maturityRegistration(r).slice(5,7))===i+1).length)
     :tv.map(t=>(adopted?maturityAdoptedRows:maturityFound).filter(r=>r.team===t.t).length);
   const maturityVertical=(adopted)=>{
     const counts=maturityCount(adopted);
     const vals=maturitySelected?counts:counts.map((n,i)=>tv[i].h?n/tv[i].h:0);
     const label=adopted?'고도화 채택사례':'고도화 발굴사례';
-    return '<div class="ibMaturityPanel"><div class="ibHead">'+label+' <em>'+(maturitySelected?esc(S.team)+' · 월별 건수':'팀별 인당 건수 (총건수)')+'</em></div><div class="ibMaturityChart">'+chart({w:Math.max(480,maturitySelected?500:tv.length*49),h:245,cats:maturityCats,series:[{name:label,vals,color:adopted?'#3579b5':'#298c80'}],per:!maturitySelected,rotate:!maturitySelected,minSlot:maturitySelected?38:49,labelTotals:maturitySelected?null:counts,tightAxis:true,axisHeadroom:.12})+'</div></div>';
+    return '<div class="ibMaturityPanel"><div class="ibHead">'+label+' <em>'+(maturitySelected?esc(maturityDrillTeam)+' · 월별 건수':'팀별 인당 건수 (총건수)')+'</em></div><div class="ibMaturityChart">'+chart({w:Math.max(480,maturitySelected?500:tv.length*49),h:245,cats:maturityCats,series:[{name:label,vals,color:adopted?'#3579b5':'#298c80'}],per:!maturitySelected,rotate:!maturitySelected,minSlot:maturitySelected?38:49,linkX:!maturitySelected,labelTotals:maturitySelected?null:counts,tightAxis:true,axisHeadroom:.12})+'</div></div>';
   };
-  const maturityRight='<div class="ibMaturityRight">'+maturityVertical(false)+maturityVertical(true)+'</div>';
+  const maturityRight='<div class="ibMaturityRight"><div class="ibMaturityControls">'+(maturitySelected?'<button type="button" data-maturity-all>전체 팀 보기</button>':'<span>팀명 또는 막대를 클릭하면 해당 팀 월별 실적으로 전환됩니다.</span>')+'</div>'+maturityVertical(false)+maturityVertical(true)+'</div>';
   const totC=tv.reduce((a,x)=>a+x.c,0),avg=per?totC/hcAll:totC/Math.max(1,tv.length);
   /* snapshot()은 매번 원본을 새로 파싱해 매 호출마다 새 객체를 만들므로 참조 비교(Set.has)가 항상 실패함 — id로 비교 */
   const keepSet=new Set((window.HD20KPIData?.snapshot?.()?.maintained||[]).map(r=>r.id));
@@ -342,6 +343,8 @@ ${maturityRight}</div>
   box.querySelectorAll('[data-evk]').forEach(b=>{const dl=document.createElement('button');dl.type='button';dl.className='ibEv';dl.textContent='엑셀 추출';dl.style.marginLeft='6px';dl.addEventListener('click',()=>{const key=b.dataset.evk;const [title,rows]=EV[key];downloadEvidence(cols,rows.map(mapR),'5S_자율개선_차트_'+key);});b.insertAdjacentElement('afterend',dl)});
   box.querySelectorAll('[data-evk]').forEach(b=>b.onclick=()=>{const [t,a]=EV[b.dataset.evk];openRows({title:t,cols,rows:a.map(mapR),file:'5S_자율개선_근거_'+b.dataset.evk})});
   box.querySelectorAll('[data-f]').forEach(el=>el.onchange=()=>{if(el.dataset.f==='month'){const v=el.value.trim();if(v!==''&&(!/^\d{1,2}$/.test(v)||Number(v)<1||Number(v)>12)){el.setCustomValidity('1~12 사이의 월을 입력하세요.');el.reportValidity();return}el.setCustomValidity('');S.month=v?String(Number(v)).padStart(2,'0'):'';}else S[el.dataset.f]=el.value;if(el.dataset.f==='group')S.team='';render(box)});
+  box.querySelector('[data-maturity-all]')?.addEventListener('click',()=>{maturityDrillTeam='';render(box)});
+  box.querySelectorAll('.ibMaturityRight [data-cat]').forEach(el=>el.addEventListener('click',()=>{const team=el.getAttribute('data-cat');if(tv.some(t=>t.t===team)){maturityDrillTeam=team;S.team=team;render(box)}}));
   box.querySelector('[data-ib="go"]').onclick=()=>render(box);box.querySelector('[data-ib="print"]').onclick=()=>window.print();
   box.querySelector('[data-ib="csv"]').onclick=()=>exportCsv({D,S,tv,A:{TYPES,allT},ML,dVals,per,hcAll});
   box.querySelector('[data-ib="saveTeamOrder"]').onclick=()=>{
