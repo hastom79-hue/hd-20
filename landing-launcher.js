@@ -34,7 +34,7 @@ function css(){
   s.textContent+=`#hd20LauncherOverview .hd20LnThreeTabs{display:flex;gap:0;border-bottom:2px solid #cddce6;margin:0 0 22px;position:sticky;top:0;background:#fff;z-index:2}#hd20LauncherOverview .hd20LnThreeTabs button{flex:1;padding:15px 12px;background:#f7fafc;border:0;border-bottom:3px solid transparent;font-size:15px;font-weight:700;color:#567086;cursor:pointer}#hd20LauncherOverview .hd20LnThreeTabs button.on{color:#125889;border-bottom-color:#1773b5;background:white}#hd20Launcher{backdrop-filter:none}#hd20Launcher .hd20LnBox{width:min(850px,94vw)}#hd20LauncherOverview{scroll-margin-top:14px}`;
   /* 긴급 복구: 전체 앱을 숨기거나 고정 오버레이로 덮는 CSS 제거 */
   s.textContent+=`body #hd20LauncherOverview{display:none}#hd20LauncherOverview.hd20LnVisible{display:block;position:relative;z-index:auto;max-width:1500px;margin:20px auto;padding:20px;background:white}#hd20LauncherOverview .hd20LnTableScroll{overflow:auto;max-height:70vh}#hd20LauncherOverview [data-ln-exit-grid]{background:#173a57;color:white}`;
-  s.textContent+=`body.hd20InquiryActive #hd20LauncherOverview.hd20LnVisible{display:block}body.hd20InquiryActive .app{display:none!important}body.hd20InquiryActive #hd20LauncherOverview{margin-bottom:24px}`;
+  s.textContent+=`body.hd20InquiryActive #hd20LauncherOverview.hd20LnVisible{display:block}body.hd20InquiryActive .app{display:block}body.hd20InquiryActive #hd20LauncherOverview{margin-bottom:24px}`;
   document.head.appendChild(s);
 }
 function close(){document.getElementById('hd20Launcher')?.remove();try{sessionStorage.setItem(SEEN_KEY,'1')}catch{}}
@@ -143,7 +143,8 @@ function boot(){
   ['hd20-kpi-source-updated','hd20-action-updated','hd20-activity-updated'].forEach(e=>window.addEventListener(e,()=>{if(document.body.classList.contains('hd20InquiryActive'))renderOverview()}));
   window.addEventListener('storage',()=>{if(document.body.classList.contains('hd20InquiryActive'))renderOverview()});
 
-  setTimeout(()=>{ensureOverview();if(window.HD20_NAV?.active?.()==='activity'&&!document.getElementById('hd20Launcher'))openOverview()},500);
+  // 복구 우선: 초기 로드에서 통합조회 자동 생성/화면 은닉을 하지 않는다.
+  // 메뉴 클릭 후에만 조회를 생성하며, 조회 렌더 오류가 나도 기본 앱은 남는다.
   // 팝업은 사용자가 명시적으로 신규등록을 선택했을 때만 연다.
   // 로그인/새로고침에서 자동 팝업을 열지 않아 조회 탭과 화면 충돌을 방지한다.
 
