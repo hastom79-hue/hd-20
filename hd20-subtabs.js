@@ -324,7 +324,7 @@ function renderRetentionSampling(root){
   const audits=load('hd20AuditRandomDrawsV1'),drawId='RET-AUDIT-'+r.id;
   let draw=audits.find(x=>x.id===drawId);
   if(!draw){draw={id:drawId,team:r.team,workplace:r.workplace,sourceCaseId:r.caseId,sourceStage:'RETENTION-RANDOM',auditActor:'5S 모듈 조직',auditDate:r.evaluatedAt.slice(0,10),auditResult:'부적합',auditor:evaluator,improvementRequest:'[유지점검 부적합] '+r.kind+' '+r.caseId+(comment?' · '+comment:'')};audits.unshift(draw);save('hd20AuditRandomDrawsV1',audits)}
-  try{r.actionId=window.HD20AuditClosedLoop?.syncAction?.(draw)||''}catch(err){console.error('[HD20 유지점검 이관]',err)}
+  try{r.actionId=window.HD20AuditClosedLoop?.syncAction?.(draw)||'';if(!r.actionId){const actions=load('hd20ActionCasesV2'),actionId='AUTO-RETENTION-'+r.id;let action=actions.find(a=>a.id===actionId||(a.sourceStage==='RETENTION-RANDOM'&&a.sourceCaseId===draw.id));if(!action){action={id:actionId,date:r.evaluatedAt.slice(0,10),registeredAt:r.evaluatedAt.slice(0,10),team:r.team,workplace:r.workplace,owner:evaluator,registeredBy:evaluator,registrant:evaluator,auditor:evaluator,problem:draw.improvementRequest,source:'5S 유지점검',sourceCaseId:draw.id,sourceStage:'RETENTION-RANDOM',originCaseId:r.caseId,status:'조치대기',effectVerified:false,recurrence:false,autoCreated:true};actions.unshift(action);save('hd20ActionCasesV2',actions);window.dispatchEvent(new CustomEvent('hd20-action-updated',{detail:{added:1,source:'retention'}}))}r.actionId=action.id}}catch(err){console.error('[HD20 유지점검 이관]',err)}
  }
  rows[n]=r;save('hd20RetentionRandomChecksV1',rows);
  window.dispatchEvent(new CustomEvent('hd20-audit-updated',{detail:{retention:r}}));render();
