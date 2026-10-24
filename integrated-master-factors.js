@@ -48,7 +48,27 @@ const head=document.querySelector('#masterModal .modalHead span');if(head)head.t
    패트롤 점검·자율 5S Audit·혁신팀 자율 점검·5S 자율개선활동 피드백·출처 미분류)의 순서를 관리하는
    유일한 창구가 구버전 숨김 탭(request-source-order-master.js)뿐이었음을 발견 — "③ 요청그룹"과
    같은 패턴으로 신버전 탭으로 정식 추가. */
-const map={team:'① 조직/팀',target:'② 팀별 인당목표',source:'③ 요청그룹',factor:'④ 업무/팩터',mail:'⑤ 메일링',discovery:'⑥ 발굴출처'};Object.entries(map).forEach(([k,n])=>{let b=tabs.querySelector('[data-master-tab="integrated-'+k+'"]');if(!b){b=document.createElement('button');b.type='button';b.dataset.masterTab='integrated-'+k;b.textContent=n;b.addEventListener('click',()=>show(k));tabs.appendChild(b)}});if(!tabs.querySelector('button.on:not([style*="display: none"])'))show('team');return true}
+const map={team:'① 조직/팀',target:'② 팀별 인당목표',source:'③ 요청그룹',factor:'④ 업무/팩터',mail:'⑤ 메일링',discovery:'⑥ 발굴출처'};Object.entries(map).forEach(([k,n])=>{let b=tabs.querySelector('[data-master-tab="integrated-'+k+'"]');if(!b){b=document.createElement('button');b.type='button';b.dataset.masterTab='integrated-'+k;b.textContent=n;b.addEventListener('click',()=>show(k));tabs.appendChild(b)}});groupMasterNavigation();if(!tabs.querySelector('button.on:not([style*="display: none"])'))show('team');return true}
+function groupMasterNavigation(){
+ const tabs=document.querySelector('#masterModal .masterTabs');if(!tabs)return;
+ tabs.querySelectorAll('[data-master-group-heading]').forEach(x=>x.remove());
+ const groups=[
+  {title:'조직·성과 기준',keys:['integrated-team','integrated-target']},
+  {title:'활동·운영 기준',keys:['integrated-source','integrated-discovery','integrated-factor','policy']},
+  {title:'시스템 운영',keys:['integrated-mail']}
+ ];
+ // 기존 각 탭의 개별 저장 기능은 유지하고 화면상의 의미만 그룹화한다.
+ groups.forEach(g=>{
+  const buttons=g.keys.map(k=>tabs.querySelector('[data-master-tab="'+k+'"]')).filter(Boolean);
+  const visible=buttons.filter(b=>b.style.display!=='none'&&!b.hidden);
+  if(!visible.length)return;
+  const heading=document.createElement('span');heading.dataset.masterGroupHeading=g.title;
+  heading.textContent=g.title;heading.setAttribute('aria-hidden','true');
+  heading.style.cssText='flex-basis:100%;font-size:11px;font-weight:850;color:#526b7a;padding:10px 3px 2px;border-top:1px solid #e4ecf1';
+  tabs.insertBefore(heading,visible[0]);
+  visible.forEach(b=>tabs.appendChild(b));
+ });
+}
 function suppressLegacy(){const tabs=document.querySelector('#masterModal .masterTabs');if(!tabs)return;
   /* 'policy'(운영정책 — Audit 표본수·Risk 가중치·개선요청 자동지정일수·리더십 명단 설정)는 '④ 업무/팩터' 등
      새 5개 탭으로 실제 대체된 적이 없는데도 여기 묶여 숨겨져 있었음. 그 결과 Audit 표본수를 설정할 방법이
