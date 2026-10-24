@@ -88,7 +88,7 @@ jobs:
             await page.screenshot({path:'advancement-regression.png',fullPage:true});
             console.log('ADVANCEMENT_REGRESSION_PASS',JSON.stringify({tabs:nav.length,verified:'ADV-REG-PASS',rejected:2,refreshPersisted:true}));
             await browser.close();
-          })().catch(e=>{console.error('ADVANCEMENT_REGRESSION_FAILED',e.stack||String(e));process.exitCode=1});
+          })().catch(e=>{console.error('ADVANCEMENT_REGRESSION_FAILED',e.stack||String(e));process.exit(1)});
           NODE
           node adv-check.cjs 2>&1 | tee advancement-regression.log
           test ${PIPESTATUS[0]} -eq 0
