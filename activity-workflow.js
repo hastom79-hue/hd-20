@@ -16,8 +16,8 @@ function factorList(key,fallback){try{const f=JSON.parse(localStorage.getItem('g
    hd20-master-factors-updated 이벤트를 받아 두 드롭다운 옵션을 다시 그려 실시간 반영되게 함. */
 window.addEventListener('hd20-master-factors-updated',()=>{
   const wSel=document.getElementById('awWorkplace2'),sSel=document.getElementById('awSpot');
-  if(wSel){const cur=wSel.value;wSel.innerHTML='<option value="">선택</option>'+factorList('작업장',[]).map(x=>`<option>${x}</option>`).join('');if([...wSel.options].some(o=>o.value===cur))wSel.value=cur}
-  if(sSel){const cur=sSel.value;sSel.innerHTML='<option value="">선택</option>'+factorList('세부위치',[]).map(x=>`<option>${x}</option>`).join('');if([...sSel.options].some(o=>o.value===cur))sSel.value=cur}
+  if(wSel){const cur=wSel.value;wSel.innerHTML='<option value="">선택</option>'+factorList('작업장',[]).map(x=>`<option>${x}</option>`).join('');if(cur&&!([...wSel.options].some(o=>o.value===cur)))wSel.add(new Option(cur+' (기존 입력값)',cur));if(cur)wSel.value=cur}
+  if(sSel){const cur=sSel.value;sSel.innerHTML='<option value="">선택</option>'+factorList('세부위치',[]).map(x=>`<option>${x}</option>`).join('');if(cur&&!([...sSel.options].some(o=>o.value===cur)))sSel.add(new Option(cur+' (기존 입력값)',cur));if(cur)sSel.value=cur}
 });
 function leaderOf(team){try{const a=JSON.parse(localStorage.getItem('hd20TeamLeaderMasterV1')||'[]');const r=(Array.isArray(a)?a:[]).find(x=>x.team===team);return r?.leader&&r.leader!=='미지정'?r.leader:''}catch{return''}}
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
