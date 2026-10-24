@@ -402,7 +402,7 @@ function render(box){
   // 요청/보완요청 기점의 해결 리드타임 (30일 = 1개월). 기한초과 일수와 구분.
   const ltStart=c=>String(c.correctionRequestedAt||c.supplementRequestedAt||c.reworkRequestedAt||c.improvementRequestDate||c.requestedAt||c.date||'').slice(0,10);
   const ltEnd=c=>String(isDone(c)?c.doneDate||'':D.today||'').slice(0,10);
-  const ltDays=c=>{const a=ltStart(c),b=ltEnd(c);if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(a)||!/^\\d{4}-\\d{2}-\\d{2}$/.test(b))return null;const n=dayDiff(a,b);return Number.isFinite(n)?Math.max(0,n):null};
+  const ltDays=c=>{const a=ltStart(c),b=ltEnd(c);if(!/^\d{4}-\d{2}-\d{2}$/.test(a)||!/^\d{4}-\d{2}-\d{2}$/.test(b))return null;const n=dayDiff(a,b);return Number.isFinite(n)?Math.max(0,n):null};
   const ltRows=rowsM.filter(c=>teamsAll.includes(c.team)).map(c=>({c,days:ltDays(c)})).filter(r=>r.days!==null);
   const ltDone=ltRows.filter(r=>isDone(r.c)),ltPending=ltRows.filter(r=>!isDone(r.c));
   const ltAvg=a=>a.length?Math.round(a.reduce((v,r)=>v+r.days,0)/a.length*10)/10:null;
