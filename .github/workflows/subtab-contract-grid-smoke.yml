@@ -51,6 +51,8 @@ jobs:
             };
             await page.goto('http://127.0.0.1:4173/index.html?ci_subtab_contract=1',{waitUntil:'commit',timeout:30000});
             await waitBoot();
+            // CI only: dismiss the initial registration chooser before exercising underlying screens.
+            await page.evaluate(()=>document.getElementById('hd20Launcher')?.remove());
             await page.evaluate(()=>{
               const teams=window.HD20ProductionTeamMaster?.teamNames?.()||[];
               if(teams.length!==19)throw new Error('canonical team master count mismatch: '+teams.length);
