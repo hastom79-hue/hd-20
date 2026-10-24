@@ -233,10 +233,9 @@ function render(box){if(!document.getElementById('hd20DrillGridCss')){const st=d
     const rows=rowsC.filter(candidate),found=rows.filter(r=>maturityRegistration(r).slice(0,4)===S.year),accepted=rows.filter(r=>adopted(r)&&cy(r)===S.year);
     const counts=(items,acceptedSeries)=>maturitySelected?ML.map((_,i)=>items.filter(r=>r.team===maturityDrillTeamSelected&&(acceptedSeries?cm(r):+maturityRegistration(r).slice(5,7))===i+1).length):tv.map(t=>items.filter(r=>r.team===t.t).length);
     const foundCounts=counts(found,false),acceptedCounts=counts(accepted,true);
-    const toValues=arr=>arr.map((n,i)=>{const headcount=tv.find(t=>t.t===maturityDrillTeamSelected)?.h;return headcount?n/headcount:0});
     const name=isRoll?'수평전개':'고도화';
-    const graph=chart({w:600,h:205,cats:maturityCats,series:[{name:'발굴',vals:toValues(foundCounts),labelTotals:foundCounts,color:'#298c80'},{name:'채택',vals:toValues(acceptedCounts),labelTotals:acceptedCounts,color:'#3579b5'}],per:true,rotate:false,minSlot:38,linkX:false,tightAxis:true,axisHeadroom:.12});
-    return '<div class="ibMaturityPanel"><div class="ibHead">'+name+' 발굴 대비 채택 <em>'+(maturitySelected?esc(maturityDrillTeamSelected)+' · 월별 인당 건수 (총건수)':'팀별 인당 건수 (총건수)')+'</em></div><div class="ibMaturityChart">'+graph+'</div><div class="ibMaturityLegend"><span>■ 발굴</span><span>■ 채택</span></div></div>';
+    const graph=chart({w:600,h:205,cats:maturityCats,series:[{name:'발굴',vals:foundCounts,color:'#298c80'},{name:'채택',vals:acceptedCounts,color:'#3579b5'}],per:false,fmt:v=>String(Math.round(v)),rotate:false,minSlot:38,linkX:false,tightAxis:true,axisHeadroom:.12});
+    return '<div class="ibMaturityPanel"><div class="ibHead">'+name+' 발굴 대비 채택 <em>'+esc(maturityDrillTeamSelected)+' · 월별 건수</em></div><div class="ibMaturityChart">'+graph+'</div><div class="ibMaturityLegend"><span>■ 발굴</span><span>■ 채택</span></div></div>';
   };
   const maturityRight='<div class="ibMaturityRight">'+compareChart('rollout')+compareChart('maturity')+'</div>';
   const totC=tv.reduce((a,x)=>a+x.c,0),avg=per?totC/hcAll:totC/Math.max(1,tv.length);
