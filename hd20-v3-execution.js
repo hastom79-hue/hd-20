@@ -105,6 +105,6 @@ tbody.innerHTML=priority.length?priority.map((x,i)=>'<tr><td>'+(i+1)+'</td><td>'
    원천데이터가 없습니다"로 굳어 있던 것(표시 로직의 타이밍 결함이지 실제 데이터 부재가 아니었음).
    리스너를 먼저 등록하고, 최초 render()는 한 틱 지연시켜 다른 스크립트의 동기 초기화가 끝난 뒤
    실행되도록 보강. */
-function boot(){['hd20-dashboard-ready','hd20-kpi-source-updated','hd20-audit-updated','hd20-action-updated'].forEach(ev=>window.addEventListener(ev,render));const watch=new MutationObserver(()=>{syncExecutionVisibility();suppressLegacy()});watch.observe(document.body,{attributes:true,attributeFilter:['class']});setTimeout(render,0);setTimeout(render,900);setTimeout(render,2500)}
+function boot(){['hd20-dashboard-ready','hd20-kpi-source-updated','hd20-audit-updated','hd20-action-updated'].forEach(ev=>window.addEventListener(ev,render));document.addEventListener('click',ev=>{if(!ev.target.closest?.('#hd20DashboardSectionTabs [data-dashboard-section="execution"]'))return;requestAnimationFrame(()=>{syncExecutionVisibility();render()})});const watch=new MutationObserver(()=>{syncExecutionVisibility();suppressLegacy()});watch.observe(document.body,{attributes:true,attributeFilter:['class']});setTimeout(render,0);setTimeout(render,900);setTimeout(render,2500)}
 window.HD20V3Execution={render};document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot,{once:true}):boot();
 })();
