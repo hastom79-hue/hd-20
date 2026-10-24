@@ -42,19 +42,20 @@ function ensure(){css();const p=panel(),tabs=document.querySelector('#masterModa
 ['order','target','sourceOrder','leader'].forEach(k=>{const b=tabs.querySelector('[data-master-tab="'+k+'"]');if(b){b.hidden=true;b.classList.remove('on');b.style.setProperty('display','none','important');b.style.setProperty('visibility','hidden','important')}});
 ['masterOrderPanel','masterTargetPanel'].forEach(id=>document.getElementById(id)?.style.setProperty('display','none'));
 document.querySelector('#masterModal .modalFoot')?.style.setProperty('display','none');
-const head=document.querySelector('#masterModal .modalHead span');if(head)head.textContent='조직/팀 · 팀별 인당목표 · 요청그룹 · 업무/팩터 · 메일링 기준정보';
+const head=document.querySelector('#masterModal .modalHead span');if(head)head.textContent='조직·성과 / 등록·업무기준 / Audit 정책 / 시스템 설정';
 /* 사용자 지시: "운영기준은 명칭을 통합기준정보로 변경하고 다른 탭 기준으로 필요한 모든 팩터들을
    녹여서 생성해라" — 탭3(hd20-request-board.js)와 개선요청 등록 팝업이 쓰는 "발굴 출처"(5종: 현장
    패트롤 점검·자율 5S Audit·혁신팀 자율 점검·5S 자율개선활동 피드백·출처 미분류)의 순서를 관리하는
    유일한 창구가 구버전 숨김 탭(request-source-order-master.js)뿐이었음을 발견 — "③ 요청그룹"과
    같은 패턴으로 신버전 탭으로 정식 추가. */
-const map={team:'① 조직/팀',target:'② 팀별 인당목표',source:'③ 요청그룹',factor:'④ 업무/팩터',mail:'⑤ 메일링',discovery:'⑥ 발굴출처'};Object.entries(map).forEach(([k,n])=>{let b=tabs.querySelector('[data-master-tab="integrated-'+k+'"]');if(!b){b=document.createElement('button');b.type='button';b.dataset.masterTab='integrated-'+k;b.textContent=n;b.addEventListener('click',()=>show(k));tabs.appendChild(b)}});groupMasterNavigation();if(!tabs.querySelector('button.on:not([style*="display: none"])'))show('team');return true}
+const map={team:'조직·팀',target:'인당 개선목표',source:'요청그룹',factor:'업무·등록항목',mail:'메일링 설정',discovery:'문제 발굴출처'};Object.entries(map).forEach(([k,n])=>{let b=tabs.querySelector('[data-master-tab="integrated-'+k+'"]');if(!b){b=document.createElement('button');b.type='button';b.dataset.masterTab='integrated-'+k;b.textContent=n;b.addEventListener('click',()=>show(k));tabs.appendChild(b)}});groupMasterNavigation();if(!tabs.querySelector('button.on:not([style*="display: none"])'))show('team');return true}
 function groupMasterNavigation(){
  const tabs=document.querySelector('#masterModal .masterTabs');if(!tabs)return;
  tabs.querySelectorAll('[data-master-group-heading]').forEach(x=>x.remove());
  const groups=[
   {title:'조직·성과 기준',keys:['integrated-team','integrated-target']},
-  {title:'활동·운영 기준',keys:['integrated-source','integrated-discovery','integrated-factor','policy']},
+  {title:'등록·업무 기준',keys:['integrated-source','integrated-discovery','integrated-factor']},
+  {title:'Audit·조치 운영정책',keys:['policy']},
   {title:'시스템 운영',keys:['integrated-mail']}
  ];
  groups.forEach(g=>{
