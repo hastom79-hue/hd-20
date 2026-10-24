@@ -49,6 +49,7 @@ jobs:
             });
             await page.goto('http://127.0.0.1:4173/index.html?area=advancement&sub=judge',{waitUntil:'domcontentloaded'});
             await page.waitForFunction(()=>window.HD20_SUBNAV?.select,{timeout:20000});
+            await page.evaluate(()=>document.getElementById('hd20Launcher')?.remove());
             await page.evaluate(()=>{
               const base={type:'5S 고도화',candidate:true,isCandidate:true,judgeState:'판정대기',confirmed:false,team:'중형상부1팀',line:'검증 라인',problem:'문제정의',improvement:'개선완료',before:'BEFORE-test',after:'AFTER-test',source:'ci-load-fixture'};
               const rows=[
