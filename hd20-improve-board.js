@@ -312,14 +312,25 @@ function render(box){if(!document.getElementById('hd20DrillGridCss')){const st=d
     for(const w of new Set(workplaceRows.map(r=>r.w))){const prev=ratio(w,mi-1),curr=ratio(w,mi);if(prev===null||curr===null)continue;compared++;if(curr<prev)declined++}
     declineArr.push(compared?declined:null)
   }
+  // View-only demonstration: never persist or export generated values.
+  const retentionDemo=teamRows.length===0||datedLossRows.length===0;
+  const demoSeed=Array.from(String(S.team)).reduce((a,c)=>a+c.charCodeAt(0),0);
+  const demoMonths=Math.min(lastMonth,10);
+  const demoNew=Array.from({length:12},(_,i)=>i<demoMonths?(i<2?2:1+(demoSeed+i)%3):null);
+  const demoLost=Array.from({length:12},(_,i)=>i<demoMonths?(i>1&&((demoSeed+i*3)%4!==0)?1+(demoSeed+i)%2:0):null);
+  const demoDecline=Array.from({length:12},(_,i)=>i<demoMonths?(i>1&&((demoSeed+i)%3===0)?1:0):null);
+  const demoKeep=Array.from({length:12},(_,i)=>i<demoMonths?Math.max(0,demoNew.slice(0,i).reduce((a,b)=>a+(b||0),0)-demoLost.slice(0,i+1).reduce((a,b)=>a+(b||0),0)):null);
+  const shownExisting=retentionDemo?demoKeep:exArr,shownNew=retentionDemo?demoNew:nwArr;
+  const shownLoss=retentionDemo?demoLost:lossArr,shownDecline=retentionDemo?demoDecline:declineArr;
+  const demoNotice=retentionDemo?'<div style="padding:8px 12px;margin-bottom:8px;border:1px solid #e6bc61;background:#fff8e7;color:#755012;font-weight:700">검증용 가상데이터 · 실제 실적이 아니며 근거 데이터/엑셀에 포함되지 않습니다.</div>':'';
   const divE=v=>v===null?null:(per?v/th:v),curKeep=teamConf.filter(r=>keepSet.has(r.id)).length;
   // Render only selected team's real, dated records. Never insert shared fixed demo arrays.
-  const E=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W/2)-8),h:260,cats:ML,per:false,stack:false,series:[{name:'기존 유지(현상태 기준)',vals:exArr,color:'#a8c7c4'},{name:'신규 확정',vals:nwArr,color:C.dark}]});
+  const E=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W/2)-8),h:260,cats:ML,per:false,stack:false,series:[{name:'기존 유지(현상태 기준)',vals:shownExisting,color:'#a8c7c4'},{name:'신규 확정',vals:shownNew,color:C.dark}]});
   const knownLoss=lossArr.some(v=>Number.isFinite(v)&&v>0),declineMonths=declineArr.filter(Number.isFinite).length;
   const lossTot=lossArr.reduce((a,b)=>a+(Number.isFinite(b)?b:0),0);
   const declineTot=declineArr.reduce((a,b)=>a+(Number.isFinite(b)?b:0),0);
-  const lossBar=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W/2)-8),h:260,cats:ML,tightAxis:true,axisHeadroom:0,series:[{name:'작업사례 이탈',vals:lossArr,color:'#c13f36'},{name:'작업장 유지수준 하락',vals:declineArr,color:'#d89a35'}]});
-  const lossChart=`<div class="ibLossWrap"><div class="ibLossLabel">작업사례 이탈 · 작업장 유지수준 하락<em>이탈 ${knownLoss?lossTot+'건':'자료 없음'} · 유지수준 하락 ${declineMonths?declineTot+'곳':'자료 없음'}</em></div>${lossBar}<div class="ibLossLegend">${leg([['작업사례 이탈','#c13f36'],['작업장 유지수준 하락','#d89a35']])}</div></div>`;
+  const lossBar=chart({w:(window.__hd20BoardPrint?W-8:Math.floor(W/2)-8),h:260,cats:ML,tightAxis:true,axisHeadroom:0,series:[{name:'작업사례 이탈',vals:shownLoss,color:'#c13f36'},{name:'작업장 유지수준 하락',vals:shownDecline,color:'#d89a35'}]});
+  const lossChart=`<div class="ibLossWrap"><div class="ibLossLabel">작업사례 이탈 · 작업장 유지수준 하락<em>이탈 ${retentionDemo?shownLoss.reduce((a,b)=>a+(b||0),0)+'건 (가상)':knownLoss?lossTot+'건':'자료 없음'} · 유지수준 하락 ${retentionDemo?shownDecline.reduce((a,b)=>a+(b||0),0)+'곳 (가상)':declineMonths?declineTot+'곳':'자료 없음'}</em></div>${lossBar}<div class="ibLossLegend">${leg([['작업사례 이탈','#c13f36'],['작업장 유지수준 하락','#d89a35']])}</div></div>`;
 
   const opt=(a,cur,all='ALL')=>`<option value="">${all}</option>`+a.map(x=>`<option value="${esc(x)}"${x===cur?' selected':''}>${esc(x)}</option>`).join('');
   box.innerHTML=`<div class="ibTitle"><h2>5S 자율개선 종합 대시보드</h2></div><p class="ibNote">기본 조회조건은 당해년도 연간누적 데이터입니다 (월간 데이터 조회 시, 해당 월을 선택하세요)</p>
@@ -335,7 +346,7 @@ function render(box){if(!document.getElementById('hd20DrillGridCss')){const st=d
 <div class="ibRow"><div class="ibPanel"><div class="ibHead">현장조직 팀에 대한 개선활동 현황${per?'(인당 개선건수)':'(총 건수)'}<button type="button" class="ibEv" data-ib="saveTeamOrder" title="현재 차트 팀 순서를 기준정보 표시순서에 저장">${teamChartOrderDirty?'순서 저장 *':'순서 저장'}</button><button type="button" class="ibEv" data-ib="resetTeamOrder" title="기준정보 기본 정렬로 복원">기본순서 복원</button><button type="button" class="ibEv" data-evk="c">근거 데이터</button><em class="pt">당월(${String(mm).padStart(2,'0')}월) 현재 참여율 ${part.toFixed(1)}% (등록자 ${owners}명 / 총원 ${hcAll}명)</em></div><div class="ibBody"><div style="font-size:11px;color:#63768a;margin:0 0 6px">팀명 또는 막대를 좌우로 드래그해 화면 순서 변경 · 순서 저장 시 통합기준정보 표시순서에 즉시 반영</div><div data-team-chart="true" style="overflow-x:auto">${Cc}</div>${leg([['평균 이상 (평균 '+avg.toFixed(2)+(per?'건/인)':'건)'),C.dark],['평균 미만',C.amber]])}</div></div></div>
 <div class="ibRow r3 ibMaturitySplit"><div class="ibPanel"><div class="ibHead ibApprovedChartHead"><span>단일 팀에 대한 연간/월별 누적 활동 실적${per?'(인당 개선건수)':''}</span><button type="button" class="ibEv" data-evk="d">근거 데이터</button><em>[ ${esc(S.team)} ] 연간 ${fx(dCum,per)}${unit}</em></div><div class="ibBody">${Dd}</div></div>
 ${maturityRight}</div>
-<div class="ibRow ibDrillRow"><div class="ibPanel"><div class="ibHead">선택팀 고도화 유지·이탈 Drill-down<button type="button" class="ibEv" data-evk="e">근거 데이터</button><em>[ ${esc(S.team)} ] 유지 ${curKeep}건 · 이탈 ${knownLoss?lossTot+'건':'자료 없음'}</em></div><div class="ibBody"><div class="ibDrillGrid"><div class="ibDrillChart">${E}${leg([['기존 유지','#a8c7c4'],['신규 확정',C.dark]])}</div><div class="ibDrillChart">${lossChart}</div></div><div class="ibLossFormula"><div><b>작업사례 이탈(건)</b><span>해당 월 실제 이탈일이 기록된 확정 사례 수</span></div><div><b>유지수준 하락(곳)</b><span>전월보다 유지율이 낮아진 작업장 수</span></div><div><b>작업장 유지율(%)</b><span>유지 사례 수 ÷ 누적 확정 사례 수 × 100</span></div></div></div></div>
+<div class="ibRow ibDrillRow"><div class="ibPanel"><div class="ibHead">선택팀 고도화 유지·이탈 Drill-down<button type="button" class="ibEv" data-evk="e">근거 데이터</button><em>[ ${esc(S.team)} ] 유지 ${curKeep}건 · 이탈 ${knownLoss?lossTot+'건':'자료 없음'}</em></div><div class="ibBody">${demoNotice}<div class="ibDrillGrid"><div class="ibDrillChart">${E}${leg([['기존 유지','#a8c7c4'],['신규 확정',C.dark]])}</div><div class="ibDrillChart">${lossChart}</div></div><div class="ibLossFormula"><div><b>작업사례 이탈(건)</b><span>해당 월 실제 이탈일이 기록된 확정 사례 수</span></div><div><b>유지수준 하락(곳)</b><span>전월보다 유지율이 낮아진 작업장 수</span></div><div><b>작업장 유지율(%)</b><span>유지 사례 수 ÷ 누적 확정 사례 수 × 100</span></div></div></div></div>
 <p class="ibFoot">※ 5S 활동 = GMES 원천 5S 활동 등록(상단 지표와 같은 데이터). 완료·확정 = 상태가 완료 또는 확정. 고도화 확정 = 5S 고도화 공식 판정이 '확정'인 건(확정일 기준, 상단 '신규 확보'와 같은 기준). 인당 = 건수 ÷ 팀 인원(팀 인원 마스터). 참여율 = 당월 5S 활동을 1건 이상 등록한 사람 수 ÷ 총원(${hcAll}명). 팀 막대를 누르면 아래 두 그래프가 그 팀으로 바뀝니다.</p>`;
   const cols=['등록일','팀','5S 유형','등록자','문제점','개선내용','상태','고도화 판정','확정일','수평전개'],mapR=r=>[String(r.date||r.regDate||'').slice(0,10),r.team,r.type,r.owner,r.problem,r.improvement,r.status,r.judgeState||'',r.judgeState==='확정'?cdOf(r):'',r.horizontalRollout===true?'대상':''],sortT=a=>[...a].sort((x,y)=>String(x.team).localeCompare(String(y.team),'ko')||String(y.date).localeCompare(String(x.date)));
   const EV={a:['5S 유형별 근거 데이터 ('+(S.month?+S.month+'월':'연간누적')+')',rowsM],b:['월별 근거 데이터 ('+S.year+'년)',rowsY],c:['팀별 근거 데이터 ('+(S.month?+S.month+'월':'연간누적')+')',sortT(rowsM)],d:['선택 팀 근거 데이터 · '+S.team,tr],e:['선택 팀 고도화 확정·수평전개 근거 · '+S.team,teamConf.filter(r=>cy(r)===S.year)]};
