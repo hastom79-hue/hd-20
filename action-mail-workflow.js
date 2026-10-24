@@ -125,6 +125,6 @@ function build(){const a=document.getElementById('awAction');if(!a)return false;
   syncLeader(a);renderCases(a);renderMaster(a);const q=new URL(location.href).searchParams.get('actionId');if(q)setTimeout(()=>openResponse(a,q),30);
   applyAuditPending(a);
   return true}
-function boot(){css();let n=0;const run=()=>{if(build())return;if(++n<50)setTimeout(run,100)};run();window.addEventListener('hd20-team-master-updated',()=>{const a=document.getElementById('awAction');if(a){renderMaster(a);syncLeader(a)}});window.addEventListener('hd20-action-updated',()=>{const a=document.getElementById('awAction');if(a)renderCases(a)});window.addEventListener('hd20-audit-to-action',e=>{const a=document.getElementById('awAction');if(a)applyAuditPending(a,e.detail)})}
+function boot(){css();let n=0;const run=()=>{if(build())return;if(++n<50)setTimeout(run,100)};run();window.addEventListener('hd20-team-master-updated',()=>{const a=document.getElementById('awAction');if(a){const sel=$('#amTeam',a);if(sel){const previous=sel.value,names=teams().map(x=>x.team).filter(Boolean);sel.innerHTML=names.map(t=>`<option>${esc(t)}</option>`).join('');if(names.includes(previous))sel.value=previous}renderMaster(a);syncLeader(a)}});window.addEventListener('hd20-action-updated',()=>{const a=document.getElementById('awAction');if(a)renderCases(a)});window.addEventListener('hd20-audit-to-action',e=>{const a=document.getElementById('awAction');if(a)applyAuditPending(a,e.detail)})}
 document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot,{once:true}):boot();
 })();
