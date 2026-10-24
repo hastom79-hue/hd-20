@@ -1,5 +1,5 @@
 (()=>{'use strict';
-const MAP={dashboard:[['summary','오늘의 운영판단'],['analysis','성과·건전성 추이'],['map','고도화 맵']],activity:[['manage','① 문제·개선 등록'],['analysis','② 실행현황·우수활동 선별']],advancement:[['judge','① 후보·판정'],['standard','② 확정사례 관리'],['trend','③ 고도화 성과분석']],audit:[['draw','① Risk 대상선정'],['inspect','② 현장 Audit·판정'],['ongoing','③ 6개월 유지검증'],['retention','④ 종료·재조치 판정']],action:[['manage','① 개선요청·실행'],['leadtime','② 지연·병목관리'],['verify','③ 효과검증·재발폐쇄']]};
+const MAP={dashboard:[['summary','오늘의 운영판단'],['analysis','성과·건전성 추이'],['map','고도화 맵']],activity:[['manage','① 문제·개선 등록'],['analysis','② 실행현황·우수활동 선별']],advancement:[['judge','① 후보·판정'],['standard','② 확정사례 관리'],['trend','③ 고도화 성과분석']],audit:[['draw','① Audit 실시'],['ongoing','② 유지점검'],['retention','③ 결과·재조치']],action:[['manage','① 개선요청·실행'],['leadtime','② 지연·병목관리'],['verify','③ 효과검증·재발폐쇄']]};
 const CONTRACT={
  'dashboard.summary':{title:'종합현황',purpose:'울산캠퍼스 5S 운영상태를 한 화면에서 파악하고 오늘 우선 확인할 영역을 정합니다.',judge:'목표 대비 성과, 고도화 확보, Audit 대기, 미완료·기한경과·재발을 동시에 확인',next:'이상 KPI·Risk 카드를 상세근거로 Drill-down하여 담당 업무 탭으로 이동',features:['핵심 KPI','팀별 성과','Action Summary','우선순위']},
  'dashboard.analysis':{title:'성과·운영분석',purpose:'단순 실적 건수를 넘어 판정 Lead Time, 유지율, 재발률, 조치완료율 등 운영 건전성을 분석합니다.',judge:'성과 증가가 프로세스 건전성 개선과 함께 일어나는지 확인',next:'취약 지표의 원천 데이터를 확인하고 원인 업무영역에서 조치',features:['운영 KPI','월별 추이','유지율','재발·기한']},
@@ -12,10 +12,10 @@ const CONTRACT={
  'advancement.standard':{title:'확정·표준화·수평전개',purpose:'공식 확정된 고도화 사례를 표준화하고 유사 라인·작업장으로 재사용할 수 있게 관리합니다.',judge:'확정 자체가 아니라 적용범위, 유지상태, 재현 가능성, 수평전개 상태를 확인',next:'재현 가능한 사례는 적용 대상을 명확히 하고 유지 미흡은 Audit로 연결',features:['확정사례','표준화','적용범위','수평전개']},
  'advancement.map':{title:'유지·이탈 포트폴리오',purpose:'팀별 고도화 수준·이탈도·공식확정 Case를 고도화/표준화 업무 안에서 확인합니다.',judge:'후보활동·공식확정·현재유지·이탈을 팀별로 비교',next:'취약 팀은 후보·3조건·심사 프로세스에서 근거를 확인',features:['Portfolio Map','공식확정 Case','유지율','이탈도']},
  'advancement.trend':{title:'판정기준·성과추이',purpose:'3대 고도화 판정기준과 월별 고도화 작업장 추이를 함께 확인합니다.',judge:'판정기준과 신규·유지·이탈 추이를 함께 확인',next:'이상 추이는 후보·심사·확정·수평전개 원천에서 확인',features:['3대 판정기준','고도화 작업장 추이']},
- 'audit.draw':{title:'Risk 대상선정',purpose:'Risk 가중치를 반영해 이번 Audit 대상 작업장을 무작위로 추출합니다.',judge:'추출된 대상의 팀·작업장 분포가 Risk 기준에 맞는지 확인',next:'추출 완료 후 실시·점검 입력 탭에서 실제 Audit을 진행',features:['Risk 가중 추출','대상선정']},
+ 'audit.draw':{title:'Audit 대상·실시',purpose:'Risk 가중치를 반영해 이번 Audit 대상 작업장을 무작위로 추출합니다.',judge:'추출된 대상의 팀·작업장 분포가 Risk 기준에 맞는지 확인',next:'추출 완료 후 실시·점검 입력 탭에서 실제 Audit을 진행',features:['Risk 가중 추출','대상선정']},
  'audit.inspect':{title:'현장 Audit·판정',purpose:'추출된 대상에 대해 실제 Audit을 실시하고 점검항목별 결과를 입력합니다.',judge:'실시 여부, Audit 결과(적합/부적합), 점검항목별 상세 입력 완결성을 확인',next:'부적합 건은 개선조치로 연결하고, 실시일은 유지관리 D-Day로 설정',features:['Audit 실시결과','점검항목 상세입력','부적합 연계']},
- 'audit.ongoing':{title:'6개월 유지검증',purpose:'Audit 실시일부터 6개월 동안 개선상태가 유지되는지 진행 중인 건을 추적합니다.',judge:'관리중 건의 재발여부·유지상태와 월별 확인 누락을 점검',next:'유지미흡·재발 징후가 보이면 재조치하고, 6개월 도래 건은 종료평가 탭에서 확정',features:['6개월 추적','월별 확인','재발 징후']},
- 'audit.retention':{title:'종료·재조치 판정',purpose:'6개월 관리기간이 도래한 건에 대해 최종 유지 여부를 판정하고 종료평가를 완료합니다.',judge:'종료평가 대기·완료 상태와 최종 판정(적합/부적합) 결과를 확인',next:'부적합 건은 개선조치로 재연결하고, 적합 건은 관리 종료 확정',features:['종료평가','최종판정','재발 확정']},
+ 'audit.ongoing':{title:'6개월 유지점검',purpose:'Audit 실시일부터 6개월 동안 개선상태가 유지되는지 진행 중인 건을 추적합니다.',judge:'관리중 건의 재발여부·유지상태와 월별 확인 누락을 점검',next:'유지미흡·재발 징후가 보이면 재조치하고, 6개월 도래 건은 종료평가 탭에서 확정',features:['6개월 추적','월별 확인','재발 징후']},
+ 'audit.retention':{title:'결과·재조치',purpose:'6개월 관리기간이 도래한 건에 대해 최종 유지 여부를 판정하고 종료평가를 완료합니다.',judge:'종료평가 대기·완료 상태와 최종 판정(적합/부적합) 결과를 확인',next:'부적합 건은 개선조치로 재연결하고, 적합 건은 관리 종료 확정',features:['종료평가','최종판정','재발 확정']},
  'action.manage':{title:'개선요청·실행',purpose:'Audit 및 현장 이슈에서 발생한 개선요청을 담당·기한·증빙 기반으로 끝까지 실행합니다.',judge:'기한 내 조치 여부와 BEFORE/AFTER 및 완료증빙의 충분성을 확인',next:'대기·진행·기한경과 건을 우선 Follow-up하고 완료 건은 효과검증으로 이동',features:['담당·기한','D+7~14','조치증빙','기한경과']},
  'action.leadtime':{title:'지연·병목관리',purpose:'등록부터 완료까지 개선조치의 예상·실제 해결 Lead Time을 비교해 지연 여부를 확인합니다.',judge:'계획 대비 실제 처리기간 차이가 큰 건과 지연 상태를 확인',next:'지연 건은 조치 목록에서 우선 Follow-up',features:['예상·실제 LT 비교','지연 여부']},
  'action.verify':{title:'효과검증·재발폐쇄',purpose:'완료된 개선조치가 실제 효과를 만들었는지 검증하고 같은 문제가 재발하는지 추적합니다.',judge:'완료표시와 효과확인을 분리하고 효과 미검증·재발 건을 집중 확인',next:'효과 미흡은 추가조치, 재발은 근인·대책을 재검토하여 폐쇄루프 재진입',features:['효과검증','검증대기','재발관리','폐쇄루프']}
@@ -281,7 +281,20 @@ function renderAuditCloseEvaluation(host){
  const done=audits.length-pending;
  host.innerHTML='<div class="awHead"><div><b>종료·재조치 판정현황</b><small>기존 Audit 기록 기준 · 종료판정은 자동 생성하지 않습니다.</small></div></div><div class="awKpis"><div><small>Audit 기록</small><b>'+audits.length+'건</b></div><div><small>종료평가 입력</small><b>'+done+'건</b></div><div><small>종료평가 미입력</small><b>'+pending+'건</b></div></div><div class="awHint">최종 적합·부적합 판정과 재조치 등록은 원천 Audit 기록에서 확인해야 합니다. 미입력 건은 완료로 간주하지 않습니다.</div>';
 }
-function applyAudit(sub){const root=$('#awAudit');if(!root)return;root.dataset.subview=sub;showAll(root);show($('.awFlow',root),false);show($('.awAuditLane',root),true);const draw=$('.auditDraw',root),batch=$('#hd20AuditBatchExecution',root),closed=$('.auditClosedLoop',root),ongoing=$('.audit6m',root),closeEval=sub==='retention'?ensureAuditCloseEvaluation(root):document.getElementById('hd20AuditCloseEvaluation');if(sub==='retention'&&closeEval?.dataset.hd20Fallback==='true')renderAuditCloseEvaluation(closeEval);show(draw,sub==='draw');show(batch,sub==='draw');show(closed,sub==='inspect');show(ongoing,sub==='ongoing');show(closeEval,sub==='retention');const activePanel=sub==='draw'?draw:sub==='inspect'?closed:sub==='ongoing'?ongoing:sub==='retention'?closeEval:null;if(activePanel){activePanel.setAttribute('data-hd20-audit-stage',sub);const lane=root.querySelector('.awAuditLane');if(lane&&activePanel.parentElement===root&&activePanel.previousElementSibling!==lane)lane.insertAdjacentElement('afterend',activePanel)}let bar=root.querySelector('#hd20AuditWorkGuide');if(!bar){bar=document.createElement('div');bar.id='hd20AuditWorkGuide';bar.className='hd20AuditWorkGuide';(root.querySelector('.awAuditLane')||root.firstElementChild)?.insertAdjacentElement('beforebegin',bar)}const guide={draw:['01 · 대상선정','Risk 정책 확인 → 표본 추출 → 선정팀 통보'],inspect:['02 · 현장 Audit','선정 대상 점검 → 적합·부적합 판정 → 개선조치 연결'],ongoing:['03 · 6개월 유지검증','월별 유지상태 확인 → 미점검·재발 추적'],retention:['04 · 종료·재조치','최종 유지판정 → 종료 확정 또는 재조치 연결']}[sub];if(bar&&guide){bar.innerHTML='<strong>'+guide[0]+'</strong><span>'+guide[1]+'</span>';const lane=root.querySelector('.awAuditLane');if(lane&&bar.nextElementSibling!==lane)lane.insertAdjacentElement('beforebegin',bar)}}
+function applyAudit(sub){
+ const root=$('#awAudit');if(!root)return;
+ root.dataset.subview=sub;showAll(root);show($('.awFlow',root),false);show($('.awAuditLane',root),true);
+ const draw=$('.auditDraw',root),batch=$('#hd20AuditBatchExecution',root),closed=$('.auditClosedLoop',root),ongoing=$('.audit6m',root);
+ const closeEval=ensureAuditCloseEvaluation(root);
+ if(sub==='retention'&&closeEval?.dataset.hd20Fallback==='true')renderAuditCloseEvaluation(closeEval);
+ // 첫 화면에서 Risk 추출과 실제 현장점검을 함께 수행한다.
+ show(draw,sub==='draw');show(batch,sub==='draw');show(closed,sub==='draw');
+ show(ongoing,sub==='ongoing');show(closeEval,sub==='retention');
+ let bar=root.querySelector('#hd20AuditWorkGuide');
+ if(!bar){bar=document.createElement('div');bar.id='hd20AuditWorkGuide';bar.className='hd20AuditWorkGuide';(root.querySelector('.awAuditLane')||root.firstElementChild)?.insertAdjacentElement('beforebegin',bar)}
+ const guide={draw:['01 · Audit 실시','Risk 대상선정과 현장 Audit을 한 화면에서 관리'],ongoing:['02 · 유지점검','실시일부터 6개월 동안 미점검·유지미흡·재발을 추적'],retention:['03 · 결과·재조치','최종 판정 미입력과 재조치 필요 사례를 구분']}[sub];
+ if(bar&&guide){bar.innerHTML='<strong>'+guide[0]+'</strong><span>'+guide[1]+'</span>';const lane=root.querySelector('.awAuditLane');if(lane&&bar.nextElementSibling!==lane)lane.insertAdjacentElement('beforebegin',bar)}
+}
 function ensureActionVerify(root){let host=$('#hd20ActionVerifyStatus',root);if(!host){host=document.createElement('section');host.id='hd20ActionVerifyStatus';host.className='awCard';const anchor=$('.awKpis',root)||$('.awFlow',root)||$('.amHeroNote',root)||$('.awHero',root);if(anchor)anchor.insertAdjacentElement('afterend',host);else root.appendChild(host)}return host}
 function renderActionVerify(root){const host=ensureActionVerify(root);if(!host)return;const rows=readStore('hd20ActionCasesV2'),done=rows.filter(doneStatus),verified=done.filter(effectVerified),pendingVerify=done.filter(x=>!effectVerified(x)),recurrence=verified.filter(recurrenceConfirmed);host.innerHTML=`<div class="awHead"><div><b>효과·재발 검증현황</b><small>실제 개선조치 데이터 기준 · 미입력 결과는 임의 생성하지 않습니다.</small></div></div><div class="awKpis"><div><small>전체 개선요청</small><b>${rows.length}건</b></div><div><small>조치 진행·대기</small><b>${rows.length-done.length}건</b></div><div><small>효과검증 완료</small><b>${verified.length}건</b></div><div><small>재발 확인</small><b>${recurrence.length}건</b></div></div><div class="awHint" style="margin-top:10px">${pendingVerify.length?`완료 ${done.length}건 중 효과검증 미입력 ${pendingVerify.length}건은 <b>검증 대기</b> 상태입니다.`:done.length?'완료된 개선조치는 모두 효과검증 결과가 입력되어 있습니다.':'완료된 개선조치가 없어 효과검증 대상이 없습니다.'}</div>`}
 function applyAction(sub){const root=$('#awAction');if(!root)return;root.dataset.subview=sub;showAll(root);show($('.awFlow',root),true);show($('.awKpis',root),true);const form=$('.amRegisterFormCard',root),verify=ensureActionVerify(root);show(form,sub==='manage');if(sub==='verify'){renderActionVerify(root);show(verify,true)}else{show(verify,false)}
@@ -307,13 +320,14 @@ function installAdvJudgeTools(){
  tools.querySelectorAll('button').forEach(b=>{b.style.cssText='padding:8px 12px;border-radius:7px;border:1px solid #cbd8e3;background:#fff;color:#24445c;cursor:pointer;font-weight:700';b.onclick=()=>openAdvDetailTool(b.dataset.advTool)});
  host.appendChild(tools);
 }
-function select(area,sub){document.getElementById('hd20AdvBack')?.remove();if(area==='advancement'&&sub==='map')sub='trend';state={area,sub};if(area==='advancement'&&sub==='process')ensureAdvProcess();document.querySelectorAll('#hd20Subnav button').forEach(b=>b.classList.toggle('on',b.dataset.sub===sub));apply(area,sub);renderPurpose(area,sub);if(area!=='audit'&&area!=='advancement')requestAnimationFrame(()=>apply(area,sub));
+function select(area,sub){document.getElementById('hd20AdvBack')?.remove();if(area==='advancement'&&sub==='map')sub='trend';if(area==='audit'&&sub==='inspect')sub='draw';state={area,sub};if(area==='advancement'&&sub==='process')ensureAdvProcess();document.querySelectorAll('#hd20Subnav button').forEach(b=>b.classList.toggle('on',b.dataset.sub===sub));apply(area,sub);renderPurpose(area,sub);if(area!=='audit'&&area!=='advancement')requestAnimationFrame(()=>apply(area,sub));
   try{const u=new URL(location.href);if(u.searchParams.get('area')===area)u.searchParams.set('sub',sub);history.replaceState(null,'',u)}catch{}}
 function syncArea(area){
   document.getElementById('hd20AdvBack')?.remove();
   if(area==='dashboard'){render('dashboard');return;}
   if(area==='advancement'&&window.__HD20_RESTORE_SUB&&['analysis','detail','process'].includes(window.__HD20_RESTORE_SUB))window.__HD20_RESTORE_SUB='judge';
   if(area==='advancement'&&window.__HD20_RESTORE_SUB==='map')window.__HD20_RESTORE_SUB='trend';
+  if(area==='audit'&&window.__HD20_RESTORE_SUB==='inspect')window.__HD20_RESTORE_SUB='draw';
   if(window.__HD20_RESTORE_SUB&&MAP[area]?.some(([k])=>k===window.__HD20_RESTORE_SUB)){
     const restoreSub=window.__HD20_RESTORE_SUB;window.__HD20_RESTORE_SUB=null;
     state.sub=restoreSub;state.area=area;const bar=ensure(),items=MAP[area]||[];
