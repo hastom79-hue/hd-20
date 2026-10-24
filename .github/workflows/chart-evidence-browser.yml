@@ -30,6 +30,8 @@ jobs:
             await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'domcontentloaded'});
             await page.waitForSelector('#hd20DashboardSectionTabs button[data-dashboard-section="summary"]',{timeout:12000});
             await page.waitForTimeout(1200);
+            // CI only: dismiss the initial registration chooser before exercising underlying screens.
+            await page.evaluate(()=>document.getElementById('hd20Launcher')?.remove());
             const v3Nav=await page.locator('#hd20DashboardSectionTabs button[data-dashboard-section]').count();
             if(v3Nav!==5)throw Error('V3 dashboard navigation count mismatch: '+v3Nav);
             await page.locator('#hd20DashboardSectionTabs button[data-dashboard-section="summary"]').click();
