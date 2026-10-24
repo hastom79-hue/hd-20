@@ -39,7 +39,7 @@ function renderFactors(){const p=panel();if(!p)return;hide();p.style.display='bl
 function renderMail(){const p=panel();if(!p)return;hide();p.style.display='block';const rows=read(MAIL_KEY,MAIL);p.querySelector('#imfBody').innerHTML='<section class="imfSec"><h4>⑤ 메일링 기준정보 · 01~07</h4><div class="imfNote">각 보고주기의 주기·수신/참조·보고대상·자동메일 조건을 Master화합니다. 현재 코드에서 확인되지 않은 수신자는 임의로 채우지 않습니다.</div><div class="imfMail"><table class="imfTbl"><thead><tr><th>구분</th><th>보고주기</th><th>수신자</th><th>참조자</th><th>보고대상</th><th>자동메일 조건</th><th>사용</th></tr></thead><tbody>'+rows.map((r,i)=>'<tr><td>'+r.id+'</td><td><input data-m="'+i+'" data-k="cadence" value="'+r.cadence+'"></td><td><input data-m="'+i+'" data-k="recipient" value="'+r.recipient+'"></td><td><input data-m="'+i+'" data-k="cc" value="'+r.cc+'"></td><td><input data-m="'+i+'" data-k="target" value="'+r.target+'"></td><td><input data-m="'+i+'" data-k="condition" value="'+r.condition+'"></td><td><input class="imfChk" type="checkbox" data-me="'+i+'" '+(r.enabled?'checked':'')+'></td></tr>').join('')+'</tbody></table></div><div class="imfFoot"><button class="imfBtn" data-save-mail>저장</button></div></section>';p.querySelector('[data-save-mail]').onclick=()=>{const n=rows.map((r,i)=>({...r,cadence:p.querySelector('[data-m="'+i+'"][data-k="cadence"]').value.trim(),recipient:p.querySelector('[data-m="'+i+'"][data-k="recipient"]').value.trim(),cc:p.querySelector('[data-m="'+i+'"][data-k="cc"]').value.trim(),target:p.querySelector('[data-m="'+i+'"][data-k="target"]').value.trim(),condition:p.querySelector('[data-m="'+i+'"][data-k="condition"]').value.trim(),enabled:p.querySelector('[data-me="'+i+'"]').checked}));write(MAIL_KEY,n);window.dispatchEvent(new CustomEvent('hd20-mailing-master-updated',{detail:n}));alert('메일링 기준정보를 저장했습니다.')}}
 function show(name){const p=panel();if(!p)return;hide();p.style.display='block';const b=document.querySelectorAll('#masterModal .masterTabs button');b.forEach(x=>x.classList.toggle('on',x.dataset.masterTab==='integrated-'+name));if(name==='team')renderTeam();if(name==='target')renderTarget();if(name==='source')renderSource();if(name==='factor')renderFactors();if(name==='mail')renderMail();if(name==='discovery')renderDiscovery()}
 function ensure(){css();const p=panel(),tabs=document.querySelector('#masterModal .masterTabs');if(!p||!tabs)return false;
-['order','target','sourceOrder','policy','leader'].forEach(k=>{const b=tabs.querySelector('[data-master-tab="'+k+'"]');if(b){b.hidden=true;b.classList.remove('on');b.style.setProperty('display','none','important');b.style.setProperty('visibility','hidden','important')}});
+['order','target','sourceOrder','leader'].forEach(k=>{const b=tabs.querySelector('[data-master-tab="'+k+'"]');if(b){b.hidden=true;b.classList.remove('on');b.style.setProperty('display','none','important');b.style.setProperty('visibility','hidden','important')}});
 ['masterOrderPanel','masterTargetPanel'].forEach(id=>document.getElementById(id)?.style.setProperty('display','none'));
 document.querySelector('#masterModal .modalFoot')?.style.setProperty('display','none');
 const head=document.querySelector('#masterModal .modalHead span');if(head)head.textContent='조직/팀 · 팀별 인당목표 · 요청그룹 · 업무/팩터 · 메일링 기준정보';
@@ -57,16 +57,14 @@ function groupMasterNavigation(){
   {title:'활동·운영 기준',keys:['integrated-source','integrated-discovery','integrated-factor','policy']},
   {title:'시스템 운영',keys:['integrated-mail']}
  ];
- // 기존 각 탭의 개별 저장 기능은 유지하고 화면상의 의미만 그룹화한다.
  groups.forEach(g=>{
-  const buttons=g.keys.map(k=>tabs.querySelector('[data-master-tab="'+k+'"]')).filter(Boolean);
-  const visible=buttons.filter(b=>b.style.display!=='none'&&!b.hidden);
-  if(!visible.length)return;
+  const buttons=g.keys.map(k=>tabs.querySelector('[data-master-tab="'+k+'"]')).filter(x=>x&&!x.hidden&&x.style.display!=='none');
+  if(!buttons.length)return;
   const heading=document.createElement('span');heading.dataset.masterGroupHeading=g.title;
   heading.textContent=g.title;heading.setAttribute('aria-hidden','true');
-  heading.style.cssText='flex-basis:100%;font-size:11px;font-weight:850;color:#526b7a;padding:10px 3px 2px;border-top:1px solid #e4ecf1';
-  tabs.insertBefore(heading,visible[0]);
-  visible.forEach(b=>tabs.appendChild(b));
+  heading.style.cssText='flex-basis:100%;width:100%;font-size:11px;font-weight:850;color:#526b7a;padding:10px 3px 2px;border-top:1px solid #e4ecf1';
+  tabs.appendChild(heading);
+  buttons.forEach(button=>tabs.appendChild(button));
  });
 }
 function suppressLegacy(){const tabs=document.querySelector('#masterModal .masterTabs');if(!tabs)return;
