@@ -213,7 +213,13 @@ function renderAdvJudge(){
    '<div style="padding:10px;background:#f6f9fb;border-radius:8px">요건 집계 <b>'+n+'/3</b> · 증빙 <b>'+(gap.length?'보완 필요':'등록 완료')+'</b> · 작업장 검증 <b>'+(verified?'완료':'미완료')+'</b></div>'+
    '<details style="margin-top:10px"><summary style="cursor:pointer;font-weight:800">등록 근거 및 BEFORE/AFTER 확인</summary><div style="margin-top:7px">'+evidenceHtml+'</div><p style="font-size:12px">원본 사진과 판정 증빙은 기존 작업장 근거검증 화면에서 확인합니다. 등록 여부만 표시하며 사진을 임의 생성하지 않습니다.</p></details>'+
    '<p style="margin:9px 0">보완 항목: '+esc([...(gap.length?gap:[]),...(n<3?[advGap(x)]:[])].join(' / ')||'없음')+'</p>'+
-   '<p style="font-size:12px;color:#697b89">3대 요건 3/3은 공식확정을 의미하지 않습니다. 현장 근거검증과 공식심사 완료 후 별도로 확정합니다.</p>'+'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button type="button" data-case-route="detail" style="padding:9px 12px;background:#fff;border:1px solid #b9cbd9;border-radius:7px;cursor:pointer;font-weight:800">작업장 근거검증 →</button><button type="button" data-case-route="process" style="padding:9px 12px;background:#194c71;color:#fff;border:1px solid #194c71;border-radius:7px;cursor:pointer;font-weight:800">공식심사 현황 →</button></div>';
+   '<p style="font-size:12px;color:#697b89">3대 요건 3/3은 공식확정을 의미하지 않습니다. 현장 근거검증과 공식심사 완료 후 별도로 확정합니다.</p>'+
+   (!verified&&n===3&&!gap.length&&txt(x.id)?'<button type="button" data-case-verify style="padding:9px 12px;border:1px solid #27745e;background:#eaf6f0;color:#17634c;border-radius:7px;font-weight:800;cursor:pointer">이 사례 근거검증 완료</button>':'')+
+   '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button type="button" data-case-route="detail" style="padding:9px 12px;background:#fff;border:1px solid #b9cbd9;border-radius:7px;cursor:pointer;font-weight:800">작업장 근거검증 →</button><button type="button" data-case-route="process" style="padding:9px 12px;background:#194c71;color:#fff;border:1px solid #194c71;border-radius:7px;cursor:pointer;font-weight:800">공식심사 현황 →</button></div>';
+  panel.querySelector('[data-case-verify]')?.addEventListener('click',()=>{
+    if(!window.confirm('선택 사례의 3대 요건·증빙을 직접 확인했습니까? 근거검증 완료로 기록합니다. 공식확정은 별도 심사가 필요합니다.'))return;
+    if(saveWorkplaceVerification(x.id)){renderAdvJudge();installAdvJudgeTools()}else window.alert('근거검증을 저장할 수 없습니다. 요건·증빙·대상 ID를 확인해 주세요.');
+  });
   panel.querySelectorAll('[data-case-route]').forEach(button=>button.addEventListener('click',()=>openAdvDetailTool(button.dataset.caseRoute)));
  };
  host.querySelectorAll('[data-case-index]').forEach(b=>b.addEventListener('click',()=>showCase(Number(b.dataset.caseIndex))));
