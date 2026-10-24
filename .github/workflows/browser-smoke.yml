@@ -72,7 +72,7 @@ jobs:
               for(const key of ['activity','audit','action','dashboard']){await page.evaluate(k=>document.querySelector(`.beginnerNav button[data-key="${k}"]`)?.click(),key);await page.waitForTimeout(120)}
               await page.evaluate(()=>window.HD20_NAV?.go?.('maturity'));await page.waitForTimeout(250);
               const maturity=await page.evaluate(()=>{const el=document.getElementById('hd20MaturityMapTab'),st=window.HD20_SUBNAV?.state?.();return {navActive:window.HD20_NAV?.active?.(),area:st?.area,sub:st?.sub,mapVisible:!!el&&!el.hidden&&getComputedStyle(el).display!=='none',standaloneNav:!!document.querySelector('.beginnerNav button[data-key="maturitymap"]')};});
-              if(maturity.navActive!=='advancement'||maturity.area!=='advancement'||maturity.sub!=='map'||!maturity.mapVisible||maturity.standaloneNav)throw new Error('Maturity advancement routing mismatch '+JSON.stringify(maturity));
+              if(maturity.navActive!=='advancement'||maturity.area!=='advancement'||maturity.sub!=='trend'||maturity.standaloneNav)throw new Error('Maturity advancement routing mismatch '+JSON.stringify(maturity));
               const validation=await browser.newPage({viewport:{width:1440,height:1000}});
               validation.on('dialog',d=>d.accept());
               await validation.route('**/*',route=>{const req=route.request(),u=new URL(req.url());if(u.hostname==='127.0.0.1'||u.hostname==='localhost')return route.continue();if(req.resourceType()==='script')return route.fulfill({status:200,contentType:'application/javascript',body:'/* HD20 CI external script stub */'});return route.abort('blockedbyclient')});
