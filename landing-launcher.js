@@ -70,7 +70,12 @@ function getRows(key){try{const a=JSON.parse(localStorage.getItem(key)||'[]');re
 function sourceRows(){
  let snap={},actions=[];try{snap=window.HD20KPIData?.snapshot?.()||{}}catch{}
  try{actions=window.HD20KPIData?.actionCases?.()||[]}catch{}
- const activities=Array.isArray(snap.activities)&&snap.activities.length?snap.activities:getRows('hd20GMES5SAutoImproveRawV1');
+ const localActivities=getRows('hd20GMES5SAutoImproveRawV1');
+ const snapshotActivities=Array.isArray(snap.activities)?snap.activities:[];
+ const year=String(window.HD20KPIData?.selectedYear?.()||new Date().getFullYear());
+ const activityRows=new Map(snapshotActivities.map(x=>[String(improvementId(x)),x]));
+ localActivities.forEach(x=>{const date=String(x.date||x.regDate||x.createdAt||'').slice(0,4);if(date===year&&improvementId(x))activityRows.set(String(improvementId(x)),x)});
+ const activities=activityRows.size?[...activityRows.values()]:localActivities.filter(x=>String(x.date||x.regDate||x.createdAt||'').slice(0,4)===year);
  const localActions=getRows('hd20ActionCasesV2');if(localActions.length){const byId=new Map((Array.isArray(actions)?actions:[]).map(x=>[String(x.id||x.caseId||''),x]));localActions.forEach(x=>byId.set(String(x.id||x.caseId||''),x));actions=[...byId.values()]}else if(!Array.isArray(actions))actions=[];
  return {activities,actions};
 }
