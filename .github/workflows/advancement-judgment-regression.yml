@@ -33,9 +33,11 @@ jobs:
           cat > adv-check.cjs <<'NODE'
           const {chromium}=require('playwright');
           const assert=require('node:assert/strict');
+          let diagnosticPage;
           (async()=>{
             const browser=await chromium.launch({headless:true});
             const page=await browser.newPage({viewport:{width:1440,height:1000}});
+            diagnosticPage=page;
             const errors=[];
             page.on('pageerror',e=>errors.push(String(e)));
             page.on('dialog',d=>d.accept());
@@ -88,7 +90,7 @@ jobs:
             await page.screenshot({path:'advancement-regression.png',fullPage:true});
             console.log('ADVANCEMENT_REGRESSION_PASS',JSON.stringify({tabs:nav.length,verified:'ADV-REG-PASS',rejected:2,refreshPersisted:true}));
             await browser.close();
-          })().catch(e=>{console.error('ADVANCEMENT_REGRESSION_FAILED',e.stack||String(e));process.exit(1)});
+          })().catch(async e=>{console.error('ADVANCEMENT_REGRESSION_FAILED',e.stack||String(e));try{await diagnosticPage?.screenshot({path:'advancement-regression.png',fullPage:true,timeout:5000})}catch(err){console.error('SCREENSHOT_FAILED',String(err))}process.exit(1)});
           NODE
           node adv-check.cjs 2>&1 | tee advancement-regression.log
           test ${PIPESTATUS[0]} -eq 0
