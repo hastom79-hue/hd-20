@@ -82,7 +82,7 @@ jobs:
                 await modal.locator('[data-ev="close"]').click();
                 const downloadPromise=page.waitForEvent('download',{timeout:8000});
                 const exportButton=page.locator('#'+id+' [data-evk="'+key+'"] + button').first();
-                await exportButton.click({force:true});
+                await exportButton.evaluate(el=>el.click());
                 const download=await downloadPromise;
                 const fs=require('fs');const raw=fs.readFileSync(await download.path(),'utf8');
                 const lines=raw.replace(/^\uFEFF/,'').trimEnd().split(/\r?\n/);
