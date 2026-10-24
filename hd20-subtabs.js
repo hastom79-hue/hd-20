@@ -172,10 +172,32 @@ function advEvidenceGap(x){const gaps=[];if(!txt(x?.problem))gaps.push('문제�
 function advWorkplaceVerified(x){return x?.workplaceVerification?.state==='완료'||x?.workplaceVerified===true}
 function saveWorkplaceVerification(id){const key='hd20GMES5SAutoImproveRawV1';let all;try{all=JSON.parse(localStorage.getItem(key)||'[]')}catch{return false}if(!Array.isArray(all))return false;const matches=all.filter(x=>x?.id!==undefined&&x?.id!==null&&String(x.id)===String(id));if(matches.length!==1)return false;const row=matches[0];if(advancementConfirmed(row)||advEvidenceGap(row).length||advCriteriaCount(row)<3)return false;row.workplaceVerification={state:'완료',verifiedAt:new Date().toISOString()};row.workplaceVerified=true;try{localStorage.setItem(key,JSON.stringify(all))}catch{return false}window.dispatchEvent(new CustomEvent('hd20-workplace-verified',{detail:{id:String(id)}}));window.HD20KPIData?.signal?.();return true}
 function renderAdvJudge(){
- const host=ensureAdvJudge();if(!host)return;const rows=readStore('hd20GMES5SAutoImproveRawV1').filter(advancementCandidate).filter(x=>!advancementConfirmed(x));
- const priority=x=>{const e=advEvidenceGap(x).length,n=advCriteriaCount(x);return(e&&n<3)?0:e?1:n<3?2:3};const body=rows.slice().sort((a,b)=>priority(a)-priority(b)||advCriteriaCount(a)-advCriteriaCount(b)||advEvidenceGap(b).length-advEvidenceGap(a).length).map(x=>{const eg=advEvidenceGap(x),n=advCriteriaCount(x),s=txt(x?.judgeState||x?.status)||'판정대기';const next=eg.length?'증빙 보완':n<3?'3대 요건 보완':'작업장 근거검증';return `<tr><td>${esc(txt(x.team)||'—')}</td><td>${esc(advLine(x))}</td><td>${esc(txt(x.workplace||x.title)||'—')}</td><td>${esc(s)}</td><td>${n}/3</td><td>${esc(eg.length?eg.join(' · '):'완결')}</td><td>${esc(n<3?advGap(x):'3대 요건 충족')}</td><td><b>${esc(next)}</b></td></tr>`}).join('');
- const evidenceGap=rows.filter(x=>advEvidenceGap(x).length).length,criteriaGap=rows.filter(x=>advCriteriaCount(x)<3).length,ready=rows.filter(x=>!advEvidenceGap(x).length&&advCriteriaCount(x)>=3).length;const bothGap=rows.filter(x=>advEvidenceGap(x).length&&advCriteriaCount(x)<3).length,evidenceOnly=rows.filter(x=>advEvidenceGap(x).length&&advCriteriaCount(x)>=3).length,criteriaOnly=rows.filter(x=>!advEvidenceGap(x).length&&advCriteriaCount(x)<3).length;
- host.innerHTML=`<div class="pcPanelHead">후보 심사 준비도 · 보완 우선순위 <small>후보 등록 이후 실제로 무엇이 부족해 판정으로 못 넘어가는지 확인</small></div><details class="hd20AdvSecondary"><summary>후보 보완현황 요약 펼쳐보기</summary><div class="hd20JudgeReadiness"><div><small>미확정 후보</small><b>${rows.length}건</b></div><div class="risk"><small>증빙+요건 동시 Gap</small><b>${bothGap}건</b></div><div class="risk"><small>증빙만 보완</small><b>${evidenceOnly}건</b></div><div class="risk"><small>요건만 보완</small><b>${criteriaOnly}건</b></div><div><small>공식판정 준비완료</small><b>${ready}건</b></div></div></details><div class="pcTableWrap"><table class="pcTable"><thead><tr><th>생산팀</th><th>라인</th><th>후보 Case</th><th>판정상태</th><th>요건</th><th>증빙 Gap</th><th>요건 Gap</th><th>다음 조치</th></tr></thead><tbody>${body||'<tr><td colspan="8">현재 미확정 고도화 후보가 없습니다.</td></tr>'}</tbody></table></div>`
+ const host=ensureAdvJudge();if(!host)return;
+ const all=readStore('hd20GMES5SAutoImproveRawV1');
+ const rows=all.filter(advancementCandidate).filter(x=>!advancementConfirmed(x));
+ const priority=x=>{const e=advEvidenceGap(x).length,n=advCriteriaCount(x);return(e&&n<3)?0:e?1:n<3?2:3};
+ const sorted=rows.slice().sort((a,b)=>priority(a)-priority(b)||advCriteriaCount(a)-advCriteriaCount(b));
+ const ready=rows.filter(x=>!advEvidenceGap(x).length&&advCriteriaCount(x)>=3).length;
+ const supplement=rows.filter(x=>advEvidenceGap(x).length||advCriteriaCount(x)<3).length;
+ const selected=host.dataset.selectedCase||'';
+ const body=sorted.map((x,i)=>{
+   const n=advCriteriaCount(x),gap=advEvidenceGap(x),status=txt(x.judgeState||x.status)||'판정대기';
+   const next=gap.length?'증빙 보완':n<3?'요건 보완':advWorkplaceVerified(x)?'공식심사 대기':'현장 근거검증';
+   return '<tr><td><button type="button" data-case-index="'+i+'" style="border:0;background:transparent;color:#175b87;text-align:left;cursor:pointer;font-weight:750;text-decoration:underline">'+esc(txt(x.workplace||x.title||x.id)||'작업사례')+'</button></td><td>'+esc(txt(x.team)||'—')+'</td><td>'+n+'/3</td><td>'+esc(status)+'</td><td>'+esc(next)+'</td></tr>';
+ }).join('');
+ host.innerHTML='<div class="pcPanelHead">고도화 후보·판정 <small>작업사례를 선택해 상세 판정 근거 확인</small></div>'+
+ '<div class="hd20JudgeReadiness" style="padding:12px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px"><div><small>판정 대상</small><b>'+rows.length+'건</b></div><div class="risk"><small>보완 필요</small><b>'+supplement+'건</b></div><div><small>근거검증 대상</small><b>'+ready+'건</b></div></div>'+
+ '<div class="pcTableWrap"><table class="pcTable"><thead><tr><th>작업사례</th><th>생산팀</th><th>요건</th><th>현재 상태</th><th>다음 단계</th></tr></thead><tbody>'+ (body||'<tr><td colspan="5">현재 판정 대상이 없습니다.</td></tr>')+'</tbody></table></div>'+
+ '<div id="hd20AdvSelectedCase" style="padding:12px;border-top:1px solid #e2e9ee;color:#39576a">위 목록에서 작업사례를 선택하면 3대 요건과 증빙 누락 항목이 표시됩니다.</div>';
+ const panel=host.querySelector('#hd20AdvSelectedCase');
+ const showCase=i=>{const x=sorted[i];if(!x)return;const n=advCriteriaCount(x),gap=advEvidenceGap(x),verified=advWorkplaceVerified(x);host.dataset.selectedCase=String(x.id||'');panel.innerHTML='<strong style="display:block;margin-bottom:10px">'+esc(txt(x.workplace||x.title||x.id)||'작업사례')+' · 판정 근거</strong>'+
+ '<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:10px"><div>① 시각화·형적관리</div><div>② Green Zone</div><div>③ 공간활용</div></div>'+
+ '<div style="padding:10px;background:#f6f9fb;border-radius:8px">충족 요건: <b>'+n+'/3</b> · 증빙: <b>'+(gap.length?'보완 필요':'확인 완료')+'</b> · 작업장 검증: <b>'+(verified?'완료':'미완료')+'</b></div>'+
+ '<p style="margin:9px 0">부족 항목: '+esc([...(gap.length?gap:[]),...(n<3?[advGap(x)]:[])].join(' / ')||'없음')+'</p>'+
+ '<p style="font-size:12px;color:#697b89">3대 요건 3/3은 공식확정을 의미하지 않습니다. 상세 근거검증과 공식심사가 필요합니다.</p>';
+ };
+ host.querySelectorAll('[data-case-index]').forEach(b=>b.addEventListener('click',()=>showCase(Number(b.dataset.caseIndex))));
+ const prior=sorted.findIndex(x=>String(x.id||'')===selected);if(prior>=0)showCase(prior);
 }
 function ensureAdvProcess(){
  let host=$('#hd20AdvProcessOperational');if(host){const root=$('#performanceConversionAnalysis'),grid=root?.querySelector('.pcGrid');if(grid&&host.parentElement!==grid)grid.appendChild(host);return host;}const root=$('#performanceConversionAnalysis');let grid=root?.querySelector('.pcGrid');if(root&&!grid){grid=document.createElement('div');grid.className='pcGrid';root.appendChild(grid)}host=document.createElement('section');host.id='hd20AdvProcessOperational';host.className='pcPanel hd20AdvProcessOperational';(grid||root||document.querySelector('.app')||document.body).appendChild(host);return host
