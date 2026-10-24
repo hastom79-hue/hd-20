@@ -399,6 +399,21 @@ function render(box){
   const teamHighlight=S.team||null;
   const activeOverdue=rowsM.filter(c=>teamsAll.includes(c.team)&&isOverdue(c,D.today));
   const delayOverallAvg=activeOverdue.length?Math.round(activeOverdue.reduce((a,c)=>a+(delayDays(c,D.today)||0),0)/activeOverdue.length*10)/10:0;
+  // 요청/보완요청 기점의 해결 리드타임 (30일 = 1개월). 기한초과 일수와 구분.
+  const ltStart=c=>String(c.correctionRequestedAt||c.supplementRequestedAt||c.reworkRequestedAt||c.improvementRequestDate||c.requestedAt||c.date||'').slice(0,10);
+  const ltEnd=c=>String(isDone(c)?c.doneDate||'':D.today||'').slice(0,10);
+  const ltDays=c=>{const a=ltStart(c),b=ltEnd(c);if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(a)||!/^\\d{4}-\\d{2}-\\d{2}$/.test(b))return null;const n=dayDiff(a,b);return Number.isFinite(n)?Math.max(0,n):null};
+  const ltRows=rowsM.filter(c=>teamsAll.includes(c.team)).map(c=>({c,days:ltDays(c)})).filter(r=>r.days!==null);
+  const ltDone=ltRows.filter(r=>isDone(r.c)),ltPending=ltRows.filter(r=>!isDone(r.c));
+  const ltAvg=a=>a.length?Math.round(a.reduce((v,r)=>v+r.days,0)/a.length*10)/10:null;
+  const ltAvgDone=ltAvg(ltDone),ltAvgPending=ltAvg(ltPending);
+  const ltMonths=v=>v===null?'—':(v/30).toFixed(1)+'개월';
+  const ltLine='<div class="rqLeadSummary" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:12px">'+
+  '<div style="padding:14px;background:#edf5f9;border-radius:8px"><small>완료 사례 평균 조치 리드타임</small><div style="font-size:24px;font-weight:900">'+(ltAvgDone===null?'—':ltAvgDone+'일')+'</div><b>'+ltMonths(ltAvgDone)+'</b><p>요청·보완요청일 → 실제 완료일</p></div>'+
+  '<div style="padding:14px;background:#fff4ee;border-radius:8px"><small>미완료 사례 평균 경과기간</small><div style="font-size:24px;font-weight:900">'+(ltAvgPending===null?'—':ltAvgPending+'일')+'</div><b>'+ltMonths(ltAvgPending)+'</b><p>요청·보완요청일 → 오늘</p></div></div>';
+  const ltMonthly=Array.from({length:12},(_,i)=>{const y=S.year+'-'+String(i+1).padStart(2,'0');const matched=ltDone.filter(r=>String(r.c.doneDate||'').slice(0,7)===y);return ltAvg(matched)});
+  const ltMax=Math.max(1,...ltMonthly.filter(x=>x!==null));
+  const ltChart='<div style="display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:5px;height:200px;align-items:end">'+ltMonthly.map((v,i)=>'<div style="min-width:0;text-align:center"><div style="height:150px;display:flex;flex-direction:column;justify-content:flex-end"><div title="'+(i+1)+'월 평균 '+(v===null?'대상 없음':v+'일')+'" style="height:'+(v===null?0:Math.max(3,Math.round(v/ltMax*145)))+'px;background:#357c9e;border-radius:4px 4px 0 0"></div></div><small style="font-size:10px;white-space:nowrap">'+(i+1)+'월</small><div style="font-size:10px">'+(v===null?'':v+'일')+'</div></div>').join('')+'</div><p style="font-size:11px;color:#657c8b">월별 완료일 기준 평균 소요일 · 1개월 = 30일 · 완료일이 없는 건은 평균에서 제외</p>';
   const sum={total:teamRows.reduce((a,r)=>a+r.total,0),done:teamRows.reduce((a,r)=>a+r.done,0),open:teamRows.reduce((a,r)=>a+r.open,0),over:teamRows.reduce((a,r)=>a+r.over,0)}; // open=기한내 미완료, 전체 미완료=open+over
   const pctS=n=>sum.total?Math.round(n/sum.total*1000)/10:0;
   if(!S.selTeam||!teamRows.some(r=>r.team===S.selTeam))S.selTeam=teamRows[0]?.team||'';
@@ -551,6 +566,7 @@ function render(box){
        (sourceBars, 이미 정의돼 있던 걸 재사용)로 복원해 좌측에 둠. */
     +'<div class="ibRow rqSplit4060">'
     +section('01. 요청출처별 현황','요청 그룹 기준',sourceBars,'a')
+    +section('조치 리드타임 · 일/30일 환산 월','완료 소요기간과 미완료 경과기간 분리',ltLine+ltChart)
     +section('02. 월별 요청·완료 추이',periodLabel+' · 완료일 기준',monthlyTrend+leg([['신규 요청','#829db5'],['완료','#247c83']]),'b')
     +'</div>'
     /* 사용자 지시: "좌우 병합배치로" — 04·05가 각자 전체 폭을 차지하며 세로로 길게 쌓여 있던 걸,
