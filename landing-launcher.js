@@ -71,7 +71,7 @@ function sourceRows(){
  let snap={},actions=[];try{snap=window.HD20KPIData?.snapshot?.()||{}}catch{}
  try{actions=window.HD20KPIData?.actionCases?.()||[]}catch{}
  const activities=Array.isArray(snap.activities)&&snap.activities.length?snap.activities:getRows('hd20GMES5SAutoImproveRawV1');
- if(!Array.isArray(actions)||!actions.length)actions=getRows('hd20ActionCasesV2');
+ const localActions=getRows('hd20ActionCasesV2');if(localActions.length){const byId=new Map((Array.isArray(actions)?actions:[]).map(x=>[String(x.id||x.caseId||''),x]));localActions.forEach(x=>byId.set(String(x.id||x.caseId||''),x));actions=[...byId.values()]}else if(!Array.isArray(actions))actions=[];
  return {activities,actions};
 }
 function escapeText(x){return String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
