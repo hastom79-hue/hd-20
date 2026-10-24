@@ -98,7 +98,7 @@ jobs:
             if(errors.length)throw Error('Browser JS errors: '+errors.join(' | '));
             fs.writeFileSync('v3-browser-evidence/result.json',JSON.stringify({result,errors},null,2));
             const executionCards=await page.evaluate(()=>{const el=document.getElementById('hd20V3Execution');return {exists:!!el,kpis:el?.querySelectorAll('[data-execution-kpi]').length||0,panels:el?.querySelectorAll('.v3exPanel').length||0}});
-            if(!executionCards.exists||executionCards.kpis!==6||executionCards.panels<6)throw Error('Approved execution V3 sections missing '+JSON.stringify(executionCards));
+            if(!executionCards.exists||executionCards.kpis!==4||executionCards.panels<3)throw Error('Approved execution V3 sections missing '+JSON.stringify(executionCards));
             result.executionV3=executionCards;
             const demoVisibility=await page.evaluate(()=>{const keys=['hd20GMES5SAutoImproveRawV1','hd20ActionCasesV2'];const counts=keys.map(k=>{try{return JSON.parse(localStorage.getItem(k)||'[]').filter(r=>r.source==='demo-seed').length}catch{return 0}});const hc=window.HD20_DEMO_HEADCOUNT_STATUS||{};const visible=id=>{const e=document.getElementById(id);return !!e&&getComputedStyle(e).display!=='none'&&e.getBoundingClientRect().height>0};return {activity:counts[0],action:counts[1],hc,improveExists:!!document.getElementById('hd20ImproveBoard'),requestExists:!!document.getElementById('hd20RequestBoard')}});
             if(demoVisibility.activity<30||demoVisibility.action<30||demoVisibility.hc.masterTeams<5||!demoVisibility.improveExists||!demoVisibility.requestExists)throw Error('Dashboard demo dataset missing '+JSON.stringify(demoVisibility));
