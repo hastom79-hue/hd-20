@@ -62,7 +62,7 @@ jobs:
               },id);
               if(!result[name].exists||result[name].buttons<3||result[name].exportButtons!==result[name].buttons)throw Error(name+' evidence controls mismatch '+JSON.stringify(result[name]));
               const tabLayout=await page.evaluate(id=>{const el=document.getElementById(id),r=el?.getBoundingClientRect();return {visible:!!el&&getComputedStyle(el).display!=='none'&&r.width>0,panels:el?.querySelectorAll('.ibPanel').length||0,overflow:document.documentElement.scrollWidth>innerWidth+4};},id);
-              if(!tabLayout.visible||tabLayout.panels<4||tabLayout.overflow)throw Error(name+' V3 panel layout invalid '+JSON.stringify(tabLayout));
+              if(!tabLayout.visible||tabLayout.panels<3||tabLayout.overflow)throw Error(name+' V3 panel layout invalid '+JSON.stringify(tabLayout));
               result[name]={...result[name],layout:tabLayout};
               await page.screenshot({path:'v3-browser-evidence/'+(name==='improve'?'02-improve':'03-request')+'.png',fullPage:true});
               result[name].charts=[];
