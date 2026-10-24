@@ -337,9 +337,15 @@ function renderRetentionSampling(root){
  render();
  if(!document.getElementById('hd20RetentionSamplingStyle')){const st=document.createElement('style');st.id='hd20RetentionSamplingStyle';st.textContent='#hd20RetentionSampling{margin:12px 0 20px}#hd20RetentionSampling .hd20RsToolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:12px 0}#hd20RetentionSampling .hd20RsToolbar input{width:66px;padding:8px}#hd20RetentionSampling button{padding:9px 14px;border:1px solid #bdd0df;background:#eef5fb;border-radius:7px;cursor:pointer;color:#173b55;font-weight:700}#hd20RetentionSampling .hd20RsRow{border:1px solid #dce6ee;border-radius:8px;padding:12px;margin:9px 0;background:white}#hd20RetentionSampling .hd20RsInfo{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px;font-size:13px}#hd20RetentionSampling .hd20RsInfo span,#hd20RetentionSampling .hd20RsInfo small{color:#62788a}#hd20RetentionSampling .hd20RsInput{display:flex;gap:10px;flex-wrap:wrap;align-items:end}#hd20RetentionSampling .hd20RsInput label{display:flex;flex-direction:column;gap:5px;font-size:12px;color:#63788b}#hd20RetentionSampling .hd20RsInput input,#hd20RetentionSampling .hd20RsInput select{padding:9px;border:1px solid #cbdbe5;border-radius:6px;max-width:240px}@media(max-width:700px){#hd20RetentionSampling .hd20RsInput label{width:100%}#hd20RetentionSampling .hd20RsInput input{max-width:100%;width:100%}}';document.head.appendChild(st)}
 }
+function hideDuplicateWorkKpis(root){
+ if(!root)return;
+ // 집계 카드는 대시보드로 일원화하고 업무 화면은 입력·처리 도구 중심으로 구성.
+ root.querySelectorAll(':scope > .awKpis,:scope > .awAuditLane,:scope > .auditTopTiles').forEach(el=>el.classList.add('hd20SubHidden'));
+ if(!document.getElementById('hd20WorkKpiDedupStyle')){const st=document.createElement('style');st.id='hd20WorkKpiDedupStyle';st.textContent='#awAudit > .awKpis,#awAudit > .awAuditLane,#awAudit > .auditTopTiles,#awAction > .awKpis{display:none!important}';document.head.appendChild(st)}
+}
 function applyAudit(sub){
  const root=$('#awAudit');if(!root)return;
- root.dataset.subview=sub;showAll(root);show($('.awFlow',root),false);show($('.awAuditLane',root),false);
+ root.dataset.subview=sub;showAll(root);hideDuplicateWorkKpis(root);show($('.awFlow',root),false);show($('.awAuditLane',root),false);
  const draw=$('.auditDraw',root),batch=$('#hd20AuditBatchExecution',root),closed=$('.auditClosedLoop',root),ongoing=$('.audit6m',root);
  const closeEval=ensureAuditCloseEvaluation(root);
  if(sub==='retention'&&closeEval?.dataset.hd20Fallback==='true')renderAuditCloseEvaluation(closeEval);
@@ -353,7 +359,7 @@ function applyAudit(sub){
 }
 function ensureActionVerify(root){let host=$('#hd20ActionVerifyStatus',root);if(!host){host=document.createElement('section');host.id='hd20ActionVerifyStatus';host.className='awCard';const anchor=$('.awKpis',root)||$('.awFlow',root)||$('.amHeroNote',root)||$('.awHero',root);if(anchor)anchor.insertAdjacentElement('afterend',host);else root.appendChild(host)}return host}
 function renderActionVerify(root){const host=ensureActionVerify(root);if(!host)return;const rows=readStore('hd20ActionCasesV2'),done=rows.filter(doneStatus),verified=done.filter(effectVerified),pendingVerify=done.filter(x=>!effectVerified(x)),recurrence=verified.filter(recurrenceConfirmed);host.innerHTML=`<div class="awHead"><div><b>효과·재발 검증현황</b><small>실제 개선조치 데이터 기준 · 미입력 결과는 임의 생성하지 않습니다.</small></div></div><div class="awKpis"><div><small>전체 개선요청</small><b>${rows.length}건</b></div><div><small>조치 진행·대기</small><b>${rows.length-done.length}건</b></div><div><small>효과검증 완료</small><b>${verified.length}건</b></div><div><small>재발 확인</small><b>${recurrence.length}건</b></div></div><div class="awHint" style="margin-top:10px">${pendingVerify.length?`완료 ${done.length}건 중 효과검증 미입력 ${pendingVerify.length}건은 <b>검증 대기</b> 상태입니다.`:done.length?'완료된 개선조치는 모두 효과검증 결과가 입력되어 있습니다.':'완료된 개선조치가 없어 효과검증 대상이 없습니다.'}</div>`}
-function applyAction(sub){const root=$('#awAction');if(!root)return;root.dataset.subview=sub;showAll(root);show($('.awFlow',root),true);show($('.awKpis',root),true);const form=$('.amRegisterFormCard',root),verify=ensureActionVerify(root);show(form,sub==='manage');if(sub==='verify'){renderActionVerify(root);show(verify,true)}else{show(verify,false)}
+function applyAction(sub){const root=$('#awAction');if(!root)return;root.dataset.subview=sub;showAll(root);hideDuplicateWorkKpis(root);show($('.awFlow',root),false);show($('.awKpis',root),false);const form=$('.amRegisterFormCard',root),verify=ensureActionVerify(root);show(form,sub==='manage');if(sub==='verify'){renderActionVerify(root);show(verify,true)}else{show(verify,false)}
   /* '+ 개선요청 등록' 등 신규 등록 액션은 '조치 목록'(manage)에서만
      의미가 있어, 다른 3개 서브탭(처리기간분석/팀장기준정보/효과재발
      관리)에서는 숨김. 내용 삭제가 아니라 서브탭별 표시 범위 재구성. */
