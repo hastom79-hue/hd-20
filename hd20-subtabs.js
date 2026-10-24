@@ -296,16 +296,20 @@ function renderRetentionSampling(root){
  const entries=[...activity.filter(x=>done(x)&&!excluded(x)).map(x=>({x,kind:'자율개선'})),...actions.filter(x=>done(x)&&!excluded(x)).map(x=>({x,kind:'개선요청'}))].filter(e=>keyOf(e.x));
  const distinct=new Map(entries.map(e=>[e.kind+':'+keyOf(e.x),e]));
  const pool=[...distinct.values()];
+ const policy=window.HD20PolicyConfig?.read?.().retentionCheck||{intervalDays:30,sampleCount:5};
+ const intervalDays=Math.max(1,Number(policy.intervalDays)||30),sampleCount=Math.max(1,Number(policy.sampleCount)||5);
+ const canEvaluate=()=>window.HD20MasterAuth?.canEvaluateRetention?.()===true;
+
  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const current=stored.filter(x=>x.result==='점검대기'||x.result==='적합'||x.result==='부적합').slice().reverse();
  const cell=x=>'<td>'+esc(x)+'</td>';
  const render=()=>{
  const records=load('hd20RetentionRandomChecksV1').slice().reverse();
  host.innerHTML='<div class="awHead"><div><b>개선활동 유지점검</b><small>완료된 자율개선·개선요청 사례를 무작위로 선정해 현재 유지상태를 확인합니다.</small></div></div>'+
- '<div class="hd20RsToolbar"><label>추출 건수 <input type="number" min="1" max="30" value="5" data-rs-count></label><button type="button" data-rs-draw>랜덤 추출</button><span>추출 가능 '+pool.length+'건 (자율개선 '+pool.filter(e=>e.kind==='자율개선').length+' / 개선요청 '+pool.filter(e=>e.kind==='개선요청').length+')</span></div>'+
+ '<div class="hd20RsToolbar"><span>기준정보: '+intervalDays+'일마다 '+sampleCount+'건 추출 · 평가자: 마스터 권한자</span><button type="button" data-rs-draw>랜덤 추출</button><span>추출 가능 '+pool.length+'건 (자율개선 '+pool.filter(e=>e.kind==='자율개선').length+' / 개선요청 '+pool.filter(e=>e.kind==='개선요청').length+')</span></div>'+
  '<div class="hd20RsList">'+(records.length?records.map(r=>'<section class="hd20RsRow" data-rs-id="'+esc(r.id)+'"><div class="hd20RsInfo"><b>'+esc(r.kind)+' · '+esc(r.caseId)+'</b><span>'+esc(r.team||'팀 미지정')+' · '+esc(r.workplace||'작업장 미입력')+'</span><small>추출 '+esc(r.drawDate)+' · '+esc(r.result)+'</small></div><div class="hd20RsInput"><label>평가자<input data-rs-evaluator value="'+esc(r.evaluator||'')+'" '+(r.result!=='점검대기'?'disabled':'')+'></label><label>현장 판정<select data-rs-result '+(r.result!=='점검대기'?'disabled':'')+'><option value="">판정 선택</option><option value="적합">유지 적합</option><option value="부적합">유지 부적합</option></select></label><label>평가 의견<input data-rs-comment value="'+esc(r.comment||'')+'" '+(r.result!=='점검대기'?'disabled':'')+'></label>'+(r.result==='점검대기'?'<button data-rs-save>판정 저장</button>':'<strong>'+esc(r.result)+'</strong>')+'</div></section>').join(''):'<p class="awHint">아직 추출된 유지점검 대상이 없습니다.</p>')+'</div>';
  host.querySelector('[data-rs-draw]').onclick=()=>{
- const requested=Math.max(1,Math.min(30,Number(host.querySelector('[data-rs-count]').value)||5));
+ if(!canEvaluate()){window.alert('유지점검 추출은 마스터 권한자 인증이 필요합니다.');return}const previous=load('hd20RetentionRandomChecksV1').map(x=>x.drawDate).filter(Boolean).sort().at(-1);if(previous&&Math.floor((Date.now()-new Date(previous+'T00:00:00').getTime())/86400000)<intervalDays){window.alert('기준정보에 설정된 유지점검 주기가 도래하지 않았습니다.');return}const requested=sampleCount;
  const rows=load('hd20RetentionRandomChecksV1'),existing=new Set(rows.filter(x=>x.result==='점검대기').map(x=>x.kind+':'+x.caseId));
  const available=pool.filter(e=>!existing.has(e.kind+':'+keyOf(e.x)));
  for(let i=available.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[available[i],available[j]]=[available[j],available[i]]}
@@ -317,7 +321,7 @@ function renderRetentionSampling(root){
  };
  host.querySelectorAll('[data-rs-save]').forEach(btn=>btn.onclick=()=>{
  const box=btn.closest('[data-rs-id]'),id=box.dataset.rsId,evaluator=box.querySelector('[data-rs-evaluator]').value.trim(),result=box.querySelector('[data-rs-result]').value,comment=box.querySelector('[data-rs-comment]').value.trim();
- if(!evaluator||!result){window.alert('평가자와 유지 판정 결과를 입력하세요.');return}
+ if(!canEvaluate()){window.alert('유지평가는 마스터 권한자 인증이 필요합니다.');return} if(!evaluator||!result){window.alert('평가자와 유지 판정 결과를 입력하세요.');return}
  const rows=load('hd20RetentionRandomChecksV1'),n=rows.findIndex(x=>x.id===id);if(n<0||rows[n].result!=='점검대기')return;
  const r={...rows[n],evaluator,comment,result,evaluatedAt:new Date().toISOString()};
  if(result==='부적합'){
