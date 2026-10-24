@@ -121,7 +121,7 @@ function render(){css();const el=ensure(),d=data();
   $$('[data-mmtk]',el).forEach(b=>b.onclick=()=>{const [t,rows]=KPI_EV[b.dataset.mmtk];window.HD20_BOARD_KIT?.openRows?.({title:t,cols:kpiCols,rows:rows.map(kpiMapR),file:'고도화맵_'+b.dataset.mmtk})});
   return el}
 function show(){const el=render();el.classList.add('on');el.hidden=false;return true}
-function hide(){const el=ensure();el.classList.remove('on');el.hidden=true;$('.mmtDetail')?.classList.remove('on');return true}
+function hide(){const el=ensure();el.classList.remove('on');el.hidden=true;el.style.removeProperty('display');document.body.classList.remove('hd20MaturityDashboardMode');$('.mmtDetail')?.classList.remove('on');return true}
 function open(){return show()}
 function close(){return hide()}
 let refreshTimer=0,lastRenderSig='';
@@ -146,11 +146,7 @@ function dashboardMapOpen(){
   el.style.setProperty('display','block','important');
   return result;
 }
-function dashboardMapClose(){
-  document.body.classList.remove('hd20MaturityDashboardMode');
-  hide();
-  document.getElementById(ID)?.style.removeProperty('display');
-}
+function dashboardMapClose(){hide()}
 function maturityDashboardCss(){
   if(document.getElementById('hd20MaturityDashboardModeStyle'))return;
   const st=document.createElement('style');st.id='hd20MaturityDashboardModeStyle';
@@ -158,6 +154,7 @@ function maturityDashboardCss(){
   document.head.appendChild(st);
 }
 window.HD20_MATURITY_DASHBOARD={open:dashboardMapOpen,close:dashboardMapClose};
+window.addEventListener('hd20-nav-area-changed',e=>{if(e.detail?.area!=='dashboard')dashboardMapClose()});
 function bootDashboardMap(){if(new URLSearchParams(location.search).get('section')==='map')window.HD20_DASHBOARD_TABS?.apply?.('map',{scroll:false})}
 document.readyState==='loading'?document.addEventListener('DOMContentLoaded',bootDashboardMap,{once:true}):bootDashboardMap();
 
