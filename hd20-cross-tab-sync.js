@@ -8,6 +8,12 @@ function refresh(){
  setTimeout(()=>{
   queued=false;
   window.dispatchEvent(new CustomEvent('hd20-refresh-requested',{detail:{origin:'cross-tab-sync'}}));
+  // Active dashboard only: keep other tabs and partially completed forms untouched.
+  if(window.HD20_NAV?.active?.()==='dashboard'){
+   for(const board of [window.HD20_IMPROVE_BOARD,window.HD20_REQUEST_BOARD]){
+    try{board?.render?.()}catch(err){console.warn('[HD20 sync dashboard]',err)}
+   }
+  }
   if(document.body.classList.contains('hd20InquiryActive')&&!document.getElementById('hd20Launcher')){
    try{window.HD20_LAUNCHER?.renderOverview?.()}catch(err){console.warn('[HD20 sync overview]',err)}
   }
