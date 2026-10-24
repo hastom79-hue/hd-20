@@ -35,7 +35,7 @@ jobs:
           if '.hd20ApprovedLanding' in nav: sys.exit('navigation still depends on retired approved landing')
           if "go('dashboard',nav)" not in nav: sys.exit('dashboard boot contract missing')
           tabs=pathlib.Path('dashboard-section-tabs.js').read_text(encoding='utf-8')
-          for key in ["key:'summary'","key:'improve'","key:'request'","key:'execution'","key:'analysis'"]:
+          for key in ["key:'summary'","key:'improve'","key:'request'","key:'execution'","key:'map'"]:
               if key not in tabs: sys.exit(f'dashboard grouping missing: {key}')
           for retired in ["key:'maturity'","key:'standard'"]:
               if retired in tabs: sys.exit(f'retired dashboard ownership remains: {retired}')
