@@ -27,27 +27,27 @@ function enhanceTable(table){
   table.dataset.teEnhanced='1';
   const headers=[...table.querySelectorAll('thead th')].map(th=>th.textContent.trim());if(!headers.length)return;
   const tbody=table.querySelector('tbody'),wrap=table.closest('.awBody')||table.parentElement;
-  const toolbar=document.createElement('div');toolbar.className='teToolbar';toolbar.innerHTML='<input class="teSearch" type="text" placeholder="검색 (전체 컬럼)"><span class="teCount"></span>';
+  const toolbar=document.createElement('div');toolbar.className='teToolbar';toolbar.innerHTML='<input class="teSearch" type="search" aria-label="전체 텍스트 필터" placeholder="텍스트 필터 (전체 컬럼)"><select class="teField" aria-label="추가 검색 필드"><option value="">추가 조건: 전체</option></select><input class="teFieldValue" type="search" aria-label="추가 검색어" placeholder="선택 필드 검색"><button type="button" class="teReset">초기화</button><span class="teCount"></span>';
   const scrollWrap=table.closest('.acScroll')||table;scrollWrap.parentElement.insertBefore(toolbar,scrollWrap);
-  let pageSize=PAGE_SIZE,moreBar=null,store=null,mo=null;const noVirtual=!!table.closest('.gmesImport,.hd20CaseTrace,.hd20ExactTable,[id$="Modal"],.modalBox');const countEl=toolbar.querySelector('.teCount'),searchEl=toolbar.querySelector('.teSearch');
+  let pageSize=PAGE_SIZE,moreBar=null,store=null,mo=null;const noVirtual=!!table.closest('.gmesImport,.hd20CaseTrace,.hd20ExactTable,[id$="Modal"],.modalBox');const countEl=toolbar.querySelector('.teCount'),searchEl=toolbar.querySelector('.teSearch'),fieldEl=toolbar.querySelector('.teField'),fieldValue=toolbar.querySelector('.teFieldValue');headers.forEach((h,i)=>{const o=document.createElement('option');o.value=String(i);o.textContent=h||`열 ${i+1}`;fieldEl.appendChild(o)});const normalize=v=>String(v??'').toLocaleLowerCase('ko').trim();const matchedRow=(tr,q,fv,fi)=>{const whole=normalize(tr.textContent);const cell=fi===''?whole:normalize(tr.children[Number(fi)]?.textContent);return(!q||whole.includes(q))&&(!fv||cell.includes(fv))};
   function domRows(){return [...tbody.querySelectorAll('tr')].filter(tr=>!tr.querySelector('.awEmpty')&&!(tr.children.length===1&&tr.querySelector('td[colspan]')))}
   function allRows(){return store||domRows()}
   function updateMore(totalMatch){if(totalMatch>pageSize){if(!moreBar||!moreBar.isConnected){moreBar=document.createElement('div');moreBar.className='teMore';moreBar.innerHTML='<button type="button">더 보기 ▾</button>';scrollWrap.insertAdjacentElement('afterend',moreBar);moreBar.querySelector('button').onclick=()=>{pageSize+=PAGE_SIZE;apply()}}moreBar.style.display=''}else if(moreBar)moreBar.style.display='none'}
   function apply(){
-    const q=searchEl.value.trim().toLowerCase(),rows=allRows();
+    const q=normalize(searchEl.value),fv=normalize(fieldValue.value),fi=fieldEl.value,rows=allRows();
     if(!noVirtual&&(store||rows.length>VMIN)){
       if(!store){store=rows.slice();table.__teStore=store}
-      const txt=tr=>tr.__teT??(tr.__teT=(tr.textContent||'').toLowerCase()),matched=q?store.filter(tr=>txt(tr).includes(q)):store,shown=matched.slice(0,pageSize);
+      const matched=store.filter(tr=>matchedRow(tr,q,fv,fi)),shown=matched.slice(0,pageSize);
       shown.forEach(tr=>tr.classList.remove('teHidden'));tbody.replaceChildren(...shown);
-      countEl.textContent=q?`검색결과 ${shown.length}/${matched.length}건`:`표시 ${shown.length}/${store.length}건`;updateMore(matched.length);
+      countEl.textContent=q||fv?`검색결과 ${shown.length}/${matched.length}건`:`표시 ${shown.length}/${store.length}건`;updateMore(matched.length);
       if(mo)mo.takeRecords();return}
     let visible=0;
-    rows.forEach(tr=>{const matches=!q||tr.innerText.toLowerCase().includes(q),withinPage=matches&&visible<pageSize;tr.classList.toggle('teHidden',!matches||!withinPage);if(matches)visible++});
-    const totalMatch=rows.filter(tr=>!q||tr.innerText.toLowerCase().includes(q)).length;
-    countEl.textContent=q?`검색결과 ${Math.min(pageSize,totalMatch)}/${totalMatch}건`:`표시 ${Math.min(pageSize,rows.length)}/${rows.length}건`;
+    rows.forEach(tr=>{const matches=matchedRow(tr,q,fv,fi),withinPage=matches&&visible<pageSize;tr.classList.toggle('teHidden',!matches||!withinPage);if(matches)visible++});
+    const totalMatch=rows.filter(tr=>matchedRow(tr,q,fv,fi)).length;
+    countEl.textContent=q||fv?`검색결과 ${Math.min(pageSize,totalMatch)}/${totalMatch}건`:`표시 ${Math.min(pageSize,rows.length)}/${rows.length}건`;
     if(totalMatch>pageSize){if(!moreBar||!moreBar.isConnected){moreBar=document.createElement('div');moreBar.className='teMore';moreBar.innerHTML='<button type="button">더 보기 ▾</button>';scrollWrap.insertAdjacentElement('afterend',moreBar);moreBar.querySelector('button').onclick=()=>{pageSize+=PAGE_SIZE;apply()}}moreBar.style.display=''}else if(moreBar)moreBar.style.display='none';
   }
-  searchEl.addEventListener('input',()=>{pageSize=PAGE_SIZE;apply()});
+  searchEl.addEventListener('input',()=>{pageSize=PAGE_SIZE;apply()});fieldEl.addEventListener('change',()=>{pageSize=PAGE_SIZE;apply()});fieldValue.addEventListener('input',()=>{pageSize=PAGE_SIZE;apply()});toolbar.querySelector('.teReset').addEventListener('click',()=>{searchEl.value='';fieldEl.value='';fieldValue.value='';pageSize=PAGE_SIZE;apply()});
   const ths=[...table.querySelectorAll('thead th')];ths.forEach((th,ci)=>{if(th.textContent.trim()==='선택')return;let dir=0;th.addEventListener('click',()=>{ths.forEach(x=>x.classList.remove('teSortAsc','teSortDesc'));dir=dir===1?-1:1;th.classList.add(dir===1?'teSortAsc':'teSortDesc');const rows=allRows();rows.sort((a,b)=>{const av=a.children[ci]?.innerText.trim()||'',bv=b.children[ci]?.innerText.trim()||'',an=parseFloat(av.replace(/[^0-9.\-]/g,'')),bn=parseFloat(bv.replace(/[^0-9.\-]/g,''));if(!isNaN(an)&&!isNaN(bn)&&/^[-0-9.,%건일곳년월Lv]*$/.test(av))return dir*(an-bn);return dir*av.localeCompare(bv,'ko')});if(!store)rows.forEach(r=>tbody.appendChild(r));apply()})});
   if(!table.classList.contains('amCases'))tbody.addEventListener('click',e=>{const tr=e.target.closest('tr');if(!tr||tr.querySelector('.awEmpty')||e.target.closest('input,select,button,a,textarea,label,[class*=Link]'))return;openRowDetail(tr,headers)});
   apply();mo=new MutationObserver(recs=>{if(table.dataset.teReflow==='1')return;table.dataset.teReflow='1';
