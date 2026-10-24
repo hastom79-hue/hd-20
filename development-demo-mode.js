@@ -251,6 +251,16 @@ const action=[];teams.forEach((team,ti)=>{for(let i=0;i<10;i++){const isDone=!(i
  approvedPopulation.forEach(r=>{
    const lost=attritedIds.has(r.id);
    r.attrition=lost;
+   // Synthetic records need a dated loss event for monthly attrition charts.
+   // Keep it after the confirmation date and never later than today.
+   if(lost){
+     const confirmedOn=new Date(String(r.judgedAt)+'T12:00:00');
+     const lossOn=new Date(confirmedOn);
+     lossOn.setDate(lossOn.getDate()+10+(Number(String(r.id).match(/(\d+)$/)?.[1]||0)%6)*7);
+     const effective=lossOn>now?now:lossOn;
+     const yyyy=effective.getFullYear(),mm=String(effective.getMonth()+1).padStart(2,'0'),dd=String(effective.getDate()).padStart(2,'0');
+     r.attritionAt=`${yyyy}-${mm}-${dd}`;
+   }else r.attritionAt='';
    r.maintainState=lost?'이탈':'유지';
    r.auditState=lost?'이탈':'유지';
    r.status=lost?'이탈':'완료';
