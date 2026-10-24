@@ -190,11 +190,29 @@ function renderAdvJudge(){
  '<div class="pcTableWrap"><table class="pcTable"><thead><tr><th>작업사례</th><th>생산팀</th><th>요건</th><th>현재 상태</th><th>다음 단계</th></tr></thead><tbody>'+ (body||'<tr><td colspan="5">현재 판정 대상이 없습니다.</td></tr>')+'</tbody></table></div>'+
  '<div id="hd20AdvSelectedCase" style="padding:12px;border-top:1px solid #e2e9ee;color:#39576a">위 목록에서 작업사례를 선택하면 3대 요건과 증빙 누락 항목이 표시됩니다.</div>';
  const panel=host.querySelector('#hd20AdvSelectedCase');
- const showCase=i=>{const x=sorted[i];if(!x)return;const n=advCriteriaCount(x),gap=advEvidenceGap(x),verified=advWorkplaceVerified(x);host.dataset.selectedCase=String(x.id||'');panel.innerHTML='<strong style="display:block;margin-bottom:10px">'+esc(txt(x.workplace||x.title||x.id)||'작업사례')+' · 판정 근거</strong>'+
- '<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:10px"><div>① 시각화·형적관리</div><div>② Green Zone</div><div>③ 공간활용</div></div>'+
- '<div style="padding:10px;background:#f6f9fb;border-radius:8px">충족 요건: <b>'+n+'/3</b> · 증빙: <b>'+(gap.length?'보완 필요':'확인 완료')+'</b> · 작업장 검증: <b>'+(verified?'완료':'미완료')+'</b></div>'+
- '<p style="margin:9px 0">부족 항목: '+esc([...(gap.length?gap:[]),...(n<3?[advGap(x)]:[])].join(' / ')||'없음')+'</p>'+
- '<p style="font-size:12px;color:#697b89">3대 요건 3/3은 공식확정을 의미하지 않습니다. 상세 근거검증과 공식심사가 필요합니다.</p>';
+ const showCase=i=>{
+  const x=sorted[i];if(!x)return;
+  const n=advCriteriaCount(x),gap=advEvidenceGap(x),verified=advWorkplaceVerified(x);
+  const raw=[x.visualization??x.criteriaVisual,x.greenZone??x.criteriaGreen,x.spaceUtilization??x.criteriaSpace];
+  const names=['① 시각화·형적관리','② Green Zone','③ 공간활용'];
+  const trueValue=v=>v===true||/^(Y|YES|충족|적합)$/i.test(txt(v));
+  const falseValue=v=>v===false||/^(N|NO|미충족|부적합)$/i.test(txt(v));
+  const flags=advCriteriaFlags(x);
+  const explicit=raw.some(v=>v!==undefined&&v!==null&&txt(v)!=='');
+  const criteria=names.map((label,j)=>{
+    const matched=explicit?(trueValue(raw[j])?'충족':falseValue(raw[j])?'미충족':'확인 필요'):(Array.isArray(x.criteriaMatched)?'확인 필요':'개별 근거 없음');
+    const state=matched==='충족'||(!explicit&&flags[j]&&Array.isArray(x.criteriaMatched))?'충족':matched;
+    return '<div style="padding:11px;border:1px solid #dce5eb;border-radius:8px"><div style="font-size:12px;font-weight:800">'+label+'</div><div style="font-weight:850;margin-top:6px;color:'+(state==='충족'?'#217450':state==='미충족'?'#b44739':'#697789')+'">'+state+'</div></div>';
+  }).join('');
+  const evidence=[['문제정의',x.problem],['개선내용',x.improvement||x.action],['BEFORE',x.before],['AFTER',x.after]];
+  const evidenceHtml=evidence.map(([label,value])=>'<div style="padding:8px;border-bottom:1px solid #e8edf0"><b>'+label+'</b> · '+(txt(value)?'<span style="color:#207355">등록됨</span>':'<span style="color:#b44739">누락</span>')+'</div>').join('');
+  host.dataset.selectedCase=String(x.id||'');
+  panel.innerHTML='<strong style="display:block;margin-bottom:10px">'+esc(txt(x.workplace||x.title||x.id)||'작업사례')+' · 판정 근거</strong>'+
+   '<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:10px">'+criteria+'</div>'+
+   '<div style="padding:10px;background:#f6f9fb;border-radius:8px">요건 집계 <b>'+n+'/3</b> · 증빙 <b>'+(gap.length?'보완 필요':'등록 완료')+'</b> · 작업장 검증 <b>'+(verified?'완료':'미완료')+'</b></div>'+
+   '<details style="margin-top:10px"><summary style="cursor:pointer;font-weight:800">등록 근거 및 BEFORE/AFTER 확인</summary><div style="margin-top:7px">'+evidenceHtml+'</div><p style="font-size:12px">원본 사진과 판정 증빙은 기존 작업장 근거검증 화면에서 확인합니다. 등록 여부만 표시하며 사진을 임의 생성하지 않습니다.</p></details>'+
+   '<p style="margin:9px 0">보완 항목: '+esc([...(gap.length?gap:[]),...(n<3?[advGap(x)]:[])].join(' / ')||'없음')+'</p>'+
+   '<p style="font-size:12px;color:#697b89">3대 요건 3/3은 공식확정을 의미하지 않습니다. 현장 근거검증과 공식심사 완료 후 별도로 확정합니다.</p>';
  };
  host.querySelectorAll('[data-case-index]').forEach(b=>b.addEventListener('click',()=>showCase(Number(b.dataset.caseIndex))));
  const prior=sorted.findIndex(x=>String(x.id||'')===selected);if(prior>=0)showCase(prior);
