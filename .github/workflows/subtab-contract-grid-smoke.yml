@@ -53,7 +53,7 @@ jobs:
             await waitBoot();
             await page.evaluate(()=>{
               const teams=window.HD20ProductionTeamMaster?.teamNames?.()||[];
-              if(teams.length!==17)throw new Error('canonical team master count mismatch: '+teams.length);
+              if(teams.length!==19)throw new Error('canonical team master count mismatch: '+teams.length);
               const cats=['정리','정돈','청소','시각화','위험구역관리','5S 고도화'];
               const photoRefs=[
                 'https://images.unsplash.com/photo-1565793298595-6a879b1d9492',
