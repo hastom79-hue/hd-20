@@ -127,7 +127,7 @@ const tk=v=>String(Number(v.toFixed(3)));
 function chart({w,h=240,cats,series,stack=false,per=false,rotate=false,sel=null,colorOf=null,minSlot=36,fmt=null,hline=null,linkX=false,topPct=null,topExtra=null,axisHeadroom=0,raisePlot=false,plotBottom=null,tightAxis=false,labelTotals=null}){
   const F=v=>fmt?fmt(v):fx(v,per);
   const W0=Math.max(320,w),slot0=(W0-56)/Math.max(1,cats.length);rotate=rotate||(slot0<58&&cats.some(c=>String(c).length>3));
-  const m={l:46,r:10,t:(Array.isArray(labelTotals)||series.some(s=>Array.isArray(s.labelTotals)))?56:(raisePlot?12:20),b:plotBottom??(rotate?84:(raisePlot?24:30))},W=W0,iw=W-m.l-m.r,ih=h-m.t-m.b;
+  const m={l:46,r:10,t:Array.isArray(labelTotals)?32:(raisePlot?12:20),b:plotBottom??(rotate?84:(raisePlot?24:30))},W=W0,iw=W-m.l-m.r,ih=h-m.t-m.b;
   const tot=cats.map((_,i)=>stack?series.reduce((a,s)=>a+(s.vals[i]||0),0):Math.max(...series.map(s=>s.vals[i]||0)));
   const dataMax=Math.max(0.0001,...tot,hline?hline.value*1.05:0),integerAxis=!per&&tot.every(v=>Number.isInteger(v))&&(!hline||Number.isInteger(hline.value)),ax=axis(tot.every(v=>v===0)&&!hline?0:dataMax*(1+Math.max(axisHeadroom,integerAxis?0.12:0)),{integer:integerAxis,tight:tightAxis}),max=ax.max,yv=v=>m.t+ih-(v/max)*ih,slot=iw/Math.max(1,cats.length);
   let g='';for(let i=0;i<=Math.round(max/ax.step);i++){const v=ax.step*i,y=yv(v);g+=`<line x1="${m.l}" x2="${W-m.r}" y1="${y}" y2="${y}" stroke="${C.grid}"/><text x="${m.l-6}" y="${y+4}" text-anchor="end" font-size="11" fill="${C.soft}">${tk(v)}</text>`}
