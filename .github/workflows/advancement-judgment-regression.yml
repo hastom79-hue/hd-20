@@ -1,0 +1,83 @@
+name: HD20 advancement judgment regression
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'hd20-subtabs.js'
+      - 'index.html'
+      - '.github/workflows/advancement-judgment-regression.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  advancement-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install Chromium browser
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Serve app
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/adv-http.log 2>&1 &
+          for i in {1..30}; do curl -fsS http://127.0.0.1:4173/index.html >/dev/null && exit 0; sleep 1; done
+          cat /tmp/adv-http.log
+          exit 1
+      - name: Validate candidate selection, verification, and persistence
+        run: |
+          cat > adv-check.cjs <<'NODE'
+          const {chromium}=require('playwright');
+          const assert=require('node:assert/strict');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:1440,height:1000}});
+            const errors=[];
+            page.on('pageerror',e=>errors.push(String(e)));
+            page.on('dialog',d=>d.accept());
+            await page.route('**/*',route=>{
+              const u=new URL(route.request().url());
+              if(['127.0.0.1','localhost'].includes(u.hostname))return route.continue();
+              if(route.request().resourceType()==='script')return route.fulfill({status:200,contentType:'application/javascript',body:''});
+              return route.abort();
+            });
+            await page.goto('http://127.0.0.1:4173/index.html?area=advancement&sub=judge',{waitUntil:'domcontentloaded'});
+            await page.waitForFunction(()=>window.HD20_SUBNAV?.select,{timeout:20000});
+            await page.evaluate(()=>{
+              const base={type:'5S 고도화',candidate:true,isCandidate:true,judgeState:'판정대기',confirmed:false,team:'중형상부1팀',line:'검증 라인',problem:'문제정의',improvement:'개선완료',before:'BEFORE-test',after:'AFTER-test',source:'ci-load-fixture'};
+              const rows=[
+                {...base,id:'ADV-REG-PASS',workplace:'검증 대상 3조건',criteriaVisual:'Y',criteriaGreen:'Y',criteriaSpace:'Y'},
+                {...base,id:'ADV-REG-FAIL',workplace:'검증 대상 미충족',criteriaVisual:'Y',criteriaGreen:'N',criteriaSpace:'Y'},
+                {...base,id:'ADV-REG-NO-EVIDENCE',workplace:'검증 대상 증빙누락',criteriaVisual:'Y',criteriaGreen:'Y',criteriaSpace:'Y',after:''}
+              ];
+              localStorage.setItem('hd20GMES5SAutoImproveRawV1',JSON.stringify(rows));
+              window.HD20_SUBNAV.select('advancement','judge');
+            });
+            await page.waitForSelector('#hd20AdvJudgeOperational [data-case-index]',{timeout:10000});
+            const nav=await page.locator('#hd20Subnav button').allTextContents();
+            assert.equal(nav.length,3,'advancement must have exactly three tabs');
+            assert.match(nav[0],/후보·판정/);
+            await page.locator('#hd20AdvJudgeOperational [data-case-index]').filter({hasText:'검증 대상 미충족'}).click();
+            assert.equal(await page.locator('#hd20AdvSelectedCase [data-case-verify]').count(),0,'one missing criterion cannot verify');
+            await page.locator('#hd20AdvJudgeOperational [data-case-index]').filter({hasText:'검증 대상 증빙누락'}).click();
+            assert.equal(await page.locator('#hd20AdvSelectedCase [data-case-verify]').count(),0,'missing evidence cannot verify');
+            await page.locator('#hd20AdvJudgeOperational [data-case-index]').filter({hasText:'검증 대상 3조건'}).click();
+            await page.locator('#hd20AdvSelectedCase [data-case-verify]').click();
+            const stored=await page.evaluate(()=>JSON.parse(localStorage.getItem('hd20GMES5SAutoImproveRawV1')));
+            assert.equal(stored.find(x=>x.id==='ADV-REG-PASS').workplaceVerified,true);
+            assert.equal(stored.find(x=>x.id==='ADV-REG-FAIL').workplaceVerified,undefined);
+            assert.equal(stored.find(x=>x.id==='ADV-REG-NO-EVIDENCE').workplaceVerified,undefined);
+            assert.equal(stored.find(x=>x.id==='ADV-REG-PASS').confirmed,false,'verification must not auto-confirm');
+            await page.reload({waitUntil:'domcontentloaded'});
+            const afterReload=await page.evaluate(()=>JSON.parse(localStorage.getItem('hd20GMES5SAutoImproveRawV1')));
+            assert.equal(afterReload.find(x=>x.id==='ADV-REG-PASS').workplaceVerified,true,'verification persisted after reload');
+            assert.deepEqual(errors,[],'browser errors');
+            console.log('ADVANCEMENT_REGRESSION_PASS',JSON.stringify({tabs:nav.length,verified:'ADV-REG-PASS',rejected:2,refreshPersisted:true}));
+            await browser.close();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+          node adv-check.cjs
