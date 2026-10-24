@@ -39,11 +39,11 @@ jobs:
           assert(action.includes('id="amRequestSource" required'),'registration source must be required');
           assert(action.includes('workplace,requestSource,leader:'),'registration must persist requestSource');
           assert(action.includes('hd20-action-updated'),'registration must signal refresh');
-          assert(board.includes('c.requestSource||c.sourceDetail||c.discoverySource'),'dashboard must read stored source');
+          assert(board.includes('c?.requestSource||c?.sourceDetail||c?.discoverySource'),'dashboard must read stored source');
           assert(board.includes("'출처 미분류'"),'legacy records must remain unclassified');
           assert(board.includes('const sourceStats=orderedSources.map'),'source bars must follow master order');
           assert(board.includes('x.done/x.count'),'source completion rate must use its own request count');
-          assert(html.includes('hd20-request-board.js?v=20261018-vertical-legend-deploy-1'),'dashboard deploy cache-bust missing');
+          assert(/hd20-request-board\.js\?v=20261025-daily-monthly-leadtime/.test(html),'dashboard deploy cache-bust missing');
           assert(html.includes('web-validation-fixture.js?v=20261018-source-sync-1'),'fixture cache-bust missing');
           assert(board.includes('rqSourceColumns'),'vertical paired source chart missing');
           assert(board.includes('발굴 리소스 · 범례 정의'),'resource legend definitions missing');
