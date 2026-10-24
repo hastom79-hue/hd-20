@@ -19,8 +19,8 @@ function ownerOptions(){return '<option value="">선택</option>'+ownerNameList(
    세부위치 드롭다운이 실시간으로 갱신되도록 함(activity-workflow.js와 동일한 패턴). */
 window.addEventListener('hd20-master-factors-updated',()=>{
   const wSel=document.getElementById('amWorkplace'),sSel=document.getElementById('amSpot');
-  if(wSel){const cur=wSel.value;wSel.innerHTML=factorOptions('작업장');if([...wSel.options].some(o=>o.value===cur))wSel.value=cur}
-  if(sSel){const cur=sSel.value;sSel.innerHTML=factorOptions('세부위치');if([...sSel.options].some(o=>o.value===cur))sSel.value=cur}
+  if(wSel){const cur=wSel.value;wSel.innerHTML=factorOptions('작업장');if(cur&&!([...wSel.options].some(o=>o.value===cur)))wSel.add(new Option(cur+' (기존 입력값)',cur));if(cur)wSel.value=cur}
+  if(sSel){const cur=sSel.value;sSel.innerHTML=factorOptions('세부위치');if(cur&&!([...sSel.options].some(o=>o.value===cur)))sSel.add(new Option(cur+' (기존 입력값)',cur));if(cur)sSel.value=cur}
 });
 /* 등록자 드롭다운 소스(① 조직/팀 팀장 명단·운영정책 리더십 명단)가 바뀌면(두 곳 모두 저장 시
    hd20-policy-updated를 쏨) 즉시 반영되도록 함. */
