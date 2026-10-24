@@ -35,7 +35,7 @@ jobs:
             if not p.startswith(('http://','https://','//')) and not pathlib.Path(p).is_file():
               missing.append(p)
           if missing: sys.exit('Missing script refs: '+str(missing))
-          required=['울산캠퍼스 5S 활동관리 시스템','Audit 후 6개월 지속관리','정량축소·정위치 변경을 통한 공간 활용','인당 목표 미설정']
+          required=['울산캠퍼스 5S 활동관리 시스템','Audit 후 6개월 지속관리','이번 달 고도화 확정','인당 목표 미설정']
           for x in required:
             if x not in html: sys.exit('Required label missing: '+x)
           retired=['maturity-seq-action-link.js','demo-data-seed.js','action-demo-seed.js','audit-global-seed.js','emergency-ui-stabilizer-v2.js','register-tab-fill.js','audit-admin-import.js','crud-hotfix.js','action-button-hotfix.js']
