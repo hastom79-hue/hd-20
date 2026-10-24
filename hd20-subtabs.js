@@ -198,9 +198,9 @@ function renderAdvJudge(){
   const trueValue=v=>v===true||/^(Y|YES|충족|적합)$/i.test(txt(v));
   const falseValue=v=>v===false||/^(N|NO|미충족|부적합)$/i.test(txt(v));
   const flags=advCriteriaFlags(x);
-  const explicit=raw.some(v=>v!==undefined&&v!==null&&txt(v)!=='');
+
   const criteria=names.map((label,j)=>{
-    const matched=explicit?(trueValue(raw[j])?'충족':falseValue(raw[j])?'미충족':'확인 필요'):(Array.isArray(x.criteriaMatched)?(flags[j]?'충족':'미충족'):'개별 판정 미등록');
+    const matched=raw[j]!==undefined&&raw[j]!==null&&txt(raw[j])!==''?(trueValue(raw[j])?'충족':falseValue(raw[j])?'미충족':'확인 필요'):(Array.isArray(x.criteriaMatched)?(flags[j]?'충족':'미충족'):'개별 판정 미등록');
     const state=matched==='충족'||(!explicit&&flags[j]&&Array.isArray(x.criteriaMatched))?'충족':matched;
     return '<div style="padding:11px;border:1px solid #dce5eb;border-radius:8px"><div style="font-size:12px;font-weight:800">'+label+'</div><div style="font-weight:850;margin-top:6px;color:'+(state==='충족'?'#217450':state==='미충족'?'#b44739':'#697789')+'">'+state+'</div></div>';
   }).join('');
