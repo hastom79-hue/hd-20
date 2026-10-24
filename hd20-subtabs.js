@@ -341,7 +341,7 @@ function hideDuplicateWorkKpis(root){
  if(!root)return;
  // 집계 카드는 대시보드로 일원화하고 업무 화면은 입력·처리 도구 중심으로 구성.
  root.querySelectorAll(':scope > .awKpis,:scope > .awAuditLane,:scope > .auditTopTiles').forEach(el=>el.classList.add('hd20SubHidden'));
- if(!document.getElementById('hd20WorkKpiDedupStyle')){const st=document.createElement('style');st.id='hd20WorkKpiDedupStyle';st.textContent='#awAudit > .awKpis,#awAudit > .awAuditLane,#awAudit > .auditTopTiles,#awAction > .awKpis{display:none!important}';document.head.appendChild(st)}
+ if(!document.getElementById('hd20WorkKpiDedupStyle')){const st=document.createElement('style');st.id='hd20WorkKpiDedupStyle';st.textContent='#awAudit .awKpis,#awAudit .awAuditLane,#awAudit .auditTopTiles,#awAudit .auditDrillTiles,#awAudit .auditSummaryTiles,#awAction .awKpis{display:none!important}';document.head.appendChild(st)}
 }
 function applyAudit(sub){
  const root=$('#awAudit');if(!root)return;
