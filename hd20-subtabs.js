@@ -283,6 +283,56 @@ function renderAuditCloseEvaluation(host){
  const notDone=audits.length-conducted.length;
  host.innerHTML='<div class="awHead"><div><b>종료·재조치 판정현황</b><small>Audit 실시 여부와 최종판정을 분리 · 종료판정은 자동 생성하지 않습니다.</small></div></div><div class="awKpis"><div><small>Audit 미실시</small><b>'+notDone+'건</b></div><div><small>최종판정 입력</small><b>'+done+'건</b></div><div><small>최종판정 미입력</small><b>'+pending+'건</b></div></div><div class="awHint">최종판정 미입력은 Audit 실시 건만 집계합니다. 6개월 도래 여부 및 증빙은 개별 원천기록에서 확인해야 하며, 미입력·미실시는 정상으로 처리하지 않습니다.</div>';
 }
+
+function renderRetentionSampling(root){
+ let host=root.querySelector('#hd20RetentionSampling');
+ if(!host){host=document.createElement('section');host.id='hd20RetentionSampling';host.className='awCard';root.insertBefore(host,root.firstChild)}
+ const load=key=>{try{const v=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(v)?v:[]}catch{return[]}};
+ const save=(key,val)=>localStorage.setItem(key,JSON.stringify(val));
+ const activity=load('hd20GMES5SAutoImproveRawV1'),actions=load('hd20ActionCasesV2'),stored=load('hd20RetentionRandomChecksV1');
+ const done=x=>['완료','개선완료','조치완료','종결','확정완료'].includes(String(x.status||x.activityStatus||x.actionStatus||'').trim())||x.completed===true;
+ const excluded=x=>x.isDemo===true||x.isTest===true||['demo-seed','e2e-fixture','web-validation-fixture'].includes(String(x.source||''));
+ const keyOf=x=>String(x.improvementNo||x.improvementNumber||x.caseId||x.activityId||x.id||'').trim();
+ const entries=[...activity.filter(x=>done(x)&&!excluded(x)).map(x=>({x,kind:'자율개선'})),...actions.filter(x=>done(x)&&!excluded(x)).map(x=>({x,kind:'개선요청'}))].filter(e=>keyOf(e.x));
+ const distinct=new Map(entries.map(e=>[e.kind+':'+keyOf(e.x),e]));
+ const pool=[...distinct.values()];
+ const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const current=stored.filter(x=>x.result==='점검대기'||x.result==='적합'||x.result==='부적합').slice().reverse();
+ const cell=x=>'<td>'+esc(x)+'</td>';
+ const render=()=>{
+ const records=load('hd20RetentionRandomChecksV1').slice().reverse();
+ host.innerHTML='<div class="awHead"><div><b>개선활동 유지점검</b><small>완료된 자율개선·개선요청 사례를 무작위로 선정해 현재 유지상태를 확인합니다.</small></div></div>'+
+ '<div class="hd20RsToolbar"><label>추출 건수 <input type="number" min="1" max="30" value="5" data-rs-count></label><button type="button" data-rs-draw>랜덤 추출</button><span>추출 가능 '+pool.length+'건 (자율개선 '+pool.filter(e=>e.kind==='자율개선').length+' / 개선요청 '+pool.filter(e=>e.kind==='개선요청').length+')</span></div>'+
+ '<div class="hd20RsList">'+(records.length?records.map(r=>'<section class="hd20RsRow" data-rs-id="'+esc(r.id)+'"><div class="hd20RsInfo"><b>'+esc(r.kind)+' · '+esc(r.caseId)+'</b><span>'+esc(r.team||'팀 미지정')+' · '+esc(r.workplace||'작업장 미입력')+'</span><small>추출 '+esc(r.drawDate)+' · '+esc(r.result)+'</small></div><div class="hd20RsInput"><label>평가자<input data-rs-evaluator value="'+esc(r.evaluator||'')+'" '+(r.result!=='점검대기'?'disabled':'')+'></label><label>현장 판정<select data-rs-result '+(r.result!=='점검대기'?'disabled':'')+'><option value="">판정 선택</option><option value="적합">유지 적합</option><option value="부적합">유지 부적합</option></select></label><label>평가 의견<input data-rs-comment value="'+esc(r.comment||'')+'" '+(r.result!=='점검대기'?'disabled':'')+'></label>'+(r.result==='점검대기'?'<button data-rs-save>판정 저장</button>':'<strong>'+esc(r.result)+'</strong>')+'</div></section>').join(''):'<p class="awHint">아직 추출된 유지점검 대상이 없습니다.</p>')+'</div>';
+ host.querySelector('[data-rs-draw]').onclick=()=>{
+ const requested=Math.max(1,Math.min(30,Number(host.querySelector('[data-rs-count]').value)||5));
+ const rows=load('hd20RetentionRandomChecksV1'),existing=new Set(rows.filter(x=>x.result==='점검대기').map(x=>x.kind+':'+x.caseId));
+ const available=pool.filter(e=>!existing.has(e.kind+':'+keyOf(e.x)));
+ for(let i=available.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[available[i],available[j]]=[available[j],available[i]]}
+ const chosen=available.slice(0,requested);
+ if(!chosen.length){window.alert('추출 가능한 완료 사례가 없습니다.');return}
+ const now=new Date().toISOString();
+ chosen.forEach(e=>rows.push({id:'RET-'+now.replace(/[^0-9]/g,'')+'-'+rows.length,caseId:keyOf(e.x),kind:e.kind,team:e.x.team||e.x.teamName||e.x.ownerTeam||'',workplace:e.x.workplace||'',drawDate:now.slice(0,10),result:'점검대기',evaluator:'',comment:''}));
+ save('hd20RetentionRandomChecksV1',rows);render();
+ };
+ host.querySelectorAll('[data-rs-save]').forEach(btn=>btn.onclick=()=>{
+ const box=btn.closest('[data-rs-id]'),id=box.dataset.rsId,evaluator=box.querySelector('[data-rs-evaluator]').value.trim(),result=box.querySelector('[data-rs-result]').value,comment=box.querySelector('[data-rs-comment]').value.trim();
+ if(!evaluator||!result){window.alert('평가자와 유지 판정 결과를 입력하세요.');return}
+ const rows=load('hd20RetentionRandomChecksV1'),n=rows.findIndex(x=>x.id===id);if(n<0||rows[n].result!=='점검대기')return;
+ const r={...rows[n],evaluator,comment,result,evaluatedAt:new Date().toISOString()};
+ if(result==='부적합'){
+  const audits=load('hd20AuditRandomDrawsV1'),drawId='RET-AUDIT-'+r.id;
+  let draw=audits.find(x=>x.id===drawId);
+  if(!draw){draw={id:drawId,team:r.team,workplace:r.workplace,sourceCaseId:r.caseId,sourceStage:'RETENTION-RANDOM',auditActor:'5S 모듈 조직',auditDate:r.evaluatedAt.slice(0,10),auditResult:'부적합',auditor:evaluator,improvementRequest:'[유지점검 부적합] '+r.kind+' '+r.caseId+(comment?' · '+comment:'')};audits.unshift(draw);save('hd20AuditRandomDrawsV1',audits)}
+  try{r.actionId=window.HD20AuditClosedLoop?.syncAction?.(draw)||''}catch(err){console.error('[HD20 유지점검 이관]',err)}
+ }
+ rows[n]=r;save('hd20RetentionRandomChecksV1',rows);
+ window.dispatchEvent(new CustomEvent('hd20-audit-updated',{detail:{retention:r}}));render();
+ });
+ };
+ render();
+ if(!document.getElementById('hd20RetentionSamplingStyle')){const st=document.createElement('style');st.id='hd20RetentionSamplingStyle';st.textContent='#hd20RetentionSampling{margin:12px 0 20px}#hd20RetentionSampling .hd20RsToolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:12px 0}#hd20RetentionSampling .hd20RsToolbar input{width:66px;padding:8px}#hd20RetentionSampling button{padding:9px 14px;border:1px solid #bdd0df;background:#eef5fb;border-radius:7px;cursor:pointer;color:#173b55;font-weight:700}#hd20RetentionSampling .hd20RsRow{border:1px solid #dce6ee;border-radius:8px;padding:12px;margin:9px 0;background:white}#hd20RetentionSampling .hd20RsInfo{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px;font-size:13px}#hd20RetentionSampling .hd20RsInfo span,#hd20RetentionSampling .hd20RsInfo small{color:#62788a}#hd20RetentionSampling .hd20RsInput{display:flex;gap:10px;flex-wrap:wrap;align-items:end}#hd20RetentionSampling .hd20RsInput label{display:flex;flex-direction:column;gap:5px;font-size:12px;color:#63788b}#hd20RetentionSampling .hd20RsInput input,#hd20RetentionSampling .hd20RsInput select{padding:9px;border:1px solid #cbdbe5;border-radius:6px;max-width:240px}@media(max-width:700px){#hd20RetentionSampling .hd20RsInput label{width:100%}#hd20RetentionSampling .hd20RsInput input{max-width:100%;width:100%}}';document.head.appendChild(st)}
+}
 function applyAudit(sub){
  const root=$('#awAudit');if(!root)return;
  root.dataset.subview=sub;showAll(root);show($('.awFlow',root),false);show($('.awAuditLane',root),false);
@@ -291,7 +341,7 @@ function applyAudit(sub){
  if(sub==='retention'&&closeEval?.dataset.hd20Fallback==='true')renderAuditCloseEvaluation(closeEval);
  // 첫 화면에서 Risk 추출과 실제 현장점검을 함께 수행한다.
  show(draw,sub==='draw');show(batch,sub==='draw');show(closed,sub==='draw');
- show(ongoing,sub==='ongoing');show(closeEval,sub==='retention');
+ show(ongoing,false);if(sub==='ongoing')renderRetentionSampling(root);else show(root.querySelector('#hd20RetentionSampling'),false);show(closeEval,sub==='retention');
  let bar=root.querySelector('#hd20AuditWorkGuide');
  if(!bar){bar=document.createElement('div');bar.id='hd20AuditWorkGuide';bar.className='hd20AuditWorkGuide';(root.querySelector('.awAuditLane')||root.firstElementChild)?.insertAdjacentElement('beforebegin',bar)}
  const guide={draw:['01 · Audit 실시','Risk 대상선정과 현장 Audit을 한 화면에서 관리'],ongoing:['02 · 유지점검','실시일부터 6개월 동안 미점검·유지미흡·재발을 추적'],retention:['03 · 결과·재조치','최종 판정 미입력과 재조치 필요 사례를 구분']}[sub];
