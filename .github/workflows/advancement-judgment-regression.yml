@@ -88,13 +88,16 @@ jobs:
             await page.screenshot({path:'advancement-regression.png',fullPage:true});
             console.log('ADVANCEMENT_REGRESSION_PASS',JSON.stringify({tabs:nav.length,verified:'ADV-REG-PASS',rejected:2,refreshPersisted:true}));
             await browser.close();
-          })().catch(e=>{console.error(e);process.exit(1)});
+          })().catch(e=>{console.error('ADVANCEMENT_REGRESSION_FAILED',e.stack||String(e));process.exitCode=1});
           NODE
-          node adv-check.cjs
+          node adv-check.cjs 2>&1 | tee advancement-regression.log
+          test ${PIPESTATUS[0]} -eq 0
       - name: Upload regression screenshot
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: advancement-regression-evidence
-          path: advancement-regression.png
+          path: |
+            advancement-regression.png
+            advancement-regression.log
           if-no-files-found: ignore
