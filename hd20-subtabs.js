@@ -277,9 +277,11 @@ function ensureAuditCloseEvaluation(root){
 }
 function renderAuditCloseEvaluation(host){
  const audits=readStore('hd20AuditRandomDrawsV1');
- const pending=audits.filter(x=>!txt(x.finalEvaluation)).length;
- const done=audits.length-pending;
- host.innerHTML='<div class="awHead"><div><b>종료·재조치 판정현황</b><small>기존 Audit 기록 기준 · 종료판정은 자동 생성하지 않습니다.</small></div></div><div class="awKpis"><div><small>Audit 기록</small><b>'+audits.length+'건</b></div><div><small>종료평가 입력</small><b>'+done+'건</b></div><div><small>종료평가 미입력</small><b>'+pending+'건</b></div></div><div class="awHint">최종 적합·부적합 판정과 재조치 등록은 원천 Audit 기록에서 확인해야 합니다. 미입력 건은 완료로 간주하지 않습니다.</div>';
+ const conducted=audits.filter(x=>txt(x.auditDate));
+ const pending=conducted.filter(x=>!txt(x.finalEvaluation)).length;
+ const done=conducted.length-pending;
+ const notDone=audits.length-conducted.length;
+ host.innerHTML='<div class="awHead"><div><b>종료·재조치 판정현황</b><small>Audit 실시 여부와 최종판정을 분리 · 종료판정은 자동 생성하지 않습니다.</small></div></div><div class="awKpis"><div><small>Audit 미실시</small><b>'+notDone+'건</b></div><div><small>최종판정 입력</small><b>'+done+'건</b></div><div><small>최종판정 미입력</small><b>'+pending+'건</b></div></div><div class="awHint">최종판정 미입력은 Audit 실시 건만 집계합니다. 6개월 도래 여부 및 증빙은 개별 원천기록에서 확인해야 하며, 미입력·미실시는 정상으로 처리하지 않습니다.</div>';
 }
 function applyAudit(sub){
  const root=$('#awAudit');if(!root)return;
