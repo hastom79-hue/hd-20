@@ -107,7 +107,7 @@ jobs:
             if(monthly.some(n=>n<1))throw Error('Missing completed activity in current-year months '+JSON.stringify(monthly));
             result.monthlyDemoCounts=monthly;
             // Verify tab ownership: only the selected section's main target is visible.
-            const ownership=[['summary','#hd20DashboardPriority'],['improve','#hd20ImproveBoard'],['request','#hd20RequestBoard'],['execution','#hd20V3Execution'],['analysis','#hd20OpsTrend']];
+            const ownership=[['summary','#hd20DashboardPriority'],['improve','#hd20ImproveBoard'],['request','#hd20RequestBoard'],['execution','#hd20V3Execution'],['map','#hd20MaturityMapTab']];
             result.tabIsolation={};
             for(const [key] of ownership){
               await page.locator('#hd20DashboardSectionTabs button[data-dashboard-section="'+key+'"]').click();
@@ -124,7 +124,7 @@ jobs:
             }
             // Verify specialist tabs are reachable without mutating operational data.
             result.specialist={};
-            for(const [key,selector,file] of [['execution','#hd20V3Execution','04-execution'],['analysis','#hd20OpsTrend','05-analysis']]){
+            for(const [key,selector,file] of [['execution','#hd20V3Execution','04-execution'],['map','#hd20MaturityMapTab','05-map']]){
               await page.locator('#hd20DashboardSectionTabs button[data-dashboard-section="'+key+'"]').click();
               await page.waitForTimeout(500);
               const state=await page.evaluate(sel=>{
