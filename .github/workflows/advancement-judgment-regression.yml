@@ -85,8 +85,16 @@ jobs:
             await page.locator('#hd20AdvJudgeOperational [data-case-index]').filter({hasText:'검증 대상 3조건'}).click();
             assert.equal(await page.locator('#hd20AdvSelectedCase [data-case-verify]').count(),0,'already verified case cannot be resubmitted');
             assert.deepEqual(errors,[],'browser errors');
+            await page.screenshot({path:'advancement-regression.png',fullPage:true});
             console.log('ADVANCEMENT_REGRESSION_PASS',JSON.stringify({tabs:nav.length,verified:'ADV-REG-PASS',rejected:2,refreshPersisted:true}));
             await browser.close();
           })().catch(e=>{console.error(e);process.exit(1)});
           NODE
           node adv-check.cjs
+      - name: Upload regression screenshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: advancement-regression-evidence
+          path: advancement-regression.png
+          if-no-files-found: ignore
