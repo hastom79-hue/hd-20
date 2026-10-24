@@ -31,7 +31,7 @@ function createFollowupAction(draw,reason){
  if(linked.some(a=>!done(a)))return null;
  const key='AUDIT-FOLLOWUP-'+id.replace(/[^a-zA-Z0-9가-힣_-]/g,'').slice(-30);
  if(actions.some(a=>a.id===key))return null;
- const at=seoulKey(),record={id:key,date:at,registeredAt:at,team:draw.team||'미지정',workplace:txt(draw.workplace),problem:'[Audit 재조치] '+reason,source:'5S Audit 종료평가',sourceCaseId:id,sourceStage:'AUDIT-FOLLOWUP',auditDate:draw.auditDate,auditActor:draw.auditActor||'',status:'조치대기',effectVerified:false,recurrence:false,autoCreated:true,created:new Date().toISOString()};
+ const at=seoulKey(),record={id:key,date:at,registeredAt:at,team:draw.team||'미지정',workplace:txt(draw.workplace),owner:txt(draw.auditor),registeredBy:txt(draw.auditor),registrant:txt(draw.auditor),auditor:txt(draw.auditor),problem:'[Audit 재조치] '+reason,source:'5S Audit 종료평가',sourceCaseId:id,sourceStage:'AUDIT-FOLLOWUP',auditDate:draw.auditDate,auditActor:draw.auditActor||'',status:'조치대기',effectVerified:false,recurrence:false,autoCreated:true,created:new Date().toISOString()};
  actions.unshift(record);localStorage.setItem(ACTION_KEY,JSON.stringify(actions));
  window.dispatchEvent(new CustomEvent('hd20-action-updated',{detail:{added:1,source:'audit-followup'}}));
  return record.id;
