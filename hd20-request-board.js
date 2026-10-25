@@ -551,7 +551,7 @@ function render(box){
   const completedTrend=Array.from({length:12},(_,i)=>trendScope.filter(c=>isDone(c)&&String(c.doneDate||'').slice(0,7)===monthKey(i+1)).length);
   const mean3=completedTrend.map((v,i)=>{const month=monthKey(i+1),today=String(D.today||'').slice(0,7);if(today&&month>today)return null;return Math.round(completedTrend.slice(Math.max(0,i-2),i+1).reduce((a,b)=>a+b,0)/Math.min(3,i+1)*10)/10});
   const monthEnd=m=>new Date(Date.UTC(trendYear,m,0)).toISOString().slice(0,10);
-  const pendingTrend=Array.from({length:12},(_,i)=>{const cut=monthEnd(i+1),today=String(D.today||'').slice(0,10);if(today&&cut.slice(0,7)>today.slice(0,7))return null;return trendScope.filter(c=>/^\d{4}-\d{2}-\d{2}$/.test(String(c.date||'').slice(0,10))&&String(c.date).slice(0,10)<=cut&&(!isDone(c)||!c.doneDate||String(c.doneDate).slice(0,10)>cut)).length});
+  const pendingTrend=Array.from({length:12},(_,i)=>{const monthCut=monthEnd(i+1),today=String(D.today||'').slice(0,10);if(today&&monthCut.slice(0,7)>today.slice(0,7))return null;const cut=today&&monthCut>today?today:monthCut;return trendScope.filter(c=>/^\d{4}-\d{2}-\d{2}$/.test(String(c.date||'').slice(0,10))&&String(c.date).slice(0,10)<=cut&&(!isDone(c)||!c.doneDate||String(c.doneDate).slice(0,10)>cut)).length});
   const makeTrend=(bars,line,label)=>{const W=1140,H=236,pad=52,chartH=170,slot=(W-2*pad)/12,rawMax=Math.max(0,...bars.flat(),...line.filter(v=>v!==null&&Number.isFinite(Number(v))));
     const tickStep=Math.max(1,Math.ceil(rawMax/4)),max=tickStep*4;
     const scale=v=>chartH*(Number(v)||0)/max;
