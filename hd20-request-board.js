@@ -539,6 +539,23 @@ function render(box){
   const delayBands=[overCases.filter(c=>delayDays(c,D.today)<=7).length,overCases.filter(c=>delayDays(c,D.today)>=8&&delayDays(c,D.today)<=14).length,overCases.filter(c=>delayDays(c,D.today)>=15).length];
   const kpi=(label,value,detail,risk=false)=>'<div class="rqKpi'+(risk?' risk':'')+'"><small>'+label+'</small><b>'+value+'</b><span class="rqKpiHint">'+detail+'</span></div>';
   const section=(title,meta,content,key)=>'<section class="ibPanel"><div class="ibHead"><span>'+title+'</span><em>'+meta+'</em>'+(key?'<button type="button" class="ibEv" data-evk="'+key+'">근거 데이터</button>':'')+'</div><div class="ibBody">'+content+'</div></section>';
+  // 실행·유지의 핵심 추이를 개선요청 종합 하단에도 제공. 팀 선택 시 해당 팀 원천만 집계.
+  const trendScope=D.cases.filter(c=>(!S.team||c.team===S.team)&&(!S.source||sourceOf(c)===S.source));
+  const trendYear=Number(S.year),monthKey=n=>S.year+'-'+String(n).padStart(2,'0');
+  const registeredTrend=Array.from({length:12},(_,i)=>trendScope.filter(c=>String(c.date||'').slice(0,7)===monthKey(i+1)).length);
+  const completedTrend=Array.from({length:12},(_,i)=>trendScope.filter(c=>isDone(c)&&String(c.doneDate||'').slice(0,7)===monthKey(i+1)).length);
+  const mean3=completedTrend.map((v,i)=>Math.round(completedTrend.slice(Math.max(0,i-2),i+1).reduce((a,b)=>a+b,0)/(Math.min(3,i+1))*10)/10);
+  const monthEnd=m=>new Date(Date.UTC(trendYear,m,0)).toISOString().slice(0,10);
+  const pendingTrend=Array.from({length:12},(_,i)=>{const cut=monthEnd(i+1);return trendScope.filter(c=>String(c.date||'').slice(0,10)<=cut&&(!isDone(c)||!c.doneDate||String(c.doneDate).slice(0,10)>cut)).length});
+  const makeTrend=(bars,line,label)=>{const W=1140,H=236,pad=38,chartH=170,slot=(W-2*pad)/12,max=Math.max(1,...bars.flat(),...line);
+    const scale=v=>chartH*(Number(v)||0)/max;
+    const rects=Array.from({length:12},(_,i)=>bars.map((v,k)=>{const width=Math.min(22,slot/(bars.length+0.8)),left=pad+i*slot+slot/2-(bars.length*width+(bars.length-1)*4)/2+k*(width+4),height=scale(v[i]);return '<rect x="'+left.toFixed(1)+'" y="'+(chartH+12-height).toFixed(1)+'" width="'+width.toFixed(1)+'" height="'+height.toFixed(1)+'" fill="'+(k?'#23857d':'#84a9bd')+'"><title>'+(i+1)+'월 '+label[k]+' '+v[i]+'건</title></rect>'+(v[i]?'<text x="'+(left+width/2).toFixed(1)+'" y="'+(chartH+8-height).toFixed(1)+'" text-anchor="middle" font-size="10" fill="#23465b">'+v[i]+'</text>':'')}).join('')).join('');
+    const linePath=line.length?'<polyline fill="none" stroke="#e29b25" stroke-width="2.4" points="'+line.map((v,i)=>(pad+i*slot+slot/2).toFixed(1)+','+(chartH+12-scale(v)).toFixed(1)).join(' ')+'"/>':'';
+    const ticks=Array.from({length:12},(_,i)=>'<text x="'+(pad+i*slot+slot/2).toFixed(1)+'" y="210" text-anchor="middle" font-size="12" fill="#60788b">'+(i+1)+'월</text>').join('');
+    return '<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+label.join('·')+' 월별 그래프" style="width:100%;height:auto;display:block"><line x1="'+pad+'" y1="'+(chartH+12)+'" x2="'+(W-pad)+'" y2="'+(chartH+12)+'" stroke="#d9e4eb"/>'+rects+linePath+ticks+'</svg><div style="display:flex;gap:20px;flex-wrap:wrap;font-size:12px;color:#536c7d"><span>■ '+label[0]+'</span>'+(bars.length>1?'<span style="color:#23857d">■ '+label[1]+'</span>':'')+'<span style="color:#c88b21">● '+(bars.length>1?'미완료 잔량':'3개월 이동평균')+'</span></div>'};
+  const completionTrendChart=makeTrend([completedTrend],mean3,['완료 건수']);
+  const throughputTrendChart=makeTrend([registeredTrend,completedTrend],pendingTrend,['등록 건수','완료 건수']);
+  const trendLabel=(S.team||'전체 팀')+' · '+S.year+'년 · 1~12월';
   const filters='<div class="ibBar"><label>연도 <select data-f="year">'+D.years.map(y=>'<option'+(y===S.year?' selected':'')+'>'+y+'</option>').join('')+'</select></label><label>월 <input data-f="month" type="number" min="1" max="12" step="1" inputmode="numeric" placeholder="전체" aria-label="조회 월 직접 입력 (1~12, 공란은 연간 전체)" title="1~12 입력 · 공란은 연간 전체" value="'+(S.month?Number(S.month):'')+'" style="width:66px;min-width:66px;box-sizing:border-box;text-align:center"></label><label>요청출처 <select data-f="source">'+opt(SOURCES,S.source)+'</select></label><label>조치대응팀 <select data-f="team">'+opt(D.teams,S.team)+'</select></label><label>진행상태 <select data-f="status">'+opt(['조치대기','진행중','완료','기한초과'],S.status)+'</select></label><label>재발 <select data-f="roll"><option value="">전체</option><option value="Y"'+(S.roll==='Y'?' selected':'')+'>있음</option><option value="N"'+(S.roll==='N'?' selected':'')+'>없음</option></select></label><button type="button" data-rq="go">조회</button><button type="button" class="alt" data-rq="reset">초기화</button><span class="sp"></span><button type="button" class="alt" data-rq="print">인쇄</button><button type="button" class="alt" data-rq="csv">엑셀 다운로드</button></div>';
   box.innerHTML='<div class="ibTitle"><h2>개선요청 종합현황</h2></div><p class="ibNote">'+esc(periodLabel)+' · 요청 발생 · 조치 이행 · 지연 위험 · 팀별 대응력</p>'
     +filters
@@ -576,6 +593,10 @@ function render(box){
     +'<div class="ibRow rqManageRow rqTeamCompare" style="grid-template-columns:minmax(0,1fr)">'
     +section('03. 조치대응팀별 이행성과','완료 / 미완료 · 팀별 건수',teamOrderControl+teamRateBars+'<details class="rqTeamDetail"><summary>팀별 상세 실적 펼치기</summary><div class="rqScroll">'+teamGrid+'</div></details>','c2')
 
+    +'</div>'
+    +'<div class="ibRow" style="grid-template-columns:minmax(0,1fr)">'
+    +section('04. 월별 실행 완료 건수 및 3개월 이동평균',trendLabel+' · 완료일 기준',completionTrendChart)
+    +section('05. 월별 개선조치 등록·완료 및 미완료 잔량',trendLabel+' · 등록일/완료일 기준',throughputTrendChart)
     +'</div>'
     +'<div class="ibRow rqPrintSkip"><button type="button" class="rqDetailOpenBtn" data-open-detail="1">📋 개선요청 상세 목록 열기 (전체 '+actionAll.length+'건)</button></div>'
     +'<p class="rqCaveat">※ 요청출처는 리더십(공장장)·5S모듈·생산혁신팀(HDPS파트) 3종입니다. 원천에 출처 필드가 없는 경우 일부 출처는 등록자 및 Audit 연계 정보로 추정됩니다. 완료일이 없는 완료 건은 월별 완료 추이에서 제외되며 총 완료 건수에는 포함됩니다.</p>';
