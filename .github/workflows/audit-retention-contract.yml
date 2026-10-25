@@ -1,0 +1,40 @@
+name: HD20 Audit retention workflow contract
+on:
+  push:
+    paths:
+      - 'hd20-subtabs.js'
+      - 'audit-closed-loop-workflow.js'
+      - 'hd20-policy-config.js'
+      - '.github/workflows/audit-retention-contract.yml'
+  workflow_dispatch:
+jobs:
+  audit-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Audit retention source and state invariants
+        run: |
+          node --check hd20-subtabs.js
+          node --check audit-closed-loop-workflow.js
+          node --check hd20-policy-config.js
+          node <<'NODE'
+          const fs=require('fs'),assert=require('assert/strict');
+          const audit=fs.readFileSync('hd20-subtabs.js','utf8');
+          const closed=fs.readFileSync('audit-closed-loop-workflow.js','utf8');
+          const policy=fs.readFileSync('hd20-policy-config.js','utf8');
+          const checks={
+            'master-only retention gate':audit.includes('window.HD20MasterAuth?.canEvaluateRetention?.()===true'),
+            'policy-driven draw interval':audit.includes('policy.intervalDays'),
+            'policy-driven sample size':audit.includes('policy.sampleCount'),
+            'original source case linked':audit.includes('originCaseId:r.caseId'),
+            'nonconformance blocks unlinked verdict':audit.includes('개선조치 등록 확인에 실패했습니다.'),
+            'action closure prerequisite':audit.includes('개선조치 완료 후 재점검할 수 있습니다.'),
+            'passing recheck required for closure':audit.includes("closedAt:result==='적합'?at:''"),
+            'failed recheck creates follow-up action':audit.includes("sourceStage:'RETENTION-RECHECK'"),
+            'recheck history retained':audit.includes('recheckHistory:history'),
+            'recheck UI updates on action change':audit.includes("window.addEventListener('hd20-action-updated'"),
+            'Audit action is linked to original auditor':closed.includes("registeredBy:String(draw.auditor||'').trim()"),
+            'master policy stores retention settings':policy.includes('retentionCheck:')
+          };
+          for(const [name,ok] of Object.entries(checks)){console.log((ok?'PASS':'FAIL')+' '+name);assert(ok,name)}
+          NODE
