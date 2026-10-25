@@ -355,7 +355,7 @@ function data(){
   const years=[...new Set(cases.map(c=>String(c.date||'').slice(0,4)))].filter(y=>/^\d{4}$/.test(y)).sort();
   return{cases,teams,years,today:K?.seoulDateKey?.()||new Date().toISOString().slice(0,10)};
 }
-const mo=c=>+String(c.date||'').slice(5,7),isDone=c=>{const v=String(c.status||c.activityStatus||c.actionStatus||'').trim();return !/미완료|미확정|미종료|미종결|완료대기|완료예정|진행|대기|보완|반려|취소/i.test(v)&&/완료|확정|종료|종결|close|done/i.test(v)},isOverdue=(c,today)=>!isDone(c)&&!!c.due&&c.due<today;
+const mo=c=>+String(c.date||'').slice(5,7),isDone=c=>{const v=String(c.status||c.activityStatus||c.actionStatus||'').trim();return !/미완료|미확정|미종료|미종결|완료대기|완료예정|진행|대기|보완|반려|취소/i.test(v)&&/완료|확정|종료|종결|close|done/i.test(v)},isOverdue=(c,today)=>{const due=String(c.due||'').slice(0,10),day=String(today||'').slice(0,10);return !isDone(c)&&/^\d{4}-\d{2}-\d{2}$/.test(due)&&/^\d{4}-\d{2}-\d{2}$/.test(day)&&due<day};
 const dayDiff=(a,b)=>Math.round((new Date(b)-new Date(a))/86400000);
 function delayDays(c,today){if(!c.due)return null;if(isDone(c)){if(!c.doneDate)return null;const d=dayDiff(c.due,c.doneDate);return d>0?d:null}if(isOverdue(c,today))return dayDiff(c.due,today);return null}
 function filt(D,{ignoreYear=false,ignoreMonth=false}={}){
