@@ -441,6 +441,15 @@ function select(area,sub){document.getElementById('hd20AdvBack')?.remove();if(ar
   try{const u=new URL(location.href);if(u.searchParams.get('area')===area)u.searchParams.set('sub',sub);history.replaceState(null,'',u)}catch{}}
 function syncArea(area){
   document.getElementById('hd20AdvBack')?.remove();
+  /* Area isolation: an advancement trend previously sets bottomGrid display:grid!important. */
+  const advancementTrend=document.querySelector('.bottomGrid');
+  if(advancementTrend&&area!=='advancement'){
+    advancementTrend.classList.remove('hd20AdvancementTrend');
+    advancementTrend.classList.add('hd20SubHidden');
+    advancementTrend.style.setProperty('display','none','important');
+    advancementTrend.style.removeProperty('visibility');
+  }
+  if(advancementTrend&&area==='advancement')advancementTrend.style.removeProperty('display');
   if(area==='dashboard'){render('dashboard');return;}
   if(area==='advancement'&&window.__HD20_RESTORE_SUB&&['analysis','detail','process'].includes(window.__HD20_RESTORE_SUB))window.__HD20_RESTORE_SUB='judge';
   if(area==='advancement'&&window.__HD20_RESTORE_SUB==='map')window.__HD20_RESTORE_SUB='trend';
@@ -460,7 +469,7 @@ function syncArea(area){
   }
   [ensure(),ensurePurpose(),$('#hd20OpsMetrics')].forEach(el=>el&&el.style.removeProperty('display'));
   state.sub=(MAP[area]||[])[0]?.[0]||'';state.area=area;const bar=ensure(),items=MAP[area]||[];bar.innerHTML=items.map(([k,n])=>`<button type="button" data-sub="${k}" class="${k===state.sub?'on':''}">${n}</button>`).join('');$$('button',bar).forEach(b=>b.onclick=()=>select(area,b.dataset.sub));renderPurpose(area,state.sub);requestAnimationFrame(()=>apply(area,state.sub))}
-function bindMain(){const nav=$('.beginnerNav');if(!nav)return;nav.addEventListener('click',e=>{const b=e.target.closest('button[data-key]');if(!b)return;setTimeout(()=>syncArea(b.dataset.key),60)});window.addEventListener('hd20-nav-area-changed',e=>{const area=e.detail?.area;if(!MAP[area]){[ensure(),ensurePurpose(),$('#hd20OpsMetrics')].forEach(el=>el&&el.style.setProperty('display','none','important'));return}if(state.area===area&&$('#hd20PurposePanel')&&getComputedStyle(ensure()).display!=='none')return;setTimeout(()=>syncArea(area),0)})}
+function bindMain(){const nav=$('.beginnerNav');if(!nav)return;nav.addEventListener('click',e=>{const b=e.target.closest('button[data-key]');if(!b)return;setTimeout(()=>syncArea(b.dataset.key),60)});window.addEventListener('hd20-nav-area-changed',e=>{const area=e.detail?.area;if(!MAP[area]){setTimeout(()=>syncArea(area),0);return}if(state.area===area&&$('#hd20PurposePanel')&&getComputedStyle(ensure()).display!=='none')return;setTimeout(()=>syncArea(area),0)})}
 function refreshActiveAdvancement(){if(state.area!=='advancement')return;if(state.sub==='judge'){renderAdvJudge();installAdvJudgeTools()}else if(state.sub==='analysis')renderAdvAnalysis();else if(state.sub==='detail')renderAdvDetail();else if(state.sub==='process')renderAdvProcess();else if(state.sub==='standard')renderAdvStandard();else if(state.sub==='map')window.HD20_MATURITY_MAP_TAB?.render?.();else if(state.sub==='judge')renderAdvJudge()}
 function boot(){ensureAdvancementUiStyle();ensure();ensureGridModal();bindMain();window.addEventListener('hd20-action-updated',()=>{if(state.area==='action'&&state.sub==='verify')renderActionVerify($('#awAction'))});['hd20-kpi-source-updated','hd20-gmes-5s-imported','hd20-gmes-5s-judged','hd20-refresh-requested'].forEach(e=>window.addEventListener(e,()=>setTimeout(refreshActiveAdvancement,0)));setTimeout(()=>render(window.HD20_NAV?.active?.()||'dashboard'),120)}
 window.HD20_SUBNAV={render,select,state:()=>({...state}),map:MAP,contracts:CONTRACT,purpose:CONTRACT,contractMap:(area)=>area?{[area]:MAP[area]}:MAP,contractPurpose:(area)=>area?Object.fromEntries(Object.entries(CONTRACT).filter(([k])=>k.startsWith(area+'.'))):CONTRACT,openGrid:()=>openGrid(state.area,state.sub),advancementType,advancementCandidate,advancementConfirmed};document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot,{once:true}):boot();
