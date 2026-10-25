@@ -288,7 +288,7 @@ function renderRetentionSampling(root){
  let host=root.querySelector('#hd20RetentionSampling');
  if(!host){host=document.createElement('section');host.id='hd20RetentionSampling';host.className='awCard';root.insertBefore(host,root.firstChild)}
  const load=key=>{try{const v=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(v)?v:[]}catch{return[]}};
- const save=(key,val)=>localStorage.setItem(key,JSON.stringify(val));
+ const save=(key,val)=>{const raw=JSON.stringify(val);localStorage.setItem(key,raw);if(localStorage.getItem(key)!==raw)throw new Error('유지점검 저장 검증 실패: '+key)};
  const activity=load('hd20GMES5SAutoImproveRawV1'),actions=load('hd20ActionCasesV2'),stored=load('hd20RetentionRandomChecksV1');
  const done=x=>['완료','개선완료','조치완료','종결','확정완료','종료','종결완료'].includes(String(x.status||x.activityStatus||x.actionStatus||'').trim())||x.completed===true;
  const excluded=x=>x.isDemo===true||x.isTest===true||['demo-seed','e2e-fixture','web-validation-fixture'].includes(String(x.source||''));
