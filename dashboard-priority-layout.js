@@ -109,6 +109,15 @@ function render(){
   groups.innerHTML=`<div class="httGrid">${html}</div>`;
   groups.querySelectorAll('[data-group-tab]').forEach(btn=>btn.addEventListener('click',()=>gotoTab(btn.dataset.groupTab)));
 }
-function boot(){removeRetiredStandardTrendLabel();render();setTimeout(removeRetiredStandardTrendLabel,500);setTimeout(removeRetiredStandardTrendLabel,1800);['hd20-kpi-source-updated','hd20-gmes-5s-imported','hd20-gmes-5s-judged','hd20-audit-updated','hd20-action-updated'].forEach(ev=>window.addEventListener(ev,()=>setTimeout(render,0)))}
-window.HD20DashboardPriority={render,KPI,GROUPS};document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot,{once:true}):boot();
+function safeRender(){
+ try{render()}catch(e){console.error('[HD20 종합현황] 전체 KPI 렌더링 실패',e)}
+ const root=document.getElementById(ID),groups=root?.querySelector('.hd20DashboardPriorityGroups');
+ if(!root||!groups||groups.querySelectorAll('[data-kpi]').length===KPI.length)return;
+ let op={};try{op=window.HD20KPIData?.operational?.(window.HD20KPIData?.snapshot?.())||{}}catch(e){console.error('[HD20 종합현황] 복구 데이터 확인 실패',e)}
+ groups.innerHTML='<div class="httGrid" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">'+KPI.map(x=>'<article class="hd20HealthTrendCard" data-kpi="'+x.key+'"><h4>'+x.label+'</h4><div class="httBig"><b>'+fmt(op[x.key],x.key)+'</b></div><div class="httFoot"><p>'+x.hint+'</p><button type="button" data-group-tab="'+x.tab+'">원인 확인 →</button></div></article>').join('')+'</div>';
+ groups.querySelectorAll('[data-group-tab]').forEach(btn=>btn.addEventListener('click',()=>gotoTab(btn.dataset.groupTab)));
+ console.warn('[HD20 종합현황] KPI 기본 카드 6개 복구 표시');
+}
+function boot(){removeRetiredStandardTrendLabel();safeRender();setTimeout(safeRender,350);setTimeout(safeRender,1400);setTimeout(removeRetiredStandardTrendLabel,1800);['hd20-kpi-source-updated','hd20-gmes-5s-imported','hd20-gmes-5s-judged','hd20-audit-updated','hd20-action-updated'].forEach(ev=>window.addEventListener(ev,()=>setTimeout(safeRender,0)))}
+window.HD20DashboardPriority={render:safeRender,KPI,GROUPS};document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot,{once:true}):boot();
 })();
