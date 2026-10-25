@@ -351,7 +351,7 @@ function css(){const prior=document.getElementById(ID+'Style');if(prior)prior.re
 @media print{#${ID} .ibBar{display:none}}
 @media(max-width:1100px){#${ID} .r1,#${ID} .rqManageRow{grid-template-columns:1fr}}`;document.head.appendChild(s)}
 function data(){
-  const K=window.HD20KPIData,rawCases=K?.actionCases?.()||[],cases=rawCases.map(c=>({...c,date:c.date||c.registeredAt||c.createdAt||c.regDate||'',due:c.due||c.dueDate||'',doneDate:c.doneDate||c.completedAt||''})),M=window.HD20ProductionTeamMaster,masterTeams=M?.teamNames?.()||[],teams=[...new Set([...masterTeams,...cases.map(c=>c.team).filter(Boolean)])];
+  const K=window.HD20KPIData,rawCases=K?.actionCases?.()||[],cases=rawCases.map(c=>({...c,date:c.date||c.registeredAt||c.createdAt||c.regDate||'',due:c.due||c.dueDate||'',doneDate:c.doneDate||c.completedAt||'',recurrence:c.recurrence===true||/^(재발|발생|true|1|Y|yes)$/i.test(String(c.recurrenceState??c.recurrent??c['재발여부']??c.recurrence??'').trim())})),M=window.HD20ProductionTeamMaster,masterTeams=M?.teamNames?.()||[],teams=[...new Set([...masterTeams,...cases.map(c=>c.team).filter(Boolean)])];
   const years=[...new Set(cases.flatMap(c=>[String(c.date||'').slice(0,4),String(c.doneDate||'').slice(0,4)]))].filter(y=>/^\d{4}$/.test(y)).sort();
   return{cases,teams,years,today:K?.seoulDateKey?.()||new Date().toISOString().slice(0,10)};
 }
