@@ -323,12 +323,12 @@ function renderRetentionSampling(root){
  const action=linkedAction(rows[n]);if(!action||!/완료|종결|close|done/i.test(String(action.status||''))){window.alert('개선조치 완료 후 재점검할 수 있습니다.');return}
  const comment=box.querySelector('[data-rs-recheck-comment]')?.value.trim()||'',result=btn.dataset.rsRecheck;
  if(!comment){window.alert('재점검 현장 확인 의견을 입력하세요.');return}
- const at=new Date().toISOString(),record={at,result,comment,actionId:action.id};
+ const at=new Date().toISOString(),actionDay=seoulDay(),record={at,result,comment,actionId:action.id};
  let followupActionId='';
  if(result==='부적합'){
   const actions=load('hd20ActionCasesV2'),idNext='AUTO-RETENTION-RECHECK-'+rows[n].id+'-'+((rows[n].recheckHistory||[]).length+1);
   let next=actions.find(a=>a.id===idNext);
-  if(!next){next={id:idNext,date:at.slice(0,10),registeredAt:at.slice(0,10),team:rows[n].team,workplace:rows[n].workplace,owner:rows[n].evaluator,registeredBy:rows[n].evaluator,registrant:rows[n].evaluator,auditor:rows[n].evaluator,problem:'[유지점검 재점검 부적합] '+rows[n].kind+' '+rows[n].caseId+' · '+comment,source:'5S 유지점검 재점검',sourceCaseId:rows[n].id,sourceStage:'RETENTION-RECHECK',originCaseId:rows[n].caseId,previousActionId:action.id,status:'조치대기',effectVerified:false,autoCreated:true};actions.unshift(next);try{save('hd20ActionCasesV2',actions)}catch(e){window.alert('재조치 등록 실패: 재점검 판정은 저장하지 않았습니다.');return}}
+  if(!next){next={id:idNext,date:actionDay,registeredAt:actionDay,team:rows[n].team,workplace:rows[n].workplace,owner:rows[n].evaluator,registeredBy:rows[n].evaluator,registrant:rows[n].evaluator,auditor:rows[n].evaluator,problem:'[유지점검 재점검 부적합] '+rows[n].kind+' '+rows[n].caseId+' · '+comment,source:'5S 유지점검 재점검',sourceCaseId:rows[n].id,sourceStage:'RETENTION-RECHECK',originCaseId:rows[n].caseId,previousActionId:action.id,status:'조치대기',effectVerified:false,autoCreated:true};actions.unshift(next);try{save('hd20ActionCasesV2',actions)}catch(e){window.alert('재조치 등록 실패: 재점검 판정은 저장하지 않았습니다.');return}}
   followupActionId=next.id;
   window.dispatchEvent(new CustomEvent('hd20-action-updated',{detail:{added:1,source:'retention-recheck'}}));
  }
@@ -356,8 +356,8 @@ function renderRetentionSampling(root){
  if(result==='부적합'){
   const audits=load('hd20AuditRandomDrawsV1'),drawId='RET-AUDIT-'+r.id;
   let draw=audits.find(x=>x.id===drawId);
-  if(!draw){draw={id:drawId,team:r.team,workplace:r.workplace,sourceCaseId:r.caseId,sourceStage:'RETENTION-RANDOM',auditActor:'마스터 권한자',auditDate:r.evaluatedAt.slice(0,10),auditResult:'부적합',auditor:evaluator,improvementRequest:'[유지점검 부적합] '+r.kind+' '+r.caseId+(comment?' · '+comment:'')};audits.unshift(draw);save('hd20AuditRandomDrawsV1',audits)}
-  try{r.actionId=window.HD20AuditClosedLoop?.syncAction?.(draw)||'';if(!r.actionId){const actions=load('hd20ActionCasesV2'),actionId='AUTO-RETENTION-'+r.id;let action=actions.find(a=>a.id===actionId||(a.sourceStage==='RETENTION-RANDOM'&&a.sourceCaseId===draw.id));if(!action){action={id:actionId,date:r.evaluatedAt.slice(0,10),registeredAt:r.evaluatedAt.slice(0,10),team:r.team,workplace:r.workplace,owner:evaluator,registeredBy:evaluator,registrant:evaluator,auditor:evaluator,problem:draw.improvementRequest,source:'5S 유지점검',sourceCaseId:draw.id,sourceStage:'RETENTION-RANDOM',originCaseId:r.caseId,status:'조치대기',effectVerified:false,recurrence:false,autoCreated:true};actions.unshift(action);save('hd20ActionCasesV2',actions);window.dispatchEvent(new CustomEvent('hd20-action-updated',{detail:{added:1,source:'retention'}}))}r.actionId=action.id}}catch(err){console.error('[HD20 유지점검 이관]',err);window.alert('부적합 개선조치 이관에 실패했습니다. 판정은 확정하지 않았습니다. 다시 처리해 주세요.');return}
+  if(!draw){draw={id:drawId,team:r.team,workplace:r.workplace,sourceCaseId:r.caseId,sourceStage:'RETENTION-RANDOM',auditActor:'마스터 권한자',auditDate:seoulDay(),auditResult:'부적합',auditor:evaluator,improvementRequest:'[유지점검 부적합] '+r.kind+' '+r.caseId+(comment?' · '+comment:'')};audits.unshift(draw);save('hd20AuditRandomDrawsV1',audits)}
+  try{r.actionId=window.HD20AuditClosedLoop?.syncAction?.(draw)||'';if(!r.actionId){const actions=load('hd20ActionCasesV2'),actionId='AUTO-RETENTION-'+r.id;let action=actions.find(a=>a.id===actionId||(a.sourceStage==='RETENTION-RANDOM'&&a.sourceCaseId===draw.id));if(!action){action={id:actionId,date:seoulDay(),registeredAt:seoulDay(),team:r.team,workplace:r.workplace,owner:evaluator,registeredBy:evaluator,registrant:evaluator,auditor:evaluator,problem:draw.improvementRequest,source:'5S 유지점검',sourceCaseId:draw.id,sourceStage:'RETENTION-RANDOM',originCaseId:r.caseId,status:'조치대기',effectVerified:false,recurrence:false,autoCreated:true};actions.unshift(action);save('hd20ActionCasesV2',actions);window.dispatchEvent(new CustomEvent('hd20-action-updated',{detail:{added:1,source:'retention'}}))}r.actionId=action.id}}catch(err){console.error('[HD20 유지점검 이관]',err);window.alert('부적합 개선조치 이관에 실패했습니다. 판정은 확정하지 않았습니다. 다시 처리해 주세요.');return}
   if(!r.actionId||!load('hd20ActionCasesV2').some(a=>String(a.id)===String(r.actionId))){window.alert('개선조치 등록 확인에 실패했습니다. 유지점검 판정은 확정하지 않았습니다.');return}
  }
  rows[n]=r;save('hd20RetentionRandomChecksV1',rows);
