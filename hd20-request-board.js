@@ -593,7 +593,7 @@ function render(box){
     +section('03. 조치대응팀별 이행성과','완료 / 미완료 · 팀별 건수',teamOrderControl+teamRateBars+'<details class="rqTeamDetail"><summary>팀별 상세 실적 펼치기</summary><div class="rqScroll">'+teamGrid+'</div></details>','c2')
 
     +'</div>'
-    +'<div class="ibRow" style="grid-template-columns:minmax(0,1fr)">'
+    +'<div class="ibRow rqNewTrendPair" style="grid-template-columns:repeat(2,minmax(0,1fr))">'
     +section('04. 월별 실행 완료 건수 및 3개월 이동평균',trendLabel+' · 완료일 기준',completionTrendChart)
     +section('05. 월별 개선조치 등록·완료 및 미완료 잔량',trendLabel+' · 등록일/완료일 기준',throughputTrendChart)
     +'</div>'
