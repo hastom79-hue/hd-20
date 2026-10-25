@@ -3,9 +3,9 @@ const DRAW_KEY='hd20AuditRandomDrawsV1',ACTION_KEY='hd20ActionCasesV2',POLICY_KE
 function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function load(k){try{const v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[]}catch{return[]}}
 function save(k,v){localStorage.setItem(k,JSON.stringify(v))}
-function today(){return new Date().toISOString().slice(0,10)}
-function dateOnly(v){const d=new Date(v);if(Number.isNaN(d.getTime()))return null;d.setHours(0,0,0,0);return d}
-function addDays(v,n){const d=dateOnly(v);if(!d)return null;d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)}
+function today(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())}
+function dateOnly(v){const key=String(v||'').slice(0,10);if(!/^\d{4}-\d{2}-\d{2}$/.test(key))return null;const d=new Date(key+'T00:00:00Z');return Number.isNaN(d.getTime())?null:d}
+function addDays(v,n){const d=dateOnly(v);if(!d)return null;d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10)}
 function deadlineDays(){if(window.HD20PolicyConfig?.deadlineDays)return window.HD20PolicyConfig.deadlineDays();try{const p=JSON.parse(localStorage.getItem(POLICY_KEY)||'{}').improvementDeadline||{},n=Number(p.defaultDays);return Number.isFinite(n)&&n>=7&&n<=14?Math.round(n):null}catch{return null}}
 function actionId(drawId){return `AUTO-AUDIT-${String(drawId).replace(/[^a-zA-Z0-9가-힣_-]/g,'').slice(-30)}`}
 function latestPending(){return load(DRAW_KEY).find(d=>!d.auditDate)||null}
