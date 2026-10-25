@@ -81,9 +81,9 @@ const dueActions=actions.filter(x=>date(x)&&date(x)<=today);
 const onTimeCount=dueActions.filter(x=>isDone(x)&&completionDate(x)&&completionDate(x)<=date(x)).length;
 const judgedDone=done.filter(x=>typeof x.effectVerified==='boolean'||str(x.effectState??x.effectResult));
 const pendingEffect=done.filter(x=>!verified(x)).length;
-const onTime=dueActions.length?Math.round(onTimeCount/dueActions.length*1000)/10:null;
+const onTime=op.actionOnTime??null;
 const cards=[
- ['onTime','기한 내 조치 완료율',onTime===null?'—':onTime+'%',onTime===null?'기한 도래 대상 없음':onTimeCount+' / '+dueActions.length+'건 기한 내 완료'],
+ ['onTime','기한 내 조치 완료율',onTime===null?'—':onTime+'%',onTime===null?'기한 도래 대상 없음':'중앙 KPI B기준 · 완료일·조치·증빙 확인'],
  ['pendingEffect','효과검증 미완료',pendingEffect+'건','완료 '+done.length+'건 중 검증 미완료'],
  ['sixRetention','6개월 유지율',op.sixRetention==null?'—':op.sixRetention+'%','공식 유지 검증 기준'],
  ['recurrenceCount','부적합 재발 건수',recur.length+'건','재발 여부 판정 기록 기준']
