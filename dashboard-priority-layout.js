@@ -63,7 +63,7 @@ function trendCss(){if(document.getElementById(ID+'TrendStyle'))return;const s=d
 function card(x,i,op,monthly){
   trendCss();
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const arr=monthly?(monthly[x.key]||[]):[],vals=arr.map(v=>v.v),known=vals.map((v,i2)=>v===null?null:i2).filter(i2=>i2!==null);
+  const arr=monthly?(monthly[x.key]||[]):[],vals=arr.map(v=>v?.v??null),known=vals.map((v,i2)=>v===null?null:i2).filter(i2=>i2!==null);
   const li=known.length?known[known.length-1]:-1,pi=known.length>1?known[known.length-2]:-1;
   // Compare like-for-like monthly cohorts, never a lifetime KPI with a monthly percentage.
   const cur=li>=0?vals[li]:null,prev=pi>=0?vals[pi]:null;
@@ -105,7 +105,8 @@ function render(){
      그룹별 박스 구분 자체를 없애고, 6개 지표 카드를 하나의 평평한 2열×3행 그리드로 배치. 소속
      확인 영역은 각 카드 좌상단의 작은 태그(색상 그룹 범례와 동일한 라벨)로만 표시. */
   const groups=root.querySelector('.hd20DashboardPriorityGroups');
-  groups.innerHTML=`<div class="httGrid">${KPI.map(x=>card(x,KPI.indexOf(x),op,monthly)).join('')}</div>`;
+  const html=KPI.map((x,i)=>{try{return card(x,i,op,monthly)}catch(err){console.error('[HD20 종합현황 KPI]',x.key,err);return `<article class="hd20HealthTrendCard" data-kpi="${x.key}"><h4>${x.label}</h4><div class="httBig"><b>${fmt(op[x.key],x.key)}</b></div><p>월별 추이 표시 점검 필요</p></article>`}}).join('');
+  groups.innerHTML=`<div class="httGrid">${html}</div>`;
   groups.querySelectorAll('[data-group-tab]').forEach(btn=>btn.addEventListener('click',()=>gotoTab(btn.dataset.groupTab)));
 }
 function boot(){removeRetiredStandardTrendLabel();render();setTimeout(removeRetiredStandardTrendLabel,500);setTimeout(removeRetiredStandardTrendLabel,1800);['hd20-kpi-source-updated','hd20-gmes-5s-imported','hd20-gmes-5s-judged','hd20-audit-updated','hd20-action-updated'].forEach(ev=>window.addEventListener(ev,()=>setTimeout(render,0)))}
