@@ -82,7 +82,7 @@ function removeRetiredStandardTrendLabel(){const bottom=document.querySelector('
 function render(){
   removeRetiredStandardTrendLabel();
   const root=ensure();if(!root)return;
-  const snap=window.HD20KPIData?.snapshot?.();const op=window.HD20KPIData?.operational?.(snap)||{};
+  let op={};try{const snap=window.HD20KPIData?.snapshot?.();op=window.HD20KPIData?.operational?.(snap)||{}}catch(e){console.error('[HD20 종합현황] KPI 원천 계산 실패',e)}
   let monthly=null;try{monthly=window.HD20KPIData?.monthlyOperational?.(12)||null}catch(e){monthly=null}
   // V3 data readiness is derived exclusively from the existing operational KPI snapshot.
   // Missing data is never presented as zero or as a calculated risk score.
@@ -104,7 +104,7 @@ function render(){
      3열로 배치하면(이전 방식) 카드 적은 그룹의 열이 항상 휑해 보이는 문제가 구조적으로 반복됨.
      그룹별 박스 구분 자체를 없애고, 6개 지표 카드를 하나의 평평한 2열×3행 그리드로 배치. 소속
      확인 영역은 각 카드 좌상단의 작은 태그(색상 그룹 범례와 동일한 라벨)로만 표시. */
-  const groups=root.querySelector('.hd20DashboardPriorityGroups');
+  let groups=root.querySelector('.hd20DashboardPriorityGroups');if(!groups){groups=document.createElement('div');groups.className='hd20DashboardPriorityGroups';root.appendChild(groups)}
   const html=KPI.map((x,i)=>{try{return card(x,i,op,monthly)}catch(err){console.error('[HD20 종합현황 KPI]',x.key,err);return `<article class="hd20HealthTrendCard" data-kpi="${x.key}"><h4>${x.label}</h4><div class="httBig"><b>${fmt(op[x.key],x.key)}</b></div><p>월별 추이 표시 점검 필요</p></article>`}}).join('');
   groups.innerHTML=`<div class="httGrid">${html}</div>`;
   groups.querySelectorAll('[data-group-tab]').forEach(btn=>btn.addEventListener('click',()=>gotoTab(btn.dataset.groupTab)));
