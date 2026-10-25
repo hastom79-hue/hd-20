@@ -290,7 +290,7 @@ function renderRetentionSampling(root){
  const load=key=>{try{const v=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(v)?v:[]}catch{return[]}};
  const save=(key,val)=>localStorage.setItem(key,JSON.stringify(val));
  const activity=load('hd20GMES5SAutoImproveRawV1'),actions=load('hd20ActionCasesV2'),stored=load('hd20RetentionRandomChecksV1');
- const done=x=>['완료','개선완료','조치완료','종결','확정완료'].includes(String(x.status||x.activityStatus||x.actionStatus||'').trim())||x.completed===true;
+ const done=x=>['완료','개선완료','조치완료','종결','확정완료','종료','종결완료'].includes(String(x.status||x.activityStatus||x.actionStatus||'').trim())||x.completed===true;
  const excluded=x=>x.isDemo===true||x.isTest===true||['demo-seed','e2e-fixture','web-validation-fixture'].includes(String(x.source||''));
  const keyOf=x=>String(x.improvementNo||x.improvementNumber||x.caseId||x.activityId||x.id||'').trim();
  const entries=[...activity.filter(x=>done(x)&&!excluded(x)).map(x=>({x,kind:'자율개선'})),...actions.filter(x=>done(x)&&!excluded(x)).map(x=>({x,kind:'개선요청'}))].filter(e=>keyOf(e.x));
@@ -299,6 +299,8 @@ function renderRetentionSampling(root){
  const policy=window.HD20PolicyConfig?.read?.().retentionCheck||{intervalDays:30,sampleCount:5};
  const intervalDays=Math.max(1,Number(policy.intervalDays)||30),sampleCount=Math.max(1,Number(policy.sampleCount)||5);
  const canEvaluate=()=>window.HD20MasterAuth?.canEvaluateRetention?.()===true;
+ const seoulDay=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+ const calendarDays=(start,end)=>{const a=String(start||'').slice(0,10),b=String(end||'').slice(0,10);if(!/^\d{4}-\d{2}-\d{2}$/.test(a)||!/^\d{4}-\d{2}-\d{2}$/.test(b))return null;return Math.round((Date.parse(b+'T00:00:00Z')-Date.parse(a+'T00:00:00Z'))/86400000)};
 
  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const current=stored.filter(x=>x.result==='점검대기'||x.result==='적합'||x.result==='부적합').slice().reverse();
@@ -336,14 +338,14 @@ function renderRetentionSampling(root){
  window.dispatchEvent(new CustomEvent('hd20-audit-updated',{detail:{retention:rows[n],recheck:true}}));render();
  });
  host.querySelector('[data-rs-draw]').onclick=()=>{
- if(!canEvaluate()){window.alert('유지점검 추출은 마스터 권한자 인증이 필요합니다.');return}const previous=load('hd20RetentionRandomChecksV1').map(x=>x.drawDate).filter(Boolean).sort().at(-1);if(previous&&Math.floor((Date.now()-new Date(previous+'T00:00:00').getTime())/86400000)<intervalDays){window.alert('기준정보에 설정된 유지점검 주기가 도래하지 않았습니다.');return}const requested=sampleCount;
+ if(!canEvaluate()){window.alert('유지점검 추출은 마스터 권한자 인증이 필요합니다.');return}const previous=load('hd20RetentionRandomChecksV1').map(x=>x.drawDate).filter(Boolean).sort().at(-1);if(previous&&calendarDays(previous,seoulDay())<intervalDays){window.alert('기준정보에 설정된 유지점검 주기가 도래하지 않았습니다.');return}const requested=sampleCount;
  const rows=load('hd20RetentionRandomChecksV1'),existing=new Set(rows.filter(x=>x.result==='점검대기').map(x=>x.kind+':'+x.caseId));
  const available=pool.filter(e=>!existing.has(e.kind+':'+keyOf(e.x)));
  for(let i=available.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[available[i],available[j]]=[available[j],available[i]]}
  const chosen=available.slice(0,requested);
  if(!chosen.length){window.alert('추출 가능한 완료 사례가 없습니다.');return}
- const now=new Date().toISOString();
- chosen.forEach(e=>rows.push({id:'RET-'+now.replace(/[^0-9]/g,'')+'-'+rows.length,caseId:keyOf(e.x),kind:e.kind,team:e.x.team||e.x.teamName||e.x.ownerTeam||'',workplace:e.x.workplace||'',drawDate:now.slice(0,10),result:'점검대기',evaluator:'',comment:''}));
+ const now=new Date().toISOString(),drawDay=seoulDay();
+ chosen.forEach(e=>rows.push({id:'RET-'+now.replace(/[^0-9]/g,'')+'-'+rows.length,caseId:keyOf(e.x),kind:e.kind,team:e.x.team||e.x.teamName||e.x.ownerTeam||'',workplace:e.x.workplace||'',drawDate:drawDay,result:'점검대기',evaluator:'',comment:''}));
  save('hd20RetentionRandomChecksV1',rows);render();
  };
  host.querySelectorAll('[data-rs-save]').forEach(btn=>btn.onclick=()=>{
