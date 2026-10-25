@@ -118,7 +118,7 @@ jobs:
               await page.waitForFunction(()=>document.querySelector('#amRequestSource')?.value==='자율 5S Audit',{},{timeout:10000});
               assert.strictEqual(await page.locator('#amProblem').inputValue(),'CI Audit 연계 확인');
               // Negative regression: missing discovery source must never persist a request.
-              await page.locator('#amWorkplace').fill('CI 출처 누락 방지');
+              await page.locator('#amWorkplace').selectOption({index:1});
               await page.locator('#amProblem').fill('출처 미선택 등록 차단');
               await page.locator('#amRequestSource').selectOption('');
               const countBefore=await page.evaluate(()=>JSON.parse(localStorage.getItem('hd20ActionCasesV2')||'[]').length);
@@ -126,7 +126,7 @@ jobs:
               const countAfter=await page.evaluate(()=>JSON.parse(localStorage.getItem('hd20ActionCasesV2')||'[]').length);
               assert.strictEqual(countAfter,countBefore,'missing source must block registration');
               // Exercise explicit user selection, persistence, completion, and reload separately.
-              await page.locator('#amWorkplace').fill('CI 격리 작업장');
+              await page.locator('#amWorkplace').selectOption({index:1});
               await page.locator('#amProblem').fill('CI 개선요청 검증');
               await page.locator('#amRequestSource').selectOption({label:'현장 패트롤 점검'});
               await page.locator('#amDraft').click();
@@ -158,7 +158,7 @@ jobs:
               assert.strictEqual(afterReload.status,'완료');
               // All four discovery sources must persist unchanged, not only the patrol path.
               for(const source of ['자율 5S Audit','혁신팀 자율 점검','5S 자율개선활동 피드백']){
-                await page.locator('#amWorkplace').fill('CI 출처별 '+source);
+                await page.locator('#amWorkplace').selectOption({index:1});
                 await page.locator('#amProblem').fill('CI 4대 출처 회귀검증');
                 await page.locator('#amRequestSource').selectOption({label:source});
                 await page.locator('#amDraft').click();
