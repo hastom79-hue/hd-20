@@ -365,7 +365,7 @@ function renderRetentionSampling(root){
  }
  rows[n]=r;
  try{save('hd20RetentionRandomChecksV1',rows)}catch(err){
-  const restore=(key,raw)=>{try{if(raw===null)localStorage.removeItem(key);else localStorage.setItem(key,raw);return true}catch(e){console.error('[유지점검 롤백 실패]',key,e);return false}};
+  const restore=(key,raw)=>{try{if(raw===null)localStorage.removeItem(key);else localStorage.setItem(key,raw);if(localStorage.getItem(key)!==raw)throw new Error('복원 확인 실패');return true}catch(e){console.error('[유지점검 롤백 실패]',key,e);return false}};
   const auditRestored=restore('hd20AuditRandomDrawsV1',savedAuditBefore),actionRestored=restore('hd20ActionCasesV2',savedActionBefore);
   window.alert(auditRestored&&actionRestored?'유지점검 판정 저장 실패: 연계 Audit·개선조치를 이전 상태로 복원했습니다.':'유지점검 저장 및 일부 복구에 실패했습니다. 관리자 확인 전 재등록하지 마세요.');
   return
