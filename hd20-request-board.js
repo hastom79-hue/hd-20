@@ -594,13 +594,13 @@ function render(box){
 
     +'</div>'
     +'<div class="ibRow" style="grid-template-columns:minmax(0,1fr)">'
-    +section('04. 조치 리드타임 · 일/30일 환산 월','완료 소요기간과 미완료 경과기간 분리',ltLine+ltChart)
-    +'</div>'
-    +'<div class="ibRow" style="grid-template-columns:minmax(0,1fr)">'
-    +section('05. 월별 실행 완료 건수 및 3개월 이동평균',trendLabel+' · 완료일 기준',completionTrendChart)
-    +section('06. 월별 개선조치 등록·완료 및 미완료 잔량',trendLabel+' · 등록일/완료일 기준',throughputTrendChart)
+    +section('04. 월별 실행 완료 건수 및 3개월 이동평균',trendLabel+' · 완료일 기준',completionTrendChart)
+    +section('05. 월별 개선조치 등록·완료 및 미완료 잔량',trendLabel+' · 등록일/완료일 기준',throughputTrendChart)
     +'</div>'
     +'<div class="ibRow rqPrintSkip"><button type="button" class="rqDetailOpenBtn" data-open-detail="1">📋 개선요청 상세 목록 열기 (전체 '+actionAll.length+'건)</button></div>'
+    +'<div class="ibRow" style="grid-template-columns:minmax(0,1fr)">'
+    +section('06. 조치 리드타임 · 일/30일 환산 월','완료 소요기간과 미완료 경과기간 분리',ltLine+ltChart)
+    +'</div>'
     +'<p class="rqCaveat">※ 요청출처는 리더십(공장장)·5S모듈·생산혁신팀(HDPS파트) 3종입니다. 원천에 출처 필드가 없는 경우 일부 출처는 등록자 및 Audit 연계 정보로 추정됩니다. 완료일이 없는 완료 건은 월별 완료 추이에서 제외되며 총 완료 건수에는 포함됩니다.</p>';
 
   const evCols=['요청번호','요청출처(검증용 포함)','출처확인상태','조치대응부서','작업장','진행현황','요청일','완료예정일','완료일'],
