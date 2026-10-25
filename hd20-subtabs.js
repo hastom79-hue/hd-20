@@ -306,7 +306,7 @@ function renderRetentionSampling(root){
  const sourceOf=r=>distinct.get(r.kind+':'+r.caseId)?.x||[...activity,...actions].find(x=>keyOf(x)===r.caseId)||null;
  const evidence=(x,which)=>{if(!x)return '';const keys=which==='before'?['before','beforeImage','beforePhoto','beforeImageUrl','asIsPhoto']:['after','afterImage','afterPhoto','afterImageUrl','afterEvidence','toBePhoto'];for(const k of keys){const v=x[k];if(typeof v==='string'&&/^(https?:\/\/|data:image\/|blob:)/.test(v.trim()))return v.trim()}return ''};
  const sourcePreview=r=>{const x=sourceOf(r);if(!x)return '<div class="hd20RsSourceEmpty">원본 사례가 없습니다. 원본 삭제·변경 여부를 확인하세요.</div>';const problem=x.problem||x.beforeText||x.issue||x.description||'',improvement=x.improvement||x.afterText||x.actionText||x.solution||'';const beforePhoto=evidence(x,'before'),afterPhoto=evidence(x,'after');return '<details class="hd20RsSource"><summary>원본 개선사례 · AS-IS / TO-BE 확인</summary><div class="hd20RsEvidence"><section><b>AS-IS · 개선 전</b><p>'+esc(problem||'개선 전 내용 미입력')+'</p>'+(beforePhoto?'<img alt="개선 전 증빙" src="'+esc(beforePhoto)+'">':'<small>사진 없음</small>')+'</section><section><b>TO-BE · 개선 후</b><p>'+esc(improvement||'개선 후 내용 미입력')+'</p>'+(afterPhoto?'<img alt="개선 후 증빙" src="'+esc(afterPhoto)+'">':'<small>사진 없음</small>')+'</section></div></details>'};
- const linkedAction=r=>{const all=load('hd20ActionCasesV2');return all.find(a=>r.actionId&&String(a.id)===String(r.actionId))||all.find(a=>a.sourceStage==='RETENTION-RANDOM'&&String(a.sourceCaseId)==='RET-AUDIT-'+r.id)||null};
+ const linkedAction=r=>{const all=load('hd20ActionCasesV2');return all.find(a=>r.followupActionId&&String(a.id)===String(r.followupActionId))||all.find(a=>r.actionId&&String(a.id)===String(r.actionId))||all.find(a=>a.sourceStage==='RETENTION-RANDOM'&&String(a.sourceCaseId)==='RET-AUDIT-'+r.id)||null};
  const actionTrace=r=>{if(r.result!=='부적합')return '';const act=linkedAction(r);if(!act)return '<div class="hd20RsTrace missing">개선조치 연계 확인 필요 · 원본 유지점검 '+esc(r.id)+'</div>';const status=String(act.status||'조치대기'),done=/완료|종결|close|done/i.test(status);const closed=r.recheckResult==='적합'&&!!r.recheckedAt;return '<div class="hd20RsTrace '+(closed?'complete':done?'pending':'pending')+'"><b>자동 개선조치 '+esc(act.id)+'</b><span>조치: '+esc(status)+'</span><span>재점검: '+esc(r.recheckResult||(done?'대기':'조치완료 후 가능'))+'</span><span>'+esc(closed?'최종 종료':done?'재점검 필요':'조치 진행중')+'</span></div>'+(done&&!closed?'<div class="hd20RsRecheck"><label>재점검 의견<input data-rs-recheck-comment placeholder="현장 유지상태 확인 결과"></label><button type="button" data-rs-recheck="적합">재점검 적합·종료</button><button type="button" data-rs-recheck="부적합">재점검 부적합</button></div>':'')};
  const render=()=>{
  const records=load('hd20RetentionRandomChecksV1').slice().reverse();
@@ -321,8 +321,16 @@ function renderRetentionSampling(root){
  const comment=box.querySelector('[data-rs-recheck-comment]')?.value.trim()||'',result=btn.dataset.rsRecheck;
  if(!comment){window.alert('재점검 현장 확인 의견을 입력하세요.');return}
  const at=new Date().toISOString(),record={at,result,comment,actionId:action.id};
+ let followupActionId='';
+ if(result==='부적합'){
+  const actions=load('hd20ActionCasesV2'),idNext='AUTO-RETENTION-RECHECK-'+rows[n].id+'-'+((rows[n].recheckHistory||[]).length+1);
+  let next=actions.find(a=>a.id===idNext);
+  if(!next){next={id:idNext,date:at.slice(0,10),registeredAt:at.slice(0,10),team:rows[n].team,workplace:rows[n].workplace,owner:rows[n].evaluator,registeredBy:rows[n].evaluator,registrant:rows[n].evaluator,auditor:rows[n].evaluator,problem:'[유지점검 재점검 부적합] '+rows[n].kind+' '+rows[n].caseId+' · '+comment,source:'5S 유지점검 재점검',sourceCaseId:rows[n].id,sourceStage:'RETENTION-RECHECK',originCaseId:rows[n].caseId,previousActionId:action.id,status:'조치대기',effectVerified:false,autoCreated:true};actions.unshift(next);try{save('hd20ActionCasesV2',actions)}catch(e){window.alert('재조치 등록 실패: 재점검 판정은 저장하지 않았습니다.');return}}
+  followupActionId=next.id;
+  window.dispatchEvent(new CustomEvent('hd20-action-updated',{detail:{added:1,source:'retention-recheck'}}));
+ }
  const history=Array.isArray(rows[n].recheckHistory)?rows[n].recheckHistory.slice():[];history.push(record);
- rows[n]={...rows[n],recheckHistory:history,recheckResult:result,recheckComment:comment,recheckedAt:at,closedAt:result==='적합'?at:''};
+ rows[n]={...rows[n],recheckHistory:history,recheckResult:result,recheckComment:comment,recheckedAt:at,followupActionId:followupActionId||rows[n].followupActionId||'',closedAt:result==='적합'?at:''};
  save('hd20RetentionRandomChecksV1',rows);
  window.dispatchEvent(new CustomEvent('hd20-audit-updated',{detail:{retention:rows[n],recheck:true}}));render();
  });
