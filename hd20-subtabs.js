@@ -329,7 +329,7 @@ function renderRetentionSampling(root){
  if(result==='부적합'){
   const actions=load('hd20ActionCasesV2'),idNext='AUTO-RETENTION-RECHECK-'+rows[n].id+'-'+((rows[n].recheckHistory||[]).length+1);
   let next=actions.find(a=>String(a.id)===idNext);
-  if(next&&(String(next.sourceCaseId)!==String(rows[n].id)||next.sourceStage!=='RETENTION-RECHECK')){box.dataset.rsSaving='';box.querySelectorAll('[data-rs-recheck]').forEach(b=>b.disabled=false);window.alert('재조치 ID가 다른 원천 기록에 사용 중입니다. 관리자에게 확인해 주세요.');return}
+  if(next&&(String(next.sourceCaseId)!==String(rows[n].id)||next.sourceStage!=='RETENTION-RECHECK'||String(next.previousActionId||'')!==String(action.id))){box.dataset.rsSaving='';box.querySelectorAll('[data-rs-recheck]').forEach(b=>b.disabled=false);window.alert('재조치 ID의 원천 또는 직전 개선조치 연결이 일치하지 않습니다. 관리자에게 확인해 주세요.');return}
   if(!next){next={id:idNext,date:actionDay,registeredAt:actionDay,team:rows[n].team,workplace:rows[n].workplace,owner:rows[n].evaluator,registeredBy:rows[n].evaluator,registrant:rows[n].evaluator,auditor:rows[n].evaluator,problem:'[유지점검 재점검 부적합] '+rows[n].kind+' '+rows[n].caseId+' · '+comment,source:'5S 유지점검 재점검',sourceCaseId:rows[n].id,sourceStage:'RETENTION-RECHECK',originCaseId:rows[n].caseId,previousActionId:action.id,status:'조치대기',effectVerified:false,autoCreated:true};actions.unshift(next);try{save('hd20ActionCasesV2',actions);createdFollowupId=next.id}catch(e){box.dataset.rsSaving='';box.querySelectorAll('[data-rs-recheck]').forEach(b=>b.disabled=false);window.alert('재조치 등록 실패: 재점검 판정은 저장하지 않았습니다.');return}}
   followupActionId=next.id;
  }
