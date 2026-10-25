@@ -9,7 +9,7 @@ function style(){if(document.getElementById(ID+'Style'))return;const s=document.
 function ensure(){style();let el=document.getElementById(ID);if(el)return el;const anchor=document.getElementById('hd20DashboardPriority')||document.querySelector('.cards');if(!anchor)return null;el=document.createElement('section');el.id=ID;el.setAttribute('aria-label','실행·유지 V3 종합관제');el.innerHTML='<header class="v3exHead"><h2>실행·유지 성과관제</h2><p>실행 이행 → 효과 입증 → 유지 검증 → 재발 방지</p></header><div class="v3exKpis"></div><div class="v3exGrid v3exTwoCharts"><section class="v3exPanel v3exFullTrend"></section><section class="v3exPanel v3exRetentionTrend"></section></div><section class="v3exPanel v3exFocus"><h3>관리 개입 필요 과제</h3><table><thead><tr><th>우선순위</th><th>담당 팀</th><th>개입 사유</th><th>조치기한</th><th>검증 상태</th></tr></thead><tbody><tr><td colspan="5">원천 조치 데이터 연결 후 표시</td></tr></tbody></table></section>';anchor.insertAdjacentElement('beforebegin',el);return el}
 function rows(key){try{const v=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(v)?v:[]}catch{return[]}}
 function str(v){return String(v??'').trim()}
-function isDone(x){return /완료|확정|종료|종결|close|done/i.test(str(x.status||x.activityStatus||x.auditState))||!!(x.doneDate&&(x.action||x.after||x.afterEvidence||x.evidenceNote))}
+function isDone(x){const status=str(x.status||x.activityStatus||x.auditState);if(/미완료|미확정|미종료|미종결|완료대기|완료예정|진행|대기|보완|반려|취소/i.test(status))return false;return /완료|확정|종료|종결|close|done/i.test(status)||!!(x.doneDate&&(x.action||x.after||x.afterEvidence||x.evidenceNote))}
 function date(x){return str(x.due||x.dueDate||x.targetDate||x.deadline).slice(0,10)}
 function recurrence(x){return x.recurrence===true||/^(재발|발생|true|1|Y|yes)$/i.test(str(x.recurrenceState??x.recurrent??x['재발여부']))}
 function verified(x){return x.effectVerified===true||/^(유효|적합|검증완료|효과확인|효과확인완료|완료|true|1|Y)$/i.test(str(x.effectState??x.effectResult))}
@@ -97,6 +97,7 @@ el.querySelector('.v3exRetentionTrend').innerHTML=monthlyComboChart(actions,sele
 const tbody=el.querySelector('.v3exFocus tbody');
 const priority=actions.filter(x=>late.includes(x)||recurrence(x)||(isDone(x)&&!verified(x))).sort((a,b)=>Number(recurrence(b))-Number(recurrence(a))||Number(late.includes(b))-Number(late.includes(a))||str(date(a)).localeCompare(str(date(b)))).slice(0,5);
 tbody.innerHTML=priority.length?priority.map((x,i)=>'<tr><td>'+(i+1)+'</td><td>'+escapeHtml(team(x))+'</td><td>'+(recurrence(x)?'재발':late.includes(x)?'기한 초과':'효과검증 미기록')+'</td><td>'+escapeHtml(date(x)||'기한 미지정')+'</td><td>'+escapeHtml(verified(x)?'효과 확인':'확인 필요')+'</td></tr>').join(''):'<tr><td colspan="5">근거가 확인된 개입 필요 과제가 없습니다.</td></tr>';
+ window.dispatchEvent(new Event('hd20-execution-kpi-rendered'));
 }
 /* development-demo-mode.js가 이 스크립트보다 먼저 로드·boot()되어 데이터 시드 직후 동기적으로
    'hd20-kpi-source-updated' 등을 dispatchEvent하는데, 이 스크립트의 리스너는 그보다 늦게(스크립트
