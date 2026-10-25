@@ -69,7 +69,8 @@ function operational(s){
      dueActions(기한이 오늘 이전인 모든 건)를 분모로, 그중 완료+기한내완료만 분자로 삼음. */
   const today=seoulDateKey();
   const dueActions=act.filter(x=>{const due=asDate(pickField(x,['targetDate','due','dueDate','deadline']));return due&&seoulDateKey(due)<=today});
-  const ontime=dueActions.filter(x=>{const done=asDate(pickField(x,['doneDate','completedDate','finishDate','completedAt'])),due=asDate(pickField(x,['targetDate','due','dueDate','deadline']));return actionCompleted(x)&&done&&due&&done<=due}).length;
+  const isOnTimeCompleted=x=>{const done=asDate(doneOf(x)),due=asDate(dueOf(x));return !!(actionCompleted(x)&&done&&due&&done<=due)};
+  const ontime=dueActions.filter(isOnTimeCompleted).length;
   const timedCompleted=dueActions;
   /* hd20-v3-execution.js('실행·유지 종합관제' 패널)가 op.execution/op.audit/op.nonconform을 기대하는데,
    이 함수가 그 키들을 전혀 반환하지 않아 세 지표 모두 항상 '—'였음(발견: 사용자가 요청한 "현시점 웹
@@ -107,7 +108,7 @@ function monthlyOperational(n=6){
     const lv=(s.confirmed||[]).filter(x=>mk(confirmedDate(x))===m).map(levelOf).filter(Number.isFinite);out.maturity.push(cell(avg(lv),lv.length));
     const cl=closed.filter(x=>x.end.slice(0,7)===m);out.sixRetention.push(cell(pct(cl.filter(x=>passOf(x.d)).length,cl.length),cl.length));
     const rc=recScope.filter(x=>mk(doneOf(x))===m);out.recurrence.push(cell(pct(rc.filter(recurrenceState).length,rc.length),rc.length));
-    const tm2=dueActions.filter(x=>mk(dueOf(x))===m);out.actionOnTime.push(cell(pct(tm2.filter(x=>{const d=asDate(doneOf(x)),u=asDate(dueOf(x));return actionCompleted(x)&&d&&u&&d<=u}).length,tm2.length),tm2.length));
+    const tm2=dueActions.filter(x=>mk(dueOf(x))===m);out.actionOnTime.push(cell(pct(tm2.filter(isOnTimeCompleted).length,tm2.length),tm2.length));
   });
   // Monthly confirmed-case cohorts: retained vs attrited, using confirmation month.
   out.advRetention=[];out.advAttrition=[];
