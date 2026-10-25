@@ -93,7 +93,7 @@ jobs:
               if(area==='activity')assert(areaMs<30000,'dense activity first-entry regression: '+areaMs+'ms');
               else assert(areaMs<5000,`dense ${area} entry regression: ${areaMs}ms`);
               for(const sub of subs){
-                await page.getByRole('button',{name:sub,exact:true}).click(); await page.waitForTimeout(100);
+                await page.locator('#hd20Subnav button').filter({hasText:sub}).first().waitFor({state:'visible',timeout:12000}).catch(async err=>{const diagnostic=await page.evaluate(()=>({area:window.HD20_SUBNAV?.state?.(),active:window.HD20_NAV?.active?.(),labels:[...document.querySelectorAll('#hd20Subnav button')].map(x=>x.textContent),display:getComputedStyle(document.querySelector('#hd20Subnav')||document.body).display}));throw new Error('SUBTAB_NOT_VISIBLE '+sub+' '+JSON.stringify(diagnostic)+' '+err.message)}); await page.locator('#hd20Subnav button').filter({hasText:sub}).first().click(); await page.waitForTimeout(100);
                 if(area==='advancement'){
                   const key=windowSub=>({judge:'hd20AdvJudgeOperational',analysis:'hd20AdvAnalysisOperational',detail:'hd20AdvDetailOperational',process:'hd20AdvProcessOperational',standard:'hd20AdvStandardOperational'})[windowSub];
                   const subKey=await page.evaluate(()=>window.HD20_SUBNAV?.state?.().sub);
