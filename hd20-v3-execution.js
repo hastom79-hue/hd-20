@@ -10,7 +10,7 @@ function ensure(){style();let el=document.getElementById(ID);if(el)return el;con
 function rows(key){try{const v=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(v)?v:[]}catch{return[]}}
 function str(v){return String(v??'').trim()}
 function isDone(x){const status=str(x.status||x.activityStatus||x.actionStatus||x.judgeState||x.auditState);return !/미완료|미확정|미종료|미종결|완료대기|완료예정|진행|대기|보완|반려|취소/i.test(status)&&/완료|확정|종료|종결|close|done/i.test(status)}
-function date(x){return str(x.due||x.dueDate||x.targetDate||x.deadline).slice(0,10)}
+function date(x){return str(x.targetDate||x.due||x.dueDate||x.deadline).slice(0,10)}
 function recurrence(x){return x.recurrence===true||/^(재발|발생|true|1|Y|yes)$/i.test(str(x.recurrenceState??x.recurrent??x['재발여부']))}
 function verified(x){return x.effectVerified===true||/^(유효|적합|검증완료|효과확인|효과확인완료|완료|true|1|Y)$/i.test(str(x.effectState??x.effectResult))}
 function team(x){return str(x.team||x.teamName||x.ownerTeam||x.department||x['팀명'])||'팀 미지정'}
@@ -20,7 +20,7 @@ function team(x){return str(x.team||x.teamName||x.ownerTeam||x.department||x['�
    되던 진짜 원인. 정상적인 단일 이스케이프(\d)로 수정. */
 function month(x){const d=str(x.auditDate||x.completedAt||x.completionDate||x.createdAt||x.date||x.registeredAt);const m=d.match(/^(20\d{2})[-/.](0?[1-9]|1[0-2])/);return m?m[1]+'-'+m[2].padStart(2,'0'):null}
 function normalizedDate(v){const m=str(v).match(/^(20\d{2})[-/.](0?[1-9]|1[0-2])[-/.](3[01]|[12]\d|0?[1-9])(?=$|[^0-9])/);return m?m[1]+'-'+m[2].padStart(2,'0')+'-'+m[3].padStart(2,'0'):''}
-function completedDate(x){return normalizedDate(x.doneDate||x.completedAt||x.completionDate)}
+function completedDate(x){return normalizedDate(x.doneDate||x.completedDate||x.finishDate||x.completedAt||x.completionDate)}
 function registeredDate(x){return normalizedDate(x.createdAt||x.regDate||x.registeredAt||x.date)}
 function annualChart(actions,year){
  const now=new Date(),currentYear=now.getFullYear(),currentMonth=now.getMonth()+1;
