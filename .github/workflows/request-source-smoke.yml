@@ -47,7 +47,7 @@ jobs:
           assert(html.includes('web-validation-fixture.js?v=20261018-upgrade-realism-1'),'fixture cache-bust missing');
           assert(board.includes('rqSourceColumns'),'vertical paired source chart missing');
           assert(board.includes('발굴 리소스 · 범례 정의'),'resource legend definitions missing');
-          assert(html.includes('action-mail-workflow.js?v=20261018-audit-source-2'),'action registration cache-bust missing');
+          assert(html.includes('action-mail-workflow.js?v=20261024-dual-filter-v2'),'action registration cache-bust missing');
           assert(action.includes("$('#amRequestSource',a).value='자율 5S Audit'"),'audit-linked request must preselect source');
           assert(loader.includes('request-source-order-master.js?v=20261018-source-sync-1'),'dynamic master cache-bust missing');
           const vm=require('vm');
@@ -93,8 +93,9 @@ jobs:
           const {chromium}=require('playwright'),assert=require('assert');
           (async()=>{
             const browser=await chromium.launch({headless:true});
+            let page;
             try{
-              const page=await browser.newPage({viewport:{width:1440,height:900}});
+              page=await browser.newPage({viewport:{width:1440,height:900}});
               page.on('dialog',dialog=>dialog.accept());
               page.on('pageerror',error=>console.error('[browser pageerror]',error.message));
               page.on('console',msg=>{if(msg.type()==='error')console.error('[browser console]',msg.text())});
@@ -163,7 +164,7 @@ jobs:
                 await page.locator('#amProblem').fill('CI 4대 출처 회귀검증');
                 await page.locator('#amRequestSource').selectOption({label:source});
                 await page.locator('#amDraft').click();
-                const found=await page.evaluate(name=>window.HD20KPIData.actionCases().find(x=>x.workplace==='CI 출처별 '+name),source);
+                const found=await page.evaluate(name=>window.HD20KPIData.actionCases().find(x=>x.requestSource===name&&x.problem==='CI 4대 출처 회귀검증'),source);
                 assert(found,'dashboard adapter missing source '+source);
                 assert.strictEqual(found.requestSource,source,'source mismatch '+source);
               }
