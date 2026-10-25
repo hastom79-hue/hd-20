@@ -361,7 +361,7 @@ function delayDays(c,today){if(!c.due)return null;if(isDone(c)){if(!c.doneDate)r
 function filt(D,{ignoreYear=false,ignoreMonth=false}={}){
   return D.cases.filter(c=>{if(!ignoreYear&&String(c.date||'').slice(0,4)!==S.year)return false;if(!ignoreMonth&&S.month&&mo(c)!==+S.month)return false;
     if(S.source&&sourceOf(c)!==S.source)return false;if(S.team&&c.team!==S.team)return false;
-    if(S.status&&(S.status==='기한초과'?!isOverdue(c,D.today):c.status!==S.status))return false;
+    if(S.status&&(S.status==='기한초과'?!isOverdue(c,D.today):S.status==='완료'?!isDone(c):String(c.status||'')!==S.status))return false;
     if(S.roll==='Y'&&!c.recurrence)return false;if(S.roll==='N'&&c.recurrence)return false;return true})}
 function render(box){
   LEADER_NAMES=null;
