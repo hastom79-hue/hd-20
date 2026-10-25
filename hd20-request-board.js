@@ -408,10 +408,12 @@ function render(box){
   const ltAvg=a=>a.length?Math.round(a.reduce((v,r)=>v+r.days,0)/a.length*10)/10:null;
   const ltAvgDone=ltAvg(ltDone),ltAvgPending=ltAvg(ltPending);
   const ltMonths=v=>v===null?'—':(v/30).toFixed(1)+'개월';
-  const ltLine='<div class="rqLeadSummary" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:12px">'+
-  '<div style="padding:14px;background:#edf5f9;border-radius:8px"><small>완료 사례 평균 조치 리드타임</small><div style="font-size:24px;font-weight:900">'+(ltAvgDone===null?'—':ltAvgDone+'일')+'</div><b>'+ltMonths(ltAvgDone)+'</b><p>요청·보완요청일 → 실제 완료일</p></div>'+
-  '<div style="padding:14px;background:#fff4ee;border-radius:8px"><small>미완료 사례 평균 경과기간</small><div style="font-size:24px;font-weight:900">'+(ltAvgPending===null?'—':ltAvgPending+'일')+'</div><b>'+ltMonths(ltAvgPending)+'</b><p>요청·보완요청일 → 오늘</p></div></div>';
-  const ltMonthly=Array.from({length:12},(_,i)=>{const y=S.year+'-'+String(i+1).padStart(2,'0');const matched=ltDone.filter(r=>String(r.c.doneDate||'').slice(0,7)===y);return ltAvg(matched)});
+  const ltLine='<div class="rqLeadSummary" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:8px 12px;background:#f3f7fa;border:1px solid #dce7ee;border-radius:7px;margin-bottom:10px;font-size:12px">'+
+  '<span><b>완료 평균</b> <strong style="font-size:18px;color:#153d59">'+(ltAvgDone===null?'—':ltAvgDone+'일')+'</strong> <small>'+ltMonths(ltAvgDone)+'</small></span>'+
+  '<span style="color:#b2c1cc">│</span>'+
+  '<span><b>미완료 경과</b> <strong style="font-size:18px;color:#944b2f">'+(ltAvgPending===null?'—':ltAvgPending+'일')+'</strong> <small>'+ltMonths(ltAvgPending)+'</small></span>'+
+  '<span style="color:#6c8090;margin-left:auto">완료: 요청→완료일 · 미완료: 요청→오늘</span></div>';
+    const ltMonthly=Array.from({length:12},(_,i)=>{const y=S.year+'-'+String(i+1).padStart(2,'0');const matched=ltDone.filter(r=>String(r.c.doneDate||'').slice(0,7)===y);return ltAvg(matched)});
   const ltMax=Math.max(1,...ltMonthly.filter(x=>x!==null));
   const ltChart='<div style="display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:5px;height:200px;align-items:end">'+ltMonthly.map((v,i)=>'<div style="min-width:0;text-align:center"><div style="height:150px;display:flex;flex-direction:column;justify-content:flex-end"><div title="'+(i+1)+'월 평균 '+(v===null?'대상 없음':v+'일')+'" style="height:'+(v===null?0:Math.max(3,Math.round(v/ltMax*145)))+'px;background:#357c9e;border-radius:4px 4px 0 0"></div></div><small style="font-size:10px;white-space:nowrap">'+(i+1)+'월</small><div style="font-size:10px">'+(v===null?'':v+'일')+'</div></div>').join('')+'</div><p style="font-size:11px;color:#657c8b">월별 완료일 기준 평균 소요일 · 1개월 = 30일 · 완료일이 없는 건은 평균에서 제외</p>';
   const sum={total:teamRows.reduce((a,r)=>a+r.total,0),done:teamRows.reduce((a,r)=>a+r.done,0),open:teamRows.reduce((a,r)=>a+r.open,0),over:teamRows.reduce((a,r)=>a+r.over,0)}; // open=기한내 미완료, 전체 미완료=open+over
