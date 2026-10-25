@@ -41,7 +41,7 @@ function levelOf(x){const v=String(x?.level||x?.maturityLevel||x?.lv||'').match(
 function pct(n,d){return d?Math.round(n/d*1000)/10:null}
 function txt(v){return String(v??'').trim()}
 function actionDone(x){const state=txt(x?.status||x?.activityStatus||x?.judgeState||x?.auditState);return !/미완료|미확정|미종료|미종결|완료대기|완료예정|진행|대기|보완|반려|취소/i.test(state)&&/완료|확정|종료|종결|close|done/i.test(state)}
-function actionCompleted(x){return !!pickField(x,['doneDate','completedDate','finishDate'])&&!!txt(x?.action||x?.improvement)&&!!(x?.after||x?.afterEvidence)}
+function actionCompleted(x){return actionDone(x)&&!!pickField(x,['doneDate','completedDate','finishDate'])&&!!txt(x?.action||x?.improvement)&&!!(x?.after||x?.afterEvidence)}
 function effectVerified(x){if(x?.effectVerified===true)return true;const v=txt(x?.effectState||x?.effectResult);if(!v||/대기|미검증|미흡|부적합|무효|false|^0$|^N$/i.test(v))return false;return /^(유효|적합|효과확인|효과확인완료|검증완료|완료|true|1|Y)$/i.test(v)}
 function recurrenceState(x){if(x?.recurrence===true)return true;if(x?.recurrence===false)return false;const v=txt(x?.recurrenceState??x?.recurrent??x?.['재발여부']);if(!v||/^(미발생|없음|미재발|false|0|no|n)$/i.test(v))return false;return /^(재발|발생|true|1|yes|y)$/i.test(v)}
 function recurrenceObserved(x){const v=txt(x?.recurrenceState??x?.recurrent??x?.['재발여부']);if(v)return /^(재발|발생|미발생|없음|미재발|true|false|1|0|yes|no|y|n)$/i.test(v);return typeof x?.recurrence==='boolean'}
