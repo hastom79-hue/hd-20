@@ -5,6 +5,7 @@ on:
       - 'hd20-subtabs.js'
       - 'audit-closed-loop-workflow.js'
       - 'hd20-policy-config.js'
+      - 'hd20-request-board.js'
       - '.github/workflows/audit-retention-contract.yml'
   workflow_dispatch:
 jobs:
@@ -17,11 +18,13 @@ jobs:
           node --check hd20-subtabs.js
           node --check audit-closed-loop-workflow.js
           node --check hd20-policy-config.js
+          node --check hd20-request-board.js
           node <<'NODE'
           const fs=require('fs'),assert=require('assert/strict');
           const audit=fs.readFileSync('hd20-subtabs.js','utf8');
           const closed=fs.readFileSync('audit-closed-loop-workflow.js','utf8');
           const policy=fs.readFileSync('hd20-policy-config.js','utf8');
+          const request=fs.readFileSync('hd20-request-board.js','utf8');
           const checks={
             'master-only retention gate':audit.includes('window.HD20MasterAuth?.canEvaluateRetention?.()===true'),
             'policy-driven draw interval':audit.includes('policy.intervalDays'),
@@ -39,7 +42,11 @@ jobs:
             'recheck write failure recovery':audit.includes('createdFollowupId')&&audit.includes("all.filter(a=>String(a.id)!==createdFollowupId)"),
             'recheck write success event ordering':audit.includes("if(createdFollowupId)window.dispatchEvent"),
             'Seoul-local retention dates':audit.includes('const seoulDay=()=>'),
-            'latest followup must not fall back to old action':audit.includes("if(r.followupActionId)return all.find")
+            'latest followup must not fall back to old action':audit.includes("if(r.followupActionId)return all.find"),
+            'request completion excludes pending states':request.includes('미완료|미확정|미종료|미종결'),
+            'request overdue excludes completed':request.includes('return !isDone(c)&&'),
+            'request team partitions are balanced':request.includes('open=a.length-done-over')&&request.includes('전체 미완료=open+over'),
+            'request due date normalized':request.includes("String(c.due||'').slice(0,10)")
           };
           for(const [name,ok] of Object.entries(checks)){console.log((ok?'PASS':'FAIL')+' '+name);assert(ok,name)}
           NODE
