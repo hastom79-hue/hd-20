@@ -34,7 +34,12 @@ jobs:
             'recheck history retained':audit.includes('recheckHistory:history'),
             'recheck UI updates on action change':audit.includes("window.addEventListener('hd20-action-updated'"),
             'Audit action is linked to original auditor':closed.includes("registeredBy:String(draw.auditor||'').trim()"),
-            'master policy stores retention settings':policy.includes('retentionCheck:')
+            'master policy stores retention settings':policy.includes('retentionCheck:'),
+            'recheck double submit gate':audit.includes("box.dataset.rsSaving==='1'"),
+            'recheck write failure recovery':audit.includes('createdFollowupId')&&audit.includes("all.filter(a=>String(a.id)!==createdFollowupId)"),
+            'recheck write success event ordering':audit.includes("if(createdFollowupId)window.dispatchEvent"),
+            'Seoul-local retention dates':audit.includes('const seoulDay=()=>'),
+            'latest followup must not fall back to old action':audit.includes("if(r.followupActionId)return all.find")
           };
           for(const [name,ok] of Object.entries(checks)){console.log((ok?'PASS':'FAIL')+' '+name);assert(ok,name)}
           NODE
