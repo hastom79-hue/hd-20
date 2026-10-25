@@ -41,7 +41,7 @@ function levelOf(x){const v=String(x?.level||x?.maturityLevel||x?.lv||'').match(
 function pct(n,d){return d?Math.round(n/d*1000)/10:null}
 function txt(v){return String(v??'').trim()}
 function actionDone(x){const state=txt(x?.status||x?.activityStatus||x?.actionStatus||x?.judgeState||x?.auditState);return !/미완료|미확정|미종료|미종결|완료대기|완료예정|진행|대기|보완|반려|취소/i.test(state)&&/완료|확정|종료|종결|close|done/i.test(state)}
-function actionCompleted(x){return actionDone(x)&&!!pickField(x,['doneDate','completedDate','finishDate'])&&!!txt(x?.action||x?.improvement)&&!!(x?.after||x?.afterEvidence)}
+function actionCompleted(x){return actionDone(x)&&!!pickField(x,['doneDate','completedDate','finishDate','completedAt'])&&!!txt(x?.action||x?.improvement)&&!!(x?.after||x?.afterEvidence)}
 function effectVerified(x){if(x?.effectVerified===true)return true;const v=txt(x?.effectState||x?.effectResult);if(!v||/대기|미검증|미흡|부적합|무효|false|^0$|^N$/i.test(v))return false;return /^(유효|적합|효과확인|효과확인완료|검증완료|완료|true|1|Y)$/i.test(v)}
 function recurrenceState(x){if(x?.recurrence===true)return true;if(x?.recurrence===false)return false;const v=txt(x?.recurrenceState??x?.recurrent??x?.['재발여부']);if(!v||/^(미발생|없음|미재발|false|0|no|n)$/i.test(v))return false;return /^(재발|발생|true|1|yes|y)$/i.test(v)}
 function recurrenceObserved(x){const v=txt(x?.recurrenceState??x?.recurrent??x?.['재발여부']);if(v)return /^(재발|발생|미발생|없음|미재발|true|false|1|0|yes|no|y|n)$/i.test(v);return typeof x?.recurrence==='boolean'}
@@ -69,7 +69,7 @@ function operational(s){
      dueActions(기한이 오늘 이전인 모든 건)를 분모로, 그중 완료+기한내완료만 분자로 삼음. */
   const today=seoulDateKey();
   const dueActions=act.filter(x=>{const due=asDate(pickField(x,['targetDate','due','dueDate','deadline']));return due&&seoulDateKey(due)<=today});
-  const ontime=dueActions.filter(x=>{const done=asDate(pickField(x,['doneDate','completedDate','finishDate'])),due=asDate(pickField(x,['targetDate','due','dueDate','deadline']));return actionCompleted(x)&&done&&due&&done<=due}).length;
+  const ontime=dueActions.filter(x=>{const done=asDate(pickField(x,['doneDate','completedDate','finishDate','completedAt'])),due=asDate(pickField(x,['targetDate','due','dueDate','deadline']));return actionCompleted(x)&&done&&due&&done<=due}).length;
   const timedCompleted=dueActions;
   /* hd20-v3-execution.js('실행·유지 종합관제' 패널)가 op.execution/op.audit/op.nonconform을 기대하는데,
    이 함수가 그 키들을 전혀 반환하지 않아 세 지표 모두 항상 '—'였음(발견: 사용자가 요청한 "현시점 웹
@@ -91,7 +91,7 @@ function monthlyOperational(n=6){
   const regOf=x=>pickField(x,['createdAt','regDate','date','importedAt']),judgeOf=x=>pickField(x,['judgedAt','judgeDate','confirmedAt']);
   const isJudged=x=>['확정','보완요청','미확정'].includes(String(x.judgeState||'').trim())&&!!judgeOf(x);
   const act=actionCases(),verified=act.filter(x=>actionDone(x)&&effectVerified(x)),recScope=verified.filter(recurrenceObserved),completed=act.filter(actionCompleted);
-  const doneOf=x=>pickField(x,['doneDate','completedDate','finishDate']),dueOf=x=>pickField(x,['targetDate','due','dueDate','deadline']);
+  const doneOf=x=>pickField(x,['doneDate','completedDate','finishDate','completedAt']),dueOf=x=>pickField(x,['targetDate','due','dueDate','deadline']);
   /* 사용자 확정(B기준): 월별 추이도 operational()과 같은 정의로 통일. 기존엔 "그 달에 완료된 건들
      중 기한 내 완료 비율"(완료월 기준, timed=completed만)이었는데, B기준은 미완료 건도 분모에
      포함해야 하므로 "그 달에 기한이 도래한(완료 여부 무관) 전체 건"으로 그룹 기준 자체를 완료월→
