@@ -69,7 +69,7 @@ function operational(s){
      dueActions(기한이 오늘 이전인 모든 건)를 분모로, 그중 완료+기한내완료만 분자로 삼음. */
   const today=seoulDateKey();
   const dueActions=act.filter(x=>{const due=asDate(pickField(x,['targetDate','due','dueDate','deadline']));return due&&seoulDateKey(due)<=today});
-  const isOnTimeCompleted=x=>{const done=asDate(doneOf(x)),due=asDate(dueOf(x));return !!(actionCompleted(x)&&done&&due&&done<=due)};
+  const isOnTimeCompleted=x=>{const done=seoulDateKey(doneOf(x)),due=seoulDateKey(dueOf(x));return !!(actionCompleted(x)&&done&&due&&done<=due)};
   const ontime=dueActions.filter(isOnTimeCompleted).length;
   const timedCompleted=dueActions;
   /* hd20-v3-execution.js('실행·유지 종합관제' 패널)가 op.execution/op.audit/op.nonconform을 기대하는데,
