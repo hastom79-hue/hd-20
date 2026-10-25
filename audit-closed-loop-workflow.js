@@ -2,7 +2,7 @@
 const DRAW_KEY='hd20AuditRandomDrawsV1',ACTION_KEY='hd20ActionCasesV2',POLICY_KEY='hd20OperatingPolicyV1',LEADER_KEY='hd20TeamLeaderMasterV1',STYLE='hd20AuditClosedLoopStyle';
 function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function load(k){try{const v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[]}catch{return[]}}
-function save(k,v){localStorage.setItem(k,JSON.stringify(v))}
+function save(k,v){const serialized=JSON.stringify(v);localStorage.setItem(k,serialized);if(localStorage.getItem(k)!==serialized)throw new Error('저장 확인에 실패했습니다: '+k)}
 function today(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())}
 function dateOnly(v){const key=String(v||'').slice(0,10);if(!/^\d{4}-\d{2}-\d{2}$/.test(key))return null;const d=new Date(key+'T00:00:00Z');return Number.isNaN(d.getTime())?null:d}
 function addDays(v,n){const d=dateOnly(v);if(!d)return null;d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10)}
