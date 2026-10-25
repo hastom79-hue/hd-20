@@ -352,7 +352,7 @@ function css(){const prior=document.getElementById(ID+'Style');if(prior)prior.re
 @media(max-width:1100px){#${ID} .r1,#${ID} .rqManageRow{grid-template-columns:1fr}}`;document.head.appendChild(s)}
 function data(){
   const K=window.HD20KPIData,rawCases=K?.actionCases?.()||[],cases=rawCases.map(c=>({...c,date:c.date||c.registeredAt||c.createdAt||c.regDate||'',due:c.due||c.dueDate||'',doneDate:c.doneDate||c.completedAt||''})),M=window.HD20ProductionTeamMaster,masterTeams=M?.teamNames?.()||[],teams=[...new Set([...masterTeams,...cases.map(c=>c.team).filter(Boolean)])];
-  const years=[...new Set(cases.map(c=>String(c.date||'').slice(0,4)))].filter(y=>/^\d{4}$/.test(y)).sort();
+  const years=[...new Set(cases.flatMap(c=>[String(c.date||'').slice(0,4),String(c.doneDate||'').slice(0,4)]))].filter(y=>/^\d{4}$/.test(y)).sort();
   return{cases,teams,years,today:K?.seoulDateKey?.()||new Date().toISOString().slice(0,10)};
 }
 const mo=c=>+String(c.date||'').slice(5,7),isDone=c=>{const v=String(c.status||c.activityStatus||c.actionStatus||'').trim();return !/미완료|미확정|미종료|미종결|완료대기|완료예정|진행|대기|보완|반려|취소/i.test(v)&&/완료|확정|종료|종결|close|done/i.test(v)},isOverdue=(c,today)=>{const due=String(c.due||'').slice(0,10),day=String(today||'').slice(0,10);return !isDone(c)&&/^\d{4}-\d{2}-\d{2}$/.test(due)&&/^\d{4}-\d{2}-\d{2}$/.test(day)&&due<day};
