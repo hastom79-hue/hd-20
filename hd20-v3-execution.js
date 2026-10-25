@@ -90,7 +90,7 @@ const cards=[
 ];
 el.querySelector('.v3exKpis').innerHTML=cards.map(([key,title,value,note])=>'<article class="v3exCard" data-execution-kpi="'+key+'"><small>'+title+'</small><strong>'+value+'</strong><p>'+note+'</p></article>').join('');
 let guide=el.querySelector('.v3exFormulaGuide');if(!guide){guide=document.createElement('details');guide.className='v3exFormulaGuide';el.querySelector('.v3exKpis').insertAdjacentElement('afterend',guide)}
-guide=el.querySelector('.v3exFormulaGuide');if(guide){guide.innerHTML='<summary>계산식 · 집계기준 안내 (핵심 KPI 4개)</summary><div style="overflow-x:auto"><table><tbody>'+metrics.map(m=>'<tr><td><b>'+escapeHtml(m[1])+'</b></td><td>'+escapeHtml(m[2])+'</td></tr>').join('')+'</tbody></table></div><p>기한 내 조치 완료율은 기한 도래 과제 전체를 분모로 하며 기한 내 완료일이 기록된 건만 분자로 인정합니다. 효과검증 미완료는 완료 건 중 명시적인 효과 입증 기록이 없는 건입니다. 6개월 유지율은 기존 공식 KPI 기준을 따릅니다. 재발 건수는 개선조치 원천 재발 판정 기록을 집계합니다.</p>';}
+guide=el.querySelector('.v3exFormulaGuide');if(guide){guide.innerHTML='<summary>계산식 · 집계기준 안내 (핵심 KPI 4개)</summary><div style="overflow-x:auto"><table><tbody>'+metrics.map(m=>'<tr><td><b>'+escapeHtml(m[1])+'</b></td><td>'+escapeHtml(m[2])+'</td></tr>').join('')+'</tbody></table></div><p>기한 내 조치 완료율은 기한 도래 과제 전체를 분모로 하며, 완료 상태·기한 내 완료일·조치내용·개선 후 증빙이 모두 확인된 건만 분자로 인정합니다. 효과검증 미완료는 완료 건 중 명시적인 효과 입증 기록이 없는 건입니다. 6개월 유지율은 기존 공식 KPI 기준을 따릅니다. 재발 건수는 개선조치 원천 재발 판정 기록을 집계합니다.</p>';}
 const selectedYear=Number(document.querySelector('[data-year]')?.value)||Number(window.HD20KPIData?.snapshot?.()?.year)||new Date().getFullYear();
 el.querySelector('.v3exFullTrend').innerHTML=annualChart(actions,selectedYear);
 el.querySelector('.v3exRetentionTrend').innerHTML=monthlyComboChart(actions,selectedYear);
