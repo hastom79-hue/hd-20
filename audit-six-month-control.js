@@ -14,7 +14,7 @@ function deadlineDays(){if(window.HD20PolicyConfig?.deadlineDays)return window.H
 function dueKey(a){return txt(a?.dueDate||a?.due||a?.targetDate||a?.deadline).slice(0,10)}
 function ensureDeadlines(){const acts=load(ACTION_KEY);let changed=false;const days=deadlineDays();for(const a of acts){if(dueKey(a))continue;const base=a.registeredAt||a.date||a.created||a.createdAt;if(!base)continue;if(days===null){if(a.autoDuePolicyState!=='정책미설정'){a.autoDuePolicyState='정책미설정';changed=true}continue}const due=addDaysKey(base,days);if(!due)continue;a.due=due;a.autoDueDays=days;a.autoDueAssigned=true;a.autoDuePolicyState='자동지정';changed=true}if(changed)save(ACTION_KEY,acts);return acts}
 function daysFromToday(v){const d=utcDay(seoulDateKey(v)),t=utcDay(seoulDateKey());return Number.isFinite(d)&&Number.isFinite(t)?Math.round((d-t)/86400000):null}
-function actionDone(a){return /완료|확정|종료|종결|close|done/i.test(txt(a?.status||a?.activityStatus||a?.judgeState||a?.auditState))}
+function actionDone(a){const s=txt(a?.status||a?.activityStatus||a?.judgeState||a?.auditState);return !/미완료|미확정|미종료|미종결|완료대기|완료예정|진행|대기|보완|반려|취소/i.test(s)&&/완료|확정|종료|종결|close|done/i.test(s)}
 function actionState(a){if(actionDone(a))return '완료';const n=daysFromToday(dueKey(a));if(n===null)return a.autoDuePolicyState==='정책미설정'?'기한정책 미설정':'기한미정';if(n<0)return '기한경과';return '진행중'}
 function effectVerified(a){if(a?.effectVerified===true)return true;const v=txt(a?.effectState||a?.effectResult);if(!v||/대기|미검증|미흡|부적합|무효|false|^0$|^N$/i.test(v))return false;return /^(유효|적합|효과확인|효과확인완료|검증완료|완료|true|1|Y)$/i.test(v)}
 function recurrenceState(a){if(a?.recurrence===true)return true;const s=txt(a?.recurrenceState);if(!s||/^(미발생|없음|미재발|false|0|N)$/i.test(s))return false;return /^(재발|발생|true|1|Y)$/i.test(s)}
