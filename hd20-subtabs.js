@@ -325,17 +325,17 @@ function renderRetentionSampling(root){
  const comment=box.querySelector('[data-rs-recheck-comment]')?.value.trim()||'',result=btn.dataset.rsRecheck;
  if(!comment){box.dataset.rsSaving='';box.querySelectorAll('[data-rs-recheck]').forEach(b=>b.disabled=false);window.alert('재점검 현장 확인 의견을 입력하세요.');return}
  const at=new Date().toISOString(),actionDay=seoulDay(),record={at,result,comment,actionId:action.id};
- let followupActionId='';
+ let followupActionId='',createdFollowupId='';
  if(result==='부적합'){
   const actions=load('hd20ActionCasesV2'),idNext='AUTO-RETENTION-RECHECK-'+rows[n].id+'-'+((rows[n].recheckHistory||[]).length+1);
   let next=actions.find(a=>a.id===idNext);
-  if(!next){next={id:idNext,date:actionDay,registeredAt:actionDay,team:rows[n].team,workplace:rows[n].workplace,owner:rows[n].evaluator,registeredBy:rows[n].evaluator,registrant:rows[n].evaluator,auditor:rows[n].evaluator,problem:'[유지점검 재점검 부적합] '+rows[n].kind+' '+rows[n].caseId+' · '+comment,source:'5S 유지점검 재점검',sourceCaseId:rows[n].id,sourceStage:'RETENTION-RECHECK',originCaseId:rows[n].caseId,previousActionId:action.id,status:'조치대기',effectVerified:false,autoCreated:true};actions.unshift(next);try{save('hd20ActionCasesV2',actions)}catch(e){box.dataset.rsSaving='';box.querySelectorAll('[data-rs-recheck]').forEach(b=>b.disabled=false);window.alert('재조치 등록 실패: 재점검 판정은 저장하지 않았습니다.');return}}
+  if(!next){next={id:idNext,date:actionDay,registeredAt:actionDay,team:rows[n].team,workplace:rows[n].workplace,owner:rows[n].evaluator,registeredBy:rows[n].evaluator,registrant:rows[n].evaluator,auditor:rows[n].evaluator,problem:'[유지점검 재점검 부적합] '+rows[n].kind+' '+rows[n].caseId+' · '+comment,source:'5S 유지점검 재점검',sourceCaseId:rows[n].id,sourceStage:'RETENTION-RECHECK',originCaseId:rows[n].caseId,previousActionId:action.id,status:'조치대기',effectVerified:false,autoCreated:true};actions.unshift(next);try{save('hd20ActionCasesV2',actions);createdFollowupId=next.id}catch(e){box.dataset.rsSaving='';box.querySelectorAll('[data-rs-recheck]').forEach(b=>b.disabled=false);window.alert('재조치 등록 실패: 재점검 판정은 저장하지 않았습니다.');return}}
   followupActionId=next.id;
-  window.dispatchEvent(new CustomEvent('hd20-action-updated',{detail:{added:1,source:'retention-recheck'}}));
  }
  const history=Array.isArray(rows[n].recheckHistory)?rows[n].recheckHistory.slice():[];history.push(record);
  rows[n]={...rows[n],recheckHistory:history,recheckResult:result,recheckComment:comment,recheckedAt:at,followupActionId:followupActionId||rows[n].followupActionId||'',closedAt:result==='적합'?at:''};
- try{save('hd20RetentionRandomChecksV1',rows)}catch(e){box.dataset.rsSaving='';box.querySelectorAll('[data-rs-recheck]').forEach(b=>b.disabled=false);window.alert('재점검 결과 저장 실패: 종료 상태가 확정되지 않았습니다.');return}
+ try{save('hd20RetentionRandomChecksV1',rows)}catch(e){let rolledBack=!createdFollowupId;if(createdFollowupId){try{const all=load('hd20ActionCasesV2');save('hd20ActionCasesV2',all.filter(a=>String(a.id)!==createdFollowupId));rolledBack=true}catch(rollbackError){console.error('[HD20 재점검 재조치 복구 실패]',rollbackError)}}box.dataset.rsSaving='';box.querySelectorAll('[data-rs-recheck]').forEach(b=>b.disabled=false);window.alert(rolledBack?'재점검 결과 저장에 실패해 신규 재조치를 취소했습니다. 다시 시도해 주세요.':'재점검 이력 저장과 자동 재조치 취소에 실패했습니다. 추가 등록하지 말고 관리자에게 확인해 주세요.');return}
+ if(createdFollowupId)window.dispatchEvent(new CustomEvent('hd20-action-updated',{detail:{added:1,source:'retention-recheck'}}));
  window.dispatchEvent(new CustomEvent('hd20-audit-updated',{detail:{retention:rows[n],recheck:true}}));render();
  });
  host.querySelector('[data-rs-draw]').onclick=()=>{
