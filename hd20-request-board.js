@@ -413,7 +413,8 @@ function render(box){
   '<span style="color:#b2c1cc">│</span>'+
   '<span><b>미완료 경과</b> <strong style="font-size:18px;color:#944b2f">'+(ltAvgPending===null?'—':ltAvgPending+'일')+'</strong> <small>'+ltMonths(ltAvgPending)+'</small></span>'+
   '<span style="color:#6c8090;margin-left:auto">완료: 요청→완료일 · 미완료: 요청→오늘</span></div>';
-    const ltMonthly=Array.from({length:12},(_,i)=>{const y=S.year+'-'+String(i+1).padStart(2,'0');const matched=ltDone.filter(r=>String(r.c.doneDate||'').slice(0,7)===y);return ltAvg(matched)});
+    const ltMonthlyCases=D.cases.filter(c=>(!S.team||c.team===S.team)&&(!S.chartTeam||c.team===S.chartTeam)&&(!S.source||sourceOf(c)===S.source)&&isDone(c)).map(c=>({c,days:ltDays(c)})).filter(r=>r.days!==null);
+  const ltMonthly=Array.from({length:12},(_,i)=>{const y=S.year+'-'+String(i+1).padStart(2,'0');const matched=ltMonthlyCases.filter(r=>String(r.c.doneDate||'').slice(0,7)===y);return ltAvg(matched)});
   const ltRawMax=Math.max(0,...ltMonthly.filter(x=>x!==null)),ltTickStep=Math.max(1,Math.ceil(ltRawMax/4)),ltMax=ltTickStep*4;
   const ltChart='<div style="display:grid;grid-template-columns:38px minmax(0,1fr);gap:6px;align-items:end">'+
   '<div style="height:150px;position:relative;font-size:10px;color:#60788b">'+Array.from({length:5},(_,i)=>'<span style="position:absolute;right:2px;bottom:calc('+i*25+'% - 6px)">'+(i*ltTickStep)+'</span>').join('')+'</div>'+
