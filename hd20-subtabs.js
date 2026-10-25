@@ -354,6 +354,7 @@ function renderRetentionSampling(root){
  const box=btn.closest('[data-rs-id]'),id=box.dataset.rsId,evaluator=box.querySelector('[data-rs-evaluator]').value.trim(),result=box.querySelector('[data-rs-result]').value,comment=box.querySelector('[data-rs-comment]').value.trim();
  if(!canEvaluate()){window.alert('유지평가는 마스터 권한자 인증이 필요합니다.');return} if(!evaluator||!result){window.alert('평가자와 유지 판정 결과를 입력하세요.');return}
  const rows=load('hd20RetentionRandomChecksV1'),n=rows.findIndex(x=>x.id===id);if(n<0||rows[n].result!=='점검대기')return;
+ const savedAuditBefore=localStorage.getItem('hd20AuditRandomDrawsV1'),savedActionBefore=localStorage.getItem('hd20ActionCasesV2');
  const r={...rows[n],evaluator,comment,result,evaluatedAt:new Date().toISOString()};
  if(result==='부적합'){
   const audits=load('hd20AuditRandomDrawsV1'),drawId='RET-AUDIT-'+r.id;
@@ -362,7 +363,13 @@ function renderRetentionSampling(root){
   try{r.actionId=window.HD20AuditClosedLoop?.syncAction?.(draw)||'';if(!r.actionId){const actions=load('hd20ActionCasesV2'),actionId='AUTO-RETENTION-'+r.id;let action=actions.find(a=>a.id===actionId||(a.sourceStage==='RETENTION-RANDOM'&&a.sourceCaseId===draw.id));if(!action){action={id:actionId,date:seoulDay(),registeredAt:seoulDay(),team:r.team,workplace:r.workplace,owner:evaluator,registeredBy:evaluator,registrant:evaluator,auditor:evaluator,problem:draw.improvementRequest,source:'5S 유지점검',sourceCaseId:draw.id,sourceStage:'RETENTION-RANDOM',originCaseId:r.caseId,status:'조치대기',effectVerified:false,recurrence:false,autoCreated:true};actions.unshift(action);save('hd20ActionCasesV2',actions);window.dispatchEvent(new CustomEvent('hd20-action-updated',{detail:{added:1,source:'retention'}}))}r.actionId=action.id}}catch(err){console.error('[HD20 유지점검 이관]',err);window.alert('부적합 개선조치 이관에 실패했습니다. 판정은 확정하지 않았습니다. 다시 처리해 주세요.');return}
   if(!r.actionId||!load('hd20ActionCasesV2').some(a=>String(a.id)===String(r.actionId))){window.alert('개선조치 등록 확인에 실패했습니다. 유지점검 판정은 확정하지 않았습니다.');return}
  }
- rows[n]=r;save('hd20RetentionRandomChecksV1',rows);
+ rows[n]=r;
+ try{save('hd20RetentionRandomChecksV1',rows)}catch(err){
+  const restore=(key,raw)=>{try{if(raw===null)localStorage.removeItem(key);else localStorage.setItem(key,raw);return true}catch(e){console.error('[유지점검 롤백 실패]',key,e);return false}};
+  const auditRestored=restore('hd20AuditRandomDrawsV1',savedAuditBefore),actionRestored=restore('hd20ActionCasesV2',savedActionBefore);
+  window.alert(auditRestored&&actionRestored?'유지점검 판정 저장 실패: 연계 Audit·개선조치를 이전 상태로 복원했습니다.':'유지점검 저장 및 일부 복구에 실패했습니다. 관리자 확인 전 재등록하지 마세요.');
+  return
+ }
  window.dispatchEvent(new CustomEvent('hd20-audit-updated',{detail:{retention:r}}));render();
  });
  };
