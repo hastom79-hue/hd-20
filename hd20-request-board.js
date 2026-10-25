@@ -13,7 +13,7 @@ const ID='hd20RequestBoard';
    별개의 분류 체계임(사용자 확인: "둘다 필요함"). 하나로 통합하거나 서로 맞춰 바꾸지 말 것 —
    이 SOURCES(5종)는 이 탭의 "발굴 출처" 용도로 의도적으로 유지됨. */
 const SOURCES=['현장 패트롤 점검','자율 5S Audit','혁신팀 자율 점검','5S 자율개선활동 피드백','출처 미분류'];
-const S={year:null,month:'',source:'',team:'',status:'',roll:'',selTeam:''};
+const S={year:null,month:'',source:'',team:'',status:'',roll:'',selTeam:'',chartTeam:''};
 const TEAM_ORDER_KEY='hd20:master:improvement-request-team-order:v1';
 let draftTeamOrder=null;
 function getTeamOrder(masterTeams){
@@ -396,14 +396,14 @@ function render(box){
      모드(화면을 통째로 교체)는 삭제하고, 대신 "04 조치대응팀별 이행성과" 표가 필터와 무관하게 항상
      전체 16개 팀을 다 보여주면서, 조치대응팀 드롭다운에서 선택한 팀의 행만 강조 표시하는 방식으로
      전환 — 공장 현황(KPI)·전체 팀 비교(04)·내 팀 강조가 한 화면/한 인쇄물에 같이 보임. */
-  const teamHighlight=S.team||null;
+  const teamHighlight=S.chartTeam||S.team||null;
   const activeOverdue=rowsM.filter(c=>teamsAll.includes(c.team)&&isOverdue(c,D.today));
   const delayOverallAvg=activeOverdue.length?Math.round(activeOverdue.reduce((a,c)=>a+(delayDays(c,D.today)||0),0)/activeOverdue.length*10)/10:0;
   // 요청/보완요청 기점의 해결 리드타임 (30일 = 1개월). 기한초과 일수와 구분.
   const ltStart=c=>String(c.correctionRequestedAt||c.supplementRequestedAt||c.reworkRequestedAt||c.improvementRequestDate||c.requestedAt||c.date||'').slice(0,10);
   const ltEnd=c=>String(isDone(c)?c.doneDate||'':D.today||'').slice(0,10);
   const ltDays=c=>{const a=ltStart(c),b=ltEnd(c);if(!/^\d{4}-\d{2}-\d{2}$/.test(a)||!/^\d{4}-\d{2}-\d{2}$/.test(b))return null;const n=dayDiff(a,b);return Number.isFinite(n)?Math.max(0,n):null};
-  const ltRows=rowsM.filter(c=>teamsAll.includes(c.team)).map(c=>({c,days:ltDays(c)})).filter(r=>r.days!==null);
+  const ltRows=rowsM.filter(c=>teamsAll.includes(c.team)&&(!S.chartTeam||c.team===S.chartTeam)).map(c=>({c,days:ltDays(c)})).filter(r=>r.days!==null);
   const ltDone=ltRows.filter(r=>isDone(r.c)),ltPending=ltRows.filter(r=>!isDone(r.c));
   const ltAvg=a=>a.length?Math.round(a.reduce((v,r)=>v+r.days,0)/a.length*10)/10:null;
   const ltAvgDone=ltAvg(ltDone),ltAvgPending=ltAvg(ltPending);
@@ -540,7 +540,7 @@ function render(box){
   const kpi=(label,value,detail,risk=false)=>'<div class="rqKpi'+(risk?' risk':'')+'"><small>'+label+'</small><b>'+value+'</b><span class="rqKpiHint">'+detail+'</span></div>';
   const section=(title,meta,content,key)=>'<section class="ibPanel"><div class="ibHead"><span>'+title+'</span><em>'+meta+'</em>'+(key?'<button type="button" class="ibEv" data-evk="'+key+'">근거 데이터</button>':'')+'</div><div class="ibBody">'+content+'</div></section>';
   // 실행·유지의 핵심 추이를 개선요청 종합 하단에도 제공. 팀 선택 시 해당 팀 원천만 집계.
-  const trendScope=D.cases.filter(c=>(!S.team||c.team===S.team)&&(!S.source||sourceOf(c)===S.source));
+  const trendScope=D.cases.filter(c=>(!S.team||c.team===S.team)&&(!S.chartTeam||c.team===S.chartTeam)&&(!S.source||sourceOf(c)===S.source));
   const trendYear=Number(S.year),monthKey=n=>S.year+'-'+String(n).padStart(2,'0');
   const registeredTrend=Array.from({length:12},(_,i)=>trendScope.filter(c=>String(c.date||'').slice(0,7)===monthKey(i+1)).length);
   const completedTrend=Array.from({length:12},(_,i)=>trendScope.filter(c=>isDone(c)&&String(c.doneDate||'').slice(0,7)===monthKey(i+1)).length);
@@ -555,7 +555,7 @@ function render(box){
     return '<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+label.join('·')+' 월별 그래프" style="width:100%;height:auto;display:block"><line x1="'+pad+'" y1="'+(chartH+12)+'" x2="'+(W-pad)+'" y2="'+(chartH+12)+'" stroke="#d9e4eb"/>'+rects+linePath+ticks+'</svg><div style="display:flex;gap:20px;flex-wrap:wrap;font-size:12px;color:#536c7d"><span>■ '+label[0]+'</span>'+(bars.length>1?'<span style="color:#23857d">■ '+label[1]+'</span>':'')+'<span style="color:#c88b21">● '+(bars.length>1?'미완료 잔량':'3개월 이동평균')+'</span></div>'};
   const completionTrendChart=makeTrend([completedTrend],mean3,['완료 건수']);
   const throughputTrendChart=makeTrend([registeredTrend,completedTrend],pendingTrend,['등록 건수','완료 건수']);
-  const trendLabel=(S.team||'전체 팀')+' · '+S.year+'년 · 1~12월';
+  const trendLabel=(S.chartTeam||S.team||'전체 팀')+' · '+S.year+'년 · 1~12월';
   const filters='<div class="ibBar"><label>연도 <select data-f="year">'+D.years.map(y=>'<option'+(y===S.year?' selected':'')+'>'+y+'</option>').join('')+'</select></label><label>월 <input data-f="month" type="number" min="1" max="12" step="1" inputmode="numeric" placeholder="전체" aria-label="조회 월 직접 입력 (1~12, 공란은 연간 전체)" title="1~12 입력 · 공란은 연간 전체" value="'+(S.month?Number(S.month):'')+'" style="width:66px;min-width:66px;box-sizing:border-box;text-align:center"></label><label>요청출처 <select data-f="source">'+opt(SOURCES,S.source)+'</select></label><label>조치대응팀 <select data-f="team">'+opt(D.teams,S.team)+'</select></label><label>진행상태 <select data-f="status">'+opt(['조치대기','진행중','완료','기한초과'],S.status)+'</select></label><label>재발 <select data-f="roll"><option value="">전체</option><option value="Y"'+(S.roll==='Y'?' selected':'')+'>있음</option><option value="N"'+(S.roll==='N'?' selected':'')+'>없음</option></select></label><button type="button" data-rq="go">조회</button><button type="button" class="alt" data-rq="reset">초기화</button><span class="sp"></span><button type="button" class="alt" data-rq="print">인쇄</button><button type="button" class="alt" data-rq="csv">엑셀 다운로드</button></div>';
   box.innerHTML='<div class="ibTitle"><h2>개선요청 종합현황</h2></div><p class="ibNote">'+esc(periodLabel)+' · 요청 발생 · 조치 이행 · 지연 위험 · 팀별 대응력</p>'
     +filters
@@ -599,7 +599,7 @@ function render(box){
     +'</div>'
     +'<div class="ibRow rqPrintSkip"><button type="button" class="rqDetailOpenBtn" data-open-detail="1">📋 개선요청 상세 목록 열기 (전체 '+actionAll.length+'건)</button></div>'
     +'<div class="ibRow" style="grid-template-columns:minmax(0,1fr)">'
-    +section('06. 조치 리드타임 · 일/30일 환산 월','완료 소요기간과 미완료 경과기간 분리',ltLine+ltChart)
+    +section('06. 조치 리드타임 · 일/30일 환산 월',(S.chartTeam||S.team||'전체 팀')+' · 완료 소요기간과 미완료 경과기간 분리',ltLine+ltChart)
     +'</div>'
     +'<p class="rqCaveat">※ 요청출처는 리더십(공장장)·5S모듈·생산혁신팀(HDPS파트) 3종입니다. 원천에 출처 필드가 없는 경우 일부 출처는 등록자 및 Audit 연계 정보로 추정됩니다. 완료일이 없는 완료 건은 월별 완료 추이에서 제외되며 총 완료 건수에는 포함됩니다.</p>';
 
@@ -622,6 +622,12 @@ function render(box){
   box.querySelectorAll('[data-team-step]').forEach(btn=>btn.onclick=()=>{const order=getTeamOrder(D.teams),i=order.indexOf(btn.dataset.team),j=i+Number(btn.dataset.teamStep);if(j<0||j>=order.length)return;moveTeam(btn.dataset.team,order[j],D.teams);render(box)});
   let draggedTeam='';
   box.querySelectorAll('[data-team-axis]').forEach(col=>{
+    col.style.cursor='pointer';col.title+=' · 클릭: 04~06번 해당 팀 조회 (다시 클릭: 전체)';
+    col.setAttribute('role','button');col.setAttribute('tabindex','0');
+    const pick=()=>{const team=col.dataset.teamAxis;if(!team)return;S.chartTeam=S.chartTeam===team?'':team;render(box)};
+    col.addEventListener('click',e=>{if(draggedTeam){draggedTeam='';return}pick()});
+    col.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();pick()}});
+    col.addEventListener('dragend',()=>{draggedTeam=''});
     col.addEventListener('dragstart',e=>{draggedTeam=col.dataset.teamAxis;e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',draggedTeam)});
     col.addEventListener('dragover',e=>{e.preventDefault();e.dataTransfer.dropEffect='move'});
     col.addEventListener('drop',e=>{e.preventDefault();const from=draggedTeam||e.dataTransfer.getData('text/plain');if(moveTeam(from,col.dataset.teamAxis,D.teams))render(box)});
@@ -629,7 +635,7 @@ function render(box){
   const saveOrder=box.querySelector('[data-team-order-save]');if(saveOrder)saveOrder.onclick=()=>{if(saveTeamOrder(D.teams))render(box);else alert('이 브라우저에 정렬순서를 저장할 수 없습니다.')};
   const resetOrder=box.querySelector('[data-team-order-reset]');if(resetOrder)resetOrder.onclick=()=>{draftTeamOrder=[...D.teams];if(saveTeamOrder(D.teams)){render(box)}else alert('기준정보 순서를 저장할 수 없습니다.')};
   box.querySelectorAll('[data-f]').forEach(el=>{el.onchange=()=>{if(el.dataset.f==='month'){const raw=el.value.trim();if(raw!==''&&(!/^\\d{1,2}$/.test(raw)||Number(raw)<1||Number(raw)>12)){el.setCustomValidity('월은 1~12 사이의 숫자로 입력해 주세요.');el.reportValidity();return;}el.setCustomValidity('');S.month=raw?String(Number(raw)).padStart(2,'0'):'';}else S[el.dataset.f]=el.value;render(box)};if(el.dataset.f==='month')el.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();el.blur()}})});
-  box.querySelector('[data-rq="reset"]').onclick=()=>{Object.assign(S,{year:null,month:'',source:'',team:'',status:'',roll:'',selTeam:''});render(box)};box.querySelector('[data-rq="go"]').onclick=()=>render(box);box.querySelector('[data-rq="print"]').onclick=()=>window.print();
+  box.querySelector('[data-rq="reset"]').onclick=()=>{Object.assign(S,{year:null,month:'',source:'',team:'',status:'',roll:'',selTeam:'',chartTeam:''});render(box)};box.querySelector('[data-rq="go"]').onclick=()=>render(box);box.querySelector('[data-rq="print"]').onclick=()=>window.print();
   box.querySelectorAll('.rqMoreBtn').forEach(btn=>btn.onclick=()=>{const prev=btn.previousElementSibling;if(!prev)return;if(prev.classList.contains('rqMoreChart')){prev.hidden=false}else{prev.querySelectorAll('tr.rqRowMore').forEach(tr=>tr.hidden=false)}btn.remove()});
   box.querySelector('[data-rq="csv"]').onclick=()=>{
     const out=[['5S 개선요청 종합 대시보드',S.year+'년',S.month?S.month+'월':'연간누적'],[],['요청번호','요청출처','조치대응부서','작업장','진행현황','요청일','완료예정일','완료일']];
