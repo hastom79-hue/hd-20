@@ -131,7 +131,8 @@ jobs:
               await page.locator('#amRequestSource').selectOption({label:'현장 패트롤 점검'});
               await page.locator('#amDraft').click();
               const stored=await page.evaluate(()=>JSON.parse(localStorage.getItem('hd20ActionCasesV2')||'[]'));
-              const row=stored.find(x=>x.workplace==='CI 격리 작업장');
+              const chosenWorkplace=await page.locator('#amWorkplace').inputValue();
+              const row=stored.find(x=>x.workplace===chosenWorkplace&&x.problem==='CI 개선요청 검증');
               assert(row,'request not persisted');
               assert.strictEqual(row.requestSource,'현장 패트롤 점검');
               await page.locator('#amCaseRows .amCaseLink[data-id]').filter({hasText:row.id}).first().click();
