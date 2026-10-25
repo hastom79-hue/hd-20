@@ -552,7 +552,7 @@ function render(box){
   const mean3=completedTrend.map((v,i)=>{const month=monthKey(i+1),today=String(D.today||'').slice(0,7);if(today&&month>today)return null;return Math.round(completedTrend.slice(Math.max(0,i-2),i+1).reduce((a,b)=>a+b,0)/Math.min(3,i+1)*10)/10});
   const monthEnd=m=>new Date(Date.UTC(trendYear,m,0)).toISOString().slice(0,10);
   const pendingTrend=Array.from({length:12},(_,i)=>{const monthCut=monthEnd(i+1),today=String(D.today||'').slice(0,10);if(today&&monthCut.slice(0,7)>today.slice(0,7))return null;const cut=today&&monthCut>today?today:monthCut;return trendScope.filter(c=>/^\d{4}-\d{2}-\d{2}$/.test(String(c.date||'').slice(0,10))&&String(c.date).slice(0,10)<=cut&&(!isDone(c)||(!!c.doneDate&&String(c.doneDate).slice(0,10)>cut)||(!c.doneDate&&!!today&&cut<today))).length});
-  const makeTrend=(bars,line,label)=>{const W=1140,H=236,pad=52,chartH=170,slot=(W-2*pad)/12,rawMax=Math.max(0,...bars.flat(),...line.filter(v=>v!==null&&Number.isFinite(Number(v))));
+  const makeTrend=(bars,line,label)=>{const W=1140,H=312,pad=52,chartH=246,slot=(W-2*pad)/12,rawMax=Math.max(0,...bars.flat(),...line.filter(v=>v!==null&&Number.isFinite(Number(v))));
     const tickStep=Math.max(1,Math.ceil(rawMax/4)),max=tickStep*4;
     const scale=v=>chartH*(Number(v)||0)/max;
     const yTicks=Array.from({length:5},(_,i)=>{const value=i*tickStep,y=chartH+12-scale(value);return '<line x1="'+pad+'" y1="'+y.toFixed(1)+'" x2="'+(W-pad)+'" y2="'+y.toFixed(1)+'" stroke="#e7edf1"/><text x="'+(pad-10)+'" y="'+(y+4).toFixed(1)+'" font-size="11" fill="#60788b" text-anchor="end">'+value+'</text>'}).join('');
