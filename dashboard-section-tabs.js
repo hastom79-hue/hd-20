@@ -19,7 +19,7 @@ function css(){if(document.getElementById('hd20DashboardSectionTabsStyle'))retur
 #hd20DashboardPriority .hd20V3Readiness p{margin:6px 0 0;font-size:12px;color:#586b78;line-height:1.5}
 @media(max-width:760px){#hd20DashboardPriority .hd20V3ReadinessMain{flex-wrap:wrap}}
 /* V3 shared professional dashboard hierarchy: visual-only, no data mutation */
-body.hd20DashboardSummaryActive .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:12px;align-items:stretch}
+body.hd20DashboardSummaryActive #hd20DashboardPriority .hd20DashboardPriorityGroups{display:block!important;visibility:visible!important;min-height:120px}body.hd20DashboardSummaryActive #hd20DashboardPriority .httGrid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}body.hd20DashboardSummaryActive #hd20DashboardPriority .hd20HealthTrendCard{display:block!important;visibility:visible!important}@media(max-width:760px){body.hd20DashboardSummaryActive #hd20DashboardPriority .httGrid{grid-template-columns:1fr}}body.hd20DashboardSummaryActive .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:12px;align-items:stretch}
 body.hd20DashboardSummaryActive .cards>*{min-width:0;box-sizing:border-box}
 body.hd20DashboardSummaryActive #hd20DashboardPriority{margin-block:16px 22px}
 body.hd20DashboardImproveActive #hd20ImproveBoard,body.hd20DashboardRequestActive #hd20RequestBoard{width:100%;min-width:0;margin-top:12px}
