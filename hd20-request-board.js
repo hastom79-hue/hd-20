@@ -548,7 +548,7 @@ function render(box){
   const trendYear=Number(S.year),monthKey=n=>S.year+'-'+String(n).padStart(2,'0');
   const registeredTrend=Array.from({length:12},(_,i)=>trendScope.filter(c=>String(c.date||'').slice(0,7)===monthKey(i+1)).length);
   const completedTrend=Array.from({length:12},(_,i)=>trendScope.filter(c=>isDone(c)&&String(c.doneDate||'').slice(0,7)===monthKey(i+1)).length);
-  const mean3=completedTrend.map((v,i)=>Math.round(completedTrend.slice(Math.max(0,i-2),i+1).reduce((a,b)=>a+b,0)/(Math.min(3,i+1))*10)/10);
+  const mean3=completedTrend.map((v,i)=>{const month=monthKey(i+1),today=String(D.today||'').slice(0,7);if(today&&month>today)return null;return Math.round(completedTrend.slice(Math.max(0,i-2),i+1).reduce((a,b)=>a+b,0)/Math.min(3,i+1)*10)/10});
   const monthEnd=m=>new Date(Date.UTC(trendYear,m,0)).toISOString().slice(0,10);
   const pendingTrend=Array.from({length:12},(_,i)=>{const cut=monthEnd(i+1),today=String(D.today||'').slice(0,10);if(today&&cut.slice(0,7)>today.slice(0,7))return null;return trendScope.filter(c=>/^\d{4}-\d{2}-\d{2}$/.test(String(c.date||'').slice(0,10))&&String(c.date).slice(0,10)<=cut&&(!isDone(c)||!c.doneDate||String(c.doneDate).slice(0,10)>cut)).length});
   const makeTrend=(bars,line,label)=>{const W=1140,H=236,pad=52,chartH=170,slot=(W-2*pad)/12,rawMax=Math.max(0,...bars.flat(),...line.filter(v=>v!==null&&Number.isFinite(Number(v))));
