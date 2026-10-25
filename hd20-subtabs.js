@@ -1,5 +1,5 @@
 (()=>{'use strict';
-const MAP={dashboard:[['summary','오늘의 운영판단'],['analysis','성과·건전성 추이'],['map','고도화 맵']],activity:[['manage','① 문제·개선 등록'],['analysis','② 실행현황·우수활동 선별']],advancement:[['judge','① 후보·판정'],['standard','② 확정사례 관리'],['trend','③ 고도화 성과분석']],audit:[['draw','① Audit 실시'],['ongoing','② 유지점검'],['retention','③ 결과·재조치']],action:[['manage','① 개선요청·실행'],['leadtime','② 지연·병목관리'],['verify','③ 효과검증·재발폐쇄']]};
+const MAP={dashboard:[['summary','오늘의 운영판단'],['analysis','성과·건전성 추이'],['map','고도화 맵']],activity:[['manage','① 문제·개선 등록'],['analysis','② 실행현황·우수활동 선별']],advancement:[['judge','① 후보·판정'],['standard','② 확정사례 관리'],['trend','③ 고도화 성과분석']],audit:[['draw','① Audit 실시'],['ongoing','② 유지점검'],['retention','③ 결과·재조치']],action:[['manage','① 개선조치 등록·실행'],['leadtime','② 미완료·지연관리'],['verify','③ 효과검증·최종종결']]};
 const CONTRACT={
  'dashboard.summary':{title:'종합현황',purpose:'울산캠퍼스 5S 운영상태를 한 화면에서 파악하고 오늘 우선 확인할 영역을 정합니다.',judge:'목표 대비 성과, 고도화 확보, Audit 대기, 미완료·기한경과·재발을 동시에 확인',next:'이상 KPI·Risk 카드를 상세근거로 Drill-down하여 담당 업무 탭으로 이동',features:['핵심 KPI','팀별 성과','Action Summary','우선순위']},
  'dashboard.analysis':{title:'성과·운영분석',purpose:'단순 실적 건수를 넘어 판정 Lead Time, 유지율, 재발률, 조치완료율 등 운영 건전성을 분석합니다.',judge:'성과 증가가 프로세스 건전성 개선과 함께 일어나는지 확인',next:'취약 지표의 원천 데이터를 확인하고 원인 업무영역에서 조치',features:['운영 KPI','월별 추이','유지율','재발·기한']},
@@ -16,9 +16,9 @@ const CONTRACT={
  'audit.inspect':{title:'현장 Audit·판정',purpose:'추출된 대상에 대해 실제 Audit을 실시하고 점검항목별 결과를 입력합니다.',judge:'실시 여부, Audit 결과(적합/부적합), 점검항목별 상세 입력 완결성을 확인',next:'부적합 건은 개선조치로 연결하고, 실시일은 유지관리 D-Day로 설정',features:['Audit 실시결과','점검항목 상세입력','부적합 연계']},
  'audit.ongoing':{title:'6개월 유지점검',purpose:'Audit 실시일부터 6개월 동안 개선상태가 유지되는지 진행 중인 건을 추적합니다.',judge:'관리중 건의 재발여부·유지상태와 월별 확인 누락을 점검',next:'유지미흡·재발 징후가 보이면 재조치하고, 6개월 도래 건은 종료평가 탭에서 확정',features:['6개월 추적','월별 확인','재발 징후']},
  'audit.retention':{title:'결과·재조치',purpose:'6개월 관리기간이 도래한 건에 대해 최종 유지 여부를 판정하고 종료평가를 완료합니다.',judge:'종료평가 대기·완료 상태와 최종 판정(적합/부적합) 결과를 확인',next:'부적합 건은 개선조치로 재연결하고, 적합 건은 관리 종료 확정',features:['종료평가','최종판정','재발 확정']},
- 'action.manage':{title:'개선요청·실행',purpose:'Audit 및 현장 이슈에서 발생한 개선요청을 담당·기한·증빙 기반으로 끝까지 실행합니다.',judge:'기한 내 조치 여부와 BEFORE/AFTER 및 완료증빙의 충분성을 확인',next:'대기·진행·기한경과 건을 우선 Follow-up하고 완료 건은 효과검증으로 이동',features:['담당·기한','D+7~14','조치증빙','기한경과']},
- 'action.leadtime':{title:'지연·병목관리',purpose:'등록부터 완료까지 개선조치의 예상·실제 해결 Lead Time을 비교해 지연 여부를 확인합니다.',judge:'계획 대비 실제 처리기간 차이가 큰 건과 지연 상태를 확인',next:'지연 건은 조치 목록에서 우선 Follow-up',features:['예상·실제 LT 비교','지연 여부']},
- 'action.verify':{title:'효과검증·재발폐쇄',purpose:'완료된 개선조치가 실제 효과를 만들었는지 검증하고 같은 문제가 재발하는지 추적합니다.',judge:'완료표시와 효과확인을 분리하고 효과 미검증·재발 건을 집중 확인',next:'효과 미흡은 추가조치, 재발은 근인·대책을 재검토하여 폐쇄루프 재진입',features:['효과검증','검증대기','재발관리','폐쇄루프']}
+ 'action.manage':{title:'개선조치 등록·실행',purpose:'Audit 및 현장 이슈에서 발생한 개선요청을 담당·기한·증빙 기반으로 끝까지 실행합니다.',judge:'기한 내 조치 여부와 BEFORE/AFTER 및 완료증빙의 충분성을 확인',next:'대기·진행·기한경과 건을 우선 Follow-up하고 완료 건은 효과검증으로 이동',features:['담당·기한','D+7~14','조치증빙','기한경과']},
+ 'action.leadtime':{title:'미완료·지연관리',purpose:'등록부터 완료까지 개선조치의 예상·실제 해결 Lead Time을 비교해 지연 여부를 확인합니다.',judge:'계획 대비 실제 처리기간 차이가 큰 건과 지연 상태를 확인',next:'지연 건은 조치 목록에서 우선 Follow-up',features:['예상·실제 LT 비교','지연 여부']},
+ 'action.verify':{title:'효과검증·최종종결',purpose:'완료된 개선조치가 실제 효과를 만들었는지 검증하고 같은 문제가 재발하는지 추적합니다.',judge:'완료표시와 효과확인을 분리하고 효과 미검증·재발 건을 집중 확인',next:'효과 미흡은 추가조치, 재발은 근인·대책을 재검토하여 폐쇄루프 재진입',features:['효과검증','검증대기','재발관리','폐쇄루프']}
 };
 const WORKFLOW={
  'activity.manage':['현장 문제·개선내용과 BEFORE/AFTER 증빙 확인','등록정보·증빙 완결 여부 판정','누락 보완 또는 고도화 후보 연결'],
