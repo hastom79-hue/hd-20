@@ -11,7 +11,7 @@ function add6(v){const key=seoulKey(v),m=key.match(/^(\d{4})-(\d{2})-(\d{2})$/);
 function auditId(d){return txt(d?.id||d?.drawId||d?.auditDrawId)}
 function actionAuditId(a){return txt(a?.auditDrawId||a?.sourceCaseId)}
 function status(a){return txt(a?.status||a?.activityStatus||a?.judgeState||a?.auditState)}
-function done(a){return /완료|확정|종료|종결|close|done/i.test(status(a))}
+function done(a){const s=status(a);return !/미완료|미확정|미종료|미종결|완료대기|완료예정|진행|대기|보완|반려|취소/i.test(s)&&/완료|확정|종료|종결|close|done/i.test(s)}
 function effect(a){if(a?.effectVerified===true)return true;const v=txt(a?.effectState||a?.effectResult);if(!v||/대기|미검증|미흡|부적합|무효|false|^0$|^N$/i.test(v))return false;return /^(유효|적합|효과확인|효과확인완료|검증완료|완료|true|1|Y)$/i.test(v)}
 function recurrenceValue(a){const v=txt(a?.recurrenceState??a?.recurrent??a?.['재발여부']);if(a?.recurrence===true||/^(재발|발생|true|1|Y)$/i.test(v))return{known:true,recurred:true};if(a?.recurrence===false||/^(미발생|없음|미재발|false|0|N)$/i.test(v))return{known:true,recurred:false};return{known:false,recurred:false}}
 function recur(a){return recurrenceValue(a).recurred}
