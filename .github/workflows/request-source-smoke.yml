@@ -44,7 +44,7 @@ jobs:
           assert(board.includes('const sourceStats=orderedSources.map'),'source bars must follow master order');
           assert(board.includes('x.done/x.count'),'source completion rate must use its own request count');
           assert(/hd20-request-board\.js\?v=20261025-daily-monthly-leadtime/.test(html),'dashboard deploy cache-bust missing');
-          assert(html.includes('web-validation-fixture.js?v=20261018-source-sync-1'),'fixture cache-bust missing');
+          assert(html.includes('web-validation-fixture.js?v=20261018-upgrade-realism-1'),'fixture cache-bust missing');
           assert(board.includes('rqSourceColumns'),'vertical paired source chart missing');
           assert(board.includes('발굴 리소스 · 범례 정의'),'resource legend definitions missing');
           assert(html.includes('action-mail-workflow.js?v=20261018-audit-source-2'),'action registration cache-bust missing');
