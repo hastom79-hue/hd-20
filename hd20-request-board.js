@@ -560,7 +560,10 @@ function render(box){
     const rects=Array.from({length:12},(_,i)=>bars.map((v,k)=>{const g=barGeom(i,k);return '<rect x="'+g.left.toFixed(1)+'" y="'+g.top.toFixed(1)+'" width="'+g.width.toFixed(1)+'" height="'+g.height.toFixed(1)+'" fill="'+(k?'#23857d':'#84a9bd')+'"><title>'+(i+1)+'월 '+label[k]+' '+v[i]+'건</title></rect>'}).join('')).join('');
     const barLabels=Array.from({length:12},(_,i)=>bars.map((v,k)=>{if(!v[i])return '';const g=barGeom(i,k);return '<text x="'+(g.left+g.width/2).toFixed(1)+'" y="'+Math.max(10,g.top-5).toFixed(1)+'" text-anchor="middle" font-size="11" font-weight="600" fill="#23465b" paint-order="stroke" stroke="#fff" stroke-width="2.5" stroke-linejoin="round">'+v[i]+'</text>'}).join('')).join('');
     const linePath=line.length?'<polyline fill="none" stroke="#e29b25" stroke-width="2.4" points="'+line.map((v,i)=>v===null?'':(pad+i*slot+slot/2).toFixed(1)+','+(chartH+12-scale(v)).toFixed(1)).filter(Boolean).join(' ')+'"/>':'';
-    const ticks=Array.from({length:12},(_,i)=>'<text x="'+(pad+i*slot+slot/2).toFixed(1)+'" y="210" text-anchor="middle" font-size="12" fill="#60788b">'+(i+1)+'월</text>').join('');
+    /* 사용자 지적(스크린샷): "가로축이 차트에 겹쳐있다" — 월 라벨(1월~12월)이 y="210"이라는 고정
+   좌표에 그려지는데, 막대그래프 영역(chartH=246, 바닥선은 chartH+12=258)보다 작은 값이라 막대 높이가
+   어느 정도 있는 달에는 라벨이 막대 중간에 겹쳐 보이고 있었음. 바닥선(chartH+12) 아래로 이동. */
+const ticks=Array.from({length:12},(_,i)=>'<text x="'+(pad+i*slot+slot/2).toFixed(1)+'" y="'+(chartH+28)+'" text-anchor="middle" font-size="12" fill="#60788b">'+(i+1)+'월</text>').join('');
     return '<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+label.join('·')+' 월별 그래프" style="width:100%;height:auto;display:block"><line x1="'+pad+'" y1="12" x2="'+pad+'" y2="'+(chartH+12)+'" stroke="#b8cbd7"/>'+yTicks+rects+linePath+barLabels+ticks+'</svg><div style="display:flex;gap:20px;flex-wrap:wrap;font-size:12px;color:#536c7d"><span>■ '+label[0]+'</span>'+(bars.length>1?'<span style="color:#23857d">■ '+label[1]+'</span>':'')+'<span style="color:#c88b21">● '+(bars.length>1?'미완료 잔량':'3개월 이동평균')+'</span></div>'};
   const completionTrendChart=makeTrend([completedTrend],mean3,['완료 건수']);
   const throughputTrendChart=makeTrend([registeredTrend,completedTrend],pendingTrend,['등록 건수','완료 건수']);
