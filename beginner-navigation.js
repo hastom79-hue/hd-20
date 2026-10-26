@@ -36,7 +36,9 @@ function reconcileMasterView(){
  if(!nav||activeKey!=='master'||!nav.querySelector('button[data-key="master"].active'))return;
  const modal=document.getElementById('masterModal');
  if(!modal)return;
- document.querySelector('.app')?.classList.add('awFocused');
+ const app=document.querySelector('.app');
+ if(app&&modal.parentElement!==app)app.appendChild(modal);
+ app?.classList.add('awFocused');
  if(!modal.classList.contains('on'))modal.classList.add('on');
  document.querySelectorAll('.awScreen.on').forEach(el=>{if(el!==modal)el.classList.remove('on')});
 }
@@ -53,7 +55,9 @@ body:has(.beginnerNav button[data-key="master"].active) .app>.hd20DashboardSecti
 body:has(.beginnerNav button[data-key="master"].active) .app>#hd20OperationalBridge,
 body:has(.beginnerNav button[data-key="master"].active) .app>.hd20ApprovedLanding,
 body:has(.beginnerNav button[data-key="master"].active) #hd20DashboardSectionTabs{display:none!important}
-body:has(.beginnerNav button[data-key="master"].active) #masterModal{display:block!important}
+/* The master editor is an app-level screen. Dashboard widgets must not coexist. */
+.app.awFocused:has(> #masterModal.on) > :not(.top):not(.beginnerNav):not(#masterModal):not(script):not(style){display:none!important}
+.app.awFocused:has(> #masterModal.on) > #masterModal{display:block!important}
 `;
  document.head.appendChild(css);
  const nav=document.querySelector('.beginnerNav');
