@@ -287,4 +287,15 @@ const action=[];teams.forEach((team,ti)=>{for(let i=0;i<10;i++){const isDone=!(i
  if(!sessionStorage.getItem('hd20DemoSeedReloaded')){sessionStorage.setItem('hd20DemoSeedReloaded','1');location.reload()}
 }
 boot();
+/* DB hydration may arrive after the first seed. Restore browser-only demo rows
+   if the canonical pull replaced them, then refresh all KPI consumers. */
+let demoRepairPending=false;
+window.addEventListener('hd20-db-status',e=>{
+ const mode=String(e.detail?.mode||'');
+ if(!['initial-pull','pull','conflict-pull'].includes(mode)||demoRepairPending)return;
+ const missing=Object.values(K).some(k=>!parse(k).some(isDemo));
+ if(!missing)return;
+ demoRepairPending=true;
+ setTimeout(()=>{demoRepairPending=false;boot();window.HD20KPIData?.signal?.()},150);
+});
 })();
