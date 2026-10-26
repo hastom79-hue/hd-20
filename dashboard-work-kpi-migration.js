@@ -28,7 +28,8 @@ function checkedMetrics(area,sub){
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function subOptions(area){
  const m=window.HD20_SUBNAV?.map?.[area.key];
- return Array.isArray(m)&&m.length?m.filter(([sub])=>Object.hasOwn(CONTRACTS[area.key]||{},sub)):[[area.defaultSub,area.title]];
+ const filtered=Array.isArray(m)?m.filter(([sub])=>Object.hasOwn(CONTRACTS[area.key]||{},sub)):[];
+ return filtered.length?filtered:[[area.defaultSub,area.title]];
 }
 function ensure(){
  const app=document.querySelector('.app'),anchor=document.getElementById('hd20DashboardPriority')||app?.querySelector('.cards');
