@@ -26,6 +26,16 @@ const {chromium}=require('playwright');
   });
   if(dashboard.groups!==3||dashboard.tiles!==12||!dashboard.visible||!dashboard.sourceMatch)
    throw new Error('dashboard KPI consolidation failed: '+JSON.stringify(dashboard));
+  const auditLabel=await page.locator('[data-dwm-area="audit"] .hd20DwmTile span').first().textContent();
+  if(auditLabel!=='Audit 원천')throw new Error('Audit title/KPI mismatch: '+auditLabel);
+  for(const section of ['improve','request','map']){
+   await page.evaluate(section=>window.HD20_DASHBOARD_TABS.apply(section,{scroll:false}),section);
+   await page.waitForTimeout(120);
+   const shown=await page.locator('#hd20DashboardWorkMetrics').isVisible();
+   if(shown)throw new Error('consolidated KPI duplicated on dashboard '+section);
+  }
+  await page.evaluate(()=>window.HD20_DASHBOARD_TABS.apply('summary',{scroll:false}));
+  if(!await page.locator('#hd20DashboardWorkMetrics').isVisible())throw new Error('summary KPI panel not restored');
   await page.selectOption('[data-dwm-select="audit"]','retention');
   const updated=await page.evaluate(()=>document.querySelector('[data-dwm-area="audit"] .hd20DwmTile span')?.textContent);
   if(updated!=='관리중')throw new Error('audit KPI subtab selection failed: '+updated);
