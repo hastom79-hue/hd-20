@@ -114,7 +114,7 @@ let summaryDataRecoveryAttempted=false;
 function safeRender(){
  if(!summaryDataRecoveryAttempted&&window.HD20DemoData?.refresh&&window.HD20KPIData?.snapshot){
    let data=null;try{data=window.HD20KPIData.snapshot()}catch{}
-   if(data&&(!data.rows?.length)&&!(window.HD20KPIData.actionCases?.()||[]).length){
+   let op={};try{op=window.HD20KPIData.operational?.(data)||{}}catch{}const noKpiValues=!KPI.some(k=>Number.isFinite(Number(op[k.key]))&&op[k.key]!==null&&op[k.key]!==undefined);const demoStats=window.HD20DemoData.stats?.();const noDemo=!demoStats||Object.values(demoStats).every(x=>!x.demo);if(noKpiValues&&noDemo){
      summaryDataRecoveryAttempted=true;
      try{window.HD20DemoData.refresh()}catch(e){console.error('[HD20] 종합현황 검증데이터 복구 실패',e)}
    }
