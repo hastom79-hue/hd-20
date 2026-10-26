@@ -39,7 +39,7 @@ function metrics(area,sub){
  'action.manage':[['전체 개선요청',actions.length,'건'],['진행/대기',actions.filter(x=>!done(x)).length,'건'],['완료',doneActions.length,'건'],['기한경과',actions.filter(overdue).length,'건']],
  'action.verify':[['검증 대상',doneActions.length,'건'],['효과검증 완료',doneActions.filter(effect).length,'건'],['검증대기',doneActions.filter(x=>!effect(x)).length,'건'],['재발',doneActions.filter(x=>effect(x)&&recur(x)).length,'건']]};
  if(area==='audit'&&sub==='ongoing')return [['관리중',audits.filter(x=>x.auditDate&&!x.finalEvaluation).length,'건'],['재발 징후',retentionRisk.filter(x=>!txt(x.finalEvaluation||x.auditFinalState)).length,'건'],['Action 연계',linked.length,'건'],['월별 확인',audits.filter(x=>x.auditDate&&!x.finalEvaluation&&txt(x.auditDate).slice(0,7)===(window.HD20KPIData?.seoulDateKey?.()||new Date().toISOString().slice(0,10)).slice(0,7)).length,'건']];
- if(area==='action'&&sub==='leadtime')return map['action.manage'];
+ if(area==='action'&&sub==='leadtime'){const due=x=>txt(x.dueDate||x.due||x.targetDate).slice(0,10),finished=x=>txt(x.doneDate).slice(0,10);return [['계획대비 지연',actions.filter(x=>due(x)&&finished(x)&&finished(x)>due(x)).length,'건'],['계획대비 조기완료',actions.filter(x=>due(x)&&finished(x)&&finished(x)<due(x)).length,'건'],['7일 이상 지연',actions.filter(x=>due(x)&&finished(x)&&(new Date(finished(x))-new Date(due(x)))/86400000>=7).length,'건'],['정시완료(당일)',actions.filter(x=>due(x)&&finished(x)&&finished(x)===due(x)).length,'건']]}
  return map[`${area}.${sub}`]||(area==='dashboard'?map['dashboard.summary']:[]);
 }
 function restoreParity(api){if(api.__evidenceParityPatched)delete api.__evidenceParityPatched;const parity=window.HD20_KPI_PARITY_GUARD;if(parity?.patchApi){parity.patchApi();parity.schedule?.()}}
