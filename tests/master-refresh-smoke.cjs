@@ -20,10 +20,12 @@ const {chromium}=require('playwright');
     modalParent:modal?.parentElement===app,modalVisible:visible(modal),
     masterEditorVisible:visible(document.getElementById('hd20IntegratedMasterFactors'))||visible(document.getElementById('hd20OperatingPolicyPanel')),
     advancementVisible:visible(adv),workplaceVisible:visible(document.getElementById('awWorkplace')),
-    sub:new URLSearchParams(location.search).get('sub')};
+    sub:new URLSearchParams(location.search).get('sub'),
+    subnavArea:window.HD20_SUBNAV?.state?.().area,
+    view:app?.dataset.hdView};
   });
   console.log(label,state);
-  if(state.selected!=='master'||!state.modalParent||!state.modalVisible||!state.masterEditorVisible||state.advancementVisible||state.workplaceVisible||state.sub)
+  if(state.selected!=='master'||!state.modalParent||!state.modalVisible||!state.masterEditorVisible||state.advancementVisible||state.workplaceVisible||state.sub||state.subnavArea!=='master'||state.view!=='master')
    throw new Error(label+': master screen isolation failed: '+JSON.stringify(state));
  };
  try{
