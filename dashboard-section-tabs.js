@@ -2,7 +2,7 @@
 const ID='hd20DashboardSectionTabs';
 /* V3: presentation-only tab refinements; keep all target ownership and filter logic unchanged. */
 const TABS=[
- {key:'summary',label:'운영 종합진단',desc:'핵심 지표 · 운영 건전성 현재값',targets:['#hd20DashboardPriority','.cards']},
+ {key:'summary',label:'운영 종합진단',desc:'핵심 지표 · 운영 건전성 현재값',targets:['#hd20DashboardPriority','.cards','#hd20DashboardWorkMetrics']},
  {key:'improve',label:'5S 자율개선 종합',desc:'유형·월별·팀별 인당 개선건수',targets:['#hd20ImproveBoard']},
  {key:'request',label:'5S 개선요청 종합',desc:'처리 단계·팀별 완료율·처리일수',targets:['#hd20RequestBoard']},
 
