@@ -71,3 +71,7 @@
 @media(max-width:1120px){#masterModal .imfFactorLayout{grid-template-columns:150px minmax(0,1fr)}#masterModal .imfFactorEditor{padding:15px 13px}#masterModal .imfFactorHeader{padding:17px}}
 @media(max-width:800px){#masterModal .imfFactorLayout{grid-template-columns:1fr}#masterModal .imfFactorCategories{flex-direction:row;flex-wrap:wrap;border-right:0;border-bottom:1px solid #e2eaf0}#masterModal .imfFactorCategory{width:auto}#masterModal .imfFactorToolbar{flex-wrap:wrap}#masterModal .imfFactorHeader{flex-wrap:wrap}}
 @media(max-width:530px){#masterModal .imfFactorTableHead,#masterModal .imfFactorRow{grid-template-columns:32px minmax(0,1fr) 100px;gap:5px}#masterModal .imfFactorRowActions button{min-width:26px;padding:4px}#masterModal .imfFactorAdd{grid-template-columns:1fr}#masterModal .imfFactorActions{flex-wrap:wrap}#masterModal .imfFactorSaveStatus{width:100%}}
+
+/* Override legacy V6 header rules injected at runtime. */
+#masterModal .imfSec.imfFactorWorkspace{margin:0!important}
+#masterModal .imfSec .imfFactorHeader h4{border:0!important;padding:0!important;margin:5px 0 7px!important;font-size:21px!important;line-height:1.3!important}
