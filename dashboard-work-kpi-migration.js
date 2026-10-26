@@ -89,6 +89,6 @@ function boot(){
  window.addEventListener('pageshow',schedule);
  setTimeout(schedule,350);setTimeout(schedule,1500);
 }
-window.HD20_DASHBOARD_WORK_METRICS={render,schedule,selected};
+window.HD20_DASHBOARD_WORK_METRICS={render,schedule,selected,rows:checkedMetrics};
 document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot,{once:true}):boot();
 })();
