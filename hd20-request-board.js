@@ -472,8 +472,11 @@ function render(box){
      너비 계산은 그대로 전체 탭 폭(box.clientWidth) 기준으로 남아 있어, 차트가 패널보다 거의 2배
      넓게 그려지고 overflow-x:auto로 가로 스크롤이 생겨 07~12월이 스크롤 밖에 가려져 있었음(겉보기엔
      "01~06월만 있고 다 비어 있는" 것처럼 보였던 진짜 원인) — 패널의 실제 폭(절반) 기준으로 수정. */
-  const monthlyPanelWidth=box.querySelector('.rqSplit4060 .ibPanel:nth-child(2)')?.getBoundingClientRect().width||0;
-  const monthlyTrend=chart({w:Math.max(380,Math.floor(monthlyPanelWidth||box.clientWidth*.6)-32),cats:ML,minSlot:30,series:[{name:'신규 요청',vals:regM,color:'#829db5'},{name:'완료',vals:monthlyDone,color:'#247c83',widthScale:1.3,pct:monthlyDonePct}]});
+  /* Calculate from the parent container, not from the previous render's chart panel.
+     On refresh the old panel can be hidden, stale, or zero-width. */
+  const parentWidth=Math.max(720,box.getBoundingClientRect().width||box.clientWidth||960);
+  const monthlyChartWidth=Math.max(380,Math.floor((parentWidth-36)*.6)-40);
+  const monthlyTrend=chart({w:monthlyChartWidth,cats:ML,minSlot:30,series:[{name:'신규 요청',vals:regM,color:'#829db5'},{name:'완료',vals:monthlyDone,color:'#247c83',widthScale:1.3,pct:monthlyDonePct}]});
   const teamCompletion=chart({w:Math.max(440,box.clientWidth-85),h:260,cats:teamRows.map(r=>r.team),rotate:true,minSlot:64,series:[{name:'완료',vals:teamRows.map(r=>r.done),color:'#247c83'},{name:'미완료',vals:teamRows.map(r=>r.open+r.over),color:'#c69a65'}]});
   // Approved V2: three fixed source categories, proportional horizontal bars.
   const sourceTotal=rowsM.length,provisionalCount=rowsM.filter(c=>!confirmedSource(c)).length;
@@ -659,7 +662,7 @@ function ensure(){
   css();let box=document.getElementById(ID);
   if(!box){const anchor=document.getElementById('hd20ImproveBoard')||document.getElementById('hd20DashboardPriority')||document.querySelector('.cards')||document.getElementById('hd20DashboardSectionTabs');if(!anchor)return false;box=document.createElement('section');box.id=ID;anchor.insertAdjacentElement('afterend',box);
     const T=window.HD20_DASHBOARD_TABS;if(T?.apply)T.apply(T.active?.()||'summary',{scroll:false})}
-  safeRender(box);return true}
+  if(!box.dataset.hd20InitialRender){box.dataset.hd20InitialRender='1';safeRender(box)}return true}
 let tries=0;(function boot(){if(!ensure()&&tries++<80)setTimeout(boot,150)})();window.addEventListener('hd20-dashboard-ready',()=>ensure());window.addEventListener('hd20-kpi-source-updated',()=>{if(!document.getElementById(ID))ensure()});document.addEventListener('DOMContentLoaded',()=>ensure(),{once:true});window.addEventListener('load',()=>ensure(),{once:true});window.addEventListener('pageshow',()=>{const b=document.getElementById(ID);if(b)safeRender(b)});
 document.addEventListener('click',e=>{if(e.target.closest?.('#hd20DashboardSectionTabs button[data-dashboard-section="request"]'))setTimeout(()=>{const b=document.getElementById(ID);if(b)safeRender(b)},80)},true);
 ['hd20-kpi-source-updated','hd20-action-updated','hd20-policy-updated'].forEach(ev=>window.addEventListener(ev,()=>setTimeout(()=>{const b=document.getElementById(ID);if(b)safeRender(b)},80)));
