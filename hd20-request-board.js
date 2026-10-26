@@ -92,7 +92,7 @@ function sourceOf(c){
   let hash=2166136261;for(let i=0;i<key.length;i++)hash=Math.imul(hash^key.charCodeAt(i),16777619)>>>0;
   return SOURCES[hash%4];
 }
-function css(){const prior=document.getElementById(ID+'Style');if(prior)prior.remove();const s=document.createElement('style');s.id=ID+'Style';s.textContent=`
+function css(){if(document.getElementById(ID+'Style'))return;const s=document.createElement('style');s.id=ID+'Style';s.textContent=`
 #${ID} .rqSplit4060 .ibPanel:nth-child(2) svg{max-width:100%;height:auto;display:block}\n#${ID}{background:#fff;border:1px solid #dfe6ec;border-radius:14px;padding:16px 18px;box-shadow:0 1px 3px rgba(20,48,76,.06)}
 #${ID} .ibTitle{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}#${ID} h2{margin:0;font-size:21px;color:#14304c}
 #${ID} .ibNote{margin:4px 0 12px;font-size:13px;font-weight:800;color:#22303f}
@@ -660,13 +660,9 @@ function ensure(){
 let tries=0;(function boot(){if(!ensure()&&tries++<80)setTimeout(boot,150)})();window.addEventListener('hd20-dashboard-ready',()=>ensure());window.addEventListener('hd20-kpi-source-updated',()=>{if(!document.getElementById(ID))ensure()});document.addEventListener('DOMContentLoaded',()=>ensure(),{once:true});window.addEventListener('load',()=>ensure(),{once:true});window.addEventListener('pageshow',()=>{const b=document.getElementById(ID);if(b)safeRender(b)});
 document.addEventListener('click',e=>{if(e.target.closest?.('#hd20DashboardSectionTabs button[data-dashboard-section="request"]'))setTimeout(()=>{const b=document.getElementById(ID);if(b)safeRender(b)},80)},true);
 ['hd20-kpi-source-updated','hd20-action-updated','hd20-policy-updated'].forEach(ev=>window.addEventListener(ev,()=>setTimeout(()=>{const b=document.getElementById(ID);if(b)safeRender(b)},80)));
-let requestPanelLastWidth=0,requestPanelResizeTimer;
-if(typeof ResizeObserver!=='undefined'){
- const panelObserver=new ResizeObserver(()=>{const b=document.getElementById(ID),p=b?.querySelector('.rqSplit4060 .ibPanel:nth-child(2)');if(!p||b.offsetParent===null)return;const w=Math.round(p.getBoundingClientRect().width);if(w>250&&Math.abs(w-requestPanelLastWidth)>3){requestPanelLastWidth=w;clearTimeout(requestPanelResizeTimer);requestPanelResizeTimer=setTimeout(()=>{safeRender(b);observePanel()},90)}});
- const observePanel=()=>{const p=document.querySelector('#'+ID+' .rqSplit4060 .ibPanel:nth-child(2)');if(p){panelObserver.disconnect();panelObserver.observe(p)}};
- document.addEventListener('click',e=>{if(e.target.closest?.('#hd20DashboardSectionTabs button'))setTimeout(observePanel,120)},true);
- window.addEventListener('load',observePanel);setTimeout(observePanel,650);
-}
-let rz;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>{const b=document.getElementById(ID);if(b&&b.offsetParent!==null)safeRender(b)},250)});
+/* SVG charts are responsive; do not destroy and rebuild the entire board on
+   ResizeObserver notifications. Full re-renders during refresh changed panel
+   geometry and repeatedly restarted chart drawing. User filter/data events
+   above remain the authoritative render triggers. */
 window.HD20_REQUEST_BOARD={ensure,render:()=>{const b=document.getElementById(ID);if(b)safeRender(b);else ensure()},state:S};
 })();
