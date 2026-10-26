@@ -181,3 +181,19 @@ html body:has(.app[data-hd-view^="audit."]) nav#hd20Subnav.hd20Subnav>button[dat
   min-height:58px!important;font-size:15px!important
  }
 }
+
+
+/* Canonical top-level area visibility, independent of asynchronous JS callbacks.
+   Prevent advancement's standardization panel from bleeding into other areas. */
+html body:has(.beginnerNav button[data-key="dashboard"].active) #performanceConversionAnalysis,
+html body:has(.beginnerNav button[data-key="activity"].active) #performanceConversionAnalysis,
+html body:has(.beginnerNav button[data-key="audit"].active) #performanceConversionAnalysis,
+html body:has(.beginnerNav button[data-key="action"].active) #performanceConversionAnalysis,
+html body:has(.beginnerNav button[data-key="master"].active) #performanceConversionAnalysis,
+html body:has(.beginnerNav button:not([data-key="advancement"]).active) #hd20AdvStandardOperational,
+html body:has(.beginnerNav button:not([data-key="advancement"]).active) #hd20AdvWorkGuide {
+  display:none!important;
+}
+html body:has(.beginnerNav button:not([data-key="activity"]).active) #hd20LauncherOverview {
+  display:none!important;
+}
