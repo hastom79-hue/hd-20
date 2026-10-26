@@ -186,11 +186,15 @@ function renderAdvJudge(){
  const body=sorted.map((x,i)=>{
    const n=advCriteriaCount(x),gap=advEvidenceGap(x),status=txt(x.judgeState||x.status)||'판정대기';
    const next=gap.length?'증빙 보완':n<3?'요건 보완':advWorkplaceVerified(x)?'공식심사 대기':'현장 근거검증';
-   return '<tr><td><button type="button" data-case-index="'+i+'" style="border:0;background:transparent;color:#175b87;text-align:left;cursor:pointer;font-weight:750;text-decoration:underline">'+esc(txt(x.workplace||x.title||x.id)||'작업사례')+'</button></td><td>'+esc(txt(x.team)||'—')+'</td><td>'+n+'/3</td><td>'+esc(status)+'</td><td>'+esc(next)+'</td></tr>';
+   /* 사용자 지시: "자율개선/개선조치등록 팝업창에서 바로 체크박스로 평가해도 되고(퀵으로) 아니면
+      고도화/표준화 탭에서 해도 되고 두가지 방법 다 되는 것으로 운영한다" — 등록폼 체크박스와 동일한
+      필드(horizontalDeployed·expandApplied·foolproofApplied)를 여기서도 토글할 수 있게 함. */
+   const cb=(field,xi)=>'<input type="checkbox" data-flag-case="'+xi+'" data-flag-field="'+field+'"'+(x[field]?' checked':'')+'>';
+   return '<tr><td><button type="button" data-case-index="'+i+'" style="border:0;background:transparent;color:#175b87;text-align:left;cursor:pointer;font-weight:750;text-decoration:underline">'+esc(txt(x.workplace||x.title||x.id)||'작업사례')+'</button></td><td>'+esc(txt(x.team)||'—')+'</td><td>'+n+'/3</td><td>'+esc(status)+'</td><td>'+cb('horizontalDeployed',i)+'</td><td>'+cb('expandApplied',i)+'</td><td>'+cb('foolproofApplied',i)+'</td><td>'+esc(next)+'</td></tr>';
  }).join('');
  host.innerHTML='<div class="pcPanelHead">고도화 후보·판정 <small>작업사례를 선택해 상세 판정 근거 확인</small></div>'+
  '<div class="hd20JudgeReadiness" style="padding:12px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px"><div><small>판정 대상</small><b>'+rows.length+'건</b></div><div class="risk"><small>보완 필요</small><b>'+supplement+'건</b></div><div><small>근거검증 대상</small><b>'+ready+'건</b></div></div>'+
- '<div class="pcTableWrap"><table class="pcTable"><thead><tr><th>작업사례</th><th>생산팀</th><th>요건</th><th>현재 상태</th><th>다음 단계</th></tr></thead><tbody>'+ (body||'<tr><td colspan="5">현재 판정 대상이 없습니다.</td></tr>')+'</tbody></table></div>'+
+ '<div class="pcTableWrap"><table class="pcTable"><thead><tr><th>작업사례</th><th>생산팀</th><th>요건</th><th>현재 상태</th><th>수평전개</th><th>확대적용</th><th>FoolProof</th><th>다음 단계</th></tr></thead><tbody>'+ (body||'<tr><td colspan="5">현재 판정 대상이 없습니다.</td></tr>')+'</tbody></table></div>'+
  '<div id="hd20AdvSelectedCase" style="display:none;padding:12px;border-top:1px solid #e2e9ee;color:#39576a"></div>';
  const panel=host.querySelector('#hd20AdvSelectedCase');
  const showCase=i=>{
@@ -226,6 +230,15 @@ function renderAdvJudge(){
   panel.querySelectorAll('[data-case-route]').forEach(button=>button.addEventListener('click',()=>openAdvDetailTool(button.dataset.caseRoute)));
  };
  host.querySelectorAll('[data-case-index]').forEach(b=>b.addEventListener('click',()=>showCase(Number(b.dataset.caseIndex))));
+ /* 등록폼 체크박스와 같은 데이터를 공유하는 퀵 토글 — 체크 즉시 저장하고 화면을 다시 그림. */
+ host.querySelectorAll('[data-flag-case]').forEach(cb=>cb.addEventListener('change',e=>{
+   e.stopPropagation();
+   const xi=Number(cb.dataset.flagCase),field=cb.dataset.flagField,target=sorted[xi];if(!target)return;
+   const all2=readStore('hd20GMES5SAutoImproveRawV1'),idx=all2.findIndex(r=>r.id===target.id);if(idx<0)return;
+   all2[idx]={...all2[idx],[field]:cb.checked};
+   try{localStorage.setItem('hd20GMES5SAutoImproveRawV1',JSON.stringify(all2))}catch{}
+   window.dispatchEvent(new CustomEvent('hd20-activity-updated',{detail:{id:target.id,field}}));
+ }));
  const prior=sorted.findIndex(x=>String(x.id||'')===selected);if(prior>=0)showCase(prior);
 }
 function ensureAdvProcess(){
