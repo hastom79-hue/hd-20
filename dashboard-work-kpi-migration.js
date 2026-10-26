@@ -85,6 +85,9 @@ function schedule(){
 }
 function boot(){
  render();
+ /* The priority board may redraw its children; restore only this summary-owned node if it is removed. */
+ const summaryAnchor=document.getElementById('hd20DashboardPriority');
+ if(summaryAnchor)new MutationObserver(()=>{if(!summaryAnchor.contains(document.getElementById(ID)))schedule()}).observe(summaryAnchor,{childList:true});
  ['hd20-nav-area-changed','hd20-subtab-changed','hd20-dashboard-section-changed','hd20-kpi-source-updated','hd20-ops-production-filter-ready','hd20-gmes-5s-imported','hd20-gmes-5s-judged','hd20-audit-updated','hd20-action-updated','hd20-refresh-requested','storage'].forEach(e=>window.addEventListener(e,schedule));
  window.addEventListener('pageshow',schedule);
  setTimeout(schedule,350);setTimeout(schedule,1500);
