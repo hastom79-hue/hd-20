@@ -1,10 +1,10 @@
 (()=>{'use strict';
 const NAV_HTML=`<button class="active" data-key="dashboard"><span class="navTop"><span class="navNumber">01</span><span class="navLabel">대시보드</span></span></button><button data-key="activity"><span class="navTop"><span class="navNumber">02</span><span class="navLabel">자율개선등록 / 개선조치등록</span></span></button><button data-key="audit"><span class="navTop"><span class="navNumber">03</span><span class="navLabel">Audit·유지점검</span></span></button><button data-key="action"><span class="navTop"><span class="navNumber">04</span><span class="navLabel">개선조치·완료관리</span></span></button><button data-key="advancement"><span class="navTop"><span class="navNumber">05</span><span class="navLabel">고도화·표준화</span></span></button><button data-key="master"><span class="navTop"><span class="navNumber">06</span><span class="navLabel">통합기준정보</span></span></button>`;
 const SCREEN_BY_KEY={activity:'awActivity',audit:'awAudit',action:'awAction',master:'masterModal'};
-let activeKey='dashboard',initialized=false;
+let activeKey='dashboard',initialized=false,navGeneration=0;
 function allScreens(){return [...document.querySelectorAll('.awScreen')];}
 function closeScreens(){allScreens().forEach(x=>x.classList.remove('on'));document.querySelector('.app')?.classList.remove('awFocused');document.body?.classList.remove('navModeActivity');document.getElementById('performanceConversionAnalysis')?.classList.remove('on')}
-function syncNav(nav,key){activeKey=key;nav.querySelectorAll('button[data-key]').forEach(b=>b.classList.toggle('active',b.dataset.key===key));window.dispatchEvent(new CustomEvent('hd20-nav-area-changed',{detail:{area:key}}))}
+function syncNav(nav,key){activeKey=key;navGeneration++;nav.querySelectorAll('button[data-key]').forEach(b=>b.classList.toggle('active',b.dataset.key===key));window.dispatchEvent(new CustomEvent('hd20-nav-area-changed',{detail:{area:key}}))}
 function syncMergedSwitch(key){}
 function openScreen(id){
  const el=document.getElementById(id);if(!el)return false;
@@ -14,10 +14,10 @@ function openScreen(id){
  requestAnimationFrame(()=>{window.scrollTo(0,0);document.documentElement.scrollTop=0;if(document.body)document.body.scrollTop=0});
  return true
 }
-function openAdvancement(nav){syncMergedSwitch('advancement');closeScreens();window.dispatchEvent(new CustomEvent('hd20-close-maturity-map-tab'));document.dispatchEvent(new CustomEvent('hd20-open-performance-conversion'));setTimeout(()=>{const conversion=document.getElementById('performanceConversionAnalysis');const workplace=document.getElementById('awWorkplace');document.querySelector('.app')?.classList.add('awFocused');if(conversion){conversion.classList.add('on');conversion.dataset.integratedArea='advancement'}if(workplace){workplace.classList.add('on');workplace.dataset.integratedArea='advancement'}},0);syncNav(nav,'advancement')}
-function goDashboard(nav,section){syncMergedSwitch('dashboard');closeScreens();window.dispatchEvent(new CustomEvent('hd20-close-maturity-map-tab'));syncNav(nav,'dashboard');try{const u=new URL(location.href);u.searchParams.set('area','dashboard');if(section)u.searchParams.set('section',section);else u.searchParams.delete('section');u.searchParams.delete('sub');history.replaceState(null,'',u)}catch{}(function tryApply(n){if(window.HD20_DASHBOARD_TABS){if(section==='map')window.HD20_MATURITY_DASHBOARD?.open?.();else if(section)window.HD20_DASHBOARD_TABS.apply(section);else window.HD20_DASHBOARD_TABS.reset?.();return}if(n<60)setTimeout(()=>tryApply(n+1),100)})(0);if(!section)requestAnimationFrame(()=>{window.scrollTo(0,0);document.documentElement.scrollTop=0;if(document.body)document.body.scrollTop=0})}
-function go(key,nav){syncMergedSwitch(key);if(key==='dashboard'){goDashboard(nav);return}
-  try{const u=new URL(location.href);u.searchParams.set('area',key);u.searchParams.delete('section');history.replaceState(null,'',u)}catch{}
+function openAdvancement(nav){syncMergedSwitch('advancement');closeScreens();window.dispatchEvent(new CustomEvent('hd20-close-maturity-map-tab'));syncNav(nav,'advancement');const generation=navGeneration;document.dispatchEvent(new CustomEvent('hd20-open-performance-conversion'));setTimeout(()=>{if(activeKey!=='advancement'||generation!==navGeneration)return;const conversion=document.getElementById('performanceConversionAnalysis');const workplace=document.getElementById('awWorkplace');document.querySelector('.app')?.classList.add('awFocused');if(conversion){conversion.classList.add('on');conversion.dataset.integratedArea='advancement'}if(workplace){workplace.classList.add('on');workplace.dataset.integratedArea='advancement'}},0)}
+function goDashboard(nav,section){syncMergedSwitch('dashboard');closeScreens();window.dispatchEvent(new CustomEvent('hd20-close-maturity-map-tab'));syncNav(nav,'dashboard');try{const u=new URL(location.href);u.searchParams.set('area','dashboard');if(section)u.searchParams.set('section',section);else u.searchParams.delete('section');u.searchParams.delete('sub');history.replaceState(null,'',u)}catch{}(function tryApply(n){if(activeKey!=='dashboard')return;if(window.HD20_DASHBOARD_TABS){if(section==='map')window.HD20_MATURITY_DASHBOARD?.open?.();else if(section)window.HD20_DASHBOARD_TABS.apply(section);else window.HD20_DASHBOARD_TABS.reset?.();return}if(n<60)setTimeout(()=>tryApply(n+1),100)})(0);if(!section)requestAnimationFrame(()=>{window.scrollTo(0,0);document.documentElement.scrollTop=0;if(document.body)document.body.scrollTop=0})}
+function go(key,nav,opts={}){syncMergedSwitch(key);if(key==='dashboard'){goDashboard(nav);return}
+  try{const u=new URL(location.href);u.searchParams.set('area',key);u.searchParams.delete('section');if(!opts.preserveSub||key==='master')u.searchParams.delete('sub');history.replaceState(null,'',u)}catch{}
   syncNav(nav,key);if(key==='advancement'){openAdvancement(nav);return}const id=SCREEN_BY_KEY[key];if(id){
   const opened=openScreen(id);
   if(key==='master'){
@@ -41,6 +41,8 @@ function reconcileMasterView(){
  app?.classList.add('awFocused');
  if(!modal.classList.contains('on'))modal.classList.add('on');
  document.querySelectorAll('.awScreen.on').forEach(el=>{if(el!==modal)el.classList.remove('on')});
+ document.getElementById('performanceConversionAnalysis')?.classList.remove('on');
+ document.getElementById('awWorkplace')?.classList.remove('on');
 }
 function installMasterViewGuard(){
  if(document.documentElement.dataset.hd20MasterViewGuard)return;
@@ -54,7 +56,13 @@ body:has(.beginnerNav button[data-key="master"].active) .app>#hd20DashboardPrior
 body:has(.beginnerNav button[data-key="master"].active) .app>.hd20DashboardSectionLabel,
 body:has(.beginnerNav button[data-key="master"].active) .app>#hd20OperationalBridge,
 body:has(.beginnerNav button[data-key="master"].active) .app>.hd20ApprovedLanding,
-body:has(.beginnerNav button[data-key="master"].active) #hd20DashboardSectionTabs{display:none!important}
+body:has(.beginnerNav button[data-key="master"].active) #hd20DashboardSectionTabs,
+body:has(.beginnerNav button[data-key="master"].active) #performanceConversionAnalysis,
+body:has(.beginnerNav button[data-key="master"].active) #awWorkplace,
+body:has(.beginnerNav button[data-key="master"].active) #hd20AdvancementDecisionGuide,
+body:has(.beginnerNav button[data-key="master"].active) #hd20MaturityConditionAnalysis,
+body:has(.beginnerNav button[data-key="master"].active) #hd20AdvancementIntegrated,
+body:has(.beginnerNav button[data-key="master"].active) #hd20AdvancementDecisionTable{display:none!important}
 /* The master editor is an app-level screen. Dashboard widgets must not coexist. */
 .app.awFocused:has(> #masterModal.on) > :not(.top):not(.beginnerNav):not(#masterModal):not(script):not(style){display:none!important}
 .app.awFocused:has(> #masterModal.on) > #masterModal{display:block!important}
@@ -76,8 +84,8 @@ function init(){if(initialized)return;const nav=document.querySelector('.beginne
      subnav 초기화 race에서 기본 첫 탭으로 되돌아가는 것을 막는다. */
   const AREAS=['dashboard','activity','audit','action','advancement','master'];
   if(area&&AREAS.includes(area)){
-    if(sub)window.__HD20_RESTORE_SUB=sub;
-    if(area==='dashboard')goDashboard(nav,section||((sub==='map')?'map':''));else go(area,nav);
+    if(sub&&area!=='master')window.__HD20_RESTORE_SUB=sub;
+    if(area==='dashboard')goDashboard(nav,section||((sub==='map')?'map':''));else go(area,nav,{preserveSub:!!sub&&area!=='master'});
     /* 안전망: 다른 스크립트들이 각자 타이밍에 기본값(요약/종합현황)으로 되돌리는 경합이 있어, 페이지가
        완전히 안정된 뒤(1.6초) URL을 다시 확인해 최종적으로 한 번 더 강제 적용 — 그 사이 값이 바뀌지
        않았다면(사용자가 이미 다른 곳으로 이동한 게 아니라면) 그대로 재적용 */
@@ -95,7 +103,7 @@ function init(){if(initialized)return;const nav=document.querySelector('.beginne
   }
   if(['maturitymap','map','maturity'].includes(raw)){window.__HD20_RESTORE_SUB='map';go('advancement',nav);return}
   const legacyArea=normalizeDeepLink(raw);
-  if(raw&&AREAS.includes(legacyArea)){if(sub)window.__HD20_RESTORE_SUB=sub;if(legacyArea==='dashboard')goDashboard(nav,section||'');else go(legacyArea,nav);return}
+  if(raw&&AREAS.includes(legacyArea)){if(sub&&legacyArea!=='master')window.__HD20_RESTORE_SUB=sub;if(legacyArea==='dashboard')goDashboard(nav,section||'');else go(legacyArea,nav,{preserveSub:!!sub&&legacyArea!=='master'});return}
   go('dashboard',nav)}
 window.HD20_NAV={go:key=>{const nav=document.querySelector('.beginnerNav');if(!nav)return;const k=normalizeDeepLink(key);if(['maturitymap','map','maturity'].includes(k)){window.__HD20_RESTORE_SUB='map';go('advancement',nav);setTimeout(()=>window.HD20_SUBNAV?.select?.('advancement','map'),0);return}go(k,nav)},active:()=>activeKey,areas:['dashboard','activity','audit','action','advancement','master'],ready:()=>initialized};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else setTimeout(init,0);
