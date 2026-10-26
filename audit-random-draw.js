@@ -56,6 +56,12 @@ function render(){const a=document.getElementById('awAudit');if(!a)return false;
   host.querySelector('#adFGo').onclick=adGo;host.querySelector('#adFTeam').onchange=adGo;host.querySelector('#adFPolicy').onchange=adGo;host.querySelector('#adFNotified').onchange=adGo;
   host.querySelector('#adFReset').onclick=()=>{host.querySelector('#adFTeam').value='';host.querySelector('#adFPolicy').value='';host.querySelector('#adFNotified').value='';DF.team=DF.policy=DF.notified='';renderHistory(host)};
   repaint();renderHistory(host);return true}
-function boot(){css();let pending=false;const active=()=>window.HD20_NAV?.active?.()==='audit'&&(!window.HD20_SUBNAV?.state||window.HD20_SUBNAV.state()?.sub==='draw');const schedule=()=>{if(!active()||pending)return;pending=true;setTimeout(()=>{pending=false;if(active())render()},40)};document.addEventListener('click',e=>{if(e.target?.closest?.('.beginnerNav [data-key="audit"],#hd20Subnav [data-sub="draw"]'))schedule()},true);window.addEventListener('hd20-nav-area-changed',schedule);['hd20-policy-updated','hd20-gmes-5s-judged','hd20-audit-updated'].forEach(e=>window.addEventListener(e,schedule));if(active())schedule()}
+function boot(){css();/* 전면 재설계 2단계 재평가 중 발견한 타이밍 버그: "운영정책"에서 Audit 표본수를 저장한 뒤 Audit
+   탭으로 이동해도 "표본수가 미설정" 안내가 그대로 남아 있었음(render()가 페이지 로드 후 단 한 번만
+   불리고 재호출되지 않음) — 원인은 schedule()의 첫 active() 체크가 "탭 전환 click을 capture 단계
+   에서 가로채는 시점"에 실행되는데, 그 시점엔 아직 메인 탭 전환(HD20_NAV.active())이 끝나지 않아
+   active()가 false로 평가되어 setTimeout 자체가 걸리지 않고 조용히 무산되던 것. active() 체크를
+   setTimeout 콜백 안으로만 옮겨 "예약은 항상 걸되, 실행 시점에만 활성 여부를 판단"하도록 수정. */
+let pending=false;const active=()=>window.HD20_NAV?.active?.()==='audit'&&(!window.HD20_SUBNAV?.state||window.HD20_SUBNAV.state()?.sub==='draw');const schedule=()=>{if(pending)return;pending=true;setTimeout(()=>{pending=false;if(active())render()},40)};document.addEventListener('click',e=>{if(e.target?.closest?.('.beginnerNav [data-key="audit"],#hd20Subnav [data-sub="draw"]'))schedule()},true);window.addEventListener('hd20-nav-area-changed',schedule);['hd20-policy-updated','hd20-gmes-5s-judged','hd20-audit-updated'].forEach(e=>window.addEventListener(e,schedule));if(active())schedule()}
 window.HD20AuditRiskDraw={teamRisk,riskTable,pickTeam,pickTeams,sampleCount,policyWeights,latestBatch,recurrenceOf,effectVerified,seoulDateKey,maturityWeak,maturityWeakCount,retentionLatestState,retentionWeakCount,render};document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot,{once:true}):boot();
 })();

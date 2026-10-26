@@ -10,7 +10,13 @@
    안에 "팀 순서를 설정하는 UI"가 사실상 두 번 나오는 명백한 중복. 같은 계열의 구버전 패널 5개
    (표시순서·인당목표·운영정책·요청출처 순서·팀장메일)와 그 탭 버튼을 전부 화면에서 숨겨 신버전
    (① 조직/팀~운영정책, integrated-master-factors.js)만 남김. */
-#masterOrderPanel,#masterTargetPanel,#hd20OperatingPolicyPanel,#hd20SourceOrderPanel,#hd20TeamLeaderMasterPanel{display:none!important}
+/* 긴급 수정(3차, 전면 재설계 2단계 재평가 중 발견): #hd20OperatingPolicyPanel은 "구버전 중복
+   패널"이 아니라 operating-policy-master.js가 만드는 "운영정책" 탭의 유일한 콘텐츠 패널임 — 이전에
+   "policy" 버튼 자체는 숨김 목록에서 제외해 보이게 복구했지만(아래 2차 수정), 그 버튼을 눌러서
+   열리는 패널은 이 규칙에 그대로 남아 있어 !important로 영구히 숨겨진 채였음. 그 결과 "운영정책"
+   버튼을 눌러도 Audit 표본수·Risk 가중치·리더십 명단·자동 Deadline을 설정할 화면이 전혀 열리지
+   않는(클릭이 100% 무반응으로 보이는) 상태가 계속되고 있었음 — 이번에 발견해 숨김 대상에서 제거. */
+#masterOrderPanel,#masterTargetPanel,#hd20SourceOrderPanel,#hd20TeamLeaderMasterPanel{display:none!important}
 /* 긴급 수정(2차): ":not([data-master-tab^=integrated-])" 방식으로 바꿨더니 이번엔 "운영정책"
    (data-master-tab="policy", integrated- 접두사를 안 쓰는 별도 신버전 탭 — operating-policy-
    master.js가 생성)까지 걸려 숨겨지는 결함이 재발. "숨길 대상"을 추측하는 부정 선택자 대신, 실제로
