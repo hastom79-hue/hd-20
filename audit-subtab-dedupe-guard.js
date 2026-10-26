@@ -15,6 +15,8 @@ function classify(el){
 }
 function apply(detail){
   if(detail?.area!=='audit')return;
+  // The canonical Audit controller owns visibility; legacy guard must not override it.
+  if(window.HD20_SUBNAV?.state?.()?.area==='audit')return;
   const root=$('#awAudit');if(!root)return;
   const sub=['draw','inspect','ongoing','retention'].includes(detail.sub)?detail.sub:'draw';
   root.dataset.canonicalSubview=sub==='retention'?'retention-closure':sub==='ongoing'?'retention-ongoing':sub==='inspect'?'audit-inspect':'audit-draw';
