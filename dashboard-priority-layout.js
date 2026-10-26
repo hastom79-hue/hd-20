@@ -16,7 +16,8 @@ const KPI=[
   {key:'advAttrition',label:'고도화 확정 후 이탈률',unit:'%',tab:'advancement',hint:'유지기준 이탈 · 공식 확정 사례 중 유지기준 이탈 비율',good:'down',max:100},
   {key:'sixRetention',label:'Audit 후 6개월 유지율',unit:'%',tab:'audit',hint:'지속성 검증 · 6개월 관리 종료 사례의 유지 비율',good:'up',max:100},
   {key:'recurrence',label:'Audit 부적합 재발률',unit:'%',tab:'audit',hint:'동일 문제 재발 · 동일 문제의 반복 발생 여부',good:'down',max:100},
-  {key:'actionOnTime',label:'기한 내 개선조치 완료율',unit:'%',tab:'action',hint:'문제 발생 후 조치 · 개선조치 실행의 적시성',good:'up',max:100}
+  {key:'actionOnTime',label:'기한 내 개선조치 완료율',unit:'%',tab:'action',hint:'문제 발생 후 조치 · 개선조치 실행의 적시성',good:'up',max:100},
+  {key:'nonconform',label:'Audit 부적합 발생률',unit:'%',tab:'audit',hint:'점검 품질 · 판정 결과가 있는 Audit 중 부적합 비율',good:'down',max:100}
 ];
 function fmt(v,k){if(v===null||v===undefined||Number.isNaN(v))return '—';const def=KPI.find(x=>x.key===k)||{};const num=def.prefix?v:(Number.isInteger(v)?v:Math.round(v*10)/10);return `${def.prefix||''}${num}${def.unit||''}`}
 function gotoTab(key){document.querySelector(`.beginnerNav button[data-key="${key}"]`)?.click()}
