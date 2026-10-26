@@ -286,6 +286,7 @@ const action=[];teams.forEach((team,ti)=>{for(let i=0;i<10;i++){const isDone=!(i
  if(document.readyState==='complete')setTimeout(notifyAfterLoad,0);else window.addEventListener('load',notifyAfterLoad,{once:true});
  if(!sessionStorage.getItem('hd20DemoSeedReloaded')){sessionStorage.setItem('hd20DemoSeedReloaded','1');location.reload()}
 }
+window.HD20DemoData={refresh:()=>{sessionStorage.setItem('hd20DemoSeedReloaded','1');boot();return window.HD20_DATA_DIAGNOSTICS?.()||null},stats:()=>window.HD20_DATA_DIAGNOSTICS?.()||null};
 boot();
 /* DB hydration may arrive after the first seed. Restore browser-only demo rows
    if the canonical pull replaced them, then refresh all KPI consumers. */
