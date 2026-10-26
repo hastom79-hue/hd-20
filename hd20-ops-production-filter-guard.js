@@ -38,6 +38,7 @@ function metrics(area,sub){
  'audit.retention':[['관리중',audits.filter(x=>x.auditDate&&!x.finalEvaluation).length,'건'],['종료평가',audits.filter(x=>x.finalEvaluation).length,'건'],['재발/미흡',retentionRisk.length,'건'],['Action 연계',linked.length,'건']],
  'action.manage':[['전체 개선요청',actions.length,'건'],['진행/대기',actions.filter(x=>!done(x)).length,'건'],['완료',doneActions.length,'건'],['기한경과',actions.filter(overdue).length,'건']],
  'action.verify':[['검증 대상',doneActions.length,'건'],['효과검증 완료',doneActions.filter(effect).length,'건'],['검증대기',doneActions.filter(x=>!effect(x)).length,'건'],['재발',doneActions.filter(x=>effect(x)&&recur(x)).length,'건']]};
+ if(area==='audit'&&sub==='ongoing')return map['audit.retention'];
  return map[`${area}.${sub}`]||(area==='dashboard'?map['dashboard.summary']:[]);
 }
 function restoreParity(api){if(api.__evidenceParityPatched)delete api.__evidenceParityPatched;const parity=window.HD20_KPI_PARITY_GUARD;if(parity?.patchApi){parity.patchApi();parity.schedule?.()}}
