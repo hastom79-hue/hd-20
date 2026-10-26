@@ -49,3 +49,11 @@
 - `tests/master-refresh-smoke.cjs`에 master 하위탭 컨트롤러·뷰 상태 검증 추가; CI workflow의 변경감지 경로에 `hd20-subtabs.js` 포함.
 - `index.html` 하위탭 JS 캐시 V24 갱신. 소스 재조회·구문검사 통과.
 - GitHub commit status 및 workflow run API에서 확인 가능한 결과가 없어 Chromium 실행검증/Pages 배포 성공은 미확정.
+
+## V10 — 상단 ② 자율개선 선택 중 ⑤ 표준화 잔상 노출 수정 (2026-10-26)
+- 사용자 캡처: 상단 ② 자율개선등록/개선조치등록 활성인데 본문에는 ⑤ 표준화·수평전개 표와 안내 노출.
+- 직접 원인: `hd20-subtabs.css`의 `#performanceConversionAnalysis.hd20AdvancementStandard{display:block!important}`가 `on` 클래스 제거 뒤에도 표준화 콘텐츠를 강제로 표시.
+- 근본 수정: 강제표시 조건에 `.on` 요구; 상단 네비게이션의 `closeScreens`에서 고도화 표준화 잔여 클래스 제거·숨김; 6개 상단 영역별 비활성 콘텐츠 CSS 격리 추가.
+- 회귀검증: 고도화 표준화→자율개선 이동→새로고침 시 비활성 고도화 화면 미노출 검사 추가.
+- 캐시버전: beginner-navigation v6, hd20-subtabs.css v5.
+- 소스 재조회/JS 구문검사 통과. 실제 GitHub Pages 브라우저 실행/CI 결과는 미확인.
