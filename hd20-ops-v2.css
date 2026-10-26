@@ -23,3 +23,9 @@ html body .app.awFocused>#hd20DashboardWorkMetrics{display:none!important}
 #hd20DashboardWorkMetrics .hd20SrOnly{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 @media(max-width:1120px){#hd20DashboardWorkMetrics .hd20DwmGroups{grid-template-columns:1fr}#hd20DashboardWorkMetrics .hd20DwmGroup+.hd20DwmGroup{border-left:0;border-top:1px solid #e4ebf0}#hd20DashboardWorkMetrics .hd20DwmTiles{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media(max-width:660px){#hd20DashboardWorkMetrics .hd20DwmGroupHead{align-items:flex-start;flex-direction:column}#hd20DashboardWorkMetrics .hd20DwmTiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* 2026-10-27: KPI migration belongs ONLY to dashboard section 1 (summary). */
+body:not(.hd20DashboardSummaryActive) #hd20DashboardWorkMetrics{display:none!important}
+body.hd20DashboardSummaryActive .app.awFocused #hd20DashboardWorkMetrics{display:none!important}
+#hd20DashboardWorkMetrics.hd20DashboardSectionHidden{display:none!important}
+#hd20DashboardWorkMetrics .hd20DwmContractError{grid-column:1/-1;margin:0;padding:16px 12px;border:1px solid #eedac3;border-radius:8px;background:#fffaf2;color:#8a5b25;font-size:12px;line-height:1.6}
