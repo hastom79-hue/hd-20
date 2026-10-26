@@ -13,7 +13,7 @@ const {chromium}=require('playwright');
  });
  try{
   await page.goto('http://127.0.0.1:4173/index.html?area=dashboard',{waitUntil:'domcontentloaded'});
-  await page.waitForFunction(()=>!!window.HD20_OPS_V2?.metrics&&!!document.getElementById('hd20DashboardWorkMetrics'),{},{timeout:25000});
+  await page.waitForFunction(()=>!!window.HD20_OPS_V2?.metrics&&!!window.HD20_DASHBOARD_TABS?.apply&&!!document.getElementById('hd20DashboardWorkMetrics'),{},{timeout:25000});
   const dashboard=await page.evaluate(()=>{
    const p=document.getElementById('hd20DashboardWorkMetrics');
    return {groups:p.querySelectorAll('.hd20DwmGroup').length,tiles:p.querySelectorAll('.hd20DwmTile').length,
