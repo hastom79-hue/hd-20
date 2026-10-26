@@ -103,3 +103,46 @@
 #hd20DashboardSectionTabs button b{display:inline!important;color:inherit!important;font-size:inherit!important;font-weight:inherit!important;line-height:inherit!important}
 #hd20DashboardSectionTabs button.active b{color:#fff!important}
 #hd20DashboardSectionTabs button:not(.active) b{color:#173650!important}
+
+
+/* 2026-10-26: Shared secondary-navigation style for ALL non-dashboard work areas.
+   Match integrated lookup and dashboard tabs; keep main navy navigation untouched. */
+html body nav#hd20Subnav.hd20Subnav{
+ display:grid!important;grid-auto-flow:column!important;grid-auto-columns:minmax(0,1fr)!important;
+ align-items:stretch!important;gap:0!important;width:100%!important;max-width:100%!important;
+ min-height:0!important;margin:8px 0 18px!important;padding:0!important;
+ background:transparent!important;border:0!important;border-radius:0!important;
+ box-shadow:none!important;overflow:visible!important;box-sizing:border-box!important
+}
+html body nav#hd20Subnav.hd20Subnav>button[data-sub]{
+ display:flex!important;position:relative!important;flex:none!important;
+ align-items:center!important;justify-content:center!important;box-sizing:border-box!important;
+ width:100%!important;min-width:0!important;min-height:70px!important;height:auto!important;
+ margin:0!important;padding:14px 10px!important;border:0!important;
+ border-bottom:2px solid #cadde9!important;border-radius:10px 10px 0 0!important;
+ background:#f4f8fb!important;color:#526d83!important;
+ font-size:17px!important;font-weight:750!important;line-height:1.35!important;
+ letter-spacing:-.25px!important;text-align:center!important;white-space:normal!important;
+ box-shadow:none!important;transform:none!important
+}
+html body nav#hd20Subnav.hd20Subnav>button[data-sub]+button[data-sub]::before{display:none!important;content:none!important}
+html body nav#hd20Subnav.hd20Subnav>button[data-sub].on,
+html body nav#hd20Subnav.hd20Subnav>button[data-sub].active{
+ background:#fff!important;color:#095a9e!important;border-bottom:3px solid #1684d8!important;
+ border-radius:10px 10px 6px 6px!important;box-shadow:0 2px 0 rgba(22,132,216,.1)!important
+}
+html body nav#hd20Subnav.hd20Subnav>button[data-sub].on::after,
+html body nav#hd20Subnav.hd20Subnav>button[data-sub].active::after{display:none!important;content:none!important}
+html body nav#hd20Subnav.hd20Subnav>button[data-sub]:hover:not(.on):not(.active){
+ background:#eaf3fa!important;color:#135e9c!important
+}
+html body nav#hd20Subnav.hd20Subnav>button[data-sub]:focus-visible{
+ outline:2px solid #1684d8!important;outline-offset:-3px!important
+}
+@media(max-width:760px){
+ html body nav#hd20Subnav.hd20Subnav{grid-auto-flow:row!important;grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ html body nav#hd20Subnav.hd20Subnav>button[data-sub]{min-height:58px!important;font-size:15px!important}
+}
+@media(max-width:440px){
+ html body nav#hd20Subnav.hd20Subnav>button[data-sub]{padding:9px 5px!important;font-size:13px!important}
+}
