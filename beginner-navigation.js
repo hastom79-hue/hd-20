@@ -3,7 +3,14 @@ const NAV_HTML=`<button class="active" data-key="dashboard"><span class="navTop"
 const SCREEN_BY_KEY={activity:'awActivity',audit:'awAudit',action:'awAction',master:'masterModal'};
 let activeKey='dashboard',initialized=false,navGeneration=0;
 function allScreens(){return [...document.querySelectorAll('.awScreen')];}
-function closeScreens(){allScreens().forEach(x=>x.classList.remove('on'));document.querySelector('.app')?.classList.remove('awFocused');document.body?.classList.remove('navModeActivity');document.getElementById('performanceConversionAnalysis')?.classList.remove('on')}
+function closeScreens(){
+ allScreens().forEach(x=>x.classList.remove('on'));
+ document.querySelector('.app')?.classList.remove('awFocused');
+ document.body?.classList.remove('navModeActivity');
+ const conversion=document.getElementById('performanceConversionAnalysis');
+ if(conversion){conversion.classList.remove('on','hd20AdvancementStandard');conversion.classList.add('hd20SubHidden')}
+ document.getElementById('awWorkplace')?.classList.remove('on');
+}
 function syncNav(nav,key){activeKey=key;navGeneration++;nav.querySelectorAll('button[data-key]').forEach(b=>b.classList.toggle('active',b.dataset.key===key));window.dispatchEvent(new CustomEvent('hd20-nav-area-changed',{detail:{area:key}}))}
 function syncMergedSwitch(key){}
 function openScreen(id){
@@ -63,6 +70,23 @@ body:has(.beginnerNav button[data-key="master"].active) #hd20AdvancementDecision
 body:has(.beginnerNav button[data-key="master"].active) #hd20MaturityConditionAnalysis,
 body:has(.beginnerNav button[data-key="master"].active) #hd20AdvancementIntegrated,
 body:has(.beginnerNav button[data-key="master"].active) #hd20AdvancementDecisionTable{display:none!important}
+/* Canonical six-area isolation. A legacy advancement style forces display:block!important
+   for .hd20AdvancementStandard, even when another top tab is selected. */
+html body:has(.beginnerNav button[data-key="dashboard"].active) #performanceConversionAnalysis,
+html body:has(.beginnerNav button[data-key="activity"].active) #performanceConversionAnalysis,
+html body:has(.beginnerNav button[data-key="audit"].active) #performanceConversionAnalysis,
+html body:has(.beginnerNav button[data-key="action"].active) #performanceConversionAnalysis,
+html body:has(.beginnerNav button[data-key="master"].active) #performanceConversionAnalysis,
+html body:has(.beginnerNav button:not([data-key="advancement"]).active) #awWorkplace,
+html body:has(.beginnerNav button:not([data-key="advancement"]).active) #hd20MaturityMapTab,
+html body:has(.beginnerNav button:not([data-key="advancement"]).active) #hd20AdvancementDecisionGuide,
+html body:has(.beginnerNav button:not([data-key="advancement"]).active) #hd20MaturityConditionAnalysis,
+html body:has(.beginnerNav button:not([data-key="advancement"]).active) #hd20AdvancementIntegrated,
+html body:has(.beginnerNav button:not([data-key="advancement"]).active) #hd20AdvancementDecisionTable,
+html body:has(.beginnerNav button:not([data-key="activity"]).active) #awActivity,
+html body:has(.beginnerNav button:not([data-key="audit"]).active) #awAudit,
+html body:has(.beginnerNav button:not([data-key="action"]).active) #awAction,
+html body:has(.beginnerNav button:not([data-key="master"]).active) #masterModal{display:none!important}
 /* The master editor is an app-level screen. Dashboard widgets must not coexist. */
 .app.awFocused:has(> #masterModal.on) > :not(.top):not(.beginnerNav):not(#masterModal):not(script):not(style){display:none!important}
 .app.awFocused:has(> #masterModal.on) > #masterModal{display:block!important}
