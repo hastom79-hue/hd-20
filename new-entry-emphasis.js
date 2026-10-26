@@ -1,7 +1,7 @@
 (()=>{'use strict';
 /* Visual-only enhancer: keep all existing button events, IDs, and workflow logic unchanged. */
 const SELECTOR='button,a,[role="button"]';
-const isNewEntry=el=>/^\\?\+?\s*신규\s*등록\s*$/.test((el.textContent||'').replace(/\s+/g,' ').trim());
+const isNewEntry=el=>/^\+?\s*신규\s*등록\s*$/.test((el.textContent||'').replace(/\s+/g,' ').trim());
 function enhance(root=document){
  if(root.nodeType!==1&&root.nodeType!==9)return;
  const candidates=[];
