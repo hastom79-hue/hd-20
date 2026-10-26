@@ -34,4 +34,4 @@
    맞지 않으므로 버튼 자체를 숨기고, 다른 탭처럼 상단 메인 탭을 눌러야만 전환되도록 함(ESC 키 닫기도
    같은 이유로 비활성화). */
 document.getElementById('closeMaster')?.style.setProperty('display','none','important');
-const close=()=>{};modal.addEventListener('mousedown',e=>{if(e.target===modal)close()});document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modal.classList.contains('on'))close()});if(modal.classList.contains('on'))open()}document.readyState==='loading'?document.addEventListener('DOMContentLoaded',init):init()})();
+const close=()=>{};modal.addEventListener('mousedown',e=>{if(e.target===modal)close()});document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modal.classList.contains('on'))close()});/* Master is a main-screen tab, not a popup. No open() function exists here. */}document.readyState==='loading'?document.addEventListener('DOMContentLoaded',init):init()})();
