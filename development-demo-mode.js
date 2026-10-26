@@ -88,7 +88,13 @@ function boot(){
  const spreadDate=(i,ti,seedA=7,seedB=11)=>{const mi=(i+ti*3)%elapsedMonths;const day=3+((i*seedA+ti*seedB)%24);const d=new Date(now.getFullYear(),mi,day);return d>now?ymd(now):ymd(d)};
  const addDaysStr=(dateStr,n)=>{const d=new Date(dateStr+'T00:00:00');d.setDate(d.getDate()+n);return d>now?ymd(now):ymd(d)};
  const weak=team=>/중형|성능|트러블/.test(team),strong=team=>/프레임|Boom/.test(team);
- const activity=[];teams.forEach((team,ti)=>{const count=weak(team)?20:strong(team)?32:28;for(let i=0;i<count;i++){const advancement=i%4===0;const criteria=advancement?(i===0||((Math.floor(i/4)+ti)%3===0)?3:2):(weak(team)?(i%3)+1:2);const approved=advancement&&criteria===3&&(i===0||(!weak(team)&&((Math.floor(i/4)+ti)%2===0)));const dropped=(advancement&&weak(team)&&i%8===0)||(approved&&i%16===0);activity.push({id:`DEMO-A-${ti}-${i}`,source:SRC,team,owner:`검증작업자-${String(ti+1).padStart(2,'0')}-${String(i%8+1).padStart(2,'0')}`,group:groupOf(team),date:spreadDate(i,ti),type:advancement?'5S 고도화':['정리','정돈','청소','시각화','위험구역관리','설비 자주보전'][i%6],area:['조립라인','자재구역','공구실','검사대'][i%4],problem:['공구 위치 불명확','통로 적치','라벨 미흡','불용품 방치'][i%4],improvement:['형적관리','Green Zone','정위치 표기','정량축소'][i%4],status:approved?'완료':dropped?'이탈':advancement?'판정대기':i%7===0?'보완':'완료',candidate:advancement&&!approved,judgeState:approved?'확정':advancement?'판정대기':'',confirmed:approved,judgedAt:approved?days(Math.max(0,((i*3+ti)%120)-(9+(i*7+ti)%18))):'',criteriaCount:criteria,criteriaMatched:criteria,maintainState:dropped?'이탈':approved?'유지':'',attrition:dropped,visualization:criteria>=1,greenZone:criteria>=2,spaceUtilization:criteria>=3});}});
+ const activity=[];teams.forEach((team,ti)=>{const count=weak(team)?20:strong(team)?32:28;for(let i=0;i<count;i++){const advancement=i%4===0;const criteria=advancement?(i===0||((Math.floor(i/4)+ti)%3===0)?3:2):(weak(team)?(i%3)+1:2);const approved=advancement&&criteria===3&&(i===0||(!weak(team)&&((Math.floor(i/4)+ti)%2===0)));const dropped=(advancement&&weak(team)&&i%8===0)||(approved&&i%16===0);
+/* 전면 재설계 2단계 재평가 중 발견: "② 확정사례 관리"의 표준화·적용범위·수평전개 컬럼이 공식확정
+   27건 전부 "미설정"으로 보였음 — 가상 데이터가 "공식확정" 단계까지만 시뮬레이션하고, 그 이후의
+   표준화·수평전개 단계 정보를 전혀 만들지 않고 있었기 때문(단순 필드명 불일치가 아니라 데이터 자체
+   부재). 확정된(approved) 사례 중 일부에 합리적인 분포로 진행 상태를 부여. */
+const rolloutScope=approved?['동일 라인','동일 공장 내 타 라인','전사 확산'][i%3]:'',standardState=approved?(i%4===0?'표준 등록 완료':i%4===1?'표준화 검토중':'표준화 진행중'):'',rolloutState=approved?(i%5===0?'수평전개 완료':i%5<3?'수평전개 진행중':'수평전개 대기'):'';
+activity.push({id:`DEMO-A-${ti}-${i}`,source:SRC,team,owner:`검증작업자-${String(ti+1).padStart(2,'0')}-${String(i%8+1).padStart(2,'0')}`,group:groupOf(team),date:spreadDate(i,ti),rolloutScope,standardState,rolloutState,type:advancement?'5S 고도화':['정리','정돈','청소','시각화','위험구역관리','설비 자주보전'][i%6],area:['조립라인','자재구역','공구실','검사대'][i%4],problem:['공구 위치 불명확','통로 적치','라벨 미흡','불용품 방치'][i%4],improvement:['형적관리','Green Zone','정위치 표기','정량축소'][i%4],status:approved?'완료':dropped?'이탈':advancement?'판정대기':i%7===0?'보완':'완료',candidate:advancement&&!approved,judgeState:approved?'확정':advancement?'판정대기':'',confirmed:approved,judgedAt:approved?days(Math.max(0,((i*3+ti)%120)-(9+(i*7+ti)%18))):'',criteriaCount:criteria,criteriaMatched:criteria,maintainState:dropped?'이탈':approved?'유지':'',attrition:dropped,visualization:criteria>=1,greenZone:criteria>=2,spaceUtilization:criteria>=3});}});
  /* Approved realistic advancement fixture: 28 confirmed, 11 attrited, 17 retained.
     Preserve ordinary 5S activity counts and headcount; only normalize synthetic advancement cases. */
  const existingAdv=activity.filter(r=>r.type==='5S 고도화');
@@ -100,7 +106,12 @@ function boot(){
    const day=3+((i*5)%20);
    const confirmedDate=now.getFullYear()+'-'+String(month).padStart(2,'0')+'-'+String(Math.min(day,month===now.getMonth()+1?now.getDate():28)).padStart(2,'0');
    const lost=i<attrited;
-   activity.push({id:'DEMO-A-ADV-REAL-'+i,source:SRC,team,group:groupOf(team),owner:'검증작업자-'+String(ti+1).padStart(2,'0'),date:confirmedDate,type:'5S 고도화',area:['조립라인','자재구역','검사대'][i%3],problem:'5S 고도화 3대 요건 확인',improvement:'시각화·Green Zone·공간활용 개선',status:'완료',candidate:false,judgeState:'확정',confirmed:true,judgedAt:confirmedDate,criteriaCount:3,criteriaMatched:3,maintainState:lost?'이탈':'유지',attrition:lost,visualization:true,greenZone:true,spaceUtilization:true});
+   /* 전면 재설계 2단계 재평가 중 발견: "② 확정사례 관리" 테이블(이 DEMO-A-ADV-REAL-* 레코드들이 실제
+   "공식확정 27건" 집계의 원천)의 표준화·적용범위·수평전개 컬럼이 전부 "미설정"으로 보였음 — 이
+   블록에 해당 필드가 전혀 없었기 때문(앞서 DEMO-A-{ti}-{i} 일반 레코드에 추가했던 것과 별개로 여기도
+   필요). 유지(lost=false) 사례만 표준화·수평전개 진행 상태를 채움(이탈 사례는 표준화를 계속 진행할
+   이유가 없어 미설정이 오히려 정확함). */
+activity.push({id:'DEMO-A-ADV-REAL-'+i,source:SRC,team,group:groupOf(team),owner:'검증작업자-'+String(ti+1).padStart(2,'0'),date:confirmedDate,rolloutScope:lost?'':['동일 라인','동일 공장 내 타 라인','전사 확산'][i%3],standardState:lost?'':(i%4===0?'표준 등록 완료':i%4===1?'표준화 검토중':'표준화 진행중'),rolloutState:lost?'':(i%5===0?'수평전개 완료':i%5<3?'수평전개 진행중':'수평전개 대기'),type:'5S 고도화',area:['조립라인','자재구역','검사대'][i%3],problem:'5S 고도화 3대 요건 확인',improvement:'시각화·Green Zone·공간활용 개선',status:'완료',candidate:false,judgeState:'확정',confirmed:true,judgedAt:confirmedDate,criteriaCount:3,criteriaMatched:3,maintainState:lost?'이탈':'유지',attrition:lost,visualization:true,greenZone:true,spaceUtilization:true});
  }
  /* Complete the current-year monthly chart with explicitly synthetic activity cases.
     Never invent future months; retain original records and never sync demo rows. */
