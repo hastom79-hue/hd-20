@@ -1,5 +1,5 @@
 (()=>{'use strict';
-const MAP={dashboard:[['summary','오늘의 운영판단'],['analysis','성과·건전성 추이'],['map','고도화 맵']],activity:[['manage','① 문제·개선 등록'],['analysis','② 실행현황·우수활동 선별']],advancement:[['judge','① 후보·판정'],['standard','② 확정사례 관리'],['trend','③ 고도화 성과분석']],audit:[['draw','① Audit 실시'],['ongoing','② 유지점검'],['retention','③ 결과·재조치']],action:[['manage','① 개선조치 등록·실행'],['leadtime','② 미완료·지연관리'],['verify','③ 효과검증·최종종결']]};
+const MAP={dashboard:[['summary','오늘의 운영판단'],['analysis','성과·건전성 추이'],['map','고도화 맵']],activity:[['manage','① 문제·개선 등록'],['analysis','② 실행현황·우수활동 선별']],advancement:[['judge','① 후보·판정'],['standard','② 확정사례 관리']],audit:[['draw','① Audit 실시'],['ongoing','② 유지점검'],['retention','③ 결과·재조치']],action:[['manage','① 개선조치 등록·실행'],['leadtime','② 미완료·지연관리'],['verify','③ 효과검증·최종종결']]};
 const CONTRACT={
  'dashboard.summary':{title:'종합현황',purpose:'울산캠퍼스 5S 운영상태를 한 화면에서 파악하고 오늘 우선 확인할 영역을 정합니다.',judge:'목표 대비 성과, 고도화 확보, Audit 대기, 미완료·기한경과·재발을 동시에 확인',next:'이상 KPI·Risk 카드를 상세근거로 Drill-down하여 담당 업무 탭으로 이동',features:['핵심 KPI','팀별 성과','Action Summary','우선순위']},
  'dashboard.analysis':{title:'성과·운영분석',purpose:'단순 실적 건수를 넘어 판정 Lead Time, 유지율, 재발률, 조치완료율 등 운영 건전성을 분석합니다.',judge:'성과 증가가 프로세스 건전성 개선과 함께 일어나는지 확인',next:'취약 지표의 원천 데이터를 확인하고 원인 업무영역에서 조치',features:['운영 KPI','월별 추이','유지율','재발·기한']},
@@ -460,7 +460,7 @@ function installAdvJudgeTools(){
  tools.querySelectorAll('button').forEach(b=>{b.style.cssText='padding:8px 12px;border-radius:7px;border:1px solid #cbd8e3;background:#fff;color:#24445c;cursor:pointer;font-weight:700';b.onclick=()=>openAdvDetailTool(b.dataset.advTool)});
  host.appendChild(tools);
 }
-function select(area,sub){document.getElementById('hd20AdvBack')?.remove();if(area==='advancement'&&sub==='map')sub='trend';if(area==='audit'&&sub==='inspect')sub='draw';state={area,sub};if(area==='advancement'&&sub==='process')ensureAdvProcess();document.querySelectorAll('#hd20Subnav button').forEach(b=>b.classList.toggle('on',b.dataset.sub===sub));apply(area,sub);renderPurpose(area,sub);if(area!=='audit'&&area!=='advancement')requestAnimationFrame(()=>apply(area,sub));
+function select(area,sub){document.getElementById('hd20AdvBack')?.remove();if(area==='advancement'&&(sub==='map'||sub==='trend'))sub='judge';if(area==='audit'&&sub==='inspect')sub='draw';state={area,sub};if(area==='advancement'&&sub==='process')ensureAdvProcess();document.querySelectorAll('#hd20Subnav button').forEach(b=>b.classList.toggle('on',b.dataset.sub===sub));apply(area,sub);renderPurpose(area,sub);if(area!=='audit'&&area!=='advancement')requestAnimationFrame(()=>apply(area,sub));
   try{const u=new URL(location.href);if(u.searchParams.get('area')===area)u.searchParams.set('sub',sub);history.replaceState(null,'',u)}catch{}}
 function syncArea(area){
   document.getElementById('hd20AdvBack')?.remove();
@@ -475,7 +475,7 @@ function syncArea(area){
   if(advancementTrend&&area==='advancement')advancementTrend.style.removeProperty('display');
   if(area==='dashboard'){render('dashboard');return;}
   if(area==='advancement'&&window.__HD20_RESTORE_SUB&&['analysis','detail','process'].includes(window.__HD20_RESTORE_SUB))window.__HD20_RESTORE_SUB='judge';
-  if(area==='advancement'&&window.__HD20_RESTORE_SUB==='map')window.__HD20_RESTORE_SUB='trend';
+  if(area==='advancement'&&['map','trend'].includes(window.__HD20_RESTORE_SUB))window.__HD20_RESTORE_SUB='judge';
   if(area==='audit'&&window.__HD20_RESTORE_SUB==='inspect')window.__HD20_RESTORE_SUB='draw';
   if(window.__HD20_RESTORE_SUB&&MAP[area]?.some(([k])=>k===window.__HD20_RESTORE_SUB)){
     const restoreSub=window.__HD20_RESTORE_SUB;window.__HD20_RESTORE_SUB=null;
