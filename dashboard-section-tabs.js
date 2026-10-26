@@ -34,16 +34,18 @@ body:not(.hd20DashboardExecutionActive) #hd20V3Execution{display:none!important}
 body.hd20DashboardSummaryActive .mainGrid,body.hd20DashboardImproveActive .mainGrid,body.hd20DashboardRequestActive .mainGrid,body.hd20DashboardAnalysisActive .mainGrid{display:none!important}
 body.hd20DashboardSummaryActive #hd20OperationalBridge,body.hd20DashboardImproveActive #hd20OperationalBridge,body.hd20DashboardRequestActive #hd20OperationalBridge,body.hd20DashboardAnalysisActive #hd20OperationalBridge{display:none!important}
 body.hd20DashboardExecutionActive .mainGrid{grid-template-columns:minmax(0,1fr) 330px;gap:10px;margin-bottom:10px}body.hd20DashboardExecutionActive .mainGrid .chart{height:330px;padding-bottom:92px}@media(max-width:1100px){body.hd20DashboardExecutionActive .mainGrid{grid-template-columns:1fr}}@media(max-width:760px){#${ID}{overflow-x:auto;position:static}#${ID} button{flex:0 0 145px}}
-/* Dashboard SECONDARY tabs only: larger typography and clearer active selection. */
-#${ID}{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;align-items:stretch!important;gap:8px!important;padding:7px!important;margin:4px 0 20px!important;background:#eef3f8!important;border:1px solid #d8e3ee!important;border-radius:14px!important;box-shadow:none!important;overflow:visible!important}
-#${ID}>button[data-dashboard-section]{min-width:0!important;min-height:56px!important;flex:none!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:6px!important;padding:11px 9px!important;border:1px solid transparent!important;border-radius:10px!important;background:transparent!important;color:#37536a!important;box-shadow:none!important;transition:background .15s ease,border-color .15s ease,color .15s ease!important}
-#${ID}>button[data-dashboard-section] b{font-size:16px!important;line-height:1.35!important;font-weight:750!important;letter-spacing:-.35px!important;white-space:nowrap!important}
-#${ID}>button[data-dashboard-section]:hover{background:#fff!important;border-color:#cbdceb!important;color:#124f85!important}
-#${ID}>button[data-dashboard-section].active{background:#fff!important;border-color:#b8d3ef!important;color:#125aa0!important;box-shadow:inset 0 -3px 0 #2477d4,0 2px 5px rgba(19,63,104,.08)!important}
+/* Dashboard subtabs match the existing three-way integrated lookup design:
+   four equal-width light-gray panels; white selected panel with blue bottom rule. */
+#${ID}{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;align-items:stretch!important;gap:0!important;margin:8px 0 18px!important;padding:0!important;min-height:0!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;overflow:visible!important}
+#${ID}>button[data-dashboard-section]{position:relative!important;box-sizing:border-box!important;display:flex!important;flex:initial!important;align-items:center!important;justify-content:center!important;width:100%!important;min-width:0!important;min-height:70px!important;height:auto!important;margin:0!important;padding:14px 10px!important;border:0!important;border-bottom:2px solid #cadde9!important;border-radius:10px 10px 0 0!important;background:#f4f8fb!important;color:#526d83!important;box-shadow:none!important;text-align:center!important;white-space:normal!important;transition:background .15s ease,color .15s ease!important}
+#${ID}>button[data-dashboard-section] b{font-size:17px!important;line-height:1.35!important;font-weight:750!important;letter-spacing:-.25px!important;color:inherit!important;white-space:normal!important}
+#${ID}>button[data-dashboard-section] small{display:none!important}
+#${ID}>button[data-dashboard-section]:hover{background:#eaf3fa!important;color:#135e9c!important}
+#${ID}>button[data-dashboard-section].active{background:#fff!important;color:#095a9e!important;border-bottom:3px solid #1684d8!important;border-radius:10px 10px 6px 6px!important;box-shadow:0 2px 0 rgba(22,132,216,.1)!important}
 #${ID}>button[data-dashboard-section].active b{color:inherit!important}
-#${ID}>button[data-dashboard-section]:focus-visible{outline:3px solid #78aeea!important;outline-offset:2px!important}
-@media(max-width:860px){#${ID}{grid-template-columns:repeat(2,minmax(0,1fr))!important}#${ID}>button[data-dashboard-section] b{font-size:15px!important}}
-@media(max-width:480px){#${ID}{gap:5px!important;padding:5px!important}#${ID}>button[data-dashboard-section]{min-height:50px!important;padding:8px 4px!important}#${ID}>button[data-dashboard-section] b{font-size:13px!important}}
+#${ID}>button[data-dashboard-section]:focus-visible{outline:2px solid #1684d8!important;outline-offset:-3px!important}
+@media(max-width:760px){#${ID}{grid-template-columns:repeat(2,minmax(0,1fr))!important}#${ID}>button[data-dashboard-section]{min-height:58px!important}#${ID}>button[data-dashboard-section] b{font-size:15px!important}}
+@media(max-width:440px){#${ID}>button[data-dashboard-section]{padding:9px 5px!important}#${ID}>button[data-dashboard-section] b{font-size:13px!important}}
 `;document.head.appendChild(s)}
 function labelBefore(el){const p=el?.previousElementSibling;return p?.classList?.contains('hd20DashboardSectionLabel')?p:null}
 function dashboardVisible(){return window.HD20_NAV?.active?.()==='dashboard'}
