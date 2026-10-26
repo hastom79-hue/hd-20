@@ -49,6 +49,12 @@ function ensure(){
    있어 유지)와 별도로 .hd20HealthTrendCard라는 새 클래스로 구현해 기존 스타일과 충돌시키지 않음. */
 function trendCss(){if(document.getElementById(ID+'TrendStyle'))return;const s=document.createElement('style');s.id=ID+'TrendStyle';s.textContent=`
 #${ID} .hd20HealthTrendCard{border:1px solid #e3eaf0;border-radius:12px;padding:14px 15px;background:#fbfcfd}
+/* Compact dashboard cards: legacy dashboard CSS may force 350px+ height and leave blank panels. */
+#${ID} .httGrid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important;align-items:stretch!important;grid-auto-rows:auto!important}
+#${ID} .httGrid>.hd20HealthTrendCard{height:auto!important;min-height:0!important;max-height:none!important;aspect-ratio:auto!important;align-self:stretch!important;display:flex!important;flex-direction:column!important;justify-content:flex-start!important;box-sizing:border-box!important;padding:14px 15px!important}
+#${ID} .httGrid>.hd20HealthTrendCard .httFoot{margin-top:auto!important;padding-top:12px!important}
+@media(max-width:720px){#${ID} .httGrid{grid-template-columns:minmax(0,1fr)!important}}
+
 #${ID} .hd20HealthTrendCard h4{margin:0;font-size:13px;color:#22303f;font-weight:850}#${ID} .httFlow{font-size:11px;color:#667b8e;margin-top:4px;font-weight:750}
 #${ID} .httBig{display:flex;align-items:baseline;gap:7px;margin:6px 0 2px}
 #${ID} .httBig b{font-size:26px;color:#14304c;letter-spacing:-.02em}#${ID} .httBig em{font-style:normal;font-size:12px;color:#5c6b7a;font-weight:800}
