@@ -63,21 +63,108 @@ function renderDiscovery(){
  p.querySelector('[data-save-discovery]').onclick=()=>{const a=DISCOVERY_SOURCES.map((v,i)=>({s:v,v:Number(p.querySelector('[data-do="'+v+'"]').value)||i+1,i})).sort((x,y)=>x.v-y.v||x.i-y.i).map(x=>x.s);write(DISCOVERY_KEY,a);window.dispatchEvent(new CustomEvent('hd20-policy-updated',{detail:{requestDiscoveryOrder:a}}));renderDiscovery();toast('문제 발굴출처 순서를 저장했습니다.')}
 }
 
+
+/* Structured master editor. All changes remain in memory until explicit Save. */
+let factorDraft=null,factorActiveCategory='업무유형',factorDirty=false,factorSearch='';
+function factorSaved(){
+ const stored=read(FACTOR_KEY,{});
+ return Object.fromEntries(Object.keys(FACTORS).map(k=>[k,Array.isArray(stored?.[k])&&stored[k].length?stored[k].map(x=>String(x)):FACTORS[k].slice()]));
+}
 function renderFactors(){
  const p=panel();if(!p)return;hide();p.style.display='block';
- const f=read(FACTOR_KEY,FACTORS),keys=Object.keys(FACTORS);
- const escapeHtml=x=>String(x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
- p.querySelector('#imfBody').innerHTML='<section class="imfSec"><h4>업무 · 등록항목</h4><div class="imfNote">항목을 한 줄에 하나씩 입력하세요. 저장하면 연결된 등록화면의 선택값에 반영됩니다.</div><div class="imfGrid imfFactorGrid">'+keys.map(k=>'<label class="imfBox imfFactorBox"><h5>'+escapeHtml(k)+'</h5><textarea data-f="'+escapeHtml(k)+'" rows="'+Math.min(6,Math.max(3,(f[k]||FACTORS[k]).length))+'" spellcheck="false">'+escapeHtml((f[k]||FACTORS[k]).join('\n'))+'</textarea></label>').join('')+'</div><div class="imfFoot"><button type="button" class="imfBtn" data-save-factor>변경사항 저장</button></div></section>';
- p.querySelector('[data-save-factor]').onclick=()=>{
-  const o={...f};
-  for(const k of keys){
-   const value=p.querySelector('[data-f="'+k+'"]').value;
-   const items=[...new Set(value.split(/\r?\n|\|/).map(x=>x.trim()).filter(Boolean))];
-   if(!items.length){toast(k+' 항목은 최소 1개가 필요합니다.');return}
-   o[k]=items;
-  }
-  write(FACTOR_KEY,o);window.dispatchEvent(new CustomEvent('hd20-master-factors-updated',{detail:o}));toast('업무·등록항목을 저장했습니다.');
+ if(!factorDraft)factorDraft=factorSaved();
+ const keys=Object.keys(FACTORS),body=p.querySelector('#imfBody');
+ if(!keys.includes(factorActiveCategory))factorActiveCategory=keys[0];
+ body.innerHTML='<section class="imfSec imfFactorWorkspace"><div class="imfFactorHeader"><div><div class="imfEyebrow">MASTER DATA / REGISTRATION FIELDS</div><h4>업무·등록항목 관리</h4><p>등록 화면에서 사용하는 선택 항목을 분류별로 관리합니다. 추가·수정·삭제·표시순서 변경 후 저장하세요.</p></div><div class="imfFactorHeaderSide"><span class="imfFactorTotal"></span><span class="imfFactorDirty" role="status" aria-live="polite"></span></div></div><div class="imfFactorLayout"><nav class="imfFactorCategories" aria-label="등록항목 분류"></nav><div class="imfFactorEditor"><div class="imfFactorToolbar"><div><h5 id="imfFactorCurrentTitle"></h5><p id="imfFactorCurrentHelp">위에서 아래 순서대로 등록 화면에 표시됩니다.</p></div><label class="imfFactorSearchLabel"><span>항목 검색</span><input type="search" id="imfFactorSearch" placeholder="항목명 검색" autocomplete="off"></label></div><div class="imfFactorTableHead"><span>순서</span><span>선택 항목명</span><span>관리</span></div><div class="imfFactorRows" role="list" aria-label="선택 항목 목록"></div><form class="imfFactorAdd" id="imfFactorAddForm"><label for="imfFactorNew">신규 항목</label><input id="imfFactorNew" autocomplete="off" placeholder="추가할 항목명을 입력하세요" maxlength="120"><button type="submit" class="imfFactorAddBtn">+ 항목 추가</button></form><p class="imfFactorHint">항목을 수정하거나 순서를 바꾸면 연결된 등록 화면의 선택값에 저장 후 반영됩니다. 기존 기록은 변경되지 않습니다.</p></div></div><div class="imfFactorActions"><span class="imfFactorSaveStatus" role="status" aria-live="polite"></span><button type="button" class="imfFactorCancel">변경 취소</button><button type="button" class="imfBtn imfFactorSave">변경사항 저장</button></div></section>';
+ const categoryNav=body.querySelector('.imfFactorCategories'),rowsEl=body.querySelector('.imfFactorRows');
+ const search=body.querySelector('#imfFactorSearch'),addForm=body.querySelector('#imfFactorAddForm');
+ const newInput=body.querySelector('#imfFactorNew'),saveBtn=body.querySelector('.imfFactorSave');
+ const cancelBtn=body.querySelector('.imfFactorCancel'),saveStatus=body.querySelector('.imfFactorSaveStatus');
+ function markDirty(){factorDirty=true;updateStatus()}
+ function updateStatus(){
+  const total=keys.reduce((n,k)=>n+factorDraft[k].length,0);
+  body.querySelector('.imfFactorTotal').textContent=keys.length+'개 분류 · '+total+'개 항목';
+  const tag=body.querySelector('.imfFactorDirty');
+  tag.textContent=factorDirty?'● 저장하지 않은 변경사항':'✓ 저장된 기준정보';
+  tag.classList.toggle('dirty',factorDirty);
+  saveBtn.disabled=!factorDirty;
+  saveStatus.textContent=factorDirty?'변경사항을 저장해야 등록 화면에 반영됩니다.':'현재 저장된 기준정보를 표시하고 있습니다.';
  }
+ function drawCategories(){
+  categoryNav.replaceChildren();
+  keys.forEach(k=>{
+   const btn=document.createElement('button');btn.type='button';btn.className='imfFactorCategory'+(k===factorActiveCategory?' active':'');
+   btn.setAttribute('aria-current',k===factorActiveCategory?'true':'false');
+   const name=document.createElement('span');name.textContent=k;
+   const count=document.createElement('b');count.textContent=String(factorDraft[k].length);
+   btn.append(name,count);
+   btn.addEventListener('click',()=>{factorActiveCategory=k;factorSearch='';search.value='';draw()});
+   categoryNav.appendChild(btn);
+  });
+ }
+ function drawRows(){
+  rowsEl.replaceChildren();
+  const items=factorDraft[factorActiveCategory],term=factorSearch.trim().toLocaleLowerCase('ko-KR');
+  let visible=0;
+  items.forEach((value,index)=>{
+   if(term&&!value.toLocaleLowerCase('ko-KR').includes(term))return;
+   visible++;
+   const row=document.createElement('div');row.className='imfFactorRow';row.setAttribute('role','listitem');
+   const order=document.createElement('span');order.className='imfFactorOrder';order.textContent=String(index+1).padStart(2,'0');
+   const input=document.createElement('input');input.type='text';input.value=value;input.maxLength=120;
+   input.setAttribute('aria-label',factorActiveCategory+' '+(index+1)+'번째 항목명');
+   input.addEventListener('change',()=>{
+    const next=input.value.trim();
+    if(!next){toast('항목명은 비워둘 수 없습니다.');input.value=items[index];return}
+    if(items.some((v,i)=>i!==index&&v.toLocaleLowerCase('ko-KR')===next.toLocaleLowerCase('ko-KR'))){toast('동일한 항목명이 이미 존재합니다.');input.value=items[index];return}
+    if(next!==items[index]){items[index]=next;markDirty();drawCategories()}
+   });
+   const actions=document.createElement('div');actions.className='imfFactorRowActions';
+   const button=(label,title,disabled,handler)=>{
+    const el=document.createElement('button');el.type='button';el.textContent=label;el.title=title;el.setAttribute('aria-label',title);
+    el.disabled=disabled;el.addEventListener('click',handler);return el;
+   };
+   actions.append(
+    button('↑','위로 이동',index===0||!!term,()=>{[items[index-1],items[index]]=[items[index],items[index-1]];markDirty();draw()}),
+    button('↓','아래로 이동',index===items.length-1||!!term,()=>{[items[index+1],items[index]]=[items[index],items[index+1]];markDirty();draw()}),
+    button('삭제','항목 삭제',items.length<=1,()=>{items.splice(index,1);markDirty();draw()})
+   );
+   row.append(order,input,actions);rowsEl.appendChild(row);
+  });
+  if(!visible){const empty=document.createElement('p');empty.className='imfFactorEmpty';empty.textContent='검색 결과가 없습니다. 검색어를 변경하세요.';rowsEl.appendChild(empty)}
+ }
+ function draw(){
+  body.querySelector('#imfFactorCurrentTitle').textContent=factorActiveCategory;
+  drawCategories();drawRows();updateStatus();
+ }
+ search.addEventListener('input',()=>{factorSearch=search.value;drawRows()});
+ addForm.addEventListener('submit',e=>{
+  e.preventDefault();const v=newInput.value.trim(),items=factorDraft[factorActiveCategory];
+  if(!v){newInput.focus();return}
+  if(items.some(x=>x.toLocaleLowerCase('ko-KR')===v.toLocaleLowerCase('ko-KR'))){toast('동일한 항목명이 이미 존재합니다.');newInput.select();return}
+  items.push(v);newInput.value='';factorSearch='';search.value='';markDirty();draw();newInput.focus();
+ });
+ cancelBtn.addEventListener('click',()=>{
+  if(!factorDirty)return;
+  if(!window.confirm('저장하지 않은 변경사항을 취소하고 마지막 저장 상태로 되돌리시겠습니까?'))return;
+  factorDraft=factorSaved();factorDirty=false;factorSearch='';search.value='';draw();toast('저장된 기준정보로 되돌렸습니다.');
+ });
+ saveBtn.addEventListener('click',()=>{
+  const next={...read(FACTOR_KEY,{})};
+  for(const k of keys){
+   const items=factorDraft[k].map(v=>String(v).trim());
+   if(!items.length||items.some(v=>!v)||new Set(items.map(v=>v.toLocaleLowerCase('ko-KR'))).size!==items.length){
+    toast(k+'의 빈 항목 또는 중복 항목을 확인하세요.');factorActiveCategory=k;draw();return;
+   }
+   next[k]=items;
+  }
+  try{write(FACTOR_KEY,next)}
+  catch(e){toast('저장에 실패했습니다. 브라우저 저장공간을 확인하세요.');return}
+  factorDraft=factorSaved();factorDirty=false;
+  window.dispatchEvent(new CustomEvent('hd20-master-factors-updated',{detail:next}));
+  draw();toast('업무·등록항목 '+keys.length+'개 분류를 저장했습니다.');
+ });
+ draw();
 }
 
 function renderMail(){const p=panel();if(!p)return;hide();p.style.display='block';const rows=read(MAIL_KEY,MAIL);p.querySelector('#imfBody').innerHTML='<section class="imfSec"><h4>메일링 설정</h4><div class="imfNote">각 보고주기의 주기·수신/참조·보고대상·자동메일 조건을 Master화합니다. 현재 코드에서 확인되지 않은 수신자는 임의로 채우지 않습니다.</div><div class="imfMail"><table class="imfTbl"><thead><tr><th>구분</th><th>보고주기</th><th>수신자</th><th>참조자</th><th>보고대상</th><th>자동메일 조건</th><th>사용</th></tr></thead><tbody>'+rows.map((r,i)=>'<tr><td>'+r.id+'</td><td><input data-m="'+i+'" data-k="cadence" value="'+r.cadence+'"></td><td><input data-m="'+i+'" data-k="recipient" value="'+r.recipient+'"></td><td><input data-m="'+i+'" data-k="cc" value="'+r.cc+'"></td><td><input data-m="'+i+'" data-k="target" value="'+r.target+'"></td><td><input data-m="'+i+'" data-k="condition" value="'+r.condition+'"></td><td><input class="imfChk" type="checkbox" data-me="'+i+'" '+(r.enabled?'checked':'')+'></td></tr>').join('')+'</tbody></table></div><div class="imfFoot"><button class="imfBtn" data-save-mail>저장</button></div></section>';p.querySelector('[data-save-mail]').onclick=()=>{const n=rows.map((r,i)=>({...r,cadence:p.querySelector('[data-m="'+i+'"][data-k="cadence"]').value.trim(),recipient:p.querySelector('[data-m="'+i+'"][data-k="recipient"]').value.trim(),cc:p.querySelector('[data-m="'+i+'"][data-k="cc"]').value.trim(),target:p.querySelector('[data-m="'+i+'"][data-k="target"]').value.trim(),condition:p.querySelector('[data-m="'+i+'"][data-k="condition"]').value.trim(),enabled:p.querySelector('[data-me="'+i+'"]').checked}));write(MAIL_KEY,n);window.dispatchEvent(new CustomEvent('hd20-mailing-master-updated',{detail:n}));toast('메일링 기준정보를 저장했습니다.')}}
