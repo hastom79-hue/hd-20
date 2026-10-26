@@ -472,8 +472,11 @@ function render(box){
      너비 계산은 그대로 전체 탭 폭(box.clientWidth) 기준으로 남아 있어, 차트가 패널보다 거의 2배
      넓게 그려지고 overflow-x:auto로 가로 스크롤이 생겨 07~12월이 스크롤 밖에 가려져 있었음(겉보기엔
      "01~06월만 있고 다 비어 있는" 것처럼 보였던 진짜 원인) — 패널의 실제 폭(절반) 기준으로 수정. */
-  const monthlyPanelWidth=box.querySelector('.rqSplit4060 .ibPanel:nth-child(2)')?.getBoundingClientRect().width||0;
-  const monthlyTrend=chart({w:Math.max(380,Math.floor(monthlyPanelWidth||box.clientWidth*.6)-32),cats:ML,minSlot:30,series:[{name:'신규 요청',vals:regM,color:'#829db5'},{name:'완료',vals:monthlyDone,color:'#247c83',widthScale:1.3,pct:monthlyDonePct}]});
+  /* Calculate from the parent container, not from the previous render's chart panel.
+     On refresh the old panel can be hidden, stale, or zero-width. */
+  const parentWidth=Math.max(720,box.getBoundingClientRect().width||box.clientWidth||960);
+  const monthlyChartWidth=Math.max(380,Math.floor((parentWidth-36)*.6)-40);
+  const monthlyTrend=chart({w:monthlyChartWidth,cats:ML,minSlot:30,series:[{name:'신규 요청',vals:regM,color:'#829db5'},{name:'완료',vals:monthlyDone,color:'#247c83',widthScale:1.3,pct:monthlyDonePct}]});
   const teamCompletion=chart({w:Math.max(440,box.clientWidth-85),h:260,cats:teamRows.map(r=>r.team),rotate:true,minSlot:64,series:[{name:'완료',vals:teamRows.map(r=>r.done),color:'#247c83'},{name:'미완료',vals:teamRows.map(r=>r.open+r.over),color:'#c69a65'}]});
   // Approved V2: three fixed source categories, proportional horizontal bars.
   const sourceTotal=rowsM.length,provisionalCount=rowsM.filter(c=>!confirmedSource(c)).length;
@@ -552,18 +555,18 @@ function render(box){
   const mean3=completedTrend.map((v,i)=>{const month=monthKey(i+1),today=String(D.today||'').slice(0,7);if(today&&month>today)return null;return Math.round(completedTrend.slice(Math.max(0,i-2),i+1).reduce((a,b)=>a+b,0)/Math.min(3,i+1)*10)/10});
   const monthEnd=m=>new Date(Date.UTC(trendYear,m,0)).toISOString().slice(0,10);
   const pendingTrend=Array.from({length:12},(_,i)=>{const monthCut=monthEnd(i+1),today=String(D.today||'').slice(0,10);if(today&&monthCut.slice(0,7)>today.slice(0,7))return null;const cut=today&&monthCut>today?today:monthCut;return trendScope.filter(c=>/^\d{4}-\d{2}-\d{2}$/.test(String(c.date||'').slice(0,10))&&String(c.date).slice(0,10)<=cut&&(!isDone(c)||(!!c.doneDate&&String(c.doneDate).slice(0,10)>cut)||(!c.doneDate&&!!today&&cut<today))).length});
-  const makeTrend=(bars,line,label)=>{const W=1140,H=312,pad=52,chartH=246,slot=(W-2*pad)/12,rawMax=Math.max(0,...bars.flat(),...line.filter(v=>v!==null&&Number.isFinite(Number(v))));
+  const makeTrend=(bars,line,label)=>{const W=900,H=390,pad=48,chartH=318,slot=(W-2*pad)/12,rawMax=Math.max(0,...bars.flat(),...line.filter(v=>v!==null&&Number.isFinite(Number(v))));
     const tickStep=Math.max(1,Math.ceil(rawMax/4)),max=tickStep*4;
     const scale=v=>chartH*(Number(v)||0)/max;
-    const yTicks=Array.from({length:5},(_,i)=>{const value=i*tickStep,y=chartH+12-scale(value);return '<line x1="'+pad+'" y1="'+y.toFixed(1)+'" x2="'+(W-pad)+'" y2="'+y.toFixed(1)+'" stroke="#e7edf1"/><text x="'+(pad-10)+'" y="'+(y+4).toFixed(1)+'" font-size="11" fill="#60788b" text-anchor="end">'+value+'</text>'}).join('');
-    const barGeom=(i,k)=>{const width=Math.min(14,slot/(bars.length*2+1)),gap=5,left=pad+i*slot+slot/2-(bars.length*width+(bars.length-1)*gap)/2+k*(width+gap),height=scale(bars[k][i]);return{width,left,height,top:chartH+12-height}};
+    const yTicks=Array.from({length:5},(_,i)=>{const value=i*tickStep,y=chartH+12-scale(value);return '<line x1="'+pad+'" y1="'+y.toFixed(1)+'" x2="'+(W-pad)+'" y2="'+y.toFixed(1)+'" stroke="#e7edf1"/><text x="'+(pad-10)+'" y="'+(y+4).toFixed(1)+'" font-size="15" fill="#60788b" text-anchor="end">'+value+'</text>'}).join('');
+    const barGeom=(i,k)=>{const width=Math.min(23,slot/(bars.length*2+1)),gap=5,left=pad+i*slot+slot/2-(bars.length*width+(bars.length-1)*gap)/2+k*(width+gap),height=scale(bars[k][i]);return{width,left,height,top:chartH+12-height}};
     const rects=Array.from({length:12},(_,i)=>bars.map((v,k)=>{const g=barGeom(i,k);return '<rect x="'+g.left.toFixed(1)+'" y="'+g.top.toFixed(1)+'" width="'+g.width.toFixed(1)+'" height="'+g.height.toFixed(1)+'" fill="'+(k?'#23857d':'#84a9bd')+'"><title>'+(i+1)+'월 '+label[k]+' '+v[i]+'건</title></rect>'}).join('')).join('');
-    const barLabels=Array.from({length:12},(_,i)=>bars.map((v,k)=>{if(!v[i])return '';const g=barGeom(i,k);return '<text x="'+(g.left+g.width/2).toFixed(1)+'" y="'+Math.max(10,g.top-5).toFixed(1)+'" text-anchor="middle" font-size="11" font-weight="600" fill="#23465b" paint-order="stroke" stroke="#fff" stroke-width="2.5" stroke-linejoin="round">'+v[i]+'</text>'}).join('')).join('');
-    const linePath=line.length?'<polyline fill="none" stroke="#e29b25" stroke-width="2.4" points="'+line.map((v,i)=>v===null?'':(pad+i*slot+slot/2).toFixed(1)+','+(chartH+12-scale(v)).toFixed(1)).filter(Boolean).join(' ')+'"/>':'';
+    const barLabels=Array.from({length:12},(_,i)=>bars.map((v,k)=>{if(!v[i])return '';const g=barGeom(i,k);return '<text x="'+(g.left+g.width/2).toFixed(1)+'" y="'+Math.max(10,g.top-5).toFixed(1)+'" text-anchor="middle" font-size="16" font-weight="700" fill="#23465b" paint-order="stroke" stroke="#fff" stroke-width="3" stroke-linejoin="round">'+v[i]+'</text>'}).join('')).join('');
+    const linePath=line.length?'<polyline fill="none" stroke="#e29b25" stroke-width="3.2" points="'+line.map((v,i)=>v===null?'':(pad+i*slot+slot/2).toFixed(1)+','+(chartH+12-scale(v)).toFixed(1)).filter(Boolean).join(' ')+'"/>':'';
     /* 사용자 지적(스크린샷): "가로축이 차트에 겹쳐있다" — 월 라벨(1월~12월)이 y="210"이라는 고정
    좌표에 그려지는데, 막대그래프 영역(chartH=246, 바닥선은 chartH+12=258)보다 작은 값이라 막대 높이가
    어느 정도 있는 달에는 라벨이 막대 중간에 겹쳐 보이고 있었음. 바닥선(chartH+12) 아래로 이동. */
-const ticks=Array.from({length:12},(_,i)=>'<text x="'+(pad+i*slot+slot/2).toFixed(1)+'" y="'+(chartH+28)+'" text-anchor="middle" font-size="12" fill="#60788b">'+(i+1)+'월</text>').join('');
+const ticks=Array.from({length:12},(_,i)=>'<text x="'+(pad+i*slot+slot/2).toFixed(1)+'" y="'+(chartH+28)+'" text-anchor="middle" font-size="15" fill="#60788b">'+(i+1)+'월</text>').join('');
     return '<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+label.join('·')+' 월별 그래프" style="width:100%;height:auto;display:block"><line x1="'+pad+'" y1="12" x2="'+pad+'" y2="'+(chartH+12)+'" stroke="#b8cbd7"/>'+yTicks+rects+linePath+barLabels+ticks+'</svg><div style="display:flex;gap:20px;flex-wrap:wrap;font-size:12px;color:#536c7d"><span>■ '+label[0]+'</span>'+(bars.length>1?'<span style="color:#23857d">■ '+label[1]+'</span>':'')+'<span style="color:#c88b21">● '+(bars.length>1?'미완료 잔량':'3개월 이동평균')+'</span></div>'};
   const completionTrendChart=makeTrend([completedTrend],mean3,['완료 건수']);
   const throughputTrendChart=makeTrend([registeredTrend,completedTrend],pendingTrend,['등록 건수','완료 건수']);
@@ -659,10 +662,11 @@ function ensure(){
   css();let box=document.getElementById(ID);
   if(!box){const anchor=document.getElementById('hd20ImproveBoard')||document.getElementById('hd20DashboardPriority')||document.querySelector('.cards')||document.getElementById('hd20DashboardSectionTabs');if(!anchor)return false;box=document.createElement('section');box.id=ID;anchor.insertAdjacentElement('afterend',box);
     const T=window.HD20_DASHBOARD_TABS;if(T?.apply)T.apply(T.active?.()||'summary',{scroll:false})}
-  safeRender(box);return true}
-let tries=0;(function boot(){if(!ensure()&&tries++<80)setTimeout(boot,150)})();window.addEventListener('hd20-dashboard-ready',()=>ensure());window.addEventListener('hd20-kpi-source-updated',()=>{if(!document.getElementById(ID))ensure()});document.addEventListener('DOMContentLoaded',()=>ensure(),{once:true});window.addEventListener('load',()=>ensure(),{once:true});window.addEventListener('pageshow',()=>{const b=document.getElementById(ID);if(b)safeRender(b)});
+  if(!box.dataset.hd20InitialRender){box.dataset.hd20InitialRender='1';safeRender(box)}return true}
+let tries=0;(function boot(){if(!ensure()&&tries++<80)setTimeout(boot,150)})();window.addEventListener('hd20-dashboard-ready',()=>ensure());window.addEventListener('hd20-kpi-source-updated',()=>{if(!document.getElementById(ID))ensure()});document.addEventListener('DOMContentLoaded',()=>ensure(),{once:true});window.addEventListener('load',()=>ensure(),{once:true});window.addEventListener('pageshow',e=>{if(!e.persisted)return;const b=document.getElementById(ID);if(b&&b.getClientRects().length)safeRender(b)});
 document.addEventListener('click',e=>{if(e.target.closest?.('#hd20DashboardSectionTabs button[data-dashboard-section="request"]'))setTimeout(()=>{const b=document.getElementById(ID);if(b)safeRender(b)},80)},true);
-['hd20-kpi-source-updated','hd20-action-updated','hd20-policy-updated'].forEach(ev=>window.addEventListener(ev,()=>setTimeout(()=>{const b=document.getElementById(ID);if(b)safeRender(b)},80)));
+let requestDataRenderTimer=null;
+['hd20-kpi-source-updated','hd20-action-updated','hd20-policy-updated'].forEach(ev=>window.addEventListener(ev,()=>{clearTimeout(requestDataRenderTimer);requestDataRenderTimer=setTimeout(()=>{const b=document.getElementById(ID);if(b&&b.getClientRects().length)safeRender(b)},180)}));
 /* SVG charts are responsive; do not destroy and rebuild the entire board on
    ResizeObserver notifications. Full re-renders during refresh changed panel
    geometry and repeatedly restarted chart drawing. User filter/data events
