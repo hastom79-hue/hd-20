@@ -81,7 +81,9 @@ function renderFactors(){
 }
 
 function renderMail(){const p=panel();if(!p)return;hide();p.style.display='block';const rows=read(MAIL_KEY,MAIL);p.querySelector('#imfBody').innerHTML='<section class="imfSec"><h4>메일링 설정</h4><div class="imfNote">각 보고주기의 주기·수신/참조·보고대상·자동메일 조건을 Master화합니다. 현재 코드에서 확인되지 않은 수신자는 임의로 채우지 않습니다.</div><div class="imfMail"><table class="imfTbl"><thead><tr><th>구분</th><th>보고주기</th><th>수신자</th><th>참조자</th><th>보고대상</th><th>자동메일 조건</th><th>사용</th></tr></thead><tbody>'+rows.map((r,i)=>'<tr><td>'+r.id+'</td><td><input data-m="'+i+'" data-k="cadence" value="'+r.cadence+'"></td><td><input data-m="'+i+'" data-k="recipient" value="'+r.recipient+'"></td><td><input data-m="'+i+'" data-k="cc" value="'+r.cc+'"></td><td><input data-m="'+i+'" data-k="target" value="'+r.target+'"></td><td><input data-m="'+i+'" data-k="condition" value="'+r.condition+'"></td><td><input class="imfChk" type="checkbox" data-me="'+i+'" '+(r.enabled?'checked':'')+'></td></tr>').join('')+'</tbody></table></div><div class="imfFoot"><button class="imfBtn" data-save-mail>저장</button></div></section>';p.querySelector('[data-save-mail]').onclick=()=>{const n=rows.map((r,i)=>({...r,cadence:p.querySelector('[data-m="'+i+'"][data-k="cadence"]').value.trim(),recipient:p.querySelector('[data-m="'+i+'"][data-k="recipient"]').value.trim(),cc:p.querySelector('[data-m="'+i+'"][data-k="cc"]').value.trim(),target:p.querySelector('[data-m="'+i+'"][data-k="target"]').value.trim(),condition:p.querySelector('[data-m="'+i+'"][data-k="condition"]').value.trim(),enabled:p.querySelector('[data-me="'+i+'"]').checked}));write(MAIL_KEY,n);window.dispatchEvent(new CustomEvent('hd20-mailing-master-updated',{detail:n}));toast('메일링 기준정보를 저장했습니다.')}}
-function show(name){const p=panel();if(!p)return;hide();p.style.display='block';const b=document.querySelectorAll('#masterModal .masterTabs button');b.forEach(x=>x.classList.toggle('on',x.dataset.masterTab==='integrated-'+name));if(name==='team')renderTeam();if(name==='target')renderTarget();if(name==='source')renderSource();if(name==='factor')renderFactors();if(name==='mail')renderMail();if(name==='discovery')renderDiscovery();attachFilter(p,name)}
+function rememberMasterTab(tab){try{sessionStorage.setItem('hd20MasterSelectedTab',tab)}catch{}}
+function restoredMasterTab(){try{const value=sessionStorage.getItem('hd20MasterSelectedTab');return ['integrated-team','integrated-target','integrated-source','integrated-discovery','integrated-factor','policy','integrated-mail'].includes(value)?value:null}catch{return null}}
+function show(name){rememberMasterTab('integrated-'+name);const p=panel();if(!p)return;hide();p.style.display='block';const b=document.querySelectorAll('#masterModal .masterTabs button');b.forEach(x=>x.classList.toggle('on',x.dataset.masterTab==='integrated-'+name));if(name==='team')renderTeam();if(name==='target')renderTarget();if(name==='source')renderSource();if(name==='factor')renderFactors();if(name==='mail')renderMail();if(name==='discovery')renderDiscovery();attachFilter(p,name)}
 function ensure(){css();const p=panel(),tabs=document.querySelector('#masterModal .masterTabs');if(!p||!tabs)return false;
 ['order','target','sourceOrder','leader'].forEach(k=>{const b=tabs.querySelector('[data-master-tab="'+k+'"]');if(b){b.hidden=true;b.classList.remove('on');b.style.setProperty('display','none','important');b.style.setProperty('visibility','hidden','important')}});
 ['masterOrderPanel','masterTargetPanel'].forEach(id=>document.getElementById(id)?.style.setProperty('display','none'));
@@ -92,7 +94,12 @@ const head=document.querySelector('#masterModal .modalHead span');if(head)head.t
    패트롤 점검·자율 5S Audit·혁신팀 자율 점검·5S 자율개선활동 피드백·출처 미분류)의 순서를 관리하는
    유일한 창구가 구버전 숨김 탭(request-source-order-master.js)뿐이었음을 발견 — "③ 요청그룹"과
    같은 패턴으로 신버전 탭으로 정식 추가. */
-const map={team:'조직·팀',target:'인당 개선목표',source:'요청그룹',factor:'업무·등록항목',mail:'메일링 설정',discovery:'문제 발굴출처'};Object.entries(map).forEach(([k,n])=>{let b=tabs.querySelector('[data-master-tab="integrated-'+k+'"]');if(!b){b=document.createElement('button');b.type='button';b.dataset.masterTab='integrated-'+k;b.textContent=n;b.addEventListener('click',()=>show(k));tabs.appendChild(b)}});groupMasterNavigation();if(!tabs.querySelector('button.on:not([style*="display: none"])'))show('team');return true}
+const map={team:'조직·팀',target:'인당 개선목표',source:'요청그룹',factor:'업무·등록항목',mail:'메일링 설정',discovery:'문제 발굴출처'};Object.entries(map).forEach(([k,n])=>{let b=tabs.querySelector('[data-master-tab="integrated-'+k+'"]');if(!b){b=document.createElement('button');b.type='button';b.dataset.masterTab='integrated-'+k;b.textContent=n;b.addEventListener('click',()=>show(k));tabs.appendChild(b)}});groupMasterNavigation();
+ const selected=restoredMasterTab();
+ if(selected==='policy'&&tabs.querySelector('[data-master-tab="policy"]'))tabs.querySelector('[data-master-tab="policy"]').click();
+ else if(selected?.startsWith('integrated-'))show(selected.slice('integrated-'.length));
+ else show('team');
+ return true}
 function groupMasterNavigation(){
  const tabs=document.querySelector('#masterModal .masterTabs');if(!tabs)return;
  const groups=[
@@ -118,6 +125,8 @@ function suppressLegacy(){const tabs=document.querySelector('#masterModal .maste
      화면 어디에도 없어 'Risk 대상선정 > 대상 일괄추출'이 "표본수가 설정되지 않았습니다" 안내만 반복하며
      영원히 진행 불가능한 상태였던 것을 발견 — 'policy'만 숨김 대상에서 제외해 복구. */
   ['order','target','sourceOrder','leader'].forEach(k=>{const b=tabs.querySelector('[data-master-tab="'+k+'"]');if(b){b.hidden=true;b.classList.remove('on');b.style.setProperty('display','none','important');b.style.setProperty('visibility','hidden','important')}})}
-function boot(){let n=0;const run=()=>{if(ensure()){suppressLegacy();const modal=document.getElementById('masterModal');if(modal)new MutationObserver(()=>suppressLegacy()).observe(modal,{subtree:true,childList:true});return}if(++n<80)setTimeout(run,150)};run()}
+function boot(){let n=0;const run=()=>{if(ensure()){suppressLegacy();const tabs=document.querySelector('#masterModal .masterTabs');
+ if(tabs&&!tabs.dataset.imfPersistenceBound){tabs.dataset.imfPersistenceBound='1';tabs.addEventListener('click',e=>{const btn=e.target.closest('[data-master-tab]');if(btn&&btn.dataset.masterTab==='policy')rememberMasterTab('policy')},true)}
+ return}if(++n<80)setTimeout(run,150)};run()}
 window.HD20IntegratedMaster={teamRows,targets,factors:()=>read(FACTOR_KEY,FACTORS),mailing:()=>read(MAIL_KEY,MAIL),getHeadcount:t=>teamRows().find(x=>x.team===t)?.headcount||null};
 document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot,{once:true}):boot();})();
