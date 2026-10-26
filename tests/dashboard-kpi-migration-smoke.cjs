@@ -35,6 +35,16 @@ const {chromium}=require('playwright');
    });
   }));
   if(!contract)throw new Error('KPI card title/value differs from drill-down evidence');
+  await page.locator('[data-dwm-area="audit"] .hd20DwmTile').first().click();
+  await page.waitForTimeout(150);
+  const drill=await page.evaluate(()=>({
+   modal:document.getElementById('hd20UniversalGridModal')?.classList.contains('on'),
+   title:document.getElementById('hd20GridTitle')?.textContent||'',
+   meta:document.getElementById('hd20GridMeta')?.textContent||''
+  }));
+  if(!drill.modal||!drill.title.includes('Audit 원천')||!drill.meta.includes('KPI 계산 원천'))
+   throw new Error('KPI click-through evidence mismatch: '+JSON.stringify(drill));
+  await page.evaluate(()=>document.getElementById('hd20UniversalGridModal')?.classList.remove('on'));
   const auditLabel=await page.locator('[data-dwm-area="audit"] .hd20DwmTile span').first().textContent();
   if(auditLabel!=='Audit 원천')throw new Error('Audit title/KPI mismatch: '+auditLabel);
   for(const section of ['improve','request','map']){
@@ -57,6 +67,8 @@ const {chromium}=require('playwright');
    }));
    if(state.nav!==area||state.workCards||state.dashboardVisible)
     throw new Error('KPI not removed from '+area+': '+JSON.stringify(state));
+   const leaked=await page.evaluate(()=>document.querySelectorAll('#hd20DashboardWorkMetrics').length);
+   if(leaked!==1)throw new Error('Duplicate KPI panel DOM after '+area+': '+leaked);
   }
   await page.evaluate(()=>window.HD20_NAV.go('dashboard'));
   await page.waitForTimeout(350);
