@@ -1,0 +1,28 @@
+/* HD-20 2026-10-27 — primary '신규등록' action visual hierarchy */
+button.hd20NewEntryEmphasis,
+a.hd20NewEntryEmphasis,
+[role="button"].hd20NewEntryEmphasis{
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  min-height:44px!important;padding:10px 22px!important;
+  border:1px solid #1356ac!important;border-radius:10px!important;
+  background:linear-gradient(135deg,#1968cc 0%,#104b9c 100%)!important;
+  color:#fff!important;font-size:14px!important;font-weight:800!important;
+  letter-spacing:-.2px!important;line-height:1.35!important;
+  box-shadow:0 3px 0 #0c3c80,0 5px 14px rgba(20,87,175,.24)!important;
+  cursor:pointer!important;transition:background .16s ease,box-shadow .16s ease,transform .16s ease!important;
+  white-space:nowrap!important;
+}
+button.hd20NewEntryEmphasis:hover,
+a.hd20NewEntryEmphasis:hover,
+[role="button"].hd20NewEntryEmphasis:hover{
+  background:linear-gradient(135deg,#257be0,#1257b5)!important;
+  box-shadow:0 3px 0 #0c3c80,0 8px 18px rgba(20,87,175,.33)!important;
+  transform:translateY(-1px)!important;
+}
+button.hd20NewEntryEmphasis:active,
+a.hd20NewEntryEmphasis:active,
+[role="button"].hd20NewEntryEmphasis:active{transform:translateY(2px)!important;box-shadow:0 1px 0 #0c3c80!important}
+.hd20NewEntryEmphasis:focus-visible{outline:3px solid #8ec7ff!important;outline-offset:3px!important}
+.hd20NewEntryEmphasis:disabled{opacity:.5!important;cursor:not-allowed!important;box-shadow:none!important;transform:none!important}
+@media (prefers-reduced-motion:reduce){.hd20NewEntryEmphasis{transition:none!important;transform:none!important}}
+@media print{.hd20NewEntryEmphasis{box-shadow:none!important}}
