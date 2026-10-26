@@ -37,7 +37,7 @@ const {chromium}=require('playwright');
   await page.waitForSelector('.imfFactorRow');
   const after=await page.locator('.imfFactorRow input').evaluateAll(xs=>xs.map(x=>x.value));
   if(!after.includes('회귀검증 임시항목'))throw Error('reload persistence failed');
-  const row=page.locator('.imfFactorRow').filter({has:page.locator('input[value="회귀검증 임시항목"]')});
+  const row=page.locator('.imfFactorRow').last();
   await row.locator('button[title="항목 삭제"]').click();
   await page.locator('.imfFactorSave').click();
   const final=await page.evaluate(()=>JSON.parse(localStorage.getItem('gmes5s_work_factor_master_v1')||'{}').업무유형||[]);
