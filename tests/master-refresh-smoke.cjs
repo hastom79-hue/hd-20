@@ -39,6 +39,33 @@ const {chromium}=require('playwright');
   await page.reload({waitUntil:'domcontentloaded'});
   await page.waitForTimeout(2000);
   await assertMaster('master refresh');
+  // Regression from user screenshot: activity selected but standardization panel remained visible.
+  await page.evaluate(()=>{
+    window.HD20_NAV.go('advancement');
+    window.HD20_SUBNAV.select('advancement','standard');
+    window.HD20_NAV.go('activity');
+  });
+  await page.waitForTimeout(1200);
+  const activityState=await page.evaluate(()=>{
+    const el=document.getElementById('performanceConversionAnalysis');
+    const activity=document.getElementById('awActivity');
+    const visible=x=>!!x&&getComputedStyle(x).display!=='none'&&x.getClientRects().length>0;
+    return {selected:document.querySelector('.beginnerNav button.active')?.dataset.key,
+      advancementVisible:visible(el),activityVisible:visible(activity),
+      standardSticky:el?.classList.contains('hd20AdvancementStandard'),
+      area:window.HD20_SUBNAV?.state?.().area};
+  });
+  console.log('advancement standard to activity',activityState);
+  if(activityState.selected!=='activity'||activityState.advancementVisible||!activityState.activityVisible||activityState.standardSticky||activityState.area!=='activity')
+    throw new Error('activity/advancement screen leakage: '+JSON.stringify(activityState));
+  await page.reload({waitUntil:'domcontentloaded'});
+  await page.waitForTimeout(1600);
+  const activityRefresh=await page.evaluate(()=>({
+    area:window.HD20_NAV?.active?.(),
+    advancementVisible:(()=>{const el=document.getElementById('performanceConversionAnalysis');return !!el&&getComputedStyle(el).display!=='none'&&el.getClientRects().length>0})()
+  }));
+  if(activityRefresh.area!=='activity'||activityRefresh.advancementVisible)
+    throw new Error('activity refresh leakage: '+JSON.stringify(activityRefresh));
   await page.evaluate(()=>window.HD20_NAV.go('dashboard'));
   await page.waitForTimeout(250);
   const dashboard=await page.evaluate(()=>document.querySelector('.beginnerNav button.active')?.dataset.key==='dashboard');
