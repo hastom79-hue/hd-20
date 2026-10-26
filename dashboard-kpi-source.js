@@ -53,6 +53,9 @@ function addMonthsKey(v,n){const m=seoulDateKey(v).match(/^(\d{4})-(\d{2})-(\d{2
 function auditId(d){return txt(d?.id||d?.drawId||d?.auditDrawId)}
 function actionAuditId(a){return txt(a?.auditDrawId||a?.sourceCaseId)}
 function sixMonthRetention(){const today=seoulDateKey(),rows=auditDraws().filter(d=>d.auditDate),closed=rows.filter(d=>{const end=addMonthsKey(d.auditDate,6);return !!end&&end<today});if(!closed.length)return null;const act=actionCases();let pass=0;for(const d of closed){const id=auditId(d),linked=id?act.filter(a=>actionAuditId(a)===id):[];const unresolved=linked.some(a=>!actionDone(a));const recurrent=linked.some(closedLoopRecurrence);const finalState=txt(d.finalEvaluation||d.auditFinalState);const failed=finalState==='미흡'||['부적합','실패','해제','중지'].includes(finalState);if(!unresolved&&!recurrent&&!failed)pass++}return pct(pass,closed.length)}
+/* Shared date accessors are required by both overall and monthly operational KPIs. */
+const doneOf=x=>pickField(x,['doneDate','completedDate','finishDate','completedAt']);
+const dueOf=x=>pickField(x,['targetDate','due','dueDate','deadline']);
 function operational(s){
   const rows=(s?.rows||[]).filter(isAdvancementType);
   const judgmentScope=rows.filter(x=>x.candidate===true||x.isCandidate===true||String(x.judgeState||'').trim());
