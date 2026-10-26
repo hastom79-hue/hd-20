@@ -6,6 +6,7 @@ on:
       - 'beginner-navigation.js'
       - 'master-info-modal.js'
       - 'integrated-master-factors.js'
+      - 'hd20-subtabs.js'
       - 'index.html'
       - 'tests/master-refresh-smoke.cjs'
       - '.github/workflows/master-refresh-smoke.yml'
