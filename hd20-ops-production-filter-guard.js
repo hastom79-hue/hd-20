@@ -38,7 +38,7 @@ function metrics(area,sub){
  'audit.retention':[['관리중',audits.filter(x=>x.auditDate&&!x.finalEvaluation).length,'건'],['종료평가',audits.filter(x=>x.finalEvaluation).length,'건'],['재발/미흡',retentionRisk.length,'건'],['Action 연계',linked.length,'건']],
  'action.manage':[['전체 개선요청',actions.length,'건'],['진행/대기',actions.filter(x=>!done(x)).length,'건'],['완료',doneActions.length,'건'],['기한경과',actions.filter(overdue).length,'건']],
  'action.verify':[['검증 대상',doneActions.length,'건'],['효과검증 완료',doneActions.filter(effect).length,'건'],['검증대기',doneActions.filter(x=>!effect(x)).length,'건'],['재발',doneActions.filter(x=>effect(x)&&recur(x)).length,'건']]};
- if(area==='audit'&&sub==='ongoing')return map['audit.retention'];
+ if(area==='audit'&&sub==='ongoing')return [['관리중',audits.filter(x=>x.auditDate&&!x.finalEvaluation).length,'건'],['재발 징후',retentionRisk.filter(x=>!txt(x.finalEvaluation||x.auditFinalState)).length,'건'],['Action 연계',linked.length,'건'],['월별 확인',audits.filter(x=>x.auditDate&&!x.finalEvaluation&&txt(x.auditDate).slice(0,7)===(window.HD20KPIData?.seoulDateKey?.()||new Date().toISOString().slice(0,10)).slice(0,7)).length,'건']];
  return map[`${area}.${sub}`]||(area==='dashboard'?map['dashboard.summary']:[]);
 }
 function restoreParity(api){if(api.__evidenceParityPatched)delete api.__evidenceParityPatched;const parity=window.HD20_KPI_PARITY_GUARD;if(parity?.patchApi){parity.patchApi();parity.schedule?.()}}
