@@ -40,3 +40,12 @@
 - 각 설정 제목의 불필요한 번호·장황한 수식어 제거.
 - 편집기 반응형 CSS 정리. 캐시버전 V7 갱신.
 - JS 파서 검사 통과. 배포 브라우저 렌더링 및 저장 후 새로고침 검증은 별도.
+
+## V9 — 탭 교차노출 재발 방지 (2026-10-26)
+- 사용자 캡처: 상단 통합기준정보 선택 상태에서 고도화 후보·판정 목록 노출.
+- 재분석: `beginner-navigation.js`의 메인 영역 전환과 `hd20-subtabs.js`의 지연 `syncArea/apply`가 별도 실행되어 이전 고도화 영역이 현재 화면을 덮어쓸 수 있음.
+- 수정: `hd20-subtabs.js`의 `apply`, `select`, `syncArea`, `render`, 고도화 갱신에 메인 선택 영역 확인 추가. 기준정보 이동 시 하위탭 상태와 `data-hd-view`를 `master`로 명시.
+- 기존 `beginner-navigation.js` 지연 고도화 콜백 차단과 결합.
+- `tests/master-refresh-smoke.cjs`에 master 하위탭 컨트롤러·뷰 상태 검증 추가; CI workflow의 변경감지 경로에 `hd20-subtabs.js` 포함.
+- `index.html` 하위탭 JS 캐시 V24 갱신. 소스 재조회·구문검사 통과.
+- GitHub commit status 및 workflow run API에서 확인 가능한 결과가 없어 Chromium 실행검증/Pages 배포 성공은 미확정.
