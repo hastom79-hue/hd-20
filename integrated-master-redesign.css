@@ -1,0 +1,73 @@
+/* HD-20 integrated master information / 2026-10-27 full interaction redesign */
+#masterModal .masterInfoBox{grid-template-columns:232px minmax(0,1fr)!important;border-radius:14px!important}
+#masterModal .masterInfoBox>.modalHead{min-height:66px!important;padding:13px 23px!important;background:#fff!important}
+#masterModal .masterInfoBox>.modalHead b{font-size:20px!important;letter-spacing:-.4px}
+#masterModal .masterInfoBox>.modalHead span{font-size:12px!important;color:#8192a2!important}
+#masterModal .masterInfoBox>.masterTabs{background:#f7f9fb!important;padding:20px 10px!important}
+#masterModal .masterTabs .imfNavGroup{margin-bottom:16px!important;padding-bottom:14px!important}
+#masterModal .masterTabs .imfNavHead strong{font-size:11px!important;color:#8b9aa9!important;letter-spacing:.4px!important}
+#masterModal .masterTabs .imfNavGroup button[data-master-tab]{min-height:40px!important;font-size:13px!important;font-weight:700!important}
+#masterModal .masterInfoBox>#hd20IntegratedMasterFactors{padding:20px 22px 32px!important}
+#masterModal .imfSec{border-radius:12px!important;border-color:#dde7ee!important;overflow:visible!important}
+#masterModal .imfSec h4{font-size:16px!important;color:#193d56!important}
+#masterModal .imfNote{color:#73899a!important}
+#masterModal .imfTbl{font-size:12.5px!important}
+#masterModal .imfTbl th{background:#f4f8fb!important;color:#526f83!important;font-size:12px!important}
+#masterModal .imfTbl tbody tr:hover{background:#f5fafe!important}
+#masterModal .imfTbl input,#masterModal .imfTbl select{border-radius:7px!important}
+#masterModal .imfTbl input:focus,#masterModal .imfTbl select:focus{outline:2px solid #b9d9ef!important;outline-offset:0!important}
+#masterModal .imfBtn{background:#145f99!important;box-shadow:0 2px 7px rgba(18,87,140,.13)!important}
+#masterModal .imfBtn:hover:not(:disabled){background:#0b507f!important}
+#masterModal .imfBtn:disabled{opacity:.45!important;cursor:not-allowed!important;box-shadow:none!important}
+/* The new workspace replaces the textarea cards rather than wrapping them in more cards. */
+#masterModal .imfFactorWorkspace{overflow:hidden!important;margin:0!important;border:1px solid #dce7ee!important;background:#fff!important}
+#masterModal .imfFactorHeader{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:20px 22px 17px;border-bottom:1px solid #e6edf2}
+#masterModal .imfFactorHeader h4{border:0!important;padding:0!important;margin:5px 0 7px!important;font-size:21px!important;line-height:1.3!important}
+#masterModal .imfFactorHeader p{margin:0;color:#73899a;font-size:12px;line-height:1.6}
+#masterModal .imfEyebrow{font-size:10px;font-weight:850;letter-spacing:1.1px;color:#5481a0}
+#masterModal .imfFactorHeaderSide{display:flex;flex-direction:column;align-items:flex-end;gap:9px;white-space:nowrap}
+#masterModal .imfFactorTotal{font-size:12px;font-weight:800;color:#496b82}
+#masterModal .imfFactorDirty{font-size:11px;font-weight:750;color:#2d8467}
+#masterModal .imfFactorDirty.dirty{color:#b07020}
+#masterModal .imfFactorLayout{display:grid;grid-template-columns:186px minmax(0,1fr);min-height:390px}
+#masterModal .imfFactorCategories{display:flex;flex-direction:column;gap:3px;padding:13px 9px;background:#f8fafc;border-right:1px solid #e2eaf0}
+#masterModal .imfFactorCategory{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;min-height:39px;padding:8px 10px;text-align:left;border:1px solid transparent;border-radius:8px;background:transparent;color:#506d81;font-size:12px;font-weight:750;cursor:pointer}
+#masterModal .imfFactorCategory b{min-width:24px;padding:3px 6px;border-radius:6px;background:#edf2f6;text-align:center;color:#7d91a0;font-size:11px}
+#masterModal .imfFactorCategory:hover{background:#edf4f9}
+#masterModal .imfFactorCategory.active{border-color:#c7e0f2;background:#eaf4fb;color:#095e98;font-weight:850}
+#masterModal .imfFactorCategory.active b{background:#fff;color:#176aa2}
+#masterModal .imfFactorEditor{min-width:0;padding:17px 20px 20px}
+#masterModal .imfFactorToolbar{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:15px}
+#masterModal .imfFactorToolbar h5{margin:0 0 4px;color:#193e58;font-size:16px}
+#masterModal .imfFactorToolbar p{margin:0;color:#8a9ca9;font-size:11px}
+#masterModal .imfFactorSearchLabel{display:flex;flex-direction:column;gap:4px;min-width:180px;color:#667e90;font-size:11px;font-weight:700}
+#masterModal .imfFactorSearchLabel input{width:100%;min-height:34px;padding:7px 10px;border:1px solid #d3e0e9;border-radius:8px;background:#fff;color:#2c536b;font-size:12px}
+#masterModal .imfFactorTableHead,#masterModal .imfFactorRow{display:grid;grid-template-columns:55px minmax(0,1fr) 152px;align-items:center;gap:10px}
+#masterModal .imfFactorTableHead{min-height:35px;padding:0 10px;background:#f2f7fa;border:1px solid #e1eaf0;border-radius:8px 8px 0 0;color:#6d8494;font-size:11px;font-weight:850}
+#masterModal .imfFactorTableHead span:last-child{text-align:center}
+#masterModal .imfFactorRows{border:1px solid #e1eaf0;border-top:0;border-radius:0 0 8px 8px;overflow:hidden}
+#masterModal .imfFactorRow{min-height:49px;padding:6px 10px;border-bottom:1px solid #eef2f5;background:#fff}
+#masterModal .imfFactorRow:last-child{border-bottom:0}
+#masterModal .imfFactorRow:hover{background:#fbfdff}
+#masterModal .imfFactorOrder{color:#8fa1af;font-size:12px;font-weight:800;font-variant-numeric:tabular-nums}
+#masterModal .imfFactorRow input{box-sizing:border-box;width:100%;min-height:35px;padding:7px 10px;border:1px solid #d7e3eb;border-radius:7px;background:#fff;color:#244c65;font-size:12.5px}
+#masterModal .imfFactorRow input:focus{outline:2px solid #bddff2;border-color:#86b9d8}
+#masterModal .imfFactorRowActions{display:flex;justify-content:flex-end;gap:5px}
+#masterModal .imfFactorRowActions button{min-width:32px;min-height:32px;padding:4px 8px;border:1px solid #d9e5ec;border-radius:7px;background:#fff;color:#4b6c82;font-size:12px;font-weight:800;cursor:pointer}
+#masterModal .imfFactorRowActions button:last-child{color:#9a5360}
+#masterModal .imfFactorRowActions button:hover:not(:disabled){background:#eaf4fb;border-color:#a9d0e8}
+#masterModal .imfFactorRowActions button:disabled{opacity:.3;cursor:default}
+#masterModal .imfFactorEmpty{padding:25px 12px;text-align:center;color:#8a9ca9;font-size:12px}
+#masterModal .imfFactorAdd{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;margin-top:14px;padding:13px;background:#f6f9fc;border:1px dashed #cfdee8;border-radius:9px}
+#masterModal .imfFactorAdd label{font-size:12px;font-weight:800;color:#49677c}
+#masterModal .imfFactorAdd input{box-sizing:border-box;min-width:0;min-height:36px;padding:7px 11px;border:1px solid #cbdce8;border-radius:7px;background:#fff;color:#244c65;font-size:12px}
+#masterModal .imfFactorAddBtn{min-height:36px;padding:7px 13px;border:1px solid #b9d6e9;border-radius:7px;background:#e8f3fb;color:#12659b;font-size:12px;font-weight:850;cursor:pointer}
+#masterModal .imfFactorAddBtn:hover{background:#d9ebf8}
+#masterModal .imfFactorHint{margin:13px 0 0;color:#8496a4;font-size:11px;line-height:1.6}
+#masterModal .imfFactorActions{position:sticky;bottom:0;z-index:3;display:flex;align-items:center;justify-content:flex-end;gap:9px;padding:14px 20px;border-top:1px solid #e0eaf0;background:#fff}
+#masterModal .imfFactorSaveStatus{margin-right:auto;color:#7a8d9c;font-size:11px}
+#masterModal .imfFactorCancel{min-height:39px;padding:8px 15px;border:1px solid #d3e1e9;border-radius:8px;background:#fff;color:#526e81;font-size:12px;font-weight:800;cursor:pointer}
+#masterModal .imfFactorActions .imfBtn{min-height:39px!important}
+@media(max-width:1120px){#masterModal .imfFactorLayout{grid-template-columns:150px minmax(0,1fr)}#masterModal .imfFactorEditor{padding:15px 13px}#masterModal .imfFactorHeader{padding:17px}}
+@media(max-width:800px){#masterModal .imfFactorLayout{grid-template-columns:1fr}#masterModal .imfFactorCategories{flex-direction:row;flex-wrap:wrap;border-right:0;border-bottom:1px solid #e2eaf0}#masterModal .imfFactorCategory{width:auto}#masterModal .imfFactorToolbar{flex-wrap:wrap}#masterModal .imfFactorHeader{flex-wrap:wrap}}
+@media(max-width:530px){#masterModal .imfFactorTableHead,#masterModal .imfFactorRow{grid-template-columns:32px minmax(0,1fr) 100px;gap:5px}#masterModal .imfFactorRowActions button{min-width:26px;padding:4px}#masterModal .imfFactorAdd{grid-template-columns:1fr}#masterModal .imfFactorActions{flex-wrap:wrap}#masterModal .imfFactorSaveStatus{width:100%}}
