@@ -284,7 +284,8 @@ const action=[];teams.forEach((team,ti)=>{for(let i=0;i<10;i++){const isDone=!(i
  /* Re-notify after downstream dashboard listeners are registered (script loads before KPI modules). */
  const notifyAfterLoad=()=>{window.dispatchEvent(new CustomEvent('hd20-gmes-5s-imported'));window.dispatchEvent(new CustomEvent('hd20-kpi-source-updated'));window.HD20KPIData?.signal?.();};
  if(document.readyState==='complete')setTimeout(notifyAfterLoad,0);else window.addEventListener('load',notifyAfterLoad,{once:true});
- if(!sessionStorage.getItem('hd20DemoSeedReloaded')){sessionStorage.setItem('hd20DemoSeedReloaded','1');location.reload()}
+ /* Keep the initial render stable: data changes are propagated by events above, not a forced page reload. */
+ sessionStorage.setItem('hd20DemoSeedReloaded','1');
 }
 window.HD20DemoData={refresh:()=>{sessionStorage.setItem('hd20DemoSeedReloaded','1');boot();return window.HD20_DATA_DIAGNOSTICS?.()||null},stats:()=>window.HD20_DATA_DIAGNOSTICS?.()||null};
 boot();
