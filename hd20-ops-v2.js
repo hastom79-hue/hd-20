@@ -41,7 +41,14 @@ function metrics(area,sub){const acts=(window.HD20KPIData?.snapshot?.()?.activit
 'advancement.standard':[['공식확정',confirmed.length,'건'],['현재 유지',confirmed.filter(x=>!/미흡|부적합|중지|해제|실패/.test(txt(x.maintainState||x.auditState||x.status))).length,'건'],['유지 미흡',confirmed.filter(x=>/미흡|부적합|중지|해제|실패/.test(txt(x.maintainState||x.auditState||x.status))||x.valid===false).length,'건'],['수평전개',confirmed.filter(x=>x.horizontalRollout||/전개/.test(txt(x.rolloutState))).length,'건']],
 'audit.draw':[['Audit 원천',audits.length,'건'],['실시 대기',audits.filter(x=>!x.auditDate).length,'건'],['Audit 완료',audits.filter(x=>x.auditDate).length,'건'],['부적합',audits.filter(x=>/부적합|미흡|NG|fail/i.test(txt(x.auditResult||x.result||x.status))).length,'건']],
 'audit.inspect':[['실시 대상',audits.filter(x=>!x.auditDate).length,'건'],['결과 입력대기',audits.filter(x=>x.auditDate&&!txt(x.auditResult||x.result)).length,'건'],['최근 7일 실시',audits.filter(x=>{const d=txt(x.auditDate).slice(0,10);if(!d)return false;const t=new Date(today()),a=new Date(d);return!isNaN(a)&&(t-a)/86400000<=7&&(t-a)/86400000>=0}).length,'건'],['부적합 등록',audits.filter(x=>/부적합|미흡|NG|fail/i.test(txt(x.auditResult||x.result||x.status))).length,'건']],
-'audit.ongoing':[['관리중',audits.filter(x=>x.auditDate&&!x.finalEvaluation).length,'건'],['재발 징후',retentionRiskAudits.filter(d=>!txt(d.finalEvaluation)).length,'건'],['Action 연계',linkedActions.length,'건'],['월별 확인',audits.filter(x=>x.auditDate&&!x.finalEvaluation).length,'건']],
+/* 전면 재설계 2단계 재평가 중 발견: "② 유지점검"의 "월별 확인" 카드가 "관리중" 카드와 완전히
+   동일한 계산식(audits.filter(x=>x.auditDate&&!x.finalEvaluation).length)을 쓰고 있어, 두 숫자가
+   항상 같게 나오고 있었음. hd20-ops-normalized.js가 이 둘로 "월별 확인률 = 월별확인/관리중"이라는
+   비율 문구를 만드는 걸 보면 원래는 "관리중 중에서 이번 달 확인이 된 건"이라는 서로 다른 의미였어야
+   함(그래서 항상 100%로만 보임). 데이터에 "월별 확인 이력"을 담는 전용 필드는 없어, 가장 안전하고
+   설명 가능한 재정의로 "이번 달에 Audit 실시일이 속하는 관리중 건수"를 사용 — 매달 달라지는 값이
+   되어 "관리중"과 분리되고 비율도 의미를 갖게 됨. */
+'audit.ongoing':[['관리중',audits.filter(x=>x.auditDate&&!x.finalEvaluation).length,'건'],['재발 징후',retentionRiskAudits.filter(d=>!txt(d.finalEvaluation)).length,'건'],['Action 연계',linkedActions.length,'건'],['월별 확인',audits.filter(x=>x.auditDate&&!x.finalEvaluation&&txt(x.auditDate).slice(0,7)===today().slice(0,7)).length,'건']],
 'audit.retention':[['관리중',audits.filter(x=>x.auditDate&&!x.finalEvaluation).length,'건'],['종료평가',audits.filter(x=>x.finalEvaluation).length,'건'],['재발/미흡',retentionRiskAudits.length,'건'],['Action 연계',linkedActions.length,'건']],
 'action.manage':[['전체 개선요청',actions.length,'건'],['진행/대기',actions.filter(x=>!isDone(x)).length,'건'],['완료',doneActions.length,'건'],['기한경과',actions.filter(overdue).length,'건']],
 'action.master':(()=>{const tm=read('hd20TeamLeaderMasterV1');const total=tm.length||16;const emailSet=tm.filter(x=>txt(x.email)).length;const leaderSet=tm.filter(x=>txt(x.leader)&&txt(x.leader)!=='미지정').length;return[['생산팀',total,'팀'],['이메일 등록',emailSet,'팀'],['팀장 지정',leaderSet,'팀'],['미지정',total-leaderSet,'팀']]})(),
