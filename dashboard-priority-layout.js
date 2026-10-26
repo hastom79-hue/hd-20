@@ -110,7 +110,15 @@ function render(){
   groups.innerHTML=`<div class="httGrid">${html}</div>`;
   groups.querySelectorAll('[data-group-tab]').forEach(btn=>btn.addEventListener('click',()=>gotoTab(btn.dataset.groupTab)));
 }
+let summaryDataRecoveryAttempted=false;
 function safeRender(){
+ if(!summaryDataRecoveryAttempted&&window.HD20DemoData?.refresh&&window.HD20KPIData?.snapshot){
+   let data=null;try{data=window.HD20KPIData.snapshot()}catch{}
+   if(data&&(!data.rows?.length)&&!(window.HD20KPIData.actionCases?.()||[]).length){
+     summaryDataRecoveryAttempted=true;
+     try{window.HD20DemoData.refresh()}catch(e){console.error('[HD20] 종합현황 검증데이터 복구 실패',e)}
+   }
+ }
  try{render()}catch(e){console.error('[HD20 종합현황] 전체 KPI 렌더링 실패',e)}
  const root=document.getElementById(ID),groups=root?.querySelector('.hd20DashboardPriorityGroups');
  if(!root||!groups||groups.querySelectorAll('[data-kpi]').length===KPI.length)return;
