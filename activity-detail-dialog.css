@@ -1,0 +1,24 @@
+/* HD20: 5S improvement number drill-down dialog */
+.awActivityLink{appearance:none;background:transparent;border:0;padding:3px 0;color:#145eae;font-size:12px;font-weight:750;text-decoration:underline;text-underline-offset:3px;cursor:pointer;white-space:nowrap}
+.awActivityLink:hover{color:#0c3d78}.awActivityLink:focus-visible{outline:2px solid #2a7ac5;outline-offset:2px;border-radius:3px}
+.awActivityDetail{position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(12,29,48,.55)}
+.awActivityDetail.on{display:flex}
+.awDetailDialog{width:min(800px,96vw);max-height:90vh;display:flex;flex-direction:column;overflow:hidden;background:#fff;border-radius:14px;box-shadow:0 25px 65px rgba(8,26,45,.3)}
+.awDetailDialog header{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:18px 24px;border-bottom:1px solid #e1e8ef}
+.awDetailDialog header small{font-size:11px;font-weight:800;letter-spacing:.09em;color:#3b76b3}
+.awDetailDialog header h3{font-size:20px;margin:5px 0 0;color:#123653}
+.awDetailDialog header button{border:1px solid #d6e1eb;border-radius:8px;background:white;color:#395a73;font-size:23px;width:35px;height:35px;cursor:pointer}
+.awDetailBody{padding:22px 24px;overflow:auto}
+.awDetailGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:20px}
+.awDetailItem{border:1px solid #e1e9f1;border-radius:8px;padding:11px 14px;min-width:0}
+.awDetailItem span{display:block;font-size:11px;color:#6a7d8f;margin-bottom:6px}
+.awDetailItem strong{font-size:13px;color:#183c57;overflow-wrap:anywhere}
+.awDetailBody section h4{margin:12px 0 7px;font-size:13px;color:#214c70}
+.awDetailBody section p{background:#f6f9fc;border-radius:7px;padding:12px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere}
+.awDetailPhotos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:14px}
+.awDetailPhotos section{border:1px solid #e2eaf1;border-radius:8px;padding:12px}
+.awDetailPhotos img{width:100%;max-height:240px;object-fit:contain}
+.awDetailEmpty{display:block;color:#8797a5;padding:25px 10px;text-align:center;background:#f5f8fa}
+.awDetailDialog footer{display:flex;justify-content:flex-end;padding:13px 24px;border-top:1px solid #e5ecf2}
+.awDetailDialog footer button{background:#1762b8;color:#fff;border:0;border-radius:8px;padding:9px 22px;cursor:pointer}
+@media(max-width:640px){.awDetailGrid,.awDetailPhotos{grid-template-columns:1fr}.awDetailBody{padding:14px}}
