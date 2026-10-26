@@ -1,0 +1,31 @@
+name: HD20 integrated master redesign smoke
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'integrated-master-factors.js'
+      - 'integrated-master-redesign.css'
+      - 'index.html'
+      - 'tests/integrated-master-redesign-smoke.cjs'
+      - '.github/workflows/integrated-master-redesign-smoke.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  master-editor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install browser test tools
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Validate integrated master editor
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/hd20-master-http.log 2>&1 &
+          for i in {1..30}; do curl -fsS http://127.0.0.1:4173/index.html >/dev/null && break; sleep 1; done
+          node tests/integrated-master-redesign-smoke.cjs
