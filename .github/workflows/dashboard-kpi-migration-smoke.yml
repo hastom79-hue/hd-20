@@ -1,0 +1,32 @@
+name: HD20 dashboard KPI migration smoke
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'hd20-ops-v2.js'
+      - 'hd20-ops-v2.css'
+      - 'dashboard-work-kpi-migration.js'
+      - 'index.html'
+      - 'tests/dashboard-kpi-migration-smoke.cjs'
+      - '.github/workflows/dashboard-kpi-migration-smoke.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  dashboard-kpi:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install Chromium test dependency
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Verify dashboard KPI migration
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/hd20-kpi-http.log 2>&1 &
+          for i in {1..30}; do curl -fsS http://127.0.0.1:4173/index.html >/dev/null && break; sleep 1; done
+          node tests/dashboard-kpi-migration-smoke.cjs
