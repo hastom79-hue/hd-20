@@ -1,0 +1,22 @@
+name: HD20 action Outlook draft smoke
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'action-mail-workflow.js'
+      - 'index.html'
+      - 'tests/action-outlook-draft-smoke.cjs'
+      - '.github/workflows/action-outlook-draft-smoke.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  outlook-draft:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: node --check action-mail-workflow.js
+      - run: node tests/action-outlook-draft-smoke.cjs
