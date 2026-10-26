@@ -105,14 +105,18 @@ function monthlyOperational(n=6){
   const passOf=d=>{const id=auditId(d),linked=id?act.filter(a=>actionAuditId(a)===id):[];const unresolved=linked.some(a=>!actionDone(a)),recurrent=linked.some(closedLoopRecurrence),fs=txt(d.finalEvaluation||d.auditFinalState),failed=fs==='미흡'||['부적합','실패','해제','중지'].includes(fs);return !unresolved&&!recurrent&&!failed};
   const closed=auditDraws().filter(d=>d.auditDate).map(d=>({d,end:addMonthsKey(d.auditDate,6)})).filter(x=>x.end&&x.end<today);
   const cell=(v,c)=>({v:v??null,n:c});
-  const out={months,judgmentRate:[],avgLead:[],maturity:[],sixRetention:[],recurrence:[],actionOnTime:[]};
-  months.forEach(m=>{if(m>today.slice(0,7)){for(const k of ['judgmentRate','avgLead','maturity','sixRetention','recurrence','actionOnTime'])out[k].push(cell(null,0));return}
+  const out={months,judgmentRate:[],avgLead:[],maturity:[],sixRetention:[],recurrence:[],actionOnTime:[],nonconform:[]};
+  const auditResults=auditDraws().filter(x=>txt(pickField(x,['result','finalEvaluation'])));
+  const auditResultDate=x=>pickField(x,['auditDate','completedAt','date','createdAt']);
+  const isNonconform=x=>/부적합|미흡|fail|ng/i.test(txt(pickField(x,['result','finalEvaluation'])));
+  months.forEach(m=>{if(m>today.slice(0,7)){for(const k of ['judgmentRate','avgLead','maturity','sixRetention','recurrence','actionOnTime','nonconform'])out[k].push(cell(null,0));return}
     const sc=scope.filter(x=>mk(regOf(x))===m);out.judgmentRate.push(cell(pct(sc.filter(isJudged).length,sc.length),sc.length));
     const jm=scope.filter(x=>isJudged(x)&&mk(judgeOf(x))===m).map(x=>daysBetween(regOf(x),judgeOf(x))).filter(Number.isFinite);out.avgLead.push(cell(avg(jm),jm.length));
     const lv=(s.confirmed||[]).filter(x=>mk(confirmedDate(x))===m).map(levelOf).filter(Number.isFinite);out.maturity.push(cell(avg(lv),lv.length));
     const cl=closed.filter(x=>x.end.slice(0,7)===m);out.sixRetention.push(cell(pct(cl.filter(x=>passOf(x.d)).length,cl.length),cl.length));
     const rc=recScope.filter(x=>mk(doneOf(x))===m);out.recurrence.push(cell(pct(rc.filter(recurrenceState).length,rc.length),rc.length));
     const tm2=dueActions.filter(x=>mk(dueOf(x))===m);out.actionOnTime.push(cell(pct(tm2.filter(isOnTimeCompleted).length,tm2.length),tm2.length));
+    const auditsThisMonth=auditResults.filter(x=>mk(auditResultDate(x))===m);out.nonconform.push(cell(pct(auditsThisMonth.filter(isNonconform).length,auditsThisMonth.length),auditsThisMonth.length));
   });
   // Monthly confirmed-case cohorts: retained vs attrited, using confirmation month.
   out.advRetention=[];out.advAttrition=[];
