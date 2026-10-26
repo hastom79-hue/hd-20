@@ -18,14 +18,23 @@ const {chromium}=require('playwright');
    const p=document.getElementById('hd20DashboardWorkMetrics');
    return {groups:p.querySelectorAll('.hd20DwmGroup').length,tiles:p.querySelectorAll('.hd20DwmTile').length,
     visible:p.getClientRects().length>0&&getComputedStyle(p).display!=='none',
-    sourceMatch:['audit','action','advancement'].every(area=>{
+    owner:p.parentElement?.id,sourceMatch:['audit','action','advancement'].every(area=>{
       const sub=window.HD20_DASHBOARD_WORK_METRICS.selected[area];
       return p.querySelector('[data-dwm-area="'+area+'"] .hd20DwmTile strong')?.textContent?.trim()===
-        window.HD20_OPS_V2.metrics(area,sub)[0].slice(1).join('');
+        window.HD20_KPI_EVIDENCE.evidence(area,sub,0).rows.length+'건';
     })};
   });
-  if(dashboard.groups!==3||dashboard.tiles!==12||!dashboard.visible||!dashboard.sourceMatch)
+  if(dashboard.groups!==3||dashboard.tiles!==12||dashboard.owner!=='hd20DashboardPriority'||!dashboard.visible||!dashboard.sourceMatch)
    throw new Error('dashboard KPI consolidation failed: '+JSON.stringify(dashboard));
+  const contract=await page.evaluate(()=>['audit','action','advancement'].every(area=>{
+   const sub=window.HD20_DASHBOARD_WORK_METRICS.selected[area];
+   const tiles=[...document.querySelectorAll('[data-dwm-area="'+area+'"] .hd20DwmTile')];
+   return tiles.length===4&&tiles.every((tile,i)=>{
+    const ev=window.HD20_KPI_EVIDENCE.evidence(area,sub,i);
+    return ev&&tile.querySelector('span')?.textContent===ev.title&&tile.querySelector('strong')?.textContent?.trim()===ev.rows.length+'건';
+   });
+  }));
+  if(!contract)throw new Error('KPI card title/value differs from drill-down evidence');
   const auditLabel=await page.locator('[data-dwm-area="audit"] .hd20DwmTile span').first().textContent();
   if(auditLabel!=='Audit 원천')throw new Error('Audit title/KPI mismatch: '+auditLabel);
   for(const section of ['improve','request','map']){
@@ -38,7 +47,7 @@ const {chromium}=require('playwright');
   if(!await page.locator('#hd20DashboardWorkMetrics').isVisible())throw new Error('summary KPI panel not restored');
   await page.selectOption('[data-dwm-select="audit"]','retention');
   const updated=await page.evaluate(()=>document.querySelector('[data-dwm-area="audit"] .hd20DwmTile span')?.textContent);
-  if(updated!=='관리중')throw new Error('audit KPI subtab selection failed: '+updated);
+  if(updated!=='6개월 관리중')throw new Error('audit KPI subtab selection failed: '+updated);
   for(const area of ['audit','action','advancement']){
    await page.evaluate(area=>window.HD20_NAV.go(area),area);
    await page.waitForTimeout(500);
