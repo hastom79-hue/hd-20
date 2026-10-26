@@ -29,3 +29,11 @@ body:not(.hd20DashboardSummaryActive) #hd20DashboardWorkMetrics{display:none!imp
 body.hd20DashboardSummaryActive .app.awFocused #hd20DashboardWorkMetrics{display:none!important}
 #hd20DashboardWorkMetrics.hd20DashboardSectionHidden{display:none!important}
 #hd20DashboardWorkMetrics .hd20DwmContractError{grid-column:1/-1;margin:0;padding:16px 12px;border:1px solid #eedac3;border-radius:8px;background:#fffaf2;color:#8a5b25;font-size:12px;line-height:1.6}
+
+/* KPI migration v4: only the summary container may own the consolidated cards.
+   Legacy strips in the three workflow areas must never reappear during late rerenders. */
+body:has(.beginnerNav button[data-key="audit"].active) #hd20OpsMetrics,
+body:has(.beginnerNav button[data-key="action"].active) #hd20OpsMetrics,
+body:has(.beginnerNav button[data-key="advancement"].active) #hd20OpsMetrics{display:none!important}
+#hd20DashboardPriority > #hd20DashboardWorkMetrics{display:block;clear:both;width:100%;box-sizing:border-box;margin:18px 0 6px}
+body:not(.hd20DashboardSummaryActive) #hd20DashboardPriority > #hd20DashboardWorkMetrics{display:none!important}
