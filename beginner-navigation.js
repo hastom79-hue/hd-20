@@ -11,7 +11,42 @@ function closeScreens(){
  if(conversion){conversion.classList.remove('on','hd20AdvancementStandard');conversion.classList.add('hd20SubHidden')}
  document.getElementById('awWorkplace')?.classList.remove('on');
 }
-function syncNav(nav,key){activeKey=key;navGeneration++;nav.querySelectorAll('button[data-key]').forEach(b=>b.classList.toggle('active',b.dataset.key===key));window.dispatchEvent(new CustomEvent('hd20-nav-area-changed',{detail:{area:key}}))}
+/* Single source of truth for visible top-level content.
+   Legacy standardization CSS can keep its container visible after a top-tab switch.
+   Inline important takes precedence over those legacy author stylesheet rules. */
+function reconcileVisibleArea(){
+ const nav=document.querySelector('.beginnerNav');
+ const selected=nav?.querySelector('button[data-key].active')?.dataset.key;
+ if(!selected)return;
+ const app=document.querySelector('.app');
+ const conversion=document.getElementById('performanceConversionAnalysis');
+ if(conversion){
+   if(selected==='advancement'){
+     conversion.style.removeProperty('display');
+   }else{
+     conversion.classList.remove('on','hd20AdvancementStandard');
+     conversion.classList.add('hd20SubHidden');
+     conversion.style.setProperty('display','none','important');
+   }
+ }
+ const screens={activity:'awActivity',audit:'awAudit',action:'awAction',master:'masterModal'};
+ Object.entries(screens).forEach(([area,id])=>{
+   const el=document.getElementById(id);if(!el)return;
+   if(selected===area){el.style.removeProperty('display')}
+   else{el.classList.remove('on');el.style.setProperty('display','none','important')}
+ });
+ if(selected!=='advancement')document.getElementById('awWorkplace')?.classList.remove('on');
+ if(selected!=='dashboard'&&app&&!app.classList.contains('awFocused')&&selected!=='activity')app.classList.add('awFocused');
+ if(selected==='master')reconcileMasterView();
+}
+function scheduleAreaReconcile(){
+ reconcileVisibleArea();
+ requestAnimationFrame(reconcileVisibleArea);
+ setTimeout(reconcileVisibleArea,80);
+ setTimeout(reconcileVisibleArea,450);
+ setTimeout(reconcileVisibleArea,1800);
+}
+function syncNav(nav,key){activeKey=key;navGeneration++;nav.querySelectorAll('button[data-key]').forEach(b=>b.classList.toggle('active',b.dataset.key===key));window.dispatchEvent(new CustomEvent('hd20-nav-area-changed',{detail:{area:key}}));scheduleAreaReconcile()}
 function syncMergedSwitch(key){}
 function openScreen(id){
  const el=document.getElementById(id);if(!el)return false;
@@ -97,6 +132,8 @@ html body:has(.beginnerNav button:not([data-key="master"]).active) #masterModal{
  window.addEventListener('pageshow',reconcileMasterView);
  window.addEventListener('load',reconcileMasterView,{once:true});
  window.addEventListener('hd20-nav-area-changed',()=>{if(activeKey==='master')reconcileMasterView()});
+ window.addEventListener('pageshow',scheduleAreaReconcile);
+ window.addEventListener('load',scheduleAreaReconcile,{once:true});
 }
 function ensureNav(){let nav=document.querySelector('.beginnerNav');if(!nav){nav=document.createElement('nav');nav.className='beginnerNav';nav.setAttribute('aria-label','5S 통합관리 메뉴');document.querySelector('.top')?.insertAdjacentElement('afterend',nav)}nav.innerHTML=NAV_HTML;nav.dataset.controller='canonical-five-area-v10-early-boot';return nav}
 function ensureHint(nav){document.querySelector('.beginnerHint')?.remove()}
