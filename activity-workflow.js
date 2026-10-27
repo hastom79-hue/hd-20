@@ -35,7 +35,7 @@ window.addEventListener('hd20-master-factors-updated',()=>{
 function leaderOf(team){try{const a=JSON.parse(localStorage.getItem('hd20TeamLeaderMasterV1')||'[]');const r=(Array.isArray(a)?a:[]).find(x=>x.team===team);return r?.leader&&r.leader!=='미지정'?r.leader:''}catch{return''}}
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
 const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-function load(){try{const v=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(v)?v:[]}catch{return[]}}
+function load(){try{const v=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(v)?v.map(x=>window.HD20WorkplaceMaster?.annotate(x)||x):[]}catch{return[]}}
 function save(v){localStorage.setItem(KEY,JSON.stringify(v))}
 function snap(){return window.HD20KPIData?.snapshot?.()||{activities:load(),candidates:[],newSecured:[],confirmed:[],maintained:[]}}
 function dateOf(x){return x?.date||x?.regDate||x?.createdAt||x?.importedAt||''}
