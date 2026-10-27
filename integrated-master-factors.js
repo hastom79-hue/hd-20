@@ -310,7 +310,7 @@ function renderMasterOverview(name){
  if(!el){el=document.createElement('section');el.id='imfGovernance';el.className='imfGovernance';p.insertBefore(el,p.firstChild)}
  const h=masterHealth(),current=MASTER_DESCRIPTIONS[name]||MASTER_DESCRIPTIONS.team;
  const stat=(value,label,detail)=>'<div class="imfGovStat"><b>'+value+'</b><strong>'+label+'</strong><small>'+detail+'</small></div>';
- el.innerHTML='<div class="imfGovTop"><div><span class="imfGovEyebrow">MASTER DATA CONTROL</span><h3>통합기준정보 운영관리</h3><p>기준정보 설정 → 등록 화면 반영 → 실적 집계까지 연결되는 공통 관리체계</p></div><span class="imfGovVersion">운영 기준 · 7개 관리영역</span></div>'
+ el.innerHTML='<div class="imfGovTop"><div><span class="imfGovEyebrow">MASTER DATA CONTROL</span><h3>통합기준정보 운영관리</h3><p>기준정보 설정 → 등록 화면 반영 → 실적 집계까지 연결되는 공통 관리체계</p></div><span class="imfGovVersion">운영 기준 · 작업장 마스터 연계</span></div>'
   +'<div class="imfGovStats">'
   +stat(h.active+' / '+h.count,'사용 생산팀','Canonical 팀 마스터')
   +stat(h.contacts+' / '+h.active,'담당자·이메일 완비','사용 팀 기준')
@@ -321,8 +321,8 @@ function renderMasterOverview(name){
  el.setAttribute('aria-label','기준정보 운영 현황');
 }
 function rememberMasterTab(tab){try{sessionStorage.setItem('hd20MasterSelectedTab',tab)}catch{}}
-function restoredMasterTab(){try{const value=sessionStorage.getItem('hd20MasterSelectedTab');return ['integrated-team','integrated-target','integrated-source','integrated-discovery','integrated-factor','policy','integrated-mail','integrated-admins'].includes(value)?value:null}catch{return null}}
-function show(name){rememberMasterTab('integrated-'+name);const p=panel();if(!p)return;hide();p.style.display='block';const b=document.querySelectorAll('#masterModal .masterTabs button');b.forEach(x=>x.classList.toggle('on',x.dataset.masterTab==='integrated-'+name));if(name==='admins'){window.HD20MasterAccess?.render(p.querySelector('#imfBody'))}if(name==='team')renderTeam();if(name==='target')renderTarget();if(name==='source')renderSource();if(name==='factor')renderFactors();if(name==='mail')renderMail();if(name==='discovery')renderDiscovery();attachFilter(p,name);renderMasterOverview(name)}
+function restoredMasterTab(){try{const value=sessionStorage.getItem('hd20MasterSelectedTab');return ['integrated-team','integrated-target','integrated-source','integrated-discovery','integrated-factor','policy','integrated-mail','integrated-admins','integrated-workplace'].includes(value)?value:null}catch{return null}}
+function show(name){rememberMasterTab('integrated-'+name);const p=panel();if(!p)return;hide();p.style.display='block';const b=document.querySelectorAll('#masterModal .masterTabs button');b.forEach(x=>x.classList.toggle('on',x.dataset.masterTab==='integrated-'+name));if(name==='admins'){window.HD20MasterAccess?.render(p.querySelector('#imfBody'))}if(name==='workplace'){window.HD20WorkplaceMaster?.render(p.querySelector('#imfBody'))}if(name==='team')renderTeam();if(name==='target')renderTarget();if(name==='source')renderSource();if(name==='factor')renderFactors();if(name==='mail')renderMail();if(name==='discovery')renderDiscovery();attachFilter(p,name);renderMasterOverview(name)}
 function ensure(){css();const p=panel(),tabs=document.querySelector('#masterModal .masterTabs');if(!p||!tabs)return false;
 ['order','target','sourceOrder','leader'].forEach(k=>{const b=tabs.querySelector('[data-master-tab="'+k+'"]');if(b){b.hidden=true;b.classList.remove('on');b.style.setProperty('display','none','important');b.style.setProperty('visibility','hidden','important')}});
 ['masterOrderPanel','masterTargetPanel'].forEach(id=>document.getElementById(id)?.style.setProperty('display','none'));
@@ -333,7 +333,7 @@ const head=document.querySelector('#masterModal .modalHead span');if(head)head.t
    패트롤 점검·자율 5S Audit·혁신팀 자율 점검·5S 자율개선활동 피드백·출처 미분류)의 순서를 관리하는
    유일한 창구가 구버전 숨김 탭(request-source-order-master.js)뿐이었음을 발견 — "③ 요청그룹"과
    같은 패턴으로 신버전 탭으로 정식 추가. */
-const map={team:'조직·팀',target:'인당 개선목표',source:'요청그룹',factor:'업무·등록항목',mail:'메일링 설정',discovery:'문제 발굴출처',admins:'마스터관리자 관리'};Object.entries(map).forEach(([k,n])=>{let b=tabs.querySelector('[data-master-tab="integrated-'+k+'"]');if(!b){b=document.createElement('button');b.type='button';b.dataset.masterTab='integrated-'+k;b.textContent=n;b.addEventListener('click',()=>show(k));tabs.appendChild(b)}});groupMasterNavigation();
+const map={team:'조직·팀',target:'인당 개선목표',source:'요청그룹',factor:'업무·등록항목',mail:'메일링 설정',discovery:'문제 발굴출처',admins:'마스터관리자 관리',workplace:'울산 작업장 마스터'};Object.entries(map).forEach(([k,n])=>{let b=tabs.querySelector('[data-master-tab="integrated-'+k+'"]');if(!b){b=document.createElement('button');b.type='button';b.dataset.masterTab='integrated-'+k;b.textContent=n;b.addEventListener('click',()=>show(k));tabs.appendChild(b)}});groupMasterNavigation();
  const selected=restoredMasterTab();
  if(selected==='policy'&&tabs.querySelector('[data-master-tab="policy"]'))tabs.querySelector('[data-master-tab="policy"]').click();
  else if(selected?.startsWith('integrated-'))show(selected.slice('integrated-'.length));
@@ -343,7 +343,7 @@ function groupMasterNavigation(){
  const tabs=document.querySelector('#masterModal .masterTabs');if(!tabs)return;
  const groups=[
   {label:'조직 · 목표',keys:['integrated-team','integrated-target']},
-  {label:'등록 · 분류',keys:['integrated-source','integrated-discovery','integrated-factor']},
+  {label:'등록 · 분류',keys:['integrated-source','integrated-discovery','integrated-factor','integrated-workplace']},
   {label:'Audit · 조치',keys:['policy']},
   {label:'시스템',keys:['integrated-mail','integrated-admins']}
  ];
