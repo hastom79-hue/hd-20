@@ -34,7 +34,7 @@ const findPhoto=(kind)=>{
  for(const key of names){
    const el=active.querySelector('[name="'+key+'"],[data-photo-kind="'+kind+'"] img,[data-photo-kind="'+kind+'"]');
    const value=el?.currentSrc||el?.src||el?.value||el?.dataset?.src;
-   if(typeof value==='string'&&/^(data:image\\/|blob:|https?:\\/\\/|\\.\\/?)/i.test(value))return value;
+   if(typeof value==='string'&&(/^(data:image|blob:|https?:)/i.test(value)||value.startsWith('./')||value.startsWith('/')))return value;
  }
  const image=[...active.querySelectorAll('img')].find(el=>new RegExp(kind,'i').test([el.id,el.className,el.alt,el.closest('[class]')?.className].join(' ')));
  return image?.currentSrc||image?.src||'';
@@ -57,7 +57,7 @@ const refTitle=document.createElement('figcaption');refTitle.textContent='고도
 const refImg=document.createElement('img');refImg.src=referencePhotos[n];refImg.alt=items[n].title+' 평가 참고사진';refImg.loading='eager';refImg.referrerPolicy='no-referrer';refImg.style.cssText='display:block;width:100%;max-height:380px;object-fit:contain;background:#e8eef3;border-radius:8px';reference.appendChild(refImg);
 const error=document.createElement('p');error.textContent='외부 참고사진을 불러올 수 없습니다. 원본 이미지 URL의 접근 상태를 확인해야 합니다.';error.style.cssText='display:none;color:#9b3b3b;font-size:13px';reference.appendChild(error);
 refImg.onerror=()=>{refImg.style.display='none';error.style.display='block'};
-evidenceRoot.insertBefore(reference,evidence);
+evidenceRoot.insertBefore(reference,evidenceRoot.querySelector('h4'));
 overlay.querySelector('[data-guide-close]').onclick=()=>overlay.close();
  overlay.querySelectorAll('[data-guide-tab]').forEach(b=>b.onclick=()=>open(Number(b.dataset.guideTab)));
  if(!overlay.open){try{overlay.showModal()}catch(err){overlay.setAttribute('open','')}}
