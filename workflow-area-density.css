@@ -131,3 +131,12 @@
 #awActivity .hd20GuideOpen,#awAction .hd20GuideOpen{margin-top:10px;padding:8px 11px;border:1px solid #a8c8df;border-radius:7px;background:#f0f8ff;color:#155b89;font-weight:700;font-size:12px;cursor:pointer;text-align:left}
 #awActivity .hd20CriteriaDefinition,#awAction .hd20CriteriaDefinition{align-items:stretch}
 #awActivity .hd20CriteriaDefinition>b,#awAction .hd20CriteriaDefinition>b{overflow-wrap:anywhere;line-height:1.65}
+
+/* 2026-10-27: Keep photo file inputs inside photo upload cards, never above advancement criteria. */
+#awActivity .awPhoto,#awAction .amPhoto{position:relative!important;isolation:isolate}
+#awActivity .awDrop,#awAction .amDrop{position:relative!important;overflow:hidden!important}
+#awActivity .awDrop input[type=file],#awAction .amDrop input[type=file]{position:relative!important;inset:auto!important;top:auto!important;left:auto!important;right:auto!important;bottom:auto!important;display:block!important;width:100%!important;max-width:100%!important;height:auto!important;min-height:0!important;margin:8px 0 0!important;padding:0!important;opacity:1!important;visibility:visible!important;transform:none!important;z-index:1!important}
+#awActivity .hd20DirectCriteria,#awAction .hd20DirectCriteria{position:relative!important;isolation:isolate!important;overflow:hidden!important;clear:both!important}
+#awActivity .hd20CriteriaChecks,#awAction .hd20CriteriaChecks{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:9px!important;width:100%!important;align-items:stretch!important}
+#awActivity .hd20CriteriaChecks>label,#awAction .hd20CriteriaChecks>label{grid-column:auto!important;grid-row:auto!important;display:flex!important;align-items:center!important;justify-content:flex-start!important;min-width:0!important;width:100%!important;max-width:none!important;margin:0!important;white-space:normal!important}
+@media(max-width:900px){#awActivity .hd20CriteriaChecks,#awAction .hd20CriteriaChecks{grid-template-columns:1fr!important}}
