@@ -84,3 +84,16 @@
 #awActivity .awCandidateRow input[type=checkbox]{appearance:auto!important;display:inline-block!important;position:static!important;flex:0 0 17px!important;width:17px!important;height:17px!important;min-width:17px!important;min-height:17px!important;max-width:17px!important;max-height:17px!important;margin:0!important;padding:0!important}
 #awActivity .awCandidateRow label{display:inline!important;grid-column:auto!important;width:auto!important;margin:0!important;padding:0!important;font-size:13px!important;font-weight:800;white-space:nowrap;cursor:pointer}
 #awActivity .awCandidateRow .awHint{display:inline!important;margin:0!important;font-size:11.5px!important;color:#667e91;line-height:1.5}
+
+
+/* Shared five-choice execution assessment below photo inputs */
+#awActivity .hd20EvalPanel,#awAction .hd20EvalPanel{grid-column:1/-1;min-width:0;padding:12px 16px;border:1px solid #d4e3ed;border-radius:9px;background:#f8fbfe}
+#awActivity .hd20EvalHead,#awAction .hd20EvalHead{display:flex;align-items:baseline;flex-wrap:wrap;gap:10px;margin-bottom:10px;color:#163d60;font-size:13px}
+#awActivity .hd20EvalHead span,#awAction .hd20EvalHead span{color:#71869a;font-size:12px}
+#awActivity .hd20EvalOptions,#awAction .hd20EvalOptions{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+#awActivity .hd20EvalChoice,#awAction .hd20EvalChoice{display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:center!important;gap:8px!important;min-width:0!important;min-height:46px!important;width:auto!important;margin:0!important;padding:9px 7px!important;border:1px solid #d7e5ef;border-radius:8px;background:#fff;color:#153b5b;font-size:12px!important;font-weight:750!important;white-space:nowrap;cursor:pointer;line-height:1.3!important}
+#awActivity .hd20EvalAdopt,#awAction .hd20EvalAdopt{border-style:dashed}
+#awActivity .hd20EvalChoice input[type=checkbox],#awAction .hd20EvalChoice input[type=checkbox]{appearance:auto!important;position:static!important;display:inline-block!important;flex:0 0 17px!important;width:17px!important;height:17px!important;min-width:17px!important;min-height:17px!important;max-width:17px!important;max-height:17px!important;margin:0!important;padding:0!important;accent-color:#246b9e}
+#awActivity .hd20EvalChoice:has(input:disabled),#awAction .hd20EvalChoice:has(input:disabled){opacity:.58;cursor:not-allowed}
+#awActivity .hd20EvalHelp,#awAction .hd20EvalHelp{margin:9px 0 0;font-size:11px;color:#6a8295}
+@media(max-width:800px){#awActivity .hd20EvalOptions,#awAction .hd20EvalOptions{grid-template-columns:repeat(2,minmax(0,1fr))}}
