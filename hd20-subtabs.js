@@ -290,13 +290,16 @@ function advProcessReason(x,state){
  return advEvidenceGap(x).length?'후보 증빙 보완: '+advEvidenceGap(x).join(' · '):'후보 근거 및 3대 요건 검증 필요'
 }
 function renderAdvProcess(){
- const host=ensureAdvProcess();if(!host)return;const root=$('#performanceConversionAnalysis');const grid=root?.querySelector('.pcGrid');if(grid&&host.parentElement!==grid)grid.appendChild(host);const rows=readStore('hd20GMES5SAutoImproveRawV1').filter(advancementCandidate);
- const states=['후보 지정','요건 보완','작업장 근거검증 필요','공식심사 대기','확정·전개','유지 이탈'];const grouped=Object.fromEntries(states.map(s=>[s,[]]));rows.forEach(x=>{const s=advProcessState(x);(grouped[s]||(grouped[s]=[])).push(x)});
- const confirmed=rows.filter(advancementConfirmed),maintained=confirmed.filter(advancementMaintained),lost=confirmed.filter(advancementAttrition),candidateOnly=rows.filter(x=>!advancementConfirmed(x));const verificationNeeded=candidateOnly.filter(x=>advProcessState(x)==='작업장 근거검증 필요'),formalReady=candidateOnly.filter(x=>advProcessState(x)==='공식심사 대기'),gap=candidateOnly.filter(x=>['후보 지정','요건 보완'].includes(advProcessState(x)));const cards=[['전체 후보',rows.length,'등록된 고도화 활동'],['보완·검증',gap.length,'증빙 또는 3대 요건 Gap'],['근거검증 필요',verificationNeeded.length,'3/3 · 작업장 검증 전'],['공식심사 대기',formalReady.length,'작업장 근거검증 완료'],['공식확정',confirmed.length,'judgeState=확정'],['현재 유지',maintained.length,'확정 후 유지 중'],['확정 후 이탈',lost.length,'유지 실패·재점검']].map(([s,n,d])=>`<div class="hd20ProcQueue ${s==='보완·검증'||s==='확정 후 이탈'?'risk':''}"><small>${s}</small><b>${n}건</b><span>${d}</span></div>`).join('');const funnel=`<div class="hd20AdvFunnel">${[['후보',rows.length],['보완/검증',gap.length],['근거검증',verificationNeeded.length],['공식심사',formalReady.length],['공식확정',confirmed.length],['현재 유지',maintained.length]].map(([k,n],i)=>`<div><small>${k}</small><b>${n}</b>${i<5?'<i>→</i>':''}</div>`).join('')}<div class="loss"><small>확정 후 이탈</small><b>${lost.length}</b></div></div>`;
- const queue=rows.filter(x=>['후보 지정','요건 보완','작업장 근거검증 필요','공식심사 대기','유지 이탈'].includes(advProcessState(x))).sort((a,b)=>advCriteriaCount(a)-advCriteriaCount(b));
- const body=queue.map(x=>{const s=advProcessState(x);return `<tr><td>${esc(txt(x.team)||'—')}</td><td>${esc(advLine(x))}</td><td>${esc(txt(x.workplace||x.title)||'—')}</td><td><b>${esc(s)}</b></td><td>${advCriteriaCount(x)}/3</td><td>${esc(advProcessReason(x,s))}</td><td>${esc(s==='유지 이탈'?'Audit/재고도화':s==='후보 지정'?'증빙 보완 후 요건검증':s==='요건 보완'?'요건 보완 후 재검증':s==='작업장 근거검증 필요'?'작업장 근거검증':'공식판정 진행')}</td></tr>`}).join('');
- host.innerHTML=`<div class="pcPanelHead">고도화 심사 Funnel · 정체/이탈 관리 <small>3/3과 공식확정을 분리하고, 확정 후 유지·이탈까지 한 흐름으로 관리합니다.</small></div><div class="pcTableWrap"><table class="pcTable"><thead><tr><th>생산팀</th><th>라인</th><th>작업장/활동</th><th>현재 단계</th><th>요건</th><th>정체·환류 사유</th><th>다음 조치</th></tr></thead><tbody>${body||'<tr><td colspan="7">현재 정체·환류 대상 Case가 없습니다.</td></tr>'}</tbody></table></div><details class="hd20AdvSecondary"><summary>단계별 심사 현황 펼쳐보기</summary>${funnel}<div class="hd20ProcQueues">${cards}</div></details>`
+ const host=ensureAdvProcess();if(!host)return;
+ const rows=readStore('hd20GMES5SAutoImproveRawV1').filter(x=>x&&x.id);
+ const ok=rows.filter(x=>advCriteriaCount(x)>=1),no=rows.filter(x=>advCriteriaCount(x)===0),lost=ok.filter(advancementAttrition);
+ host.innerHTML='<div class="pcPanelHead">고도화 즉시판정 및 유지관리 <small>후보·대기 단계 없음 · 3대 요건 중 1개 이상 충족</small></div>'+
+ '<div class="hd20AdvKpis"><div><small>전체 작업사례</small><b>'+rows.length+'건</b></div><div><small>요건 충족</small><b>'+ok.length+'건</b></div><div><small>요건 미충족</small><b>'+no.length+'건</b></div><div><small>유지 이탈</small><b>'+lost.length+'건</b></div></div>'+
+ '<div class="pcTableWrap"><table class="pcTable"><thead><tr><th>생산팀</th><th>작업사례</th><th>충족수</th><th>즉시판정</th><th>유지상태</th></tr></thead><tbody>'+
+ rows.map(x=>'<tr><td>'+esc(txt(x.team)||'—')+'</td><td>'+esc(txt(x.workplace||x.title||x.id)||'—')+'</td><td>'+advCriteriaCount(x)+'/3</td><td>'+(advCriteriaCount(x)>=1?'충족':'미충족')+'</td><td>'+esc(txt(x.maintainState)||'—')+'</td></tr>').join('')+
+ '</tbody></table></div>';
 }
+
 function ensureAdvStandard(){
  let host=$('#hd20AdvStandardOperational');if(host)return host;host=document.createElement('section');host.id='hd20AdvStandardOperational';host.className='pcPanel hd20AdvStandardOperational';const root=$('#performanceConversionAnalysis');(root?.querySelector('.pcGrid')||root)?.appendChild(host);return host
 }
