@@ -198,7 +198,7 @@ function saveWorkplaceVerification(id){const key='hd20GMES5SAutoImproveRawV1';le
 function renderAdvJudge(){
  const host=ensureAdvJudge();if(!host)return;
  const all=readStore('hd20GMES5SAutoImproveRawV1');
- const rows=all.filter(advancementCandidate).filter(x=>!advancementConfirmed(x));
+ const rows=all.filter(x=>x&&x.id);
  const priority=x=>{const e=advEvidenceGap(x).length,n=advCriteriaCount(x);return(e&&n<3)?0:e?1:n<3?2:3};
  const sorted=rows.slice().sort((a,b)=>priority(a)-priority(b)||advCriteriaCount(a)-advCriteriaCount(b));
  const ready=rows.filter(x=>!advEvidenceGap(x).length&&advCriteriaCount(x)>=1).length;
