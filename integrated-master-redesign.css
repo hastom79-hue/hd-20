@@ -99,3 +99,8 @@
 #masterModal .imfGovJump button:hover,#masterModal .imfGovJump button.active{background:#185da7;border-color:#185da7;color:#fff}
 @media(max-width:920px){#masterModal .imfGovStats{grid-template-columns:repeat(2,minmax(0,1fr))}#masterModal .imfGovStat:nth-child(2){border-right:0}#masterModal .imfGovStat:nth-child(-n+2){border-bottom:1px solid #e7edf2}#masterModal .imfGovContext{align-items:flex-start;flex-direction:column}}
 @media(max-width:540px){#masterModal .imfGovTop{align-items:flex-start;flex-direction:column}#masterModal .imfGovStat{padding:11px}#masterModal .imfGovStat b{font-size:18px}}
+
+#masterModal .imfFilterBar{display:flex;align-items:center;flex-wrap:wrap;gap:10px;padding:10px 14px;background:#f8fbfd;border-bottom:1px solid #e5edf3}
+#masterModal .imfFilterBar input[type=search]{flex:1 1 230px;min-width:160px}
+#masterModal .imfFilterBar select{flex:0 1 220px;max-width:100%;min-height:34px;padding:7px 10px;border:1px solid #cbdbe5;border-radius:7px;background:#fff;color:#345a76;font-size:12px}
+#masterModal .imfFilterBar .imfFilterCount{margin-left:auto;white-space:nowrap;font-weight:750;color:#32678f}
