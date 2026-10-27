@@ -56,7 +56,7 @@ function attachFilter(p,name){
     const leader=String(row.querySelector('[data-l]')?.value||'').trim();
     const email=String(row.querySelector('[data-e]')?.value||'').trim();
     const count=Number(row.querySelector('[data-h]')?.value);
-    if(kind==='contact')stateMatch=active&&(!leader||leader==='미지정'||!email||!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email));
+    if(kind==='contact')stateMatch=active&&(!leader||leader==='미지정'||!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email));
     if(kind==='headcount')stateMatch=active&&!(count>0);
     if(kind==='inactive')stateMatch=!active;
    }else{
