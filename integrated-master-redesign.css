@@ -75,3 +75,27 @@
 /* Override legacy V6 header rules injected at runtime. */
 #masterModal .imfSec.imfFactorWorkspace{margin:0!important}
 #masterModal .imfSec .imfFactorHeader h4{border:0!important;padding:0!important;margin:5px 0 7px!important;font-size:21px!important;line-height:1.3!important}
+
+/* Integrated master governance: compact operational readiness summary */
+#masterModal .imfGovernance{margin:14px 18px 18px;padding:0;border:1px solid #dce6ef;border-radius:13px;background:#fff;overflow:hidden}
+#masterModal .imfGovTop{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:17px 20px 13px;background:linear-gradient(105deg,#f0f6fc,#fff)}
+#masterModal .imfGovEyebrow{display:block;font-size:10px;font-weight:900;letter-spacing:.11em;color:#2865a5}
+#masterModal .imfGovTop h3{margin:3px 0 4px;font-size:18px;font-weight:850;color:#193d5c}
+#masterModal .imfGovTop p{margin:0;color:#607b90;font-size:12px;line-height:1.5}
+#masterModal .imfGovVersion{font-size:11px;font-weight:750;color:#477296;border:1px solid #cfdfed;background:#fff;padding:7px 11px;border-radius:20px;white-space:nowrap}
+#masterModal .imfGovStats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;border-top:1px solid #e3ebf2;border-bottom:1px solid #e3ebf2}
+#masterModal .imfGovStat{display:flex;flex-direction:column;gap:3px;padding:13px 19px;border-right:1px solid #e7edf2;min-width:0}
+#masterModal .imfGovStat:last-child{border-right:0}
+#masterModal .imfGovStat b{font-size:22px;color:#175ba2;line-height:1.2;font-variant-numeric:tabular-nums}
+#masterModal .imfGovStat strong{font-size:12px;color:#294c68}
+#masterModal .imfGovStat small{font-size:10px;color:#74889b}
+#masterModal .imfGovContext{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:13px 20px}
+#masterModal .imfGovContext>div:first-child{display:flex;flex-direction:column;gap:3px;min-width:0}
+#masterModal .imfGovContext b{font-size:13px;color:#234f72}
+#masterModal .imfGovContext span{font-size:12px;color:#506d82}
+#masterModal .imfGovContext small{font-size:11px;color:#73899a}
+#masterModal .imfGovJump{display:flex;flex-wrap:wrap;gap:5px;justify-content:flex-end}
+#masterModal .imfGovJump button{font-size:11px;font-weight:750;color:#2b628c;background:#f3f8fc;border:1px solid #d4e3ed;border-radius:7px;padding:7px 10px;cursor:pointer;white-space:nowrap}
+#masterModal .imfGovJump button:hover,#masterModal .imfGovJump button.active{background:#185da7;border-color:#185da7;color:#fff}
+@media(max-width:920px){#masterModal .imfGovStats{grid-template-columns:repeat(2,minmax(0,1fr))}#masterModal .imfGovStat:nth-child(2){border-right:0}#masterModal .imfGovStat:nth-child(-n+2){border-bottom:1px solid #e7edf2}#masterModal .imfGovContext{align-items:flex-start;flex-direction:column}}
+@media(max-width:540px){#masterModal .imfGovTop{align-items:flex-start;flex-direction:column}#masterModal .imfGovStat{padding:11px}#masterModal .imfGovStat b{font-size:18px}}
