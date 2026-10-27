@@ -97,3 +97,13 @@
 #awActivity .hd20EvalChoice:has(input:disabled),#awAction .hd20EvalChoice:has(input:disabled){opacity:.58;cursor:not-allowed}
 #awActivity .hd20EvalHelp,#awAction .hd20EvalHelp{margin:9px 0 0;font-size:11px;color:#6a8295}
 @media(max-width:800px){#awActivity .hd20EvalOptions,#awAction .hd20EvalOptions{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+
+/* Evaluation layout V2: override inherited registration-form grid spans */
+#awActivity .hd20EvalPanel .hd20EvalOptions,#awAction .hd20EvalPanel .hd20EvalOptions{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;grid-auto-flow:row!important;gap:8px!important;width:100%!important}
+#awActivity .hd20EvalPanel .hd20EvalOptions>.hd20EvalChoice,#awAction .hd20EvalPanel .hd20EvalOptions>.hd20EvalChoice{grid-column:auto!important;grid-row:auto!important;align-self:stretch!important;justify-self:stretch!important;max-width:none!important;box-sizing:border-box!important}
+#awActivity .hd20EvalViewer .hd20EvalOptions,#awAction .hd20EvalViewer .hd20EvalOptions{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+#awActivity .hd20EvalViewer .hd20EvalAdopt,#awAction .hd20EvalViewer .hd20EvalAdopt,#awActivity .hd20EvalAdopt[hidden],#awAction .hd20EvalAdopt[hidden]{display:none!important}
+@media(max-width:800px){#awActivity .hd20EvalPanel .hd20EvalOptions,#awAction .hd20EvalPanel .hd20EvalOptions{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:800px){#awActivity .hd20EvalViewer .hd20EvalOptions,#awAction .hd20EvalViewer .hd20EvalOptions{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:430px){#awActivity .hd20EvalPanel .hd20EvalOptions,#awAction .hd20EvalPanel .hd20EvalOptions{grid-template-columns:minmax(0,1fr)!important}}
