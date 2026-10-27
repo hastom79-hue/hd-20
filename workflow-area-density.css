@@ -126,3 +126,8 @@
 #awActivity .hd20FinalAdoptionRow span,#awAction .hd20FinalAdoptionRow span{display:flex;flex-direction:column;gap:4px}
 #awActivity .hd20FinalAdoptionRow b,#awAction .hd20FinalAdoptionRow b{color:#164f80;font-size:13px}
 #awActivity .hd20FinalAdoptionRow small,#awAction .hd20FinalAdoptionRow small{color:#52748d;font-size:12px;line-height:1.5}
+
+/* Restored full evaluation photo guide buttons */
+#awActivity .hd20GuideOpen,#awAction .hd20GuideOpen{margin-top:10px;padding:8px 11px;border:1px solid #a8c8df;border-radius:7px;background:#f0f8ff;color:#155b89;font-weight:700;font-size:12px;cursor:pointer;text-align:left}
+#awActivity .hd20CriteriaDefinition,#awAction .hd20CriteriaDefinition{align-items:stretch}
+#awActivity .hd20CriteriaDefinition>b,#awAction .hd20CriteriaDefinition>b{overflow-wrap:anywhere;line-height:1.65}
