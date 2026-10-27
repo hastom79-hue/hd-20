@@ -1,5 +1,8 @@
 (()=>{'use strict';
-const MAP={dashboard:[['summary','오늘의 운영판단'],['analysis','성과·건전성 추이'],['map','고도화 맵']],activity:[['manage','① 문제·개선 등록'],['analysis','② 실행현황·우수활동 선별']],advancement:[['judge','① 3대 요건 즉시판정'],['standard','② 확정사례 관리']],audit:[['draw','① Audit 실시'],['ongoing','② 유지점검'],['retention','③ 결과·재조치']],action:[['manage','① 개선조치 등록·실행'],['leadtime','② 미완료·지연관리'],['verify','③ 효과검증·최종종결']]};
+const MAP={dashboard:[['summary','오늘의 운영판단'],['analysis','성과·건전성 추이'],['map','고도화 맵']],activity:[['manage','① 문제·개선 등록'],['analysis','② 실행현황·우수활동 선별']],/* 사용자 지시: "고도화·표준화는 남이되, '① 3대요건 즉시판정' 만 간소화/삭제하고 '② 확정사례 관리'는
+   남겨라" — 네비게이션에서 judge 서브탭 버튼을 제거(렌더링 함수 자체는 안전하게 코드에 남겨두되
+   호출 경로를 모두 standard로 돌려 사실상 비활성화). */
+advancement:[['standard','확정사례 관리']],audit:[['draw','① Audit 실시'],['ongoing','② 유지점검'],['retention','③ 결과·재조치']],action:[['manage','① 개선조치 등록·실행'],['leadtime','② 미완료·지연관리'],['verify','③ 효과검증·최종종결']]};
 const CONTRACT={
  'dashboard.summary':{title:'종합현황',purpose:'울산캠퍼스 5S 운영상태를 한 화면에서 파악하고 오늘 우선 확인할 영역을 정합니다.',judge:'목표 대비 성과, 고도화 확보, Audit 대기, 미완료·기한경과·재발을 동시에 확인',next:'이상 KPI·Risk 카드를 상세근거로 Drill-down하여 담당 업무 탭으로 이동',features:['핵심 KPI','팀별 성과','Action Summary','우선순위']},
  'dashboard.analysis':{title:'성과·운영분석',purpose:'단순 실적 건수를 넘어 판정 Lead Time, 유지율, 재발률, 조치완료율 등 운영 건전성을 분석합니다.',judge:'성과 증가가 프로세스 건전성 개선과 함께 일어나는지 확인',next:'취약 지표의 원천 데이터를 확인하고 원인 업무영역에서 조치',features:['운영 KPI','월별 추이','유지율','재발·기한']},
@@ -501,7 +504,7 @@ function openAdvDetailTool(sub){
  const bar=ensure(),back=document.createElement('div');back.id='hd20AdvBack';back.style.cssText='display:flex;align-items:center;gap:12px;padding:9px 12px;background:#f7fafc;border:1px solid #dbe5ee;border-radius:8px;margin-top:7px';
  back.innerHTML='<button type="button" style="padding:7px 13px;cursor:pointer;border-radius:6px;border:1px solid #cad7e2;background:#fff">← 요건·판정으로 돌아가기</button><strong style="font-size:13px">상세 검증 · 기존 판정 기능 유지</strong>';
  bar.insertAdjacentElement('afterend',back);
- back.querySelector('button').onclick=()=>select('advancement','judge');
+ back.querySelector('button').onclick=()=>select('advancement','standard');
 }
 function installAdvJudgeTools(){
  const host=ensureAdvJudge();if(!host||host.querySelector('#hd20AdvTools'))return;
@@ -510,7 +513,7 @@ function installAdvJudgeTools(){
  tools.querySelectorAll('button').forEach(b=>{b.style.cssText='padding:8px 12px;border-radius:7px;border:1px solid #cbd8e3;background:#fff;color:#24445c;cursor:pointer;font-weight:700';b.onclick=()=>openAdvDetailTool(b.dataset.advTool)});
  host.appendChild(tools);
 }
-function select(area,sub){if(window.HD20_NAV?.active?.()!==area)return;document.getElementById('hd20AdvBack')?.remove();if(area==='advancement'&&(sub==='map'||sub==='trend'))sub='judge';if(area==='audit'&&sub==='inspect')sub='draw';state={area,sub};if(area==='advancement'&&sub==='process')ensureAdvProcess();document.querySelectorAll('#hd20Subnav button').forEach(b=>b.classList.toggle('on',b.dataset.sub===sub));apply(area,sub);renderPurpose(area,sub);if(area!=='audit'&&area!=='advancement')requestAnimationFrame(()=>apply(area,sub));
+function select(area,sub){if(window.HD20_NAV?.active?.()!==area)return;document.getElementById('hd20AdvBack')?.remove();if(area==='advancement'&&(sub==='map'||sub==='trend'||sub==='judge'))sub='standard';if(area==='audit'&&sub==='inspect')sub='draw';state={area,sub};if(area==='advancement'&&sub==='process')ensureAdvProcess();document.querySelectorAll('#hd20Subnav button').forEach(b=>b.classList.toggle('on',b.dataset.sub===sub));apply(area,sub);renderPurpose(area,sub);if(area!=='audit'&&area!=='advancement')requestAnimationFrame(()=>apply(area,sub));
   try{const u=new URL(location.href);if(u.searchParams.get('area')===area)u.searchParams.set('sub',sub);history.replaceState(null,'',u)}catch{}}
 function syncArea(area){
   if(window.HD20_NAV?.active?.()!==area)return;
@@ -525,8 +528,8 @@ function syncArea(area){
   }
   if(advancementTrend&&area==='advancement')advancementTrend.style.removeProperty('display');
   if(area==='dashboard'){render('dashboard');return;}
-  if(area==='advancement'&&window.__HD20_RESTORE_SUB&&['analysis','detail','process'].includes(window.__HD20_RESTORE_SUB))window.__HD20_RESTORE_SUB='judge';
-  if(area==='advancement'&&['map','trend'].includes(window.__HD20_RESTORE_SUB))window.__HD20_RESTORE_SUB='judge';
+  if(area==='advancement'&&window.__HD20_RESTORE_SUB&&['analysis','detail','process','judge'].includes(window.__HD20_RESTORE_SUB))window.__HD20_RESTORE_SUB='standard';
+  if(area==='advancement'&&['map','trend'].includes(window.__HD20_RESTORE_SUB))window.__HD20_RESTORE_SUB='standard';
   if(area==='audit'&&window.__HD20_RESTORE_SUB==='inspect')window.__HD20_RESTORE_SUB='draw';
   if(window.__HD20_RESTORE_SUB&&MAP[area]?.some(([k])=>k===window.__HD20_RESTORE_SUB)){
     const restoreSub=window.__HD20_RESTORE_SUB;window.__HD20_RESTORE_SUB=null;
