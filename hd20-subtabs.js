@@ -236,6 +236,10 @@ function renderAdvJudge(){
   const falseValue=v=>v===false||/^(N|NO|미충족|부적합)$/i.test(txt(v));
   const flags=advCriteriaFlags(x);
 
+  /* 전체 디자인·로직 검토 중 발견: "고도화·표준화 → ① 후보·판정"에서 작업사례를 클릭해 상세 판정
+     근거를 열면 "explicit is not defined" ReferenceError가 발생해 패널이 전혀 안 열렸음(모든 사례
+     클릭이 무반응이었음) — raw[j]에 명시적인 값이 있는지 여부를 가리키는 explicit 변수 선언이
+     누락되어 있었음. */
   const criteria=names.map((label,j)=>{
     const matched=raw[j]!==undefined&&raw[j]!==null&&txt(raw[j])!==''?(trueValue(raw[j])?'충족':falseValue(raw[j])?'미충족':'확인 필요'):(Array.isArray(x.criteriaMatched)?(flags[j]?'충족':'미충족'):'개별 판정 미등록');
     const state=matched;
