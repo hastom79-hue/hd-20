@@ -321,8 +321,8 @@ function renderMasterOverview(name){
  el.setAttribute('aria-label','기준정보 운영 현황');
 }
 function rememberMasterTab(tab){try{sessionStorage.setItem('hd20MasterSelectedTab',tab)}catch{}}
-function restoredMasterTab(){try{const value=sessionStorage.getItem('hd20MasterSelectedTab');return ['integrated-team','integrated-target','integrated-source','integrated-discovery','integrated-factor','policy','integrated-mail'].includes(value)?value:null}catch{return null}}
-function show(name){rememberMasterTab('integrated-'+name);const p=panel();if(!p)return;hide();p.style.display='block';const b=document.querySelectorAll('#masterModal .masterTabs button');b.forEach(x=>x.classList.toggle('on',x.dataset.masterTab==='integrated-'+name));if(name==='team')renderTeam();if(name==='target')renderTarget();if(name==='source')renderSource();if(name==='factor')renderFactors();if(name==='mail')renderMail();if(name==='discovery')renderDiscovery();attachFilter(p,name);renderMasterOverview(name)}
+function restoredMasterTab(){try{const value=sessionStorage.getItem('hd20MasterSelectedTab');return ['integrated-team','integrated-target','integrated-source','integrated-discovery','integrated-factor','policy','integrated-mail','integrated-admins'].includes(value)?value:null}catch{return null}}
+function show(name){rememberMasterTab('integrated-'+name);const p=panel();if(!p)return;hide();p.style.display='block';const b=document.querySelectorAll('#masterModal .masterTabs button');b.forEach(x=>x.classList.toggle('on',x.dataset.masterTab==='integrated-'+name));if(name==='admins'){window.HD20MasterAccess?.render(p.querySelector('#imfBody'))}if(name==='team')renderTeam();if(name==='target')renderTarget();if(name==='source')renderSource();if(name==='factor')renderFactors();if(name==='mail')renderMail();if(name==='discovery')renderDiscovery();attachFilter(p,name);renderMasterOverview(name)}
 function ensure(){css();const p=panel(),tabs=document.querySelector('#masterModal .masterTabs');if(!p||!tabs)return false;
 ['order','target','sourceOrder','leader'].forEach(k=>{const b=tabs.querySelector('[data-master-tab="'+k+'"]');if(b){b.hidden=true;b.classList.remove('on');b.style.setProperty('display','none','important');b.style.setProperty('visibility','hidden','important')}});
 ['masterOrderPanel','masterTargetPanel'].forEach(id=>document.getElementById(id)?.style.setProperty('display','none'));
@@ -333,7 +333,7 @@ const head=document.querySelector('#masterModal .modalHead span');if(head)head.t
    패트롤 점검·자율 5S Audit·혁신팀 자율 점검·5S 자율개선활동 피드백·출처 미분류)의 순서를 관리하는
    유일한 창구가 구버전 숨김 탭(request-source-order-master.js)뿐이었음을 발견 — "③ 요청그룹"과
    같은 패턴으로 신버전 탭으로 정식 추가. */
-const map={team:'조직·팀',target:'인당 개선목표',source:'요청그룹',factor:'업무·등록항목',mail:'메일링 설정',discovery:'문제 발굴출처'};Object.entries(map).forEach(([k,n])=>{let b=tabs.querySelector('[data-master-tab="integrated-'+k+'"]');if(!b){b=document.createElement('button');b.type='button';b.dataset.masterTab='integrated-'+k;b.textContent=n;b.addEventListener('click',()=>show(k));tabs.appendChild(b)}});groupMasterNavigation();
+const map={team:'조직·팀',target:'인당 개선목표',source:'요청그룹',factor:'업무·등록항목',mail:'메일링 설정',discovery:'문제 발굴출처',admins:'마스터관리자 관리'};Object.entries(map).forEach(([k,n])=>{let b=tabs.querySelector('[data-master-tab="integrated-'+k+'"]');if(!b){b=document.createElement('button');b.type='button';b.dataset.masterTab='integrated-'+k;b.textContent=n;b.addEventListener('click',()=>show(k));tabs.appendChild(b)}});groupMasterNavigation();
  const selected=restoredMasterTab();
  if(selected==='policy'&&tabs.querySelector('[data-master-tab="policy"]'))tabs.querySelector('[data-master-tab="policy"]').click();
  else if(selected?.startsWith('integrated-'))show(selected.slice('integrated-'.length));
@@ -345,7 +345,7 @@ function groupMasterNavigation(){
   {label:'조직 · 목표',keys:['integrated-team','integrated-target']},
   {label:'등록 · 분류',keys:['integrated-source','integrated-discovery','integrated-factor']},
   {label:'Audit · 조치',keys:['policy']},
-  {label:'시스템',keys:['integrated-mail']}
+  {label:'시스템',keys:['integrated-mail','integrated-admins']}
  ];
  tabs.querySelectorAll('.imfNavGroup').forEach(g=>{[...g.querySelectorAll('button')].forEach(b=>tabs.appendChild(b));g.remove()});
  tabs.querySelectorAll('[data-master-group-heading]').forEach(x=>x.remove());
