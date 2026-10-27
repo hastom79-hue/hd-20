@@ -194,8 +194,17 @@ function renderAdvJudge(){
  }).join('');
  host.innerHTML='<div class="pcPanelHead">고도화 후보·판정 <small>작업사례를 선택해 상세 판정 근거 확인</small></div>'+
  '<div class="hd20JudgeReadiness" style="padding:12px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px"><div><small>판정 대상</small><b>'+rows.length+'건</b></div><div class="risk"><small>보완 필요</small><b>'+supplement+'건</b></div><div><small>근거검증 대상</small><b>'+ready+'건</b></div></div>'+
- '<div class="pcTableWrap"><table class="pcTable"><thead><tr><th>작업사례</th><th>생산팀</th><th>요건</th><th>현재 상태</th><th>수평전개</th><th>확대적용</th><th>FoolProof</th><th>다음 단계</th></tr></thead><tbody>'+ (body||'<tr><td colspan="5">현재 판정 대상이 없습니다.</td></tr>')+'</tbody></table></div>'+
+ '<div class="pcTableWrap"><table class="pcTable"><thead><tr><th>작업사례</th><th>생산팀</th><th>요건</th><th>현재 상태</th><th>수평전개</th><th>확대적용</th><th>FoolProof</th><th>다음 단계</th></tr></thead><tbody>'+ (body||'<tr><td colspan="8">현재 판정 대상이 없습니다.</td></tr>')+'</tbody></table></div>'+
  '<div id="hd20AdvSelectedCase" style="display:none;padding:12px;border-top:1px solid #e2e9ee;color:#39576a"></div>';
+ const criteriaGuide='<section class="hd20AdvCriteriaGuide" aria-label="5S 고도화 3대 요건 설명" style="margin:12px 0;padding:14px;border:1px solid #cbdde8;border-radius:10px;background:#f7fafc">'+
+ '<strong style="display:block;color:#173a57;margin-bottom:5px">5S 고도화 3대 요건 · 평가기준</strong>'+
+ '<p style="margin:0 0 10px;font-size:12px;color:#4d677a">작업장 전체가 아닌 개별 개선사례를 기준으로 판정합니다. 각 요건은 근거를 확인하여 충족·미충족을 구분합니다.</p>'+
+ '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:9px">'+
+ '<div style="padding:10px;background:#fff;border:1px solid #e0e8ee;border-radius:8px"><b>① 시각화·형적관리</b><p style="margin:6px 0 0;font-size:12px;line-height:1.6">정상·이상 상태와 정위치·정품·정량 기준이 현장에서 쉽게 식별되며, 표시·형적관리의 실효성이 유지되는지 확인</p></div>'+
+ '<div style="padding:10px;background:#fff;border:1px solid #e0e8ee;border-radius:8px"><b>② Green Zone</b><p style="margin:6px 0 0;font-size:12px;line-height:1.6">개선 대상 구역의 5S 관리상태가 정해진 기준에 따라 안정적으로 유지되고, 이상·이탈을 발견하여 관리할 수 있는지 확인</p></div>'+
+ '<div style="padding:10px;background:#fff;border:1px solid #e0e8ee;border-radius:8px"><b>③ 공간활용</b><p style="margin:6px 0 0;font-size:12px;line-height:1.6">불필요한 적치·낭비 공간을 제거하고 동선·보관·작업공간의 효율과 활용도가 개선되었는지 확인</p></div>'+
+ '</div><p style="margin:10px 0 0;font-size:12px;color:#4d677a">※ 요건 충족 개수와 공식 고도화 확정은 별개입니다. 근거검증·공식심사·유지관리를 통해 최종 판정합니다.</p></section>';
+ host.querySelector('.hd20JudgeReadiness')?.insertAdjacentHTML('afterend',criteriaGuide);
  const panel=host.querySelector('#hd20AdvSelectedCase');
  const showCase=i=>{
   const x=sorted[i];if(!x)return;
@@ -208,7 +217,7 @@ function renderAdvJudge(){
 
   const criteria=names.map((label,j)=>{
     const matched=raw[j]!==undefined&&raw[j]!==null&&txt(raw[j])!==''?(trueValue(raw[j])?'충족':falseValue(raw[j])?'미충족':'확인 필요'):(Array.isArray(x.criteriaMatched)?(flags[j]?'충족':'미충족'):'개별 판정 미등록');
-    const state=matched==='충족'||(!explicit&&flags[j]&&Array.isArray(x.criteriaMatched))?'충족':matched;
+    const state=matched;
     return '<div style="padding:11px;border:1px solid #dce5eb;border-radius:8px"><div style="font-size:12px;font-weight:800">'+label+'</div><div style="font-weight:850;margin-top:6px;color:'+(state==='충족'?'#217450':state==='미충족'?'#b44739':'#697789')+'">'+state+'</div></div>';
   }).join('');
   const evidence=[['문제정의',x.problem],['개선내용',x.improvement||x.action],['BEFORE',x.before],['AFTER',x.after]];
