@@ -32,7 +32,7 @@ window.addEventListener('hd20-policy-updated',()=>{
 const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 function teams(){try{const v=JSON.parse(localStorage.getItem(TEAM_KEY)||'[]');return Array.isArray(v)&&v.length?v:TEAMS().map(team=>({team,leader:'미지정',email:''}))}catch{return TEAMS().map(team=>({team,leader:'미지정',email:''}))}}
 function saveTeams(v){localStorage.setItem(TEAM_KEY,JSON.stringify(v))}
-function cases(){try{const v=JSON.parse(localStorage.getItem(CASE_KEY)||'[]');return Array.isArray(v)?v:[]}catch{return[]}}
+function cases(){try{const v=JSON.parse(localStorage.getItem(CASE_KEY)||'[]');return Array.isArray(v)?v.map(x=>window.HD20WorkplaceMaster?.annotate(x)||x):[]}catch{return[]}}
 function saveCases(v){localStorage.setItem(CASE_KEY,JSON.stringify(v))}
 function leaderFor(team){return teams().find(x=>x.team===team)||{team,leader:'미지정',email:''}}
 function newId(){return'IMP-'+new Date().toISOString().slice(0,10).replace(/-/g,'')+'-'+String(cases().length+1).padStart(3,'0')}
