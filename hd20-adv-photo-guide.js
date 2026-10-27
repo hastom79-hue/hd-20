@@ -53,8 +53,8 @@ const findPhoto=(kind)=>{
 });
 evidenceRoot.appendChild(evidence);
 const criterionOnePhotos=[
-{title:'A안 · 공구 형적관리',src:'https://optilean.de/wp-content/uploads/2023/12/Shadowboard-opti-lean-5s-methode-jpg.webp',note:'공구별 형적·명칭·정위치 표시 및 누락 식별'},
-{title:'B안 · 치공구 형적관리',src:'https://simplefactory.de/image/catalog/Produkte%20Neu/600488/20220410_5S-Schaumstoff-Schublade-big39.png',note:'전용 수납 형적을 통한 오배치·혼입·누락 방지'}];
+{title:'A안 · 공구 형적관리',src:'https://media.licdn.com/dms/image/v2/D4E22AQEThsphiKSKdw/feedshare-shrink_800/feedshare-shrink_800/0/1688284480119?e=2147483647&t=SkJ-h1P6eNdGfSMyYcyPcTbFoKvn3Y5WLF0zbrjv5HM&v=beta',note:'공구별 형적·명칭·정위치 표시 및 누락 식별'},
+{title:'B안 · 치공구 형적관리',src:'https://tracemyspace.com/cdn/shop/articles/Bischoff_Aerospace_2000x.jpg?v=1693289200',note:'전용 수납 형적을 통한 오배치·혼입·누락 방지'}];
 const reference=document.createElement('figure');reference.style.cssText='margin:16px 0;padding:12px;border:1px solid #d8e3eb;border-radius:10px;background:#f8fbfd';
 const refTitle=document.createElement('figcaption');refTitle.textContent='고도화 요건별 기존 평가 참고사진 (등록 사례의 BEFORE/AFTER 증빙과 별개)';refTitle.style.cssText='font-weight:700;margin-bottom:10px;color:#234c68';reference.appendChild(refTitle);
 const makeReferencePhoto=(src,alt)=>{
