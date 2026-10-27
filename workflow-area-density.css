@@ -66,3 +66,16 @@
 #awAction .awTable th{background:#EAF1F7!important;color:#294A66!important;font-size:13px!important}
 #awAction .awTable td{font-size:13.5px!important}
 @media(max-width:1100px){#awAction>.amGrid{grid-template-columns:1fr!important}#awAction>.amGrid>.amCard:first-child{position:static!important}}
+
+#awActivity .awAdoptionPanel{grid-column:1/-1;padding:14px;border:1px solid #d7e4ed;border-radius:9px;background:#f8fafc}
+#awActivity .awAdoptionTitle{display:block;margin-bottom:12px;font-size:13px;color:#234963}
+#awActivity .awAdoptionGrid{display:grid;grid-template-columns:minmax(120px,1fr) 120px 120px;align-items:center;background:#fff;border:1px solid #dfe8ef;border-radius:8px}
+#awActivity .awAdoptionGrid>span,#awActivity .awAdoptionGrid>.awAdoptionCell{min-height:46px;display:flex;align-items:center;padding:8px 12px;border-bottom:1px solid #e9eff3}
+#awActivity .awAdoptionGrid>:nth-last-child(-n+3){border-bottom:0}
+#awActivity .awAdoptionHeader{font-weight:800;background:#edf3f7}
+#awActivity .awAdoptionCell,#awActivity .awExpandRow{display:flex;align-items:center;gap:9px}
+#awActivity .awAdoptionCell input[type=checkbox],#awActivity .awExpandRow input[type=checkbox]{appearance:auto!important;display:inline-block!important;flex:0 0 17px!important;width:17px!important;height:17px!important;min-width:17px!important;min-height:17px!important;max-width:17px!important;max-height:17px!important;margin:0!important;padding:0!important}
+#awActivity .awAdoptionCell label,#awActivity .awExpandRow label{display:inline!important;grid-column:auto!important;width:auto!important;margin:0!important;padding:0!important;white-space:nowrap;font-size:13px!important}
+#awActivity .awExpandRow{margin-top:12px}
+#awActivity .awAdoptionHelp{font-size:12px;color:#597487;margin:10px 0 0}
+@media(max-width:600px){#awActivity .awAdoptionGrid{grid-template-columns:minmax(86px,1fr) 90px 90px}#awActivity .awAdoptionGrid>span,#awActivity .awAdoptionGrid>.awAdoptionCell{padding:8px 5px}}
