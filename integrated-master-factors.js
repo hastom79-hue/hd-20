@@ -180,7 +180,7 @@ const MASTER_DESCRIPTIONS={
 function masterHealth(){
  const rows=teamRows(),goal=targets(),mail=read(MAIL_KEY,MAIL);
  const count=rows.length,active=rows.filter(x=>x.active).length,
- contacts=rows.filter(x=>x.active&&String(x.leader||'').trim()&&x.leader!=='미지정'&&/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(String(x.email||'').trim())).length,
+ contacts=rows.filter(x=>x.active&&String(x.leader||'').trim()&&x.leader!=='미지정'&&/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(x.email||'').trim())).length,
  headcount=rows.filter(x=>x.active&&Number(x.headcount)>0).length,
  goals=rows.filter(x=>x.active&&['Q1','Q2','Q3','Q4'].every(q=>Number(goal[x.team]?.[q])>0)).length,
  mailing=Array.isArray(mail)?mail.filter(x=>x.enabled).length:0;
