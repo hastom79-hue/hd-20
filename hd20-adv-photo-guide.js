@@ -4,8 +4,12 @@ const items=[
 {title:'인간공학적 그린존 적용을 통한 안전 및 동선의 최소화',definition:'작업자가 자주 사용하는 공구·부품·자재를 인체에 부담이 적고 접근하기 쉬운 Green Zone에 배치하여 불필요한 동작·이동을 최소화하고 안전성과 작업 편의성을 높인 개선사례.',checks:['개선 전 과도한 굽힘·뻗기·회전·이동 문제가 확인되는가','사용 빈도와 작업 자세를 고려하여 Green Zone 내 배치했는가','동선·작업부담 또는 안전 위험이 실질적으로 감소했는가'],before:'작업자 자세, 불편한 작업 높이·거리, 반복 이동경로가 보이도록 촬영',after:'개선된 배치 높이·거리, Green Zone 범위, 작업자 자세 및 단축된 동선을 같은 관점에서 촬영',fail:'Green Zone이라는 명칭만 부여하고 인체공학적 배치나 동선 개선 효과가 없는 사례'},
 {title:'정량축소/정위치 변경을 통한 공간 활용 확장',definition:'불필요한 보유량을 정량 축소하거나 보관·적치 정위치를 변경하여 점유공간을 줄이고 확보한 공간을 통로·작업·보관 등 필요한 용도로 실질적으로 활용한 개선사례.',checks:['정량 축소 또는 정위치 변경 전후 차이가 명확한가','점유면적·통로·작업공간의 실제 개선이 확인되는가','확보한 공간의 활용과 유지상태를 확인할 수 있는가'],before:'적치량·보관 위치·점유면적·통로 폭이 드러나는 전체 사진. 가능하면 수량·면적을 표기',after:'동일 위치·각도에서 축소된 적치량과 변경된 정위치, 확보 공간의 실제 활용 모습을 촬영',fail:'물품만 임시 이동하거나 정량을 줄이지 않고 공간 확보·활용 효과가 확인되지 않는 사례'}
 ];
-// Restored original three reference photographs from criteria-popup-final-repair.js.
-const referencePhotos=["https://kureansiklopedi.com/_next/image?q=100&url=https%3A%2F%2Fcdn.t3pedia.org%2Fmedia%2Fuploads%2F2025%2F06%2F21%2FDRJQFarUlbkPc4S1AQpgPi7ziHvRR8B8.png&w=1280","https://static.ajproducts.com/cdn-cgi/image/width%3D890/siteassets/content/blog/published-2024/2405/avlasta-din-kropp-med-en-arbetsplatsmatta/all_blog_ease-your-body-header_4.3.jpg","https://safetyculture.com/library/_next/image?q=75&url=https%3A%2F%2Fmedia-signed-url-download.au.safetyculture.com%2Fcontent-library%2Foriginals%2F2%2Fe%2F1%2F8%2F2e18d439-4332-4c7a-80fb-c2c6ead2f9f7&w=3840"];
+/* 사용자 지적: "고도화 요건 b,c 판정가이드 팝업사진 부적절" — 요건2·3(및 요건1)의 참고사진이 전부
+   울산캠퍼스 5S 활동과 무관한 외부 사이트(터키 백과사전·스웨덴 가구회사 블로그·안전교육업체·
+   LinkedIn 게시물·항공우주회사 홍보이미지)에서 무단으로 가져온 이미지였고, 실제로는 hotlink가
+   깨져 "참고사진 연결 오류"만 표시되고 있었음. 저작권·맥락 부적절 문제를 근본적으로 없애기 위해
+   참고사진 섹션 자체를 제거하고, 이미 충실한 텍스트 가이드(정의·체크포인트·BEFORE/AFTER 가이드·
+   인정 곤란 사례)만으로 구성. */
 const esc=s=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function open(index=0){
  const n=Math.max(0,Math.min(2,Number(index)||0));
@@ -52,21 +56,6 @@ const findPhoto=(kind)=>{
  evidence.appendChild(cell);
 });
 evidenceRoot.appendChild(evidence);
-const criterionOnePhotos=[
-{title:'A안 · 공구 형적관리',src:'https://media.licdn.com/dms/image/v2/D4E22AQEThsphiKSKdw/feedshare-shrink_800/feedshare-shrink_800/0/1688284480119?e=2147483647&t=SkJ-h1P6eNdGfSMyYcyPcTbFoKvn3Y5WLF0zbrjv5HM&v=beta',note:'공구별 형적·명칭·정위치 표시 및 누락 식별'},
-{title:'B안 · 치공구 형적관리',src:'https://tracemyspace.com/cdn/shop/articles/Bischoff_Aerospace_2000x.jpg?v=1693289200',note:'전용 수납 형적을 통한 오배치·혼입·누락 방지'}];
-const reference=document.createElement('figure');reference.style.cssText='margin:16px 0;padding:12px;border:1px solid #d8e3eb;border-radius:10px;background:#f8fbfd';
-const refTitle=document.createElement('figcaption');refTitle.textContent='고도화 요건별 기존 평가 참고사진 (등록 사례의 BEFORE/AFTER 증빙과 별개)';refTitle.style.cssText='font-weight:700;margin-bottom:10px;color:#234c68';reference.appendChild(refTitle);
-const makeReferencePhoto=(src,alt)=>{
- const frame=document.createElement('div');frame.style.cssText='min-width:0;border:1px solid #dce5ec;border-radius:8px;padding:9px;background:white';
- const img=document.createElement('img');img.src=src;img.alt=alt;img.loading='eager';img.style.cssText='display:block;width:100%;height:235px;object-fit:contain;border-radius:6px;background:#edf2f5';frame.appendChild(img);
- const err=document.createElement('p');err.style.cssText='display:none;color:#a33;font-size:12px';err.textContent='참고사진 연결 오류';frame.appendChild(err);img.onerror=()=>{img.style.display='none';err.style.display='block'};return frame;
-};
-if(n===0){
- const gallery=document.createElement('div');gallery.style.cssText='display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px';
- criterionOnePhotos.forEach(p=>{const frame=makeReferencePhoto(p.src,p.title);const h=document.createElement('b');h.textContent=p.title;frame.prepend(h);const note=document.createElement('p');note.textContent=p.note;note.style.cssText='font-size:12px;color:#536d7e';frame.appendChild(note);gallery.appendChild(frame)});reference.appendChild(gallery);
-}else{reference.appendChild(makeReferencePhoto(referencePhotos[n],items[n].title+' 평가 참고사진'))}
-evidenceRoot.insertBefore(reference,evidenceRoot.querySelector('h4'));
 overlay.querySelector('[data-guide-close]').onclick=()=>overlay.close();
  overlay.querySelectorAll('[data-guide-tab]').forEach(b=>b.onclick=()=>open(Number(b.dataset.guideTab)));
  if(!overlay.open){try{overlay.showModal()}catch(err){overlay.setAttribute('open','')}}
