@@ -120,3 +120,10 @@
 #masterModal .imfMailSave:disabled,#masterModal [data-op-save]:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
 #masterModal .opReview{margin-top:13px;padding:11px 14px;border:1px solid #d9e6f0;border-radius:8px;background:#f4f8fc;color:#426a87;font-size:12px;line-height:1.6}
 #masterModal .opSave{gap:9px;align-items:center}
+
+/* Team master: validation and unsaved-change controls */
+#masterModal .imfTeamFoot{align-items:center;gap:10px;flex-wrap:wrap}
+#masterModal .imfTeamReview{flex:1 1 240px;color:#486d87;font-size:12px;line-height:1.5}
+#masterModal .imfTeamReview.imfMailInvalid{color:#b33c30;font-weight:750}
+#masterModal [data-reset-team]{padding:9px 13px;border:1px solid #cbdde8;border-radius:7px;background:#fff;color:#3b617d;font-weight:750;cursor:pointer}
+#masterModal [data-save-team]:disabled{opacity:.45;cursor:not-allowed}
