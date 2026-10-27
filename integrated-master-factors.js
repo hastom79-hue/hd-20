@@ -41,12 +41,36 @@ function attachFilter(p,name){
  const sec=p.querySelector('.imfSec'),table=sec?.querySelector('.imfTbl'),tbody=table?.querySelector('tbody');if(!tbody)return;
  const toolbar=document.createElement('div');toolbar.className='imfFilterBar';
  const input=document.createElement('input');input.type='search';input.placeholder='팀명 · 조직 · 담당자 검색';input.setAttribute('aria-label','기준정보 검색');
+ const state=document.createElement('select');state.setAttribute('aria-label','설정 상태 필터');
+ const options=name==='team'?[['','전체 팀'],['contact','담당자·이메일 미설정'],['headcount','기준인원 미설정'],['inactive','미사용 팀']]:[['','전체 팀'],['missing','분기 목표 미설정'],['complete','분기 목표 완비']];
+ options.forEach(([v,label])=>{const o=document.createElement('option');o.value=v;o.textContent=label;state.appendChild(o)});
  const count=document.createElement('span');count.className='imfFilterCount';
- toolbar.append(input,count);table.parentElement.before(toolbar);
+ toolbar.append(input,state,count);table.parentElement.before(toolbar);
  const rows=[...tbody.querySelectorAll('tr')];
- const update=()=>{const term=input.value.trim().toLocaleLowerCase('ko-KR');let shown=0;rows.forEach(row=>{const matched=!term||row.textContent.toLocaleLowerCase('ko-KR').includes(term)||[...row.querySelectorAll('input')].some(el=>String(el.value).toLocaleLowerCase('ko-KR').includes(term));row.hidden=!matched;if(matched)shown++});count.textContent=shown+' / '+rows.length+'개 팀'};
- input.addEventListener('input',update);update();
+ const update=()=>{const term=input.value.trim().toLocaleLowerCase('ko-KR'),kind=state.value;let shown=0;
+  rows.forEach(row=>{
+   const searchMatch=!term||row.textContent.toLocaleLowerCase('ko-KR').includes(term)||[...row.querySelectorAll('input')].some(el=>String(el.value).toLocaleLowerCase('ko-KR').includes(term));
+   let stateMatch=true;
+   if(name==='team'){
+    const active=row.querySelector('[data-a]')?.checked!==false;
+    const leader=String(row.querySelector('[data-l]')?.value||'').trim();
+    const email=String(row.querySelector('[data-e]')?.value||'').trim();
+    const count=Number(row.querySelector('[data-h]')?.value);
+    if(kind==='contact')stateMatch=active&&(!leader||leader==='미지정'||!email||!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email));
+    if(kind==='headcount')stateMatch=active&&!(count>0);
+    if(kind==='inactive')stateMatch=!active;
+   }else{
+    const complete=[...row.querySelectorAll('[data-q]')].length===4&&[...row.querySelectorAll('[data-q]')].every(el=>Number(el.value)>0);
+    if(kind==='missing')stateMatch=!complete;
+    if(kind==='complete')stateMatch=complete;
+   }
+   row.hidden=!(searchMatch&&stateMatch);if(!row.hidden)shown++;
+  });count.textContent=shown+' / '+rows.length+'개 팀';
+ };
+ input.addEventListener('input',update);state.addEventListener('change',update);
+ tbody.addEventListener('input',update);tbody.addEventListener('change',update);update();
 }
+
 function renderTeam(){const p=panel();if(!p)return;hide();p.style.display='block';const rows=teamRows();p.querySelector('#imfBody').innerHTML='<section class="imfSec"><h4>조직·팀 기준정보</h4><div class="imfNote">Canonical 생산팀 Master의 팀명·상위조직은 기준으로 유지하고, 사용 여부·정렬순서·담당자 연결·기준인원을 관리합니다.</div><div style="overflow:auto"><table class="imfTbl"><thead><tr><th>팀명</th><th>상위조직</th><th>사용</th><th>정렬</th><th>담당자</th><th>이메일</th><th>기준인원</th></tr></thead><tbody>'+rows.map(x=>'<tr><td>'+x.team+'</td><td>'+x.org+'</td><td><input class="imfChk" type="checkbox" data-a="'+x.team+'" '+(x.active?'checked':'')+'></td><td><input type="number" min="1" data-o="'+x.team+'" value="'+x.order+'"></td><td><input data-l="'+x.team+'" value="'+x.leader+'"></td><td><input data-e="'+x.team+'" value="'+x.email+'"></td><td><input type="number" min="0" data-h="'+x.team+'" value="'+x.headcount+'"></td></tr>').join('')+'</tbody></table></div><div class="imfFoot"><button class="imfBtn" data-save-team>저장</button></div></section>';p.querySelector('[data-save-team]').onclick=()=>saveTeams(p)}
 function renderTarget(){const p=panel();if(!p)return;hide();p.style.display='block';const v=targets(),hist=read(HIST_KEY,[]);p.querySelector('#imfBody').innerHTML='<section class="imfSec"><h4>인당 개선목표</h4><div class="imfNote">Q1~Q4 건/인 목표와 생산성 기준값을 팀별로 관리합니다. 미설정은 미설정 그대로 유지하며 임의 달성/미달 판정을 만들지 않습니다.</div><div style="overflow:auto"><table class="imfTbl"><thead><tr><th>팀명</th><th>Q1</th><th>Q2</th><th>Q3</th><th>Q4</th></tr></thead><tbody>'+TEAMS().map(t=>'<tr><td>'+t+'</td>'+['Q1','Q2','Q3','Q4'].map(q=>'<td><input type="number" min="0" step="0.1" data-t="'+t+'" data-q="'+q+'" value="'+(v[t][q]??'')+'" placeholder="미설정"></td>').join('')+'</tr>').join('')+'</tbody></table></div><div class="imfFoot"><button class="imfBtn" data-save-target>저장 + 변경이력</button></div></section><section class="imfSec"><h4>목표 변경 이력</h4><div class="imfHist"><table class="imfTbl"><thead><tr><th>시각</th><th>팀</th><th>변경</th></tr></thead><tbody>'+((hist.slice(-30).reverse().map(h=>'<tr><td>'+new Date(h.at).toLocaleString('ko-KR')+'</td><td>'+h.team+'</td><td>'+h.changes.map(c=>c.q+': '+(c.before??'미설정')+' → '+(c.after??'미설정')).join(', ')+'</td></tr>').join(''))||'<tr><td colspan="3">변경 이력 없음</td></tr>')+'</tbody></table></div></section>';p.querySelector('[data-save-target]').onclick=()=>{const old=targets(),next={};TEAMS().forEach(t=>{next[t]={};['Q1','Q2','Q3','Q4'].forEach(q=>{const n=Number(p.querySelector('[data-t="'+CSS.escape(t)+'"][data-q="'+q+'"]').value);next[t][q]=Number.isFinite(n)&&n>0?n:null})});const h=hist;TEAMS().forEach(t=>{const changes=['Q1','Q2','Q3','Q4'].filter(q=>old[t][q]!==next[t][q]).map(q=>({q,before:old[t][q],after:next[t][q]}));if(changes.length)h.push({at:new Date().toISOString(),team:t,changes})});write(TARGET_KEY,next);write(HIST_KEY,h.slice(-200));window.dispatchEvent(new CustomEvent('hd20-team-targets-updated',{detail:next}));renderTarget();attachFilter(p,'target');renderMasterOverview('target');toast('인당 목표와 변경이력을 저장했습니다.')}}
 function renderSource(){
