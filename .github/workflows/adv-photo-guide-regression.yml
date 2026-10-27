@@ -1,0 +1,37 @@
+name: HD20 photo guide popup regression
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'hd20-adv-photo-guide.js'
+      - 'activity-register-modal.js'
+      - 'action-register-modal.js'
+      - 'activity-workflow.js'
+      - 'action-mail-workflow.js'
+      - 'index.html'
+      - 'tests/adv-photo-guide-e2e.cjs'
+      - '.github/workflows/adv-photo-guide-regression.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  guide-dialog-e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Serve application
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/hd20-photo-guide-http.log 2>&1 &
+          for i in {1..30}; do curl -fsS http://127.0.0.1:4173/index.html >/dev/null && exit 0; sleep 1; done
+          cat /tmp/hd20-photo-guide-http.log
+          exit 1
+      - name: Test registration popups and all three guide tabs
+        run: node tests/adv-photo-guide-e2e.cjs
