@@ -118,3 +118,11 @@
 #awActivity .hd20CriteriaDefinition small,#awAction .hd20CriteriaDefinition small{display:block;margin-top:auto;padding-top:9px;border-top:1px dashed #d7e3eb;font-size:11.5px;line-height:1.7;color:#527189}
 #awActivity .hd20CriteriaChecks label,#awAction .hd20CriteriaChecks label{min-height:52px!important;line-height:1.5!important;white-space:normal!important}
 @media(max-width:900px){#awActivity .hd20CriteriaDefinitions,#awAction .hd20CriteriaDefinitions{grid-template-columns:1fr}}
+
+/* Final advancement adoption: master-only, distinct from 1-of-3 criteria verdict */
+#awActivity .hd20FinalAdoptionRow,#awAction .hd20FinalAdoptionRow{display:flex;align-items:flex-start;gap:12px;padding:13px 15px;background:#eaf3fc;border:1px solid #9dc4e3;border-radius:9px;cursor:pointer}
+#awActivity .hd20FinalAdoptionRow[hidden],#awAction .hd20FinalAdoptionRow[hidden]{display:none!important}
+#awActivity .hd20FinalAdoptionRow input,#awAction .hd20FinalAdoptionRow input{appearance:auto!important;position:static!important;width:18px!important;height:18px!important;min-width:18px!important;min-height:18px!important;margin:2px 0 0!important;flex:none!important}
+#awActivity .hd20FinalAdoptionRow span,#awAction .hd20FinalAdoptionRow span{display:flex;flex-direction:column;gap:4px}
+#awActivity .hd20FinalAdoptionRow b,#awAction .hd20FinalAdoptionRow b{color:#164f80;font-size:13px}
+#awActivity .hd20FinalAdoptionRow small,#awAction .hd20FinalAdoptionRow small{color:#52748d;font-size:12px;line-height:1.5}
