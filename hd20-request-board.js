@@ -610,7 +610,7 @@ const ticks=Array.from({length:12},(_,i)=>'<text x="'+(pad+i*slot+slot/2).toFixe
 
     +'</div>'
     +'<div class="ibRow rqNewTrendPair" style="grid-template-columns:repeat(2,minmax(0,1fr))">'
-    +section('04. 월별 실행 완료 건수 및 3개월 이동평균',trendLabel+' · 완료일 기준',completionTrendChart)
+    +section('04. 월별 실행 완료 건수',trendLabel+' · 완료일 기준',completionTrendChart)
     +section('05. 월별 개선조치 등록·완료',trendLabel+' · 등록일/완료일 기준',throughputTrendChart)
     +'</div>'
     +'<div class="ibRow rqPrintSkip"><button type="button" class="rqDetailOpenBtn" data-open-detail="1">📋 개선요청 상세 목록 열기 (전체 '+actionAll.length+'건)</button></div>'
