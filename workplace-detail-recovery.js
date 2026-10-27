@@ -1,1 +1,0 @@
-(()=>{document.querySelectorAll('.workplaceDetailRecovery').forEach(el=>el.remove());})();

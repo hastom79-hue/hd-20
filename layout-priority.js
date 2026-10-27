@@ -1,1 +1,0 @@
-(()=>{/* Dashboard layout is intentionally locked. Legacy DOM reordering disabled to prevent first-page layout drift. */})();
