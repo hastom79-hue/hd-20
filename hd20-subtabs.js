@@ -218,20 +218,20 @@ function renderAdvJudge(){
  '<div class="pcTableWrap"><table class="pcTable"><thead><tr><th>작업사례</th><th>생산팀</th><th>요건</th><th>현재 상태</th><th>수평전개</th><th>확대적용</th><th>FoolProof</th><th>다음 단계</th></tr></thead><tbody>'+ (body||'<tr><td colspan="8">현재 판정 대상이 없습니다.</td></tr>')+'</tbody></table></div>'+
  '<div id="hd20AdvSelectedCase" style="display:none;padding:12px;border-top:1px solid #e2e9ee;color:#39576a"></div>';
  const criteriaGuide='<section class="hd20AdvCriteriaGuide" aria-label="5S 고도화 3대 요건 설명" style="margin:12px 0;padding:14px;border:1px solid #cbdde8;border-radius:10px;background:#f7fafc">'+
- '<strong style="display:block;color:#173a57;margin-bottom:5px">5S 고도화 3대 요건 · 평가기준</strong>'+
- '<p style="margin:0 0 10px;font-size:12px;color:#4d677a">작업장 전체가 아닌 개별 개선사례를 기준으로 판정합니다. 각 요건은 근거를 확인하여 충족·미충족을 구분합니다.</p>'+
- '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:9px">'+
- '<div style="padding:10px;background:#fff;border:1px solid #e0e8ee;border-radius:8px"><b>① 시각화·형적관리</b><p style="margin:6px 0 0;font-size:12px;line-height:1.6">정상·이상 상태와 정위치·정품·정량 기준이 현장에서 쉽게 식별되며, 표시·형적관리의 실효성이 유지되는지 확인</p></div>'+
- '<div style="padding:10px;background:#fff;border:1px solid #e0e8ee;border-radius:8px"><b>② Green Zone</b><p style="margin:6px 0 0;font-size:12px;line-height:1.6">개선 대상 구역의 5S 관리상태가 정해진 기준에 따라 안정적으로 유지되고, 이상·이탈을 발견하여 관리할 수 있는지 확인</p></div>'+
- '<div style="padding:10px;background:#fff;border:1px solid #e0e8ee;border-radius:8px"><b>③ 공간활용</b><p style="margin:6px 0 0;font-size:12px;line-height:1.6">불필요한 적치·낭비 공간을 제거하고 동선·보관·작업공간의 효율과 활용도가 개선되었는지 확인</p></div>'+
- '</div><p style="margin:10px 0 0;font-size:12px;color:#4d677a">※ 요건 충족 개수와 공식 고도화 확정은 별개입니다. 근거검증·공식심사·유지관리를 통해 최종 판정합니다.</p></section>';
+'<strong style="display:block;color:#173a57;margin-bottom:5px">5S 고도화 3대 요건 · 평가기준</strong>'+
+'<p style="font-size:12px;color:#4d677a">개별 개선사례 기준 · 3대 요건 중 1개 이상 충족 시 요건 충족 · 최종 채택은 마스터관리자</p>'+
+'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:9px">'+
+'<div style="padding:12px;background:#fff;border:1px solid #e0e8ee;border-radius:8px"><b> 1. 시각화를 통한 찾는 낭비의 삭제(형적관리 등)</b><p style="font-size:12px;line-height:1.7">찾는 낭비를 줄이기 위한 시각화·형적관리의 적용과 실질적 개선효과를 평가합니다.</p><button type="button" data-hd20-photo-guide="0" style="padding:7px 10px;border:1px solid #abc8dc;border-radius:7px;background:#f4faff;color:#165581;cursor:pointer">평가자료 · 사진 가이드 보기</button></div>'+
+'<div style="padding:12px;background:#fff;border:1px solid #e0e8ee;border-radius:8px"><b> 2. 인간공학적 그린존 적용을 통한 안전 및 동선의 최소화</b><p style="font-size:12px;line-height:1.7">인간공학적 Green Zone 적용에 따른 안전성 향상과 이동·동작 감소를 평가합니다.</p><button type="button" data-hd20-photo-guide="1" style="padding:7px 10px;border:1px solid #abc8dc;border-radius:7px;background:#f4faff;color:#165581;cursor:pointer">평가자료 · 사진 가이드 보기</button></div>'+
+'<div style="padding:12px;background:#fff;border:1px solid #e0e8ee;border-radius:8px"><b> 3. 정량축소/정위치 변경을 통한 공간 활용 확장</b><p style="font-size:12px;line-height:1.7">정량 축소 및 정위치 변경으로 확보한 공간의 실제 활용 확장을 평가합니다.</p><button type="button" data-hd20-photo-guide="2" style="padding:7px 10px;border:1px solid #abc8dc;border-radius:7px;background:#f4faff;color:#165581;cursor:pointer">평가자료 · 사진 가이드 보기</button></div>'+
+'</div></section>';
  host.querySelector('.hd20JudgeReadiness')?.insertAdjacentHTML('afterend',criteriaGuide);
  const panel=host.querySelector('#hd20AdvSelectedCase');
  const showCase=i=>{
   const x=sorted[i];if(!x)return;
   const n=advCriteriaCount(x),gap=advEvidenceGap(x),verified=advWorkplaceVerified(x);
   const raw=[x.visualization??x.criteriaVisual,x.greenZone??x.criteriaGreen,x.spaceUtilization??x.criteriaSpace];
-  const names=['① 시각화·형적관리','② Green Zone','③ 공간활용'];
+  const names=['① 시각화를 통한 찾는 낭비의 삭제(형적관리 등)','② 인간공학적 그린존 적용을 통한 안전 및 동선의 최소화','③ 정량축소/정위치 변경을 통한 공간 활용 확장'];
   const trueValue=v=>v===true||/^(Y|YES|충족|적합)$/i.test(txt(v));
   const falseValue=v=>v===false||/^(N|NO|미충족|부적합)$/i.test(txt(v));
   const flags=advCriteriaFlags(x);
