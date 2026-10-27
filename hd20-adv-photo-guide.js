@@ -16,5 +16,5 @@ function open(index=0){
  overlay.querySelector('[data-guide-close]')?.focus();
 }
 window.HD20AdvPhotoGuide={open,items};
-document.addEventListener('click',e=>{const btn=e.target.closest('[data-hd20-photo-guide]');if(!btn)return;e.preventDefault();e.stopPropagation();open(Number(btn.dataset.hd20PhotoGuide))});
+document.addEventListener('click',e=>{const btn=e.target?.closest?.('[data-hd20-photo-guide]');if(!btn)return;e.preventDefault();e.stopPropagation();e.stopImmediatePropagation?.();open(Number(btn.dataset.hd20PhotoGuide))},true);
 })();
