@@ -201,12 +201,12 @@ function renderAdvJudge(){
  const rows=all.filter(x=>x&&x.id);
  const priority=x=>{const e=advEvidenceGap(x).length,n=advCriteriaCount(x);return(e&&n<3)?0:e?1:n<3?2:3};
  const sorted=rows.slice().sort((a,b)=>priority(a)-priority(b)||advCriteriaCount(a)-advCriteriaCount(b));
- const ready=rows.filter(x=>!advEvidenceGap(x).length&&advCriteriaCount(x)>=1).length;
- const supplement=rows.filter(x=>advEvidenceGap(x).length||advCriteriaCount(x)<3).length;
+ const ready=rows.filter(x=>advCriteriaCount(x)>=1).length;
+ const supplement=rows.filter(x=>advCriteriaCount(x)===0).length;
  const selected=host.dataset.selectedCase||'';
  const body=sorted.map((x,i)=>{
-   const n=advCriteriaCount(x),gap=advEvidenceGap(x),status=txt(x.judgeState||x.status)||'판정대기';
-   const next=gap.length?'증빙 보완':n<3?'요건 보완':advWorkplaceVerified(x)?'공식심사 대기':'현장 근거검증';
+   const n=advCriteriaCount(x),gap=advEvidenceGap(x),status=n>=1?'충족':'미충족';
+   const next=n>=1?'요건 충족':'요건 미충족';
    /* 사용자 지시: "자율개선/개선조치등록 팝업창에서 바로 체크박스로 평가해도 되고(퀵으로) 아니면
       고도화/표준화 탭에서 해도 되고 두가지 방법 다 되는 것으로 운영한다" — 등록폼 체크박스와 동일한
       필드(horizontalDeployed·expandApplied·foolproofApplied)를 여기서도 토글할 수 있게 함. */
