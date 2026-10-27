@@ -52,11 +52,20 @@ const findPhoto=(kind)=>{
  evidence.appendChild(cell);
 });
 evidenceRoot.appendChild(evidence);
+const criterionOnePhotos=[
+{title:'A안 · 공구 형적관리',src:'https://optilean.de/wp-content/uploads/2023/12/Shadowboard-opti-lean-5s-methode-jpg.webp',note:'공구별 형적·명칭·정위치 표시 및 누락 식별'},
+{title:'B안 · 치공구 형적관리',src:'https://simplefactory.de/image/catalog/Produkte%20Neu/600488/20220410_5S-Schaumstoff-Schublade-big39.png',note:'전용 수납 형적을 통한 오배치·혼입·누락 방지'}];
 const reference=document.createElement('figure');reference.style.cssText='margin:16px 0;padding:12px;border:1px solid #d8e3eb;border-radius:10px;background:#f8fbfd';
 const refTitle=document.createElement('figcaption');refTitle.textContent='고도화 요건별 기존 평가 참고사진 (등록 사례의 BEFORE/AFTER 증빙과 별개)';refTitle.style.cssText='font-weight:700;margin-bottom:10px;color:#234c68';reference.appendChild(refTitle);
-const refImg=document.createElement('img');refImg.src=referencePhotos[n];refImg.alt=items[n].title+' 평가 참고사진';refImg.loading='eager';refImg.referrerPolicy='no-referrer';refImg.style.cssText='display:block;width:100%;max-height:380px;object-fit:contain;background:#e8eef3;border-radius:8px';reference.appendChild(refImg);
-const error=document.createElement('p');error.textContent='외부 참고사진을 불러올 수 없습니다. 원본 이미지 URL의 접근 상태를 확인해야 합니다.';error.style.cssText='display:none;color:#9b3b3b;font-size:13px';reference.appendChild(error);
-refImg.onerror=()=>{refImg.style.display='none';error.style.display='block'};
+const makeReferencePhoto=(src,alt)=>{
+ const frame=document.createElement('div');frame.style.cssText='min-width:0;border:1px solid #dce5ec;border-radius:8px;padding:9px;background:white';
+ const img=document.createElement('img');img.src=src;img.alt=alt;img.loading='eager';img.style.cssText='display:block;width:100%;height:235px;object-fit:contain;border-radius:6px;background:#edf2f5';frame.appendChild(img);
+ const err=document.createElement('p');err.style.cssText='display:none;color:#a33;font-size:12px';err.textContent='참고사진 연결 오류';frame.appendChild(err);img.onerror=()=>{img.style.display='none';err.style.display='block'};return frame;
+};
+if(n===0){
+ const gallery=document.createElement('div');gallery.style.cssText='display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px';
+ criterionOnePhotos.forEach(p=>{const frame=makeReferencePhoto(p.src,p.title);const h=document.createElement('b');h.textContent=p.title;frame.prepend(h);const note=document.createElement('p');note.textContent=p.note;note.style.cssText='font-size:12px;color:#536d7e';frame.appendChild(note);gallery.appendChild(frame)});reference.appendChild(gallery);
+}else{reference.appendChild(makeReferencePhoto(referencePhotos[n],items[n].title+' 평가 참고사진'))}
 evidenceRoot.insertBefore(reference,evidenceRoot.querySelector('h4'));
 overlay.querySelector('[data-guide-close]').onclick=()=>overlay.close();
  overlay.querySelectorAll('[data-guide-tab]').forEach(b=>b.onclick=()=>open(Number(b.dataset.guideTab)));
