@@ -104,3 +104,19 @@
 #masterModal .imfFilterBar input[type=search]{flex:1 1 230px;min-width:160px}
 #masterModal .imfFilterBar select{flex:0 1 220px;max-width:100%;min-height:34px;padding:7px 10px;border:1px solid #cbdbe5;border-radius:7px;background:#fff;color:#345a76;font-size:12px}
 #masterModal .imfFilterBar .imfFilterCount{margin-left:auto;white-space:nowrap;font-weight:750;color:#32678f}
+
+/* Mailing and Audit policy pre-save review */
+#masterModal .imfMailWorkspace .imfMail{overflow-x:auto}
+#masterModal .imfMailWorkspace .imfTbl{min-width:980px}
+#masterModal .imfMailWorkspace .imfTbl td input:not([type=checkbox]){min-width:105px}
+#masterModal .imfMailReview{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:10px;padding:12px 15px;border-top:1px solid #e3edf4}
+#masterModal .imfMailReviewState{margin-right:auto;font-size:12px;color:#426880;font-weight:700}
+#masterModal .imfMailReviewState.imfMailInvalid{color:#b34030}
+#masterModal .imfMailUndo,#masterModal [data-op-reset]{padding:9px 13px;border:1px solid #cddde9;border-radius:7px;background:#fff;color:#3b617d;font-weight:750;cursor:pointer}
+#masterModal .imfMailDiff{padding:0 15px 13px;color:#557188;font-size:11px}
+#masterModal .imfMailDiff:empty{display:none}
+#masterModal .imfMailDiff strong{display:block;margin:6px 0;color:#264f6d}
+#masterModal .imfMailDiff ul{margin:4px 0 0;padding:10px 15px 10px 29px;background:#f5f9fc;border-radius:8px;max-height:140px;overflow:auto;line-height:1.7}
+#masterModal .imfMailSave:disabled,#masterModal [data-op-save]:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+#masterModal .opReview{margin-top:13px;padding:11px 14px;border:1px solid #d9e6f0;border-radius:8px;background:#f4f8fc;color:#426a87;font-size:12px;line-height:1.6}
+#masterModal .opSave{gap:9px;align-items:center}
