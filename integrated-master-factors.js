@@ -191,7 +191,52 @@ function renderFactors(){
  draw();
 }
 
-function renderMail(){const p=panel();if(!p)return;hide();p.style.display='block';const rows=read(MAIL_KEY,MAIL);p.querySelector('#imfBody').innerHTML='<section class="imfSec"><h4>메일링 설정</h4><div class="imfNote">각 보고주기의 주기·수신/참조·보고대상·자동메일 조건을 Master화합니다. 현재 코드에서 확인되지 않은 수신자는 임의로 채우지 않습니다.</div><div class="imfMail"><table class="imfTbl"><thead><tr><th>구분</th><th>보고주기</th><th>수신자</th><th>참조자</th><th>보고대상</th><th>자동메일 조건</th><th>사용</th></tr></thead><tbody>'+rows.map((r,i)=>'<tr><td>'+r.id+'</td><td><input data-m="'+i+'" data-k="cadence" value="'+r.cadence+'"></td><td><input data-m="'+i+'" data-k="recipient" value="'+r.recipient+'"></td><td><input data-m="'+i+'" data-k="cc" value="'+r.cc+'"></td><td><input data-m="'+i+'" data-k="target" value="'+r.target+'"></td><td><input data-m="'+i+'" data-k="condition" value="'+r.condition+'"></td><td><input class="imfChk" type="checkbox" data-me="'+i+'" '+(r.enabled?'checked':'')+'></td></tr>').join('')+'</tbody></table></div><div class="imfFoot"><button class="imfBtn" data-save-mail>저장</button></div></section>';p.querySelector('[data-save-mail]').onclick=()=>{const n=rows.map((r,i)=>({...r,cadence:p.querySelector('[data-m="'+i+'"][data-k="cadence"]').value.trim(),recipient:p.querySelector('[data-m="'+i+'"][data-k="recipient"]').value.trim(),cc:p.querySelector('[data-m="'+i+'"][data-k="cc"]').value.trim(),target:p.querySelector('[data-m="'+i+'"][data-k="target"]').value.trim(),condition:p.querySelector('[data-m="'+i+'"][data-k="condition"]').value.trim(),enabled:p.querySelector('[data-me="'+i+'"]').checked}));write(MAIL_KEY,n);window.dispatchEvent(new CustomEvent('hd20-mailing-master-updated',{detail:n}));renderMasterOverview('mail');toast('메일링 기준정보를 저장했습니다.')}}
+function renderMail(){
+ const p=panel();if(!p)return;hide();p.style.display='block';
+ const rows=read(MAIL_KEY,MAIL);
+ const safe=v=>String(v??'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+ const fields=[['cadence','보고주기'],['recipient','수신자'],['cc','참조자'],['target','보고대상'],['condition','자동메일 조건']];
+ const body=p.querySelector('#imfBody');
+ body.innerHTML='<section class="imfSec imfMailWorkspace"><h4>메일링 설정</h4><div class="imfNote">실제 수신자는 등록된 값만 사용합니다. 사용 중인 규칙은 수신자·보고주기·대상·조건이 필수이며, 수신/참조 주소를 검증한 후 저장합니다. 저장은 메일 발송을 실행하지 않습니다.</div><div class="imfMail"><table class="imfTbl"><thead><tr><th>구분</th><th>보고주기</th><th>수신자</th><th>참조자</th><th>보고대상</th><th>자동메일 조건</th><th>사용</th></tr></thead><tbody>'+rows.map((r,i)=>'<tr><td>'+safe(r.id)+'</td>'+fields.map(([k])=>'<td><input data-m="'+i+'" data-k="'+k+'" value="'+safe(r[k])+'" aria-label="'+safe(r.id)+' '+k+'"></td>').join('')+'<td><input class="imfChk" type="checkbox" data-me="'+i+'" '+(r.enabled?'checked':'')+'></td></tr>').join('')+'</tbody></table></div><div class="imfMailReview"><span class="imfMailReviewState" role="status" aria-live="polite">변경사항을 확인하세요.</span><button type="button" class="imfMailUndo">변경 취소</button><button type="button" class="imfBtn imfMailSave" disabled>변경사항 저장</button></div><div class="imfMailDiff" aria-live="polite"></div></section>';
+ const status=body.querySelector('.imfMailReviewState'),diff=body.querySelector('.imfMailDiff'),save=body.querySelector('.imfMailSave');
+ const values=()=>rows.map((r,i)=>({...r,...Object.fromEntries(fields.map(([k])=>[k,p.querySelector('[data-m="'+i+'"][data-k="'+k+'"]').value.trim()])),enabled:p.querySelector('[data-me="'+i+'"]').checked}));
+ const emailList=v=>String(v||'').split(/[,;\n]+/).map(x=>x.trim()).filter(Boolean);
+ const emailOk=v=>/^[^\s@,;]+@[^\s@,;]+\.[^\s@,;]+$/.test(v);
+ function validate(next){
+  for(let i=0;i<next.length;i++){
+   const r=next[i];if(!r.enabled)continue;
+   for(const k of ['cadence','recipient','target','condition'])if(!r[k]||r[k]==='미설정')return '규칙 '+r.id+': '+({cadence:'보고주기',recipient:'수신자',target:'보고대상',condition:'자동메일 조건'}[k])+'을 입력하세요.';
+   for(const k of ['recipient','cc'])if(emailList(r[k]).some(v=>!emailOk(v)))return '규칙 '+r.id+': '+(k==='cc'?'참조자':'수신자')+' 이메일 주소를 확인하세요.';
+  }
+  return '';
+ }
+ function update(){
+  const next=values(),changes=[];
+  next.forEach((r,i)=>{fields.forEach(([k,label])=>{if(String(rows[i][k]??'')!==r[k])changes.push({id:r.id,label,before:rows[i][k],after:r[k]})});if(!!rows[i].enabled!==r.enabled)changes.push({id:r.id,label:'사용',before:rows[i].enabled?'사용':'미사용',after:r.enabled?'사용':'미사용'})});
+  const issue=validate(next);save.disabled=!changes.length||!!issue;
+  status.textContent=issue||(!changes.length?'저장된 기준정보와 동일합니다.':changes.length+'개 변경사항 · 저장 전 검토');
+  status.classList.toggle('imfMailInvalid',!!issue);
+  diff.replaceChildren();
+  if(changes.length){
+   const title=document.createElement('strong');title.textContent='저장 전 변경사항 ('+changes.length+'건)';
+   const list=document.createElement('ul');
+   changes.slice(0,30).forEach(c=>{const li=document.createElement('li');li.textContent=c.id+' · '+c.label+': '+(String(c.before||'—'))+' → '+(String(c.after||'—'));list.appendChild(li)});
+   if(changes.length>30){const li=document.createElement('li');li.textContent='외 '+(changes.length-30)+'건';list.appendChild(li)}
+   diff.append(title,list);
+  }
+  return{next,changes,issue};
+ }
+ body.querySelector('.imfMailWorkspace').addEventListener('input',update);
+ body.querySelector('.imfMailWorkspace').addEventListener('change',update);
+ body.querySelector('.imfMailUndo').onclick=()=>{if(update().changes.length&&!window.confirm('메일링 설정의 저장하지 않은 변경사항을 취소하시겠습니까?'))return;renderMail();toast('마지막 저장 상태로 되돌렸습니다.')};
+ save.onclick=()=>{
+  const result=update();if(result.issue){toast(result.issue);return}if(!result.changes.length)return;
+  try{write(MAIL_KEY,result.next)}catch(e){toast('저장 실패: 브라우저 저장공간을 확인하세요.');return}
+  window.dispatchEvent(new CustomEvent('hd20-mailing-master-updated',{detail:result.next}));
+  renderMail();renderMasterOverview('mail');toast('메일링 설정 '+result.changes.length+'개 변경사항을 저장했습니다.');
+ };
+ update();
+}
 /* 기준정보 운영상태: 실제 저장된 Master만 집계하며 임의 값을 생성하지 않는다. */
 const MASTER_DESCRIPTIONS={
  team:['조직·팀','팀 사용여부, 책임자·이메일·인원·표시순서','자율개선 등록자 및 개선요청 담당자 연결'],
