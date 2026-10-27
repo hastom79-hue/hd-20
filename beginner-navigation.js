@@ -1,6 +1,6 @@
 (()=>{'use strict';
-const NAV_HTML=`<button class="active" data-key="dashboard"><span class="navTop"><span class="navNumber">01</span><span class="navLabel">대시보드</span></span></button><button data-key="activity"><span class="navTop"><span class="navNumber">02</span><span class="navLabel">자율개선등록 / 개선조치등록</span></span></button><button data-key="audit"><span class="navTop"><span class="navNumber">03</span><span class="navLabel">Audit·유지점검</span></span></button><button data-key="action"><span class="navTop"><span class="navNumber">04</span><span class="navLabel">개선조치·완료관리</span></span></button><button data-key="advancement"><span class="navTop"><span class="navNumber">05</span><span class="navLabel">고도화·표준화</span></span></button><button data-key="master"><span class="navTop"><span class="navNumber">06</span><span class="navLabel">통합기준정보</span></span></button>`;
-const SCREEN_BY_KEY={activity:'awActivity',audit:'awAudit',action:'awAction',master:'masterModal'};
+const NAV_HTML=`<button class="active" data-key="dashboard"><span class="navTop"><span class="navNumber">01</span><span class="navLabel">대시보드</span></span></button><button data-key="activity"><span class="navTop"><span class="navNumber">02</span><span class="navLabel">자율개선등록 / 개선조치등록</span></span></button><button data-key="audit"><span class="navTop"><span class="navNumber">03</span><span class="navLabel">Audit·유지점검</span></span></button><button data-key="action"><span class="navTop"><span class="navNumber">04</span><span class="navLabel">개선조치·완료관리</span></span></button><button data-key="advancement"><span class="navTop"><span class="navNumber">05</span><span class="navLabel">고도화·표준화</span></span></button><button data-key="master"><span class="navTop"><span class="navNumber">06</span><span class="navLabel">통합기준정보</span></span></button><button data-key="theme"><span class="navTop"><span class="navNumber">07</span><span class="navLabel">테마 점검</span></span></button>`;
+const SCREEN_BY_KEY={activity:'awActivity',audit:'awAudit',action:'awAction',master:'masterModal',theme:'awTheme'};
 let activeKey='dashboard',initialized=false,navGeneration=0;
 function allScreens(){return [...document.querySelectorAll('.awScreen')];}
 function closeScreens(){
@@ -29,7 +29,7 @@ function reconcileVisibleArea(){
      conversion.style.setProperty('display','none','important');
    }
  }
- const screens={activity:'awActivity',audit:'awAudit',action:'awAction',master:'masterModal'};
+ const screens={activity:'awActivity',audit:'awAudit',action:'awAction',master:'masterModal',theme:'awTheme'};
  Object.entries(screens).forEach(([area,id])=>{
    const el=document.getElementById(id);if(!el)return;
    if(selected===area){el.style.removeProperty('display')}
@@ -121,7 +121,8 @@ html body:has(.beginnerNav button:not([data-key="advancement"]).active) #hd20Adv
 html body:has(.beginnerNav button:not([data-key="activity"]).active) #awActivity,
 html body:has(.beginnerNav button:not([data-key="audit"]).active) #awAudit,
 html body:has(.beginnerNav button:not([data-key="action"]).active) #awAction,
-html body:has(.beginnerNav button:not([data-key="master"]).active) #masterModal{display:none!important}
+html body:has(.beginnerNav button:not([data-key="master"]).active) #masterModal,
+html body:has(.beginnerNav button:not([data-key="theme"]).active) #awTheme{display:none!important}
 /* The master editor is an app-level screen. Dashboard widgets must not coexist. */
 .app.awFocused:has(> #masterModal.on) > :not(.top):not(.beginnerNav):not(#masterModal):not(script):not(style){display:none!important}
 .app.awFocused:has(> #masterModal.on) > #masterModal{display:block!important}
