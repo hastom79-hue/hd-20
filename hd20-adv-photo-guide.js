@@ -8,13 +8,34 @@ const esc=s=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 function open(index=0){
  const n=Math.max(0,Math.min(2,Number(index)||0));
  let overlay=document.getElementById('hd20AdvPhotoGuidePopup');
- if(!overlay){overlay=document.createElement('div');overlay.id='hd20AdvPhotoGuidePopup';overlay.style.cssText='position:fixed;inset:0;z-index:2147483000;background:rgba(12,27,42,.65);display:flex;align-items:center;justify-content:center;padding:16px';document.body.appendChild(overlay);overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove()})}
+ if(!overlay){
+  overlay=document.createElement('dialog');
+  overlay.id='hd20AdvPhotoGuidePopup';
+  overlay.setAttribute('aria-label','5S 고도화 3대 요건 평가자료 및 사진 가이드');
+  overlay.style.cssText='box-sizing:border-box;position:fixed;inset:0;margin:auto;padding:0;border:0;border-radius:12px;width:min(920px,96vw);max-width:96vw;max-height:92vh;overflow:auto;background:transparent;box-shadow:0 22px 75px rgba(0,0,0,.4);z-index:2147483647';
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.close()});
+ }
  const d=items[n];
  overlay.innerHTML='<section role="dialog" aria-modal="true" aria-label="5S 고도화 3대 요건 평가자료·사진 가이드" style="background:#fff;border-radius:12px;max-width:920px;width:100%;max-height:92vh;overflow:auto;padding:22px;box-shadow:0 12px 40px #0004;color:#263e51"><header style="display:flex;justify-content:space-between;gap:12px;align-items:center"><div><b style="font-size:18px">5S 고도화 3대 요건 · 평가자료 및 사진 가이드</b><p style="font-size:12px;color:#667b8b;margin:6px 0">개별 개선사례 기준 · 3대 요건 중 1개 이상 충족 시 요건 충족 · 최종 채택은 마스터관리자</p></div><button type="button" data-guide-close style="padding:8px 13px;border:1px solid #cddae4;border-radius:8px;background:#fff;cursor:pointer">닫기 ×</button></header><nav style="display:flex;gap:7px;flex-wrap:wrap;margin:16px 0">'+items.map((x,i)=>'<button type="button" data-guide-tab="'+i+'" style="padding:9px 12px;border:1px solid #a6bfd1;border-radius:8px;cursor:pointer;background:'+(i===n?'#1b5d92':'#fff')+';color:'+(i===n?'#fff':'#24455f')+'">요건 '+(i+1)+'</button>').join('')+'</nav><h3 style="font-size:17px;margin:12px 0">'+(n+1)+'. '+esc(d.title)+'</h3><p style="line-height:1.8;background:#f3f8fc;padding:12px;border-radius:8px">'+esc(d.definition)+'</p><h4>현장 평가 체크포인트</h4><ul style="line-height:1.9">'+d.checks.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px"><div style="border:1px solid #d8e3eb;border-radius:9px;padding:13px"><b>BEFORE 사진 가이드</b><p style="line-height:1.8;font-size:13px">'+esc(d.before)+'</p></div><div style="border:1px solid #d8e3eb;border-radius:9px;padding:13px"><b>AFTER 사진 가이드</b><p style="line-height:1.8;font-size:13px">'+esc(d.after)+'</p></div></div><h4>인정 곤란 사례</h4><p style="line-height:1.8">'+esc(d.fail)+'</p><p style="font-size:12px;color:#687e8e">※ 실제 현장 참고사진은 등록된 BEFORE·AFTER 원본을 사용합니다. 임의 생성 사진을 평가 근거로 사용하지 않습니다.</p></section>';
- overlay.querySelector('[data-guide-close]').onclick=()=>overlay.remove();
+ overlay.querySelector('[data-guide-close]').onclick=()=>overlay.close();
  overlay.querySelectorAll('[data-guide-tab]').forEach(b=>b.onclick=()=>open(Number(b.dataset.guideTab)));
+ if(!overlay.open){try{overlay.showModal()}catch(err){overlay.setAttribute('open','')}}
  overlay.querySelector('[data-guide-close]')?.focus();
 }
 window.HD20AdvPhotoGuide={open,items};
-document.addEventListener('click',e=>{const btn=e.target?.closest?.('[data-hd20-photo-guide]');if(!btn)return;e.preventDefault();e.stopPropagation();e.stopImmediatePropagation?.();open(Number(btn.dataset.hd20PhotoGuide))},true);
+/* Window capture executes before document-level handlers in registration popups.
+   Native dialog enters the browser top layer above both registration modals. */
+function guideClick(e){
+ const btn=e.target?.closest?.('[data-hd20-photo-guide]');
+ if(!btn)return;
+ e.preventDefault();e.stopPropagation();e.stopImmediatePropagation?.();
+ open(Number(btn.getAttribute('data-hd20-photo-guide')));
+}
+window.addEventListener('click',guideClick,true);
+if(!document.getElementById('hd20AdvGuideDialogBackdrop')){
+ const st=document.createElement('style');st.id='hd20AdvGuideDialogBackdrop';
+ st.textContent='#hd20AdvPhotoGuidePopup::backdrop{background:rgba(12,27,42,.68);backdrop-filter:blur(3px)}#hd20AdvPhotoGuidePopup[open]{display:block!important}';
+ document.head.appendChild(st);
+}
 })();
