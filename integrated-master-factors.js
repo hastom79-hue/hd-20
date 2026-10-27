@@ -143,7 +143,7 @@ function factorSaved(){
  const stored=read(FACTOR_KEY,{});
  return Object.fromEntries(Object.keys(FACTORS).map(k=>[k,Array.isArray(stored?.[k])&&stored[k].length?stored[k].map(x=>String(x)):FACTORS[k].slice()]));
 }
-function renderFactors(){
+function renderFactors(){if(window.HD20WorkplaceMaster){const master=window.HD20WorkplaceMaster;const items=master.values();const current=JSON.parse(localStorage.getItem('gmes5s_work_factor_master_v1')||'{}');if(JSON.stringify(current['작업장'])!==JSON.stringify(items)){current['작업장']=items;localStorage.setItem('gmes5s_work_factor_master_v1',JSON.stringify(current))}}
  const p=panel();if(!p)return;hide();p.style.display='block';
  if(!factorDraft||!factorDirty)factorDraft=factorSaved();
  const keys=Object.keys(FACTORS),body=p.querySelector('#imfBody');
