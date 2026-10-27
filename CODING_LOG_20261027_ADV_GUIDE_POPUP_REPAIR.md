@@ -22,3 +22,10 @@
 2. 상세 팝업에서 요건 1/2/3 탭 전환, 닫기 및 ESC 확인.
 3. 개선요청 등록 팝업에서도 동일하게 확인.
 4. 마스터권한 최종 채택 체크박스 및 일반 사용자 비노출 회귀 확인.
+
+## 자동화 회귀검증 추가
+- `tests/adv-photo-guide-e2e.cjs` : Playwright Chromium으로 자율개선/개선요청 등록창에서 각 요건 버튼 클릭, 3개 요건 탭 전환, 닫기, 원래 등록창 유지 검증.
+- `.github/workflows/adv-photo-guide-regression.yml` : 관련 코드가 main에 push될 때 자동 실행.
+- 테스트 코드 추가 커밋: `548809974f11b02166f695f3dc0f5e1f99cc0ced`
+- 워크플로 추가 커밋: `dd1cc004760901b57839951d1645e4da56246977`
+- **검증 주의:** GitHub Actions 실행 결과는 이 세션에서 조회되지 않았으며 PASS로 판정하지 않음.
