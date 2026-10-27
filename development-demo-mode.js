@@ -163,7 +163,12 @@ const action=[];teams.forEach((team,ti)=>{for(let i=0;i<10;i++){const isDone=!(i
    패널 등 여러 화면이 workplace/problem을 직접 참조하므로, title과 같은 인덱스로 짝을 맞춰 네 필드
    보강. 기존 title/action 필드는 다른 화면이 참조할 수 있어 그대로 유지(제거하지 않음). */
 const demoWorkplace=['조립라인 A','조립라인 B','용접라인','도장라인','자재창고','출하장'][i%6],demoSpot=['1구역','2구역','3구역','통로','작업대','보관랙'][i%6],demoOwner=['박진규상무','5S모듈리더','생산혁신팀','생산기술팀장','자재운영팀장','생산운영팀장'][i%6],demoProblem=['통로 적치물 방치','표준표기 누락','정위치 미준수','Audit 지적사항 재발 우려'][i%4];
-action.push({id:`DEMO-X-${ti}-${i}`,source:SRC,team,group:groupOf(team),auditDrawId:`DEMO-U-${ti}-${i%8}`,createdAt,dueDate:addDaysStr(createdAt,14),status:isLate?'기한초과':isProgress?'진행중':'완료',doneDate:!isDone?'':addDaysStr(createdAt,11+((ti*3+i*7)%11)),action:'현장 5S 개선조치 시행',workplace:demoWorkplace,spot:demoSpot,owner:demoOwner,problem:demoProblem,after:isDone?'개선 후 정위치·형적관리 적용 완료(현장 사진 첨부)':'',afterEvidence:'',evidenceNote:isDone?'개선 후 정위치·형적관리 적용 완료 (사진 증빙은 미첨부)':'',effectVerified:isDone&&!pendingVerify,recurrenceState:pendingVerify?'':i%5===0?'재발':'미발생',title:['정위치 보완','표준표기 개선','통로 적치 제거','Audit 재발 방지'][i%4]})}});
+/* 전면 디자인·로직 검토 중 발견: 통합기준정보 ④업무/팩터에 연동해 새로 추가한 "우선순위"·"리스크"
+   필드가 등록 폼에는 있지만, 기존 가상 데이터(270건) 생성 로직에는 반영되지 않아 "개선요청 현황"
+   표에서 전부 "—"로 비어 보였음. 기한초과·재발(recurrenceState) 건은 우선순위·리스크를 높게,
+   나머지는 분산되도록 보강. */
+const demoPriority=isLate?'긴급':i%4===0?'높음':i%4===1?'보통':'낮음',demoRisk=(pendingVerify||i%5===0)?'높음':i%3===0?'중간':i%7===0?'미평가':'낮음';
+action.push({id:`DEMO-X-${ti}-${i}`,source:SRC,team,group:groupOf(team),auditDrawId:`DEMO-U-${ti}-${i%8}`,createdAt,dueDate:addDaysStr(createdAt,14),status:isLate?'기한초과':isProgress?'진행중':'완료',doneDate:!isDone?'':addDaysStr(createdAt,11+((ti*3+i*7)%11)),action:'현장 5S 개선조치 시행',workplace:demoWorkplace,spot:demoSpot,owner:demoOwner,problem:demoProblem,priority:demoPriority,risk:demoRisk,after:isDone?'개선 후 정위치·형적관리 적용 완료(현장 사진 첨부)':'',afterEvidence:'',evidenceNote:isDone?'개선 후 정위치·형적관리 적용 완료 (사진 증빙은 미첨부)':'',effectVerified:isDone&&!pendingVerify,recurrenceState:pendingVerify?'':i%5===0?'재발':'미발생',title:['정위치 보완','표준표기 개선','통로 적치 제거','Audit 재발 방지'][i%4]})}});
  /* Active 5S teams: adjust synthetic RAW action records (not chart-only overrides).
     Preserve all IDs and denominators; completed records remain explicitly demo-seed. */
  const activeTeamPatterns=[/중형하부/,/대형메인|대형메인팀/,/휠로더/];
@@ -196,7 +201,7 @@ action.push({id:`DEMO-X-${ti}-${i}`,source:SRC,team,group:groupOf(team),auditDra
      const lateCount=monthlyLate[(m-1)%monthlyLate.length];
      const isLate=((j*5+m*3)%8)<lateCount;
      const due=addDaysStr(done,isLate?-(1+(j%4)):(2+(j%4)));
-     action.push({id:'DEMO-X-MONTH-'+m+'-'+j,source:SRC,team,group:groupOf(team),createdAt:start,date:start,dueDate:due,targetDate:due,doneDate:done,status:'완료',action:'현장 정위치 및 표준표기 개선',workplace:['조립라인 A','조립라인 B','용접라인','도장라인','자재창고','출하장'][j%6],spot:['1구역','2구역','3구역','통로','작업대','보관랙'][j%6],owner:['박진규상무','5S모듈리더','생산혁신팀','생산기술팀장','자재운영팀장','생산운영팀장'][j%6],problem:['통로 적치물 방치','표준표기 누락','정위치 미준수','Audit 지적사항 재발 우려'][j%4],after:'개선 후 현장 확인 완료',afterEvidence:'개선결과 확인',effectVerified:true,recurrenceState:((j*3+m*5)%8)<[3,1,4,2,5,1,3,2,4,1,3,2][(m-1)%12]?'재발':'미발생',title:'월별 개선조치 검증',evidenceNote:'가상 검증 데이터 · 실제 운영실적 아님'});
+     action.push({id:'DEMO-X-MONTH-'+m+'-'+j,source:SRC,team,group:groupOf(team),createdAt:start,date:start,dueDate:due,targetDate:due,doneDate:done,status:'완료',action:'현장 정위치 및 표준표기 개선',workplace:['조립라인 A','조립라인 B','용접라인','도장라인','자재창고','출하장'][j%6],spot:['1구역','2구역','3구역','통로','작업대','보관랙'][j%6],owner:['박진규상무','5S모듈리더','생산혁신팀','생산기술팀장','자재운영팀장','생산운영팀장'][j%6],problem:['통로 적치물 방치','표준표기 누락','정위치 미준수','Audit 지적사항 재발 우려'][j%4],priority:['높음','보통','낮음','보통'][j%4],risk:['중간','낮음','높음','낮음'][j%4],after:'개선 후 현장 확인 완료',afterEvidence:'개선결과 확인',effectVerified:true,recurrenceState:((j*3+m*5)%8)<[3,1,4,2,5,1,3,2,4,1,3,2][(m-1)%12]?'재발':'미발생',title:'월별 개선조치 검증',evidenceNote:'가상 검증 데이터 · 실제 운영실적 아님'});
    }
  }
  /* Populate month-scoped validation samples without inflating confirmed-case totals. */
