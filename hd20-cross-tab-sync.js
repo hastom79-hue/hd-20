@@ -1,7 +1,7 @@
 (()=>{'use strict';
 // In-memory event bridge: refresh views, never rewrite saved production data.
 let queued=false;
-const changes=['hd20-action-updated','hd20-audit-updated','hd20-audit-draw','hd20-activity-updated','hd20-kpi-source-updated','hd20-gmes-5s-imported','hd20-gmes-5s-judged','hd20-team-master-updated','hd20-team-targets-updated','hd20-master-factors-updated','hd20-policy-updated','hd20-mailing-master-updated'];
+const changes=['hd20-action-updated','hd20-audit-updated','hd20-audit-draw','hd20-activity-updated','hd20-activity-register-success','hd20-kpi-source-updated','hd20-gmes-5s-imported','hd20-gmes-5s-judged','hd20-team-master-updated','hd20-team-targets-updated','hd20-master-factors-updated','hd20-policy-updated','hd20-mailing-master-updated'];
 function refresh(){
  if(queued)return;
  queued=true;
