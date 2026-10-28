@@ -71,7 +71,7 @@ jobs:
           grep -Fq "function advWorkplaceVerified(x)" hd20-subtabs.js
           grep -q "function sanitizeStore(v){return Array.isArray(v)?v.filter(x=>!isNonProdRow(x)):v}" supabase-sync.js
           grep -q "row.workplaceVerification={state:'완료',verifiedAt:new Date().toISOString()}" hd20-subtabs.js
-          grep -q "\['근거검증',verificationNeeded.length\],\['공식심사',formalReady.length\]" hd20-subtabs.js
+          grep -Fq "['근거검증',advWorkplaceVerified(x)?'완료':'미완료']" hd20-subtabs.js
 
       - name: Verify six-column navigation layout
         run: |
