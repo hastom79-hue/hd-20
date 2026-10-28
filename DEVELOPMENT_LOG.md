@@ -1863,3 +1863,5 @@ Canonical Store는 다음을 기준으로 한다.
 - 월별 KPI는 재점검 이력 수를 실시 라인 수로 중복 계산하지 않도록 라인별 최신 점검 1건 기준으로 집계. 과거 점검 이력은 유지.
 - index.html 캐시 키 갱신: maturity-team-case-drilldown.js?v=20261028-strict-3criteria-2, theme-inspection.js?v=20261028-history-preserve-v4.
 - 브랜치: fix/strict-official-maturity-case-counts-20261028. 정적 조건 확인 완료. 실제 브라우저/Pages 및 기존 저장 데이터에 대한 회귀 검증 전까지 병합·운영 배포 완료로 간주하지 않음.
+
+- 추가 점검: 선택한 조회 월이 현재 월과 다를 때 개선조치가 실제 등록 월 기준으로만 묶여 과거 월 재점검에서 중복 방지·매트릭스 집계가 어긋날 수 있는 점을 보완. 테마 Audit 개선조치에 auditMonth를 기록하고 월 옵션·매트릭스·자동등록 KPI·중복 방지가 auditMonth 우선으로 동작하도록 수정. 기존 데이터는 auditMonth가 없으면 createdAt/date로 폴백.
