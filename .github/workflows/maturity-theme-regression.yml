@@ -1,0 +1,51 @@
+name: HD20 maturity counts and theme audit history regression
+on:
+  pull_request:
+    paths:
+      - 'maturity-team-case-drilldown.js'
+      - 'theme-inspection.js'
+      - 'index.html'
+      - '.github/workflows/maturity-theme-regression.yml'
+  push:
+    paths:
+      - 'maturity-team-case-drilldown.js'
+      - 'theme-inspection.js'
+      - 'index.html'
+      - '.github/workflows/maturity-theme-regression.yml'
+  workflow_dispatch:
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: JavaScript syntax
+        run: |
+          node --check maturity-team-case-drilldown.js
+          node --check theme-inspection.js
+      - name: Official count and audit history contracts
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const assert = require('node:assert/strict');
+          const drill = fs.readFileSync('maturity-team-case-drilldown.js', 'utf8');
+          const theme = fs.readFileSync('theme-inspection.js', 'utf8');
+          const html = fs.readFileSync('index.html', 'utf8');
+          const checks = {
+            'team detail requires official confirmed state': /state==='확정'/.test(drill),
+            'team detail requires final adoption flag': /x\.finalAdopted===true\|\|x\.advancementAdopted===true/.test(drill),
+            'team detail requires all three criteria': /s\.explicit===true&&s\.count===3/.test(drill),
+            'audit saves append a history record': /checks\.push\(rec\)/.test(theme),
+            'audit does not overwrite same line/month slot': !/findIndex\(x=>x\.line===line&&x\.month===month\)/.test(theme),
+            'checklist loads latest audit': /sort\(\(a,b\)=>String\(b\.auditedAt\|\|''\)\.localeCompare\(String\(a\.auditedAt\|\|''\)\)\)\[0\]/.test(theme),
+            'KPI counts latest audit per line': /latestByLine\.set\(rec\.line,rec\)/.test(theme),
+            'maturity drilldown cache refreshed': /maturity-team-case-drilldown\.js\?v=20261028-strict-3criteria-2/.test(html),
+            'theme inspection cache refreshed': /theme-inspection\.js\?v=20261028-history-preserve-v4/.test(html)
+          };
+          for (const [name, ok] of Object.entries(checks)) {
+            console.log((ok ? 'PASS ' : 'FAIL ') + name);
+            assert.ok(ok, name);
+          }
+          NODE
