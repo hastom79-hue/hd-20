@@ -1,0 +1,51 @@
+.themeSubtitle{color:#5c7489;font-size:13px;margin-top:4px}
+#awTheme{padding:0 0 26px;color:#1d3547}
+#awTheme .awHero{position:relative;overflow:hidden;display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;padding:23px 25px;border-radius:15px;background:linear-gradient(118deg,#122f47,#174e70 70%,#197b92);color:#fff;box-shadow:0 8px 22px #173a5120}
+#awTheme .awHero h2{font-size:24px;line-height:1.2;margin:7px 0;color:#fff}
+#awTheme .awHero>div:first-child:before{content:'HDPS · 5S MODULE / FIELD CONTROL';display:block;font-size:10px;letter-spacing:.15em;font-weight:900;color:#9ed9e7}
+#awTheme .themeSubtitle{max-width:740px;color:#d8e7ef;font-size:12px;line-height:1.65}
+#awTheme .themeOwner{background:#ffffff18;color:#e6f5fa;border:1px solid #ffffff35}
+#awTheme .themeControls{gap:8px}
+#awTheme .themeControls label{font-size:11px;font-weight:800;color:#d8e7ef}
+#awTheme .themeControls select{padding:8px 10px;border-radius:7px;border:1px solid #cbdbe4;background:#fff;color:#24485e;font-weight:750}
+#awTheme .themeKpiRow{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:13px 0}
+#awTheme .themeKpiCard{border:1px solid #dfe8ee;border-radius:12px;padding:14px 16px;box-shadow:none}
+#awTheme .themeKpiCard small{font-size:10px;font-weight:800;color:#6b8292}
+#awTheme .themeKpiCard b{font-size:25px;color:#193d55;letter-spacing:-.04em}
+#awTheme .themeKpiCard.warn b{color:#bb4339}#awTheme .themeKpiCard.good b{color:#19805a}
+#awTheme .themeTwoTrack{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0 20px}
+#awTheme .themeTrackCard{min-width:0;border-radius:10px;padding:13px 15px;background:#f7fafb;border:1px solid #e0e8ed;font-size:11px;line-height:1.6}
+#awTheme .themeTrackCard b{font-size:11px;color:#1b526e}
+#awTheme .themeSectionHead{margin:20px 0 10px}
+#awTheme .themeSectionHead h3{font-size:15px;color:#1b3d54}
+#awTheme .themeMatrixWrap,#awTheme .themeAuditBox{border:1px solid #dfe7ec;border-radius:13px;box-shadow:none;padding:15px}
+#awTheme table.themeMatrix{font-size:11px;border-collapse:separate;border-spacing:4px}
+#awTheme table.themeMatrix th{background:#eaf1f5;color:#35566a;border:0;border-radius:6px;padding:10px 6px}
+#awTheme table.themeMatrix td{border:0;border-radius:6px;overflow:hidden}
+#awTheme table.themeMatrix td.rowHead{background:#f2f6f8;border:1px solid #e0e8ed;border-radius:7px;font-size:11px;padding:9px 11px}
+#awTheme table.themeMatrix td.cell{height:42px;font-size:12px;box-shadow:inset 0 0 0 1px #e2eaf0}
+#awTheme table.themeMatrix td.cell.sel{outline:2px solid #176b8c;outline-offset:-2px}
+#awTheme .themeEmptyNote{border-radius:8px;font-size:11px}
+#awTheme .themeAuditBox{margin-top:14px;padding:0;overflow:hidden}
+#awTheme .themeAuditBox>.themeSectionHead{padding:16px 17px;margin:0;background:#f8fafb;border-bottom:1px solid #e8eef2}
+#awTheme .themeAuditBox>.themeControls,#awTheme .themeAuditBox>.themeBulkRow,#awTheme .themeAuditBox>#themeAuditMemo,#awTheme .themeAuditBox>.themeAuditMeta,#awTheme .themeAuditBox>#themeChecklistWrap,#awTheme .themeAuditBox>.themeSaveBtn,#awTheme .themeAuditBox>.themeSaveResult{margin-left:16px;margin-right:16px}
+#awTheme .themeAuditBox>.themeControls{margin-top:14px}
+#awTheme .themeBulkRow{align-items:center;margin-top:12px;margin-bottom:8px}
+#awTheme .themeBulkBtn{border-radius:7px;background:#f3f7f9;font-size:11px;font-weight:800;padding:8px 11px}
+#awTheme .themeWorkflowNote{display:block;width:100%;font-size:10px;color:#6e8492;font-weight:800;padding:4px 0}
+#awTheme .themeAuditMeta{margin-top:12px;margin-bottom:8px}
+#awTheme .themeAuditMeta label{display:flex;flex-direction:column;gap:5px;font-size:10px;color:#718593;font-weight:800}
+#awTheme .themeAuditMeta textarea{width:100%;border:1px solid #d6e1e7;border-radius:7px;padding:9px;font:inherit;font-size:11px;color:#29495e;resize:vertical}
+#awTheme .themeCheckRow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;padding:10px 11px;border-bottom:1px solid #edf1f4;border-radius:6px}
+#awTheme .themeCheckRow:nth-child(even){background:#fafcfd}
+#awTheme .themeCheckRow .itemText{font-size:11px;line-height:1.5;color:#314f62}
+#awTheme .themeCheckRow .themeToggle{gap:4px}
+#awTheme .themeCheckRow button{min-width:52px;border-radius:7px;padding:6px 9px;font-size:10px;font-weight:800}
+#awTheme .themeCheckRow button.active.ok{background:#16815a;border-color:#16815a}
+#awTheme .themeCheckRow button.active.ng{background:#c84b3a;border-color:#c84b3a}
+#awTheme .themeChecklistGroup>.catHead{padding:10px 11px;background:#f4f8fa;border-radius:7px;margin:13px 0 4px;font-size:11px}
+#awTheme .themeChecklistGroup>.catHead button{border-radius:7px;padding:6px 8px;font-weight:800}
+#awTheme .themeSaveBtn{position:sticky;bottom:8px;z-index:3;width:calc(100% - 32px);margin-top:15px;margin-bottom:14px;padding:11px 15px;border-radius:8px;background:#0c678b;font-size:12px;box-shadow:0 5px 15px #123b5020}
+#awTheme .themeSaveResult.on{display:block;margin-bottom:14px;border:1px solid #c5e8d2;border-radius:8px}
+@media(max-width:900px){#awTheme .themeKpiRow{grid-template-columns:repeat(2,minmax(0,1fr))}#awTheme .themeMatrixWrap{overflow-x:auto}#awTheme table.themeMatrix{min-width:650px}}
+@media(max-width:600px){#awTheme .awHero{padding:18px}#awTheme .awHero h2{font-size:21px}#awTheme .themeTwoTrack{grid-template-columns:1fr}#awTheme .themeCheckRow{grid-template-columns:1fr}#awTheme .themeCheckRow .themeToggle{justify-content:flex-start}}
