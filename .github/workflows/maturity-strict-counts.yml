@@ -32,7 +32,7 @@ jobs:
           const files=['hd20-maturity-map-tab.js','maturity-map-official-case-link.js','maturity-team-case-drilldown.js'];
           for(const file of files){
             const src=fs.readFileSync(file,'utf8');
-            const match=src.match(/function criteriaState\\(x\\)\\{[^\\n]*\\}/);
+            const match=src.match(/function criteriaState\(x\)\{[^\n]*\}/);
             assert.ok(match, file+': criteriaState helper missing');
             const fn=vm.runInNewContext(match[0]+';criteriaState',{});
             const all={criteriaVisual:'Y',criteriaGreen:'Y',criteriaSpace:'Y'};
@@ -44,8 +44,8 @@ jobs:
           const map=fs.readFileSync('hd20-maturity-map-tab.js','utf8');
           const official=fs.readFileSync('maturity-map-official-case-link.js','utf8');
           const detail=fs.readFileSync('maturity-team-case-drilldown.js','utf8');
-          assert.match(map,/state\\.count===3/);
-          assert.match(official,/s\\.count===3/);
-          assert.match(detail,/s\\.count===3/);
+          assert.match(map,/state\.count===3/);
+          assert.match(official,/s\.count===3/);
+          assert.match(detail,/s\.count===3/);
           console.log('STRICT_MATURITY_CRITERIA_PASS: 3 scripts, 3 scenarios each');
           NODE
