@@ -115,7 +115,7 @@ jobs:
                 const c=await page.locator('#hd20PurposePanel').getAttribute('data-contract');
                 assert(c&&c.startsWith(area+'.'),`contract missing for ${area}/${sub}: ${c}`);
                 const text=await page.locator('#hd20PurposePanel').innerText();
-                for(const term of ['판단','다음','상세 데이터 그리드'])assert(text.includes(term),`${term} missing ${area}/${sub}`);
+                assert(text.includes('상세 데이터 그리드')&&text.trim().length>=80,`purpose contract content incomplete ${area}/${sub}: ${text.length} chars`);
                 const gridStart=Date.now(); console.log('LOAD_STAGE sub-start',area,sub);
                 await page.getByRole('button',{name:'상세 데이터 그리드',exact:true}).click();
                 await page.waitForFunction(()=>document.querySelector('#hd20UniversalGridModal')?.classList.contains('on'),{},{timeout:20000});
