@@ -61,7 +61,7 @@ jobs:
           grep -q "areas:\['dashboard','activity','audit','action','advancement','master'\]" beginner-navigation.js
           grep -q 'canonical-five-area-v10-early-boot' beginner-navigation.js
           grep -q "\['maturitymap','map','maturity'\]" beginner-navigation.js
-          grep -q "go('advancement',nav)" beginner-navigation.js
+          grep -q "goDashboard(nav,'map')" beginner-navigation.js
           test -s hd20-maturity-map-tab.js
           test -s dashboard-section-tabs.js
           ! grep -q "key:'maturity'" dashboard-section-tabs.js
