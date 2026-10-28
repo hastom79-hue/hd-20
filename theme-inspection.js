@@ -2,7 +2,7 @@
 
    v2까지의 문제점과 조치:
    1) 처음 들어왔을 때 매트릭스가 텅 비어 있어 "뭘 해야 하는지" 전혀 안내가 없었음
-      → 요약 카드 4개(실시 라인·미흡 발견·자동 등록·적합률) 추가, 매트릭스가 비어 있을 때도
+      → 요약 카드 4개(실시 라인·최신 점검 미흡·자동 등록·점검 적합률) 추가, 매트릭스가 비어 있을 때도
         "아직 점검 실시 전입니다 — 아래에서 라인을 선택해 Audit을 시작하세요" 안내 추가.
    2) 매트릭스와 체크리스트가 완전히 분리되어 있어 셀을 클릭해도 아무 반응이 없었음
       → 매트릭스 셀 클릭 시 해당 라인으로 체크리스트가 자동 전환되고 그 섹션으로 스크롤.
@@ -141,13 +141,13 @@ function render(){
    return `<td class="cell${isSel?' sel':''}" data-pick-line="${esc(ln)}" style="background:${cellColor(n)}">${n||''}</td>`;
  }).join('')+'</tr>').join('');
  host.innerHTML=`<div class="awHero">
-   <div><h2>⑦ 테마 점검</h2><div class="themeSubtitle">라인별 취약점을 품목·기준 단위 세부 테마로 점검하고, 미흡 항목은 자동으로 개선조치가 등록됩니다.</div><span class="themeOwner">5S모듈 주관</span></div>
+   <div><h2>테마점검 운영센터</h2><div class="themeSubtitle">라인별 5S 취약점을 동일 기준으로 점검하고, 미흡 항목을 개선조치·완료관리와 연결합니다. 재점검 이력은 누적 보존됩니다.</div><span class="themeOwner">5S모듈 주관</span></div>
    <div class="themeControls"><label>조회 월 <select id="themeMonthSel">${monthOpts.map(m=>`<option${m===month?' selected':''}>${m}</option>`).join('')}</select></label></div>
  </div>
  <div class="themeKpiRow">
-   <div class="themeKpiCard"><small>이번 달 Audit 실시 라인</small><b>${k.linesAudited}<span style="font-size:14px">/${LINES.length}</span></b></div>
+   <div class="themeKpiCard"><small>점검 실시 라인</small><b>${k.linesAudited}<span style="font-size:14px">/${LINES.length}</span></b></div>
    <div class="themeKpiCard ${k.ng?'warn':''}"><small>미흡 발견</small><b>${k.ng}건</b></div>
-   <div class="themeKpiCard"><small>자동 등록된 개선조치</small><b>${k.autoRegistered}건</b></div>
+   <div class="themeKpiCard"><small>연계 개선조치</small><b>${k.autoRegistered}건</b></div>
    <div class="themeKpiCard ${k.okRate==null?'':k.okRate>=80?'good':'warn'}"><small>적합률</small><b>${k.okRate==null?'—':k.okRate+'%'}</b></div>
  </div>
  <div class="themeTwoTrack">
@@ -165,11 +165,11 @@ function render(){
      <label>라인 <select id="themeLineSel">${LINES.map(l=>`<option${l===line?' selected':''}>${esc(l)}</option>`).join('')}</select></label>
      <label>담당 생산팀 <select id="themeTeamSel">${teamOptions().map(t=>`<option${t===team?' selected':''}>${esc(t)}</option>`).join('')}</select></label>
    </div>
-   <div class="themeBulkRow">
+   <div class="themeBulkRow"><span class="themeWorkflowNote">점검 흐름　① 라인 선택 → ② 전 항목 판정 → ③ 결과 저장 → ④ 개선조치 확인</span>
      <button type="button" class="themeBulkBtn" id="themeBulkAllOk">전체 적합으로 일괄 설정</button>
      <button type="button" class="themeBulkBtn" id="themeBulkClear">전체 초기화</button>
    </div>
-   <div id="themeChecklistWrap"></div>
+   <div class="themeAuditMeta"><label>현장 관찰 메모 <textarea id="themeAuditMemo" rows="2" placeholder="현장 특이사항, 즉시조치, 재발 위험 등을 기록"></textarea></label><div id="themeProgress" aria-live="polite"></div></div><div id="themeChecklistWrap"></div>
    <button type="button" class="themeSaveBtn" id="themeSaveBtn">점검 결과 저장 · 미흡 항목 자동 등록</button>
    <div class="themeSaveResult" id="themeSaveResult"></div>
  </div>`;
@@ -257,7 +257,9 @@ function saveAudit(){
  rows.forEach(row=>{const active=row.querySelector('button.active');if(active)states[row.dataset.key]=active.dataset.v});
  const checks=loadChecks();
  /* Audit는 line/month별 단일 슬롯이 아니라 이력이다. 재점검 시 기존 기록을 덮어쓰지 않고 새 기록으로 추가한다. */
- const rec={id:'THEME-AUDIT-'+Date.now()+'-'+checks.length,line,team,month,states,auditedAt:new Date().toISOString()};
+ const memo=$('#themeAuditMemo',host)?.value.trim()||'';
+ if(Object.keys(states).length<CHECKLIST.length){const missing=CHECKLIST.length-Object.keys(states).length;alert('미판정 항목 '+missing+'건이 있습니다. 모든 항목을 판정한 뒤 저장해 주세요.');return}
+ const rec={id:'THEME-AUDIT-'+Date.now()+'-'+checks.length,line,team,month,states,memo,auditedAt:new Date().toISOString(),checklistVersion:4};
  checks.push(rec);
  saveChecks(checks);
  const ngItems=rows.filter(row=>states[row.dataset.key]==='미흡');
@@ -265,7 +267,8 @@ function saveAudit(){
  let created=0;
  ngItems.forEach(row=>{
    const cat=row.dataset.cat,item=row.dataset.item;
-   const dup=actions.find(a=>a.source==='테마Audit'&&a.workplace===line&&a.themeCategory===cat&&a.problem===item&&monthKey(a.auditMonth||a.createdAt||a.date)===month);
+   const active=['조치대기','미착수','진행중','진행 중','기한경과','보완요청','조치중','조치 진행중','효과검증 대기'];
+   const dup=actions.find(a=>a.source==='테마Audit'&&a.workplace===line&&a.themeCategory===cat&&a.problem===`[테마 점검] ${line} · ${item}`&&monthKey(a.auditMonth||a.createdAt||a.date)===month&&active.includes(String(a.status||'')));
    if(dup)return;
    const createdAt=today();
    actions.unshift({
@@ -280,7 +283,7 @@ function saveAudit(){
      createdAt,date:createdAt,
      dueDate:addDaysStr(createdAt,14),targetDate:addDaysStr(createdAt,14),
      status:'조치대기',
-     requestSource:'테마 Audit(5S모듈 주관)',
+     requestSource:'테마 Audit(5S모듈 주관)',auditRecordId:rec.id,auditMemo:memo,
    });
  });
  save(actions);

@@ -45,7 +45,7 @@ jobs:
             'theme matrix groups by audit month': theme.includes('monthKey(x.auditMonth||x.createdAt||x.date)'),
             'theme action dedupe uses audit month': theme.includes('monthKey(a.auditMonth||a.createdAt||a.date)'),
             'maturity drilldown cache refreshed': /maturity-team-case-drilldown\.js\?v=20261028-strict-3criteria-2/.test(html),
-            'theme inspection cache refreshed': /theme-inspection\.js\?v=20261028-history-preserve-v4/.test(html)
+            'theme inspection cache refreshed': /theme-inspection\.js\?v=20261028-full-rebuild-v4/.test(html)
           };
           for (const [name, ok] of Object.entries(checks)) {
             console.log((ok ? 'PASS ' : 'FAIL ') + name);
