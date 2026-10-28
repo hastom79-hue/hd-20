@@ -114,7 +114,10 @@ function matrixData(month){
 }
 function cellColor(n){if(n<=0)return'#ffffff';if(n===1)return'#fff3d6';if(n===2)return'#ffe2a8';if(n<=4)return'#ffc877';return'#ff9d52'}
 function kpis(month){
- const checks=loadChecks().filter(x=>x.month===month);
+ const allChecks=loadChecks().filter(x=>x.month===month);
+ const latestByLine=new Map();
+ allChecks.forEach(rec=>{const prev=latestByLine.get(rec.line);if(!prev||String(rec.auditedAt||'').localeCompare(String(prev.auditedAt||''))>=0)latestByLine.set(rec.line,rec)});
+ const checks=[...latestByLine.values()];
  const linesAudited=checks.length;
  let ok=0,ng=0;
  checks.forEach(c=>Object.values(c.states||{}).forEach(v=>{if(v==='적합')ok++;else if(v==='미흡')ng++}));
@@ -194,8 +197,8 @@ function refreshMatrixSelection(){
  });
 }
 function checklistState(line){
- const all=loadChecks();
- const rec=all.find(x=>x.line===line&&x.month===document.getElementById('awTheme').dataset.month)||{};
+ const month=document.getElementById('awTheme').dataset.month;
+ const rec=loadChecks().filter(x=>x.line===line&&x.month===month).sort((a,b)=>String(b.auditedAt||'').localeCompare(String(a.auditedAt||'')))[0]||{};
  return rec.states||{};
 }
 function renderChecklist(){
@@ -253,9 +256,9 @@ function saveAudit(){
  const states={};
  rows.forEach(row=>{const active=row.querySelector('button.active');if(active)states[row.dataset.key]=active.dataset.v});
  const checks=loadChecks();
- const idx=checks.findIndex(x=>x.line===line&&x.month===month);
- const rec={line,month,states,auditedAt:new Date().toISOString()};
- if(idx>=0)checks[idx]=rec;else checks.push(rec);
+ /* Audit는 line/month별 단일 슬롯이 아니라 이력이다. 재점검 시 기존 기록을 덮어쓰지 않고 새 기록으로 추가한다. */
+ const rec={id:'THEME-AUDIT-'+Date.now()+'-'+checks.length,line,team,month,states,auditedAt:new Date().toISOString()};
+ checks.push(rec);
  saveChecks(checks);
  const ngItems=rows.filter(row=>states[row.dataset.key]==='미흡');
  const actions=load();
