@@ -49,15 +49,15 @@ jobs:
             if x in html: sys.exit('Retired script ref remains: '+x)
           PY
 
-      - name: Verify six-area navigation and advancement maturity IA
+      - name: Verify seven-area navigation and advancement maturity IA
         run: |
           set -euo pipefail
           test -s beginner-navigation.js
-          for key in dashboard activity advancement audit action master; do
+          for key in dashboard activity audit theme action advancement master; do
             grep -q "data-key=\\\"$key\\\"" beginner-navigation.js
           done
           ! grep -q 'data-key="maturitymap"' beginner-navigation.js
-          grep -q "areas:\['dashboard','activity','audit','action','advancement','master'\]" beginner-navigation.js
+          grep -q "areas:\['dashboard','activity','audit','theme','action','advancement','master'\]" beginner-navigation.js
           grep -q 'canonical-five-area-v10-early-boot' beginner-navigation.js
           grep -q "\['maturitymap','map','maturity'\]" beginner-navigation.js
           grep -q "go('advancement',nav)" beginner-navigation.js
@@ -73,11 +73,11 @@ jobs:
           grep -q "row.workplaceVerification={state:'완료',verifiedAt:new Date().toISOString()}" hd20-subtabs.js
           grep -Fq "['근거검증',advWorkplaceVerified(x)?'완료':'미완료']" hd20-subtabs.js
 
-      - name: Verify six-column navigation layout
+      - name: Verify seven-column navigation layout
         run: |
           set -euo pipefail
           test -s hd20-five-area.css
-          grep -q 'grid-template-columns:repeat(6,minmax(0,1fr))' hd20-five-area.css
+          grep -q 'grid-template-columns:repeat(7,minmax(0,1fr))' hd20-five-area.css
           ! grep -q "workplace.classList.add('on')" hd20-five-area-integration.js
           ! grep -q "hd20-six-nav-layout.js" final-layout-polish.js
           grep -q "window.HD20_FIVE_AREA={refresh,areas:\['dashboard','activity','advancement','audit','action','master'\]}" hd20-five-area-integration.js
