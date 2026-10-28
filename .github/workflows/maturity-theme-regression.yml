@@ -41,6 +41,9 @@ jobs:
             'audit does not overwrite same line/month slot': !/findIndex\(x=>x\.line===line&&x\.month===month\)/.test(theme),
             'checklist loads latest audit': /sort\(\(a,b\)=>String\(b\.auditedAt\|\|''\)\.localeCompare\(String\(a\.auditedAt\|\|''\)\)\)\[0\]/.test(theme),
             'KPI counts latest audit per line': /latestByLine\.set\(rec\.line,rec\)/.test(theme),
+            'theme action records selected audit month': theme.includes('auditMonth:month'),
+            'theme matrix groups by audit month': theme.includes('monthKey(x.auditMonth||x.createdAt||x.date)'),
+            'theme action dedupe uses audit month': theme.includes('monthKey(a.auditMonth||a.createdAt||a.date)'),
             'maturity drilldown cache refreshed': /maturity-team-case-drilldown\.js\?v=20261028-strict-3criteria-2/.test(html),
             'theme inspection cache refreshed': /theme-inspection\.js\?v=20261028-history-preserve-v4/.test(html)
           };
