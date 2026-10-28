@@ -20,9 +20,10 @@ function bind(root,prefix){
   const n=inputs.filter(x=>x.checked).length,master=!!window.HD20MasterAccess?.isMaster();
   if(out)out.textContent=(n?'충족':'미충족')+' ('+n+'/3)';
   if(panel){panel.hidden=!master;panel.style.display=master?'flex':'none'}
-  if(cb){cb.disabled=!master||n===0;if(!master||n===0)cb.checked=false}
+  if(cb){cb.disabled=!master||n===0;cb.checked=master&&n>=1}
  };
  inputs.forEach(x=>x.addEventListener('change',update));
+ if(cb)cb.addEventListener('change',update);
  window.addEventListener('hd20-master-access-updated',update);
  update();
 }
