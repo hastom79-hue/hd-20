@@ -83,7 +83,11 @@ jobs:
             const dashKeys=await page.locator('#hd20DashboardSectionTabs button[data-dashboard-section]').evaluateAll(xs=>xs.map(x=>x.dataset.dashboardSection));
             assert(JSON.stringify(dashKeys)===JSON.stringify(['summary','improve','request','map']),'dashboard groups mismatch: '+dashKeys.join(','));
             const maturityCheck=async()=>{await page.evaluate(()=>window.HD20_NAV?.go?.('maturity'));await page.waitForTimeout(250);const maturityState=await page.evaluate(()=>{const tab=document.querySelector('#hd20MaturityMapTab'),map=tab?.querySelector('.mmtMap,.mmtBars'),st=window.HD20_SUBNAV?.state?.();return {nav:window.HD20_NAV?.active?.(),area:st?.area,sub:st?.sub,visible:!!tab&&!tab.hidden&&getComputedStyle(tab).display!=='none',mapHeight:map?.getBoundingClientRect().height||0,dots:document.querySelectorAll('#hd20MaturityMapTab .mmtDot,.mmtBarRow').length,teams:document.querySelectorAll('#hd20MaturityMapTab .mmtTeam,.mmtBarRow').length}});assert(maturityState.nav==='dashboard'&&maturityState.area==='dashboard'&&maturityState.sub==='map'&&maturityState.visible&&maturityState.mapHeight>300,'dashboard maturity map not active: '+JSON.stringify(maturityState));await page.evaluate(()=>window.HD20_NAV?.go?.('dashboard'));await page.waitForTimeout(100);};
-            const areas={activity:['① 문제·개선 등록','② 실행현황·우수활동 선별'],advancement:['확정사례 관리'],audit:['① Audit 실시','② 유지점검','③ 결과·재조치'],action:['① 개선조치 등록·실행','② 미완료·지연관리','③ 효과검증·최종종결']};
+            const areas={advancement:['확정사례 관리'],audit:['① Audit 실시','② 유지점검','③ 결과·재조치'],action:['① 개선조치 등록·실행','② 미완료·지연관리','③ 효과검증·최종종결']};
+            await page.locator('.beginnerNav button[data-key="activity"]').click(); await page.waitForTimeout(250);
+            const activityGrid=await page.evaluate(()=>({active:window.HD20_NAV?.active?.(),overview:!!document.getElementById('hd20LauncherOverview')&&document.getElementById('hd20LauncherOverview').classList.contains('hd20LnVisible')}));
+            assert(activityGrid.active==='activity'&&activityGrid.overview,'merged registration grid not active: '+JSON.stringify(activityGrid));
+            await page.evaluate(()=>window.HD20_NAV?.go?.('dashboard')); await page.waitForTimeout(100);
             let count=0;
             for(const [area,subs] of Object.entries(areas)){
               const areaStart=Date.now(); console.log('LOAD_STAGE area-start',area);
