@@ -1,6 +1,12 @@
-name: HD20 advancement judgment regression
+name: HD20 advancement navigation contract
 on:
   push:
+    branches: [main]
+    paths:
+      - 'hd20-subtabs.js'
+      - 'index.html'
+      - '.github/workflows/advancement-judgment-regression.yml'
+  pull_request:
     branches: [main]
     paths:
       - 'hd20-subtabs.js'
@@ -10,9 +16,9 @@ on:
 permissions:
   contents: read
 jobs:
-  advancement-regression:
+  advancement-navigation:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -28,7 +34,7 @@ jobs:
           for i in {1..30}; do curl -fsS http://127.0.0.1:4173/index.html >/dev/null && exit 0; sleep 1; done
           cat /tmp/adv-http.log
           exit 1
-      - name: Validate candidate selection, verification, and persistence
+      - name: Validate approved advancement navigation
         run: |
           cat > adv-check.cjs <<'NODE'
           const {chromium}=require('playwright');
@@ -47,60 +53,30 @@ jobs:
               if(route.request().resourceType()==='script')return route.fulfill({status:200,contentType:'application/javascript',body:''});
               return route.abort();
             });
-            await page.goto('http://127.0.0.1:4173/index.html?area=advancement&sub=judge',{waitUntil:'domcontentloaded'});
+            await page.goto('http://127.0.0.1:4173/index.html?area=advancement&sub=standard',{waitUntil:'domcontentloaded'});
             await page.waitForFunction(()=>window.HD20_SUBNAV?.select,{timeout:20000});
             await page.evaluate(()=>document.getElementById('hd20Launcher')?.remove());
-            await page.evaluate(()=>{
-              const base={type:'5S 고도화',candidate:true,isCandidate:true,judgeState:'판정대기',confirmed:false,team:'중형상부1팀',line:'검증 라인',problem:'문제정의',improvement:'개선완료',before:'BEFORE-test',after:'AFTER-test',source:'ci-load-fixture'};
-              const rows=[
-                {...base,id:'ADV-REG-PASS',workplace:'검증 대상 3조건',criteriaVisual:'Y',criteriaGreen:'Y',criteriaSpace:'Y'},
-                {...base,id:'ADV-REG-FAIL',workplace:'검증 대상 미충족',criteriaVisual:'Y',criteriaGreen:'N',criteriaSpace:'Y'},
-                {...base,id:'ADV-REG-NO-EVIDENCE',workplace:'검증 대상 증빙누락',criteriaVisual:'Y',criteriaGreen:'Y',criteriaSpace:'Y',after:''}
-              ];
-              localStorage.setItem('hd20GMES5SAutoImproveRawV1',JSON.stringify(rows));
-              window.HD20_SUBNAV.select('advancement','judge');
-            });
             await page.evaluate(()=>document.querySelector('.beginnerNav button[data-key="advancement"]')?.click());
-            await page.waitForFunction(()=>document.querySelector('#hd20Subnav button[data-sub="judge"]'),{},{timeout:12000});
-            await page.evaluate(()=>window.HD20_SUBNAV.select('advancement','judge'));
-            await page.waitForSelector('#hd20AdvJudgeOperational [data-case-index]',{state:'visible',timeout:12000});
+            await page.waitForSelector('#hd20Subnav button[data-sub="standard"]',{state:'visible',timeout:12000});
+            await page.evaluate(()=>window.HD20_SUBNAV.select('advancement','standard'));
             const nav=await page.locator('#hd20Subnav button').allTextContents();
-            assert.equal(nav.length,3,'advancement must have exactly three tabs');
-            assert.match(nav[0],/후보·판정/);
-            await page.locator('#hd20AdvJudgeOperational [data-case-index]').filter({hasText:'검증 대상 미충족'}).click();
-            assert.equal(await page.locator('#hd20AdvSelectedCase [data-case-verify]').count(),0,'one missing criterion cannot verify');
-            await page.locator('#hd20AdvJudgeOperational [data-case-index]').filter({hasText:'검증 대상 증빙누락'}).click();
-            assert.equal(await page.locator('#hd20AdvSelectedCase [data-case-verify]').count(),0,'missing evidence cannot verify');
-            await page.locator('#hd20AdvJudgeOperational [data-case-index]').filter({hasText:'검증 대상 3조건'}).click();
-            await page.locator('#hd20AdvSelectedCase [data-case-verify]').click();
-            const stored=await page.evaluate(()=>JSON.parse(localStorage.getItem('hd20GMES5SAutoImproveRawV1')));
-            assert.equal(stored.find(x=>x.id==='ADV-REG-PASS').workplaceVerified,true);
-            assert.equal(stored.find(x=>x.id==='ADV-REG-FAIL').workplaceVerified,undefined);
-            assert.equal(stored.find(x=>x.id==='ADV-REG-NO-EVIDENCE').workplaceVerified,undefined);
-            assert.equal(stored.find(x=>x.id==='ADV-REG-PASS').confirmed,false,'verification must not auto-confirm');
-            await page.reload({waitUntil:'domcontentloaded'});
-            const afterReload=await page.evaluate(()=>JSON.parse(localStorage.getItem('hd20GMES5SAutoImproveRawV1')));
-            assert.equal(afterReload.find(x=>x.id==='ADV-REG-PASS').workplaceVerified,true,'verification persisted after reload');
-            assert.equal(afterReload.find(x=>x.id==='ADV-REG-PASS').confirmed,false,'reload must not silently confirm');
-            await page.evaluate(()=>document.querySelector('.beginnerNav button[data-key="advancement"]')?.click());
-            await page.waitForFunction(()=>window.HD20_SUBNAV?.select,{},{timeout:12000});
-            await page.evaluate(()=>window.HD20_SUBNAV.select('advancement','judge'));
-            await page.locator('#hd20AdvJudgeOperational [data-case-index]').filter({hasText:'검증 대상 3조건'}).click();
-            assert.equal(await page.locator('#hd20AdvSelectedCase [data-case-verify]').count(),0,'already verified case cannot be resubmitted');
+            assert.equal(nav.length,1,'advancement must expose only the approved tab');
+            assert.match(nav[0],/확정사례 관리/);
+            assert.equal(await page.locator('#hd20Subnav button[data-sub="judge"]').count(),0,'retired immediate-judgement tab must not return');
             assert.deepEqual(errors,[],'browser errors');
-            await page.screenshot({path:'advancement-regression.png',fullPage:true});
-            console.log('ADVANCEMENT_REGRESSION_PASS',JSON.stringify({tabs:nav.length,verified:'ADV-REG-PASS',rejected:2,refreshPersisted:true}));
+            await page.screenshot({path:'advancement-navigation.png',fullPage:true});
+            console.log('ADVANCEMENT_NAVIGATION_PASS',JSON.stringify({tabs:nav,retiredJudgeTabAbsent:true}));
             await browser.close();
-          })().catch(async e=>{console.error('ADVANCEMENT_REGRESSION_FAILED',e.stack||String(e));try{await diagnosticPage?.screenshot({path:'advancement-regression.png',fullPage:true,timeout:5000})}catch(err){console.error('SCREENSHOT_FAILED',String(err))}process.exit(1)});
+          })().catch(async e=>{console.error('ADVANCEMENT_NAVIGATION_FAILED',e.stack||String(e));try{await diagnosticPage?.screenshot({path:'advancement-navigation.png',fullPage:true,timeout:5000})}catch(err){console.error('SCREENSHOT_FAILED',String(err))}process.exit(1)});
           NODE
-          node adv-check.cjs 2>&1 | tee advancement-regression.log
-          test ${PIPESTATUS[0]} -eq 0
-      - name: Upload regression screenshot
+          node adv-check.cjs 2>&1 | tee advancement-navigation.log
+          test {PIPESTATUS[0]} -eq 0
+      - name: Upload regression evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: advancement-regression-evidence
+          name: advancement-navigation-evidence
           path: |
-            advancement-regression.png
-            advancement-regression.log
+            advancement-navigation.png
+            advancement-navigation.log
           if-no-files-found: ignore
