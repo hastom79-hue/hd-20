@@ -106,8 +106,8 @@ jobs:
         run: |
           set -euo pipefail
           ! test -e demo-seed-data.js
-          ! grep -R --include='*.js' --exclude='web-validation-fixture.js' --exclude='hd20-subtabs.js' --exclude-dir='tests' --exclude-dir='.git' -n "source:'demo-seed'\\|HD20_DEMO_ACTIONS\\|HD20_ACTION_DEMO_SEED_DISABLED" .
-          ! grep -R --include='*.js' --include='*.html' --exclude='web-validation-fixture.js' --exclude-dir='tests' --exclude-dir='.git' -n 'example\\.com\\|홍길동\\|김현대' .
+          ! grep -R --include='*.js' --exclude='web-validation-fixture.js' --exclude='hd20-subtabs.js' --exclude-dir='tests' --exclude-dir='.git' -n "source:'demo-seed'\|HD20_DEMO_ACTIONS\|HD20_ACTION_DEMO_SEED_DISABLED" .
+          ! grep -R --include='*.js' --include='*.html' --exclude='web-validation-fixture.js' --exclude-dir='tests' --exclude-dir='.git' -n 'example\.com\|홍길동\|김현대' .
 
       - name: Verify validation fixture is explicit opt-in only
         run: |
