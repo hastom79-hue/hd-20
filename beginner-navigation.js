@@ -1,5 +1,15 @@
 (()=>{'use strict';
-const NAV_HTML=`<button class="active" data-key="dashboard"><span class="navTop"><span class="navNumber">01</span><span class="navLabel">대시보드</span></span></button><button data-key="activity"><span class="navTop"><span class="navNumber">02</span><span class="navLabel">자율개선등록 / 개선조치등록</span></span></button><button data-key="audit"><span class="navTop"><span class="navNumber">03</span><span class="navLabel">Audit·유지점검</span></span></button><button data-key="theme"><span class="navTop"><span class="navNumber">04</span><span class="navLabel">테마 점검</span></span></button><button data-key="action"><span class="navTop"><span class="navNumber">05</span><span class="navLabel">개선조치·완료관리</span></span></button><button data-key="advancement"><span class="navTop"><span class="navNumber">06</span><span class="navLabel">고도화·표준화</span></span></button><button data-key="master"><span class="navTop"><span class="navNumber">07</span><span class="navLabel">통합기준정보</span></span></button>`;
+/* 사용자 지시: "고도화/표준화 탭은 ② 대시보드 드릴다운으로 흡수" — 버튼을 완전히 DOM에서
+     지우지 않고 display:none으로만 숨김. 이유: 이 파일의 CSS 가시성 가드(아래 ":has(.beginnerNav
+     button:not([data-key=\"advancement\"]).active)" 규칙들)가 "advancement 버튼이 DOM에 존재한다"는
+     전제로 설계돼 있어, 버튼을 완전히 제거하면 :not() 선택자가 모든 버튼에 매치되어 #awWorkplace·
+     #hd20MaturityMapTab 등이 어느 탭에서도 영구히 숨겨지는 심각한 회귀가 발생했음(실제로 발생시켜
+     확인 후 즉시 복구). display:none!important로 버튼만 비표시 처리(외부 CSS의 .beginnerNav
+     button{display:flex!important} 규칙을 이겨야 하므로 important 필수). 남아 있던 유일한 화면
+     "확정사례 관리"는 advancement-standard-drilldown.js가 대시보드 "고도화 맵" 섹션의 드릴다운
+     모달로 독립 재구현해 흡수. 탭 순서는 다른 세션이 재배치한 워크플로우 순서(dashboard→activity→
+     audit→theme→action→advancement[숨김]→master)를 그대로 따름. */
+const NAV_HTML=`<button class="active" data-key="dashboard"><span class="navTop"><span class="navNumber">01</span><span class="navLabel">대시보드</span></span></button><button data-key="activity"><span class="navTop"><span class="navNumber">02</span><span class="navLabel">자율개선등록 / 개선조치등록</span></span></button><button data-key="audit"><span class="navTop"><span class="navNumber">03</span><span class="navLabel">Audit·유지점검</span></span></button><button data-key="theme"><span class="navTop"><span class="navNumber">04</span><span class="navLabel">테마 점검</span></span></button><button data-key="action"><span class="navTop"><span class="navNumber">05</span><span class="navLabel">개선조치·완료관리</span></span></button><button data-key="advancement" style="display:none!important" aria-hidden="true" tabindex="-1"><span class="navTop"><span class="navNumber">06</span><span class="navLabel">고도화·표준화</span></span></button><button data-key="master"><span class="navTop"><span class="navNumber">07</span><span class="navLabel">통합기준정보</span></span></button>`;
 const SCREEN_BY_KEY={activity:'awActivity',audit:'awAudit',action:'awAction',master:'masterModal',theme:'awTheme'};
 let activeKey='dashboard',initialized=false,navGeneration=0;
 function allScreens(){return [...document.querySelectorAll('.awScreen')];}
@@ -58,7 +68,14 @@ function openScreen(id){
 }
 function openAdvancement(nav){syncMergedSwitch('advancement');closeScreens();window.dispatchEvent(new CustomEvent('hd20-close-maturity-map-tab'));syncNav(nav,'advancement');const generation=navGeneration;document.dispatchEvent(new CustomEvent('hd20-open-performance-conversion'));setTimeout(()=>{if(activeKey!=='advancement'||generation!==navGeneration)return;const conversion=document.getElementById('performanceConversionAnalysis');const workplace=document.getElementById('awWorkplace');document.querySelector('.app')?.classList.add('awFocused');if(conversion){conversion.classList.add('on');conversion.dataset.integratedArea='advancement'}if(workplace){workplace.classList.add('on');workplace.dataset.integratedArea='advancement'}},0)}
 function goDashboard(nav,section){syncMergedSwitch('dashboard');closeScreens();window.dispatchEvent(new CustomEvent('hd20-close-maturity-map-tab'));syncNav(nav,'dashboard');try{const u=new URL(location.href);u.searchParams.set('area','dashboard');if(section)u.searchParams.set('section',section);else u.searchParams.delete('section');u.searchParams.delete('sub');history.replaceState(null,'',u)}catch{}(function tryApply(n){if(activeKey!=='dashboard')return;if(window.HD20_DASHBOARD_TABS){if(section==='map')window.HD20_MATURITY_DASHBOARD?.open?.();else if(section)window.HD20_DASHBOARD_TABS.apply(section);else window.HD20_DASHBOARD_TABS.reset?.();return}if(n<60)setTimeout(()=>tryApply(n+1),100)})(0);if(!section)requestAnimationFrame(()=>{window.scrollTo(0,0);document.documentElement.scrollTop=0;if(document.body)document.body.scrollTop=0})}
-function go(key,nav,opts={}){syncMergedSwitch(key);if(key==='dashboard'){goDashboard(nav);return}
+/* defer 전환(전체 스크립트 동기→비동기 로딩) 이후 발견된 심각한 회귀: 대시보드를 포함한 여러 탭이
+   완전히 빈 화면으로 보이는 버그의 원인 — landing-launcher.js가 "자율개선등록" 탭의 통합조회 화면이
+   열릴 때 body에 추가하는 hd20InquiryActive 클래스(".app > :not(...){display:none}"으로 거의 모든
+   콘텐츠를 숨기는 CSS와 쌍을 이룸)가, 다른 메인탭으로 전환해도 제거되지 않고 그대로 남아 있을 수
+   있었음(스크립트 실행 타이밍이 바뀌며 hideOverview() 호출 누락 경로가 생긴 것으로 추정). 원인
+   스크립트를 특정하기보다, 탭 전환의 단일 진입점인 go()에서 activity가 아닌 모든 탭으로 전환할 때
+   이 클래스를 항상 정리하도록 안전장치를 추가해 근본적으로 차단. */
+function go(key,nav,opts={}){if(key!=='activity')document.body.classList.remove('hd20InquiryActive');syncMergedSwitch(key);if(key==='dashboard'){goDashboard(nav);return}
   try{const u=new URL(location.href);u.searchParams.set('area',key);u.searchParams.delete('section');if(!opts.preserveSub||key==='master')u.searchParams.delete('sub');history.replaceState(null,'',u)}catch{}
   syncNav(nav,key);if(key==='advancement'){openAdvancement(nav);return}const id=SCREEN_BY_KEY[key];if(id){
   const opened=openScreen(id);

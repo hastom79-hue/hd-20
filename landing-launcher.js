@@ -171,7 +171,14 @@ function ensureOverview(deferRender=false){
 function openOverview(){if(overviewOpening)return;overviewOpening=true;try{close();if(window.HD20_NAV?.active?.()!=='activity')window.HD20_NAV?.go?.('activity');try{const u=new URL(location.href);if(u.searchParams.get('sub')==='unified'){u.searchParams.delete('sub');history.replaceState(null,'',u)}}catch{}ensureOverview(true);document.body.classList.remove('hd20UnifiedLanding');const grid=document.getElementById('hd20LauncherOverview');grid?.classList.add('hd20LnVisible');document.body.classList.add('hd20InquiryActive');renderOverview();if(grid){grid.style.removeProperty('display');grid.style.removeProperty('visibility');document.querySelector('.app')?.classList.remove('awFocused');document.getElementById('awActivity')?.classList.remove('on');document.getElementById('awAction')?.classList.remove('on');grid.scrollTop=0;window.scrollTo(0,0)}}finally{overviewOpening=false}}
 function open(){
   if(document.getElementById('hd20Launcher'))return;
-  ensureOverview(true);document.body.classList.remove('hd20UnifiedLanding');document.getElementById('hd20LauncherOverview')?.classList.add('hd20LnVisible');document.body.classList.add('hd20InquiryActive');GRID.route='all';GRID.page=1;
+  /* defer 전환 이후 발견된 심각한 회귀(대시보드 포함 여러 탭이 완전히 빈 화면으로 보임)의 근본
+     원인 — 초기 런처 팝업을 여는 이 open() 함수가, 팝업이 열리는 "즉시" hd20InquiryActive 클래스를
+     body에 미리 붙이고 있었음(통합조회 DOM을 미리 준비해 두려는 의도로 보이나, 이 클래스는
+     ".app > :not(...){display:none}"과 쌍을 이뤄 현재 탭의 콘텐츠 대부분을 숨기는 역할도 겸하고
+     있어, 사용자가 팝업을 실제로 "건너뛰기/배경클릭/ESC"로 닫아 openOverview()를 거치기 전까지는
+     불필요하게 화면을 가리고 있었음). 통합조회 DOM 준비(ensureOverview)는 그대로 두되, 클래스 추가는
+     실제로 openOverview()가 호출될 때(팝업을 닫을 때)만 일어나도록 제거. */
+  ensureOverview(true);document.body.classList.remove('hd20UnifiedLanding');document.getElementById('hd20LauncherOverview')?.classList.add('hd20LnVisible');GRID.route='all';GRID.page=1;
   css();
   const el=document.createElement('div');
   el.id='hd20Launcher';
