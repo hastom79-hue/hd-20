@@ -53,7 +53,7 @@ jobs:
             'KPI counts latest audit per line': /latestByLine\.set\(rec\.line,rec\)/.test(theme),
             'theme action records selected audit month': theme.includes('auditMonth:month'),
             'theme matrix groups by audit month': theme.includes('monthKey(x.auditMonth||x.createdAt||x.date)'),
-            'theme action dedupe uses audit month': theme.includes('monthKey(a.auditMonth||a.createdAt||a.date)'),
+            'active theme action dedupe uses stable issue identity': theme.includes("a.source==='테마Audit'&&a.workplace===line&&a.themeCategory===cat&&a.problem===problem&&activeStatuses.includes(String(a.status||''))"),
             'matrix is based on latest audit checklist': /function matrixData\(month\)\{[\s\S]*?const audits=loadChecks\(\)/.test(theme),
             'visible audit history table exists': theme.includes('themeHistoryTable'),
             'repeat audit trace is attached to active action': theme.includes('relatedAuditRecordIds') && theme.includes('lastAuditRecordId'),
