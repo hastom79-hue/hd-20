@@ -3,6 +3,8 @@ name: HD20 current IA smoke
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -44,8 +46,9 @@ jobs:
               await page.waitForFunction(()=>!!document.querySelector('.beginnerNav'),{},{timeout:10000});
               await page.waitForFunction(()=>window.HD20_NAV&&window.HD20_DASHBOARD_TABS&&document.getElementById('hd20DashboardSectionTabs'),{},{timeout:25000});
               const expected=['dashboard','activity','audit','action','advancement','master'];
+              const expectedNav=[...expected,'theme'];
               const keys=await page.locator('.beginnerNav button[data-key]').evaluateAll(xs=>xs.map(x=>x.dataset.key));
-              assert(JSON.stringify(keys)===JSON.stringify(expected),'canonical top nav mismatch: '+JSON.stringify(keys));
+              assert(JSON.stringify(keys)===JSON.stringify(expectedNav),'canonical top nav mismatch: '+JSON.stringify(keys));
               assert((await page.locator('.beginnerNav button.active').getAttribute('data-key'))==='dashboard','dashboard not initial tab');
               const groupKeys=await page.locator('#hd20DashboardSectionTabs button').evaluateAll(xs=>xs.map(x=>x.dataset.dashboardSection));
               assert(JSON.stringify(groupKeys)===JSON.stringify(['summary','improve','request','map']),'dashboard group mismatch: '+JSON.stringify(groupKeys));
