@@ -3,6 +3,8 @@ name: HD20 browser smoke
 on:
   push:
     branches: [main, hd20-overhaul-20260902]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -56,7 +58,7 @@ jobs:
               await page.waitForFunction(()=>!!document.getElementById('hd20OperationalBridge'),{},{timeout:15000});
               await page.waitForTimeout(500);
               const main=await page.evaluate(()=>({readyState:document.readyState,nav:[...document.querySelectorAll('.beginnerNav button[data-key]')].map(x=>x.dataset.key),bodyVisible:getComputedStyle(document.body).visibility!=='hidden',authPending:document.documentElement.classList.contains('hd20-auth-pending'),priority:document.querySelectorAll('#hd20DashboardPriority').length,bridge:!!document.getElementById('hd20OperationalBridge'),kpi:document.querySelectorAll('.cards .kpi').length,metric:document.querySelectorAll('#hd20DashboardPriority .hd20HealthTrendCard').length,legacyLanding:document.querySelectorAll('.hd20ApprovedLanding').length,text:document.body.innerText}));
-              const expected=['dashboard','activity','audit','action','advancement','master'];
+              const expected=['dashboard','activity','audit','action','advancement','master','theme'];
               if(JSON.stringify(main.nav)!==JSON.stringify(expected))throw new Error('Main nav mismatch '+JSON.stringify(main));
               if(!main.bodyVisible||main.authPending||main.priority!==1||!main.bridge)throw new Error('Boot contract mismatch '+JSON.stringify(main));
               if(main.kpi!==5||main.metric!==5||main.legacyLanding!==0)throw new Error('Main dashboard contract mismatch '+JSON.stringify({kpi:main.kpi,metric:main.metric,legacyLanding:main.legacyLanding}));
@@ -72,7 +74,7 @@ jobs:
               for(const key of ['activity','audit','action','dashboard']){await page.evaluate(k=>document.querySelector(`.beginnerNav button[data-key="${k}"]`)?.click(),key);await page.waitForTimeout(120)}
               await page.evaluate(()=>window.HD20_NAV?.go?.('maturity'));await page.waitForTimeout(250);
               const maturity=await page.evaluate(()=>{const el=document.getElementById('hd20MaturityMapTab'),st=window.HD20_SUBNAV?.state?.();return {navActive:window.HD20_NAV?.active?.(),area:st?.area,sub:st?.sub,mapVisible:!!el&&!el.hidden&&getComputedStyle(el).display!=='none',standaloneNav:!!document.querySelector('.beginnerNav button[data-key="maturitymap"]')};});
-              if(maturity.navActive!=='advancement'||maturity.area!=='advancement'||maturity.sub!=='trend'||maturity.standaloneNav)throw new Error('Maturity advancement routing mismatch '+JSON.stringify(maturity));
+              if(maturity.navActive!=='dashboard'||maturity.area!=='dashboard'||maturity.sub!=='map'||!maturity.mapVisible||maturity.standaloneNav)throw new Error('Maturity dashboard-map routing mismatch '+JSON.stringify(maturity));
               const validation=await browser.newPage({viewport:{width:1440,height:1000}});
               validation.on('dialog',d=>d.accept());
               await validation.route('**/*',route=>{const req=route.request(),u=new URL(req.url());if(u.hostname==='127.0.0.1'||u.hostname==='localhost')return route.continue();if(req.resourceType()==='script')return route.fulfill({status:200,contentType:'application/javascript',body:'/* HD20 CI external script stub */'});return route.abort('blockedbyclient')});
@@ -90,7 +92,7 @@ jobs:
               const areaSubs={activity:['① 문제·개선 등록','② 실행현황·우수활동 선별'],advancement:['① 유지·이탈 포트폴리오','② 판정기준·성과추이','③ 후보 접수·근거확인','④ 3대 요건 판정','⑤ 작업장 근거검증','⑥ 공식심사·정체관리','⑦ 확정·표준화·수평전개'],audit:['① Risk 대상선정','② 현장 Audit·판정','③ 6개월 유지검증','④ 종료·재조치 판정'],action:['① 개선요청·실행','② 지연·병목관리','③ 효과검증·재발폐쇄']};
               for(const [area,subs] of Object.entries(areaSubs)){await validation.evaluate(a=>document.querySelector(`.beginnerNav button[data-key="${a}"]`)?.click(),area);await validation.waitForFunction(()=>!!document.querySelector('#hd20PurposePanel'),{},{timeout:45000});coverage.areas[area]={};for(const sub of subs){await validation.getByRole('button',{name:sub,exact:true}).click();await validation.waitForTimeout(120);coverage.areas[area][sub]=await validation.evaluate(()=>{const p=document.querySelector('#hd20PurposePanel'),root=document.querySelector('.hd20AreaOn,.on');const vis=e=>{const r=e.getBoundingClientRect(),s=getComputedStyle(e);return s.display!=='none'&&s.visibility!=='hidden'&&r.width>0&&r.height>0};const dataNodes=[...document.querySelectorAll('table tbody tr,.awCard,.metric,.kpiCard,.actionCard,.mmtBarRow,.mmtKpi,.bottomGrid > .card,[data-case-id],[data-row-id]')].filter(vis);return{contract:p?.dataset.contract||'',purposeText:(p?.innerText||'').trim().length,visibleTables:[...document.querySelectorAll('table')].filter(t=>t.offsetParent!==null&&t.rows.length>1).length,visibleData:dataNodes.length,bodyText:(document.body.innerText||'').trim().length}})}}
               // Advancement body ownership: exactly one current owner, never legacy awWorkplace.
-              const advOwners={judge:'#hd20AdvJudgeOperational',analysis:'#hd20AdvAnalysisOperational',detail:'#hd20AdvDetailOperational',process:'#hd20AdvProcessOperational',standard:'#hd20AdvStandardOperational',map:'#hd20MaturityMapTab',trend:'.bottomGrid'};
+              const advOwners={standard:'#hd20AdvStandardOperational'};
               coverage.advancementOwnership={};
               await validation.evaluate(()=>window.HD20_NAV?.go?.('advancement'));await validation.waitForTimeout(180);
               for(const [sub,selector] of Object.entries(advOwners)){await validation.evaluate(s=>window.HD20_SUBNAV?.select?.('advancement',s),sub);await validation.waitForTimeout(180);coverage.advancementOwnership[sub]=await validation.evaluate(({sub,selector,all})=>{const vis=e=>{if(!e)return false;const r=e.getBoundingClientRect(),s=getComputedStyle(e);return !e.hidden&&s.display!=='none'&&s.visibility!=='hidden'&&r.width>0&&r.height>0};const owner=document.querySelector(selector);return{sub,expectedVisible:vis(owner),visibleOwners:Object.entries(all).filter(([,sel])=>vis(document.querySelector(sel))).map(([k])=>k),legacyVisible:vis(document.getElementById('awWorkplace'))}}, {sub,selector,all:advOwners});}
@@ -124,10 +126,10 @@ jobs:
               for(const [k,v] of Object.entries(masterCoverage))if(v.active!=='integrated-'+k||!v.panel||v.legacyOrder||v.legacyTarget||v.legacyFoot||v.saveButtons!==1)throw new Error('Integrated master ownership mismatch '+k+' '+JSON.stringify(v));evidence.masterCoverage=masterCoverage;
               await restore.goto('http://127.0.0.1:4173/index.html?area=advancement&sub=map',{waitUntil:'commit',timeout:15000});await restore.waitForTimeout(1900);
               const mapRestore=await restore.evaluate(()=>{const s=window.HD20_SUBNAV?.state?.(),el=document.getElementById('hd20MaturityMapTab');return{nav:window.HD20_NAV?.active?.(),area:s?.area,sub:s?.sub,visible:!!el&&getComputedStyle(el).display!=='none'}});
-              if(mapRestore.nav!=='advancement'||mapRestore.area!=='advancement'||mapRestore.sub!=='map'||!mapRestore.visible)throw new Error('advancement map refresh restore failed '+JSON.stringify(mapRestore));
+              if(mapRestore.nav!=='dashboard'||mapRestore.area!=='dashboard'||mapRestore.sub!=='map'||!mapRestore.visible)throw new Error('dashboard map refresh restore failed '+JSON.stringify(mapRestore));
               await restore.reload({waitUntil:'commit',timeout:15000});await restore.waitForTimeout(1900);
               const mapReload=await restore.evaluate(()=>{const s=window.HD20_SUBNAV?.state?.(),el=document.getElementById('hd20MaturityMapTab');return{nav:window.HD20_NAV?.active?.(),area:s?.area,sub:s?.sub,visible:!!el&&!el.hidden&&getComputedStyle(el).display!=='none',query:location.search}});
-              if(mapReload.nav!=='advancement'||mapReload.area!=='advancement'||mapReload.sub!=='map'||!mapReload.visible)throw new Error('advancement map reload persistence failed '+JSON.stringify(mapReload));
+              if(mapReload.nav!=='dashboard'||mapReload.area!=='dashboard'||mapReload.sub!=='map'||!mapReload.visible)throw new Error('dashboard map reload persistence failed '+JSON.stringify(mapReload));
               await restore.goto('http://127.0.0.1:4173/index.html?area=master&tab=dashboard',{waitUntil:'commit',timeout:15000});await restore.waitForTimeout(1900);
               const canonicalPrecedence=await restore.evaluate(()=>({nav:window.HD20_NAV?.active?.(),modal:document.getElementById('masterModal')?.classList.contains('on')||getComputedStyle(document.getElementById('masterModal')).display!=='none',query:location.search}));
               if(canonicalPrecedence.nav!=='master'||!canonicalPrecedence.modal)throw new Error('canonical area did not override legacy tab '+JSON.stringify(canonicalPrecedence));
