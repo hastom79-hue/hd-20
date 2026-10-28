@@ -101,18 +101,13 @@ jobs:
           grep -q 'window.HD20KPIData' dashboard-kpi-source.js
           grep -q 'function renderTrend' dashboard-actions.js
 
-      - name: Verify demo seed is safe and isolated
+      - name: Verify demo seed is retired and isolated
+        shell: bash
         run: |
           set -euo pipefail
-          test -s demo-seed-data.js
-          grep -q "isDemo:true" demo-seed-data.js
-          grep -q "source:'demo-seed'" demo-seed-data.js
-          grep -q 'emptyArray(ACT)' demo-seed-data.js
-          grep -q 'emptyArray(AUD)' demo-seed-data.js
-          grep -q 'emptyArray(ACTION)' demo-seed-data.js
-          grep -q "if(!localStorage.getItem(HEAD))" demo-seed-data.js
-          ! grep -R --include='*.js' --exclude='demo-seed-data.js' --exclude='web-validation-fixture.js' --exclude='hd20-subtabs.js' --exclude-dir='tests' --exclude-dir='.git' -n "source:'demo-seed'\|HD20_DEMO_ACTIONS\|HD20_ACTION_DEMO_SEED_DISABLED" .
-          ! grep -R --include='*.js' --include='*.html' --exclude='web-validation-fixture.js' --exclude-dir='tests' --exclude-dir='.git' -n 'example\.com\|홍길동\|김현대' .
+          ! test -e demo-seed-data.js
+          ! grep -R --include='*.js' --exclude='web-validation-fixture.js' --exclude='hd20-subtabs.js' --exclude-dir='tests' --exclude-dir='.git' -n "source:'demo-seed'\\|HD20_DEMO_ACTIONS\\|HD20_ACTION_DEMO_SEED_DISABLED" .
+          ! grep -R --include='*.js' --include='*.html' --exclude='web-validation-fixture.js' --exclude-dir='tests' --exclude-dir='.git' -n 'example\\.com\\|홍길동\\|김현대' .
 
       - name: Verify validation fixture is explicit opt-in only
         run: |
