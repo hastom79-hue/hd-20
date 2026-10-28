@@ -3,6 +3,12 @@ name: HD20 runtime smoke
 on:
   push:
     branches: [main, hd20-overhaul-20260902]
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/runtime-smoke.yml'
+      - 'hd20-subtabs.js'
+      - 'index.html'
   workflow_dispatch:
 
 permissions:
