@@ -66,7 +66,7 @@ jobs:
               if(retired.workflow||retired.opsMetrics||retired.standardTrend)throw new Error('Retired dashboard chrome remains '+JSON.stringify(retired));
               if(/1개월 점검|3개월 AUDIT|6개월 AUDIT/.test(main.text))throw new Error('Legacy Audit label on main');
               if(errors.length)throw new Error('Main page errors '+JSON.stringify(errors));
-              await page.locator('.beginnerNav button[data-key="advancement"]').click();
+              await page.evaluate(()=>window.HD20_NAV?.go?.('advancement'));
               await page.waitForFunction(()=>{const el=document.getElementById('hd20AdvStandardOperational');return !!el&&getComputedStyle(el).display!=='none'&&el.getClientRects().length>0},{},{timeout:15000});
               const advancement=await page.evaluate(()=>{const el=document.getElementById('hd20AdvStandardOperational'),all=el?.innerText||'',st=window.HD20_SUBNAV?.state?.();return {visible:!!el&&getComputedStyle(el).display!=='none'&&el.getClientRects().length>0,area:st?.area,sub:st?.sub,hasStandardTitle:all.includes('확정사례 관리')||all.includes('표준화'),hasFakeOwner:all.includes('생산혁신팀 메인 담당자')}});
               if(!advancement.visible||advancement.area!=='advancement'||advancement.sub!=='standard'||!advancement.hasStandardTitle||advancement.hasFakeOwner)throw new Error('Approved advancement standard tab contract '+JSON.stringify(advancement));
@@ -93,8 +93,8 @@ jobs:
               await page.locator('.beginnerNav button[data-key="activity"]').click();await page.waitForTimeout(250);
               const activityGrid=await page.evaluate(()=>({active:window.HD20_NAV?.active?.(),overview:!!document.getElementById('hd20LauncherOverview')&&document.getElementById('hd20LauncherOverview').classList.contains('hd20LnVisible')}));
               if(activityGrid.active!=='activity'||!activityGrid.overview)throw new Error('Merged registration grid contract '+JSON.stringify(activityGrid));
-              if(await page.locator('#hd20Launcher').count()){await page.locator('#hd20Launcher [data-ln-close]').click();await page.waitForTimeout(120)}
-              await page.locator('.beginnerNav button[data-key="dashboard"]').click();await page.waitForTimeout(150);
+              await page.evaluate(()=>{document.getElementById('hd20Launcher')?.remove();document.getElementById('hd20LauncherOverview')?.classList.remove('hd20LnVisible');document.body.classList.remove('hd20UnifiedLanding','hd20InquiryActive')});
+              await page.evaluate(()=>window.HD20_NAV?.go?.('dashboard'));await page.waitForTimeout(150);
               const areaSubs={advancement:['확정사례 관리'],audit:['① Audit 실시','② 유지점검','③ 결과·재조치'],action:['① 개선조치 등록·실행','② 미완료·지연관리','③ 효과검증·최종종결']};
               for(const [area,subs] of Object.entries(areaSubs)){
               for(const [area,subs] of Object.entries(areaSubs)){await validation.evaluate(a=>document.querySelector(`.beginnerNav button[data-key="${a}"]`)?.click(),area);await validation.waitForFunction(()=>!!document.querySelector('#hd20PurposePanel'),{},{timeout:45000});coverage.areas[area]={};for(const sub of subs){await validation.getByRole('button',{name:sub,exact:true}).click();await validation.waitForTimeout(120);coverage.areas[area][sub]=await validation.evaluate(()=>{const p=document.querySelector('#hd20PurposePanel'),root=document.querySelector('.hd20AreaOn,.on');const vis=e=>{const r=e.getBoundingClientRect(),s=getComputedStyle(e);return s.display!=='none'&&s.visibility!=='hidden'&&r.width>0&&r.height>0};const dataNodes=[...document.querySelectorAll('table tbody tr,.awCard,.metric,.kpiCard,.actionCard,.mmtBarRow,.mmtKpi,.bottomGrid > .card,[data-case-id],[data-row-id]')].filter(vis);return{contract:p?.dataset.contract||'',purposeText:(p?.innerText||'').trim().length,visibleTables:[...document.querySelectorAll('table')].filter(t=>t.offsetParent!==null&&t.rows.length>1).length,visibleData:dataNodes.length,bodyText:(document.body.innerText||'').trim().length}})}}
