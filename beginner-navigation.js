@@ -147,7 +147,7 @@ function init(){if(initialized)return;const nav=document.querySelector('.beginne
   const AREAS=['dashboard','activity','audit','action','advancement','master'];
   if(area&&AREAS.includes(area)){
     if(sub&&area!=='master')window.__HD20_RESTORE_SUB=sub;
-    if(area==='dashboard')goDashboard(nav,section||((sub==='map')?'map':''));else go(area,nav,{preserveSub:!!sub&&area!=='master'});
+    if(area==='dashboard')goDashboard(nav,section||((sub==='map')?'map':''));else if(area==='advancement'&&sub==='map')goDashboard(nav,'map');else go(area,nav,{preserveSub:!!sub&&area!=='master'});
     /* 안전망: 다른 스크립트들이 각자 타이밍에 기본값(요약/종합현황)으로 되돌리는 경합이 있어, 페이지가
        완전히 안정된 뒤(1.6초) URL을 다시 확인해 최종적으로 한 번 더 강제 적용 — 그 사이 값이 바뀌지
        않았다면(사용자가 이미 다른 곳으로 이동한 게 아니라면) 그대로 재적용 */
@@ -163,10 +163,10 @@ function init(){if(initialized)return;const nav=document.querySelector('.beginne
     },1600);
     return;
   }
-  if(['maturitymap','map','maturity'].includes(raw)){window.__HD20_RESTORE_SUB='map';go('advancement',nav);return}
+  if(['maturitymap','map','maturity'].includes(raw)){goDashboard(nav,'map');return}
   const legacyArea=normalizeDeepLink(raw);
   if(raw&&AREAS.includes(legacyArea)){if(sub&&legacyArea!=='master')window.__HD20_RESTORE_SUB=sub;if(legacyArea==='dashboard')goDashboard(nav,section||'');else go(legacyArea,nav,{preserveSub:!!sub&&legacyArea!=='master'});return}
   go('dashboard',nav)}
-window.HD20_NAV={go:key=>{const nav=document.querySelector('.beginnerNav');if(!nav)return;const k=normalizeDeepLink(key);if(['maturitymap','map','maturity'].includes(k)){window.__HD20_RESTORE_SUB='map';go('advancement',nav);setTimeout(()=>window.HD20_SUBNAV?.select?.('advancement','map'),0);return}go(k,nav)},active:()=>activeKey,areas:['dashboard','activity','audit','action','advancement','master'],ready:()=>initialized};
+window.HD20_NAV={go:key=>{const nav=document.querySelector('.beginnerNav');if(!nav)return;const k=normalizeDeepLink(key);if(['maturitymap','map','maturity'].includes(k)){goDashboard(nav,'map');return}go(k,nav)},active:()=>activeKey,areas:['dashboard','activity','audit','action','advancement','master'],ready:()=>initialized};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else setTimeout(init,0);
 })();
