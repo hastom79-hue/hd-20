@@ -1854,3 +1854,14 @@ Canonical Store는 다음을 기준으로 한다.
 - 원인: 현재 승인된 `hd20-subtabs.js`는 고도화·표준화 하위 탭을 `확정사례 관리` 1개로 구성하고 즉시 판정 탭을 제거했으나, 기존 CI가 폐기된 3개 탭/판정 UI를 계속 기대함.
 - 조치: 회귀검증을 승인된 단일 탭 노출 및 폐기된 judge 탭 미노출 확인으로 변경하고, pull_request에서도 실행하도록 조정. 상세 3대 요건 필터는 별도 `maturity-strict-counts.yml`에서 검증.
 - 검증 상태: 업데이트한 브라우저 회귀검증 실행 결과 확인 필요.
+
+
+## 2026-10-28 후속 수정 — 공식 확정 상세 집계 일치 및 테마점검 이력 보존
+- 고도화 팀별 상세(maturity-team-case-drilldown.js)가 맵 공식 집계보다 느슨한 조건을 사용하던 불일치를 수정.
+- 상세 목록도 공식 판정 상태 '확정' + finalAdopted 또는 advancementAdopted 명시 + 3대 요건 데이터 명시 및 충족수 3개 조건을 모두 통과한 사례만 표시.
+- 테마점검(theme-inspection.js)의 기존 저장 방식은 동일 라인·월의 재점검 시 기존 기록을 덮어써 이력을 잃을 수 있었음. 새 점검마다 이력 레코드를 추가하고, 화면 체크리스트는 해당 라인·월의 최신 기록을 불러오도록 변경.
+- 월별 KPI는 재점검 이력 수를 실시 라인 수로 중복 계산하지 않도록 라인별 최신 점검 1건 기준으로 집계. 과거 점검 이력은 유지.
+- index.html 캐시 키 갱신: maturity-team-case-drilldown.js?v=20261028-strict-3criteria-2, theme-inspection.js?v=20261028-history-preserve-v4.
+- 브랜치: fix/strict-official-maturity-case-counts-20261028. 정적 조건 확인 완료. 실제 브라우저/Pages 및 기존 저장 데이터에 대한 회귀 검증 전까지 병합·운영 배포 완료로 간주하지 않음.
+
+- 추가 점검: 선택한 조회 월이 현재 월과 다를 때 개선조치가 실제 등록 월 기준으로만 묶여 과거 월 재점검에서 중복 방지·매트릭스 집계가 어긋날 수 있는 점을 보완. 테마 Audit 개선조치에 auditMonth를 기록하고 월 옵션·매트릭스·자동등록 KPI·중복 방지가 auditMonth 우선으로 동작하도록 수정. 기존 데이터는 auditMonth가 없으면 createdAt/date로 폴백.

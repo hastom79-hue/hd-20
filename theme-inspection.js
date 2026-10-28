@@ -103,23 +103,26 @@ function css(){if(document.getElementById('hd20ThemeStyle'))return;const s=docum
  `;document.head.appendChild(s);
 }
 function monthOptions(){
- const rows=load(),set=new Set(rows.filter(x=>x.source==='테마Audit').map(x=>monthKey(x.createdAt||x.date)).filter(Boolean));
+ const rows=load(),set=new Set(rows.filter(x=>x.source==='테마Audit').map(x=>monthKey(x.auditMonth||x.createdAt||x.date)).filter(Boolean));
  set.add(thisMonth());
  return[...set].sort().reverse();
 }
 function matrixData(month){
- const rows=load().filter(x=>x.source==='테마Audit'&&monthKey(x.createdAt||x.date)===month);
+ const rows=load().filter(x=>x.source==='테마Audit'&&monthKey(x.auditMonth||x.createdAt||x.date)===month);
  const grid=LINES.map(ln=>THEMES.map(th=>rows.filter(x=>x.workplace===ln&&x.themeCategory===th)));
  return{grid,rows};
 }
 function cellColor(n){if(n<=0)return'#ffffff';if(n===1)return'#fff3d6';if(n===2)return'#ffe2a8';if(n<=4)return'#ffc877';return'#ff9d52'}
 function kpis(month){
- const checks=loadChecks().filter(x=>x.month===month);
+ const allChecks=loadChecks().filter(x=>x.month===month);
+ const latestByLine=new Map();
+ allChecks.forEach(rec=>{const prev=latestByLine.get(rec.line);if(!prev||String(rec.auditedAt||'').localeCompare(String(prev.auditedAt||''))>=0)latestByLine.set(rec.line,rec)});
+ const checks=[...latestByLine.values()];
  const linesAudited=checks.length;
  let ok=0,ng=0;
  checks.forEach(c=>Object.values(c.states||{}).forEach(v=>{if(v==='적합')ok++;else if(v==='미흡')ng++}));
  const total=ok+ng;
- const autoRegistered=load().filter(x=>x.source==='테마Audit'&&monthKey(x.createdAt||x.date)===month).length;
+ const autoRegistered=load().filter(x=>x.source==='테마Audit'&&monthKey(x.auditMonth||x.createdAt||x.date)===month).length;
  const okRate=total?Math.round(ok/total*100):null;
  return{linesAudited,ng,autoRegistered,okRate};
 }
@@ -194,8 +197,8 @@ function refreshMatrixSelection(){
  });
 }
 function checklistState(line){
- const all=loadChecks();
- const rec=all.find(x=>x.line===line&&x.month===document.getElementById('awTheme').dataset.month)||{};
+ const month=document.getElementById('awTheme').dataset.month;
+ const rec=loadChecks().filter(x=>x.line===line&&x.month===month).sort((a,b)=>String(b.auditedAt||'').localeCompare(String(a.auditedAt||'')))[0]||{};
  return rec.states||{};
 }
 function renderChecklist(){
@@ -253,22 +256,23 @@ function saveAudit(){
  const states={};
  rows.forEach(row=>{const active=row.querySelector('button.active');if(active)states[row.dataset.key]=active.dataset.v});
  const checks=loadChecks();
- const idx=checks.findIndex(x=>x.line===line&&x.month===month);
- const rec={line,month,states,auditedAt:new Date().toISOString()};
- if(idx>=0)checks[idx]=rec;else checks.push(rec);
+ /* Audit는 line/month별 단일 슬롯이 아니라 이력이다. 재점검 시 기존 기록을 덮어쓰지 않고 새 기록으로 추가한다. */
+ const rec={id:'THEME-AUDIT-'+Date.now()+'-'+checks.length,line,team,month,states,auditedAt:new Date().toISOString()};
+ checks.push(rec);
  saveChecks(checks);
  const ngItems=rows.filter(row=>states[row.dataset.key]==='미흡');
  const actions=load();
  let created=0;
  ngItems.forEach(row=>{
    const cat=row.dataset.cat,item=row.dataset.item;
-   const dup=actions.find(a=>a.source==='테마Audit'&&a.workplace===line&&a.themeCategory===cat&&a.problem===item&&monthKey(a.createdAt)===month);
+   const dup=actions.find(a=>a.source==='테마Audit'&&a.workplace===line&&a.themeCategory===cat&&a.problem===item&&monthKey(a.auditMonth||a.createdAt||a.date)===month);
    if(dup)return;
    const createdAt=today();
    actions.unshift({
      id:'THEME-'+Date.now()+'-'+(created++),
      source:'테마Audit',
      team,
+     auditMonth:month,
      workplace:line,
      themeCategory:cat,
      type:cat,
