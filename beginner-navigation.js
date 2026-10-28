@@ -1,5 +1,5 @@
 (()=>{'use strict';
-const NAV_HTML=`<button class="active" data-key="dashboard"><span class="navTop"><span class="navNumber">01</span><span class="navLabel">대시보드</span></span></button><button data-key="activity"><span class="navTop"><span class="navNumber">02</span><span class="navLabel">자율개선등록 / 개선조치등록</span></span></button><button data-key="audit"><span class="navTop"><span class="navNumber">03</span><span class="navLabel">Audit·유지점검</span></span></button><button data-key="action"><span class="navTop"><span class="navNumber">04</span><span class="navLabel">개선조치·완료관리</span></span></button><button data-key="advancement"><span class="navTop"><span class="navNumber">05</span><span class="navLabel">고도화·표준화</span></span></button><button data-key="master"><span class="navTop"><span class="navNumber">06</span><span class="navLabel">통합기준정보</span></span></button><button data-key="theme"><span class="navTop"><span class="navNumber">07</span><span class="navLabel">테마 점검</span></span></button>`;
+const NAV_HTML=`<button class="active" data-key="dashboard"><span class="navTop"><span class="navNumber">01</span><span class="navLabel">대시보드</span></span></button><button data-key="activity"><span class="navTop"><span class="navNumber">02</span><span class="navLabel">자율개선등록 / 개선조치등록</span></span></button><button data-key="audit"><span class="navTop"><span class="navNumber">03</span><span class="navLabel">Audit·유지점검</span></span></button><button data-key="theme"><span class="navTop"><span class="navNumber">04</span><span class="navLabel">테마 점검</span></span></button><button data-key="action"><span class="navTop"><span class="navNumber">05</span><span class="navLabel">개선조치·완료관리</span></span></button><button data-key="advancement"><span class="navTop"><span class="navNumber">06</span><span class="navLabel">고도화·표준화</span></span></button><button data-key="master"><span class="navTop"><span class="navNumber">07</span><span class="navLabel">통합기준정보</span></span></button>`;
 const SCREEN_BY_KEY={activity:'awActivity',audit:'awAudit',action:'awAction',master:'masterModal',theme:'awTheme'};
 let activeKey='dashboard',initialized=false,navGeneration=0;
 function allScreens(){return [...document.querySelectorAll('.awScreen')];}
@@ -144,7 +144,7 @@ function init(){if(initialized)return;const nav=document.querySelector('.beginne
   const q=new URLSearchParams(location.search),raw=q.get('tab'),area=q.get('area'),section=q.get('section'),sub=q.get('sub');
   /* canonical area/sub가 있으면 legacy tab보다 우선한다. restore sub는 go() 전에 예약해
      subnav 초기화 race에서 기본 첫 탭으로 되돌아가는 것을 막는다. */
-  const AREAS=['dashboard','activity','audit','action','advancement','master'];
+  const AREAS=['dashboard','activity','audit','theme','action','advancement','master'];
   if(area&&AREAS.includes(area)){
     if(sub&&area!=='master')window.__HD20_RESTORE_SUB=sub;
     if(area==='dashboard')goDashboard(nav,section||((sub==='map')?'map':''));else go(area,nav,{preserveSub:!!sub&&area!=='master'});
@@ -167,6 +167,6 @@ function init(){if(initialized)return;const nav=document.querySelector('.beginne
   const legacyArea=normalizeDeepLink(raw);
   if(raw&&AREAS.includes(legacyArea)){if(sub&&legacyArea!=='master')window.__HD20_RESTORE_SUB=sub;if(legacyArea==='dashboard')goDashboard(nav,section||'');else go(legacyArea,nav,{preserveSub:!!sub&&legacyArea!=='master'});return}
   go('dashboard',nav)}
-window.HD20_NAV={go:key=>{const nav=document.querySelector('.beginnerNav');if(!nav)return;const k=normalizeDeepLink(key);if(['maturitymap','map','maturity'].includes(k)){window.__HD20_RESTORE_SUB='map';go('advancement',nav);setTimeout(()=>window.HD20_SUBNAV?.select?.('advancement','map'),0);return}go(k,nav)},active:()=>activeKey,areas:['dashboard','activity','audit','action','advancement','master'],ready:()=>initialized};
+window.HD20_NAV={go:key=>{const nav=document.querySelector('.beginnerNav');if(!nav)return;const k=normalizeDeepLink(key);if(['maturitymap','map','maturity'].includes(k)){window.__HD20_RESTORE_SUB='map';go('advancement',nav);setTimeout(()=>window.HD20_SUBNAV?.select?.('advancement','map'),0);return}go(k,nav)},active:()=>activeKey,areas:['dashboard','activity','audit','theme','action','advancement','master'],ready:()=>initialized};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else setTimeout(init,0);
 })();
