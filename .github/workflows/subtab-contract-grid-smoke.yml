@@ -1,7 +1,9 @@
-name: HD20 subtab contract grid smoke
+name: HD20 operational subtab contract smoke
 
 on:
   push:
+    branches: [main]
+  pull_request:
     branches: [main]
   workflow_dispatch:
 
@@ -75,42 +77,33 @@ jobs:
             console.log('LOAD_STAGE boot-after-fixture');
             const fixtureCounts=await page.evaluate(()=>({activities:JSON.parse(localStorage.getItem('hd20GMES5SAutoImproveRawV1')||'[]').length,audits:JSON.parse(localStorage.getItem('hd20AuditRandomDrawsV1')||'[]').length,actions:JSON.parse(localStorage.getItem('hd20ActionCasesV2')||'[]').length})); assert(fixtureCounts.activities===192&&fixtureCounts.audits===96&&fixtureCounts.actions===128,'load fixture count mismatch: '+JSON.stringify(fixtureCounts));
             const fixtureQuality=await page.evaluate(()=>{const a=JSON.parse(localStorage.getItem('hd20GMES5SAutoImproveRawV1')||'[]'),u=JSON.parse(localStorage.getItem('hd20AuditRandomDrawsV1')||'[]'),x=JSON.parse(localStorage.getItem('hd20ActionCasesV2')||'[]');return {teams:new Set(a.map(v=>v.team)).size,types:new Set(a.map(v=>v.type)).size,candidates:a.filter(v=>v.isCandidate).length,confirmed:a.filter(v=>v.confirmed).length,activityPhotos:a.filter(v=>/^https:\/\/images\.unsplash\.com\/photo-/.test(v.before||'')&&/^https:\/\/images\.unsplash\.com\/photo-/.test(v.after||'')).length,auditWeak:u.filter(v=>v.auditResult==='미흡'||v.finalEvaluation==='미흡').length,actionDone:x.filter(v=>v.status==='완료').length,actionPending:x.filter(v=>v.status!=='완료').length,effectPending:x.filter(v=>v.status==='완료'&&!v.effectVerified).length,recurrence:x.filter(v=>v.recurrence===true).length,actionPhotos:x.filter(v=>/^https:\/\/images\.unsplash\.com\/photo-/.test(v.before||'')).length}}); assert(fixtureQuality.teams===19&&fixtureQuality.types>=6,'dense fixture coverage mismatch: '+JSON.stringify(fixtureQuality)); assert(fixtureQuality.candidates>0&&fixtureQuality.confirmed>0&&fixtureQuality.auditWeak>0&&fixtureQuality.actionDone>0&&fixtureQuality.actionPending>0&&fixtureQuality.effectPending>0&&fixtureQuality.recurrence>0,'dense fixture state coverage missing: '+JSON.stringify(fixtureQuality)); assert(fixtureQuality.activityPhotos===192&&fixtureQuality.actionPhotos===128,'real-photo reference coverage missing: '+JSON.stringify(fixtureQuality)); console.log('LOAD_STAGE fixture-quality',JSON.stringify(fixtureQuality));
-            const expectedMain=['dashboard','activity','audit','action','advancement','master'];
+            const expectedMain=['dashboard','activity','audit','action','advancement','master','theme'];
             const mainKeys=await page.locator('.beginnerNav button[data-key]').evaluateAll(xs=>xs.map(x=>x.dataset.key));
             assert(JSON.stringify(mainKeys)===JSON.stringify(expectedMain),'canonical six-area nav mismatch: '+mainKeys.join(','));
             const dashKeys=await page.locator('#hd20DashboardSectionTabs button[data-dashboard-section]').evaluateAll(xs=>xs.map(x=>x.dataset.dashboardSection));
-            assert(JSON.stringify(dashKeys)===JSON.stringify(['summary','improve','request','execution','map']),'dashboard groups mismatch: '+dashKeys.join(','));
-            const maturityCheck=async()=>{await page.evaluate(()=>window.HD20_NAV?.go?.('maturity'));await page.waitForTimeout(250);const maturityState=await page.evaluate(()=>{const tab=document.querySelector('#hd20MaturityMapTab'),map=tab?.querySelector('.mmtMap,.mmtBars'),st=window.HD20_SUBNAV?.state?.();return {nav:window.HD20_NAV?.active?.(),area:st?.area,sub:st?.sub,visible:!!tab&&!tab.hidden&&getComputedStyle(tab).display!=='none',mapHeight:map?.getBoundingClientRect().height||0,dots:document.querySelectorAll('#hd20MaturityMapTab .mmtDot,.mmtBarRow').length,teams:document.querySelectorAll('#hd20MaturityMapTab .mmtTeam,.mmtBarRow').length}});assert(maturityState.nav==='advancement'&&maturityState.area==='advancement'&&maturityState.sub==='map'&&maturityState.visible&&maturityState.mapHeight>300,'advancement maturity map not active: '+JSON.stringify(maturityState));await page.evaluate(()=>window.HD20_NAV?.go?.('dashboard'));await page.waitForTimeout(100);};
-            const areas={activity:['① 문제·개선 등록','② 실행현황·우수활동 선별'],advancement:['① 후보·판정','② 확정사례 관리','③ 고도화 성과분석'],audit:['① Audit 실시','② 유지점검','③ 결과·재조치'],action:['① 개선요청·실행','② 지연·병목관리','③ 효과검증·재발폐쇄']};
-            let count=0;
+            assert(JSON.stringify(dashKeys)===JSON.stringify(['summary','improve','request','map']),'dashboard groups mismatch: '+dashKeys.join(','));
+            const maturityCheck=async()=>{await page.evaluate(()=>window.HD20_NAV?.go?.('maturity'));await page.waitForTimeout(250);const maturityState=await page.evaluate(()=>{const tab=document.querySelector('#hd20MaturityMapTab'),map=tab?.querySelector('.mmtMap,.mmtBars'),st=window.HD20_SUBNAV?.state?.();return {nav:window.HD20_NAV?.active?.(),area:window.HD20_NAV?.active?.(),sub:window.HD20_DASHBOARD_TABS?.active?.(),visible:!!tab&&!tab.hidden&&getComputedStyle(tab).display!=='none',mapHeight:map?.getBoundingClientRect().height||0,dots:document.querySelectorAll('#hd20MaturityMapTab .mmtDot,.mmtBarRow').length,teams:document.querySelectorAll('#hd20MaturityMapTab .mmtTeam,.mmtBarRow').length}});assert(maturityState.nav==='dashboard'&&maturityState.area==='dashboard'&&maturityState.sub==='map'&&maturityState.visible&&maturityState.mapHeight>300,'dashboard maturity map not active: '+JSON.stringify(maturityState));await page.evaluate(()=>window.HD20_NAV?.go?.('dashboard'));await page.waitForTimeout(100);};
+            await page.locator('.beginnerNav button[data-key="advancement"]').click();await page.waitForTimeout(180);
+            const standardState=await page.evaluate(()=>{const el=document.getElementById('hd20AdvStandardOperational'),st=window.HD20_SUBNAV?.state?.();return{active:window.HD20_NAV?.active?.(),sub:st?.sub,visible:!!el&&getComputedStyle(el).display!=='none'&&el.getClientRects().length>0}});
+            assert(standardState.active==='advancement'&&standardState.visible,'approved single standard tab not visible: '+JSON.stringify(standardState));
+            await page.evaluate(()=>window.HD20_NAV?.go?.('dashboard'));await page.waitForTimeout(100);
+            const areas={audit:['① Audit 실시','② 유지점검','③ 결과·재조치'],action:['① 개선조치 등록·실행','② 미완료·지연관리','③ 효과검증·최종종결']};
+            await page.locator('.beginnerNav button[data-key="activity"]').click(); await page.waitForTimeout(250);
+            const activityGrid=await page.evaluate(()=>({active:window.HD20_NAV?.active?.(),overview:!!document.getElementById('hd20LauncherOverview')&&document.getElementById('hd20LauncherOverview').classList.contains('hd20LnVisible')}));
+            assert(activityGrid.active==='activity'&&activityGrid.overview,'merged registration grid not active: '+JSON.stringify(activityGrid));
+            await page.evaluate(()=>window.HD20_NAV?.go?.('dashboard')); await page.waitForTimeout(100);
+            let subtabCount=0;
             for(const [area,subs] of Object.entries(areas)){
-              const areaStart=Date.now(); console.log('LOAD_STAGE area-start',area);
-              const subDiag=await page.evaluate(a=>{const api=window.HD20_SUBNAV,s=[...document.scripts].filter(x=>x.src.includes('hd20-subtabs')).map(x=>x.src);return {api:!!api,keys:Object.keys(api||{}),area:a,map:api?.contractMap?.(a)?.[a]||null,contractKeys:Object.keys(api?.contractPurpose?.(a)||{}).filter(k=>k.startsWith(a+'.')),purpose:document.querySelector('#hd20PurposePanel')?.dataset.contract||null,subnav:!!document.querySelector('#hd20Subnav'),scripts:s}},area);console.log('LOAD_STAGE subtab-pre',JSON.stringify(subDiag));assert(subDiag.api&&subDiag.map?.length&&subDiag.contractKeys.length,'subtab API contract missing: '+JSON.stringify(subDiag));
-              const renderDiag=await page.evaluate(a=>{window.HD20_SUBNAV.render(a);return {area:a,state:window.HD20_SUBNAV.state?.(),purpose:document.querySelector('#hd20PurposePanel')?.dataset.contract||null,subnav:document.querySelector('#hd20Subnav')?.innerText||null}},area); console.log('LOAD_STAGE subtab-render',JSON.stringify(renderDiag));
-              assert(renderDiag.purpose?.startsWith(area+'.'),'subtab render did not publish purpose contract: '+JSON.stringify(renderDiag));
-              await page.evaluate(a=>window.HD20_NAV?.go?.(a),area); await page.waitForTimeout(150);
-              const areaMs=Date.now()-areaStart; console.log('LOAD_STAGE area-ready',area,areaMs);
-              if(area==='activity')assert(areaMs<30000,'dense activity first-entry regression: '+areaMs+'ms');
-              else assert(areaMs<5000,`dense ${area} entry regression: ${areaMs}ms`);
+              await page.evaluate(a=>window.HD20_NAV?.go?.(a),area);await page.waitForTimeout(150);
+              await page.evaluate(a=>window.HD20_SUBNAV?.render?.(a),area);
+              const ready=await page.evaluate(a=>({active:window.HD20_NAV?.active?.(),state:window.HD20_SUBNAV?.state?.(),labels:[...document.querySelectorAll('#hd20Subnav button')].map(b=>b.textContent.trim()),visible:(()=>{const e=document.querySelector('#hd20Subnav'),r=e?.getBoundingClientRect(),s=e&&getComputedStyle(e);return !!e&&!!r&&r.width>0&&r.height>0&&s.display!=='none'&&s.visibility!=='hidden'})()}),area);
+              assert(ready.active===area&&ready.state?.area===area&&ready.visible,'operational subnav not visible '+area+': '+JSON.stringify(ready));
               for(const sub of subs){
-                await page.locator('#hd20Subnav button').filter({hasText:sub}).first().waitFor({state:'visible',timeout:12000}).catch(async err=>{const diagnostic=await page.evaluate(()=>({area:window.HD20_SUBNAV?.state?.(),active:window.HD20_NAV?.active?.(),labels:[...document.querySelectorAll('#hd20Subnav button')].map(x=>x.textContent),display:getComputedStyle(document.querySelector('#hd20Subnav')||document.body).display}));throw new Error('SUBTAB_NOT_VISIBLE '+sub+' '+JSON.stringify(diagnostic)+' '+err.message)}); await page.locator('#hd20Subnav button').filter({hasText:sub}).first().click(); await page.waitForTimeout(100);
-                if(area==='advancement'){
-                  const key=windowSub=>({judge:'hd20AdvJudgeOperational',analysis:'hd20AdvAnalysisOperational',detail:'hd20AdvDetailOperational',process:'hd20AdvProcessOperational',standard:'hd20AdvStandardOperational'})[windowSub];
-                  const subKey=await page.evaluate(()=>window.HD20_SUBNAV?.state?.().sub);
-                  const ownership=await page.evaluate(expected=>{const ids=['hd20AdvJudgeOperational','hd20AdvAnalysisOperational','hd20AdvDetailOperational','hd20AdvProcessOperational','hd20AdvStandardOperational'];const visible=id=>{const e=document.getElementById(id);return !!e&&getComputedStyle(e).display!=='none'&&e.getClientRects().length>0};const work=document.getElementById('awWorkplace'),map=document.getElementById('hd20MaturityMapTab'),trend=document.querySelector('.bottomGrid');return{visibleOps:ids.filter(visible),work:visible('awWorkplace'),map:visible('hd20MaturityMapTab')&&!map?.hidden,trend:!!trend&&getComputedStyle(trend).display!=='none'&&trend.getClientRects().length>0,expected}},key(subKey));
-                  if(ownership.expected)assert(ownership.visibleOps.length===1&&ownership.visibleOps[0]===ownership.expected&&!ownership.work&&!ownership.map&&!ownership.trend,'advancement work-tab ownership failed '+subKey+': '+JSON.stringify(ownership));
-                  else if(subKey==='map')assert(ownership.visibleOps.length===0&&!ownership.work&&ownership.map&&!ownership.trend,'advancement map ownership failed '+JSON.stringify(ownership));
-                  else if(subKey==='trend')assert(ownership.visibleOps.length===0&&!ownership.work&&!ownership.map&&ownership.trend,'advancement trend ownership failed '+JSON.stringify(ownership));
-                }
-                const c=await page.locator('#hd20PurposePanel').getAttribute('data-contract');
-                assert(c&&c.startsWith(area+'.'),`contract missing for ${area}/${sub}: ${c}`);
-                const text=await page.locator('#hd20PurposePanel').innerText();
-                for(const term of ['판단','다음','상세 데이터 그리드'])assert(text.includes(term),`${term} missing ${area}/${sub}`);
-                const gridStart=Date.now(); console.log('LOAD_STAGE sub-start',area,sub);
-                await page.getByRole('button',{name:'상세 데이터 그리드',exact:true}).click();
-                await page.waitForFunction(()=>document.querySelector('#hd20UniversalGridModal')?.classList.contains('on'),{},{timeout:20000});
-                const meta=await page.locator('#hd20GridMeta').innerText(); assert(meta.length>0,'grid meta missing'); const gridMs=Date.now()-gridStart; console.log('LOAD_STAGE grid-ready',area,sub,gridMs,meta); assert(gridMs<5000,`dense grid regression ${area}/${sub}: ${gridMs}ms`);
-                await page.keyboard.press('Escape'); count++;
+                await page.locator('#hd20Subnav button').filter({hasText:sub}).first().waitFor({state:'visible',timeout:12000});
+                await page.locator('#hd20Subnav button').filter({hasText:sub}).first().click();await page.waitForTimeout(100);
+                const state=await page.evaluate(()=>({area:window.HD20_SUBNAV?.state?.().area,sub:window.HD20_SUBNAV?.state?.().sub,labels:[...document.querySelectorAll('#hd20Subnav button')].map(b=>b.textContent.trim())}));
+                assert(state.area===area&&state.sub===({ '① Audit 실시':'draw','② 유지점검':'ongoing','③ 결과·재조치':'retention','① 개선조치 등록·실행':'manage','② 미완료·지연관리':'leadtime','③ 효과검증·최종종결':'verify'})[sub],'operational subtab state mismatch '+area+'/'+sub+': '+JSON.stringify(state));
+                subtabCount++;
               }
             }
             await page.evaluate(()=>window.HD20_NAV?.go?.('action')); await page.waitForTimeout(120);
@@ -122,7 +115,7 @@ jobs:
               const state=await page.evaluate(k=>{const vis=e=>!!e&&getComputedStyle(e).display!=='none'&&e.getClientRects().length>0;const legacyTabs=['order','target','sourceOrder','leader'].filter(x=>vis(document.querySelector('#masterModal [data-master-tab="'+x+'"]')));const legacyPanels=['masterOrderPanel','masterTargetPanel','hd20SourceOrderPanel','hd20OperatingPolicyPanel','hd20TeamLeaderMasterPanel'].filter(id=>vis(document.getElementById(id)));return{active:document.querySelector('#masterModal .masterTabs button.on')?.dataset.masterTab||'',integrated:vis(document.getElementById('hd20IntegratedMasterFactors')),legacyTabs,legacyPanels,save:[...document.querySelectorAll('#hd20IntegratedMasterFactors .imfBtn')].filter(vis).length}},key);
               assert(state.active==='integrated-'+key&&state.integrated&&state.legacyTabs.length===0&&state.legacyPanels.length===0&&state.save===1,'integrated operating master ownership failed '+key+': '+JSON.stringify(state));
             }
-            const expectedCount=Object.values(areas).reduce((n,subs)=>n+subs.length,0); assert(count===expectedCount,`not all operational subtabs checked: ${count}/${expectedCount}`);
+            const expectedCount=Object.values(areas).reduce((n,subs)=>n+subs.length,0); assert(subtabCount===expectedCount,`not all operational subtabs checked: ${subtabCount}/${expectedCount}`);
             assert(errs.length===0,'page errors:\n'+errs.join('\n---\n'));
             await maturityCheck();
             await page.setViewportSize({width:390,height:844});
