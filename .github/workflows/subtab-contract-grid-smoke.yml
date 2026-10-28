@@ -93,7 +93,6 @@ jobs:
             assert(activityGrid.active==='activity'&&activityGrid.overview,'merged registration grid not active: '+JSON.stringify(activityGrid));
             await page.evaluate(()=>window.HD20_NAV?.go?.('dashboard')); await page.waitForTimeout(100);
             let count=0;
-            let count=0;
             for(const [area,subs] of Object.entries(areas)){
               await page.evaluate(a=>window.HD20_NAV?.go?.(a),area);await page.waitForTimeout(150);
               await page.evaluate(a=>window.HD20_SUBNAV?.render?.(a),area);
