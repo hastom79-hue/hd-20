@@ -36,17 +36,25 @@ const evidenceRoot=overlay.querySelector('section');
 const evidence=document.createElement('div');
 evidence.id='hd20AdvGuideEvidence';
 evidence.style.cssText='display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:16px 0';
+/* 사용자 지적: "사진은 어디에도 반영되어 있지 않다" — 원인은 이 함수가 찾던 속성명(beforeImage,
+   afterPhoto 등)이 실제 등록 폼과 전혀 달랐기 때문. 실제 구조를 확인한 결과: 자율개선 등록 폼은
+   #awBefore/#awAfter, 개선요청 등록 폼은 #amBefore/#amEvidence라는 ID를 가진 요소의
+   dataset.data(Base64 또는 URL 문자열)에 사진이 저장됨(activity-workflow.js·action-mail-workflow.js
+   의 register() 함수가 바로 이 속성을 읽어 레코드에 저장하는 것과 동일한 경로). */
 const findPhoto=(kind)=>{
- const names=kind==='before'?['beforeImage','beforePhoto','beforeImg','beforeDataUrl','beforePhotoData']:['afterImage','afterPhoto','afterImg','afterDataUrl','afterPhotoData'];
- const active=[...document.querySelectorAll('#awRegisterModal,#hd20ActionRegisterModal')].find(el=>el.getClientRects().length&&getComputedStyle(el).display!=='none');
+ /* 가시성 체크를 getClientRects/display 기반에서 ".on" 클래스 기반으로 교체 — 두 등록 모달
+    (activity-register-modal.js·action-register-modal.js) 모두 open()/hide()에서 overlay 자체가
+    아니라 overlay.classList의 "on" 토글로 열림·닫힘을 표시하는데, 바깥 wrapper의 display 계산값이
+    항상 'none'이 아니어서(내부 레이아웃 방식) 이전 체크가 "열려 있어도 안 보인다"고 오판했음. */
+ const active=[...document.querySelectorAll('#awRegisterModal.on,#hd20ActionRegisterModal.on')][0];
  if(!active)return '';
- for(const key of names){
-   const el=active.querySelector('[name="'+key+'"],[data-photo-kind="'+kind+'"] img,[data-photo-kind="'+kind+'"]');
-   const value=el?.currentSrc||el?.src||el?.value||el?.dataset?.src;
-   if(typeof value==='string'&&(/^(data:image|blob:|https?:)/i.test(value)||value.startsWith('./')||value.startsWith('/')))return value;
+ const ids=kind==='before'?['awBefore','amBefore']:['awAfter','amEvidence'];
+ for(const id of ids){
+   const el=active.querySelector('#'+id);
+   const value=el?.dataset?.data;
+   if(typeof value==='string'&&value)return value;
  }
- const image=[...active.querySelectorAll('img')].find(el=>new RegExp(kind,'i').test([el.id,el.className,el.alt,el.closest('[class]')?.className].join(' ')));
- return image?.currentSrc||image?.src||'';
+ return '';
 };
 ['before','after'].forEach(kind=>{
  const cell=document.createElement('div');cell.style.cssText='border:1px solid #d8e3eb;border-radius:9px;padding:12px;min-height:175px';
