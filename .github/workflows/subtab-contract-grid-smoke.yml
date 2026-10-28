@@ -92,7 +92,7 @@ jobs:
             const activityGrid=await page.evaluate(()=>({active:window.HD20_NAV?.active?.(),overview:!!document.getElementById('hd20LauncherOverview')&&document.getElementById('hd20LauncherOverview').classList.contains('hd20LnVisible')}));
             assert(activityGrid.active==='activity'&&activityGrid.overview,'merged registration grid not active: '+JSON.stringify(activityGrid));
             await page.evaluate(()=>window.HD20_NAV?.go?.('dashboard')); await page.waitForTimeout(100);
-            let count=0;
+            let subtabCount=0;
             for(const [area,subs] of Object.entries(areas)){
               await page.evaluate(a=>window.HD20_NAV?.go?.(a),area);await page.waitForTimeout(150);
               await page.evaluate(a=>window.HD20_SUBNAV?.render?.(a),area);
@@ -103,7 +103,7 @@ jobs:
                 await page.locator('#hd20Subnav button').filter({hasText:sub}).first().click();await page.waitForTimeout(100);
                 const state=await page.evaluate(()=>({area:window.HD20_SUBNAV?.state?.().area,sub:window.HD20_SUBNAV?.state?.().sub,labels:[...document.querySelectorAll('#hd20Subnav button')].map(b=>b.textContent.trim())}));
                 assert(state.area===area&&state.sub===({ '① Audit 실시':'draw','② 유지점검':'ongoing','③ 결과·재조치':'retention','① 개선조치 등록·실행':'manage','② 미완료·지연관리':'leadtime','③ 효과검증·최종종결':'verify'})[sub],'operational subtab state mismatch '+area+'/'+sub+': '+JSON.stringify(state));
-                count++;
+                subtabCount++;
               }
             }
             await page.evaluate(()=>window.HD20_NAV?.go?.('action')); await page.waitForTimeout(120);
@@ -115,7 +115,7 @@ jobs:
               const state=await page.evaluate(k=>{const vis=e=>!!e&&getComputedStyle(e).display!=='none'&&e.getClientRects().length>0;const legacyTabs=['order','target','sourceOrder','leader'].filter(x=>vis(document.querySelector('#masterModal [data-master-tab="'+x+'"]')));const legacyPanels=['masterOrderPanel','masterTargetPanel','hd20SourceOrderPanel','hd20OperatingPolicyPanel','hd20TeamLeaderMasterPanel'].filter(id=>vis(document.getElementById(id)));return{active:document.querySelector('#masterModal .masterTabs button.on')?.dataset.masterTab||'',integrated:vis(document.getElementById('hd20IntegratedMasterFactors')),legacyTabs,legacyPanels,save:[...document.querySelectorAll('#hd20IntegratedMasterFactors .imfBtn')].filter(vis).length}},key);
               assert(state.active==='integrated-'+key&&state.integrated&&state.legacyTabs.length===0&&state.legacyPanels.length===0&&state.save===1,'integrated operating master ownership failed '+key+': '+JSON.stringify(state));
             }
-            const expectedCount=Object.values(areas).reduce((n,subs)=>n+subs.length,0); assert(count===expectedCount,`not all operational subtabs checked: ${count}/${expectedCount}`);
+            const expectedCount=Object.values(areas).reduce((n,subs)=>n+subs.length,0); assert(subtabCount===expectedCount,`not all operational subtabs checked: ${subtabCount}/${expectedCount}`);
             assert(errs.length===0,'page errors:\n'+errs.join('\n---\n'));
             await maturityCheck();
             await page.setViewportSize({width:390,height:844});
