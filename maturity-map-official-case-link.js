@@ -2,7 +2,7 @@
 const KEY='hd20GMES5SAutoImproveRawV1',STYLE='maturityOfficialCaseLinkStyle';
 function norm(v){return String(v??'').trim().replace(/\s+/g,'').toLowerCase()}
 function load(){try{return JSON.parse(localStorage.getItem(KEY)||'[]')}catch{return[]}}
-function counts(){const m=new Map();load().filter(x=>x.confirmed===true&&x.judgeState==='확정').forEach(x=>{const k=norm(x.team);if(!k)return;m.set(k,(m.get(k)||0)+1)});return m}
+function counts(){const m=new Map();load().filter(x=>x.confirmed===true&&(x.finalAdopted===true||x.advancementAdopted===true)).forEach(x=>{const k=norm(x.team);if(!k)return;m.set(k,(m.get(k)||0)+1)});return m}
 function css(){if(document.getElementById(STYLE))return;const s=document.createElement('style');s.id=STYLE;s.textContent=`
 .ipOfficialChip{background:#eaf6ef!important;border-color:#c8e3d2!important;color:#2d6f4b!important}.ipOfficialChip b{color:#246640!important}.ipOfficialNum{font-size:13.5px;font-weight:950;color:#2d7650}.ipOfficialBadge{display:block;margin-top:3px;padding:2px 5px;border-radius:999px;background:#eaf6ef;color:#2d7650;font-size:11px;font-weight:950;white-space:nowrap}.ipOfficialNote{display:inline-block;margin-left:6px;padding:2px 6px;border-radius:999px;background:#eef6fb;color:#47718d;font-size:11.5px;font-weight:900}.ipRailHead.ipOfficialCols,.ipRow.ipOfficialCols{grid-template-columns:1.25fr .62fr .62fr .62fr .72fr .62fr!important}.ipMap[data-official-linked='1'] .ipAxisY{color:#2f6c4b}.ipMap[data-official-linked='1'] .ipDot[data-official-count]:not([data-official-count='0']){box-shadow:0 4px 12px rgba(20,52,76,.12),0 0 0 3px rgba(52,160,90,.10)}
 `;document.head.appendChild(s)}
