@@ -141,7 +141,12 @@ function kpis(month){
  let ok=0,ng=0;
  checks.forEach(c=>Object.values(c.states||{}).forEach(v=>{if(v==='적합')ok++;else if(v==='미흡')ng++}));
  const total=ok+ng;
- const autoRegistered=load().filter(x=>x.source==='테마Audit'&&monthKey(x.auditMonth||x.createdAt||x.date)===month).length;
+ const actionRows=load().filter(x=>x.source==='테마Audit'),linkedIds=new Set();
+ checks.forEach(rec=>{
+   const ids=Array.isArray(rec.linkedActionIds)&&rec.linkedActionIds.length?rec.linkedActionIds:actionRows.filter(a=>a.auditRecordId===rec.id||(Array.isArray(a.relatedAuditRecordIds)&&a.relatedAuditRecordIds.includes(rec.id))).map(a=>a.id);
+   ids.forEach(id=>linkedIds.add(id));
+ });
+ const autoRegistered=linkedIds.size;
  const okRate=total?Math.round(ok/total*100):null;
  return{linesAudited,ng,autoRegistered,okRate};
 }
@@ -151,7 +156,7 @@ function historyTable(month){
  const actions=load();
  const body=all.slice(0,8).map(rec=>{
    const values=Object.values(rec.states||{}),ok=values.filter(v=>v==='적합').length,ng=values.filter(v=>v==='미흡').length,total=ok+ng;
-   const linked=Array.isArray(rec.linkedActionIds)?rec.linkedActionIds:actions.filter(a=>a.source==='테마Audit'&&(a.auditRecordId===rec.id||(Array.isArray(a.relatedAuditRecordIds)&&a.relatedAuditRecordIds.includes(rec.id)))).map(a=>a.id);
+   const linked=Array.isArray(rec.linkedActionIds)&&rec.linkedActionIds.length?rec.linkedActionIds:actions.filter(a=>a.source==='테마Audit'&&(a.auditRecordId===rec.id||(Array.isArray(a.relatedAuditRecordIds)&&a.relatedAuditRecordIds.includes(rec.id)))).map(a=>a.id);
    return '<tr><td>'+esc(formatAuditDate(rec.auditedAt))+'</td><td>'+esc(rec.line||'—')+'</td><td>'+esc(rec.team||'—')+'</td><td class="num">'+ng+'</td><td class="num">'+(total?Math.round(ok/total*100)+'%':'—')+'</td><td class="num">'+linked.length+'</td><td>'+esc(String(rec.memo||'').slice(0,70)||'—')+'</td></tr>';
  }).join('');
  return '<div class="themeHistoryMeta">총 '+all.length+'회 · 최신 '+Math.min(all.length,8)+'회 표시 · 재점검 기록은 이전 회차를 덮어쓰지 않습니다.</div><div class="themeHistoryWrap"><table class="themeHistoryTable"><thead><tr><th>점검 일시</th><th>라인</th><th>담당 생산팀</th><th>미흡</th><th>적합률</th><th>연계 조치</th><th>현장 관찰 메모</th></tr></thead><tbody>'+body+'</tbody></table></div>';
@@ -304,12 +309,13 @@ function saveAudit(){
  const linkedActionIds=[],createdActionIds=[],reusedActionIds=[];
  ngItems.forEach(row=>{
    const cat=row.dataset.cat,item=row.dataset.item,problem='[테마 점검] '+line+' · '+item;
-   const dup=actions.find(a=>a.source==='테마Audit'&&a.workplace===line&&a.themeCategory===cat&&a.problem===problem&&monthKey(a.auditMonth||a.createdAt||a.date)===month&&activeStatuses.includes(String(a.status||'')));
+   const dup=actions.find(a=>a.source==='테마Audit'&&a.workplace===line&&a.themeCategory===cat&&a.problem===problem&&activeStatuses.includes(String(a.status||'')));
    if(dup){
      const related=Array.isArray(dup.relatedAuditRecordIds)?dup.relatedAuditRecordIds.slice():[dup.auditRecordId].filter(Boolean);
      if(!related.includes(rec.id))related.push(rec.id);
      dup.relatedAuditRecordIds=related;
      dup.lastAuditRecordId=rec.id;
+     dup.lastAuditMonth=month;
      dup.lastAuditedAt=rec.auditedAt;
      dup.lastAuditMemo=memo;
      dup.recheckCount=(Number(dup.recheckCount)||0)+1;
