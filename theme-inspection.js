@@ -103,12 +103,12 @@ function css(){if(document.getElementById('hd20ThemeStyle'))return;const s=docum
  `;document.head.appendChild(s);
 }
 function monthOptions(){
- const rows=load(),set=new Set(rows.filter(x=>x.source==='테마Audit').map(x=>monthKey(x.createdAt||x.date)).filter(Boolean));
+ const rows=load(),set=new Set(rows.filter(x=>x.source==='테마Audit').map(x=>monthKey(x.auditMonth||x.createdAt||x.date)).filter(Boolean));
  set.add(thisMonth());
  return[...set].sort().reverse();
 }
 function matrixData(month){
- const rows=load().filter(x=>x.source==='테마Audit'&&monthKey(x.createdAt||x.date)===month);
+ const rows=load().filter(x=>x.source==='테마Audit'&&monthKey(x.auditMonth||x.createdAt||x.date)===month);
  const grid=LINES.map(ln=>THEMES.map(th=>rows.filter(x=>x.workplace===ln&&x.themeCategory===th)));
  return{grid,rows};
 }
@@ -122,7 +122,7 @@ function kpis(month){
  let ok=0,ng=0;
  checks.forEach(c=>Object.values(c.states||{}).forEach(v=>{if(v==='적합')ok++;else if(v==='미흡')ng++}));
  const total=ok+ng;
- const autoRegistered=load().filter(x=>x.source==='테마Audit'&&monthKey(x.createdAt||x.date)===month).length;
+ const autoRegistered=load().filter(x=>x.source==='테마Audit'&&monthKey(x.auditMonth||x.createdAt||x.date)===month).length;
  const okRate=total?Math.round(ok/total*100):null;
  return{linesAudited,ng,autoRegistered,okRate};
 }
@@ -265,13 +265,14 @@ function saveAudit(){
  let created=0;
  ngItems.forEach(row=>{
    const cat=row.dataset.cat,item=row.dataset.item;
-   const dup=actions.find(a=>a.source==='테마Audit'&&a.workplace===line&&a.themeCategory===cat&&a.problem===item&&monthKey(a.createdAt)===month);
+   const dup=actions.find(a=>a.source==='테마Audit'&&a.workplace===line&&a.themeCategory===cat&&a.problem===item&&monthKey(a.auditMonth||a.createdAt||a.date)===month);
    if(dup)return;
    const createdAt=today();
    actions.unshift({
      id:'THEME-'+Date.now()+'-'+(created++),
      source:'테마Audit',
      team,
+     auditMonth:month,
      workplace:line,
      themeCategory:cat,
      type:cat,
