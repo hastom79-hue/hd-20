@@ -58,7 +58,7 @@ jobs:
           test -s hd20-maturity-map-tab.js
           test -s dashboard-section-tabs.js
           ! grep -q "key:'maturity'" dashboard-section-tabs.js
-          grep -q "['map','⑥ 유지·이탈 포트폴리오']" hd20-subtabs.js
+          grep -q "['map','고도화 맵']" hd20-subtabs.js
           test -s hd20-subtabs.js
           grep -q "workplaceVerification={state:'완료'" hd20-subtabs.js
           grep -q "advWorkplaceVerified(x)?'공식심사 대기':'작업장 근거검증 필요'" hd20-subtabs.js
