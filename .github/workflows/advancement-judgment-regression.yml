@@ -69,8 +69,8 @@ jobs:
             await browser.close();
           })().catch(async e=>{console.error('ADVANCEMENT_NAVIGATION_FAILED',e.stack||String(e));try{await diagnosticPage?.screenshot({path:'advancement-navigation.png',fullPage:true,timeout:5000})}catch(err){console.error('SCREENSHOT_FAILED',String(err))}process.exit(1)});
           NODE
+          set -o pipefail
           node adv-check.cjs 2>&1 | tee advancement-navigation.log
-          test {PIPESTATUS[0]} -eq 0
       - name: Upload regression evidence
         if: always()
         uses: actions/upload-artifact@v4
