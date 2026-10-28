@@ -53,7 +53,7 @@ grep -rl "파일명.js" *.js *.html *.css
 | `hd20TeamLeaderMasterV1` | 생산팀별 팀장·이메일 마스터 |
 | `hd20OperatingPolicyV1` | Audit 표본수·Risk 가중치 등 운영정책 |
 | `gmes5s_work_factor_master_v1` | 통합기준정보 ④업무/팩터(작업장·세부위치·우선순위·리스크 등) |
-| `hd20ThemeAuditChecksV1` | 테마 점검 체크리스트 평가 상태 |
+| `hd20ThemeAuditChecksV1` | 테마 점검 체크리스트 평가 상태·회차별 재점검 이력 (Supabase canonical payload 동기화) |
 
 ### 2.5 주요 전역 객체
 
