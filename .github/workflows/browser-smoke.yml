@@ -72,6 +72,7 @@ jobs:
               if(!advancement.visible||advancement.area!=='advancement'||advancement.sub!=='standard'||!advancement.hasStandardTitle||advancement.hasFakeOwner)throw new Error('Approved advancement standard tab contract '+JSON.stringify(advancement));
               evidence.advancement=advancement;
               for(const key of ['activity','audit','action','dashboard']){await page.evaluate(k=>document.querySelector(`.beginnerNav button[data-key="${k}"]`)?.click(),key);await page.waitForTimeout(120)}
+              if(await page.locator('#hd20Launcher').count()){await page.locator('#hd20Launcher [data-ln-close]').click();await page.waitForTimeout(120)}
               await page.evaluate(()=>window.HD20_NAV?.go?.('maturity'));await page.waitForTimeout(250);
               const maturity=await page.evaluate(()=>{const el=document.getElementById('hd20MaturityMapTab'),st=window.HD20_SUBNAV?.state?.();return {navActive:window.HD20_NAV?.active?.(),area:window.HD20_NAV?.active?.(),sub:window.HD20_DASHBOARD_TABS?.active?.(),mapVisible:!!el&&!el.hidden&&getComputedStyle(el).display!=='none',standaloneNav:!!document.querySelector('.beginnerNav button[data-key="maturitymap"]')};});
               if(maturity.navActive!=='dashboard'||maturity.area!=='dashboard'||maturity.sub!=='map'||!maturity.mapVisible||maturity.standaloneNav)throw new Error('Maturity dashboard-map routing mismatch '+JSON.stringify(maturity));
@@ -92,6 +93,7 @@ jobs:
               await page.locator('.beginnerNav button[data-key="activity"]').click();await page.waitForTimeout(250);
               const activityGrid=await page.evaluate(()=>({active:window.HD20_NAV?.active?.(),overview:!!document.getElementById('hd20LauncherOverview')&&document.getElementById('hd20LauncherOverview').classList.contains('hd20LnVisible')}));
               if(activityGrid.active!=='activity'||!activityGrid.overview)throw new Error('Merged registration grid contract '+JSON.stringify(activityGrid));
+              if(await page.locator('#hd20Launcher').count()){await page.locator('#hd20Launcher [data-ln-close]').click();await page.waitForTimeout(120)}
               await page.locator('.beginnerNav button[data-key="dashboard"]').click();await page.waitForTimeout(150);
               const areaSubs={advancement:['확정사례 관리'],audit:['① Audit 실시','② 유지점검','③ 결과·재조치'],action:['① 개선조치 등록·실행','② 미완료·지연관리','③ 효과검증·최종종결']};
               for(const [area,subs] of Object.entries(areaSubs)){
