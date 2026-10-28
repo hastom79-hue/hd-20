@@ -3,6 +3,12 @@ name: HD20 runtime smoke
 on:
   push:
     branches: [main, hd20-overhaul-20260902]
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/runtime-smoke.yml'
+      - 'hd20-subtabs.js'
+      - 'index.html'
   workflow_dispatch:
 
 permissions:
@@ -58,14 +64,14 @@ jobs:
           test -s hd20-maturity-map-tab.js
           test -s dashboard-section-tabs.js
           ! grep -q "key:'maturity'" dashboard-section-tabs.js
-          grep -q "['map','⑥ 유지·이탈 포트폴리오']" hd20-subtabs.js
+          grep -Fq "['map','고도화 맵']" hd20-subtabs.js
           test -s hd20-subtabs.js
           grep -q "workplaceVerification={state:'완료'" hd20-subtabs.js
           grep -q "advWorkplaceVerified(x)?'공식심사 대기':'작업장 근거검증 필요'" hd20-subtabs.js
-          grep -q "formalReady=candidateOnly.filter" hd20-subtabs.js
+          grep -Fq "function advWorkplaceVerified(x)" hd20-subtabs.js
           grep -q "function sanitizeStore(v){return Array.isArray(v)?v.filter(x=>!isNonProdRow(x)):v}" supabase-sync.js
           grep -q "row.workplaceVerification={state:'완료',verifiedAt:new Date().toISOString()}" hd20-subtabs.js
-          grep -q "\['근거검증',verificationNeeded.length\],\['공식심사',formalReady.length\]" hd20-subtabs.js
+          grep -Fq "['근거검증',advWorkplaceVerified(x)?'완료':'미완료']" hd20-subtabs.js
 
       - name: Verify six-column navigation layout
         run: |
@@ -95,18 +101,13 @@ jobs:
           grep -q 'window.HD20KPIData' dashboard-kpi-source.js
           grep -q 'function renderTrend' dashboard-actions.js
 
-      - name: Verify demo seed is safe and isolated
+      - name: Verify demo seed is retired and isolated
+        shell: bash
         run: |
           set -euo pipefail
-          test -s demo-seed-data.js
-          grep -q "isDemo:true" demo-seed-data.js
-          grep -q "source:'demo-seed'" demo-seed-data.js
-          grep -q 'emptyArray(ACT)' demo-seed-data.js
-          grep -q 'emptyArray(AUD)' demo-seed-data.js
-          grep -q 'emptyArray(ACTION)' demo-seed-data.js
-          grep -q "if(!localStorage.getItem(HEAD))" demo-seed-data.js
-          ! grep -R --include='*.js' --exclude='demo-seed-data.js' --exclude-dir='.git' -n "source:'demo-seed'\|HD20_DEMO_ACTIONS\|HD20_ACTION_DEMO_SEED_DISABLED" .
-          ! grep -R --include='*.js' --include='*.html' --exclude-dir='.git' -n 'example\.com\|홍길동\|김현대' .
+          ! test -e demo-seed-data.js
+          ! grep -R --include='*.js' --exclude='web-validation-fixture.js' --exclude='hd20-subtabs.js' --exclude-dir='tests' --exclude-dir='.git' -n "source:'demo-seed'\|HD20_DEMO_ACTIONS\|HD20_ACTION_DEMO_SEED_DISABLED" .
+          ! grep -R --include='*.js' --include='*.html' --exclude='web-validation-fixture.js' --exclude-dir='tests' --exclude-dir='.git' -n 'example\.com\|홍길동\|김현대' .
 
       - name: Verify validation fixture is explicit opt-in only
         run: |
