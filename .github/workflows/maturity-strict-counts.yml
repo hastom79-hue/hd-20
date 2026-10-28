@@ -1,0 +1,51 @@
+name: HD20 strict maturity criteria regression
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'hd20-maturity-map-tab.js'
+      - 'maturity-map-official-case-link.js'
+      - 'maturity-team-case-drilldown.js'
+      - '.github/workflows/maturity-strict-counts.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  strict-maturity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Check JavaScript syntax
+        run: |
+          node --check hd20-maturity-map-tab.js
+          node --check maturity-map-official-case-link.js
+          node --check maturity-team-case-drilldown.js
+      - name: Verify three-criteria gate
+        run: |
+          node <<'NODE'
+          const fs=require('node:fs');
+          const vm=require('node:vm');
+          const assert=require('node:assert/strict');
+          const files=['hd20-maturity-map-tab.js','maturity-map-official-case-link.js','maturity-team-case-drilldown.js'];
+          for(const file of files){
+            const src=fs.readFileSync(file,'utf8');
+            const match=src.match(/function criteriaState\\(x\\)\\{[^\\n]*\\}/);
+            assert.ok(match, file+': criteriaState helper missing');
+            const fn=vm.runInNewContext(match[0]+';criteriaState',{});
+            const all={criteriaVisual:'Y',criteriaGreen:'Y',criteriaSpace:'Y'};
+            const partial={criteriaVisual:'Y',criteriaGreen:'N',criteriaSpace:'Y'};
+            assert.deepEqual(JSON.parse(JSON.stringify(fn(all))),{values:[true,true,true],count:3,explicit:true},file+': all three should pass');
+            assert.equal(fn(partial).count,2,file+': partial criteria must not pass');
+            assert.equal(fn({}).explicit,false,file+': missing criteria must not pass');
+          }
+          const map=fs.readFileSync('hd20-maturity-map-tab.js','utf8');
+          const official=fs.readFileSync('maturity-map-official-case-link.js','utf8');
+          const detail=fs.readFileSync('maturity-team-case-drilldown.js','utf8');
+          assert.match(map,/state\\.count===3/);
+          assert.match(official,/s\\.count===3/);
+          assert.match(detail,/s\\.count===3/);
+          console.log('STRICT_MATURITY_CRITERIA_PASS: 3 scripts, 3 scenarios each');
+          NODE
