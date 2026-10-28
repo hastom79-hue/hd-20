@@ -31,3 +31,8 @@ HD-20: prevent inflated official maturity case counts and preserve theme-audit h
 - Audit history display against actual user browser localStorage data.
 - Full regression across theme inspection, action creation/deduplication, and official maturity case drilldown.
 - Do not merge/deploy until these checks pass.
+
+5. Historical month consistency
+   - Theme Audit-generated action records now store `auditMonth` from the selected month.
+   - Month options, matrix grouping, KPI counts, and duplicate prevention use `auditMonth` first and fall back to legacy `createdAt`/`date` for existing records.
+   - Added CI assertions for the selected-month grouping contract.
