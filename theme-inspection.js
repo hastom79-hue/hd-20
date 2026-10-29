@@ -188,26 +188,29 @@ function render(){
  const month=host.dataset.month||thisMonth();host.dataset.month=month;
  const line=host.dataset.line||LINES[0];host.dataset.line=line;
  const team=host.dataset.team||LINE_DEFAULT_TEAM[line]||teamOptions()[0]||'';host.dataset.team=team;
- const{grid,rows:matrixRows}=matrixData(month);
  const monthOpts=monthOptions();
  const view=host.dataset.view||'plan';host.dataset.view=view;
  const planThemes=plannedThemes(month,line);
- const k=kpis(month);
- const head='<tr><th>라인 \\ 5S 테마</th>'+THEMES.map(t=>`<th>${esc(t)}</th>`).join('')+'</tr>';
- const body=LINES.map((ln,ri)=>'<tr><td class="rowHead" data-pick-line="'+esc(ln)+'">'+esc(ln)+'</td>'+THEMES.map((th,ci)=>{
-   const values=grid[ri][ci],n=values===null?null:values.length;
-   const isSel=ln===line;
-   return `<td class="cell${isSel?' sel':''}" data-pick-line="${esc(ln)}" style="background:${n===null?'#f1f4f6':cellColor(n)}" title="${n===null?'이번 월 계획 테마 아님':n+'건 미흡'}">${n===null?'—':(n||'')}</td>`;
- }).join('')+'</tr>').join('');
+ const auditRows=loadChecks().filter(x=>monthKey(x.month||x.auditedAt)===month);
+ const latestAuditByLine=new Map();
+ auditRows.forEach(rec=>{const prev=latestAuditByLine.get(rec.line);if(!prev||String(rec.auditedAt||'').localeCompare(String(prev.auditedAt||''))>=0)latestAuditByLine.set(rec.line,rec)});
+ const monthActions=load().filter(x=>x.source==='테마Audit'&&(monthKey(x.auditMonth||x.createdAt||x.date)===month||monthKey(x.lastAuditMonth||x.lastAuditedAt)===month));
+ const lineSummaryRows=LINES.map(ln=>{
+   const themes=plannedThemes(month,ln),rec=latestAuditByLine.get(ln),states=Object.values(rec?.states||{});
+   const ng=states.filter(v=>v==='미흡').length;
+   const actionCount=monthActions.filter(a=>a.workplace===ln).length;
+   const themeChips=themes.length?themes.map(t=>'<span class="themeLineChip">'+esc(t)+'</span>').join(''):'<span class="themePlanMissing">계획 미설정</span>';
+   return '<div class="themeLineSummaryRow '+(ln===line?'isSelected':'')+'"><div class="themeLineName">'+esc(ln)+'</div><div><div class="themeLineChips">'+themeChips+'</div></div><div class="themeLineDate">'+(rec?esc(formatAuditDate(rec.auditedAt)):'<span class="themeMuted">미실시</span>')+'</div><div><span class="themeCountPill '+(ng?'hasFinding':'')+'">'+ng+'건</span></div><div><span class="themeCountPill">'+actionCount+'건</span></div><div><button type="button" class="themeLineAction" data-pick-line="'+esc(ln)+'">현장점검 열기</button></div></div>';
+ }).join('');
  host.innerHTML=`<div class="awHero">
    <div><h2>테마점검 운영센터</h2><div class="themeSubtitle">라인별 5S 취약점을 동일 기준으로 점검하고, 미흡 항목을 개선조치·완료관리와 연결합니다. 재점검 이력은 누적 보존됩니다.</div><span class="themeOwner">5S모듈 주관</span></div>
    <div class="themeControls"><label>조회 월 <select id="themeMonthSel">${monthOpts.map(m=>`<option${m===month?' selected':''}>${m}</option>`).join('')}</select></label></div>
  </div>
- <div class="themeKpiRow">
-   <div class="themeKpiCard"><small>점검 실시 라인</small><b>${k.linesAudited}<span style="font-size:14px">/${LINES.length}</span></b></div>
-   <div class="themeKpiCard ${k.ng?'warn':''}"><small>미흡 발견</small><b>${k.ng}건</b></div>
-   <div class="themeKpiCard"><small>연계 개선조치</small><b>${k.autoRegistered}건</b></div>
-   <div class="themeKpiCard ${k.okRate==null?'':k.okRate>=80?'good':'warn'}"><small>적합률</small><b>${k.okRate==null?'—':k.okRate+'%'}</b></div>
+ <div class="themeWorkflowRail" aria-label="테마점검 업무 흐름">
+   <div class="themeWorkflowStep"><span>01</span><div><b>점검계획</b><small>5S 모듈이 월별 취약 테마 지정</small></div></div><div class="themeWorkflowConnector"></div>
+   <div class="themeWorkflowStep"><span>02</span><div><b>현장 Audit</b><small>계획된 항목 전수 판정</small></div></div><div class="themeWorkflowConnector"></div>
+   <div class="themeWorkflowStep"><span>03</span><div><b>개선조치</b><small>미흡사항을 원본 조치와 연결</small></div></div><div class="themeWorkflowConnector"></div>
+   <div class="themeWorkflowStep"><span>04</span><div><b>재점검</b><small>완료·재발 여부와 이력 누적</small></div></div>
  </div>
  <nav class="themeTabNav" aria-label="테마점검 작업영역">
    <button type="button" data-theme-view="plan" class="${view==='plan'?'active':''}">점검계획·취약현황</button>
@@ -220,12 +223,12 @@ function render(){
  <div class="themeControls"><label>계획 라인/구역 <select id="themePlanLineSel">${LINES.map(l=>`<option${l===line?' selected':''}>${esc(l)}</option>`).join('')}</select></label><span class="themePlanHint">체크한 테마만 현장 점검표에 표시됩니다. 기존 점검 이력은 보존됩니다.</span></div>
  <div class="themePlanChoices">${THEMES.map(t=>`<label><input type="checkbox" name="themePlanTheme" value="${esc(t)}" ${planThemes.includes(t)?'checked':''}><span>${esc(t)}</span></label>`).join('')}</div>
  <div class="themePlanFooter"><span>선택 테마 <b id="themePlanCount">${planThemes.length}</b> / ${THEMES.length} · <b class="themePlanState">${planThemes.length?'계획 설정됨':'계획 미설정'}</b></span><button type="button" class="themePlanSave" id="themeSavePlanBtn">계획 저장</button></div>${planThemes.length?'':'<div class="themeEmptyNote themePlanEmpty">이 라인의 해당 월 점검 테마가 아직 지정되지 않았습니다. 5S 모듈에서 취약 테마를 선택한 후 저장해야 현장점검을 시작할 수 있습니다.</div>'}</div>
- <div class="themeSectionHead"><h3>라인 × 5S 테마 취약점 개요</h3><small>계획 테마만 집계 · 셀 또는 라인명을 클릭해 라인 선택</small></div>
- <div class="themeMatrixWrap">
-   <table class="themeMatrix">${head}${body}</table>
-   ${matrixRows.length?'':'<div class="themeEmptyNote">⚠ 이번 달에는 아직 테마 Audit을 실시한 라인이 없습니다. 아래 "테마 Audit 실시"에서 라인을 선택해 점검을 시작하세요.</div>'}
+ <div class="themeSectionHead"><h3>라인별 점검 준비·실행 현황</h3><small>계획 테마 · 최근 Audit · 미흡 건 · 연결 조치를 한 행에서 확인</small></div>
+ <div class="themeLineSummary">
+   <div class="themeLineSummaryHead"><span>라인 / 구역</span><span>계획된 취약 테마</span><span>최근 점검</span><span>미흡</span><span>연계 조치</span><span></span></div>
+   <div class="themeLineSummaryBody">${lineSummaryRows}</div>
  </div>
- </section>
+ <div class="themeSummaryFoot">라인을 선택하면 해당 라인의 현장점검 화면으로 이동합니다. 점검계획이 없는 라인은 먼저 계획을 저장해야 Audit 결과를 등록할 수 있습니다.</div> </section>
  <section class="themePanel" data-theme-panel="history" ${view==='history'?'':'hidden'}><div class="themeHistoryBox"><div class="themeSectionHead" style="margin-top:0"><h3>최근 점검 이력</h3><small>선택 월의 점검 회차·미흡 건수·연계 조치를 확인합니다</small></div>${historyTable(month)}</div></section>
  <section class="themePanel" data-theme-panel="audit" ${view==='audit'?'':'hidden'}><div class="themeAuditBox" id="themeAuditBox">
    <div class="themeSectionHead" style="margin-top:0"><h3>테마 Audit 실시 — <span id="themeAuditLineLabel">${esc(line)}</span></h3></div>

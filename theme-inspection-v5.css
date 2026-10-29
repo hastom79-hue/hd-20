@@ -97,3 +97,49 @@
 #awTheme .themeStatusTag{display:inline-block;padding:4px 7px;border:1px solid #d8e3e9;border-radius:5px;background:#f5f8fa;color:#36566b;font-size:11px;font-weight:800;white-space:nowrap}
 #awTheme #themeActionTableBody tr[hidden]{display:none}
 @media(max-width:720px){#awTheme .themeActionFilters{grid-template-columns:1fr}#awTheme #themeActionCount{padding:0}}
+
+
+/* v6 — line-first operating view; replace wide heatmap and dashboard-like KPI tiles */
+#awTheme .themeWorkflowRail{display:flex;align-items:center;gap:9px;padding:12px 15px;margin:12px 0 16px;background:#f5f8fa;border:1px solid #dfe7ed;border-radius:9px}
+#awTheme .themeWorkflowStep{display:flex;align-items:center;gap:9px;min-width:0;flex:1}
+#awTheme .themeWorkflowStep>span{display:grid;place-items:center;flex:none;width:28px;height:28px;border-radius:50%;background:#173b53;color:#fff;font-size:10px;font-weight:900}
+#awTheme .themeWorkflowStep b{display:block;color:#24485e;font-size:12px;line-height:1.4}
+#awTheme .themeWorkflowStep small{display:block;margin-top:2px;color:#718697;font-size:10px;line-height:1.4}
+#awTheme .themeWorkflowConnector{width:22px;height:1px;flex:none;background:#cbd8e1}
+#awTheme .themeLineSummary{border:1px solid #dce6ed;border-radius:9px;background:#fff;overflow:hidden}
+#awTheme .themeLineSummaryHead,#awTheme .themeLineSummaryBody>.themeLineSummaryRow{display:grid;grid-template-columns:minmax(125px,1.05fr) minmax(210px,2fr) minmax(130px,1.1fr) 64px 76px 112px;align-items:center;gap:10px}
+#awTheme .themeLineSummaryHead{padding:10px 13px;background:#f1f5f8;color:#60798a;font-size:10px;font-weight:900}
+#awTheme .themeLineSummaryBody>.themeLineSummaryRow{padding:10px 13px;border-top:1px solid #e9eef2;min-height:54px}
+#awTheme .themeLineSummaryBody>.themeLineSummaryRow:first-child{border-top:0}
+#awTheme .themeLineSummaryBody>.themeLineSummaryRow:nth-child(even){background:#fbfcfd}
+#awTheme .themeLineSummaryBody>.themeLineSummaryRow.isSelected{background:#edf6f9;box-shadow:inset 3px 0 #0e6f91}
+#awTheme .themeLineName{font-size:12px;font-weight:850;color:#23465c;overflow-wrap:anywhere}
+#awTheme .themeLineChips{display:flex;flex-wrap:wrap;gap:4px;min-width:0}
+#awTheme .themeLineChip{display:inline-block;padding:4px 6px;border-radius:4px;background:#eaf3f6;color:#28576b;font-size:10px;font-weight:750;line-height:1.3}
+#awTheme .themePlanMissing{font-size:10px;color:#a36b16;font-weight:800}
+#awTheme .themeLineDate{font-size:10px;color:#5d7586;line-height:1.4}
+#awTheme .themeMuted{color:#98a6b1}
+#awTheme .themeCountPill{display:inline-block;min-width:35px;padding:5px 7px;border-radius:5px;background:#eef3f6;color:#3c596b;text-align:center;font-size:11px;font-weight:850;white-space:nowrap}
+#awTheme .themeCountPill.hasFinding{background:#fff0e8;color:#b4472e}
+#awTheme .themeLineAction{border:1px solid #b9d3df;border-radius:5px;background:#fff;color:#0e6f91;padding:7px 8px;font-size:10px;font-weight:850;white-space:nowrap;cursor:pointer}
+#awTheme .themeLineAction:hover{background:#eaf5f8;border-color:#7fb4c5}
+#awTheme .themeSummaryFoot{margin-top:9px;color:#728697;font-size:10px;line-height:1.6}
+@media(max-width:1050px){
+ #awTheme .themeWorkflowStep small{display:none}
+ #awTheme .themeLineSummaryHead,#awTheme .themeLineSummaryBody>.themeLineSummaryRow{grid-template-columns:minmax(110px,1fr) minmax(170px,1.7fr) minmax(105px,1fr) 55px 64px 105px;gap:7px}
+}
+@media(max-width:760px){
+ #awTheme .themeWorkflowRail{align-items:stretch;flex-direction:column;gap:7px}
+ #awTheme .themeWorkflowStep{flex:none}
+ #awTheme .themeWorkflowStep small{display:block}
+ #awTheme .themeWorkflowConnector{width:1px;height:8px;margin-left:13px}
+ #awTheme .themeLineSummaryHead{display:none}
+ #awTheme .themeLineSummaryBody>.themeLineSummaryRow{grid-template-columns:minmax(0,1fr) auto auto;gap:8px;padding:12px}
+ #awTheme .themeLineSummaryBody>.themeLineSummaryRow>div:nth-child(1){grid-column:1}
+ #awTheme .themeLineSummaryBody>.themeLineSummaryRow>div:nth-child(2){grid-column:1 / -1;grid-row:2}
+ #awTheme .themeLineSummaryBody>.themeLineSummaryRow>div:nth-child(3){grid-column:1;grid-row:3}
+ #awTheme .themeLineSummaryBody>.themeLineSummaryRow>div:nth-child(4){grid-column:2;grid-row:3}
+ #awTheme .themeLineSummaryBody>.themeLineSummaryRow>div:nth-child(5){grid-column:3;grid-row:3}
+ #awTheme .themeLineSummaryBody>.themeLineSummaryRow>div:nth-child(6){grid-column:1 / -1;grid-row:4}
+ #awTheme .themeLineAction{width:100%}
+}
