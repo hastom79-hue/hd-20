@@ -58,7 +58,17 @@ function plannedThemes(month,line){
  if(prior?.states)return THEMES.filter(t=>CHECKLIST.some(item=>item.cat===t&&Object.prototype.hasOwnProperty.call(prior.states,item.cat+'::'+item.item)));
  return [];
 }
-function actionTable(month){const rows=load().filter(x=>x.source==='테마Audit'&&monthKey(x.auditMonth||x.createdAt||x.date)===month).sort((a,b)=>String(b.lastAuditedAt||b.createdAt||'').localeCompare(String(a.lastAuditedAt||a.createdAt||'')));if(!rows.length)return '<div class="themeEmptyNote">선택 월에 연결된 테마점검 개선조치가 없습니다.</div>';return '<div class="themeHistoryMeta">총 '+rows.length+'건 · 동일 미흡사항의 미완료 조치는 중복 생성하지 않고 재점검 이력을 연결합니다.</div><div class="themeHistoryWrap"><table class="themeHistoryTable"><thead><tr><th>라인/구역</th><th>취약 테마</th><th>미흡사항</th><th>상태</th><th>조치기한</th><th>재점검</th><th>조치 ID</th></tr></thead><tbody>'+rows.map(a=>'<tr><td>'+esc(a.workplace||'—')+'</td><td>'+esc(a.themeCategory||a.type||'—')+'</td><td>'+esc(a.problem||'—')+'</td><td>'+esc(a.status||'—')+'</td><td>'+esc(a.dueDate||a.targetDate||'—')+'</td><td class="num">'+(Number(a.recheckCount)||0)+'</td><td>'+esc(a.id||'—')+'</td></tr>').join('')+'</tbody></table></div>'}
+function actionTable(month){
+ const rows=load().filter(x=>x.source==='테마Audit'&&(monthKey(x.auditMonth||x.createdAt||x.date)===month||monthKey(x.lastAuditMonth||x.lastAuditedAt)===month)).sort((a,b)=>String(b.lastAuditedAt||b.createdAt||'').localeCompare(String(a.lastAuditedAt||a.createdAt||'')));
+ if(!rows.length)return '<div class="themeEmptyNote">선택 월에 연결된 테마점검 개선조치가 없습니다.</div>';
+ const statuses=[...new Set(rows.map(a=>String(a.status||'미분류')))].sort();
+ const tableRows=rows.map(a=>{
+  const status=String(a.status||'미분류'),line=String(a.workplace||''),team=String(a.team||''),theme=String(a.themeCategory||a.type||''),problem=String(a.problem||''),id=String(a.id||'');
+  const search=[line,team,theme,problem,status,id].join(' ');
+  return '<tr data-status="'+esc(status)+'" data-search="'+esc(search.toLocaleLowerCase())+'"><td>'+esc(line||'—')+'</td><td>'+esc(team||'—')+'</td><td>'+esc(theme||'—')+'</td><td>'+esc(problem||'—')+'</td><td><span class="themeStatusTag">'+esc(status)+'</span></td><td>'+esc(a.dueDate||a.targetDate||'—')+'</td><td class="num">'+(Number(a.recheckCount)||0)+'</td><td>'+esc(id||'—')+'</td></tr>';
+ }).join('');
+ return '<div class="themeHistoryMeta">총 '+rows.length+'건 · 최초 발생 월과 최근 재점검 월 모두에서 조회 · 동일 미흡사항의 미완료 조치는 중복 생성하지 않고 재점검 이력을 연결합니다.</div><div class="themeActionFilters"><label>빠른 검색 <input id="themeActionSearch" type="search" placeholder="라인·팀·테마·미흡내용·조치 ID"></label><label>조치 상태 <select id="themeActionStatus"><option value="">전체 상태</option>'+statuses.map(s=>'<option value="'+esc(s)+'">'+esc(s)+'</option>').join('')+'</select></label><span id="themeActionCount" aria-live="polite">표시 '+rows.length+'/'+rows.length+'건</span></div><div class="themeHistoryWrap"><table class="themeHistoryTable"><thead><tr><th>라인/구역</th><th>담당팀</th><th>취약 테마</th><th>미흡사항</th><th>조치 상태</th><th>조치기한</th><th>재점검</th><th>조치 ID</th></tr></thead><tbody id="themeActionTableBody">'+tableRows+'</tbody></table><div id="themeActionNoResults" class="themeEmptyNote" hidden>검색 조건에 맞는 조치가 없습니다.</div></div>';
+}
 function teamOptions(){try{const v=JSON.parse(localStorage.getItem(TEAM_KEY)||'[]');if(Array.isArray(v)&&v.length)return v.map(x=>x.team||x)}catch{}return FALLBACK_TEAMS}
 function seoulDate(date=new Date()){const p=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(date);const part=k=>(p.find(x=>x.type===k)||{}).value||'';return part('year')+'-'+part('month')+'-'+part('day')}
 function addDaysStr(d,n){const x=new Date(String(d).slice(0,10)+'T12:00:00Z');x.setUTCDate(x.getUTCDate()+n);return x.toISOString().slice(0,10)}
@@ -145,7 +155,7 @@ function matrixData(month){
 }
 function cellColor(n){if(n<=0)return'#ffffff';if(n===1)return'#fff3d6';if(n===2)return'#ffe2a8';if(n<=4)return'#ffc877';return'#ff9d52'}
 function kpis(month){
- const allChecks=loadChecks().filter(x=>x.month===month);
+ const allChecks=loadChecks().filter(x=>monthKey(x.month||x.auditedAt)===month);
  const latestByLine=new Map();
  allChecks.forEach(rec=>{const prev=latestByLine.get(rec.line);if(!prev||String(rec.auditedAt||'').localeCompare(String(prev.auditedAt||''))>=0)latestByLine.set(rec.line,rec)});
  const checks=[...latestByLine.values()];
@@ -235,6 +245,9 @@ function render(){
  </div></section>
  <section class="themePanel" data-theme-panel="actions" ${view==='actions'?'':'hidden'}><div class="themeHistoryBox"><div class="themeSectionHead" style="margin-top:0"><h3>테마점검 미흡사항 · 개선조치 추적</h3><small>개선조치·완료관리와 같은 원본 조치 레코드를 조회합니다</small></div>${actionTable(month)}</div></section>`;
  $('#themeMonthSel',host).addEventListener('change',e=>{host.dataset.month=e.target.value;render()});
+  const actionSearch=$('#themeActionSearch',host),actionStatus=$('#themeActionStatus',host);
+  const filterActions=()=>{const query=(actionSearch?.value||'').trim().toLocaleLowerCase(),status=actionStatus?.value||'',rows=$('#themeActionTableBody tr',host);let shown=0;rows.forEach(row=>{const visible=(!query||(row.dataset.search||'').includes(query))&&(!status||row.dataset.status===status);row.hidden=!visible;if(visible)shown++});const count=$('#themeActionCount',host);if(count)count.textContent='표시 '+shown+'/'+rows.length+'건';const empty=$('#themeActionNoResults',host);if(empty)empty.hidden=shown>0};
+  actionSearch?.addEventListener('input',filterActions);actionStatus?.addEventListener('change',filterActions);
  Array.from(host.querySelectorAll('[data-theme-view]')).forEach(btn=>btn.addEventListener('click',()=>{host.dataset.view=btn.dataset.themeView;render()}));
  $('#themePlanLineSel',host).addEventListener('change',e=>{host.dataset.line=e.target.value;host.dataset.team=LINE_DEFAULT_TEAM[e.target.value]||host.dataset.team;render()});
  Array.from(host.querySelectorAll('input[name="themePlanTheme"]')).forEach(box=>box.addEventListener('change',()=>{const n=host.querySelectorAll('input[name="themePlanTheme"]:checked').length;const count=$('#themePlanCount',host);if(count)count.textContent=n}));

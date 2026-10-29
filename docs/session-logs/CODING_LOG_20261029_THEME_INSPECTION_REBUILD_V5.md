@@ -29,3 +29,10 @@
 - New audit rounds start with blank judgments; copying the previous round is an explicit action and is labeled as a reference that must be rechecked onsite.
 - Added browser regression assertions for clean rounds, explicit previous-result import, and plan-gated audits.
 - Dashboard remains untouched; live authenticated cross-session sync is still a separate verification item.
+
+
+## Follow-up — Action tracking usability
+- Added text search across line/team/theme/finding/action ID and a status filter to the action-tracking view.
+- Reinspection-linked cases are discoverable in both the original audit month and the latest reinspection month.
+- Monthly KPI lookup falls back to audit timestamps for legacy records with no explicit month field.
+- Cache keys bumped to `20261029-action-filters-3`; dashboard remains unchanged.
