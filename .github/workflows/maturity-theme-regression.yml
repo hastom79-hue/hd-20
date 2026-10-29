@@ -71,14 +71,18 @@ jobs:
             'local audit history is preserved if remote key is missing': /k==='hd20ThemeAuditChecksV1'\|\|k==='hd20ThemeAuditPlansV1'\)\{const localAudit=localClean\(k\);if\(Array\.isArray\(localAudit\)&&localAudit\.length\)preservedKeys\.push\(k\)/.test(sync),
             'sync cache refreshed': /supabase-sync\.js\?v=20261029-theme-plan-sync-v2/.test(html),
             'maturity drilldown cache refreshed': /maturity-team-case-drilldown\.js\?v=20261028-strict-3criteria-2/.test(html),
-            'theme inspection cache refreshed': /theme-inspection\.js\?v=20261029-workflow-rebuild-1/.test(html),
+            'theme inspection cache refreshed': /theme-inspection\.js\?v=20261029-workflow-quality-2/.test(html),
             'theme workflow has four task views': ['plan','audit','actions','history'].every(v=>theme.includes('data-theme-view="'+v+'"')),
             'theme plans are stored by month and line': theme.includes("PLAN_KEY='hd20ThemeAuditPlansV1'") && theme.includes('themes:selected'),
             'only planned themes are shown in checklist': /THEMES\.filter\(cat=>activeThemes\.includes\(cat\)\)/.test(theme),
             'active Ulsan workplace master is used for line choices': theme.includes('window.HD20WorkplaceMaster?.active?.()'),
             'theme plan store is included in canonical sync': /const KEYS=\[[^\]]*'hd20ThemeAuditPlansV1'/.test(sync),
             'local theme plans are preserved if remote key is missing': /k==='hd20ThemeAuditChecksV1'\|\|k==='hd20ThemeAuditPlansV1'/.test(sync),
-            'theme workflow CSS cache refreshed': /theme-inspection-v5\.css\?v=20261029-workflow-rebuild-1/.test(html)
+            'theme workflow CSS cache refreshed': /theme-inspection-v5\.css\?v=20261029-workflow-quality-2/.test(html),
+            'new line-month has no implicit all-theme plan': /function plannedThemes\(month,line\)\{[\s\S]*?return \[\];/.test(theme),
+            'new audit round starts blank': /function checklistState\(line\)\{return \{\}\}/.test(theme),
+            'previous judgements are loaded only by explicit action': theme.includes('id="themeLoadPrevious"') && theme.includes('addEventListener(\'click\',loadPreviousJudgements)'),
+            'audit saving is blocked without a planned theme': theme.includes("if(!applicable.length){alert('먼저 [점검계획·취약현황]에서 해당 월·라인의 점검 테마를 지정하고 저장해 주세요.')")
           };
           for (const [name, ok] of Object.entries(checks)) {
             console.log((ok ? 'PASS ' : 'FAIL ') + name);
