@@ -4,12 +4,18 @@ on:
     branches: [main]
     paths:
       - 'hd20-subtabs.js'
+      - 'theme-inspection.js'
+      - 'theme-inspection-v5.css'
+      - 'supabase-sync.js'
       - 'index.html'
       - '.github/workflows/advancement-judgment-regression.yml'
   pull_request:
     branches: [main]
     paths:
       - 'hd20-subtabs.js'
+      - 'theme-inspection.js'
+      - 'theme-inspection-v5.css'
+      - 'supabase-sync.js'
       - 'index.html'
       - '.github/workflows/advancement-judgment-regression.yml'
   workflow_dispatch:
@@ -63,6 +69,22 @@ jobs:
             assert.equal(nav.length,1,'advancement must expose only the approved tab');
             assert.match(nav[0],/확정사례 관리/);
             assert.equal(await page.locator('#hd20Subnav button[data-sub="judge"]').count(),0,'retired immediate-judgement tab must not return');
+            await page.evaluate(()=>document.querySelector('.beginnerNav button[data-key="theme"]')?.click());
+            await page.waitForSelector('#awTheme .themeTabNav button[data-theme-view="plan"]',{state:'visible',timeout:12000});
+            const themeTabs=await page.locator('#awTheme .themeTabNav button').allTextContents();
+            assert.deepEqual(themeTabs,['점검계획·취약현황','현장점검 실시','미흡·개선조치 추적','재점검·이력'],'theme workflow tabs');
+            const planBoxes=page.locator('#awTheme input[name="themePlanTheme"]');
+            assert.equal(await planBoxes.count(),7,'seven 5S theme groups');
+            for(let i=1;i<await planBoxes.count();i++)await planBoxes.nth(i).uncheck();
+            await page.locator('#awTheme #themeSavePlanBtn').click();
+            await page.locator('#awTheme button[data-theme-view="audit"]').click();
+            await page.waitForSelector('#awTheme #themeChecklistWrap .themeCheckRow',{state:'visible',timeout:5000});
+            const plannedRows=await page.locator('#awTheme #themeChecklistWrap .themeCheckRow').count();
+            assert.ok(plannedRows>0&&plannedRows<23,'inspection checklist must follow the saved theme plan');
+            await page.locator('#awTheme button[data-theme-view="actions"]').click();
+            assert.equal(await page.locator('#awTheme .themePanel[data-theme-panel="actions"]:not([hidden])').count(),1,'action tracking view opens');
+            await page.locator('#awTheme button[data-theme-view="history"]').click();
+            assert.equal(await page.locator('#awTheme .themePanel[data-theme-panel="history"]:not([hidden])').count(),1,'history view opens');
             assert.deepEqual(errors,[],'browser errors');
             await page.screenshot({path:'advancement-navigation.png',fullPage:true});
             console.log('ADVANCEMENT_NAVIGATION_PASS',JSON.stringify({tabs:nav,retiredJudgeTabAbsent:true}));

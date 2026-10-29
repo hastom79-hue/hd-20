@@ -13,10 +13,10 @@
       → 카드형 레이아웃·그림자·강조색 등 다른 탭과 통일된 디자인으로 전면 교체. */
 (()=>{'use strict';
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
-const ACT_KEY='hd20ActionCasesV2',TEAM_KEY='hd20TeamLeaderMasterV1',CHECK_KEY='hd20ThemeAuditChecksV1';
+const ACT_KEY='hd20ActionCasesV2',TEAM_KEY='hd20TeamLeaderMasterV1',CHECK_KEY='hd20ThemeAuditChecksV1',PLAN_KEY='hd20ThemeAuditPlansV1';
 const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const FALLBACK_TEAMS=['대형Att.팀','대형메인팀','대형상부팀','프레임제작팀','Boom제작팀','중형상부1팀','중형상부2팀','중형하부팀','중형Att팀','중형메인팀','휠로더Front팀','휠로더리어팀','휠로더메인팀','초대형조립팀','성능팀','트러블슈팅팀','옵션조립팀','출하팀','자재물류팀'];
-const LINES=['조립라인','자재구역','공구실','검사대'];
+const LINES=(()=>{const master=window.HD20WorkplaceMaster?.active?.()||[];const names=master.map(x=>String(x.name||x).replace(/^\[울산\]\s*/,''));const old=[...loadChecks().map(x=>x.line),...load().filter(x=>x.source==='테마Audit').map(x=>x.workplace)].filter(Boolean);return [...new Set([...(names.length?names:['중형라인','대형라인','통합서브라인','중형라인 ARM KIT 라인','중형라인 BOOM KIT 라인','대형라인 ARM KIT 라인','대형라인 BOOM KIT 라인','휠로더 라인','초대형 라인','프레임 상부 ASSY','프레임 하부 ASSY','붐 라인','부품도장라인','중대형휠로더검사라인','출하장','비정규 라인(구.Pilot장)','원자재 창고','기타구역(옥외,시설물)']),...old])];})();
 /* 라인별 대표 담당팀(자재/검사 공용구역은 자재물류팀, 공구실은 트러블슈팅팀, 조립라인은 첫 조립팀을
    기본값으로 — 실제로는 현장에서 변경 가능하도록 드롭다운은 그대로 열어 둠). */
 const LINE_DEFAULT_TEAM={'조립라인':'대형Att.팀','자재구역':'자재물류팀','공구실':'트러블슈팅팀','검사대':'성능팀'};
@@ -49,6 +49,10 @@ function load(){try{const v=JSON.parse(localStorage.getItem(ACT_KEY)||'[]');retu
 function save(rows){try{localStorage.setItem(ACT_KEY,JSON.stringify(rows));return true}catch(e){console.error('[HD20 Theme] action save failed',e);return false}}
 function loadChecks(){try{const v=JSON.parse(localStorage.getItem(CHECK_KEY)||'[]');return Array.isArray(v)?v:[]}catch{return[]}}
 function saveChecks(rows){try{localStorage.setItem(CHECK_KEY,JSON.stringify(rows));return true}catch(e){console.error('[HD20 Theme] audit history save failed',e);return false}}
+function loadPlans(){try{const v=JSON.parse(localStorage.getItem(PLAN_KEY)||'[]');return Array.isArray(v)?v:[]}catch{return[]}}
+function savePlans(rows){try{localStorage.setItem(PLAN_KEY,JSON.stringify(rows));return true}catch(e){console.error('[HD20 Theme] plan save failed',e);return false}}
+function plannedThemes(month,line){const p=loadPlans().find(x=>x.month===month&&x.line===line);return p&&Array.isArray(p.themes)?THEMES.filter(t=>p.themes.includes(t)):THEMES.slice()}
+function actionTable(month){const rows=load().filter(x=>x.source==='테마Audit'&&monthKey(x.auditMonth||x.createdAt||x.date)===month).sort((a,b)=>String(b.lastAuditedAt||b.createdAt||'').localeCompare(String(a.lastAuditedAt||a.createdAt||'')));if(!rows.length)return '<div class="themeEmptyNote">선택 월에 연결된 테마점검 개선조치가 없습니다.</div>';return '<div class="themeHistoryMeta">총 '+rows.length+'건 · 동일 미흡사항의 미완료 조치는 중복 생성하지 않고 재점검 이력을 연결합니다.</div><div class="themeHistoryWrap"><table class="themeHistoryTable"><thead><tr><th>라인/구역</th><th>취약 테마</th><th>미흡사항</th><th>상태</th><th>조치기한</th><th>재점검</th><th>조치 ID</th></tr></thead><tbody>'+rows.map(a=>'<tr><td>'+esc(a.workplace||'—')+'</td><td>'+esc(a.themeCategory||a.type||'—')+'</td><td>'+esc(a.problem||'—')+'</td><td>'+esc(a.status||'—')+'</td><td>'+esc(a.dueDate||a.targetDate||'—')+'</td><td class="num">'+(Number(a.recheckCount)||0)+'</td><td>'+esc(a.id||'—')+'</td></tr>').join('')+'</tbody></table></div>'}
 function teamOptions(){try{const v=JSON.parse(localStorage.getItem(TEAM_KEY)||'[]');if(Array.isArray(v)&&v.length)return v.map(x=>x.team||x)}catch{}return FALLBACK_TEAMS}
 function seoulDate(date=new Date()){const p=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(date);const part=k=>(p.find(x=>x.type===k)||{}).value||'';return part('year')+'-'+part('month')+'-'+part('day')}
 function addDaysStr(d,n){const x=new Date(String(d).slice(0,10)+'T12:00:00Z');x.setUTCDate(x.getUTCDate()+n);return x.toISOString().slice(0,10)}
@@ -116,7 +120,8 @@ function css(){if(document.getElementById('hd20ThemeStyle'))return;const s=docum
 function monthOptions(){
  const actionMonths=load().filter(x=>x.source==='테마Audit').map(x=>monthKey(x.auditMonth||x.createdAt||x.date));
  const auditMonths=loadChecks().map(x=>monthKey(x.month||x.auditedAt));
- const set=new Set([...actionMonths,...auditMonths].filter(Boolean));
+ const planMonths=loadPlans().map(x=>monthKey(x.month));
+ const set=new Set([...actionMonths,...auditMonths,...planMonths].filter(Boolean));
  set.add(thisMonth());
  return[...set].sort().reverse();
 }
@@ -127,6 +132,7 @@ function matrixData(month){
  const rows=[...latestByLine.values()];
  const grid=LINES.map(line=>THEMES.map(theme=>{
    const rec=latestByLine.get(line);
+   if(!plannedThemes(month,line).includes(theme))return null;
    return rec?CHECKLIST.filter(item=>item.cat===theme&&rec.states?.[item.cat+'::'+item.item]==='미흡'):[];
  }));
  return{grid,rows};
@@ -168,12 +174,14 @@ function render(){
  const team=host.dataset.team||LINE_DEFAULT_TEAM[line]||teamOptions()[0]||'';host.dataset.team=team;
  const{grid,rows:matrixRows}=matrixData(month);
  const monthOpts=monthOptions();
+ const view=host.dataset.view||'plan';host.dataset.view=view;
+ const planThemes=plannedThemes(month,line);
  const k=kpis(month);
  const head='<tr><th>라인 \\ 5S 테마</th>'+THEMES.map(t=>`<th>${esc(t)}</th>`).join('')+'</tr>';
  const body=LINES.map((ln,ri)=>'<tr><td class="rowHead" data-pick-line="'+esc(ln)+'">'+esc(ln)+'</td>'+THEMES.map((th,ci)=>{
-   const n=grid[ri][ci].length;
+   const values=grid[ri][ci],n=values===null?null:values.length;
    const isSel=ln===line;
-   return `<td class="cell${isSel?' sel':''}" data-pick-line="${esc(ln)}" style="background:${cellColor(n)}">${n||''}</td>`;
+   return `<td class="cell${isSel?' sel':''}" data-pick-line="${esc(ln)}" style="background:${n===null?'#f1f4f6':cellColor(n)}" title="${n===null?'이번 월 계획 테마 아님':n+'건 미흡'}">${n===null?'—':(n||'')}</td>`;
  }).join('')+'</tr>').join('');
  host.innerHTML=`<div class="awHero">
    <div><h2>테마점검 운영센터</h2><div class="themeSubtitle">라인별 5S 취약점을 동일 기준으로 점검하고, 미흡 항목을 개선조치·완료관리와 연결합니다. 재점검 이력은 누적 보존됩니다.</div><span class="themeOwner">5S모듈 주관</span></div>
@@ -185,17 +193,25 @@ function render(){
    <div class="themeKpiCard"><small>연계 개선조치</small><b>${k.autoRegistered}건</b></div>
    <div class="themeKpiCard ${k.okRate==null?'':k.okRate>=80?'good':'warn'}"><small>적합률</small><b>${k.okRate==null?'—':k.okRate+'%'}</b></div>
  </div>
- <div class="themeTwoTrack">
-   <div class="themeTrackCard"><b>① 수동 발굴출처 트랙</b>현장 패트롤·자율 5S Audit 등 발굴 출처를 선택해 개선조치·완료관리 탭에서 직접 등록합니다.</div>
-   <div class="themeTrackCard"><b>② 테마 Audit 자동 트랙(이 화면)</b>아래 체크리스트에서 "미흡"으로 평가하면, 저장 즉시 개별 개선조치 건이 자동 등록됩니다(발굴출처: 테마Audit).</div>
- </div>
- <div class="themeSectionHead"><h3>라인 × 5S 테마 취약점 개요</h3><small style="color:#8098a8">셀 또는 라인명을 클릭하면 아래 체크리스트로 바로 이동합니다</small></div>
+ <nav class="themeTabNav" aria-label="테마점검 작업영역">
+   <button type="button" data-theme-view="plan" class="${view==='plan'?'active':''}">점검계획·취약현황</button>
+   <button type="button" data-theme-view="audit" class="${view==='audit'?'active':''}">현장점검 실시</button>
+   <button type="button" data-theme-view="actions" class="${view==='actions'?'active':''}">미흡·개선조치 추적</button>
+   <button type="button" data-theme-view="history" class="${view==='history'?'active':''}">재점검·이력</button>
+ </nav>
+ <section class="themePanel" data-theme-panel="plan" ${view==='plan'?'':'hidden'}>
+ <div class="themePlanBox"><div class="themeSectionHead"><h3>월별·라인별 취약 테마 계획</h3><small>5S 모듈이 해당 월에 중점 점검할 테마를 지정합니다.</small></div>
+ <div class="themeControls"><label>계획 라인/구역 <select id="themePlanLineSel">${LINES.map(l=>`<option${l===line?' selected':''}>${esc(l)}</option>`).join('')}</select></label><span class="themePlanHint">체크한 테마만 현장 점검표에 표시됩니다. 기존 점검 이력은 보존됩니다.</span></div>
+ <div class="themePlanChoices">${THEMES.map(t=>`<label><input type="checkbox" name="themePlanTheme" value="${esc(t)}" ${planThemes.includes(t)?'checked':''}><span>${esc(t)}</span></label>`).join('')}</div>
+ <div class="themePlanFooter"><span>선택 테마 <b id="themePlanCount">${planThemes.length}</b> / ${THEMES.length}</span><button type="button" class="themePlanSave" id="themeSavePlanBtn">계획 저장</button></div></div>
+ <div class="themeSectionHead"><h3>라인 × 5S 테마 취약점 개요</h3><small>계획 테마만 집계 · 셀 또는 라인명을 클릭해 라인 선택</small></div>
  <div class="themeMatrixWrap">
    <table class="themeMatrix">${head}${body}</table>
    ${matrixRows.length?'':'<div class="themeEmptyNote">⚠ 이번 달에는 아직 테마 Audit을 실시한 라인이 없습니다. 아래 "테마 Audit 실시"에서 라인을 선택해 점검을 시작하세요.</div>'}
  </div>
- <div class="themeHistoryBox"><div class="themeSectionHead" style="margin-top:0"><h3>최근 점검 이력</h3><small style="color:#8098a8">선택 월의 점검 회차·미흡 건수·연계 조치를 확인합니다</small></div>${historyTable(month)}</div>
- <div class="themeAuditBox" id="themeAuditBox">
+ </section>
+ <section class="themePanel" data-theme-panel="history" ${view==='history'?'':'hidden'}><div class="themeHistoryBox"><div class="themeSectionHead" style="margin-top:0"><h3>최근 점검 이력</h3><small>선택 월의 점검 회차·미흡 건수·연계 조치를 확인합니다</small></div>${historyTable(month)}</div></section>
+ <section class="themePanel" data-theme-panel="audit" ${view==='audit'?'':'hidden'}><div class="themeAuditBox" id="themeAuditBox">
    <div class="themeSectionHead" style="margin-top:0"><h3>테마 Audit 실시 — <span id="themeAuditLineLabel">${esc(line)}</span></h3></div>
    <div class="themeControls">
      <label>라인 <select id="themeLineSel">${LINES.map(l=>`<option${l===line?' selected':''}>${esc(l)}</option>`).join('')}</select></label>
@@ -208,19 +224,22 @@ function render(){
    <div class="themeAuditMeta"><label>현장 관찰 메모 <textarea id="themeAuditMemo" rows="2" placeholder="현장 특이사항, 즉시조치, 재발 위험 등을 기록"></textarea></label><div id="themeProgress" aria-live="polite"></div></div><div id="themeChecklistWrap"></div>
    <button type="button" class="themeSaveBtn" id="themeSaveBtn">점검 결과 저장 · 미흡 항목 자동 등록</button>
    <div class="themeSaveResult" id="themeSaveResult"></div>
- </div>`;
+ </div></section>
+ <section class="themePanel" data-theme-panel="actions" ${view==='actions'?'':'hidden'}><div class="themeHistoryBox"><div class="themeSectionHead" style="margin-top:0"><h3>테마점검 미흡사항 · 개선조치 추적</h3><small>개선조치·완료관리와 같은 원본 조치 레코드를 조회합니다</small></div>${actionTable(month)}</div></section>`;
  $('#themeMonthSel',host).addEventListener('change',e=>{host.dataset.month=e.target.value;render()});
- $('#themeLineSel',host).addEventListener('change',e=>{host.dataset.line=e.target.value;host.dataset.team=LINE_DEFAULT_TEAM[e.target.value]||host.dataset.team;syncLineLabel();renderChecklist();refreshMatrixSelection()});
+ Array.from(host.querySelectorAll('[data-theme-view]')).forEach(btn=>btn.addEventListener('click',()=>{host.dataset.view=btn.dataset.themeView;render()}));
+ $('#themePlanLineSel',host).addEventListener('change',e=>{host.dataset.line=e.target.value;host.dataset.team=LINE_DEFAULT_TEAM[e.target.value]||host.dataset.team;render()});
+ Array.from(host.querySelectorAll('input[name="themePlanTheme"]')).forEach(box=>box.addEventListener('change',()=>{const n=host.querySelectorAll('input[name="themePlanTheme"]:checked').length;const count=$('#themePlanCount',host);if(count)count.textContent=n}));
+ $('#themeSavePlanBtn',host).addEventListener('click',()=>{const selected=Array.from(host.querySelectorAll('input[name="themePlanTheme"]:checked')).map(x=>x.value);if(!selected.length){alert('최소 1개 이상의 취약 테마를 선택해 주세요.');return}const plans=loadPlans(),entry={month,line:host.dataset.line,themes:selected,updatedAt:new Date().toISOString()};const i=plans.findIndex(x=>x.month===month&&x.line===host.dataset.line);if(i>=0)plans[i]=entry;else plans.push(entry);if(!savePlans(plans)){alert('점검계획 저장에 실패했습니다. 저장공간을 확인해 주세요.');return}render()});
+ $('#themeLineSel',host).addEventListener('change',e=>{host.dataset.line=e.target.value;host.dataset.team=LINE_DEFAULT_TEAM[e.target.value]||host.dataset.team;render()});
  $('#themeTeamSel',host).addEventListener('change',e=>{host.dataset.team=e.target.value});
  $('#themeSaveBtn',host).addEventListener('click',saveAudit);
  $('#themeBulkAllOk',host).addEventListener('click',()=>bulkSet('적합'));
  $('#themeBulkClear',host).addEventListener('click',()=>bulkSet(''));
- $$('[data-pick-line]',host).forEach(el=>el.addEventListener('click',()=>{
+ Array.from(host.querySelectorAll('[data-pick-line]')).forEach(el=>el.addEventListener('click',()=>{
    const ln=el.getAttribute('data-pick-line');
-   host.dataset.line=ln;host.dataset.team=LINE_DEFAULT_TEAM[ln]||host.dataset.team;
-   $('#themeLineSel',host).value=ln;$('#themeTeamSel',host).value=host.dataset.team;
-   syncLineLabel();renderChecklist();refreshMatrixSelection();
-   $('#themeAuditBox',host).scrollIntoView({behavior:'smooth',block:'start'});
+   host.dataset.line=ln;host.dataset.team=LINE_DEFAULT_TEAM[ln]||host.dataset.team;host.dataset.view='audit';render();
+   $('#themeAuditBox',host)?.scrollIntoView({behavior:'smooth',block:'start'});
  }));
  renderChecklist();
 }
@@ -247,7 +266,8 @@ function renderChecklist(){
  const wrap=document.getElementById('themeChecklistWrap');if(!wrap)return;
  const line=host.dataset.line;
  const states=checklistState(line);
- const groups=THEMES.map(cat=>{
+ const activeThemes=plannedThemes(host.dataset.month,line);
+ const groups=THEMES.filter(cat=>activeThemes.includes(cat)).map(cat=>{
    const items=CHECKLIST.filter(c=>c.cat===cat);
    const rows=items.map((it)=>{
      const key=cat+'::'+it.item;
@@ -299,7 +319,8 @@ function saveAudit(){
  const line=host.dataset.line,team=host.dataset.team,month=host.dataset.month;
  const rows=$$('.themeCheckRow',host),states={};
  rows.forEach(row=>{const active=row.querySelector('button.active');if(active)states[row.dataset.key]=active.dataset.v});
- if(Object.keys(states).length<CHECKLIST.length){const missing=CHECKLIST.length-Object.keys(states).length;alert('미판정 항목 '+missing+'건이 있습니다. 모든 항목을 판정한 뒤 저장해 주세요.');return}
+ const applicable=CHECKLIST.filter(item=>plannedThemes(month,line).includes(item.cat));
+ if(Object.keys(states).length<applicable.length){const missing=applicable.length-Object.keys(states).length;alert('미판정 항목 '+missing+'건이 있습니다. 모든 항목을 판정한 뒤 저장해 주세요.');return}
  const checks=loadChecks(),memo=$('#themeAuditMemo',host)?.value.trim()||'';
  const rec={id:newId('THEME-AUDIT'),line,team,month,states,memo,auditedAt:new Date().toISOString(),checklistVersion:4,linkedActionIds:[],createdActionIds:[],reusedActionIds:[],ngCount:rows.filter(row=>states[row.dataset.key]==='미흡').length};
  checks.push(rec);
