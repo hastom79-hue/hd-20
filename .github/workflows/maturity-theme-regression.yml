@@ -85,7 +85,12 @@ jobs:
             'audit saving is blocked without a planned theme': theme.includes("if(!applicable.length){alert('먼저 [점검계획·취약현황]에서 해당 월·라인의 점검 테마를 지정하고 저장해 주세요.')"),
             'action tracker has text and status filters': theme.includes('id="themeActionSearch"') && theme.includes('id="themeActionStatus"'),
             'action tracker includes latest reinspection month': /monthKey\(x\.auditMonth\|\|x\.createdAt\|\|x\.date\)===month\|\|monthKey\(x\.lastAuditMonth\|\|x\.lastAuditedAt\)===month/.test(theme),
-            'KPI month filter supports legacy audit timestamps': /loadChecks\(\)\.filter\(x=>monthKey\(x\.month\|\|x\.auditedAt\)===month\)/.test(theme)
+            'KPI month filter supports legacy audit timestamps': /loadChecks\(\)\.filter\(x=>monthKey\(x\.month\|\|x\.auditedAt\)===month\)/.test(theme),
+            'theme workflow uses explicit four-step process rail': theme.includes('themeWorkflowRail') && ['점검계획','현장 Audit','개선조치','재점검'].every(v=>theme.includes(v)),
+            'line overview is compact and line-first': theme.includes('themeLineSummaryBody') && theme.includes('themeLineAction') && theme.includes('계획된 취약 테마'),
+            'line overview no longer renders a wide heatmap table': !theme.includes('<table class="themeMatrix">'),
+            'dashboard-like KPI tile row removed from theme screen': !theme.includes('<div class="themeKpiRow">'),
+            'theme v6 assets cache refreshed': /theme-inspection\.js\?v=20261029-line-first-v6/.test(html) && /theme-inspection-v5\.css\?v=20261029-line-first-v6/.test(html)
           };
           for (const [name, ok] of Object.entries(checks)) {
             console.log((ok ? 'PASS ' : 'FAIL ') + name);
