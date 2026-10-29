@@ -21,3 +21,11 @@
 - JavaScript syntax and workflow regression checks run in GitHub Actions before merge.
 - Authenticated cross-session sync and live visual browser verification remain separate production-session checks.
 - Live authenticated save/sync and visual browser verification remain required before claiming complete production validation.
+
+
+## Follow-up quality correction — 2026-10-29
+- New month/line pairs now start with no planned themes instead of silently enabling all themes.
+- Saving an audit is blocked until at least one theme is explicitly planned.
+- New audit rounds start with blank judgments; copying the previous round is an explicit action and is labeled as a reference that must be rechecked onsite.
+- Added browser regression assertions for clean rounds, explicit previous-result import, and plan-gated audits.
+- Dashboard remains untouched; live authenticated cross-session sync is still a separate verification item.
