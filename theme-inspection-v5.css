@@ -64,3 +64,27 @@
 #awTheme .themeEmptyNote{padding:12px;background:#fff8e8;border:1px solid #f0dca8;border-radius:7px;color:#84621b;font-size:12px}
 @media(max-width:950px){#awTheme .themeKpiRow{grid-template-columns:repeat(2,minmax(0,1fr))!important}#awTheme .themePlanChoices{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:620px){#awTheme .awHero{padding:16px!important}#awTheme .awHero h2{font-size:20px!important}#awTheme .themePlanChoices{grid-template-columns:1fr}#awTheme .themeCheckRow{grid-template-columns:1fr!important}#awTheme .themeCheckRow .themeToggle{justify-content:flex-start}#awTheme .themeTabNav button{min-width:132px;padding:10px}}
+
+/* Workflow quality: explicit planning gate, clean audit rounds, and clearer action controls */
+#awTheme .themeKpiCard{position:relative;min-height:88px}
+#awTheme .themeKpiCard em{display:block;margin-top:4px;font-size:10px;font-style:normal;color:#718697}
+#awTheme .themePlanState{font-size:11px;color:#0e6f91}
+#awTheme .themePlanEmpty{margin-top:12px;background:#fff8e8!important;border-color:#efd9a3!important;color:#76571c!important}
+#awTheme .themePreviousNote{flex:1 1 100%;font-size:11px;line-height:1.5;color:#0e6f91;padding:3px 0}
+#awTheme .themeTabNav button{position:relative;transition:background .15s,color .15s}
+#awTheme .themeTabNav button:hover{background:#edf5f8;color:#145a70}
+#awTheme .themePlanSave,#awTheme .themeSaveBtn{transition:filter .15s,transform .15s}
+#awTheme .themePlanSave:hover,#awTheme .themeSaveBtn:hover{filter:brightness(.95);transform:translateY(-1px)}
+#awTheme .themeChecklistGroup{border:1px solid #e2eaf0;border-radius:8px;overflow:hidden;margin:14px 16px 0}
+#awTheme .themeChecklistGroup>.catHead{margin:0!important;border-radius:0!important}
+#awTheme .themeChecklistGroup .themeCheckRow:last-child{border-bottom:0}
+#awTheme .themeAuditBox .themeWorkflowNote{font-weight:600}
+#awTheme .themeAuditBox .themeBulkBtn{cursor:pointer;transition:background .15s,border-color .15s}
+#awTheme .themeAuditBox .themeBulkBtn:hover{background:#eaf4f8;border-color:#8ab9ca}
+@media(max-width:620px){
+ #awTheme .themeKpiCard{min-height:75px;padding:10px!important}
+ #awTheme .themeKpiCard b{font-size:21px!important}
+ #awTheme .themePlanFooter{align-items:flex-start;flex-direction:column}
+ #awTheme .themeChecklistGroup{margin-left:8px;margin-right:8px}
+ #awTheme .themeAuditBox>.themeControls,#awTheme .themeAuditBox>.themeBulkRow,#awTheme .themeAuditBox>.themeAuditMeta,#awTheme .themeAuditBox>#themeChecklistWrap{margin-left:8px!important;margin-right:8px!important}
+}

@@ -75,12 +75,16 @@ jobs:
             assert.deepEqual(themeTabs,['점검계획·취약현황','현장점검 실시','미흡·개선조치 추적','재점검·이력'],'theme workflow tabs');
             const planBoxes=page.locator('#awTheme input[name="themePlanTheme"]');
             assert.equal(await planBoxes.count(),7,'seven 5S theme groups');
-            for(let i=1;i<await planBoxes.count();i++)await planBoxes.nth(i).uncheck();
+            for(let i=0;i<await planBoxes.count();i++){if(i===0)await planBoxes.nth(i).check();else await planBoxes.nth(i).uncheck();}
             await page.locator('#awTheme #themeSavePlanBtn').click();
             await page.locator('#awTheme button[data-theme-view="audit"]').click();
             await page.waitForSelector('#awTheme #themeChecklistWrap .themeCheckRow',{state:'visible',timeout:5000});
             const plannedRows=await page.locator('#awTheme #themeChecklistWrap .themeCheckRow').count();
             assert.ok(plannedRows>0&&plannedRows<23,'inspection checklist must follow the saved theme plan');
+            assert.equal(await page.locator('#awTheme #themeChecklistWrap button.active').count(),0,'new audit round must not inherit previous judgements');
+            assert.equal(await page.locator('#awTheme #themeLoadPrevious').count(),1,'previous judgement import is an explicit control');
+            await page.locator('#awTheme #themeBulkClear').click();
+            assert.equal(await page.locator('#awTheme #themeChecklistWrap button.active').count(),0,'clear returns the round to a clean state');
             await page.locator('#awTheme button[data-theme-view="actions"]').click();
             assert.equal(await page.locator('#awTheme .themePanel[data-theme-panel="actions"]:not([hidden])').count(),1,'action tracking view opens');
             await page.locator('#awTheme button[data-theme-view="history"]').click();
