@@ -1,5 +1,8 @@
 /* HD-20 integrated master information / 2026-10-27 full interaction redesign */
 #masterModal .masterInfoBox{grid-template-columns:232px minmax(0,1fr)!important;border-radius:14px!important}
+/* CI 레이아웃 검증 중 발견: 왼쪽 사이드바가 고정 232px라서 좁은 모바일(375px 등) 화면에서 전체 박스가
+   뷰포트 가로 폭을 넘김 — 좁은 화면에서는 사이드바를 위, 콘텐츠를 아래로 쌓는 1열 레이아웃으로 전환. */
+@media (max-width:480px){#masterModal .masterInfoBox{grid-template-columns:1fr!important}}
 #masterModal .masterInfoBox>.modalHead{min-height:66px!important;padding:13px 23px!important;background:#fff!important}
 #masterModal .masterInfoBox>.modalHead b{font-size:20px!important;letter-spacing:-.4px}
 #masterModal .masterInfoBox>.modalHead span{font-size:12px!important;color:#8192a2!important}
