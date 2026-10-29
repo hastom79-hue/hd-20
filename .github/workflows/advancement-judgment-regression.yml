@@ -13,6 +13,9 @@ on:
     branches: [main]
     paths:
       - 'hd20-subtabs.js'
+      - 'theme-inspection.js'
+      - 'theme-inspection-v5.css'
+      - 'supabase-sync.js'
       - 'index.html'
       - '.github/workflows/advancement-judgment-regression.yml'
   workflow_dispatch:
