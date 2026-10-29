@@ -236,7 +236,7 @@ function render(){
  $('#themeSaveBtn',host).addEventListener('click',saveAudit);
  $('#themeBulkAllOk',host).addEventListener('click',()=>bulkSet('적합'));
  $('#themeBulkClear',host).addEventListener('click',()=>bulkSet(''));
- $('[data-pick-line]',host).forEach(el=>el.addEventListener('click',()=>{
+ Array.from(host.querySelectorAll('[data-pick-line]')).forEach(el=>el.addEventListener('click',()=>{
    const ln=el.getAttribute('data-pick-line');
    host.dataset.line=ln;host.dataset.team=LINE_DEFAULT_TEAM[ln]||host.dataset.team;host.dataset.view='audit';render();
    $('#themeAuditBox',host)?.scrollIntoView({behavior:'smooth',block:'start'});
