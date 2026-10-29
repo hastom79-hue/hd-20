@@ -130,7 +130,6 @@ html body:has(.beginnerNav button[data-key="audit"].active) #performanceConversi
 html body:has(.beginnerNav button[data-key="action"].active) #performanceConversionAnalysis,
 html body:has(.beginnerNav button[data-key="master"].active) #performanceConversionAnalysis,
 html body:has(.beginnerNav button:not([data-key="advancement"]).active) #awWorkplace,
-html body:has(.beginnerNav button:not([data-key="advancement"]).active) #hd20MaturityMapTab,
 html body:has(.beginnerNav button:not([data-key="advancement"]).active) #hd20AdvancementDecisionGuide,
 html body:has(.beginnerNav button:not([data-key="advancement"]).active) #hd20MaturityConditionAnalysis,
 html body:has(.beginnerNav button:not([data-key="advancement"]).active) #hd20AdvancementIntegrated,

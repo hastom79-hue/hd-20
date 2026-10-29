@@ -22,7 +22,7 @@ jobs:
           (async()=>{
             const browser=await chromium.launch({headless:true});
             const cases=[{name:'desktop',width:1440,height:1000},{name:'desktop-125pct-equivalent',width:1152,height:800},{name:'tablet',width:900,height:900},{name:'mobile',width:375,height:812}];
-            const tabs=['dashboard','activity','advancement','audit','action','master','theme'];
+            const tabs=['dashboard','activity','audit','theme','action','advancement','master'];
             const expectedKpis=['고도화 확정 사례의 유지율','고도화 확정 후 이탈률','Audit 후 6개월 유지율','Audit 부적합 재발률','기한 내 개선조치 완료율'];
             const advancementLevels=['1개 조건 충족 영역','2개 이상 충족 영역','3개 모두 충족 영역'];
             for(const vp of cases){
