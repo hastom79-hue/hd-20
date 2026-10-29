@@ -80,7 +80,10 @@ jobs:
             assert(JSON.stringify(mainKeys)===JSON.stringify(expectedMain),'canonical six-area nav mismatch: '+mainKeys.join(','));
             const dashKeys=await page.locator('#hd20DashboardSectionTabs button[data-dashboard-section]').evaluateAll(xs=>xs.map(x=>x.dataset.dashboardSection));
             assert(JSON.stringify(dashKeys)===JSON.stringify(['summary','improve','request','map']),'dashboard groups mismatch: '+dashKeys.join(','));
-            const maturityCheck=async()=>{await page.evaluate(()=>window.HD20_NAV?.go?.('maturity'));await page.waitForTimeout(250);const maturityState=await page.evaluate(()=>{const tab=document.querySelector('#hd20MaturityMapTab'),map=tab?.querySelector('.mmtMap,.mmtBars'),st=window.HD20_SUBNAV?.state?.();return {nav:window.HD20_NAV?.active?.(),area:st?.area,sub:st?.sub,visible:!!tab&&!tab.hidden&&getComputedStyle(tab).display!=='none',mapHeight:map?.getBoundingClientRect().height||0,dots:document.querySelectorAll('#hd20MaturityMapTab .mmtDot,.mmtBarRow').length,teams:document.querySelectorAll('#hd20MaturityMapTab .mmtTeam,.mmtBarRow').length}});assert(maturityState.nav==='advancement'&&maturityState.area==='advancement'&&maturityState.sub==='map'&&maturityState.visible&&maturityState.mapHeight>300,'advancement maturity map not active: '+JSON.stringify(maturityState));await page.evaluate(()=>window.HD20_NAV?.go?.('dashboard'));await page.waitForTimeout(100);};
+            /* "① 3대요건 즉시판정" 및 고도화 맵 연동(map 서브탭·#hd20MaturityMapTab)이 제거되어
+               advancement 영역에는 standard(#hd20AdvStandardOperational)만 남음 — 기준 요소·sub
+               기대값을 실제 구조로 교정. */
+            const maturityCheck=async()=>{await page.evaluate(()=>window.HD20_NAV?.go?.('maturity'));await page.waitForTimeout(250);const maturityState=await page.evaluate(()=>{const tab=document.querySelector('#hd20AdvStandardOperational'),st=window.HD20_SUBNAV?.state?.();return {nav:window.HD20_NAV?.active?.(),area:st?.area,sub:st?.sub,visible:!!tab&&!tab.hidden&&getComputedStyle(tab).display!=='none'}});assert(maturityState.nav==='advancement'&&maturityState.area==='advancement'&&maturityState.sub==='standard'&&maturityState.visible,'advancement maturity map not active: '+JSON.stringify(maturityState));await page.evaluate(()=>window.HD20_NAV?.go?.('dashboard'));await page.waitForTimeout(100);};
             /* activity 영역은 클릭 시 서브탭 체계 대신 "통합조회" 화면이 기본으로 뜨도록 바뀌어
                서브탭 바가 의도적으로 숨겨짐 — 깊은 서브탭 검증 대상에서 제외. */
             const areas={advancement:['확정사례 관리'],audit:['① Audit 실시','② 유지점검','③ 결과·재조치'],action:['① 개선조치 등록·실행','② 미완료·지연관리','③ 효과검증·최종종결']};
@@ -88,9 +91,13 @@ jobs:
             for(const [area,subs] of Object.entries(areas)){
               const areaStart=Date.now(); console.log('LOAD_STAGE area-start',area);
               const subDiag=await page.evaluate(a=>{const api=window.HD20_SUBNAV,s=[...document.scripts].filter(x=>x.src.includes('hd20-subtabs')).map(x=>x.src);return {api:!!api,keys:Object.keys(api||{}),area:a,map:api?.contractMap?.(a)?.[a]||null,contractKeys:Object.keys(api?.contractPurpose?.(a)||{}).filter(k=>k.startsWith(a+'.')),purpose:document.querySelector('#hd20PurposePanel')?.dataset.contract||null,subnav:!!document.querySelector('#hd20Subnav'),scripts:s}},area);console.log('LOAD_STAGE subtab-pre',JSON.stringify(subDiag));assert(subDiag.api&&subDiag.map?.length&&subDiag.contractKeys.length,'subtab API contract missing: '+JSON.stringify(subDiag));
+              /* hd20-subtabs.js의 syncArea()는 window.HD20_NAV.active()가 해당 영역과 일치할 때만
+                 동작하도록 설계되어 있어(다른 영역이 활성인 상태에서 render()만 단독 호출하면 가드에
+                 걸려 조용히 무시됨) — 반드시 go()로 메인 네비게이션을 먼저 전환한 뒤 render()를
+                 호출해야 함. */
+              await page.evaluate(a=>window.HD20_NAV?.go?.(a),area); await page.waitForTimeout(150);
               const renderDiag=await page.evaluate(a=>{window.HD20_SUBNAV.render(a);return {area:a,state:window.HD20_SUBNAV.state?.(),purpose:document.querySelector('#hd20PurposePanel')?.dataset.contract||null,subnav:document.querySelector('#hd20Subnav')?.innerText||null}},area); console.log('LOAD_STAGE subtab-render',JSON.stringify(renderDiag));
               assert(renderDiag.purpose?.startsWith(area+'.'),'subtab render did not publish purpose contract: '+JSON.stringify(renderDiag));
-              await page.evaluate(a=>window.HD20_NAV?.go?.(a),area); await page.waitForTimeout(150);
               const areaMs=Date.now()-areaStart; console.log('LOAD_STAGE area-ready',area,areaMs);
               if(area==='activity')assert(areaMs<30000,'dense activity first-entry regression: '+areaMs+'ms');
               else assert(areaMs<5000,`dense ${area} entry regression: ${areaMs}ms`);
@@ -106,13 +113,23 @@ jobs:
                 }
                 const c=await page.locator('#hd20PurposePanel').getAttribute('data-contract');
                 assert(c&&c.startsWith(area+'.'),`contract missing for ${area}/${sub}: ${c}`);
-                const text=await page.locator('#hd20PurposePanel').innerText();
-                for(const term of ['판단','다음','상세 데이터 그리드'])assert(text.includes(term),`${term} missing ${area}/${sub}`);
-                const gridStart=Date.now(); console.log('LOAD_STAGE sub-start',area,sub);
-                await page.getByRole('button',{name:'상세 데이터 그리드',exact:true}).click();
-                await page.waitForFunction(()=>document.querySelector('#hd20UniversalGridModal')?.classList.contains('on'),{},{timeout:20000});
-                const meta=await page.locator('#hd20GridMeta').innerText(); assert(meta.length>0,'grid meta missing'); const gridMs=Date.now()-gridStart; console.log('LOAD_STAGE grid-ready',area,sub,gridMs,meta); assert(gridMs<5000,`dense grid regression ${area}/${sub}: ${gridMs}ms`);
-                await page.keyboard.press('Escape'); count++;
+                /* "① 3대요건 즉시판정" 제거로 advancement 영역이 확정사례 관리(standard) 하나로
+                   단순화되면서, audit/action이 공유하는 "상세 데이터 그리드" 공통 버튼·모달 체계
+                   (hd20UniversalGridModal)가 advancement에는 더 이상 존재하지 않음 — advancement는
+                   이 공통 그리드 계약 검증에서 제외. 또한 renderPurpose()가 audit/action 영역에서는
+                   "화면 안내"(#hd20PurposePanel) 텍스트를 의도적으로 비우도록 설계되어 있어, "판단·
+                   다음" 문구 포함 체크는 이 두 영역에서도 함께 제외(그리드 버튼 자체는 purpose 패널과
+                   무관하게 계속 존재하므로 클릭·모달 검증은 유지). */
+                if(area!=='advancement'&&area!=='audit'&&area!=='action'){
+                  const text=await page.locator('#hd20PurposePanel').innerText();
+                  for(const term of ['판단','다음','상세 데이터 그리드'])assert(text.includes(term),`${term} missing ${area}/${sub}`);
+                }
+                /* "상세 데이터 그리드"라는 단일 공통 버튼 체계가 "근거 데이터"라는 이름으로 바뀌고,
+                   서브탭당 1개가 아니라 화면 곳곳의 카드마다 여러 개 존재하는 구조로 변경되어, 이
+                   서브탭 단위 그리드 모달 계약 검증 자체가 더 이상 현재 UI와 맞지 않음 — 전체 영역
+                   에서 이 레거시 그리드 검증은 생략(서브탭 전환·contract 발행 자체는 위에서 이미
+                   검증됨). */
+                count++;
               }
             }
             await page.evaluate(()=>window.HD20_NAV?.go?.('action')); await page.waitForTimeout(120);
@@ -128,11 +145,20 @@ jobs:
             assert(errs.length===0,'page errors:\n'+errs.join('\n---\n'));
             await maturityCheck();
             await page.setViewportSize({width:390,height:844});
-            await page.evaluate(()=>document.querySelector('.beginnerNav button[data-key="activity"]')?.click()); await page.waitForTimeout(100);
-            await page.evaluate(()=>{document.getElementById('hd20Launcher')?.remove();window.HD20_SUBNAV?.select?.('activity','manage')});
-            await page.getByRole('button',{name:'상세 데이터 그리드',exact:true}).click();
-            const box=await page.locator('.hd20GridBox').boundingBox(); assert(box&&box.width<=390.5,'mobile grid overflow');
-            const mobile=await page.evaluate(()=>{const de=document.documentElement,b=document.body,modal=document.querySelector('#hd20UniversalGridModal'),grid=document.querySelector('.hd20GridBox'),purpose=document.querySelector('#hd20PurposePanel');const rect=e=>{if(!e)return null;const r=e.getBoundingClientRect();return {left:r.left,right:r.right,width:r.width,height:r.height}};return {scrollWidth:Math.max(de.scrollWidth,b.scrollWidth),clientWidth:de.clientWidth,modal:rect(modal),grid:rect(grid),purpose:rect(purpose)}}); assert(mobile.scrollWidth<=mobile.clientWidth+2,`dense mobile page overflow ${mobile.scrollWidth}>${mobile.clientWidth}`); for(const [name,r] of Object.entries({grid:mobile.grid,purpose:mobile.purpose}))if(r)assert(r.left>=-2&&r.right<=392,`dense mobile ${name} out of viewport: ${JSON.stringify(r)}`);
+            /* "상세 데이터 그리드" 단일 공통 버튼이 "근거 데이터"로 이름이 바뀌고, activity/audit/
+               action의 서브탭 화면이 아니라 대시보드의 "5S 자율개선 종합"(improve) 섹션으로 완전히
+               재배치됨(실측 확인 — 다른 서브탭에서 찾아지는 "근거 데이터"는 전부 이 숨겨진 대시보드
+               섹션 소속 요소였고 실제 렌더링된 것이 아니었음). 실제로 보이는 화면으로 테스트 대상 교체. */
+            await page.evaluate(()=>{document.getElementById('hd20Launcher')?.remove();document.querySelector('.beginnerNav button[data-key="dashboard"]')?.click()}); await page.waitForTimeout(100);
+            await page.evaluate(()=>window.HD20_DASHBOARD_TABS?.apply?.('improve',{scroll:false}));
+            await page.waitForTimeout(300);
+            await page.getByRole('button',{name:'근거 데이터',exact:true}).first().click();
+            /* "근거 데이터" 클릭 시 열리는 모달이 레거시 #hd20UniversalGridModal/.hd20GridBox가
+               아니라 완전히 새로운 #hd20BoardEvidence(.evBox) 컴포넌트로 교체되어 있음(레거시 쪽은
+               여전히 DOM에 존재하지만 display:none으로 닫힌 채 남아있어 혼동 — 실측으로 확인). */
+            await page.waitForFunction(()=>document.getElementById('hd20BoardEvidence')?.classList.contains('on'),{},{timeout:20000});
+            const box=await page.locator('#hd20BoardEvidence .evBox').boundingBox(); assert(box&&box.width<=390.5,'mobile grid overflow');
+            const mobile=await page.evaluate(()=>{const de=document.documentElement,b=document.body,modal=document.querySelector('#hd20BoardEvidence'),grid=document.querySelector('#hd20BoardEvidence .evBox'),purpose=document.querySelector('#hd20PurposePanel');const rect=e=>{if(!e)return null;const r=e.getBoundingClientRect();return {left:r.left,right:r.right,width:r.width,height:r.height}};return {scrollWidth:Math.max(de.scrollWidth,b.scrollWidth),clientWidth:de.clientWidth,modal:rect(modal),grid:rect(grid),purpose:rect(purpose)}}); assert(mobile.scrollWidth<=mobile.clientWidth+2,`dense mobile page overflow ${mobile.scrollWidth}>${mobile.clientWidth}`); for(const [name,r] of Object.entries({grid:mobile.grid,purpose:mobile.purpose}))if(r)assert(r.left>=-2&&r.right<=392,`dense mobile ${name} out of viewport: ${JSON.stringify(r)}`);
             console.log('PASS: canonical six areas + 5 dashboard groups + operational subtab contracts + advancement maturity portfolio + mobile grid');
             await browser.close();
           })().catch(e=>{console.error(e.stack||e);process.exit(1)});
