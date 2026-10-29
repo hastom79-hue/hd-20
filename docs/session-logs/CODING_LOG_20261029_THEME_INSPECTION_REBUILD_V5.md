@@ -36,3 +36,11 @@
 - Reinspection-linked cases are discoverable in both the original audit month and the latest reinspection month.
 - Monthly KPI lookup falls back to audit timestamps for legacy records with no explicit month field.
 - Cache keys bumped to `20261029-action-filters-3`; dashboard remains unchanged.
+
+
+## 2026-10-29 v6 — 라인 우선 운영화면
+- 기존 매트릭스가 차지하던 넓은 가로 영역을 제거하고 라인별 요약 목록으로 전환.
+- 라인별 계획 테마 칩, 최근 점검 일시, 최신 점검의 미흡 건수, 월 필터 기준 연계 조치 수, 현장점검 진입 버튼을 한 행에 배치.
+- 상단의 대시보드형 KPI 카드 4개를 제거하고 4단계 업무 흐름 레일로 대체.
+- 작은 화면은 라인별 요약을 세로 재배치하며 계획/이력/조치 데이터 스키마는 변경하지 않음.
+- 추가 회귀 assertion: 업무 흐름 레일, 라인 요약 진입, 넓은 매트릭스 제거, KPI 타일 제거, 캐시 키 갱신.
