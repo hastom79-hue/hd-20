@@ -120,7 +120,8 @@ function css(){if(document.getElementById('hd20ThemeStyle'))return;const s=docum
 function monthOptions(){
  const actionMonths=load().filter(x=>x.source==='테마Audit').map(x=>monthKey(x.auditMonth||x.createdAt||x.date));
  const auditMonths=loadChecks().map(x=>monthKey(x.month||x.auditedAt));
- const set=new Set([...actionMonths,...auditMonths].filter(Boolean));
+ const planMonths=loadPlans().map(x=>monthKey(x.month));
+ const set=new Set([...actionMonths,...auditMonths,...planMonths].filter(Boolean));
  set.add(thisMonth());
  return[...set].sort().reverse();
 }
@@ -178,7 +179,7 @@ function render(){
  const k=kpis(month);
  const head='<tr><th>라인 \\ 5S 테마</th>'+THEMES.map(t=>`<th>${esc(t)}</th>`).join('')+'</tr>';
  const body=LINES.map((ln,ri)=>'<tr><td class="rowHead" data-pick-line="'+esc(ln)+'">'+esc(ln)+'</td>'+THEMES.map((th,ci)=>{
-   const n=grid[ri][ci].length;
+   const values=grid[ri][ci],n=values===null?null:values.length;
    const isSel=ln===line;
    return `<td class="cell${isSel?' sel':''}" data-pick-line="${esc(ln)}" style="background:${n===null?'#f1f4f6':cellColor(n)}" title="${n===null?'이번 월 계획 테마 아님':n+'건 미흡'}">${n===null?'—':(n||'')}</td>`;
  }).join('')+'</tr>').join('');
@@ -226,21 +227,19 @@ function render(){
  </div></section>
  <section class="themePanel" data-theme-panel="actions" ${view==='actions'?'':'hidden'}><div class="themeHistoryBox"><div class="themeSectionHead" style="margin-top:0"><h3>테마점검 미흡사항 · 개선조치 추적</h3><small>개선조치·완료관리와 같은 원본 조치 레코드를 조회합니다</small></div>${actionTable(month)}</div></section>`;
  $('#themeMonthSel',host).addEventListener('change',e=>{host.dataset.month=e.target.value;render()});
- $('[data-theme-view]',host).forEach(btn=>btn.addEventListener('click',()=>{host.dataset.view=btn.dataset.themeView;render()}));
+ Array.from(host.querySelectorAll('[data-theme-view]')).forEach(btn=>btn.addEventListener('click',()=>{host.dataset.view=btn.dataset.themeView;render()}));
  $('#themePlanLineSel',host).addEventListener('change',e=>{host.dataset.line=e.target.value;host.dataset.team=LINE_DEFAULT_TEAM[e.target.value]||host.dataset.team;render()});
- $('input[name="themePlanTheme"]',host).forEach(box=>box.addEventListener('change',()=>{const n=$('input[name="themePlanTheme"]:checked',host).length;const count=$('#themePlanCount',host);if(count)count.textContent=n}));
- $('#themeSavePlanBtn',host).addEventListener('click',()=>{const selected=$('input[name="themePlanTheme"]:checked',host).map(x=>x.value);if(!selected.length){alert('최소 1개 이상의 취약 테마를 선택해 주세요.');return}const plans=loadPlans(),entry={month,line:host.dataset.line,themes:selected,updatedAt:new Date().toISOString()};const i=plans.findIndex(x=>x.month===month&&x.line===host.dataset.line);if(i>=0)plans[i]=entry;else plans.push(entry);if(!savePlans(plans)){alert('점검계획 저장에 실패했습니다. 저장공간을 확인해 주세요.');return}render()});
+ Array.from(host.querySelectorAll('input[name="themePlanTheme"]')).forEach(box=>box.addEventListener('change',()=>{const n=host.querySelectorAll('input[name="themePlanTheme"]:checked').length;const count=$('#themePlanCount',host);if(count)count.textContent=n}));
+ $('#themeSavePlanBtn',host).addEventListener('click',()=>{const selected=Array.from(host.querySelectorAll('input[name="themePlanTheme"]:checked')).map(x=>x.value);if(!selected.length){alert('최소 1개 이상의 취약 테마를 선택해 주세요.');return}const plans=loadPlans(),entry={month,line:host.dataset.line,themes:selected,updatedAt:new Date().toISOString()};const i=plans.findIndex(x=>x.month===month&&x.line===host.dataset.line);if(i>=0)plans[i]=entry;else plans.push(entry);if(!savePlans(plans)){alert('점검계획 저장에 실패했습니다. 저장공간을 확인해 주세요.');return}render()});
  $('#themeLineSel',host).addEventListener('change',e=>{host.dataset.line=e.target.value;host.dataset.team=LINE_DEFAULT_TEAM[e.target.value]||host.dataset.team;render()});
  $('#themeTeamSel',host).addEventListener('change',e=>{host.dataset.team=e.target.value});
  $('#themeSaveBtn',host).addEventListener('click',saveAudit);
  $('#themeBulkAllOk',host).addEventListener('click',()=>bulkSet('적합'));
  $('#themeBulkClear',host).addEventListener('click',()=>bulkSet(''));
- $$('[data-pick-line]',host).forEach(el=>el.addEventListener('click',()=>{
+ $('[data-pick-line]',host).forEach(el=>el.addEventListener('click',()=>{
    const ln=el.getAttribute('data-pick-line');
-   host.dataset.line=ln;host.dataset.team=LINE_DEFAULT_TEAM[ln]||host.dataset.team;
-   $('#themeLineSel',host).value=ln;$('#themeTeamSel',host).value=host.dataset.team;
-   syncLineLabel();renderChecklist();refreshMatrixSelection();
-   $('#themeAuditBox',host).scrollIntoView({behavior:'smooth',block:'start'});
+   host.dataset.line=ln;host.dataset.team=LINE_DEFAULT_TEAM[ln]||host.dataset.team;host.dataset.view='audit';render();
+   $('#themeAuditBox',host)?.scrollIntoView({behavior:'smooth',block:'start'});
  }));
  renderChecklist();
 }
