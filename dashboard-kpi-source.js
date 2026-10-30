@@ -17,7 +17,7 @@ function validationMode(){return new URL(location.href).searchParams.get('valida
 function load(){try{const v=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(v)?(validationMode()?v.filter(x=>x?.source==='web-validation-fixture'):v.filter(x=>window.HD20_DEMO_MODE===true&&x?.source==='demo-seed'||!isNonProdRow(x))):[]}catch{return[]}}
 function yearOf(v){const m=String(v??'').match(/(20\d{2})/);return m?Number(m[1]):null}
 function selectedYear(){const txt=document.querySelector('.controls select')?.textContent||'';const y=yearOf(txt);return y||new Date().getFullYear()}
-function advancementType(x){return String(x?.type||x?.category||x?.sType||x?.['5S구분']||x?.['활동유형']||'').replace(/\\s+/g,'')}
+function advancementType(x){return String(x?.type||x?.category||x?.sType||x?.['5S구분']||x?.['활동유형']||'').replace(/\s+/g,'')}
 function isAdvancementType(x){if(!x)return false;return /고도화/.test(advancementType(x))||criteriaCount(x)>0}
 function criteriaCount(x){
  if(!x)return 0;
