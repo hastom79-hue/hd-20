@@ -61,7 +61,7 @@ function draw(){
  groups.onclick=e=>{const b=e.target.closest('[data-group]');if(!b)return;if(!apply())return;activeGroup=b.dataset.group;activeChild=activeG()?.children[0]?.id||null;render()};
  childSel.onchange=()=>{if(!apply())return;activeChild=childSel.value;render()};
  host.querySelector('#tmAddChild').onclick=()=>{const g=activeG();if(!g)return;const id=g.id+'-'+Date.now();g.children.push({id,name:'신규 세부 테마',active:true,items:[]});activeChild=id;render();host.querySelector('#tmName')?.focus()};
- editor.onclick=e=>{if(e.target.id==='tmApply'){if(apply()){host.querySelector('#tmStatus').textContent='편집 내용이 임시 반영되었습니다. 최종 저장을 눌러야 기준정보에 저장됩니다.';render()}}if(e.target.id==='tmDelete'){const c=activeC();if(!c)return;if(!confirm('세부 테마를 삭제하시겠습니까? 기존 점검 이력은 유지됩니다.'))return;activeG().children=activeG().children.filter(x=>x.id!==c.id);activeChild=activeG().children[0]?.id||null;render()}};
+ editor.onclick=e=>{if(e.target.id==='tmApply'){if(apply()){host.querySelector('#tmStatus').textContent='편집 내용이 임시 반영되었습니다. 최종 저장을 눌러야 기준정보에 저장됩니다.';render()}}if(e.target.id==='tmDelete'){const c=activeC();if(!c)return;if(!confirm('세부 테마를 삭제하시겠습니까? 기존 점검 이력은 유지됩니다.'))return;c.active=false;activeChild=activeG().children.find(x=>x.active)?.id||null;render()}};
  host.querySelector('#tmSave').onclick=()=>{if(!apply())return;try{save(draft);host.querySelector('#tmStatus').textContent='저장 완료 · 테마점검 계획 및 Audit에 연동되었습니다.';draw()}catch(e){host.querySelector('#tmStatus').textContent=e.message}};
  render();
 }
