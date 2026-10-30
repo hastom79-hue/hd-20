@@ -27,7 +27,7 @@ function criteriaCount(x){
  for(const aliases of groups){let v;for(const k of aliases){if(x[k]!==undefined&&x[k]!==null&&x[k]!==''){v=x[k];break}}if(v===undefined&&x.raw&&typeof x.raw==='object'){for(const k of aliases){if(x.raw[k]!==undefined){v=x.raw[k];break}}}if(yes(v))n++}
  return n;
 }
-function isCandidate(x){return !!x&&isAdvancementType(x)&&criteriaCount(x)>=1}
+function isCandidate(x){return !!x&&/고도화/.test(advancementType(x))&&criteriaCount(x)>=1}
 function isConfirmed(x){return !!x&&/고도화/.test(advancementType(x))&&isCandidate(x)&&x.confirmed===true&&String(x.judgeState||x.judgementState||x.officialJudgeState||x.officialStatus||x['판정상태']||'').trim()==='확정'&&(x.finalAdopted===true||x.advancementAdopted===true)}
 function maintenanceState(x){const state=String(x?.maintainState||x?.auditState||'').trim();if(x?.attrition===true||x?.valid===false||/중지|미흡|이탈|재점검|부적합|해제|실패/.test(state))return 'attrited';if(/^(유지|정상|유지완료|maintained)$/i.test(state))return 'maintained';return 'unverified'}
 function isMaintained(x){return isConfirmed(x)&&maintenanceState(x)==='maintained'}
