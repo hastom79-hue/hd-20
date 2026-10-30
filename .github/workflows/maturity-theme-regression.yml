@@ -4,6 +4,7 @@ on:
     paths:
       - 'maturity-team-case-drilldown.js'
       - 'hd20-direct-criteria.js'
+      - 'theme-master.js'
       - 'theme-inspection.js'
       - 'theme-inspection-v5.css'
       - 'supabase-sync.js'
