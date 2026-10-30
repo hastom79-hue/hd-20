@@ -96,6 +96,13 @@ function render(){
   // Missing data is never presented as zero or as a calculated risk score.
   const ready=KPI.filter(x=>op[x.key]!==null&&op[x.key]!==undefined&&Number.isFinite(Number(op[x.key])));
   const missing=KPI.filter(x=>!ready.includes(x));
+  const snap=window.HD20KPIData?.snapshot?.();
+  const advSource=(snap?.rows||[]).filter(x=>window.HD20KPIData?.isAdvancementType?.(x));
+  const advCandidates=(snap?.candidates||[]).length,advOfficial=(snap?.confirmed||[]).length;
+  const advEvaluated=(snap?.confirmed||[]).filter(x=>window.HD20KPIData?.maintenanceState?.(x)!=='unverified').length;
+  let audit=document.getElementById('hd20AdvancementDataReadiness');
+  if(!audit){audit=document.createElement('div');audit.id='hd20AdvancementDataReadiness';audit.style.cssText='margin:8px 0 12px;padding:9px 12px;border:1px solid #dbe6ee;border-radius:9px;background:#f7fafc;font-size:12px;color:#34536a';root.querySelector('.hd20V3Readiness')?.insertAdjacentElement('afterend',audit)}
+  if(audit)audit.textContent='고도화 집계 검증 · 원천 '+advSource.length+'건 / 요건 후보 '+advCandidates+'건 / 공식 채택 '+advOfficial+'건 / 유지평가 완료 '+advEvaluated+'건'+(advOfficial===0&&advCandidates>0?' · 후보 자료는 존재하지만 공식 채택 승인 근거가 확인되지 않습니다.':'');
   const readiness=root.querySelector('.hd20V3Readiness');
   if(readiness){
     /* 6개 지표가 전부 정상 연결된 평상시에도 매번 초록 포인트 바가 있는 독립된 박스로 눈에 띄게
