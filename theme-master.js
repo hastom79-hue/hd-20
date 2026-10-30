@@ -37,7 +37,7 @@ function save(v){const d=clean(v);if(!d.some(g=>g.active&&g.children.some(c=>c.a
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function attach(){
  const tabs=document.querySelector('#masterModal .masterTabs'),box=document.querySelector('#masterModal .masterInfoBox');if(!tabs||!box)return false;
- let btn=tabs.querySelector('[data-master-tab="integrated-theme"]');if(!btn){btn=document.createElement('button');btn.type='button';btn.dataset.masterTab='integrated-theme';btn.textContent='5S 테마관리';tabs.appendChild(btn)}
+ let btn=tabs.querySelector('[data-master-tab="integrated-theme"]');if(!btn){btn=document.createElement('button');btn.type='button';btn.dataset.masterTab='integrated-theme';btn.textContent='5S 테마관리';const group=[...tabs.querySelectorAll('.imfNavGroup')].find(x=>x.textContent.includes('등록 · 분류'))||tabs;group.appendChild(btn)}
  let panel=document.getElementById('hd20ThemeCatalogPanel');if(!panel){panel=document.createElement('section');panel.id='hd20ThemeCatalogPanel';panel.className='imfPanel';panel.style.display='none';panel.innerHTML='<div id="hd20ThemeCatalogBody"></div>';box.appendChild(panel)}
  btn.onclick=()=>show();tabs.addEventListener('click',e=>{const b=e.target.closest('[data-master-tab]');if(b&&b!==btn)panel.style.display='none'},true);
  return true;
