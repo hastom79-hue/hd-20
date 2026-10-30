@@ -423,7 +423,7 @@ function build(){
 }
 function boot(){
  let n=0;const run=()=>{if(build())return;if(++n<60)setTimeout(run,100)};run();
- document.addEventListener('click',e=>{if(e.target?.closest?.('.beginnerNav [data-key="theme"]'))setTimeout(render,50)},true);
+ document.addEventListener('click',e=>{if(!e.target?.closest?.('.beginnerNav [data-key="theme"]'))return;const host=document.getElementById('awTheme');if(!host||!host.hasChildNodes())setTimeout(render,50)},true);
 }
 document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot,{once:true}):boot();
 })();
