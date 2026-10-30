@@ -17,10 +17,12 @@ function validationMode(){return new URL(location.href).searchParams.get('valida
 function load(){try{const v=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(v)?(validationMode()?v.filter(x=>x?.source==='web-validation-fixture'):v.filter(x=>window.HD20_DEMO_MODE===true&&x?.source==='demo-seed'||!isNonProdRow(x))):[]}catch{return[]}}
 function yearOf(v){const m=String(v??'').match(/(20\d{2})/);return m?Number(m[1]):null}
 function selectedYear(){const txt=document.querySelector('.controls select')?.textContent||'';const y=yearOf(txt);return y||new Date().getFullYear()}
-function isAdvancementType(x){return !!x&&(x.criteriaMatched>=1||x.criteriaVisual===true||x.criteriaGreen===true||x.criteriaSpace===true||x.visualization===true||x.greenZone===true||x.spaceUtilization===true||x.confirmed===true)}
-function isConfirmed(x){return !!x&&isAdvancementType(x)&&(x.confirmed===true||x.criteriaMatched>=1||x.criteriaVisual===true||x.criteriaGreen===true||x.criteriaSpace===true||x.visualization===true||x.greenZone===true||x.spaceUtilization===true)}
-function isCandidate(x){return isConfirmed(x)}
-function isMaintained(x){if(!isConfirmed(x))return false;return !/중지|미흡|이탈|재점검|부적합|해제|실패/.test(String(x.maintainState||x.auditState||x.status||''))&&x.attrition!==true&&x.valid!==false}
+function isAdvancementType(x){if(!x)return false;const type=String(x.type||x.category||x.sType||x['5S구분']||x['활동유형']||'').replace(/\\s/g,'');return /고도화/.test(type)||Number(x.criteriaMatched)>=1||x.criteriaVisual===true||x.criteriaGreen===true||x.criteriaSpace===true||x.visualization===true||x.greenZone===true||x.spaceUtilization===true}
+function criteriaCount(x){const n=Number(x?.criteriaMatched);if(Number.isFinite(n)&&n>=1&&n<=3)return n;return [x?.criteriaVisual===true||x?.visualization===true,x?.criteriaGreen===true||x?.greenZone===true,x?.criteriaSpace===true||x?.spaceUtilization===true].filter(Boolean).length}
+function isCandidate(x){return isAdvancementType(x)&&criteriaCount(x)>=1}
+function isConfirmed(x){return isCandidate(x)&&x.confirmed===true&&['확정','승인'].includes(String(x.judgeState||x.judgementState||x.officialJudgeState||x.officialStatus||x['판정상태']||'').trim())&&(x.finalAdopted===true||x.advancementAdopted===true)}
+function maintenanceState(x){const state=String(x?.maintainState||x?.auditState||'').trim();if(x?.attrition===true||x?.valid===false||/중지|미흡|이탈|재점검|부적합|해제|실패/.test(state))return 'attrited';if(/^(유지|정상|유지완료|maintained)$/i.test(state))return 'maintained';return 'unverified'}
+function isMaintained(x){return isConfirmed(x)&&maintenanceState(x)==='maintained'}
 function num(v){const n=Number(String(v??'').replace(/[^0-9.\-]/g,''));return Number.isFinite(n)&&n>0?n:null}
 function masterHeadcount(master){const byTeam=new Map();if(Array.isArray(master)){master.forEach((x,i)=>{if(typeof x==='number'){byTeam.set(String(i),x);return}if(!x||typeof x!=='object')return;const team=String(x.team||x.name||x.조직||x.생산팀||i),n=num(x.headcount??x.people??x.head??x.인원??x.현원??x.재적인원);if(n)byTeam.set(team,n)})}else if(master&&typeof master==='object'){Object.entries(master).forEach(([team,v])=>{const n=typeof v==='object'?num(v.headcount??v.people??v.head??v.인원??v.현원??v.재적인원):num(v);if(n)byTeam.set(team,n)})}return [...byTeam.values()].reduce((a,b)=>a+b,0)||null}
 function rowHeadcount(rows){const byTeam=new Map(),keys=['headcount','people','head','인원','현원','재적인원','재직인원'];rows.forEach(x=>{const team=String(x.team||'').trim();if(!team)return;let n=null;for(const k of keys){n=num(x[k]);if(n)break}if(!n&&x.raw&&typeof x.raw==='object'){for(const [k,v] of Object.entries(x.raw)){if(/^(인원|현원|재적인원|재직인원|headcount|people)$/i.test(String(k).replace(/\s/g,''))){n=num(v);if(n)break}}}if(n&&!byTeam.has(team))byTeam.set(team,n)});return [...byTeam.values()].reduce((a,b)=>a+b,0)||null}
@@ -82,7 +84,8 @@ function operational(s){
    자체가 없어 임의로 숫자를 만들면 안 되므로 그대로 '—' 유지. nonconform(부적합 발생률)만은 실제 Audit
    결과(result/finalEvaluation 필드)로 계산 가능해 추가. */
   const auditRows=auditDraws(),auditWithResult=auditRows.filter(x=>txt(pickField(x,['result','finalEvaluation']))),nonconformCnt=auditWithResult.filter(x=>/부적합|미흡|fail|ng/i.test(txt(pickField(x,['result','finalEvaluation'])))).length;
-  return{advRetention:pct((s?.maintained||[]).length,(s?.confirmed||[]).length),advAttrition:pct((s?.confirmed||[]).length-(s?.maintained||[]).length,(s?.confirmed||[]).length),judgmentRate:pct(judged.length,judgmentScope.length),avgLead:lead.length?Math.round(lead.reduce((a,b)=>a+b,0)/lead.length*10)/10:null,maturity:levels.length?Math.round(levels.reduce((a,b)=>a+b,0)/levels.length*10)/10:null,sixRetention:sixMonthRetention(),recurrence:pct(recurred,recurrenceScope.length),actionOnTime:pct(ontime,timedCompleted.length),nonconform:pct(nonconformCnt,auditWithResult.length)}
+  const evaluated=(s?.confirmed||[]).filter(x=>maintenanceState(x)!=='unverified');const attrited=evaluated.filter(x=>maintenanceState(x)==='attrited').length;
+  return{advRetention:pct(evaluated.filter(isMaintained).length,evaluated.length),advAttrition:pct(attrited,evaluated.length),judgmentRate:pct(judged.length,judgmentScope.length),avgLead:lead.length?Math.round(lead.reduce((a,b)=>a+b,0)/lead.length*10)/10:null,maturity:levels.length?Math.round(levels.reduce((a,b)=>a+b,0)/levels.length*10)/10:null,sixRetention:sixMonthRetention(),recurrence:pct(recurred,recurrenceScope.length),actionOnTime:pct(ontime,timedCompleted.length),nonconform:pct(nonconformCnt,auditWithResult.length)}
 }
 /* 월별 추이(읽기 전용): operational()과 같은 정의를 월 단위로 나눈 값. 기존 산식은 변경하지 않음.
    판정완료율=등록월 기준, Lead Time·수준=판정/확정월 기준, 6개월 유지율=6개월 종료월 기준,
@@ -122,9 +125,9 @@ function monthlyOperational(n=6){
   out.advRetention=[];out.advAttrition=[];
   months.forEach(m=>{
     const cohort=(s.confirmed||[]).filter(x=>mk(confirmedDate(x))===m);
-    const kept=cohort.filter(isMaintained).length;
-    out.advRetention.push(cell(pct(kept,cohort.length),cohort.length));
-    out.advAttrition.push(cell(pct(cohort.length-kept,cohort.length),cohort.length));
+    const evaluated=cohort.filter(x=>maintenanceState(x)!=='unverified'),kept=evaluated.filter(isMaintained).length;
+    out.advRetention.push(cell(pct(kept,evaluated.length),evaluated.length));
+    out.advAttrition.push(cell(pct(evaluated.length-kept,evaluated.length),evaluated.length));
   });
   return out;
 }
