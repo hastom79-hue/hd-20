@@ -71,30 +71,21 @@ function render(){
   style.textContent+=' #hd20DashboardWorkMetrics .hd20DwmMiniBars{height:86px;padding-top:16px;overflow:visible}#hd20DashboardWorkMetrics .hd20DwmMiniBar{overflow:visible}#hd20DashboardWorkMetrics .hd20DwmBarLabel{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);font-size:9px;font-weight:700;line-height:13px;white-space:nowrap;color:#526e89}#hd20DashboardWorkMetrics .hd20DwmMiniBar:last-child .hd20DwmBarLabel{color:#173452}';
   document.head.appendChild(style);
  }
- const specs=[{area:'audit',numerator:3,denominator:2,title:'Audit 부적합 발생률',detail:'점검 품질 · 부적합 비율'},{area:'action',numerator:2,denominator:0,title:'개선조치 완료율',detail:'전체 요청 대비 완료'},{area:'advancement',numerator:1,denominator:0,title:'고도화 유지율',detail:'공식확정 대비 현재 유지'}];
- const year=new Date().getFullYear(),currentMonth=new Date().getMonth()+1;
- root.innerHTML='<div class="hd20DwmHead"><div><h2>운영 종합진단 · 업무별 핵심지표</h2></div></div><div class="hd20DwmGroups">'+specs.map(spec=>{
-  const area=AREAS.find(a=>a.key===spec.area),sub=area.defaultSub;
-  const names=CONTRACTS[spec.area][sub];
-  const ev=names.map((_,i)=>{try{return window.HD20_KPI_EVIDENCE?.evidence?.(spec.area,sub,i)}catch{return null}});
-  const valid=ev.every((e,i)=>e?.title===names[i]&&Array.isArray(e.rows));
-  const total=valid?ev[spec.denominator].rows.length:0,positive=valid?ev[spec.numerator].rows.length:0;
-  const statusVerified=spec.area!=='advancement'||(valid&&ev[spec.denominator].rows.length>0&&ev[spec.denominator].rows.every(x=>/^(유지|정상|유지완료|이탈|미흡|중지|재점검|부적합|해제|실패|maintained|attrited)$/i.test(String(x.maintainState||x.auditState||'').trim())||x.attrition===true||x.valid===false));
-  const rate=valid&&total>0&&statusVerified?Math.min(100,positive/total*100):null;
-  // Reuse the verified monthly source that already drives the dashboard's operational charts.
-  // Its monthly denominator/cohort may differ from the cumulative headline above.
-  const monthlyKey={audit:'nonconform',action:'actionOnTime',advancement:'advRetention'}[spec.area];
-  let monthly=null;
-  try{monthly=window.HD20KPIData?.monthlyOperational?.(12)}catch(error){console.warn('[HD20 KPI] 월별 집계 실패',spec.area,error)}
-  const byMonth=Array.from({length:12},(_,i)=>{
-   const cell=monthly?.[monthlyKey]?.[i];
-   return statusVerified&&cell&&Number.isFinite(cell.v)&&cell.n>0?Math.max(0,Math.min(100,cell.v)):null;
-  });
-  const monthlyTitle={audit:'월별 Audit 부적합률',action:'월별 기한 내 개선조치 완료율',advancement:'월별 공식확정 사례 유지율'}[spec.area];
-  const known=byMonth.some(v=>v!==null);
-  return '<section class="hd20DwmGroup"><div class="hd20DwmGroupHead"><h3>'+esc(area.title)+'</h3></div><div class="hd20DwmMiniValue">'+(rate===null?'—':rate.toFixed(1)+'%')+'</div><div class="hd20DwmMiniMeta">'+esc(spec.title)+' · '+(valid?positive+' / '+total+'건':'원천 집계 확인 필요')+'</div><div class="hd20DwmMiniBars">'+byMonth.map((v,i)=>'<div class="hd20DwmMiniBar" title="'+(i+1)+'월: '+(v===null?'자료 없음':v.toFixed(1)+'%')+'" style="height:'+(v===null?0:Math.max(2,v/100*66))+'px;'+(v===null?'background:transparent;':'')+'">'+(v===null?'':'<span class="hd20DwmBarLabel">'+v.toFixed(1)+'%</span>')+'</div>').join('')+'</div><div class="hd20DwmMiniMonths"><span>1월</span><span>6월</span><span>12월</span></div><div class="hd20DwmMiniFoot"><span>'+esc(!statusVerified?'유지·이탈 판정 근거 확인 필요':known?monthlyTitle:'월별 집계 표본 없음')+'</span><button type="button" data-dwm-detail="'+spec.area+'" data-dwm-index="'+spec.numerator+'">원인 확인 →</button></div></section>';
+ const specs=[
+  {area:'audit',sub:'retention',index:2,title:'재발·미흡',hint:'Audit 후 재점검 또는 재조치 대상'},
+  {area:'action',sub:'manage',index:3,title:'기한경과',hint:'기한 초과 개선조치 확인 대상'},
+  {area:'advancement',sub:'standard',index:2,title:'유지 미흡',hint:'고도화 유지기준 이탈·보완 대상'}
+ ];
+ root.innerHTML='<div class="hd20DwmHead"><div><h2>운영 종합진단 · 후속 조치 필요 현황</h2><p style="display:block;margin:5px 0 0;color:#74899d;font-size:12px">상단 성과율과 중복하지 않고 실제 확인·조치가 필요한 사례만 표시합니다.</p></div></div><div class="hd20DwmGroups">'+specs.map(spec=>{
+  const area=AREAS.find(a=>a.key===spec.area),expected=CONTRACTS[spec.area][spec.sub]?.[spec.index];
+  let evidence=null;
+  try{evidence=window.HD20_KPI_EVIDENCE?.evidence?.(spec.area,spec.sub,spec.index)}catch(e){console.warn('[HD20] 후속조치 근거 조회 실패',spec.area,e)}
+  const valid=evidence?.title===expected&&Array.isArray(evidence.rows);
+  const count=valid?evidence.rows.length:null;
+  return '<section class="hd20DwmGroup"><div class="hd20DwmGroupHead"><h3>'+esc(area.title)+'</h3></div><div class="hd20DwmMiniValue">'+(count===null?'—':count+'건')+'</div><div class="hd20DwmMiniMeta">'+esc(spec.title)+'</div><p style="font-size:12px;color:#74899d;min-height:34px;margin:12px 0 8px">'+esc(spec.hint)+'</p><div class="hd20DwmMiniFoot"><span>'+(valid?'원천 사례 기준':'원천 집계 확인 필요')+'</span><button type="button" data-dwm-detail="'+spec.area+'" data-dwm-sub="'+spec.sub+'" data-dwm-index="'+spec.index+'">사례 확인 →</button></div></section>';
  }).join('')+'</div>';
- root.querySelectorAll('[data-dwm-detail]').forEach(el=>el.addEventListener('click',()=>{const area=el.dataset.dwmDetail;openEvidence(area,AREAS.find(a=>a.key===area).defaultSub,Number(el.dataset.dwmIndex))}));
+ root.querySelectorAll('[data-dwm-detail]').forEach(el=>el.addEventListener('click',()=>openEvidence(el.dataset.dwmDetail,el.dataset.dwmSub,Number(el.dataset.dwmIndex))));
+
 }
 
 let scheduled=false;
