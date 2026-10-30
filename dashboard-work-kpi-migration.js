@@ -78,7 +78,8 @@ function render(){
   const ev=names.map((_,i)=>{try{return window.HD20_KPI_EVIDENCE?.evidence?.(spec.area,sub,i)}catch{return null}});
   const valid=ev.every((e,i)=>e?.title===names[i]&&Array.isArray(e.rows));
   const total=valid?ev[spec.denominator].rows.length:0,positive=valid?ev[spec.numerator].rows.length:0;
-  const rate=valid&&total>0?Math.min(100,positive/total*100):null;
+  const statusVerified=spec.area!=='advancement'||(valid&&ev[spec.denominator].rows.some(x=>/유지|이탈|미흡|중지|재점검|부적합|해제|실패|maintain|attrition/i.test(String(x.maintainState||x.auditState||x.status||''))||x.attrition===true||x.valid===false));
+  const rate=valid&&total>0&&statusVerified?Math.min(100,positive/total*100):null;
   // Reuse the verified monthly source that already drives the dashboard's operational charts.
   // Its monthly denominator/cohort may differ from the cumulative headline above.
   const monthlyKey={audit:'nonconform',action:'actionOnTime',advancement:'advRetention'}[spec.area];
@@ -86,11 +87,11 @@ function render(){
   try{monthly=window.HD20KPIData?.monthlyOperational?.(12)}catch(error){console.warn('[HD20 KPI] 월별 집계 실패',spec.area,error)}
   const byMonth=Array.from({length:12},(_,i)=>{
    const cell=monthly?.[monthlyKey]?.[i];
-   return cell&&Number.isFinite(cell.v)&&cell.n>0?Math.max(0,Math.min(100,cell.v)):null;
+   return statusVerified&&cell&&Number.isFinite(cell.v)&&cell.n>0?Math.max(0,Math.min(100,cell.v)):null;
   });
   const monthlyTitle={audit:'월별 Audit 부적합률',action:'월별 기한 내 개선조치 완료율',advancement:'월별 공식확정 사례 유지율'}[spec.area];
   const known=byMonth.some(v=>v!==null);
-  return '<section class="hd20DwmGroup"><div class="hd20DwmGroupHead"><h3>'+esc(area.title)+'</h3></div><div class="hd20DwmMiniValue">'+(rate===null?'—':rate.toFixed(1)+'%')+'</div><div class="hd20DwmMiniMeta">'+esc(spec.title)+' · '+(valid?positive+' / '+total+'건':'원천 집계 확인 필요')+'</div><div class="hd20DwmMiniBars">'+byMonth.map((v,i)=>'<div class="hd20DwmMiniBar" title="'+(i+1)+'월: '+(v===null?'자료 없음':v.toFixed(1)+'%')+'" style="height:'+(v===null?0:Math.max(2,v/100*66))+'px;'+(v===null?'background:transparent;':'')+'"></div>').join('')+'</div><div class="hd20DwmMiniMonths"><span>1월</span><span>6월</span><span>12월</span></div><div class="hd20DwmMiniFoot"><span>'+esc(known?monthlyTitle:'월별 집계 표본 없음')+'</span><button type="button" data-dwm-detail="'+spec.area+'" data-dwm-index="'+spec.numerator+'">원인 확인 →</button></div></section>';
+  return '<section class="hd20DwmGroup"><div class="hd20DwmGroupHead"><h3>'+esc(area.title)+'</h3></div><div class="hd20DwmMiniValue">'+(rate===null?'—':rate.toFixed(1)+'%')+'</div><div class="hd20DwmMiniMeta">'+esc(spec.title)+' · '+(valid?positive+' / '+total+'건':'원천 집계 확인 필요')+'</div><div class="hd20DwmMiniBars">'+byMonth.map((v,i)=>'<div class="hd20DwmMiniBar" title="'+(i+1)+'월: '+(v===null?'자료 없음':v.toFixed(1)+'%')+'" style="height:'+(v===null?0:Math.max(2,v/100*66))+'px;'+(v===null?'background:transparent;':'')+'"></div>').join('')+'</div><div class="hd20DwmMiniMonths"><span>1월</span><span>6월</span><span>12월</span></div><div class="hd20DwmMiniFoot"><span>'+esc(!statusVerified?'유지·이탈 판정 근거 확인 필요':known?monthlyTitle:'월별 집계 표본 없음')+'</span><button type="button" data-dwm-detail="'+spec.area+'" data-dwm-index="'+spec.numerator+'">원인 확인 →</button></div></section>';
  }).join('')+'</div>';
  root.querySelectorAll('[data-dwm-detail]').forEach(el=>el.addEventListener('click',()=>{const area=el.dataset.dwmDetail;openEvidence(area,AREAS.find(a=>a.key===area).defaultSub,Number(el.dataset.dwmIndex))}));
 }
