@@ -19,6 +19,7 @@ on:
     paths:
       - 'maturity-team-case-drilldown.js'
       - 'hd20-direct-criteria.js'
+      - 'theme-master.js'
       - 'theme-inspection.js'
       - 'supabase-sync.js'
       - 'DEVELOPMENT_LOG.md'
@@ -98,9 +99,9 @@ jobs:
             'theme catalog has five requested parent themes': ['정리','정돈','시각화관리','청소','설비자주보전'].every(v=>themeMaster.includes("name:'"+v+"'")),
             'theme catalog supports child create edit and soft delete': themeMaster.includes('tmAddChild') && themeMaster.includes('tmApply') && themeMaster.includes('c.active=false'),
             'theme audit reads integrated master checklist': theme.includes('window.HD20ThemeMaster?.checklist?.()'),
-            'theme catalog is included in canonical sync': /const KEYS=\\[[^\\]]*'hd20ThemeCatalogMasterV1'/.test(sync),
+            'theme catalog is included in canonical sync': /const KEYS=\[[^\]]*'hd20ThemeCatalogMasterV1'/.test(sync),
             'theme master asset loaded before theme audit': html.indexOf('theme-master.js') < html.indexOf('theme-inspection.js'),
-            'theme master cache refreshed': /theme-master\\.js\\?v=20261030-granular-crud-v3/.test(html),
+            'theme master cache refreshed': /theme-master\.js\?v=20261030-granular-crud-v3/.test(html),
             'theme v6 assets cache refreshed': /theme-inspection-v5\\.css\\?v=20261029-line-first-v6/.test(html)
           };
           for (const [name, ok] of Object.entries(checks)) {
