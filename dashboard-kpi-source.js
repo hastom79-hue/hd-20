@@ -20,7 +20,7 @@ function selectedYear(){const txt=document.querySelector('.controls select')?.te
 function isAdvancementType(x){if(!x)return false;const type=String(x.type||x.category||x.sType||x['5S구분']||x['활동유형']||'').replace(/\\s/g,'');return /고도화/.test(type)||Number(x.criteriaMatched)>=1||x.criteriaVisual===true||x.criteriaGreen===true||x.criteriaSpace===true||x.visualization===true||x.greenZone===true||x.spaceUtilization===true}
 function criteriaCount(x){const n=Number(x?.criteriaMatched);if(Number.isFinite(n)&&n>=1&&n<=3)return n;return [x?.criteriaVisual===true||x?.visualization===true,x?.criteriaGreen===true||x?.greenZone===true,x?.criteriaSpace===true||x?.spaceUtilization===true].filter(Boolean).length}
 function isCandidate(x){return isAdvancementType(x)&&criteriaCount(x)>=1}
-function isConfirmed(x){return isCandidate(x)&&x.confirmed===true&&['확정','승인'].includes(String(x.judgeState||x.judgementState||x.officialJudgeState||x.officialStatus||x['판정상태']||'').trim())&&(x.finalAdopted===true||x.advancementAdopted===true)}
+function isConfirmed(x){const type=String(x?.type||x?.category||x?.sType||x?.['5S구분']||x?.['활동유형']||'').replace(/\s/g,'');return /고도화/.test(type)&&isCandidate(x)&&x.confirmed===true&&['확정','승인'].includes(String(x.judgeState||x.judgementState||x.officialJudgeState||x.officialStatus||x['판정상태']||'').trim())&&(x.finalAdopted===true||x.advancementAdopted===true)}
 function maintenanceState(x){const state=String(x?.maintainState||x?.auditState||'').trim();if(x?.attrition===true||x?.valid===false||/중지|미흡|이탈|재점검|부적합|해제|실패/.test(state))return 'attrited';if(/^(유지|정상|유지완료|maintained)$/i.test(state))return 'maintained';return 'unverified'}
 function isMaintained(x){return isConfirmed(x)&&maintenanceState(x)==='maintained'}
 function num(v){const n=Number(String(v??'').replace(/[^0-9.\-]/g,''));return Number.isFinite(n)&&n>0?n:null}
@@ -141,6 +141,6 @@ function monthlyOperational(n=6){
   return out;
 }
 function signal(){window.dispatchEvent(new CustomEvent('hd20-kpi-source-updated',{detail:snapshot()}))}
-window.HD20KPIData={actionCases,monthlyOperational,KEY,HEADCOUNT_KEY,AUDIT_KEY,load,isNonProdRow,yearOf,selectedYear,isCandidate,isConfirmed,isMaintained,isAdvancementType,rowDate,confirmedDate,headcount,snapshot,operational,sixMonthRetention,recurrenceState,recurrenceObserved,effectVerified,actionCompleted,closedLoopRecurrence,seoulDateKey,signal};
+window.HD20KPIData={criteriaCount,maintenanceState,actionCases,monthlyOperational,KEY,HEADCOUNT_KEY,AUDIT_KEY,load,isNonProdRow,yearOf,selectedYear,isCandidate,isConfirmed,isMaintained,isAdvancementType,rowDate,confirmedDate,headcount,snapshot,operational,sixMonthRetention,recurrenceState,recurrenceObserved,effectVerified,actionCompleted,closedLoopRecurrence,seoulDateKey,signal};
 ['hd20-gmes-5s-imported','hd20-gmes-5s-judged','hd20-audit-updated','hd20-action-updated'].forEach(e=>window.addEventListener(e,()=>setTimeout(signal,0)));window.addEventListener('storage',e=>{if(e.key===KEY||e.key===HEADCOUNT_KEY||e.key===AUDIT_KEY||e.key==='hd20ActionCasesV2')signal()});
 })();
