@@ -101,7 +101,7 @@ jobs:
             'theme catalog is included in canonical sync': /const KEYS=\[[^\]]*'hd20ThemeCatalogMasterV1'/.test(sync),
             'theme master asset loaded before theme audit': html.indexOf('theme-master.js') < html.indexOf('theme-inspection.js'),
             'theme master cache refreshed': /theme-master\.js\?v=20261030-granular-crud-v3/.test(html),
-            'theme v6 assets cache refreshed': /theme-inspection-v5\\.css\\?v=20261029-line-first-v6/.test(html)
+            'theme v6 assets cache refreshed': /theme-inspection-v5\.css\?v=20261029-line-first-v6/.test(html)
           };
           for (const [name, ok] of Object.entries(checks)) {
             console.log((ok ? 'PASS ' : 'FAIL ') + name);
