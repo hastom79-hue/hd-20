@@ -73,9 +73,10 @@ jobs:
             'Seoul-local date handling is explicit': theme.includes("timeZone:'Asia/Seoul'"),
             'audit history store is included in canonical sync': /const KEYS=\[[^\]]*'hd20ThemeAuditChecksV1'[^\]]*'hd20ThemeAuditPlansV1'/.test(sync),
             'local audit history is preserved if remote key is missing': /k==='hd20ThemeAuditChecksV1'\|\|k==='hd20ThemeAuditPlansV1'\)\{const localAudit=localClean\(k\);if\(Array\.isArray\(localAudit\)&&localAudit\.length\)preservedKeys\.push\(k\)/.test(sync),
+            'local theme master is preserved if remote key is missing': /k==='hd20ThemeCatalogMasterV1'/.test(sync),
             'sync cache refreshed': /supabase-sync\.js\?v=20261029-theme-plan-sync-v2/.test(html),
             'maturity drilldown cache refreshed': /maturity-team-case-drilldown\.js\?v=20261028-strict-3criteria-2/.test(html),
-            'theme inspection cache refreshed': /theme-inspection\.js\?v=20261029-line-first-v6/.test(html),
+            'theme inspection cache refreshed': /theme-inspection\.js\?v=20261030-master-catalog-v2/.test(html),
             'theme workflow has four task views': ['plan','audit','actions','history'].every(v=>theme.includes('data-theme-view="'+v+'"')),
             'theme plans are stored by month and line': theme.includes("PLAN_KEY='hd20ThemeAuditPlansV1'") && theme.includes('themes:selected'),
             'only planned themes are shown in checklist': /THEMES\.filter\(cat=>activeThemes\.includes\(cat\)\)/.test(theme),
@@ -94,7 +95,13 @@ jobs:
             'line overview is compact and line-first': theme.includes('themeLineSummaryBody') && theme.includes('themeLineAction') && theme.includes('계획된 취약 테마'),
             'line overview no longer renders a wide heatmap table': !theme.includes('<table class="themeMatrix">'),
             'dashboard-like KPI tile row removed from theme screen': !theme.includes('<div class="themeKpiRow">'),
-            'theme v6 assets cache refreshed': /theme-inspection\.js\?v=20261029-line-first-v6/.test(html) && /theme-inspection-v5\.css\?v=20261029-line-first-v6/.test(html)
+            'theme catalog has five requested parent themes': ['정리','정돈','시각화관리','청소','설비자주보전'].every(v=>themeMaster.includes("name:'"+v+"'")),
+            'theme catalog supports child create edit and soft delete': themeMaster.includes('tmAddChild') && themeMaster.includes('tmApply') && themeMaster.includes('c.active=false'),
+            'theme audit reads integrated master checklist': theme.includes('window.HD20ThemeMaster?.checklist?.()'),
+            'theme catalog is included in canonical sync': /const KEYS=\\[[^\\]]*'hd20ThemeCatalogMasterV1'/.test(sync),
+            'theme master asset loaded before theme audit': html.indexOf('theme-master.js') < html.indexOf('theme-inspection.js'),
+            'theme master cache refreshed': /theme-master\\.js\\?v=20261030-granular-crud-v3/.test(html),
+            'theme v6 assets cache refreshed': /theme-inspection-v5\\.css\\?v=20261029-line-first-v6/.test(html)
           };
           for (const [name, ok] of Object.entries(checks)) {
             console.log((ok ? 'PASS ' : 'FAIL ') + name);
