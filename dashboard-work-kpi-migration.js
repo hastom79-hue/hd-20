@@ -64,19 +64,37 @@ function openEvidence(area,sub,index){
  window.HD20_OPS_V2?.go?.(area,sub,{openGrid:true});
 }
 function render(){
- const root=ensure();
- if(!root)return;
- /* Summary container controls visibility; never forcibly unhide this node in another tab. */
- root.innerHTML='<div class="hd20DwmHead"><div><h2>운영 종합진단 · 업무별 핵심지표</h2><p>Audit·유지점검 / 개선조치·완료관리 / 고도화·표준화의 원천 근거 기준 건수입니다. 카드를 누르면 동일한 상세 근거를 조회합니다.</p></div></div><div class="hd20DwmGroups">'+AREAS.map(a=>{
-  const options=subOptions(a);
-  if(!options.some(([sub])=>sub===selected[a.key]))selected[a.key]=options[0][0];
-  const sub=selected[a.key],rows=checkedMetrics(a.key,sub);
-  return '<section class="hd20DwmGroup" data-dwm-area="'+a.key+'"><div class="hd20DwmGroupHead"><div><h3>'+a.title+'</h3><small>'+a.note+'</small></div><label><span class="hd20SrOnly">지표 구분</span><select data-dwm-select="'+a.key+'" aria-label="'+a.title+' 지표 구분">'+options.map(([v,n])=>'<option value="'+esc(v)+'"'+(v===sub?' selected':'')+'>'+esc(n)+'</option>').join('')+'</select></label></div><div class="hd20DwmTiles">'+(rows?rows.map(([label,value,unit],i)=>'<button type="button" class="hd20DwmTile" data-dwm-detail="'+a.key+'" data-dwm-index="'+i+'" title="'+esc(a.title+' · '+label+' 상세 근거 보기')+'"><span>'+esc(label)+'</span><strong>'+esc(value)+'<small>'+esc(unit)+'</small></strong></button>').join(''):'<p class="hd20DwmContractError" role="alert">이 영역의 지표 연결을 확인해야 합니다. 잘못된 대시보드 공통값을 대신 표시하지 않습니다.</p>')+'</div></section>';
+ const root=ensure();if(!root)return;
+ if(!document.getElementById('hd20DwmCompactStyle')){
+  const style=document.createElement('style');style.id='hd20DwmCompactStyle';
+  style.textContent='#hd20DashboardWorkMetrics .hd20DwmGroups{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}#hd20DashboardWorkMetrics .hd20DwmGroup{min-width:0;padding:14px 16px;border:1px solid #dfe8ef;border-radius:13px;background:#fff}#hd20DashboardWorkMetrics .hd20DwmGroupHead{display:flex;justify-content:space-between;gap:8px;align-items:center}#hd20DashboardWorkMetrics .hd20DwmGroupHead h3{margin:0;font-size:14px}#hd20DashboardWorkMetrics .hd20DwmGroupHead small{display:none}#hd20DashboardWorkMetrics .hd20DwmHead{margin-bottom:10px}#hd20DashboardWorkMetrics .hd20DwmHead p{display:none}#hd20DashboardWorkMetrics .hd20DwmMiniValue{font-size:25px;font-weight:800;color:#123452;margin:9px 0 0}#hd20DashboardWorkMetrics .hd20DwmMiniMeta{font-size:11px;color:#74899d}#hd20DashboardWorkMetrics .hd20DwmMiniBars{height:68px;display:flex;align-items:flex-end;gap:5px;margin-top:9px;border-bottom:1px solid #e4eaf0}#hd20DashboardWorkMetrics .hd20DwmMiniBar{flex:1;min-width:0;position:relative;background:#b7c7d5;border-radius:3px 3px 0 0}#hd20DashboardWorkMetrics .hd20DwmMiniBar:last-child{background:#173452}#hd20DashboardWorkMetrics .hd20DwmMiniMonths{display:flex;justify-content:space-between;font-size:10px;color:#90a2b4;margin-top:4px}#hd20DashboardWorkMetrics .hd20DwmMiniFoot{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:9px;font-size:11px;color:#74899d}#hd20DashboardWorkMetrics .hd20DwmMiniFoot button{border:1px solid #d1dfeb;background:white;border-radius:9px;padding:6px 9px;color:#173452;font-weight:700;cursor:pointer;white-space:nowrap}@media(max-width:850px){#hd20DashboardWorkMetrics .hd20DwmGroups{grid-template-columns:1fr}}';
+  document.head.appendChild(style);
+ }
+ const specs=[{area:'audit',numerator:3,denominator:2,title:'Audit 부적합 발생률',detail:'점검 품질 · 부적합 비율'},{area:'action',numerator:2,denominator:0,title:'개선조치 완료율',detail:'전체 요청 대비 완료'},{area:'advancement',numerator:1,denominator:0,title:'고도화 유지율',detail:'공식확정 대비 현재 유지'}];
+ const year=new Date().getFullYear(),currentMonth=new Date().getMonth()+1;
+ root.innerHTML='<div class="hd20DwmHead"><div><h2>운영 종합진단 · 업무별 핵심지표</h2></div></div><div class="hd20DwmGroups">'+specs.map(spec=>{
+  const area=AREAS.find(a=>a.key===spec.area),sub=area.defaultSub;
+  const names=CONTRACTS[spec.area][sub];
+  const ev=names.map((_,i)=>{try{return window.HD20_KPI_EVIDENCE?.evidence?.(spec.area,sub,i)}catch{return null}});
+  const valid=ev.every((e,i)=>e?.title===names[i]&&Array.isArray(e.rows));
+  const total=valid?ev[spec.denominator].rows.length:0,positive=valid?ev[spec.numerator].rows.length:0;
+  const rate=valid&&total>0?Math.min(100,positive/total*100):null;
+  const byMonth=Array.from({length:12},(_,i)=>{
+   if(!valid||i+1>currentMonth)return null;
+   const count=(rows)=>rows.filter(row=>{
+    const raw=Object.entries(row||{}).find(([k,v])=>/완료일|점검일|등록일|발생일|date|month|createdAt|doneDate|completedDate/i.test(k)&&/^\\d{4}[-./]\\d{1,2}/.test(String(v)))?.[1];
+    if(!raw)return false;
+    const match=String(raw).match(/^(\\d{4})[-./](\\d{1,2})/);return match&&Number(match[1])===year&&Number(match[2])===i+1;
+   }).length;
+   const denominator=count(ev[spec.denominator].rows),numerator=count(ev[spec.numerator].rows);
+   return denominator?Math.min(100,numerator/denominator*100):null;
+  });
+  const known=byMonth.some(v=>v!==null);
+  return '<section class="hd20DwmGroup"><div class="hd20DwmGroupHead"><h3>'+esc(area.title)+'</h3></div><div class="hd20DwmMiniValue">'+(rate===null?'—':rate.toFixed(1)+'%')+'</div><div class="hd20DwmMiniMeta">'+esc(spec.title)+' · '+(valid?positive+' / '+total+'건':'원천 집계 확인 필요')+'</div><div class="hd20DwmMiniBars">'+byMonth.map((v,i)=>'<div class="hd20DwmMiniBar" title="'+(i+1)+'월: '+(v===null?'자료 없음':v.toFixed(1)+'%')+'" style="height:'+(v===null?0:Math.max(2,v/100*66))+'px;'+(v===null?'background:transparent;':'')+'"></div>').join('')+'</div><div class="hd20DwmMiniMonths"><span>1월</span><span>6월</span><span>12월</span></div><div class="hd20DwmMiniFoot"><span>'+esc(known?spec.detail:'월별 날짜 근거 확인 필요')+'</span><button type="button" data-dwm-detail="'+spec.area+'" data-dwm-index="'+spec.numerator+'">원인 확인 →</button></div></section>';
  }).join('')+'</div>';
- root.querySelectorAll('[data-dwm-select]').forEach(el=>el.addEventListener('change',()=>{const a=el.dataset.dwmSelect;selected[a]=el.value;render()}));
- root.querySelectorAll('[data-dwm-detail]').forEach(el=>el.addEventListener('click',()=>{const a=el.dataset.dwmDetail;openEvidence(a,selected[a],Number(el.dataset.dwmIndex))}));
-
+ root.querySelectorAll('[data-dwm-detail]').forEach(el=>el.addEventListener('click',()=>{const area=el.dataset.dwmDetail;openEvidence(area,AREAS.find(a=>a.key===area).defaultSub,Number(el.dataset.dwmIndex))}));
 }
+
 let scheduled=false;
 function schedule(){
  if(scheduled)return;
