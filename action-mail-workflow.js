@@ -94,10 +94,20 @@ body.innerHTML=rows.length?rows.map(c=>`<tr><td><span class="amCaseLink" data-id
   const sumEls={total:$('[data-am-sum="total"]',a),done:$('[data-am-sum="done"]',a),wait:$('[data-am-sum="wait"]',a),over:$('[data-am-sum="over"]',a)};
   if(sumEls.total){sumEls.total.textContent=rows.length+'건';sumEls.done.textContent=done.length+'건';sumEls.wait.textContent=wait.length+'건';sumEls.over.textContent=over.length+'건'}
   const recentHost=$('#amRecentDone',a);
-  if(recentHost){const recentDone=[...done].sort((x,y)=>String(y.doneDate||y.completedDate||'').localeCompare(String(x.doneDate||x.completedDate||''))).slice(0,5);recentHost.innerHTML=recentDone.length?recentDone.map(c=>`<div class="row"><span><b>${esc(c.id)}</b> · ${esc(c.team)}</span><small>${esc(c.doneDate||c.completedDate||'—')}</small></div>`).join(''):'<div class="awHint" style="padding:4px 0">완료된 개선조치가 없습니다.</div>'}
+  if(recentHost){
+    const selectedTeam=String($('#amTeam',a)?.value||'').trim();
+    const recentDone=selectedTeam?cases().filter(c=>String(c.team||'').trim()===selectedTeam&&c.status==='완료').sort((x,y)=>String(y.doneDate||y.completedDate||y.finishDate||'').localeCompare(String(x.doneDate||x.completedDate||x.finishDate||''))).slice(0,3):[];
+    recentHost.innerHTML=!selectedTeam?'<div class="awHint">생산팀을 선택하면 해당 팀의 최근 완료된 개선조치가 표시됩니다.</div>':recentDone.length?recentDone.map(c=>{
+      const completed=String(c.doneDate||c.completedDate||c.finishDate||'');
+      const activityMonth=String(c.auditMonth||c.activityMonth||c.month||c.date||completed).slice(0,7);
+      const theme=String(c.themeCategory||c.theme||c['5S구분']||'미분류');
+      return `<div class="row"><span><b>${esc(c.id)}</b> · ${esc(c.workplace||'작업장 미지정')} · ${esc(activityMonth||'월 미상')} · ${esc(theme)}</span><small>완료 ${esc(completed||'—')}</small></div>`;
+    }).join(''):'<div class="awHint">해당 팀의 최근 완료된 개선조치가 없습니다.</div>';
+  }
 }
 function renderMaster(a){const old=$('.amMaster',a);if(old)old.remove()}
-function syncLeader(a){const team=$('#amTeam',a)?.value||'',x=leaderFor(team);if($('#amLeader',a))$('#amLeader',a).value=x.leader||'미지정';if($('#amEmail',a))$('#amEmail',a).value=x.email||''}
+function renderRecentDone(a){const host=$('#amRecentDone',a);if(!host)return;const team=String($('#amTeam',a)?.value||'').trim();const list=team?cases().filter(c=>String(c.team||'').trim()===team&&c.status==='완료').sort((x,y)=>String(y.doneDate||y.completedDate||y.finishDate||'').localeCompare(String(x.doneDate||x.completedDate||x.finishDate||''))).slice(0,3):[];host.innerHTML=!team?'<div class="awHint">생산팀을 선택해 주세요.</div>':list.length?list.map(c=>{const done=String(c.doneDate||c.completedDate||c.finishDate||'');const month=String(c.auditMonth||c.activityMonth||c.month||c.date||done).slice(0,7);return `<div class="row"><span><b>${esc(c.id)}</b> · ${esc(c.workplace||'—')} · ${esc(month||'—')} · ${esc(c.themeCategory||c.theme||c['5S구분']||'미분류')}</span><small>${esc(done||'—')}</small></div>`}).join(''):'<div class="awHint">해당 팀의 최근 완료된 개선조치가 없습니다.</div>'}
+function syncLeader(a){renderRecentDone(a);const team=$('#amTeam',a)?.value||'',x=leaderFor(team);if($('#amLeader',a))$('#amLeader',a).value=x.leader||'미지정';if($('#amEmail',a))$('#amEmail',a).value=x.email||''}
 /* 사용자 지시: "팝업창 등록시 정보 누락시 저장되지 않도록 인터락 설정 필요함" — 작업장·문제점·발굴
    출처는 이미 검증되고 있었으나 "조치기한"은 비워도 그대로 저장되고 있었음. 정식 등록(메일알림/
    Outlook알림/자동발송)에서는 조치기한도 필수로 막고, "임시저장"(via===false)은 작성 중인 메모 성격
