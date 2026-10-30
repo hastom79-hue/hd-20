@@ -20,7 +20,7 @@ const LINES=(()=>{const master=window.HD20WorkplaceMaster?.active?.()||[];const 
 /* 라인별 대표 담당팀(자재/검사 공용구역은 자재물류팀, 공구실은 트러블슈팅팀, 조립라인은 첫 조립팀을
    기본값으로 — 실제로는 현장에서 변경 가능하도록 드롭다운은 그대로 열어 둠). */
 const LINE_DEFAULT_TEAM={'조립라인':'대형Att.팀','자재구역':'자재물류팀','공구실':'트러블슈팅팀','검사대':'성능팀'};
-const CHECKLIST=[
+const LEGACY_CHECKLIST=[
  {cat:'정리',item:'불용 지그·공구 방치'},
  {cat:'정리',item:'폐자재·폐자재함 미분리 배출'},
  {cat:'정리',item:'사용연한 초과 소모품(장갑·걸레 등) 방치'},
@@ -44,7 +44,9 @@ const CHECKLIST=[
  {cat:'5S 고도화',item:'수평전개 대상 라인 누락'},
  {cat:'5S 고도화',item:'FoolProof 장치 미설치·고장 방치'},
 ];
-const THEMES=[...new Set(CHECKLIST.map(c=>c.cat))];
+let CHECKLIST=[...(window.HD20ThemeMaster?.checklist?.()||[]),...LEGACY_CHECKLIST.filter(x=>loadChecks().some(r=>r.states&&Object.prototype.hasOwnProperty.call(r.states,x.cat+'::'+x.item)))];
+let THEMES=[...new Set((window.HD20ThemeMaster?.checklist?.()||CHECKLIST).map(c=>c.cat))];
+window.addEventListener('hd20-theme-master-updated',()=>{const current=window.HD20ThemeMaster?.checklist?.()||[];CHECKLIST=[...current,...LEGACY_CHECKLIST.filter(x=>loadChecks().some(r=>r.states&&Object.prototype.hasOwnProperty.call(r.states,x.cat+'::'+x.item)))];THEMES=[...new Set(current.map(c=>c.cat))];render()});
 function load(){try{const v=JSON.parse(localStorage.getItem(ACT_KEY)||'[]');return Array.isArray(v)?v:[]}catch{return[]}}
 function save(rows){try{localStorage.setItem(ACT_KEY,JSON.stringify(rows));return true}catch(e){console.error('[HD20 Theme] action save failed',e);return false}}
 function loadChecks(){try{const v=JSON.parse(localStorage.getItem(CHECK_KEY)||'[]');return Array.isArray(v)?v:[]}catch{return[]}}
