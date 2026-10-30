@@ -18,7 +18,7 @@ function load(){try{const v=JSON.parse(localStorage.getItem(KEY)||'[]');return A
 function yearOf(v){const m=String(v??'').match(/(20\d{2})/);return m?Number(m[1]):null}
 function selectedYear(){const txt=document.querySelector('.controls select')?.textContent||'';const y=yearOf(txt);return y||new Date().getFullYear()}
 function advancementType(x){return String(x?.type||x?.category||x?.sType||x?.['5S구분']||x?.['활동유형']||'').replace(/\s+/g,'')}
-function isAdvancementType(x){if(!x)return false;return /고도화/.test(advancementType(x))||criteriaCount(x)>0}
+function isAdvancementType(x){if(!x)return false;return /고도화/.test(advancementType(x))}
 function criteriaCount(x){
  if(!x)return 0;
  const groups=[['criterionVisual','criteriaVisual','visualCriterion','visualization','시각화','형적관리','criterion1','criteria1','c1'],['criterionGreen','criteriaGreen','greenZone','greenCriterion','GreenZone','green','criterion2','criteria2','c2'],['criterionSpace','criteriaSpace','spaceUtilization','spaceCriterion','정량축소','정위치','공간활용','criterion3','criteria3','c3']];
