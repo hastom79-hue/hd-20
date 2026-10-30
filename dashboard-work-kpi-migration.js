@@ -79,7 +79,7 @@ function render(){
   const ev=names.map((_,i)=>{try{return window.HD20_KPI_EVIDENCE?.evidence?.(spec.area,sub,i)}catch{return null}});
   const valid=ev.every((e,i)=>e?.title===names[i]&&Array.isArray(e.rows));
   const total=valid?ev[spec.denominator].rows.length:0,positive=valid?ev[spec.numerator].rows.length:0;
-  const statusVerified=spec.area!=='advancement'||(valid&&ev[spec.denominator].rows.some(x=>/유지|이탈|미흡|중지|재점검|부적합|해제|실패|maintain|attrition/i.test(String(x.maintainState||x.auditState||x.status||''))||x.attrition===true||x.valid===false));
+  const statusVerified=spec.area!=='advancement'||(valid&&ev[spec.denominator].rows.length>0&&ev[spec.denominator].rows.every(x=>/^(유지|정상|유지완료|이탈|미흡|중지|재점검|부적합|해제|실패|maintained|attrited)$/i.test(String(x.maintainState||x.auditState||'').trim())||x.attrition===true||x.valid===false));
   const rate=valid&&total>0&&statusVerified?Math.min(100,positive/total*100):null;
   // Reuse the verified monthly source that already drives the dashboard's operational charts.
   // Its monthly denominator/cohort may differ from the cumulative headline above.
