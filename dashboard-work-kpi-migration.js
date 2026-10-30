@@ -69,20 +69,24 @@ function render(){
   const style=document.createElement('style');style.id='hd20DwmCompactStyle';
   style.textContent='#hd20DashboardWorkMetrics .hd20DwmGroups{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}#hd20DashboardWorkMetrics .hd20DwmGroup{min-width:0;padding:14px 16px;border:1px solid #dfe8ef;border-radius:13px;background:#fff}#hd20DashboardWorkMetrics .hd20DwmGroupHead{display:flex;justify-content:space-between;gap:8px;align-items:center}#hd20DashboardWorkMetrics .hd20DwmGroupHead h3{margin:0;font-size:14px}#hd20DashboardWorkMetrics .hd20DwmGroupHead small{display:none}#hd20DashboardWorkMetrics .hd20DwmHead{margin-bottom:10px}#hd20DashboardWorkMetrics .hd20DwmHead p{display:none}#hd20DashboardWorkMetrics .hd20DwmMiniValue{font-size:25px;font-weight:800;color:#123452;margin:9px 0 0}#hd20DashboardWorkMetrics .hd20DwmMiniMeta{font-size:11px;color:#74899d}#hd20DashboardWorkMetrics .hd20DwmMiniBars{height:68px;display:flex;align-items:flex-end;gap:5px;margin-top:9px;border-bottom:1px solid #e4eaf0}#hd20DashboardWorkMetrics .hd20DwmMiniBar{flex:1;min-width:0;position:relative;background:#b7c7d5;border-radius:3px 3px 0 0}#hd20DashboardWorkMetrics .hd20DwmMiniBar:last-child{background:#173452}#hd20DashboardWorkMetrics .hd20DwmMiniMonths{display:flex;justify-content:space-between;font-size:10px;color:#90a2b4;margin-top:4px}#hd20DashboardWorkMetrics .hd20DwmMiniFoot{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:9px;font-size:11px;color:#74899d}#hd20DashboardWorkMetrics .hd20DwmMiniFoot button{border:1px solid #d1dfeb;background:white;border-radius:9px;padding:6px 9px;color:#173452;font-weight:700;cursor:pointer;white-space:nowrap}@media(max-width:850px){#hd20DashboardWorkMetrics .hd20DwmGroups{grid-template-columns:1fr}}';
   style.textContent+=' #hd20DashboardWorkMetrics .hd20DwmMiniBars{height:86px;padding-top:16px;overflow:visible}#hd20DashboardWorkMetrics .hd20DwmMiniBar{overflow:visible}#hd20DashboardWorkMetrics .hd20DwmBarLabel{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);font-size:9px;font-weight:700;line-height:13px;white-space:nowrap;color:#526e89}#hd20DashboardWorkMetrics .hd20DwmMiniBar:last-child .hd20DwmBarLabel{color:#173452}';
+  style.textContent+='#hd20DashboardWorkMetrics .hd20DwmGroup{padding:14px 15px!important}#hd20DashboardWorkMetrics .hd20DwmDescription{font-size:11px;line-height:1.4;color:#74899d;margin:5px 0 12px;min-height:0}#hd20DashboardWorkMetrics .hd20DwmFocusRows{display:grid;gap:6px}#hd20DashboardWorkMetrics .hd20DwmFocusRow{width:100%;display:flex;align-items:center;gap:8px;text-align:left;padding:10px 11px;border:1px solid #e1e8ef;border-radius:8px;background:#f8fafc;color:#254158;font-size:12px;cursor:pointer}#hd20DashboardWorkMetrics .hd20DwmFocusRow:hover,#hd20DashboardWorkMetrics .hd20DwmFocusRow:focus-visible{background:#edf4fa;border-color:#a9c3d7}#hd20DashboardWorkMetrics .hd20DwmFocusRow strong{font-size:17px;color:#163752;margin-left:auto;font-variant-numeric:tabular-nums}#hd20DashboardWorkMetrics .hd20DwmFocusArrow{color:#8094a6;font-size:20px}#hd20DashboardWorkMetrics .hd20DwmFocusNote{margin-top:9px;font-size:10.5px;color:#7c8e9f}';
   document.head.appendChild(style);
  }
  const specs=[
-  {area:'audit',sub:'retention',index:2,title:'재발·미흡',hint:'Audit 후 재점검 또는 재조치 대상'},
-  {area:'action',sub:'manage',index:3,title:'기한경과',hint:'기한 초과 개선조치 확인 대상'},
-  {area:'advancement',sub:'standard',index:2,title:'유지 미흡',hint:'고도화 유지기준 이탈·보완 대상'}
+  {area:'audit',title:'Audit·유지점검',hint:'부적합 재발 및 유지관리 미완료 확인',metrics:[['retention',2,'재발·미흡'],['ongoing',0,'6개월 관리중']]},
+  {area:'action',title:'개선조치·완료관리',hint:'기한초과 및 검증 대기 조치 확인',metrics:[['manage',3,'기한경과'],['verify',2,'효과검증 대기']]},
+  {area:'advancement',title:'고도화·표준화',hint:'유지기준 이탈 및 공식 판정 대기 확인',metrics:[['standard',2,'유지 미흡'],['judge',1,'판정대기']]}
  ];
- root.innerHTML='<div class="hd20DwmHead"><div><h2>운영 종합진단 · 후속 조치 필요 현황</h2><p style="display:block;margin:5px 0 0;color:#74899d;font-size:12px">상단 성과율과 중복하지 않고 실제 확인·조치가 필요한 사례만 표시합니다.</p></div></div><div class="hd20DwmGroups">'+specs.map(spec=>{
-  const area=AREAS.find(a=>a.key===spec.area),expected=CONTRACTS[spec.area][spec.sub]?.[spec.index];
-  let evidence=null;
-  try{evidence=window.HD20_KPI_EVIDENCE?.evidence?.(spec.area,spec.sub,spec.index)}catch(e){console.warn('[HD20] 후속조치 근거 조회 실패',spec.area,e)}
-  const valid=evidence?.title===expected&&Array.isArray(evidence.rows);
-  const count=valid?evidence.rows.length:null;
-  return '<section class="hd20DwmGroup"><div class="hd20DwmGroupHead"><h3>'+esc(area.title)+'</h3></div><div class="hd20DwmMiniValue">'+(count===null?'—':count+'건')+'</div><div class="hd20DwmMiniMeta">'+esc(spec.title)+'</div><p style="font-size:12px;color:#74899d;min-height:34px;margin:12px 0 8px">'+esc(spec.hint)+'</p><div class="hd20DwmMiniFoot"><span>'+(valid?'원천 사례 기준':'원천 집계 확인 필요')+'</span><button type="button" data-dwm-detail="'+spec.area+'" data-dwm-sub="'+spec.sub+'" data-dwm-index="'+spec.index+'">사례 확인 →</button></div></section>';
+ root.innerHTML='<div class="hd20DwmHead"><div><h2>운영 종합진단 · 집중관리 대상</h2><p style="display:block!important;margin:5px 0 0;color:#74899d;font-size:12px">성과율은 상단에서 확인하고, 여기서는 후속 조치가 필요한 건을 관리합니다.</p></div></div><div class="hd20DwmGroups">'+specs.map(spec=>{
+  const metrics=spec.metrics.map(([sub,index,label])=>{
+   const expected=CONTRACTS[spec.area]?.[sub]?.[index];
+   let ev=null;
+   try{ev=window.HD20_KPI_EVIDENCE?.evidence?.(spec.area,sub,index)}catch(e){console.warn('[HD20] 집중관리 근거 조회 실패',spec.area,sub,e)}
+   const valid=ev?.title===expected&&Array.isArray(ev.rows);
+   return {sub,index,label,count:valid?ev.rows.length:null};
+  });
+  const first=metrics[0],second=metrics[1];
+  return '<section class="hd20DwmGroup"><div class="hd20DwmGroupHead"><h3>'+esc(spec.title)+'</h3></div><p class="hd20DwmDescription">'+esc(spec.hint)+'</p><div class="hd20DwmFocusRows">'+metrics.map(m=>'<button type="button" class="hd20DwmFocusRow" data-dwm-detail="'+spec.area+'" data-dwm-sub="'+m.sub+'" data-dwm-index="'+m.index+'"><span>'+esc(m.label)+'</span><strong>'+ (m.count===null?'—':m.count+'건') +'</strong><span class="hd20DwmFocusArrow">›</span></button>').join('')+'</div><div class="hd20DwmFocusNote">'+(metrics.some(m=>m.count===null)?'— : 근거 데이터 확인 필요':metrics.every(m=>m.count===0)?'현재 집계된 대상 없음':'항목 선택 시 실제 사례 상세 확인')+'</div></section>';
  }).join('')+'</div>';
  root.querySelectorAll('[data-dwm-detail]').forEach(el=>el.addEventListener('click',()=>openEvidence(el.dataset.dwmDetail,el.dataset.dwmSub,Number(el.dataset.dwmIndex))));
 
