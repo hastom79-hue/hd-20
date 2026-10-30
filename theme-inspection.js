@@ -44,8 +44,9 @@ const LEGACY_CHECKLIST=[
  {cat:'5S 고도화',item:'수평전개 대상 라인 누락'},
  {cat:'5S 고도화',item:'FoolProof 장치 미설치·고장 방치'},
 ];
-const CHECKLIST=[...(window.HD20ThemeMaster?.checklist?.()||[]),...LEGACY_CHECKLIST.filter(x=>loadChecks().some(r=>r.states&&Object.prototype.hasOwnProperty.call(r.states,x.cat+'::'+x.item)))];
-const THEMES=[...new Set((window.HD20ThemeMaster?.checklist?.()||CHECKLIST).map(c=>c.cat))];
+let CHECKLIST=[...(window.HD20ThemeMaster?.checklist?.()||[]),...LEGACY_CHECKLIST.filter(x=>loadChecks().some(r=>r.states&&Object.prototype.hasOwnProperty.call(r.states,x.cat+'::'+x.item)))];
+let THEMES=[...new Set((window.HD20ThemeMaster?.checklist?.()||CHECKLIST).map(c=>c.cat))];
+window.addEventListener('hd20-theme-master-updated',()=>{const current=window.HD20ThemeMaster?.checklist?.()||[];CHECKLIST=[...current,...LEGACY_CHECKLIST.filter(x=>loadChecks().some(r=>r.states&&Object.prototype.hasOwnProperty.call(r.states,x.cat+'::'+x.item)))];THEMES=[...new Set(current.map(c=>c.cat))];render()});
 function load(){try{const v=JSON.parse(localStorage.getItem(ACT_KEY)||'[]');return Array.isArray(v)?v:[]}catch{return[]}}
 function save(rows){try{localStorage.setItem(ACT_KEY,JSON.stringify(rows));return true}catch(e){console.error('[HD20 Theme] action save failed',e);return false}}
 function loadChecks(){try{const v=JSON.parse(localStorage.getItem(CHECK_KEY)||'[]');return Array.isArray(v)?v:[]}catch{return[]}}
