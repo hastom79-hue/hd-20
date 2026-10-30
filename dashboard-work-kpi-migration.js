@@ -68,9 +68,9 @@ function rowMonth(row){
  for(const key of fields){
   const value=row?.[key];if(value===null||value===undefined||value==='')continue;
   const raw=String(value).trim();
-  const match=raw.match(/^(20\\d{2})[-./년 ]+(0?[1-9]|1[0-2])(?:\\D|$)/);
+  const match=raw.match(/^(20\d{2})[-./년 ]+(0?[1-9]|1[0-2])(?:\D|$)/);
   if(match)return {year:Number(match[1]),month:Number(match[2])};
-  if(/^20\\d{4}$/.test(raw))return {year:Number(raw.slice(0,4)),month:Number(raw.slice(4,6))};
+  if(/^20\d{4}$/.test(raw))return {year:Number(raw.slice(0,4)),month:Number(raw.slice(4,6))};
  }
  return null;
 }
