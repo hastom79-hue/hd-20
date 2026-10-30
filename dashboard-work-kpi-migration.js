@@ -63,6 +63,22 @@ function openEvidence(area,sub,index){
  try{if(window.HD20_KPI_EVIDENCE?.openEvidence?.(area,sub,index))return}catch(e){console.warn('[HD20 KPI] 근거 조회 실패, 업무화면으로 이동',e)}
  window.HD20_OPS_V2?.go?.(area,sub,{openGrid:true});
 }
+function rowMonth(row){
+ const fields=['occurredAt','eventDate','inspectionDate','auditDate','requestDate','createdAt','registeredAt','updatedAt','date','month','점검일','등록일','발생일','요청일','판정일','완료일'];
+ for(const key of fields){
+  const value=row?.[key];if(value===null||value===undefined||value==='')continue;
+  const raw=String(value).trim();
+  const match=raw.match(/^(20\\d{2})[-./년 ]+(0?[1-9]|1[0-2])(?:\\D|$)/);
+  if(match)return {year:Number(match[1]),month:Number(match[2])};
+  if(/^20\\d{4}$/.test(raw))return {year:Number(raw.slice(0,4)),month:Number(raw.slice(4,6))};
+ }
+ return null;
+}
+function monthlyEvidence(rows,year){
+ const values=Array(12).fill(0),known=Array(12).fill(false);
+ for(const row of rows){const m=rowMonth(row);if(m&&m.year===year){values[m.month-1]++;known[m.month-1]=true}}
+ return {values,dated:rows.length===0||known.some(Boolean),undated:rows.length>0&&!known.some(Boolean)};
+}
 function render(){
  const root=ensure();if(!root)return;
  if(!document.getElementById('hd20DwmCompactStyle')){
@@ -70,23 +86,31 @@ function render(){
   style.textContent='#hd20DashboardWorkMetrics .hd20DwmGroups{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}#hd20DashboardWorkMetrics .hd20DwmGroup{min-width:0;padding:14px 16px;border:1px solid #dfe8ef;border-radius:13px;background:#fff}#hd20DashboardWorkMetrics .hd20DwmGroupHead{display:flex;justify-content:space-between;gap:8px;align-items:center}#hd20DashboardWorkMetrics .hd20DwmGroupHead h3{margin:0;font-size:14px}#hd20DashboardWorkMetrics .hd20DwmGroupHead small{display:none}#hd20DashboardWorkMetrics .hd20DwmHead{margin-bottom:10px}#hd20DashboardWorkMetrics .hd20DwmHead p{display:none}#hd20DashboardWorkMetrics .hd20DwmMiniValue{font-size:25px;font-weight:800;color:#123452;margin:9px 0 0}#hd20DashboardWorkMetrics .hd20DwmMiniMeta{font-size:11px;color:#74899d}#hd20DashboardWorkMetrics .hd20DwmMiniBars{height:68px;display:flex;align-items:flex-end;gap:5px;margin-top:9px;border-bottom:1px solid #e4eaf0}#hd20DashboardWorkMetrics .hd20DwmMiniBar{flex:1;min-width:0;position:relative;background:#b7c7d5;border-radius:3px 3px 0 0}#hd20DashboardWorkMetrics .hd20DwmMiniBar:last-child{background:#173452}#hd20DashboardWorkMetrics .hd20DwmMiniMonths{display:flex;justify-content:space-between;font-size:10px;color:#90a2b4;margin-top:4px}#hd20DashboardWorkMetrics .hd20DwmMiniFoot{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:9px;font-size:11px;color:#74899d}#hd20DashboardWorkMetrics .hd20DwmMiniFoot button{border:1px solid #d1dfeb;background:white;border-radius:9px;padding:6px 9px;color:#173452;font-weight:700;cursor:pointer;white-space:nowrap}@media(max-width:850px){#hd20DashboardWorkMetrics .hd20DwmGroups{grid-template-columns:1fr}}';
   style.textContent+=' #hd20DashboardWorkMetrics .hd20DwmMiniBars{height:86px;padding-top:16px;overflow:visible}#hd20DashboardWorkMetrics .hd20DwmMiniBar{overflow:visible}#hd20DashboardWorkMetrics .hd20DwmBarLabel{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);font-size:9px;font-weight:700;line-height:13px;white-space:nowrap;color:#526e89}#hd20DashboardWorkMetrics .hd20DwmMiniBar:last-child .hd20DwmBarLabel{color:#173452}';
   style.textContent+='#hd20DashboardWorkMetrics .hd20DwmGroup{padding:14px 15px!important}#hd20DashboardWorkMetrics .hd20DwmDescription{font-size:11px;line-height:1.4;color:#74899d;margin:5px 0 12px;min-height:0}#hd20DashboardWorkMetrics .hd20DwmFocusRows{display:grid;gap:6px}#hd20DashboardWorkMetrics .hd20DwmFocusRow{width:100%;display:flex;align-items:center;gap:8px;text-align:left;padding:10px 11px;border:1px solid #e1e8ef;border-radius:8px;background:#f8fafc;color:#254158;font-size:12px;cursor:pointer}#hd20DashboardWorkMetrics .hd20DwmFocusRow:hover,#hd20DashboardWorkMetrics .hd20DwmFocusRow:focus-visible{background:#edf4fa;border-color:#a9c3d7}#hd20DashboardWorkMetrics .hd20DwmFocusRow strong{font-size:17px;color:#163752;margin-left:auto;font-variant-numeric:tabular-nums}#hd20DashboardWorkMetrics .hd20DwmFocusArrow{color:#8094a6;font-size:20px}#hd20DashboardWorkMetrics .hd20DwmFocusNote{margin-top:9px;font-size:10.5px;color:#7c8e9f}';
+  style.textContent+='#hd20DashboardWorkMetrics .hd20DwmChart{height:112px;display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:3px;border-bottom:1px solid #dce6ee;align-items:end;margin:12px 0 9px}#hd20DashboardWorkMetrics .hd20DwmMonth{height:100%;display:flex;flex-direction:column;justify-content:flex-end;min-width:0;align-items:center}#hd20DashboardWorkMetrics .hd20DwmMonth small{font-size:9px;color:#8294a5;height:17px}#hd20DashboardWorkMetrics .hd20DwmBarPair{height:82px;width:100%;display:flex;gap:2px;align-items:flex-end;justify-content:center}#hd20DashboardWorkMetrics .hd20DwmChartBar{position:relative;flex:1;max-width:13px;border-radius:3px 3px 0 0}#hd20DashboardWorkMetrics .hd20DwmChartBar.primary,#hd20DashboardWorkMetrics .hd20DwmLegend i.primary{background:#244966}#hd20DashboardWorkMetrics .hd20DwmChartBar.secondary,#hd20DashboardWorkMetrics .hd20DwmLegend i.secondary{background:#8aabc4}#hd20DashboardWorkMetrics .hd20DwmChartBar span{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);font-size:9px;font-weight:700;color:#405b71}#hd20DashboardWorkMetrics .hd20DwmLegend{display:flex;flex-wrap:wrap;gap:6px}#hd20DashboardWorkMetrics .hd20DwmLegend button{border:1px solid #dce5ec;background:#fff;border-radius:7px;padding:5px 7px;font-size:10px;display:flex;align-items:center;gap:5px;color:#405b71;cursor:pointer}#hd20DashboardWorkMetrics .hd20DwmLegend strong{color:#173452}#hd20DashboardWorkMetrics .hd20DwmLegend i{width:8px;height:8px;border-radius:2px}#hd20DashboardWorkMetrics .hd20DwmNoData{grid-column:1/-1;align-self:center;text-align:center;color:#8a9aaa;font-size:12px}';
   document.head.appendChild(style);
  }
  const specs=[
-  {area:'audit',title:'Audit·유지점검',hint:'부적합 재발 및 유지관리 미완료 확인',metrics:[['retention',2,'재발·미흡'],['ongoing',0,'6개월 관리중']]},
-  {area:'action',title:'개선조치·완료관리',hint:'기한초과 및 검증 대기 조치 확인',metrics:[['manage',3,'기한경과'],['verify',2,'효과검증 대기']]},
-  {area:'advancement',title:'고도화·표준화',hint:'유지기준 이탈 및 공식 판정 대기 확인',metrics:[['standard',2,'유지 미흡'],['judge',1,'판정대기']]}
+  {area:'audit',title:'Audit·유지점검',metrics:[['retention',2,'재발·미흡'],['ongoing',0,'6개월 관리중']]},
+  {area:'action',title:'개선조치·완료관리',metrics:[['manage',3,'기한경과'],['verify',2,'효과검증 대기']]},
+  {area:'advancement',title:'고도화·표준화',metrics:[['standard',2,'유지 미흡'],['judge',1,'판정대기']]}
  ];
- root.innerHTML='<div class="hd20DwmHead"><div><h2>운영 종합진단 · 집중관리 대상</h2><p style="display:block!important;margin:5px 0 0;color:#74899d;font-size:12px">성과율은 상단에서 확인하고, 여기서는 후속 조치가 필요한 건을 관리합니다.</p></div></div><div class="hd20DwmGroups">'+specs.map(spec=>{
+ const year=Number(new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Seoul',year:'numeric'}).format(new Date()));
+ root.innerHTML='<div class="hd20DwmHead"><div><h2>운영 종합진단 · 집중관리 추이</h2><p style="display:block!important;margin:5px 0 0;color:#74899d;font-size:12px">월별 관리대상 발생 추이 · 단위 건 · '+year+'년</p></div></div><div class="hd20DwmGroups">'+specs.map(spec=>{
   const metrics=spec.metrics.map(([sub,index,label])=>{
-   const expected=CONTRACTS[spec.area]?.[sub]?.[index];
-   let ev=null;
-   try{ev=window.HD20_KPI_EVIDENCE?.evidence?.(spec.area,sub,index)}catch(e){console.warn('[HD20] 집중관리 근거 조회 실패',spec.area,sub,e)}
+   const expected=CONTRACTS[spec.area]?.[sub]?.[index];let ev=null;
+   try{ev=window.HD20_KPI_EVIDENCE?.evidence?.(spec.area,sub,index)}catch(e){console.warn('[HD20] 월별 근거 조회 실패',spec.area,sub,e)}
    const valid=ev?.title===expected&&Array.isArray(ev.rows);
-   return {sub,index,label,count:valid?ev.rows.length:null};
+   return {sub,index,label,count:valid?ev.rows.length:null,series:valid?monthlyEvidence(ev.rows,year):null};
   });
-  const first=metrics[0],second=metrics[1];
-  return '<section class="hd20DwmGroup"><div class="hd20DwmGroupHead"><h3>'+esc(spec.title)+'</h3></div><p class="hd20DwmDescription">'+esc(spec.hint)+'</p><div class="hd20DwmFocusRows">'+metrics.map(m=>'<button type="button" class="hd20DwmFocusRow" data-dwm-detail="'+spec.area+'" data-dwm-sub="'+m.sub+'" data-dwm-index="'+m.index+'"><span>'+esc(m.label)+'</span><strong>'+ (m.count===null?'—':m.count+'건') +'</strong><span class="hd20DwmFocusArrow">›</span></button>').join('')+'</div><div class="hd20DwmFocusNote">'+(metrics.some(m=>m.count===null)?'— : 근거 데이터 확인 필요':metrics.every(m=>m.count===0)?'현재 집계된 대상 없음':'항목 선택 시 실제 사례 상세 확인')+'</div></section>';
+  const allDated=metrics.every(m=>m.series?.dated);
+  const max=Math.max(1,...metrics.flatMap(m=>m.series?.values||[]));
+  const bars=Array.from({length:12},(_,i)=>'<div class="hd20DwmMonth"><div class="hd20DwmBarPair">'+metrics.map((m,j)=>{
+   const val=m.series?.values[i]??0;
+   const usable=allDated&&m.series;
+   const height=usable&&val>0?Math.max(3,Math.round(val/max*70)):0;
+   return '<div class="hd20DwmChartBar '+(j?'secondary':'primary')+'" style="height:'+height+'px" title="'+esc(m.label)+' '+(i+1)+'월: '+(usable?val+'건':'월별 자료 없음')+'">'+(usable&&val>0?'<span>'+val+'</span>':'')+'</div>';
+  }).join('')+'</div><small>'+(i+1)+'월</small></div>').join('');
+  return '<section class="hd20DwmGroup"><div class="hd20DwmGroupHead"><h3>'+esc(spec.title)+'</h3></div><div class="hd20DwmChart">'+(allDated?bars:'<div class="hd20DwmNoData">월별 날짜 근거 확인 필요</div>')+'</div><div class="hd20DwmLegend">'+metrics.map((m,j)=>'<button type="button" data-dwm-detail="'+spec.area+'" data-dwm-sub="'+m.sub+'" data-dwm-index="'+m.index+'"><i class="'+(j?'secondary':'primary')+'"></i>'+esc(m.label)+' <strong>'+(m.count===null?'—':m.count+'건')+'</strong></button>').join('')+'</div><div class="hd20DwmFocusNote">'+(allDated?'범례 선택 시 실제 사례 확인':'날짜가 확인되지 않는 사례를 임의로 월별 배분하지 않습니다')+'</div></section>';
  }).join('')+'</div>';
  root.querySelectorAll('[data-dwm-detail]').forEach(el=>el.addEventListener('click',()=>openEvidence(el.dataset.dwmDetail,el.dataset.dwmSub,Number(el.dataset.dwmIndex))));
 
