@@ -1,5 +1,5 @@
 (()=>{'use strict';
-const KEYS=['hd20GMES5SAutoImproveRawV1','hd20ActionCasesV2','hd20AuditRandomDrawsV1','hd20OperatingPolicyV1','hd20AuditChecklistV1','hd20TeamLeaderMasterV1','hd20TeamHeadcountMasterV1','hd20ThemeAuditChecksV1','hd20ThemeAuditPlansV1'];
+const KEYS=['hd20GMES5SAutoImproveRawV1','hd20ActionCasesV2','hd20AuditRandomDrawsV1','hd20OperatingPolicyV1','hd20AuditChecklistV1','hd20TeamLeaderMasterV1','hd20TeamHeadcountMasterV1','hd20ThemeAuditChecksV1','hd20ThemeAuditPlansV1','hd20ThemeCatalogMasterV1'];
 const LEGACY_TEST_IDS=new Set('DRAW-1788010755791,DRAW-1788010759290,DRAW-1788010760070,DRAW-1788010760500,DRAW-1788010760921,DRAW-1788010761360,DRAW-1788011635587,DRAW-1788011636106,DRAW-1788011636356,DRAW-1788011636538,DRAW-1788011636773,DRAW-1788011636931,DRAW-1788011637126,DRAW-1788011637396,DRAW-1788011637597,DRAW-1788011637788,DRAW-1788011637966,DRAW-1788011638138,DRAW-1788011638487,DRAW-1788011638656,DRAW-1788011638846'.split(','));
 const ROW='canonical_v1',META='hd20DbSyncMetaV1';let client=null,user=null,ready=false,applying=false,timer=null,patched=false,booting=false,lastRemoteAt='';
 const parse=v=>{try{return JSON.parse(v)}catch{return v}};
