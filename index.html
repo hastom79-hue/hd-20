@@ -41,7 +41,7 @@ body:has(#awAudit.on) #hd20PurposePanel[data-contract="audit.draw"] .hd20Purpose
 (()=>{if(!new URLSearchParams(location.search).has('hd20diag'))return;
 function show(){const k=window.HD20KPIData;let snap=null,err='';try{snap=k?.snapshot?.()}catch(e){err=String(e)}
 const el=document.createElement('aside');el.id='hd20-deploy-diagnostic';el.style.cssText='position:fixed;bottom:12px;right:12px;z-index:2147483647;background:#102d40;color:white;padding:14px;border-radius:10px;max-width:380px;font:12px/1.7 sans-serif;box-shadow:0 8px 24px #0005';
-const version='20261031-runtime-diag-v1';const vals=snap?'원천 '+snap.rows.length+' / 후보 '+snap.candidates.length+' / 공식채택 '+snap.confirmed.length:'집계 불가';
+const version='20261031-runtime-diag-v2';const vals=snap?'원천 '+snap.rows.length+' / 고도화 유형 '+snap.rows.filter(x=>k.isAdvancementType(x)).length+' / 후보 '+snap.candidates.length+' / 공식채택 '+snap.confirmed.length+' / 유지 '+snap.maintained.length+' / 가상 확정 '+snap.rows.filter(x=>x.source==='demo-seed'&&x.confirmed===true&&x.judgeState==='확정').length:'집계 불가';
 el.textContent='HD-20 배포진단 '+version+' | KPI 모듈 '+(k?'정상 로드':'미로드')+' | '+vals+(err?' | 오류 '+err:'');
 const btn=document.createElement('button');btn.textContent='강제 새로고침';btn.style.cssText='margin-left:8px;padding:4px 8px;cursor:pointer';btn.onclick=()=>{const url=new URL(location.href);url.searchParams.set('hd20diag','1');url.searchParams.set('cache',Date.now());location.replace(url.href)};el.appendChild(btn);document.body.appendChild(el)}
 document.readyState==='loading'?document.addEventListener('DOMContentLoaded',show,{once:true}):show();
