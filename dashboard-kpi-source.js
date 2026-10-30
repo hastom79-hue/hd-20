@@ -17,10 +17,18 @@ function validationMode(){return new URL(location.href).searchParams.get('valida
 function load(){try{const v=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(v)?(validationMode()?v.filter(x=>x?.source==='web-validation-fixture'):v.filter(x=>window.HD20_DEMO_MODE===true&&x?.source==='demo-seed'||!isNonProdRow(x))):[]}catch{return[]}}
 function yearOf(v){const m=String(v??'').match(/(20\d{2})/);return m?Number(m[1]):null}
 function selectedYear(){const txt=document.querySelector('.controls select')?.textContent||'';const y=yearOf(txt);return y||new Date().getFullYear()}
-function isAdvancementType(x){if(!x)return false;const type=String(x.type||x.category||x.sType||x['5S구분']||x['활동유형']||'').replace(/\\s/g,'');return /고도화/.test(type)||Number(x.criteriaMatched)>=1||x.criteriaVisual===true||x.criteriaGreen===true||x.criteriaSpace===true||x.visualization===true||x.greenZone===true||x.spaceUtilization===true}
-function criteriaCount(x){const n=Number(x?.criteriaMatched);if(Number.isFinite(n)&&n>=1&&n<=3)return n;return [x?.criteriaVisual===true||x?.visualization===true,x?.criteriaGreen===true||x?.greenZone===true,x?.criteriaSpace===true||x?.spaceUtilization===true].filter(Boolean).length}
-function isCandidate(x){return isAdvancementType(x)&&criteriaCount(x)>=1}
-function isConfirmed(x){const type=String(x?.type||x?.category||x?.sType||x?.['5S구분']||x?.['활동유형']||'').replace(/\s/g,'');return /고도화/.test(type)&&isCandidate(x)&&x.confirmed===true&&['확정','승인'].includes(String(x.judgeState||x.judgementState||x.officialJudgeState||x.officialStatus||x['판정상태']||'').trim())&&(x.finalAdopted===true||x.advancementAdopted===true)}
+function advancementType(x){return String(x?.type||x?.category||x?.sType||x?.['5S구분']||x?.['활동유형']||'').replace(/\\s+/g,'')}
+function isAdvancementType(x){if(!x)return false;return /고도화/.test(advancementType(x))||criteriaCount(x)>0}
+function criteriaCount(x){
+ if(!x)return 0;
+ const groups=[['criterionVisual','criteriaVisual','visualCriterion','visualization','시각화','형적관리','criterion1','criteria1','c1'],['criterionGreen','criteriaGreen','greenZone','greenCriterion','GreenZone','green','criterion2','criteria2','c2'],['criterionSpace','criteriaSpace','spaceUtilization','spaceCriterion','정량축소','정위치','공간활용','criterion3','criteria3','c3']];
+ const yes=v=>v===true||v===1||['y','yes','true','1','충족','적합','o','ok','pass','완료'].includes(String(v??'').trim().toLowerCase());
+ let n=0;
+ for(const aliases of groups){let v;for(const k of aliases){if(x[k]!==undefined&&x[k]!==null&&x[k]!==''){v=x[k];break}}if(v===undefined&&x.raw&&typeof x.raw==='object'){for(const k of aliases){if(x.raw[k]!==undefined){v=x.raw[k];break}}}if(yes(v))n++}
+ return n;
+}
+function isCandidate(x){return !!x&&isAdvancementType(x)&&criteriaCount(x)>=1}
+function isConfirmed(x){return !!x&&/고도화/.test(advancementType(x))&&isCandidate(x)&&x.confirmed===true&&String(x.judgeState||x.judgementState||x.officialJudgeState||x.officialStatus||x['판정상태']||'').trim()==='확정'&&(x.finalAdopted===true||x.advancementAdopted===true)}
 function maintenanceState(x){const state=String(x?.maintainState||x?.auditState||'').trim();if(x?.attrition===true||x?.valid===false||/중지|미흡|이탈|재점검|부적합|해제|실패/.test(state))return 'attrited';if(/^(유지|정상|유지완료|maintained)$/i.test(state))return 'maintained';return 'unverified'}
 function isMaintained(x){return isConfirmed(x)&&maintenanceState(x)==='maintained'}
 function num(v){const n=Number(String(v??'').replace(/[^0-9.\-]/g,''));return Number.isFinite(n)&&n>0?n:null}
