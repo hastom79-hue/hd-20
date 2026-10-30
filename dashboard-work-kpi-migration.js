@@ -102,15 +102,16 @@ function render(){
    const valid=ev?.title===expected&&Array.isArray(ev.rows);
    return {sub,index,label,count:valid?ev.rows.length:null,series:valid?monthlyEvidence(ev.rows,year):null};
   });
-  const allDated=metrics.every(m=>m.series?.dated);
+  const anyDated=metrics.some(m=>m.series?.dated&&m.series?.values.some(v=>v>0));
+  const missing=metrics.filter(m=>!m.series?.dated&&m.count>0).map(m=>m.label);
   const max=Math.max(1,...metrics.flatMap(m=>m.series?.values||[]));
   const bars=Array.from({length:12},(_,i)=>'<div class="hd20DwmMonth"><div class="hd20DwmBarPair">'+metrics.map((m,j)=>{
    const val=m.series?.values[i]??0;
-   const usable=allDated&&m.series;
+   const usable=!!m.series?.dated;
    const height=usable&&val>0?Math.max(3,Math.round(val/max*70)):0;
    return '<div class="hd20DwmChartBar '+(j?'secondary':'primary')+'" style="height:'+height+'px" title="'+esc(m.label)+' '+(i+1)+'월: '+(usable?val+'건':'월별 자료 없음')+'">'+(usable&&val>0?'<span>'+val+'</span>':'')+'</div>';
   }).join('')+'</div><small>'+(i+1)+'월</small></div>').join('');
-  return '<section class="hd20DwmGroup"><div class="hd20DwmGroupHead"><h3>'+esc(spec.title)+'</h3></div><div class="hd20DwmChart">'+(allDated?bars:'<div class="hd20DwmNoData">월별 날짜 근거 확인 필요</div>')+'</div><div class="hd20DwmLegend">'+metrics.map((m,j)=>'<button type="button" data-dwm-detail="'+spec.area+'" data-dwm-sub="'+m.sub+'" data-dwm-index="'+m.index+'"><i class="'+(j?'secondary':'primary')+'"></i>'+esc(m.label)+' <strong>'+(m.count===null?'—':m.count+'건')+'</strong></button>').join('')+'</div><div class="hd20DwmFocusNote">'+(allDated?'범례 선택 시 실제 사례 확인':'날짜가 확인되지 않는 사례를 임의로 월별 배분하지 않습니다')+'</div></section>';
+  return '<section class="hd20DwmGroup"><div class="hd20DwmGroupHead"><h3>'+esc(spec.title)+'</h3></div><div class="hd20DwmChart">'+(anyDated?bars:'<div class="hd20DwmNoData">해당 연도 월별 발생 기록 없음 · 날짜 근거 확인 필요</div>')+'</div><div class="hd20DwmLegend">'+metrics.map((m,j)=>'<button type="button" data-dwm-detail="'+spec.area+'" data-dwm-sub="'+m.sub+'" data-dwm-index="'+m.index+'"><i class="'+(j?'secondary':'primary')+'"></i>'+esc(m.label)+' <strong>'+(m.count===null?'—':m.count+'건')+'</strong></button>').join('')+'</div><div class="hd20DwmFocusNote">'+(missing.length?'날짜 미확인: '+esc(missing.join(', '))+' · 확인된 계열만 표시':'범례 선택 시 실제 사례 확인')+'</div></section>';
  }).join('')+'</div>';
  root.querySelectorAll('[data-dwm-detail]').forEach(el=>el.addEventListener('click',()=>openEvidence(el.dataset.dwmDetail,el.dataset.dwmSub,Number(el.dataset.dwmIndex))));
 
