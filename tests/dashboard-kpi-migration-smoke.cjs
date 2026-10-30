@@ -6,7 +6,7 @@ const {chromium}=require('playwright');
  page.on('pageerror',e=>errors.push(String(e)));
  page.on('dialog',d=>d.accept());
  await page.route('**/*',route=>{
-  const u=new URL(route.request().url);
+  const u=new URL(route.request().url());
   if(['127.0.0.1','localhost'].includes(u.hostname))return route.continue();
   if(route.request().resourceType()==='script')return route.fulfill({status:200,contentType:'application/javascript',body:'/* external stub */'});
   return route.abort('blockedbyclient');
@@ -14,6 +14,8 @@ const {chromium}=require('playwright');
  try{
   await page.goto('http://127.0.0.1:4173/index.html?area=dashboard',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>!!window.HD20_OPS_V2?.metrics&&!!window.HD20_DASHBOARD_TABS?.apply&&!!document.getElementById('hd20DashboardWorkMetrics'),{},{timeout:25000});
+  /* 랜딩 런처 팝업이 이후 클릭을 가로막으므로 먼저 닫는다 */
+  await page.evaluate(()=>{document.querySelector('[data-ln="skip"]')?.click()||document.getElementById('hd20Launcher')?.remove()});
   const dashboard=await page.evaluate(()=>{
    const p=document.getElementById('hd20DashboardWorkMetrics');
    return {groups:p.querySelectorAll('.hd20DwmGroup').length,tiles:p.querySelectorAll('.hd20DwmTile').length,

@@ -367,5 +367,5 @@ function suppressLegacy(){const tabs=document.querySelector('#masterModal .maste
 function boot(){let n=0;const run=()=>{if(ensure()){suppressLegacy();const tabs=document.querySelector('#masterModal .masterTabs');
  if(tabs&&!tabs.dataset.imfPersistenceBound){tabs.dataset.imfPersistenceBound='1';tabs.addEventListener('click',e=>{const btn=e.target.closest('[data-master-tab]');if(btn&&btn.dataset.masterTab==='policy')rememberMasterTab('policy')},true)}
  return}if(++n<80)setTimeout(run,150)};run()}
-window.HD20IntegratedMaster={teamRows,targets,factors:()=>read(FACTOR_KEY,FACTORS),mailing:()=>read(MAIL_KEY,MAIL),getHeadcount:t=>teamRows().find(x=>x.team===t)?.headcount||null};
+window.HD20IntegratedMaster={teamRows,targets,factors:()=>factorSaved(),/* 작업장 마스터 동기화가 저장소에 {작업장:[...]}만 부분 저장할 수 있어, 원본을 그대로 반환하면 업무유형 등 나머지 카테고리가 사라져 보였음 — 기본값을 병합해 항상 전체 카테고리를 반환 */mailing:()=>read(MAIL_KEY,MAIL),getHeadcount:t=>teamRows().find(x=>x.team===t)?.headcount||null};
 document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot,{once:true}):boot();})();

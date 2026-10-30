@@ -33,8 +33,9 @@ jobs:
               await page.waitForFunction(()=>!!document.querySelector('.beginnerNav button[data-key="dashboard"]'),{},{timeout:20000});
               await page.waitForFunction(()=>!!document.getElementById('hd20DashboardPriority'),{},{timeout:20000});
               await page.waitForFunction(()=>!!document.getElementById('hd20DashboardSectionTabs'),{},{timeout:20000});
-              const cssContract=await page.evaluate(()=>[...document.querySelectorAll('link[rel="stylesheet"]')].map(x=>new URL(x.href).pathname.split('/').pop()));
-              const expectedCss=['pretendard.css','styles.css','hd20-overhaul.css','hd20-five-area.css','dashboard-priority-groups.css','workflow-area-density.css','hd20-subtabs.css','hd20-ops-v2.css','integrated-master-redesign.css','supabase-auth.css','hd22-theme.css','theme-inspection-v4.css','print-styles.css','new-entry-emphasis.css','activity-detail-dialog.css'];
+              /* 테마 점검 CSS는 재구축마다 버전 번호(v4, v5, …)가 바뀌므로 버전을 정규화해 비교 — 파일명이 바뀔 때마다 CI가 깨지는 것을 방지. */
+              const cssContract=await page.evaluate(()=>[...document.querySelectorAll('link[rel="stylesheet"]')].map(x=>new URL(x.href).pathname.split('/').pop().replace(/^theme-inspection-v\d+\.css$/,'theme-inspection.css')));
+              const expectedCss=['pretendard.css','styles.css','hd20-overhaul.css','hd20-five-area.css','dashboard-priority-groups.css','workflow-area-density.css','hd20-subtabs.css','hd20-ops-v2.css','integrated-master-redesign.css','supabase-auth.css','hd22-theme.css','theme-inspection.css','print-styles.css','new-entry-emphasis.css','activity-detail-dialog.css'];
               if(JSON.stringify(cssContract)!==JSON.stringify(expectedCss)) throw new Error(`${vp.name}: stylesheet contract=${JSON.stringify(cssContract)}`);
               if(cssContract.some(x=>/mobile-runtime-restore|hotfix|polish/i.test(x))) throw new Error(`${vp.name}: retired stylesheet leaked ${JSON.stringify(cssContract)}`);
               const navCount=await page.locator('.beginnerNav button[data-key]').count(); if(navCount!==7) throw new Error(`${vp.name}: nav count=${navCount}`);

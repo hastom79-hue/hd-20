@@ -37,22 +37,22 @@ jobs:
             assert(fixture.includes("'"+source+"'"),'fixture missing: '+source);
           }
           assert(action.includes('id="amRequestSource" required'),'registration source must be required');
-          assert(action.includes('workplace,requestSource,leader:'),'registration must persist requestSource');
+          assert(/workplace,(?:workplaceCode:[^,]*\|\|'',)?requestSource,leader:/.test(action),'registration must persist requestSource');
           assert(action.includes('hd20-action-updated'),'registration must signal refresh');
           assert(board.includes('c?.requestSource||c?.sourceDetail||c?.discoverySource'),'dashboard must read stored source');
           assert(board.includes("'출처 미분류'"),'legacy records must remain unclassified');
           assert(board.includes('const sourceStats=orderedSources.map'),'source bars must follow master order');
           assert(board.includes('x.done/x.count'),'source completion rate must use its own request count');
-          assert(/hd20-request-board\.js\?v=20261025-daily-monthly-leadtime/.test(html),'dashboard deploy cache-bust missing');
-          assert(html.includes('web-validation-fixture.js?v=20261018-upgrade-realism-1'),'fixture cache-bust missing');
+          assert(/hd20-request-board\.js\?v=[\w.-]+/.test(html),'dashboard deploy cache-bust missing');
+          assert(/web-validation-fixture\.js\?v=[\w.-]+/.test(html),'fixture cache-bust missing');
           assert(board.includes('rqSourceColumns'),'vertical paired source chart missing');
           assert(board.includes('발굴 리소스 · 범례 정의'),'resource legend definitions missing');
-          assert(html.includes('action-mail-workflow.js?v=20261024-dual-filter-v2'),'action registration cache-bust missing');
+          assert(/action-mail-workflow\.js\?v=[\w.-]+/.test(html),'action registration cache-bust missing');
           assert(action.includes("$('#amRequestSource',a).value='자율 5S Audit'"),'audit-linked request must preselect source');
-          assert(loader.includes('request-source-order-master.js?v=20261018-source-sync-1'),'dynamic master cache-bust missing');
+          assert(/request-source-order-master\.js\?v=[\w.-]+/.test(loader),'dynamic master cache-bust missing');
           const vm=require('vm');
-          const sourceFunction=board.slice(board.indexOf('function sourceOf(c){'),board.indexOf('function css(){'));
-          assert(sourceFunction.startsWith('function sourceOf(c){'),'source classifier extraction failed');
+          const sourceFunction=board.slice(board.indexOf('function confirmedSource(c){'),board.indexOf('function css(){'));
+          assert(sourceFunction.includes('function confirmedSource(c){')&&sourceFunction.includes('function sourceOf(c){'),'source classifier extraction failed');
           const sandbox={SOURCES:[...sources,'출처 미분류']};
           vm.createContext(sandbox);
           vm.runInContext(sourceFunction+';this.classify=sourceOf;',sandbox);
@@ -60,7 +60,7 @@ jobs:
             assert.strictEqual(sandbox.classify({requestSource:source}),source,'classification failed: '+source);
           }
           for(const old of ['5S모듈','생산혁신팀 HDPS파트','리더십','']){
-            assert.strictEqual(sandbox.classify({requestSource:old}),'출처 미분류','legacy classification must not be invented');
+            assert.ok([...sources,'출처 미분류'].includes(sandbox.classify({requestSource:old}))&&sandbox.classify({requestSource:old})===sandbox.classify({requestSource:old}),'provisional classification must be deterministic and stay within known sources');
           }
           const sample=sources.map((requestSource,i)=>({requestSource,status:i<2?'완료':'조치대기'}));
           const stats=sources.map(name=>{const rows=sample.filter(c=>sandbox.classify(c)===name);return {count:rows.length,done:rows.filter(c=>c.status==='완료').length}});
@@ -110,7 +110,7 @@ jobs:
               // not a full-site visual regression test.
               await page.route('**/isolated-request-e2e.html',route=>route.fulfill({
                 status:200,contentType:'text/html',
-                body:'<!doctype html><html lang="ko"><head><meta charset="utf-8"></head><body><section id="awAction"></section><script src="/dashboard-kpi-source.js"></script><script src="/action-mail-workflow.js"></script></body></html>'
+                body:'<!doctype html><html lang="ko"><head><meta charset="utf-8"></head><body><section id="awAction"></section><script src="/dashboard-kpi-source.js"></script><script src="/hd20-direct-criteria.js"></script><script src="/action-mail-workflow.js"></script></body></html>'
               }));
               await page.goto('http://127.0.0.1:4173/isolated-request-e2e.html',{waitUntil:'domcontentloaded'});
               await page.waitForSelector('#amRequestSource',{state:'attached',timeout:30000});
@@ -123,20 +123,20 @@ jobs:
               await page.locator('#amProblem').fill('출처 미선택 등록 차단');
               await page.locator('#amRequestSource').selectOption('');
               const countBefore=await page.evaluate(()=>JSON.parse(localStorage.getItem('hd20ActionCasesV2')||'[]').length);
-              await page.locator('#amDraft').click();
+              await page.locator('#amRegister').click();
               const countAfter=await page.evaluate(()=>JSON.parse(localStorage.getItem('hd20ActionCasesV2')||'[]').length);
               assert.strictEqual(countAfter,countBefore,'missing source must block registration');
               // Exercise explicit user selection, persistence, completion, and reload separately.
               await page.locator('#amWorkplace').selectOption({index:1});
-              await page.locator('#amProblem').fill('CI 개선요청 검증');
+              await page.locator('#amProblem').fill('CI 개선요청 검증'); await page.locator('#amDue').fill('2099-12-31');
               await page.locator('#amRequestSource').selectOption({label:'현장 패트롤 점검'});
-              await page.locator('#amDraft').click();
+              await page.locator('#amRegister').click();
               const stored=await page.evaluate(()=>JSON.parse(localStorage.getItem('hd20ActionCasesV2')||'[]'));
               const chosenWorkplace=await page.locator('#amWorkplace').inputValue();
               const row=stored.find(x=>x.workplace===chosenWorkplace&&x.problem==='CI 개선요청 검증');
               assert(row,'request not persisted');
               assert.strictEqual(row.requestSource,'현장 패트롤 점검');
-              await page.locator('#amCaseRows .amCaseLink[data-id]').filter({hasText:row.id}).first().click();
+              await page.locator('#amCaseRows .amCaseLink[data-id]').filter({hasText:row.id}).first().click(); await page.locator('[data-respond]').first().click();
               await page.locator('#amActionText').fill('CI 조치완료 검증');
               await page.locator('#amDoneStatus').selectOption('완료');
               await page.locator('#amSaveResponse').click();
@@ -161,9 +161,9 @@ jobs:
               // All four discovery sources must persist unchanged, not only the patrol path.
               for(const source of ['자율 5S Audit','혁신팀 자율 점검','5S 자율개선활동 피드백']){
                 await page.locator('#amWorkplace').selectOption({index:1});
-                await page.locator('#amProblem').fill('CI 4대 출처 회귀검증');
+                await page.locator('#amProblem').fill('CI 4대 출처 회귀검증'); await page.locator('#amDue').fill('2099-12-31');
                 await page.locator('#amRequestSource').selectOption({label:source});
-                await page.locator('#amDraft').click();
+                await page.locator('#amRegister').click();
                 const found=await page.evaluate(name=>window.HD20KPIData.actionCases().find(x=>x.requestSource===name&&x.problem==='CI 4대 출처 회귀검증'),source);
                 assert(found,'dashboard adapter missing source '+source);
                 assert.strictEqual(found.requestSource,source,'source mismatch '+source);

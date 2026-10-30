@@ -33,7 +33,7 @@ jobs:
             // CI only: dismiss the initial registration chooser before exercising underlying screens.
             await page.evaluate(()=>document.getElementById('hd20Launcher')?.remove());
             const v3Nav=await page.locator('#hd20DashboardSectionTabs button[data-dashboard-section]').count();
-            if(v3Nav!==5)throw Error('V3 dashboard navigation count mismatch: '+v3Nav);
+            if(v3Nav!==4)throw Error('V3 dashboard navigation count mismatch: '+v3Nav);
             await page.locator('#hd20DashboardSectionTabs button[data-dashboard-section="summary"]').click();
             if(await page.locator('#hd20DashboardSectionTabs button.active').count()!==1)throw Error('V3 active navigation mismatch');
             const summaryStatus=await page.locator('#hd20DashboardPriority .hd20V3ReadinessMain').count();
@@ -97,9 +97,6 @@ jobs:
             }
             if(errors.length)throw Error('Browser JS errors: '+errors.join(' | '));
             fs.writeFileSync('v3-browser-evidence/result.json',JSON.stringify({result,errors},null,2));
-            const executionCards=await page.evaluate(()=>{const el=document.getElementById('hd20V3Execution');return {exists:!!el,kpis:el?.querySelectorAll('[data-execution-kpi]').length||0,panels:el?.querySelectorAll('.v3exPanel').length||0}});
-            if(!executionCards.exists||executionCards.kpis!==4||executionCards.panels<3)throw Error('Approved execution V3 sections missing '+JSON.stringify(executionCards));
-            result.executionV3=executionCards;
             const demoVisibility=await page.evaluate(()=>{const keys=['hd20GMES5SAutoImproveRawV1','hd20ActionCasesV2'];const counts=keys.map(k=>{try{return JSON.parse(localStorage.getItem(k)||'[]').filter(r=>r.source==='demo-seed').length}catch{return 0}});const hc=window.HD20_DEMO_HEADCOUNT_STATUS||{};const visible=id=>{const e=document.getElementById(id);return !!e&&getComputedStyle(e).display!=='none'&&e.getBoundingClientRect().height>0};return {activity:counts[0],action:counts[1],hc,improveExists:!!document.getElementById('hd20ImproveBoard'),requestExists:!!document.getElementById('hd20RequestBoard')}});
             if(demoVisibility.activity<30||demoVisibility.action<30||demoVisibility.hc.masterTeams<5||!demoVisibility.improveExists||!demoVisibility.requestExists)throw Error('Dashboard demo dataset missing '+JSON.stringify(demoVisibility));
             result.demoVisibility=demoVisibility;
@@ -107,7 +104,7 @@ jobs:
             if(monthly.some(n=>n<1))throw Error('Missing completed activity in current-year months '+JSON.stringify(monthly));
             result.monthlyDemoCounts=monthly;
             // Verify tab ownership: only the selected section's main target is visible.
-            const ownership=[['summary','#hd20DashboardPriority'],['improve','#hd20ImproveBoard'],['request','#hd20RequestBoard'],['execution','#hd20V3Execution'],['map','#hd20MaturityMapTab']];
+            const ownership=[['summary','#hd20DashboardPriority'],['improve','#hd20ImproveBoard'],['request','#hd20RequestBoard'],['map','#hd20MaturityMapTab']];
             result.tabIsolation={};
             for(const [key] of ownership){
               await page.locator('#hd20DashboardSectionTabs button[data-dashboard-section="'+key+'"]').click();
@@ -124,7 +121,7 @@ jobs:
             }
             // Verify specialist tabs are reachable without mutating operational data.
             result.specialist={};
-            for(const [key,selector,file] of [['execution','#hd20V3Execution','04-execution'],['map','#hd20MaturityMapTab','05-map']]){
+            for(const [key,selector,file] of [['map','#hd20MaturityMapTab','05-map']]){
               await page.locator('#hd20DashboardSectionTabs button[data-dashboard-section="'+key+'"]').click();
               await page.waitForTimeout(500);
               const state=await page.evaluate(sel=>{

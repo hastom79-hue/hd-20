@@ -6,7 +6,7 @@ const {chromium}=require('playwright');
  page.on('pageerror',e=>errors.push(String(e)));
  page.on('dialog',d=>d.accept());
  await page.route('**/*',route=>{
-  const u=new URL(route.request().url);
+  const u=new URL(route.request().url());
   if(['127.0.0.1','localhost'].includes(u.hostname))return route.continue();
   if(route.request().resourceType()==='script')return route.fulfill({status:200,contentType:'application/javascript',body:'/* external dependency stub */'});
   return route.abort('blockedbyclient');
@@ -14,6 +14,7 @@ const {chromium}=require('playwright');
  try{
   await page.goto('http://127.0.0.1:4173/index.html?area=master',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>!!window.HD20IntegratedMaster&&!!document.querySelector('[data-master-tab="integrated-factor"]'),null,{timeout:25000});
+  await page.evaluate(()=>{document.querySelector('[data-ln="skip"]')?.click()||document.getElementById('hd20Launcher')?.remove()}); /* 랜딩 런처가 클릭을 가로채므로 닫는다 */
   await page.evaluate(()=>window.HD20_NAV?.go?.('master'));
   await page.locator('[data-master-tab="integrated-factor"]').click({force:true});
   await page.waitForSelector('#imfFactorAddForm');
@@ -32,6 +33,7 @@ const {chromium}=require('playwright');
   if(!saved.includes('회귀검증 임시항목'))throw Error('save failed');
   await page.reload({waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>!!document.querySelector('[data-master-tab="integrated-factor"]'),null,{timeout:25000});
+  await page.evaluate(()=>{document.querySelector('[data-ln="skip"]')?.click()||document.getElementById('hd20Launcher')?.remove()}); /* 랜딩 런처가 클릭을 가로채므로 닫는다 */
   await page.evaluate(()=>window.HD20_NAV?.go?.('master'));
   await page.locator('[data-master-tab="integrated-factor"]').click({force:true});
   await page.waitForSelector('.imfFactorRow');
