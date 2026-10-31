@@ -97,9 +97,9 @@ function render(){
   document.head.appendChild(style);
  }
  const specs=[
-  {area:'audit',title:'Audit·유지점검',metrics:[['draw',0,'Audit 등록'],['ongoing',0,'6개월 관리중']]},
-  {area:'action',title:'개선조치·완료관리',metrics:[['manage',3,'기한경과'],['verify',2,'효과검증 대기']]},
-  {area:'advancement',title:'고도화·표준화',metrics:[['standard',2,'유지 미흡'],['judge',1,'판정대기']]}
+  {area:'audit',title:'Audit·유지점검',metrics:[['draw',0,'Audit 등록'],['draw',2,'Audit 완료']]},
+  {area:'action',title:'개선조치·완료관리',metrics:[['manage',0,'개선요청'],['manage',2,'조치완료']]},
+  {area:'advancement',title:'고도화·표준화',metrics:[['judge',0,'고도화 후보'],['standard',0,'공식확정']]}
  ];
  const year=Number(new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Seoul',year:'numeric'}).format(new Date()));
  root.innerHTML='<div class="hd20DwmHead"><div><h2>운영 종합진단 · 집중관리 추이</h2><p style="display:block!important;margin:5px 0 0;color:#74899d;font-size:12px">월별 관리대상 발생 추이 · 단위 건 · '+year+'년</p></div></div><div class="hd20DwmGroups">'+specs.map(spec=>{
