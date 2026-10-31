@@ -52,7 +52,7 @@ function renderHistory(box){
  const draws=load(DRAW_KEY).slice(0,40),tbody=box.querySelector('[data-audit-cl-history]');if(!tbody)return;
  const actionsByDraw={};load(ACTION_KEY).forEach(a=>{const ids=new Set([a.auditDrawId,a.sourceCaseId].map(v=>String(v||'').trim()).filter(Boolean));ids.forEach(id=>(actionsByDraw[id]??=[]).push(a))});
  const brief=v=>{const x=String(v||'').replace(/^\\[Audit 개선요청\\]\\s*/,'').trim();return x.length>72?x.slice(0,72)+'…':x};
- const isDone=a=>/완료|종결|조치완료|확정/.test(String(a.status||''))&&!/미완료|미종결/.test(String(a.status||''))&&!(/재발|부적합|미흡|실패/.test(String(a.recurrenceStatus||a.recurrenceState||a.effectStatus||''))||a.recurrence===true||a.effectVerified===false);
+ const isDone=a=>{const status=String(a.status||a.actionStatus||'');const done=/완료|종결|확정|종료|close|done/i.test(status)&&!/미완료|미종결|미종료|진행|대기|보완|반려|취소/i.test(status);const kpi=window.HD20KPIData;const verified=typeof kpi?.effectVerified==='function'?kpi.effectVerified(a):(a.effectVerified===true||/^(유효|적합|효과확인|효과확인완료|검증완료|완료|true|1|Y)$/i.test(String(a.effectState||a.effectResult||'')));const recurrent=typeof kpi?.recurrenceState==='function'?kpi.recurrenceState(a):(a.recurrence===true||/^(재발|발생|true|1|yes|y)$/i.test(String(a.recurrenceState||a.recurrent||'')));return done&&verified&&!recurrent};
  tbody.innerHTML=draws.length?draws.map(d=>{
  const st=controlState(d),cls=st==='실시대기'?'wait':st==='6개월 관리중'?'run':'close',linked=actionsByDraw[String(d.id)]||[];
  const total=linked.length,done=linked.filter(isDone).length,pending=total-done;
