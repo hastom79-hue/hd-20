@@ -17,7 +17,7 @@ function daysFromToday(v){const d=utcDay(seoulDateKey(v)),t=utcDay(seoulDateKey(
 function actionDone(a){const s=txt(a?.status||a?.activityStatus||a?.judgeState||a?.auditState);return !/미완료|미확정|미종료|미종결|완료대기|완료예정|진행|대기|보완|반려|취소/i.test(s)&&/완료|확정|종료|종결|close|done/i.test(s)}
 function actionState(a){if(actionDone(a))return !effectVerified(a)?'효과검증 대기':recurrenceState(a)?'재발 발생':!recurrenceKnown(a)?'재발 확인 대기':'완료';const n=daysFromToday(dueKey(a));if(n===null)return a.autoDuePolicyState==='정책미설정'?'기한정책 미설정':'기한미정';if(n<0)return '기한경과';return '진행중'}
 function effectVerified(a){if(a?.effectVerified===true)return true;const v=txt(a?.effectState||a?.effectResult);if(!v||/대기|미검증|미흡|부적합|무효|false|^0$|^N$/i.test(v))return false;return /^(유효|적합|효과확인|효과확인완료|검증완료|완료|true|1|Y)$/i.test(v)}
-function recurrenceState(a){if(a?.recurrence===true)return true;const s=txt(a?.recurrenceState);if(!s||/^(미발생|없음|미재발|false|0|N)$/i.test(s))return false;return /^(재발|발생|true|1|Y)$/i.test(s)}
+function recurrenceState(a){const s=txt(a?.recurrenceState??a?.recurrent??a?.['재발여부']);if(/^(재발|발생|true|1|Y)$/i.test(s))return true;if(/^(미발생|없음|미재발|false|0|N)$/i.test(s))return false;return a?.recurrence===true}
 function recurrenceKnown(a){if(typeof a?.recurrence==='boolean')return true;const s=txt(a?.recurrenceState??a?.recurrent??a?.['재발여부']);return /^(재발|발생|true|1|Y|미발생|없음|미재발|false|0|N)$/i.test(s)}
 function closedLoopRecurrence(a){return actionDone(a)&&effectVerified(a)&&recurrenceState(a)}
 function auditDate(d){return d.auditDate||d.performedAt||d.auditPerformedAt||d.completedAt||null}
