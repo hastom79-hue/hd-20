@@ -26,4 +26,9 @@ for(const [record,known,recurred] of [
  [{recurrence:null,recurrenceState:'no'},true,false],
  [{recurrence:false},true,false]
 ]){const result=cv(record);assert.equal(result.known,known,JSON.stringify(record));assert.equal(result.recurred,recurred,JSON.stringify(record));assert.equal(sk(record),known,JSON.stringify(record));assert.equal(sr(record),recurred,JSON.stringify(record));assert.equal(ko(record),known,JSON.stringify(record));assert.equal(kr(record),recurred,JSON.stringify(record))}
+const closedLoop=source('audit-closed-loop-workflow.js'),linkage=source('action-audit-linkage.js');
+assert.match(closedLoop,/effectVerified:false,recurrence:null/,'new Audit-linked Action must begin with unconfirmed recurrence');
+assert.match(close,/effectVerified:false,recurrence:null/,'new follow-up Action must begin with unconfirmed recurrence');
+assert.match(linkage,/const REGISTER_IDS=new Set\(\['amRegister','amRegisterOutlook','amRegisterAuto'\]\)/,'draft save must not consume pending Audit registration linkage');
+assert.doesNotMatch(linkage,/const REGISTER_IDS=new Set\([^\n]*'amDraft'/,'draft must not be a formal registration action');
 console.log('Audit six-month boundary and recurrence module contract PASS');
