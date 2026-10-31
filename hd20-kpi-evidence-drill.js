@@ -34,7 +34,7 @@ function actionRow(x){return[x.id||'—',actionSourceId(x)||'—',x.registeredAt
    클릭했을 때 보이는 증거 데이터 건수와 반드시 일치시키기 위해" 이 evidence() 함수의 결과 길이로
    덮어쓰는 가드 레이어였음 — 그래서 다른 파일들을 아무리 고쳐도 최종 화면은 안 바뀌었음. 진짜
    소스인 이 함수의 acts도 연도 필터 없는 read(ACT)였으므로 여기를 고쳐야 비로소 반영됨. */
-function evidence(area,sub,index){const acts=(window.HD20KPIData?.snapshot?.()?.activities)||read(ACT),audits=read(AUD),actions=read(ACTION),candidates=acts.filter(candidate),confirmedRows=acts.filter(confirmed),doneActions=actions.filter(done),linkedActions=actions.filter(a=>{const id=actionSourceId(a);return !!id&&audits.some(d=>auditId(d)===id)});const key=`${area}.${sub}.${index}`;let title='',headers=[],rows=[];
+function evidence(area,sub,index){const acts=window.HD20_DEMO_MODE===true?read(ACT):((window.HD20KPIData?.snapshot?.()?.activities)||read(ACT)),audits=read(AUD),actions=read(ACTION),candidates=acts.filter(candidate),confirmedRows=acts.filter(confirmed),doneActions=actions.filter(done),linkedActions=actions.filter(a=>{const id=actionSourceId(a);return !!id&&audits.some(d=>auditId(d)===id)});const key=`${area}.${sub}.${index}`;let title='',headers=[],rows=[];
 const A=['Activity ID','일자','유형','생산팀','작업장','상태','고도화 후보'],V=['Activity ID','후보일','생산팀','작업장','판정상태','공식확정','확정일','유지상태','수평전개'],U=['Audit ID','선정일','생산팀','작업장','Audit일','결과','종료평가','Action 연계','유지 Risk'],X=['Action ID','원천 Audit ID','등록일','생산팀','담당','기한','조치상태','운영상태','효과검증','재발'];
 const setA=(n,r)=>{title=n;headers=A;rows=r.map(activityRow)},setV=(n,r)=>{title=n;headers=V;rows=r.map(advancementRow)},setU=(n,r)=>{title=n;headers=U;rows=r.map(x=>auditRow(x,actions))},setX=(n,r)=>{title=n;headers=X;rows=r.map(actionRow)};
 switch(key){
