@@ -2,7 +2,7 @@
 const ACT='hd20GMES5SAutoImproveRawV1',AUD='hd20AuditRandomDrawsV1',ACTION='hd20ActionCasesV2';
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
 function nonProd(x){if(window.HD20KPIData?.isNonProdRow)return window.HD20KPIData.isNonProdRow(x);const source=String(x?.source||'').toLowerCase(),id=String(x?.id||'').toUpperCase(),sourceCaseId=String(x?.sourceCaseId||'').toUpperCase();return x?.isDemo===true||x?.isTest===true||source==='demo-seed'||source==='e2e-fixture'||id.startsWith('DEMO-')||id.startsWith('E2E-')||sourceCaseId.startsWith('DEMO-')||sourceCaseId.startsWith('E2E-')}
-function read(k){try{const v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v.filter(x=>!nonProd(x)||(window.HD20_DEMO_MODE===true&&x?.source==='demo-seed')):[]}catch{return[]}}
+function read(k){try{const v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?(new URL(location.href).searchParams.get('validation')==='1'?v.filter(x=>x?.source==='web-validation-fixture'):v.filter(x=>!nonProd(x)||(window.HD20_DEMO_MODE===true&&x?.source==='demo-seed'))):[]}catch{return[]}}
 function txt(v){return String(v??'').trim()}
 function esc(v){return txt(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function today(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())}
