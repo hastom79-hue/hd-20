@@ -1,6 +1,6 @@
 (()=>{'use strict';
 const CASE_KEY='hd20ActionCasesV2',POLICY_KEY='hd20OperatingPolicyV1',PENDING_KEY='hd20ActionAuditLinkPendingV1',LEGACY_PENDING_KEY='hd20AuditToActionPending';
-const REGISTER_IDS=new Set(['amDraft','amRegister','amRegisterOutlook','amRegisterAuto']);
+const REGISTER_IDS=new Set(['amRegister','amRegisterOutlook','amRegisterAuto']);
 let pendingSource=null,registerAttempt=null;
 function loadCases(){try{const v=JSON.parse(localStorage.getItem(CASE_KEY)||'[]');return Array.isArray(v)?v:[]}catch{return[]}}
 function saveCases(v){localStorage.setItem(CASE_KEY,JSON.stringify(v))}
