@@ -10,6 +10,7 @@ assert.equal(add6('2024-08-31'),'2025-02-28');
 assert.equal(add6('2023-08-31'),'2024-02-29');
 assert.match(close,/end<=today/,'6-month evaluation must be eligible on maturity date');
 assert.match(close,/end>seoulKey\(\)/,'6-month evaluation must not block on maturity date');
+assert.match(six,/active:!!end&&end>today/,'six-month tracking must end on the evaluation maturity date');
 const txt=v=>String(v??'').trim();
 const cv=vm.runInNewContext(extract(close,'recurrenceValue')+';recurrenceValue',{txt});
 const sr=vm.runInNewContext(extract(six,'recurrenceState')+';recurrenceState',{txt});
