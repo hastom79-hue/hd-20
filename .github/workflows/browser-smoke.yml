@@ -17,6 +17,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+      - name: Check Audit and KPI JavaScript syntax
+        run: |
+          node --check audit-close-evaluation.js
+          node --check audit-six-month-control.js
+          node --check audit-closed-loop-workflow.js
+          node --check action-audit-linkage.js
+          node --check dashboard-kpi-source.js
       - name: Install Playwright Chromium
         run: |
           npm init -y >/dev/null 2>&1
