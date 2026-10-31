@@ -120,7 +120,7 @@ function render(){
    const height=usable&&val>0?Math.max(3,Math.round(val/max*70)):0;
    return '<div class="hd20DwmChartBar '+(j?'secondary':'primary')+'" style="height:'+height+'px" title="'+esc(m.label)+' '+(i+1)+'월: '+(usable?val+'건':'월별 자료 없음')+'">'+(usable&&val>0?'<span>'+val+'</span>':'')+'</div>';
   }).join('')+'</div><small>'+(i+1)+'월</small></div>').join('');
-  return '<section class="hd20DwmGroup"><div class="hd20DwmGroupHead"><h3>'+esc(spec.title)+'</h3></div><div class="hd20DwmChart">'+(anyDated?bars:'<div class="hd20DwmNoData">해당 연도 월별 발생 기록 없음 · 날짜 근거 확인 필요</div>')+'</div><div class="hd20DwmLegend">'+metrics.map((m,j)=>'<button type="button" data-dwm-detail="'+spec.area+'" data-dwm-sub="'+m.sub+'" data-dwm-index="'+m.index+'"><i class="'+(j?'secondary':'primary')+'"></i>'+esc(m.label)+' <strong>'+(m.count===null?'—':m.count+'건')+'</strong></button>').join('')+'</div><div class="hd20DwmFocusNote">'+(missing.length?'날짜 미확인: '+esc(missing.join(', '))+' · ':'')+esc(diagnostics)+'</div></section>';
+  return '<section class="hd20DwmGroup"><div class="hd20DwmGroupHead"><h3>'+esc(spec.title)+'</h3></div><div class="hd20DwmChart">'+(anyDated?bars:'<div class="hd20DwmNoData">해당 연도 월별 발생 기록 없음 · 날짜 근거 확인 필요</div>')+'</div><div class="hd20DwmLegend">'+metrics.map((m,j)=>'<button type="button" data-dwm-detail="'+spec.area+'" data-dwm-sub="'+m.sub+'" data-dwm-index="'+m.index+'"><i class="'+(j?'secondary':'primary')+'"></i>'+esc(m.label)+' <strong>'+(m.count===null?'—':(m.series?m.series.values.reduce((a,b)=>a+b,0):0)+'건')+'</strong></button>').join('')+'</div><div class="hd20DwmFocusNote">'+(missing.length?'날짜 미확인: '+esc(missing.join(', '))+' · ':'')+esc(diagnostics)+'</div></section>';
  }).join('')+'</div>';
  root.querySelectorAll('[data-dwm-detail]').forEach(el=>el.addEventListener('click',()=>openEvidence(el.dataset.dwmDetail,el.dataset.dwmSub,Number(el.dataset.dwmIndex))));
 
@@ -139,6 +139,7 @@ function boot(){
  if(summaryAnchor)new MutationObserver(()=>{if(!summaryAnchor.contains(document.getElementById(ID)))schedule()}).observe(summaryAnchor,{childList:true});
  ['hd20-nav-area-changed','hd20-subtab-changed','hd20-dashboard-section-changed','hd20-kpi-source-updated','hd20-ops-production-filter-ready','hd20-gmes-5s-imported','hd20-gmes-5s-judged','hd20-audit-updated','hd20-action-updated','hd20-refresh-requested','storage'].forEach(e=>window.addEventListener(e,schedule));
  window.addEventListener('pageshow',schedule);
+ document.addEventListener('change',e=>{if(e.target?.matches?.('select,input[type="month"],input[type="date"],input[type="number"]'))schedule()});
  setTimeout(schedule,350);setTimeout(schedule,1500);
 }
 window.HD20_DASHBOARD_WORK_METRICS={render,schedule,selected,rows:checkedMetrics};
