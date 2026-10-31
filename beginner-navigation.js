@@ -42,7 +42,7 @@ function reconcileVisibleArea(){
  const screens={activity:'awActivity',audit:'awAudit',action:'awAction',master:'masterModal',theme:'awTheme'};
  Object.entries(screens).forEach(([area,id])=>{
    const el=document.getElementById(id);if(!el)return;
-   if(selected===area||(selected==='audit'&&mergedAuditSection==='action'&&area==='action')){el.style.removeProperty('display')}
+   if((selected===area&&!(area==='audit'&&mergedAuditSection==='action'))||(selected==='audit'&&mergedAuditSection==='action'&&area==='action')){if(area==='action'&&selected==='audit')el.style.setProperty('display','block','important');else el.style.removeProperty('display')}
    else{el.classList.remove('on');el.style.setProperty('display','none','important')}
  });
  if(selected!=='advancement')document.getElementById('awWorkplace')?.classList.remove('on');
