@@ -102,7 +102,7 @@ function render(){
   {area:'action',title:'개선조치·완료관리',metrics:[['manage',0,'개선요청'],['manage',2,'조치완료']]},
   {area:'advancement',title:'고도화·표준화',metrics:[['judge',0,'고도화 후보'],['standard',0,'공식확정']]}
  ];
- const year=Number(new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Seoul',year:'numeric'}).format(new Date()));
+ const year=Number(window.HD20KPIData?.selectedYear?.()||new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Seoul',year:'numeric'}).format(new Date()));
  root.innerHTML='<div class="hd20DwmHead"><div><h2>운영 종합진단 · 집중관리 추이</h2><p style="display:block!important;margin:5px 0 0;color:#74899d;font-size:12px">월별 관리대상 발생 추이 · 단위 건 · '+year+'년</p></div></div><div class="hd20DwmGroups">'+specs.map(spec=>{
   const metrics=spec.metrics.map(([sub,index,label])=>{
    const expected=CONTRACTS[spec.area]?.[sub]?.[index];let ev=null;
