@@ -23,7 +23,7 @@ function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&l
 function finalState(d){return txt(d?.finalEvaluation||d?.auditFinalState)}
 function eligible(){const today=seoulKey();return prod().filter(d=>{const end=add6(d.auditDate);return !!d.auditDate&&!!end&&end<today})}
 function priorityRows(rows){return [...rows].sort((a,b)=>{const ap=finalState(a)?1:0,bp=finalState(b)?1:0;if(ap!==bp)return ap-bp;const ae=add6(a.auditDate),be=add6(b.auditDate);if(ae!==be)return ae.localeCompare(be);return auditId(a).localeCompare(auditId(b))})}
-function followupDeadline(start){const n=Number(window.HD20PolicyConfig?.deadlineDays?.());if(!Number.isInteger(n)||n<7||n>14)return{due:'',days:null};const d=new Date(start+'T00:00:00Z');if(Number.isNaN(d.getTime()))return{due:'',days:null};d.setUTCDate(d.getUTCDate()+n);return{due:d.toISOString().slice(0,10),days:n}}
+function followupDeadline(start){let configured=window.HD20PolicyConfig?.deadlineDays?.();if(configured==null){try{configured=JSON.parse(localStorage.getItem('hd20OperatingPolicyV1')||'{}').improvementDeadline?.defaultDays}catch{configured=null}}const n=configured==null||configured===''?NaN:Number(configured);if(!Number.isInteger(n)||n<7||n>14)return{due:'',days:null};const d=new Date(start+'T00:00:00Z');if(Number.isNaN(d.getTime()))return{due:'',days:null};d.setUTCDate(d.getUTCDate()+n);return{due:d.toISOString().slice(0,10),days:n}}
 function createFollowupAction(draw,reason){
  const id=auditId(draw);if(!id||nonProd(draw))return null;
  const actions=load(ACTION_KEY);
