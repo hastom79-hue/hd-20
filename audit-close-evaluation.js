@@ -23,6 +23,7 @@ function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&l
 function finalState(d){return txt(d?.finalEvaluation||d?.auditFinalState)}
 function eligible(){const today=seoulKey();return prod().filter(d=>{const end=add6(d.auditDate);return !!d.auditDate&&!!end&&end<today})}
 function priorityRows(rows){return [...rows].sort((a,b)=>{const ap=finalState(a)?1:0,bp=finalState(b)?1:0;if(ap!==bp)return ap-bp;const ae=add6(a.auditDate),be=add6(b.auditDate);if(ae!==be)return ae.localeCompare(be);return auditId(a).localeCompare(auditId(b))})}
+function followupDeadline(start){const n=Number(window.HD20PolicyConfig?.deadlineDays?.());if(!Number.isInteger(n)||n<7||n>14)return{due:'',days:null};const d=new Date(start+'T00:00:00Z');if(Number.isNaN(d.getTime()))return{due:'',days:null};d.setUTCDate(d.getUTCDate()+n);return{due:d.toISOString().slice(0,10),days:n}}
 function createFollowupAction(draw,reason){
  const id=auditId(draw);if(!id||nonProd(draw))return null;
  const actions=load(ACTION_KEY);
@@ -31,7 +32,7 @@ function createFollowupAction(draw,reason){
  if(linked.some(a=>!done(a)))return null;
  const key='AUDIT-FOLLOWUP-'+id.replace(/[^a-zA-Z0-9가-힣_-]/g,'').slice(-30);
  if(actions.some(a=>a.id===key||(a.sourceStage==='AUDIT-FOLLOWUP'&&(txt(a?.auditDrawId)===id||txt(a?.sourceCaseId)===id))))return null;
- const at=seoulKey(),record={id:key,date:at,registeredAt:at,team:draw.team||'미지정',workplace:txt(draw.workplace),owner:txt(draw.initialAuditor||draw.auditor),registeredBy:txt(draw.initialAuditor||draw.auditor),registrant:txt(draw.initialAuditor||draw.auditor),auditor:txt(draw.initialAuditor||draw.auditor),initialAuditor:txt(draw.initialAuditor||draw.auditor),problem:'[Audit 재조치] '+reason,source:'5S Audit 종료평가',sourceCaseId:id,auditDrawId:id,sourceStage:'AUDIT-FOLLOWUP',auditDate:draw.auditDate,auditActor:draw.auditActor||'',status:'조치대기',effectVerified:false,recurrence:false,autoCreated:true,created:new Date().toISOString()};
+ const at=seoulKey(),policy=followupDeadline(at),record={id:key,date:at,registeredAt:at,due:policy.due,autoDueDays:policy.days,autoDueAssigned:policy.days!==null,autoDuePolicyState:policy.days===null?'정책미설정':'자동지정',team:draw.team||'미지정',workplace:txt(draw.workplace),owner:txt(draw.initialAuditor||draw.auditor),registeredBy:txt(draw.initialAuditor||draw.auditor),registrant:txt(draw.initialAuditor||draw.auditor),auditor:txt(draw.initialAuditor||draw.auditor),initialAuditor:txt(draw.initialAuditor||draw.auditor),problem:'[Audit 재조치] '+reason,source:'5S Audit 종료평가',sourceCaseId:id,auditDrawId:id,sourceStage:'AUDIT-FOLLOWUP',auditDate:draw.auditDate,auditActor:draw.auditActor||'',status:'조치대기',effectVerified:false,recurrence:false,autoCreated:true,created:new Date().toISOString()};
  actions.unshift(record);const serialized=JSON.stringify(actions);localStorage.setItem(ACTION_KEY,serialized);if(localStorage.getItem(ACTION_KEY)!==serialized)throw new Error('Audit 후속 개선조치 저장 확인 실패');
  window.dispatchEvent(new CustomEvent('hd20-action-updated',{detail:{added:1,source:'audit-followup'}}));
  return record.id;
