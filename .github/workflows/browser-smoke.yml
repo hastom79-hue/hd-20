@@ -24,6 +24,8 @@ jobs:
           node --check audit-closed-loop-workflow.js
           node --check action-audit-linkage.js
           node --check dashboard-kpi-source.js
+      - name: Verify Audit six-month and recurrence contracts
+        run: node tests/audit-recurrence-contract.cjs
       - name: Install Playwright Chromium
         run: |
           npm init -y >/dev/null 2>&1
