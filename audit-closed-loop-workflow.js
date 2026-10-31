@@ -39,7 +39,7 @@ function css(){if(document.getElementById(STYLE))return;const s=document.createE
    보여주도록 보강. */
 function showAuditRecord(drawId){
  const d=load(DRAW_KEY).find(x=>String(x.id)===String(drawId));if(!d)return;
- const actions=load(ACTION_KEY).filter(a=>String(a.auditDrawId||a.sourceCaseId||'')===String(d.id));
+ const actions=load(ACTION_KEY).filter(a=>String(a.auditDrawId||'')===String(d.id)||String(a.sourceCaseId||'')===String(d.id));
  let overlay=document.getElementById('hd20AuditRecordOverlay');
  if(!overlay){overlay=document.createElement('div');overlay.id='hd20AuditRecordOverlay';overlay.style.cssText='position:fixed;inset:0;z-index:999999;background:rgba(10,28,47,.55);display:flex;align-items:center;justify-content:center;padding:18px';overlay.innerHTML='<section role="dialog" aria-modal="true" aria-label="Audit 건별 상세" style="background:#fff;border-radius:12px;width:min(820px,100%);max-height:88vh;overflow:auto;padding:20px"><div style="display:flex;justify-content:space-between;align-items:center"><strong style="font-size:18px">Audit 건별 상세</strong><button type="button" data-close style="padding:8px 13px;cursor:pointer">닫기</button></div><div data-audit-detail style="margin-top:14px"></div></section>';document.body.appendChild(overlay);overlay.querySelector('[data-close]').onclick=()=>overlay.remove();overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove()})}
  const fields=[['Audit ID',d.id],['생산팀',d.team],['대상 추출일',d.date],['Audit 실시일',d.auditDate],['Audit 주체',d.auditActor],['점검자',d.auditor],['대상 작업장',d.workplace],['판정',d.auditResult||d.result],['개선요청 내용',d.improvementRequest],['유지관리 단계',controlState(d)]];
