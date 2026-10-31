@@ -17,7 +17,7 @@ function recurrenceValue(a){const v=txt(a?.recurrenceState??a?.recurrent??a?.['�
 function recur(a){return recurrenceValue(a).recurred}
 function recurrenceKnown(a){return recurrenceValue(a).known}
 function needsAction(d){return !!txt(d?.improvementRequest)||/개선요청|부적합/.test(txt(d?.auditResult||d?.result))}
-function linkedActions(d){const id=auditId(d);return id?prodActions().filter(a=>actionAuditId(a)===id):[]}
+function linkedActions(d){const id=auditId(d);return id?prodActions().filter(a=>txt(a?.auditDrawId)===id||txt(a?.sourceCaseId)===id):[]}
 function closureState(d){const linked=linkedActions(d),open=linked.filter(a=>!done(a)),unverified=linked.filter(a=>done(a)&&!effect(a)),recurrencePending=linked.filter(a=>done(a)&&effect(a)&&!recurrenceKnown(a)),recurrence=linked.filter(a=>done(a)&&effect(a)&&recurrenceKnown(a)&&recur(a));return{linked,open,unverified,recurrencePending,recurrence,canMaintain:(!needsAction(d)||linked.length>0)&&open.length===0&&unverified.length===0&&recurrencePending.length===0&&recurrence.length===0}}
 function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function finalState(d){return txt(d?.finalEvaluation||d?.auditFinalState)}
@@ -26,12 +26,12 @@ function priorityRows(rows){return [...rows].sort((a,b)=>{const ap=finalState(a)
 function createFollowupAction(draw,reason){
  const id=auditId(draw);if(!id||nonProd(draw))return null;
  const actions=load(ACTION_KEY);
- const linked=actions.filter(a=>actionAuditId(a)===id&&!nonProd(a));
+ const linked=actions.filter(a=>(txt(a?.auditDrawId)===id||txt(a?.sourceCaseId)===id)&&!nonProd(a));
  // 미완료 요청이 있으면 신규 생성 대신 기존 요청을 계속 관리한다.
  if(linked.some(a=>!done(a)))return null;
  const key='AUDIT-FOLLOWUP-'+id.replace(/[^a-zA-Z0-9가-힣_-]/g,'').slice(-30);
- if(actions.some(a=>a.id===key||(a.sourceStage==='AUDIT-FOLLOWUP'&&actionAuditId(a)===id)))return null;
- const at=seoulKey(),record={id:key,date:at,registeredAt:at,team:draw.team||'미지정',workplace:txt(draw.workplace),owner:txt(draw.auditor),registeredBy:txt(draw.auditor),registrant:txt(draw.auditor),auditor:txt(draw.auditor),problem:'[Audit 재조치] '+reason,source:'5S Audit 종료평가',sourceCaseId:id,sourceStage:'AUDIT-FOLLOWUP',auditDate:draw.auditDate,auditActor:draw.auditActor||'',status:'조치대기',effectVerified:false,recurrence:false,autoCreated:true,created:new Date().toISOString()};
+ if(actions.some(a=>a.id===key||(a.sourceStage==='AUDIT-FOLLOWUP'&&(txt(a?.auditDrawId)===id||txt(a?.sourceCaseId)===id))))return null;
+ const at=seoulKey(),record={id:key,date:at,registeredAt:at,team:draw.team||'미지정',workplace:txt(draw.workplace),owner:txt(draw.initialAuditor||draw.auditor),registeredBy:txt(draw.initialAuditor||draw.auditor),registrant:txt(draw.initialAuditor||draw.auditor),auditor:txt(draw.initialAuditor||draw.auditor),initialAuditor:txt(draw.initialAuditor||draw.auditor),problem:'[Audit 재조치] '+reason,source:'5S Audit 종료평가',sourceCaseId:id,auditDrawId:id,sourceStage:'AUDIT-FOLLOWUP',auditDate:draw.auditDate,auditActor:draw.auditActor||'',status:'조치대기',effectVerified:false,recurrence:false,autoCreated:true,created:new Date().toISOString()};
  actions.unshift(record);const serialized=JSON.stringify(actions);localStorage.setItem(ACTION_KEY,serialized);if(localStorage.getItem(ACTION_KEY)!==serialized)throw new Error('Audit 후속 개선조치 저장 확인 실패');
  window.dispatchEvent(new CustomEvent('hd20-action-updated',{detail:{added:1,source:'audit-followup'}}));
  return record.id;
