@@ -108,7 +108,7 @@ function render(){
    const expected=CONTRACTS[spec.area]?.[sub]?.[index];let ev=null;
    try{ev=window.HD20_KPI_EVIDENCE?.evidence?.(spec.area,sub,index)}catch(e){console.warn('[HD20] 월별 근거 조회 실패',spec.area,sub,e)}
    const valid=ev?.title===expected&&Array.isArray(ev.rows);
-   return {sub,index,label,count:valid?ev.rows.length:null,series:valid?monthlyEvidence(ev.rows,year,ev.headers,(spec.area==='audit'&&sub==='draw'&&index===2)?'Audit일':(spec.area==='advancement'&&sub==='standard'&&index===0)?'확정일':null):null};
+   return {sub,index,label,count:valid?ev.rows.length:null,series:valid?monthlyEvidence(ev.rows,year,ev.headers,(spec.area==='audit'&&sub==='draw'&&index===2)?'Audit일':(spec.area==='advancement'&&sub==='standard'&&index===0)?'확정일':(spec.area==='action'&&sub==='manage'&&index===2)?'완료일':null):null};
   });
   const anyDated=metrics.some(m=>m.series?.dated&&m.series?.values.some(v=>v>0));
   const missing=metrics.filter(m=>!m.series?.dated&&m.count>0).map(m=>m.label);
