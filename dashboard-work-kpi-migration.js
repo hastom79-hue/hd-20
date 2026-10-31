@@ -97,7 +97,7 @@ function render(){
   document.head.appendChild(style);
  }
  const specs=[
-  {area:'audit',title:'Audit·유지점검',metrics:[['retention',2,'재발·미흡'],['ongoing',0,'6개월 관리중']]},
+  {area:'audit',title:'Audit·유지점검',metrics:[['draw',0,'Audit 등록'],['ongoing',0,'6개월 관리중']]},
   {area:'action',title:'개선조치·완료관리',metrics:[['manage',3,'기한경과'],['verify',2,'효과검증 대기']]},
   {area:'advancement',title:'고도화·표준화',metrics:[['standard',2,'유지 미흡'],['judge',1,'판정대기']]}
  ];
