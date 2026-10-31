@@ -63,9 +63,10 @@ function openEvidence(area,sub,index){
  try{if(window.HD20_KPI_EVIDENCE?.openEvidence?.(area,sub,index))return}catch(e){console.warn('[HD20 KPI] 근거 조회 실패, 업무화면으로 이동',e)}
  window.HD20_OPS_V2?.go?.(area,sub,{openGrid:true});
 }
-function rowMonth(row,headers){
+function rowMonth(row,headers,preferredHeader){
  if(Array.isArray(row)){
   const labels=Array.isArray(headers)?headers:[];
+  if(preferredHeader){const i=labels.findIndex(h=>String(h)===preferredHeader);if(i>=0)return rowMonth({date:row[i]});}
   const dateColumns=labels.map((h,i)=>/일자|일시|날짜|등록일|선정일|점검일|Audit일|확정일|판정일|요청일|완료일|기한/i.test(String(h))?i:-1).filter(i=>i>=0);
   for(const i of dateColumns){const found=rowMonth({date:row[i]});if(found)return found}
   return null;
@@ -81,9 +82,9 @@ function rowMonth(row,headers){
  }
  return null;
 }
-function monthlyEvidence(rows,year,headers){
+function monthlyEvidence(rows,year,headers,preferredHeader){
  const values=Array(12).fill(0),known=Array(12).fill(false);
- for(const row of rows){const m=rowMonth(row,headers);if(m&&m.year===year){values[m.month-1]++;known[m.month-1]=true}}
+ for(const row of rows){const m=rowMonth(row,headers,preferredHeader);if(m&&m.year===year){values[m.month-1]++;known[m.month-1]=true}}
  return {values,dated:rows.length===0||known.some(Boolean),undated:rows.length>0&&!known.some(Boolean)};
 }
 function render(){
@@ -107,7 +108,7 @@ function render(){
    const expected=CONTRACTS[spec.area]?.[sub]?.[index];let ev=null;
    try{ev=window.HD20_KPI_EVIDENCE?.evidence?.(spec.area,sub,index)}catch(e){console.warn('[HD20] 월별 근거 조회 실패',spec.area,sub,e)}
    const valid=ev?.title===expected&&Array.isArray(ev.rows);
-   return {sub,index,label,count:valid?ev.rows.length:null,series:valid?monthlyEvidence(ev.rows,year,ev.headers):null};
+   return {sub,index,label,count:valid?ev.rows.length:null,series:valid?monthlyEvidence(ev.rows,year,ev.headers,(spec.area==='audit'&&sub==='draw'&&index===2)?'Audit일':(spec.area==='advancement'&&sub==='standard'&&index===0)?'확정일':null):null};
   });
   const anyDated=metrics.some(m=>m.series?.dated&&m.series?.values.some(v=>v>0));
   const missing=metrics.filter(m=>!m.series?.dated&&m.count>0).map(m=>m.label);
