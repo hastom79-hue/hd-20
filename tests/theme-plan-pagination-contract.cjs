@@ -1,0 +1,12 @@
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const source=fs.readFileSync('theme-inspection.js','utf8');
+new Function(source);
+assert.match(source,/#awTheme \.themePanel\[hidden\]\{display:none!important\}/,'inactive panels must not expand page');
+assert.match(source,/const pageSize=10,totalPages=/,'first tab must be paginated');
+assert.match(source,/LINES\.slice\(page\*pageSize,\(page\+1\)\*pageSize\)/,'render only page subset');
+assert.match(source,/data-theme-page="-1"/,'previous page control');
+assert.match(source,/data-theme-page="1"/,'next page control');
+assert.match(source,/host\.dataset\.planPage=String\(/,'page navigation handler');
+console.log('THEME PLAN PAGINATION CONTRACT PASS');
