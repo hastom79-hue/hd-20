@@ -423,6 +423,8 @@ function build(){
 }
 function boot(){
  let n=0;const run=()=>{if(build())return;if(++n<60)setTimeout(run,100)};run();
+ window.addEventListener('hd20-audit-merged-section',e=>{if(e.detail?.section==='theme')setTimeout(render,0)});
+ window.addEventListener('hd20-master-factors-updated',()=>{if(window.HD20_NAV?.active?.()==='audit'&&new URLSearchParams(location.search).get('sub')==='theme')setTimeout(render,0)});
  document.addEventListener('click',e=>{if(!e.target?.closest?.('.beginnerNav [data-key="theme"]'))return;const host=document.getElementById('awTheme');if(!host||!host.hasChildNodes())setTimeout(render,50)},true);
 }
 document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot,{once:true}):boot();
