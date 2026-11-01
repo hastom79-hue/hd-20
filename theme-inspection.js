@@ -371,7 +371,7 @@ async function saveAudit(){
  const linkedActionIds=[],createdActionIds=[],reusedActionIds=[];
  ngItems.forEach(row=>{
    const cat=row.dataset.cat,item=row.dataset.item,problem='[테마 점검] '+line+' · '+item;
-   const dup=actions.find(a=>a.source==='테마Audit'&&a.workplace===line&&a.themeCategory===cat&&a.problem===problem&&activeStatuses.includes(String(a.status||'')));
+   const dup=actions.find(a=>a.source==='테마Audit'&&a.workplace===line&&a.team===team&&a.themeCategory===cat&&a.problem===problem&&activeStatuses.includes(String(a.status||'')));
    if(dup){
      const related=Array.isArray(dup.relatedAuditRecordIds)?dup.relatedAuditRecordIds.slice():[dup.auditRecordId].filter(Boolean);
      if(!related.includes(rec.id))related.push(rec.id);
