@@ -15,4 +15,7 @@ assert.equal(context.findActive(actions,'L','C',args[2],args[3]),undefined);
 assert.equal(context.findPrevious(actions,'L','B',args[2],args[3]),undefined);
 assert.equal(context.findActive(actions.filter(x=>x.id!=='active'),...args),undefined);
 assert.equal(context.findPrevious(actions.filter(x=>x.id!=='active'),...args).id,'newer');
+assert.equal(context.findActive([issue('unknown','보류')],...args).id,'unknown','unknown status must not create duplicate');
+assert.equal(context.findActive([issue('empty','')],...args).id,'empty','empty status must not create duplicate');
+assert.equal(context.findActive([issue('closed','완료')],...args),undefined,'completed action must not be reused');
 console.log('Theme completed recurrence and team-isolated matching PASS');
