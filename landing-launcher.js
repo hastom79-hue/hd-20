@@ -46,26 +46,21 @@ function css(){
   document.head.appendChild(s);
 }
 function close(){document.getElementById('hd20Launcher')?.remove();try{sessionStorage.setItem(SEEN_KEY,'1')}catch{}}
-function clickWhenReady(findFn,modalId,area,tries=0){
- // Keep the navigation guard until the actual register modal is open.
+function clickWhenReady(findFn,modalId,area,tries=0,clicked=false){
  if(window.HD20_NAV?.active?.()!==area){internalRegistrationNavigation=false;return}
- const modal=document.getElementById(modalId);
- if(modal?.classList.contains('on')){internalRegistrationNavigation=false;return}
+ if(document.getElementById(modalId)?.classList.contains('on')){internalRegistrationNavigation=false;return}
  const el=findFn();
- if(el&&el.isConnected&&!el.disabled&&typeof el.onclick==='function'){
-   el.click();
-   if(document.getElementById(modalId)?.classList.contains('on')){
-     internalRegistrationNavigation=false;return
-   }
+ if(!clicked&&el?.isConnected&&!el.disabled&&typeof el.onclick==='function'){
+   el.click();clicked=true;
+   if(document.getElementById(modalId)?.classList.contains('on')){internalRegistrationNavigation=false;return}
  }
- if(tries>=40){
+ if(tries>=20){
    internalRegistrationNavigation=false;
-   console.warn('[HD20 launcher] 등록창 전환 실패: '+area);
-   // Do not leave a blank legacy workspace after a failed registration transition.
+   console.warn('[HD20 launcher] 등록 팝업 열기 실패: '+area);
    if(window.HD20_NAV?.active?.()===area)openOverview();
    return
  }
- setTimeout(()=>clickWhenReady(findFn,modalId,area,tries+1),100);
+ setTimeout(()=>clickWhenReady(findFn,modalId,area,tries+1,clicked),50);
 }
 function hideOverview(){document.body.classList.remove('hd20InquiryActive');const grid=document.getElementById('hd20LauncherOverview');if(!grid)return;grid.classList.remove('hd20LnVisible');grid.style.removeProperty('display');grid.style.removeProperty('visibility');document.body.classList.remove('hd20UnifiedLanding')}
 function navigate(area){
@@ -78,14 +73,13 @@ function goActivityRegister(){
  if(internalRegistrationNavigation)return;
  internalRegistrationNavigation=true;
  close();navigate('activity');
- window.HD20_SUBNAV?.select?.('activity','manage');
- setTimeout(()=>clickWhenReady(()=>document.querySelector('#awActivity [data-aw="new"]'),'awRegisterModal','activity'),80);
+ setTimeout(()=>clickWhenReady(()=>document.querySelector('#awActivity [data-aw="new"]'),'awRegisterModal','activity'),0);
 }
 function goActionRegister(){
  if(internalRegistrationNavigation)return;
  internalRegistrationNavigation=true;
  close();navigate('action');
- setTimeout(()=>clickWhenReady(()=>document.getElementById('hd20ActionRegisterBtn'),'hd20ActionRegisterModal','action'),80);
+ setTimeout(()=>clickWhenReady(()=>document.getElementById('hd20ActionRegisterBtn'),'hd20ActionRegisterModal','action'),0);
 }
 function getRows(key){try{const a=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(a)?a:[]}catch{return[]}}
 function sourceRows(){
