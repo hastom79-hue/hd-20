@@ -33,6 +33,71 @@ function open(index=0){
 // The reference panel displays actual, traceable case evidence only.
 // The active unsaved draft takes precedence; otherwise select a registered
 // case satisfying the currently viewed criterion. Never substitute examples.
+// Reference guide images are independent from improvement-case evidence.
+// All six examples need authorized, real source photos; none are fabricated.
+const GUIDE_KEY='hd20AdvGuideReferencePhotosV1';
+const loadGuide=()=>{try{const x=JSON.parse(localStorage.getItem(GUIDE_KEY)||'{}');return x&&typeof x==='object'?x:{}}catch{return{}}};
+const guideImages=loadGuide();
+const guideUploader=document.createElement('section');
+guideUploader.id='hd20AdvGuidePhotoReference';
+guideUploader.style.cssText='margin:15px 0;padding:14px;background:#f4f8fc;border:1px solid #d0dfeb;border-radius:10px';
+const guideTitle=document.createElement('strong');
+guideTitle.textContent='BEFORE · AFTER 평가 사진 가이드';
+guideUploader.appendChild(guideTitle);
+const guideHint=document.createElement('p');
+guideHint.textContent='현장 촬영 예시 원본을 등록하여 사용하는 영역입니다. 아래 실제 개선사례 증빙사진과 구분합니다.';
+guideHint.style.cssText='margin:5px 0 12px;font-size:12px;color:#536c7d;line-height:1.6';
+guideUploader.appendChild(guideHint);
+const guideGrid=document.createElement('div');
+guideGrid.style.cssText='display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px';
+const isMaster=!!window.HD20MasterAccess?.isMaster?.();
+for(const kind of ['before','after']){
+ const key='criterion'+(n+1)+'_'+kind;
+ const photo=guideImages[key];
+ const cell=document.createElement('div');
+ cell.style.cssText='padding:12px;background:white;border:1px solid #d5e1eb;border-radius:9px;min-height:170px';
+ const title=document.createElement('b');title.textContent=kind.toUpperCase()+' 가이드 원본';
+ cell.appendChild(title);
+ if(typeof photo==='string'&&/^data:image\/(png|jpeg|webp);base64,/i.test(photo)){
+  const img=document.createElement('img');img.src=photo;img.alt=(n+1)+'번 요건 '+kind.toUpperCase()+' 평가 참고사진';
+  img.style.cssText='display:block;width:100%;max-height:300px;object-fit:contain;margin:9px auto;border-radius:6px;background:#f8fafb';
+  cell.appendChild(img);
+ }else{
+  const missing=document.createElement('p');
+  missing.textContent='평가용 원본 사진 미등록';
+  missing.style.cssText='min-height:90px;display:flex;align-items:center;justify-content:center;text-align:center;color:#677e91;background:#f7f9fb;border:1px dashed #cbd9e4;border-radius:7px;font-size:13px';
+  cell.appendChild(missing);
+ }
+ if(isMaster){
+   const wrap=document.createElement('label');
+   wrap.style.cssText='display:block;font-size:12px;font-weight:700;color:#145a81;cursor:pointer;margin-top:9px';
+   wrap.textContent='현장 원본 사진 '+(photo?'교체':'등록')+' (마스터)';
+   const input=document.createElement('input');input.type='file';input.accept='image/jpeg,image/png,image/webp';
+   input.style.cssText='display:block;width:100%;margin-top:7px;font-size:11px';
+   input.onchange=async()=>{
+     const file=input.files?.[0];if(!file)return;
+     if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>600000){
+       alert('가이드 사진은 JPG/PNG/WEBP, 600KB 이하로 등록해 주세요.');input.value='';return;
+     }
+     const data=await new Promise((resolve,reject)=>{const rd=new FileReader();rd.onload=()=>resolve(rd.result);rd.onerror=reject;rd.readAsDataURL(file)});
+     const next=loadGuide();next[key]=data;
+     try{localStorage.setItem(GUIDE_KEY,JSON.stringify(next))}
+     catch(e){alert('브라우저 저장공간 부족으로 등록하지 못했습니다.');return}
+     open(n);
+   };
+   wrap.appendChild(input);cell.appendChild(wrap);
+ }
+ guideGrid.appendChild(cell);
+}
+guideUploader.appendChild(guideGrid);
+const sourceNotice=document.createElement('p');
+sourceNotice.style.cssText='margin:10px 0 0;font-size:11px;color:#856129;line-height:1.6';
+sourceNotice.textContent='현재 가이드 사진은 등록한 브라우저에만 저장됩니다. 전체 사용자 공유에는 별도 공용 저장소 연동이 필요합니다.';
+guideUploader.appendChild(sourceNotice);
+const guideTextBoxes=evidenceRoot.querySelectorAll('div');
+const guideTextAnchor=[...guideTextBoxes].find(el=>el.textContent?.trim().startsWith('BEFORE 사진 가이드'));
+if(guideTextAnchor?.parentElement)guideTextAnchor.parentElement.before(guideUploader);
+else evidenceRoot.appendChild(guideUploader);
 const evidenceRoot=overlay.querySelector('section');
 const evidence=document.createElement('div');
 evidence.id='hd20AdvGuideEvidence';
