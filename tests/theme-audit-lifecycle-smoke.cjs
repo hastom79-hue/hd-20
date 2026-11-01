@@ -36,6 +36,17 @@ const {chromium}=require('playwright');
    await page.waitForFunction(expected=>JSON.parse(localStorage.getItem('hd20ThemeAuditChecksV1')||'[]').filter(x=>x.line==='TEST-LINE').length===expected,before+1,{timeout:15000});
    await page.waitForFunction(()=>document.querySelector('#themeSaveResult')?.textContent?.includes('점검 이력 저장 완료'),null,{timeout:15000});
   };
+  // Reject NG without photo: neither audit history nor action cases may be written.
+  await page.locator('#themeBulkAllOk').click();
+  await page.locator('#awTheme .themeCheckRow').first().locator('[data-v="미흡"]').click();
+  await page.locator('#themeAuditAuditor').fill('E2E 점검자');
+  await page.locator('#themeSaveBtn').click();
+  await page.waitForFunction(()=>document.querySelector('#themeSaveBtn')?.disabled===false,null,{timeout:15000});
+  const rejected=await page.evaluate(()=>({
+   audits:JSON.parse(localStorage.getItem('hd20ThemeAuditChecksV1')||'[]').filter(x=>x.line==='TEST-LINE').length,
+   actions:JSON.parse(localStorage.getItem('hd20ActionCasesV2')||'[]').filter(x=>x.source==='테마Audit'&&x.workplace==='TEST-LINE').length
+  }));
+  assert.deepEqual(rejected,{audits:0,actions:0},'NG without photo must not persist any data');
   await submit();
   let state=await page.evaluate(()=>({actions:JSON.parse(localStorage.getItem('hd20ActionCasesV2')||'[]').filter(x=>x.source==='테마Audit'&&x.workplace==='TEST-LINE'),audits:JSON.parse(localStorage.getItem('hd20ThemeAuditChecksV1')||'[]').filter(x=>x.line==='TEST-LINE')}));
   assert.equal(state.actions.length,1,'first NG creates one action');
