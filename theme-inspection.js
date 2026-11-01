@@ -102,7 +102,7 @@ function css(){if(document.getElementById('hd20ThemeStyle'))return;const s=docum
  #awTheme{padding-bottom:20px;min-height:0;max-width:100%;overflow-x:hidden}
  #awTheme .themePanel[hidden]{display:none!important}
  #awTheme .themePanel{min-height:0;max-width:100%}
- #awTheme .themeLineSummary{min-width:0;max-width:100%;overflow-x:auto}
+ #awTheme .themeLineSummary{min-width:0;max-width:100%;max-height:560px;overflow:auto;overscroll-behavior:contain}
  #awTheme .themeLineSummaryBody{min-height:0}
  #awTheme .themeLineSummaryHead,#awTheme .themeLineSummaryRow{min-width:840px;box-sizing:border-box}
  #awTheme .themeLineSummaryRow{min-height:46px;max-height:120px;overflow:hidden}
@@ -284,26 +284,28 @@ function render(){
    <div class="themeSaveResult" id="themeSaveResult"></div>
  </div></section>
  <section class="themePanel" data-theme-panel="actions" ${view==='actions'?'':'hidden'}><div class="themeHistoryBox"><div class="themeSectionHead" style="margin-top:0"><h3>테마점검 미흡사항 · 개선조치 추적</h3><small>개선조치·완료관리와 같은 원본 조치 레코드를 조회합니다</small></div>${actionTable(month)}</div></section>`;
+ // Mount only the selected workspace. Hidden panels must never retain tall layout boxes.
+ host.querySelectorAll('.themePanel[hidden]').forEach(panel=>panel.remove());
  $('#themeMonthSel',host).addEventListener('change',e=>{host.dataset.month=e.target.value;render()});
   const actionSearch=$('#themeActionSearch',host),actionStatus=$('#themeActionStatus',host),actionRecurrence=$('#themeActionRecurrence',host);
   const filterActions=()=>{const query=(actionSearch?.value||'').trim().toLocaleLowerCase(),status=actionStatus?.value||'',rows=Array.from(host.querySelectorAll('#themeActionTableBody tr'));let shown=0;rows.forEach(row=>{const visible=(!query||(row.dataset.search||'').includes(query))&&(!status||row.dataset.status===status)&&(!actionRecurrence?.value||row.dataset.recurrence===actionRecurrence.value);row.hidden=!visible;if(visible)shown++});const count=$('#themeActionCount',host);if(count)count.textContent='표시 '+shown+'/'+rows.length+'건';const empty=$('#themeActionNoResults',host);if(empty)empty.hidden=shown>0};
   actionSearch?.addEventListener('input',filterActions);actionStatus?.addEventListener('change',filterActions);actionRecurrence?.addEventListener('change',filterActions);
  Array.from(host.querySelectorAll('[data-theme-page]')).forEach(btn=>btn.addEventListener('click',()=>{host.dataset.planPage=String(Math.min(totalPages-1,Math.max(0,page+Number(btn.dataset.themePage))));render()}));
  Array.from(host.querySelectorAll('[data-theme-view]')).forEach(btn=>btn.addEventListener('click',()=>{host.dataset.view=btn.dataset.themeView;render()}));
- $('#themePlanLineSel',host).addEventListener('change',e=>{host.dataset.line=e.target.value;host.dataset.team=LINE_DEFAULT_TEAM[e.target.value]||host.dataset.team;render()});
+ $('#themePlanLineSel',host)?.addEventListener('change',e=>{host.dataset.line=e.target.value;host.dataset.team=LINE_DEFAULT_TEAM[e.target.value]||host.dataset.team;render()});
  Array.from(host.querySelectorAll('input[name="themePlanTheme"]')).forEach(box=>box.addEventListener('change',()=>{const n=host.querySelectorAll('input[name="themePlanTheme"]:checked').length;const count=$('#themePlanCount',host);if(count)count.textContent=n}));
- $('#themeSavePlanBtn',host).addEventListener('click',()=>{const selected=Array.from(host.querySelectorAll('input[name="themePlanTheme"]:checked')).map(x=>x.value);if(!selected.length){alert('최소 1개 이상의 취약 테마를 선택해 주세요.');return}const plans=loadPlans(),entry={month,line:host.dataset.line,themes:selected,updatedAt:new Date().toISOString()};const i=plans.findIndex(x=>x.month===month&&x.line===host.dataset.line);if(i>=0)plans[i]=entry;else plans.push(entry);if(!savePlans(plans)){alert('점검계획 저장에 실패했습니다. 저장공간을 확인해 주세요.');return}render()});
- $('#themeLineSel',host).addEventListener('change',e=>{host.dataset.line=e.target.value;host.dataset.team=LINE_DEFAULT_TEAM[e.target.value]||host.dataset.team;render()});
- $('#themeTeamSel',host).addEventListener('change',e=>{host.dataset.team=e.target.value});
- $('#themeSaveBtn',host).addEventListener('click',async e=>{
+ $('#themeSavePlanBtn',host)?.addEventListener('click',()=>{const selected=Array.from(host.querySelectorAll('input[name="themePlanTheme"]:checked')).map(x=>x.value);if(!selected.length){alert('최소 1개 이상의 취약 테마를 선택해 주세요.');return}const plans=loadPlans(),entry={month,line:host.dataset.line,themes:selected,updatedAt:new Date().toISOString()};const i=plans.findIndex(x=>x.month===month&&x.line===host.dataset.line);if(i>=0)plans[i]=entry;else plans.push(entry);if(!savePlans(plans)){alert('점검계획 저장에 실패했습니다. 저장공간을 확인해 주세요.');return}render()});
+ $('#themeLineSel',host)?.addEventListener('change',e=>{host.dataset.line=e.target.value;host.dataset.team=LINE_DEFAULT_TEAM[e.target.value]||host.dataset.team;render()});
+ $('#themeTeamSel',host)?.addEventListener('change',e=>{host.dataset.team=e.target.value});
+ $('#themeSaveBtn',host)?.addEventListener('click',async e=>{
    const button=e.currentTarget;
    if(button.dataset.saving==='true')return;
    button.dataset.saving='true';button.disabled=true;
    try{await saveAudit()}catch(error){console.error('[HD20 Theme] unexpected audit save error',error);alert('점검 저장 중 오류가 발생했습니다. 저장 결과를 확인한 뒤 다시 시도해 주세요.')}finally{button.dataset.saving='false';button.disabled=false}
  });
- $('#themeBulkAllOk',host).addEventListener('click',()=>bulkSet('적합'));
- $('#themeLoadPrevious',host).addEventListener('click',loadPreviousJudgements);
-  $('#themeBulkClear',host).addEventListener('click',()=>{bulkSet('');const note=$('#themePreviousNote',host);if(note)note.textContent='새 회차 입력 상태로 초기화했습니다.'});
+ $('#themeBulkAllOk',host)?.addEventListener('click',()=>bulkSet('적합'));
+ $('#themeLoadPrevious',host)?.addEventListener('click',loadPreviousJudgements);
+  $('#themeBulkClear',host)?.addEventListener('click',()=>{bulkSet('');const note=$('#themePreviousNote',host);if(note)note.textContent='새 회차 입력 상태로 초기화했습니다.'});
  Array.from(host.querySelectorAll('[data-pick-line]')).forEach(el=>el.addEventListener('click',()=>{
    const ln=el.getAttribute('data-pick-line');
    host.dataset.line=ln;host.dataset.team=LINE_DEFAULT_TEAM[ln]||host.dataset.team;host.dataset.view='audit';render();
