@@ -1,0 +1,14 @@
+'use strict';
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const source=fs.readFileSync('theme-inspection.js','utf8');
+const start=source.indexOf('function themeActionInMonth('),end=source.indexOf('function actionTable(month)',start);
+assert.ok(start>=0&&end>start);
+const context=vm.createContext({});
+vm.runInContext('const monthKey=d=>String(d||"").slice(0,7);\n'+source.slice(start,end)+'\nthis.inMonth=themeActionInMonth;',context,{timeout:1000});
+const action={id:'A',source:'테마Audit',auditMonth:'2026-08',lastAuditMonth:'2026-10',relatedAuditRecordIds:['AUD-1','AUD-2','AUD-3']};
+const checks=[{id:'AUD-1',month:'2026-08'},{id:'AUD-2',month:'2026-09'},{id:'AUD-3',month:'2026-10'}];
+for(const month of ['2026-08','2026-09','2026-10'])assert.equal(context.inMonth(action,month,checks),true,month);
+assert.equal(context.inMonth(action,'2026-11',checks),false);
+assert.equal(context.inMonth({...action,source:'자율개선'},'2026-09',checks),false);
+assert.equal(context.inMonth({...action,relatedAuditRecordIds:[]},'2026-09',checks),false);
+console.log('Theme intermediate audit month linkage PASS');
