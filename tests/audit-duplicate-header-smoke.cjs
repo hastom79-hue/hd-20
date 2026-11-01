@@ -16,6 +16,19 @@ const {chromium}=require('playwright');
   });
   assert.equal(audit.bannerVisible,false,'redundant Audit banner hidden');
   assert.equal(audit.heroVisible,false,'redundant Audit hero hidden');
+  const compact=await page.evaluate(()=>{
+    const panel=document.querySelector('#awAudit .audit6m');
+    const registration=document.querySelector('#awAudit .auditClosedLoop');
+    return {
+      lifecycleDiagramCount:document.querySelectorAll('#awAudit .audit6mFlow').length,
+      registrationHeading:registration?.querySelector('.awHead')?.textContent?.trim()||'',
+      sixMonthTableCount:panel?.querySelectorAll('table').length||0
+    };
+  });
+  assert.equal(compact.lifecycleDiagramCount,0,'redundant six-month workflow diagram removed');
+  assert.equal(compact.registrationHeading,'Audit 결과 등록','Audit form heading simplified');
+  assert.ok(compact.sixMonthTableCount>=1,'six-month monitoring table preserved');
+
   // The theme sub-section must remain accessible and must not be hidden by the Audit-only rule.
   await page.evaluate(()=>window.HD20_NAV?.openAuditSection?.('theme'));
   await page.waitForFunction(()=>new URLSearchParams(location.search).get('sub')==='theme',null,{timeout:15000});
