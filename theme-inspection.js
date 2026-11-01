@@ -380,6 +380,11 @@ async function saveAudit(){
      dup.lastAuditMonth=month;
      dup.lastAuditedAt=rec.auditedAt;
      dup.lastAuditMemo=memo;
+     dup.lastAuditAuditor=rec.initialAuditor;
+     dup.lastAuditPhoto=rec.improvementPhoto||'';
+     if(!dup.initialAuditor)dup.initialAuditor=String(dup.auditor||dup.registeredBy||rec.initialAuditor||'');
+     if(!dup.before&&rec.improvementPhoto)dup.before=rec.improvementPhoto;
+     if(!dup.evidence&&rec.improvementPhoto)dup.evidence=rec.improvementPhoto;
      dup.recheckCount=(Number(dup.recheckCount)||0)+1;
      linkedActionIds.push(dup.id);reusedActionIds.push(dup.id);
      return;
@@ -388,7 +393,7 @@ async function saveAudit(){
    actions.unshift({
      id:actionId,source:'테마Audit',team,auditMonth:month,workplace:line,themeCategory:cat,type:cat,problem,
      createdAt:today(),date:today(),dueDate,targetDate:dueDate,autoDueDays:dueDays,autoDueAssigned:dueDays!==null,autoDuePolicyState:dueDays===null?'정책미설정':'자동지정',status:'조치대기',
-     requestSource:'테마 Audit(5S모듈 주관)',sourceStage:'THEME-AUDIT',sourceCaseId:rec.id,registeredBy:rec.initialAuditor,registrant:rec.initialAuditor,auditor:rec.initialAuditor,before:rec.improvementPhoto||'',evidence:rec.improvementPhoto||'',after:'',auditRecordId:rec.id,relatedAuditRecordIds:[rec.id],lastAuditRecordId:rec.id,lastAuditedAt:rec.auditedAt,auditMemo:memo
+     requestSource:'테마 Audit(5S모듈 주관)',sourceStage:'THEME-AUDIT',sourceCaseId:rec.id,registeredBy:rec.initialAuditor,registrant:rec.initialAuditor,auditor:rec.initialAuditor,initialAuditor:rec.initialAuditor,lastAuditAuditor:rec.initialAuditor,lastAuditPhoto:rec.improvementPhoto||'',before:rec.improvementPhoto||'',evidence:rec.improvementPhoto||'',after:'',auditRecordId:rec.id,relatedAuditRecordIds:[rec.id],lastAuditRecordId:rec.id,lastAuditedAt:rec.auditedAt,auditMemo:memo
    });
    linkedActionIds.push(actionId);createdActionIds.push(actionId);
  });
