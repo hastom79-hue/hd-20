@@ -64,19 +64,21 @@ let selected=null;
 if(draft.before||draft.after){
  selected={...draft,source:'현재 작성 중인 사례',id:'',team:'',date:''};
 }else{
- let cases=[];
- try{
-   const kpi=window.HD20KPIData;
-   const snap=kpi?.snapshot?.();
-   if(Array.isArray(snap?.activities))cases.push(...snap.activities.map(r=>({record:r,source:'자율개선 등록'})));
-   if(typeof kpi?.actionCases==='function'){
-     const actions=kpi.actionCases();
+ let cases=[
+  ...fromStorage('hd20GMES5SAutoImproveRawV1').map(r=>({record:r,source:'자율개선 등록'})),
+  ...fromStorage('hd20ActionCasesV2').map(r=>({record:r,source:'개선조치 등록'}))
+ ];
+ // Cross-view KPI data is a fallback, not the canonical photograph source.
+ // Some summarized KPI rows omit large before/after image payloads.
+ if(!cases.some(({record})=>matchingCriterion(record,n)&&casePair(record,'')!==null)){
+   try{
+     const kpi=window.HD20KPIData;
+     const snap=kpi?.snapshot?.();
+     if(Array.isArray(snap?.activities))cases.push(...snap.activities.map(r=>({record:r,source:'자율개선 등록'})));
+     const actions=kpi?.actionCases?.();
      if(Array.isArray(actions))cases.push(...actions.map(r=>({record:r,source:'개선조치 등록'})));
-   }
- }catch(err){console.warn('[HD20 photo guide] reference query fallback',err)}
- // Stored cases are also read because the KPI snapshot may omit photo payloads.
- cases.push(...fromStorage('hd20GMES5SAutoImproveRawV1').map(r=>({record:r,source:'자율개선 등록'})));
- cases.push(...fromStorage('hd20ActionCasesV2').map(r=>({record:r,source:'개선조치 등록'})));
+   }catch(err){console.warn('[HD20 photo guide] photo source fallback',err)}
+ }
  const seen=new Set();
  const relevant=cases.filter(({record})=>{
    if(!record||!matchingCriterion(record,n))return false;
