@@ -16,6 +16,7 @@ const {chromium}=require('playwright');
   });
   assert.equal(audit.bannerVisible,false,'redundant Audit banner hidden');
   assert.equal(audit.heroVisible,false,'redundant Audit hero hidden');
+  await page.waitForFunction(()=>!!document.querySelector('#awAudit .audit6m table')&&!!document.querySelector('#awAudit .auditClosedLoop .awHead'),null,{timeout:20000});
   const compact=await page.evaluate(()=>{
     const panel=document.querySelector('#awAudit .audit6m');
     const registration=document.querySelector('#awAudit .auditClosedLoop');
