@@ -57,6 +57,8 @@ jobs:
         run: node tests/theme-audit-lifecycle-smoke.cjs
       - name: Verify theme first-tab bounded scroll and pagination in Chromium
         run: node tests/theme-plan-height-smoke.cjs
+      - name: Verify Audit duplicate banner removed in Chromium
+        run: node tests/audit-duplicate-header-smoke.cjs
       - name: Verify integrated master workspace navigation and refresh
         run: node tests/master-workspace-v2-smoke.cjs
       - name: Execute browser boot and five-area contracts
