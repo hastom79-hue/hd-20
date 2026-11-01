@@ -18,4 +18,28 @@ assert.equal(context.findPrevious(actions.filter(x=>x.id!=='active'),...args).id
 assert.equal(context.findActive([issue('unknown','보류')],...args).id,'unknown','unknown status must not create duplicate');
 assert.equal(context.findActive([issue('empty','')],...args).id,'empty','empty status must not create duplicate');
 assert.equal(context.findActive([issue('closed','완료')],...args),undefined,'completed action must not be reused');
+// Lifecycle: first NG creates one action, repeated NG reuses it, completed NG becomes recurrence.
+const lifecycle=[];
+const createOrReuse=(status,when)=>{
+ const existing=context.findActive(lifecycle,...args);
+ if(existing){existing.relatedAuditRecordIds.push(when);existing.recheckCount++;return{created:false,id:existing.id}}
+ const previous=context.findPrevious(lifecycle,...args);
+ const row={...issue('CASE-'+(lifecycle.length+1),status),relatedAuditRecordIds:[when],recheckCount:0,recurrence:!!previous,recurrenceOfActionId:previous?.id||''};
+ lifecycle.unshift(row);return{created:true,id:row.id};
+};
+const first=createOrReuse('조치대기','AUD-1');
+assert.equal(first.created,true);
+const second=createOrReuse('조치대기','AUD-2');
+assert.equal(second.created,false,'open issue must be reused');
+assert.equal(second.id,first.id);
+assert.equal(lifecycle.length,1,'no duplicate open action');
+assert.deepEqual(Array.from(lifecycle[0].relatedAuditRecordIds),['AUD-1','AUD-2']);
+lifecycle[0].status='조치 완료';lifecycle[0].completedAt='2026-10-31';
+const third=createOrReuse('조치대기','AUD-3');
+assert.equal(third.created,true,'new NG after completion must create new action');
+assert.equal(lifecycle.length,2);
+assert.equal(lifecycle[0].recurrence,true,'new action classified as recurrence');
+assert.equal(lifecycle[0].recurrenceOfActionId,first.id);
+assert.equal(context.findActive(lifecycle,...args).id,third.id);
+assert.equal(context.findPrevious(lifecycle,...args).id,first.id);
 console.log('Theme completed recurrence and team-isolated matching PASS');
