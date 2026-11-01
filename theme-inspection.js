@@ -389,9 +389,11 @@ async function saveAudit(){
      linkedActionIds.push(dup.id);reusedActionIds.push(dup.id);
      return;
    }
+   const completedStatuses=['완료','조치완료','개선완료','종결','종료','유지점검 완료','효과검증 완료'];
+   const previousCompleted=actions.filter(a=>a.source==='테마Audit'&&a.workplace===line&&a.team===team&&a.themeCategory===cat&&a.problem===problem&&completedStatuses.includes(String(a.status||''))).sort((a,b)=>String(b.completedAt||b.updatedAt||b.createdAt||'').localeCompare(String(a.completedAt||a.updatedAt||a.createdAt||'')))[0];
    const actionId=newId('THEME');
    actions.unshift({
-     id:actionId,source:'테마Audit',team,auditMonth:month,workplace:line,themeCategory:cat,type:cat,problem,
+     id:actionId,source:'테마Audit',team,auditMonth:month,workplace:line,themeCategory:cat,type:cat,problem,recurrence:!!previousCompleted,recurrenceOfActionId:previousCompleted?.id||'',recurrenceDetectedAt:previousCompleted?rec.auditedAt:'',
      createdAt:today(),date:today(),dueDate,targetDate:dueDate,autoDueDays:dueDays,autoDueAssigned:dueDays!==null,autoDuePolicyState:dueDays===null?'정책미설정':'자동지정',status:'조치대기',
      requestSource:'테마 Audit(5S모듈 주관)',sourceStage:'THEME-AUDIT',sourceCaseId:rec.id,registeredBy:rec.initialAuditor,registrant:rec.initialAuditor,auditor:rec.initialAuditor,initialAuditor:rec.initialAuditor,lastAuditAuditor:rec.initialAuditor,lastAuditPhoto:rec.improvementPhoto||'',before:rec.improvementPhoto||'',evidence:rec.improvementPhoto||'',after:'',auditRecordId:rec.id,relatedAuditRecordIds:[rec.id],lastAuditRecordId:rec.id,lastAuditedAt:rec.auditedAt,auditMemo:memo
    });
