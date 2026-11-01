@@ -366,7 +366,7 @@ function saveAudit(){
  const rec={id:newId('THEME-AUDIT'),line,team,month,auditor,initialAuditor:auditor,states,memo,auditedAt:new Date().toISOString(),checklistVersion:4,linkedActionIds:[],createdActionIds:[],reusedActionIds:[],ngCount:rows.filter(row=>states[row.dataset.key]==='미흡').length};
  checks.push(rec);
  if(!saveChecks(checks)){alert('점검 결과를 저장하지 못했습니다. 브라우저 저장공간을 확인한 뒤 다시 시도해 주세요.');return}
- const ngItems=rows.filter(row=>states[row.dataset.key]==='미흡'),actions=load();
+ const ngItems=rows.filter(row=>states[row.dataset.key]==='미흡'),actions=load(),originalActions=JSON.stringify(actions);
  const activeStatuses=['조치대기','미착수','진행중','진행 중','기한경과','보완요청','조치중','조치 진행중','효과검증 대기'];
  const linkedActionIds=[],createdActionIds=[],reusedActionIds=[];
  ngItems.forEach(row=>{
@@ -397,11 +397,12 @@ function saveAudit(){
  rec.reusedActionIds=reusedActionIds;
  rec.linkedAt=new Date().toISOString();
  if(!save(actions)){
-   alert('점검 이력은 저장되었지만 개선조치 데이터 저장에 실패했습니다. 화면을 닫지 말고 저장공간/DB 상태를 확인해 주세요.');
-   render();return;
+   if(!saveChecks(checks.filter(x=>x.id!==rec.id)))console.error('[HD20 Theme] failed to rollback audit history after action save failure',rec.id);
+   alert('개선조치 저장에 실패하여 이번 점검 이력 등록을 취소했습니다. 저장공간을 확인하고 다시 시도해 주세요.');
+   return;
  }
  const savedChecks=loadChecks(),savedRec=savedChecks.find(x=>x.id===rec.id);
- if(savedRec){Object.assign(savedRec,{linkedActionIds:rec.linkedActionIds,createdActionIds:createdActionIds,reusedActionIds:reusedActionIds,linkedAt:rec.linkedAt,ngCount:rec.ngCount});if(!saveChecks(savedChecks))console.error('[HD20 Theme] audit-to-action link metadata could not be saved',rec.id)}
+ if(savedRec){Object.assign(savedRec,{linkedActionIds:rec.linkedActionIds,createdActionIds:createdActionIds,reusedActionIds:reusedActionIds,linkedAt:rec.linkedAt,ngCount:rec.ngCount});if(!saveChecks(savedChecks)){try{localStorage.setItem(ACT_KEY,originalActions)}catch(error){console.error('[HD20 Theme] action rollback failed',error)}if(!saveChecks(checks.filter(x=>x.id!==rec.id)))console.error('[HD20 Theme] audit rollback failed',rec.id);alert('점검-개선조치 연결정보 저장에 실패하여 이번 등록을 취소했습니다. 다시 시도해 주세요.');return}}
  window.dispatchEvent(new CustomEvent('hd20-action-updated',{detail:{added:createdActionIds.length,reused:reusedActionIds.length,source:'theme-audit',auditRecordId:rec.id}}));
  window.dispatchEvent(new CustomEvent('hd20-activity-updated',{detail:{source:'테마Audit',auditRecordId:rec.id}}));
  window.dispatchEvent(new CustomEvent('hd20-theme-audit-updated',{detail:{auditRecordId:rec.id,line,month}}));
