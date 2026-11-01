@@ -246,7 +246,7 @@ function render(){
      <button type="button" class="themeBulkBtn" id="themeBulkClear">전체 초기화</button>
      <span id="themePreviousNote" class="themePreviousNote" aria-live="polite"></span>
    </div>
-   <div class="themeAuditMeta"><label>현장 관찰 메모 <textarea id="themeAuditMemo" rows="2" placeholder="현장 특이사항, 즉시조치, 재발 위험 등을 기록"></textarea></label><div id="themeProgress" aria-live="polite"></div></div><div id="themeChecklistWrap"></div>
+   <div class="themeAuditMeta"><label>최초 점검자 <input id="themeAuditAuditor" type="text" maxlength="80" placeholder="점검자 성명 (필수)" required></label><label>현장 관찰 메모 <textarea id="themeAuditMemo" rows="2" placeholder="현장 특이사항, 즉시조치, 재발 위험 등을 기록"></textarea></label><div id="themeProgress" aria-live="polite"></div></div><div id="themeChecklistWrap"></div>
    <button type="button" class="themeSaveBtn" id="themeSaveBtn">점검 결과 저장 · 미흡 항목 자동 등록</button>
    <div class="themeSaveResult" id="themeSaveResult"></div>
  </div></section>
@@ -362,8 +362,8 @@ function saveAudit(){
  const applicable=CHECKLIST.filter(item=>plannedThemes(month,line).includes(item.cat));
  if(!applicable.length){alert('먼저 [점검계획·취약현황]에서 해당 월·라인의 점검 테마를 지정하고 저장해 주세요.');host.dataset.view='plan';render();return}
   if(Object.keys(states).length<applicable.length){const missing=applicable.length-Object.keys(states).length;alert('미판정 항목 '+missing+'건이 있습니다. 모든 항목을 판정한 뒤 저장해 주세요.');return}
- const checks=loadChecks(),memo=$('#themeAuditMemo',host)?.value.trim()||'';const policyDays=window.HD20PolicyConfig?.deadlineDays?.()??null;const dueDays=Number.isFinite(Number(policyDays))&&Number(policyDays)>0?Number(policyDays):null;const dueDate=dueDays===null?'':addDaysStr(today(),dueDays);
- const rec={id:newId('THEME-AUDIT'),line,team,month,states,memo,auditedAt:new Date().toISOString(),checklistVersion:4,linkedActionIds:[],createdActionIds:[],reusedActionIds:[],ngCount:rows.filter(row=>states[row.dataset.key]==='미흡').length};
+ const auditor=$('#themeAuditAuditor',host)?.value.trim()||'';if(!auditor){alert('최초 점검자 성명을 입력해 주세요.');$('#themeAuditAuditor',host)?.focus();return}const checks=loadChecks(),memo=$('#themeAuditMemo',host)?.value.trim()||'';const policyDays=window.HD20PolicyConfig?.deadlineDays?.()??null;const dueDays=Number.isFinite(Number(policyDays))&&Number(policyDays)>0?Number(policyDays):null;const dueDate=dueDays===null?'':addDaysStr(today(),dueDays);
+ const rec={id:newId('THEME-AUDIT'),line,team,month,auditor,initialAuditor:auditor,states,memo,auditedAt:new Date().toISOString(),checklistVersion:4,linkedActionIds:[],createdActionIds:[],reusedActionIds:[],ngCount:rows.filter(row=>states[row.dataset.key]==='미흡').length};
  checks.push(rec);
  if(!saveChecks(checks)){alert('점검 결과를 저장하지 못했습니다. 브라우저 저장공간을 확인한 뒤 다시 시도해 주세요.');return}
  const ngItems=rows.filter(row=>states[row.dataset.key]==='미흡'),actions=load();
@@ -388,7 +388,7 @@ function saveAudit(){
    actions.unshift({
      id:actionId,source:'테마Audit',team,auditMonth:month,workplace:line,themeCategory:cat,type:cat,problem,
      createdAt:today(),date:today(),dueDate,targetDate:dueDate,autoDueDays:dueDays,autoDueAssigned:dueDays!==null,autoDuePolicyState:dueDays===null?'정책미설정':'자동지정',status:'조치대기',
-     requestSource:'테마 Audit(5S모듈 주관)',sourceStage:'THEME-AUDIT',sourceCaseId:rec.id,registeredBy:rec.auditor||'미지정',registrant:rec.auditor||'미지정',auditRecordId:rec.id,relatedAuditRecordIds:[rec.id],lastAuditRecordId:rec.id,lastAuditedAt:rec.auditedAt,auditMemo:memo
+     requestSource:'테마 Audit(5S모듈 주관)',sourceStage:'THEME-AUDIT',sourceCaseId:rec.id,registeredBy:rec.initialAuditor,registrant:rec.initialAuditor,auditor:rec.initialAuditor,auditRecordId:rec.id,relatedAuditRecordIds:[rec.id],lastAuditRecordId:rec.id,lastAuditedAt:rec.auditedAt,auditMemo:memo
    });
    linkedActionIds.push(actionId);createdActionIds.push(actionId);
  });
