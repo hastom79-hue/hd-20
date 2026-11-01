@@ -69,7 +69,7 @@ function themeSameIssue(a,line,team,cat,problem){return a.source==='테마Audit'
 function themeFindActive(actions,line,team,cat,problem){return actions.find(a=>themeSameIssue(a,line,team,cat,problem)&&!THEME_COMPLETED_STATUSES.has(normalizeThemeStatus(a.status)))}
 function themeFindPreviousCompleted(actions,line,team,cat,problem){return actions.filter(a=>themeSameIssue(a,line,team,cat,problem)&&THEME_COMPLETED_STATUSES.has(normalizeThemeStatus(a.status))).sort((a,b)=>String(b.completedAt||b.updatedAt||b.createdAt||'').localeCompare(String(a.completedAt||a.updatedAt||a.createdAt||'')))[0]}
 function themeAuditIdsForMonth(checks,month){
- return new Set(checks.filter(rec=>monthKey(rec.month||rec.auditedAt)===month).map(rec=>String(rec.id)).filter(Boolean));
+ return new Set(checks.filter(rec=>rec?.id!=null&&String(rec.id).trim()&&monthKey(rec.month||rec.auditedAt)===month).map(rec=>String(rec.id)));
 }
 function themeActionInMonth(a,month,monthAuditIds){
  if(a.source!=='테마Audit')return false;
