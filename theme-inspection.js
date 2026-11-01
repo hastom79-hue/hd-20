@@ -68,8 +68,14 @@ const normalizeThemeStatus=v=>String(v??'').replace(/\s+/g,'').trim();
 function themeSameIssue(a,line,team,cat,problem){return a.source==='테마Audit'&&a.workplace===line&&a.team===team&&a.themeCategory===cat&&a.problem===problem}
 function themeFindActive(actions,line,team,cat,problem){return actions.find(a=>themeSameIssue(a,line,team,cat,problem)&&!THEME_COMPLETED_STATUSES.has(normalizeThemeStatus(a.status)))}
 function themeFindPreviousCompleted(actions,line,team,cat,problem){return actions.filter(a=>themeSameIssue(a,line,team,cat,problem)&&THEME_COMPLETED_STATUSES.has(normalizeThemeStatus(a.status))).sort((a,b)=>String(b.completedAt||b.updatedAt||b.createdAt||'').localeCompare(String(a.completedAt||a.updatedAt||a.createdAt||'')))[0]}
+function themeActionInMonth(a,month,checks){
+ if(a.source!=='테마Audit')return false;
+ if(monthKey(a.auditMonth||a.createdAt||a.date)===month||monthKey(a.lastAuditMonth||a.lastAuditedAt)===month)return true;
+ const ids=new Set([...(Array.isArray(a.relatedAuditRecordIds)?a.relatedAuditRecordIds:[]),a.auditRecordId,a.lastAuditRecordId].filter(Boolean).map(String));
+ return ids.size>0&&checks.some(rec=>ids.has(String(rec.id))&&monthKey(rec.month||rec.auditedAt)===month);
+}
 function actionTable(month){
- const rows=load().filter(x=>x.source==='테마Audit'&&(monthKey(x.auditMonth||x.createdAt||x.date)===month||monthKey(x.lastAuditMonth||x.lastAuditedAt)===month)).sort((a,b)=>String(b.lastAuditedAt||b.createdAt||'').localeCompare(String(a.lastAuditedAt||a.createdAt||'')));
+ const rows=load().filter(x=>themeActionInMonth(x,month,loadChecks())).sort((a,b)=>String(b.lastAuditedAt||b.createdAt||'').localeCompare(String(a.lastAuditedAt||a.createdAt||'')));
  if(!rows.length)return '<div class="themeEmptyNote">선택 월에 연결된 테마점검 개선조치가 없습니다.</div>';
  const recurrenceCount=rows.filter(a=>a.recurrence===true).length;const recurrenceRate=rows.length?((recurrenceCount/rows.length)*100).toFixed(1):'0.0';
  const statuses=[...new Set(rows.map(a=>String(a.status||'미분류')))].sort();
@@ -205,7 +211,7 @@ function render(){
  const auditRows=loadChecks().filter(x=>monthKey(x.month||x.auditedAt)===month);
  const latestAuditByLine=new Map();
  auditRows.forEach(rec=>{const prev=latestAuditByLine.get(rec.line);if(!prev||String(rec.auditedAt||'').localeCompare(String(prev.auditedAt||''))>=0)latestAuditByLine.set(rec.line,rec)});
- const monthActions=load().filter(x=>x.source==='테마Audit'&&(monthKey(x.auditMonth||x.createdAt||x.date)===month||monthKey(x.lastAuditMonth||x.lastAuditedAt)===month));
+ const monthActions=load().filter(x=>themeActionInMonth(x,month,loadChecks()));
  const lineSummaryRows=LINES.map(ln=>{
    const themes=plannedThemes(month,ln),rec=latestAuditByLine.get(ln),states=Object.values(rec?.states||{});
    const ng=states.filter(v=>v==='미흡').length;
