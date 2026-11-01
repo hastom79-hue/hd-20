@@ -34,6 +34,14 @@ const {chromium}=require('playwright');
   assert.equal(await count(),1,'three filters combined matching');
   assert.equal(await page.locator('#themeActionCount').textContent(),'표시 1/3건');
   assert.deepEqual(errors.filter(x=>x.includes('forEach')||x.includes('rows')),[],'no table filter JS error');
+  await page.reload({waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>window.HD20_NAV?.ready?.()&&!!document.querySelector('#awTheme [data-theme-view="actions"]'),null,{timeout:25000});
+  await page.locator('#awTheme [data-theme-view="actions"]').click();
+  await page.waitForSelector('#themeActionTableBody tr',{timeout:15000});
+  assert.equal(await count(),3,'all persisted rows visible after refresh');
+  await page.locator('#themeActionStatus').selectOption('완료');
+  await page.locator('#themeActionRecurrence').selectOption('yes');
+  assert.equal(await count(),1,'completed recurrence filter works after refresh');
   console.log('THEME ACTION FILTERS BROWSER PASS');
  }finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exit(1)});
