@@ -51,6 +51,10 @@ const assert = require('node:assert/strict');
    assert.equal(await dialog.getByText('AFTER 사진 가이드').count(),1);
    assert.equal(await dialog.locator('#hd20AdvGuidePhotoReference').count(),1,
      'independent photo guide section must always be visible');
+   assert.equal(await dialog.locator('section[role="dialog"] > #hd20AdvGuidePhotoReference').count(),1,
+     'photo reference must be inside the single dialog panel, not a sibling overlay');
+   assert.equal(await dialog.locator(':scope > #hd20AdvGuidePhotoReference').count(),0,
+     'no floating reference panel may appear beside dialog');
    assert.equal(await dialog.locator('#hd20AdvGuidePhotoReference img').count(),0,
      'never fabricate photographic references when none are registered');
    const imageCount=await dialog.locator('#hd20AdvGuideEvidence img').count();
