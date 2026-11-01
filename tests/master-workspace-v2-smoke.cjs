@@ -16,6 +16,16 @@ try{
  await page.locator('[data-hm-target="integrated-workplace"]').click();
  if(await page.locator('[data-hm-target="integrated-workplace"]').getAttribute('aria-pressed')!=='true')throw Error('Workspace selection failed');
  if(await page.locator('#hd20IntegratedMasterFactors').count()===0)throw Error('Canonical master editor missing');
+ const scrollContract=await page.evaluate(async()=>{
+   const modal=document.querySelector('#masterModal .masterInfoBox');
+   const target=document.querySelector('[data-hm-target="integrated-theme"]');
+   const before=window.scrollY;
+   target?.click();
+   await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+   return {pageBefore:before,pageAfter:window.scrollY,modalScrollOwner:!!modal&&getComputedStyle(modal).overflowY==='auto'};
+ });
+ if(!scrollContract.modalScrollOwner||Math.abs(scrollContract.pageAfter-scrollContract.pageBefore)>2)
+   throw Error('Master selection moved the outer page '+JSON.stringify(scrollContract));
  const masterLayout=await page.evaluate(()=>{
    const panel=document.querySelector('#masterModal .masterInfoBox');
    const style=getComputedStyle(panel);
