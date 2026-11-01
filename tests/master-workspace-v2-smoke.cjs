@@ -16,6 +16,13 @@ try{
  await page.locator('[data-hm-target="integrated-workplace"]').click();
  if(await page.locator('[data-hm-target="integrated-workplace"]').getAttribute('aria-pressed')!=='true')throw Error('Workspace selection failed');
  if(await page.locator('#hd20IntegratedMasterFactors').count()===0)throw Error('Canonical master editor missing');
+ const masterLayout=await page.evaluate(()=>{
+   const panel=document.querySelector('#masterModal .masterInfoBox');
+   const style=getComputedStyle(panel);
+   return {height:panel.getBoundingClientRect().height,viewport:innerHeight,overflowY:style.overflowY,scrollHeight:panel.scrollHeight};
+ });
+ if(masterLayout.height>masterLayout.viewport||!['auto','scroll'].includes(masterLayout.overflowY))
+   throw Error('Integrated master panel exceeds viewport '+JSON.stringify(masterLayout));
  await page.reload({waitUntil:'domcontentloaded'});
  await page.waitForSelector('#hd20MasterWorkspace [data-hm-target="integrated-team"]',{timeout:25000});
  if(await page.locator('#hd20MasterWorkspace [data-hm-target]').count()<10)throw Error('Master missing after refresh');
