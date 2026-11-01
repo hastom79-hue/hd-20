@@ -7,7 +7,8 @@ const {chromium}=require('playwright');
   const page=await browser.newPage({viewport:{width:1440,height:900}});
   page.on('dialog',d=>d.dismiss());
   await page.addInitScript(()=>{
-   const month=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit'}).format(new Date());
+   const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit'}).formatToParts(new Date());
+   const month=parts.find(x=>x.type==='year').value+'-'+parts.find(x=>x.type==='month').value;
    const rows=[
     {id:'FILTER-1',source:'테마Audit',auditMonth:month,workplace:'라인A',team:'팀A',themeCategory:'정리',problem:'불용품',status:'진행중',recurrence:false},
     {id:'FILTER-2',source:'테마Audit',auditMonth:month,workplace:'라인B',team:'팀B',themeCategory:'청소',problem:'누유',status:'완료',recurrence:true,recurrenceOfActionId:'OLDER'},
