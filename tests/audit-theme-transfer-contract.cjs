@@ -35,6 +35,8 @@ assert.match(theme,/THEME_COMPLETED_STATUSES.has\(normalizeThemeStatus\(a.status
 assert.match(theme,/recurrence:!!previousCompleted/);
 assert.match(theme,/recurrenceOfActionId:previousCompleted\?\.id/);
 assert.match(theme,/const recurrenceCount=rows.filter/);
+assert.match(theme,/flatMap\(x=>\[monthKey\(x.auditMonth\|\|x.createdAt\|\|x.date\),monthKey\(x.lastAuditMonth\|\|x.lastAuditedAt\)\]\)/);
+assert.match(theme,/const monthAuditIds=themeAuditIdsForMonth\(loadChecks\(\),month\)/);
 assert.match(theme,/rows=Array\.from\(host\.querySelectorAll\('#themeActionTableBody tr'\)\)/);
 assert.doesNotMatch(theme,/rows=\$\('#themeActionTableBody tr',host\)/);
 assert.match(theme,/재발률/);
