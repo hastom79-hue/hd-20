@@ -35,6 +35,8 @@ assert.match(theme,/THEME_COMPLETED_STATUSES.has\(normalizeThemeStatus\(a.status
 assert.match(theme,/recurrence:!!previousCompleted/);
 assert.match(theme,/recurrenceOfActionId:previousCompleted\?\.id/);
 assert.match(theme,/const recurrenceCount=rows.filter/);
+assert.match(theme,/rows=\$\$\('#themeActionTableBody tr',host\)/);
+assert.doesNotMatch(theme,/rows=\$\('#themeActionTableBody tr',host\)/);
 assert.match(theme,/재발률/);
 assert.match(theme,/이전 조치 ID/);
 assert.match(theme,/sourceCaseId:rec\.id/);
