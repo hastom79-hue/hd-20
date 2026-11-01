@@ -1,0 +1,18 @@
+'use strict';
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const source=fs.readFileSync('theme-inspection.js','utf8');
+const start=source.indexOf('const THEME_COMPLETED_STATUSES=');
+const end=source.indexOf('function actionTable(month)',start);
+assert.ok(start>=0&&end>start,'theme action matching helpers must exist');
+const context=vm.createContext({});
+vm.runInContext(source.slice(start,end)+`\nthis.findActive=themeFindActive;this.findPrevious=themeFindPreviousCompleted;`,context,{timeout:1000});
+const issue=(id,status,team='A',completedAt='')=>({id,status,source:'테마Audit',workplace:'L',team,themeCategory:'정리',problem:'[테마 점검] L · 불용품',completedAt});
+const actions=[issue('old','완료','A','2026-09-01'),issue('newer','조치완료','A','2026-10-01'),issue('active','진행 중'),issue('other-team','진행중','B')];
+const args=['L','A','정리','[테마 점검] L · 불용품'];
+assert.equal(context.findActive(actions,...args).id,'active');
+assert.equal(context.findPrevious(actions,...args).id,'newer');
+assert.equal(context.findActive(actions,'L','C',args[2],args[3]),undefined);
+assert.equal(context.findPrevious(actions,'L','B',args[2],args[3]),undefined);
+assert.equal(context.findActive(actions.filter(x=>x.id!=='active'),...args),undefined);
+assert.equal(context.findPrevious(actions.filter(x=>x.id!=='active'),...args).id,'newer');
+console.log('Theme completed recurrence and team-isolated matching PASS');
