@@ -1,6 +1,8 @@
 'use strict';
 const assert=require('node:assert/strict');
 const {chromium}=require('playwright');
+const fs=require('node:fs');
+fs.mkdirSync('artifacts',{recursive:true});
 (async()=>{
  const browser=await chromium.launch({headless:true});
  try{
@@ -29,6 +31,7 @@ const {chromium}=require('playwright');
   assert.equal(compact.lifecycleDiagramCount,0,'redundant six-month workflow diagram removed');
   assert.equal(compact.registrationHeading,'Audit 결과 등록','Audit form heading simplified');
   assert.ok(compact.sixMonthTableCount>=1,'six-month monitoring table preserved');
+  await page.screenshot({path:'artifacts/audit-compact.png',fullPage:false});
 
   // The theme sub-section must remain accessible and must not be hidden by the Audit-only rule.
   await page.evaluate(()=>window.HD20_NAV?.openAuditSection?.('theme'));
@@ -39,8 +42,9 @@ const {chromium}=require('playwright');
   });
   assert.equal(theme.visible,true,'theme workspace must remain visible');
   assert.equal(theme.active,true,'Audit main navigation remains selected');
+  await page.screenshot({path:'artifacts/audit-theme.png',fullPage:false});
   await page.evaluate(()=>window.HD20_NAV?.go?.('dashboard'));
   await page.waitForFunction(()=>document.querySelector('.beginnerNav button[data-key="dashboard"]')?.classList.contains('active'),null,{timeout:15000});
   console.log('AUDIT DUPLICATE HEADER BROWSER PASS');
- }finally{await browser.close()}
+ }catch(error){await page.screenshot({path:'artifacts/audit-failure.png',fullPage:false}).catch(()=>{});throw error}finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exit(1)});
