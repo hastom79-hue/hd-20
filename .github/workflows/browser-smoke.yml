@@ -26,6 +26,8 @@ jobs:
           node --check dashboard-kpi-source.js
       - name: Verify Audit six-month and recurrence contracts
         run: node tests/audit-recurrence-contract.cjs
+      - name: Verify Audit and theme improvement transfer contracts
+        run: node tests/audit-theme-transfer-contract.cjs
       - name: Install Playwright Chromium
         run: |
           npm init -y >/dev/null 2>&1
