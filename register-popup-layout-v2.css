@@ -161,3 +161,40 @@
  #awRegisterModal .hd20RegGroup .hd20PopupSectionTitle span,
  #hd20ActionRegisterModal .hd20RegGroup .hd20PopupSectionTitle span{display:block!important;margin-top:4px!important}
 }
+
+
+/* Requested fixed two-column execution evaluation:
+   column 1: horizontal / horizontal adopted / expand
+   column 2: foolproof / foolproof adopted. */
+#awRegisterModal .hd20EvalPanel .hd20EvalOptions,
+#hd20ActionRegisterModal .hd20EvalPanel .hd20EvalOptions{
+ display:grid!important;
+ grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ grid-template-rows:repeat(3,minmax(50px,auto))!important;
+ grid-auto-flow:row!important;
+ gap:9px 14px!important;
+ align-items:stretch!important;
+}
+#awRegisterModal .hd20EvalPanel .hd20EvalOptions>.hd20EvalChoice,
+#hd20ActionRegisterModal .hd20EvalPanel .hd20EvalOptions>.hd20EvalChoice{
+ width:100%!important;min-width:0!important;
+ margin:0!important;box-sizing:border-box!important;
+ justify-content:flex-start!important;
+ padding:11px 14px!important;text-align:left!important;
+}
+#awRegisterModal .hd20EvalPanel .hd20EvalOptions>.hd20EvalChoice:nth-child(1),
+#hd20ActionRegisterModal .hd20EvalPanel .hd20EvalOptions>.hd20EvalChoice:nth-child(1){grid-column:1!important;grid-row:1!important}
+#awRegisterModal .hd20EvalPanel .hd20EvalOptions>.hd20EvalChoice:nth-child(2),
+#hd20ActionRegisterModal .hd20EvalPanel .hd20EvalOptions>.hd20EvalChoice:nth-child(2){grid-column:1!important;grid-row:2!important}
+#awRegisterModal .hd20EvalPanel .hd20EvalOptions>.hd20EvalChoice:nth-child(3),
+#hd20ActionRegisterModal .hd20EvalPanel .hd20EvalOptions>.hd20EvalChoice:nth-child(3){grid-column:1!important;grid-row:3!important}
+#awRegisterModal .hd20EvalPanel .hd20EvalOptions>.hd20EvalChoice:nth-child(4),
+#hd20ActionRegisterModal .hd20EvalPanel .hd20EvalOptions>.hd20EvalChoice:nth-child(4){grid-column:2!important;grid-row:1!important}
+#awRegisterModal .hd20EvalPanel .hd20EvalOptions>.hd20EvalChoice:nth-child(5),
+#hd20ActionRegisterModal .hd20EvalPanel .hd20EvalOptions>.hd20EvalChoice:nth-child(5){grid-column:2!important;grid-row:2!important}
+@media(max-width:420px){
+ #awRegisterModal .hd20EvalPanel .hd20EvalOptions,
+ #hd20ActionRegisterModal .hd20EvalPanel .hd20EvalOptions{gap:7px!important}
+ #awRegisterModal .hd20EvalPanel .hd20EvalOptions>.hd20EvalChoice,
+ #hd20ActionRegisterModal .hd20EvalPanel .hd20EvalOptions>.hd20EvalChoice{padding:9px 7px!important;font-size:12px!important}
+}
