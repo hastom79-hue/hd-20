@@ -1,0 +1,155 @@
+/* HD-20 | Unified registration dialogs, scoped to the two create forms only.
+   Existing domain fields, approval criteria, visibility permissions and persistence are untouched. */
+#awRegisterModal .awRegisterDialog,
+#hd20ActionRegisterModal .armBox{
+ width:min(1180px,96vw)!important;
+ max-height:min(92dvh,980px)!important;
+ border:1px solid #d5e2eb!important;
+ border-radius:14px!important;
+ overflow-y:auto!important;
+ overflow-x:hidden!important;
+ background:#f6f9fc!important;
+ box-shadow:0 24px 70px rgba(19,46,66,.22)!important;
+ scrollbar-gutter:stable;
+}
+#awRegisterModal .awRegisterTop,
+#hd20ActionRegisterModal .armHead{
+ position:sticky!important;top:0!important;z-index:20!important;
+ padding:16px 22px!important;background:#fff!important;
+ border-bottom:1px solid #d9e5ee!important;min-height:70px;
+ box-shadow:0 2px 8px rgba(35,71,98,.035)!important;
+}
+#awRegisterModal .awRegisterTop h3,
+#hd20ActionRegisterModal .armHead b{
+ font-size:21px!important;font-weight:850!important;letter-spacing:-.4px!important;
+ color:#173c57!important;line-height:1.3!important;
+}
+#awRegisterModal .awRegisterContent,
+#hd20ActionRegisterModal .armBody{
+ padding:17px 22px 24px!important;background:#f6f9fc!important;
+}
+/* Compact reference strip: no copy of previous records, and no duplicate rows */
+#hd20ActionRegisterModal .hd20ActionRecentFirst{
+ background:#f0f6fc!important;border:1px solid #c9dbe9!important;
+ border-left:4px solid #2873a8!important;border-radius:9px!important;
+ padding:12px 16px!important;margin:0 0 15px!important;
+}
+#hd20ActionRegisterModal .hd20ActionRecentFirst>.amHead2{
+ font-size:14px!important;color:#17415d!important;font-weight:850!important;
+ padding:0 0 7px!important;margin:0!important;border:0!important;
+}
+#hd20ActionRegisterModal .hd20ActionRecentFirst .amRecentList{
+ max-height:142px!important;overflow-y:auto!important;font-size:12px!important;
+}
+#awRegisterModal .awRegisterFormCard,
+#hd20ActionRegisterModal .amRegisterFormCard{
+ background:#fff!important;border:1px solid #d7e4ed!important;
+ border-radius:10px!important;padding:18px!important;
+ box-sizing:border-box!important;
+}
+#awRegisterModal .awRegisterFormCard>.awBody,
+#hd20ActionRegisterModal .amRegisterFormCard>.amBody{
+ padding:0!important;
+}
+#awRegisterModal .awForm,
+#hd20ActionRegisterModal .amForm{
+ display:grid!important;
+ grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ gap:13px 18px!important;
+ align-items:start!important;
+}
+#awRegisterModal .awForm>.wide,
+#hd20ActionRegisterModal .amForm>.wide{
+ grid-column:1/-1!important;
+}
+#awRegisterModal .hd20PopupSectionTitle,
+#hd20ActionRegisterModal .hd20PopupSectionTitle{
+ grid-column:1/-1!important;
+ display:flex!important;align-items:baseline!important;
+ justify-content:space-between!important;gap:12px!important;flex-wrap:wrap;
+ border-bottom:1px solid #d9e6ee!important;
+ margin:12px 0 0!important;padding:12px 1px 9px!important;
+ background:transparent!important;
+}
+#awRegisterModal .hd20PopupSectionTitle:first-child,
+#hd20ActionRegisterModal .hd20PopupSectionTitle:first-child{margin-top:0!important;padding-top:0!important}
+#awRegisterModal .hd20PopupSectionTitle strong,
+#hd20ActionRegisterModal .hd20PopupSectionTitle strong{
+ color:#145079!important;font-size:15px!important;font-weight:850!important;
+}
+#awRegisterModal .hd20PopupSectionTitle span,
+#hd20ActionRegisterModal .hd20PopupSectionTitle span{
+ color:#71899b!important;font-size:11px!important;line-height:1.5!important;
+}
+#awRegisterModal .awForm>label,
+#hd20ActionRegisterModal .amForm>label{
+ display:flex!important;flex-direction:column!important;
+ gap:6px!important;min-width:0!important;
+ font-size:12px!important;color:#385970!important;font-weight:800!important;
+}
+#awRegisterModal .awForm label input:not([type=checkbox]):not([type=file]),
+#awRegisterModal .awForm label select,
+#awRegisterModal .awForm label textarea,
+#hd20ActionRegisterModal .amForm label input:not([type=checkbox]):not([type=file]),
+#hd20ActionRegisterModal .amForm label select,
+#hd20ActionRegisterModal .amForm label textarea{
+ box-sizing:border-box!important;width:100%!important;
+ border:1px solid #cbdce8!important;border-radius:7px!important;
+ min-height:39px!important;background:#fff!important;color:#193f59!important;
+ padding:9px 10px!important;font-size:13px!important;
+}
+#awRegisterModal .awForm label textarea,
+#hd20ActionRegisterModal .amForm label textarea{
+ min-height:100px!important;resize:vertical!important;line-height:1.55!important;
+}
+#awRegisterModal .awForm input:focus-visible,
+#awRegisterModal .awForm textarea:focus-visible,
+#awRegisterModal .awForm select:focus-visible,
+#hd20ActionRegisterModal .amForm input:focus-visible,
+#hd20ActionRegisterModal .amForm textarea:focus-visible,
+#hd20ActionRegisterModal .amForm select:focus-visible{
+ outline:2px solid #8ec3e4!important;outline-offset:1px!important;
+}
+#awRegisterModal .awPhoto,
+#hd20ActionRegisterModal .amPhoto{
+ display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:13px!important;
+}
+#awRegisterModal .awDrop,
+#hd20ActionRegisterModal .amDrop{
+ min-width:0!important;min-height:126px!important;border:1px dashed #b8d1e1!important;
+ border-radius:9px!important;background:#f9fcfe!important;
+ padding:13px!important;box-sizing:border-box!important;
+}
+#awRegisterModal .awRecentList{display:none!important}
+#awRegisterModal .hd20EvalPanel,
+#hd20ActionRegisterModal .hd20EvalPanel{
+ grid-column:1/-1!important;border:1px solid #d7e5ed!important;
+ border-radius:9px!important;background:#f8fbfd!important;padding:15px!important;
+}
+#awRegisterModal .hd20ModalTopActions,
+#hd20ActionRegisterModal .hd20ModalTopActions{gap:8px!important}
+#awRegisterModal .hd20ModalBtn,
+#hd20ActionRegisterModal .hd20ModalBtn{
+ min-height:38px!important;border-radius:8px!important;font-weight:800!important;
+}
+#awRegisterModal .hd20ModalBtn.primary,
+#hd20ActionRegisterModal .hd20ModalBtn.primary{
+ background:#1b689f!important;color:white!important;border-color:#1b689f!important;
+}
+/* Keep informative helper notes but prevent them overpowering the form. */
+#awRegisterModal .awRegisterNote,
+#hd20ActionRegisterModal .amRegisterNote,
+#hd20ActionRegisterModal .amBackendNote{
+ font-size:11.5px!important;line-height:1.5!important;
+ border-radius:8px!important;margin-top:12px!important;
+}
+@media(max-width:700px){
+ #awRegisterModal .awRegisterDialog,#hd20ActionRegisterModal .armBox{width:100%!important;max-height:95dvh!important;scrollbar-gutter:auto}
+ #awRegisterModal .awRegisterTop,#hd20ActionRegisterModal .armHead{padding:12px!important;gap:8px!important;flex-wrap:wrap!important}
+ #awRegisterModal .awRegisterContent,#hd20ActionRegisterModal .armBody{padding:10px!important}
+ #awRegisterModal .awRegisterFormCard,#hd20ActionRegisterModal .amRegisterFormCard{padding:12px!important}
+ #awRegisterModal .awForm,#hd20ActionRegisterModal .amForm{grid-template-columns:minmax(0,1fr)!important;gap:10px!important}
+ #awRegisterModal .awPhoto,#hd20ActionRegisterModal .amPhoto{grid-template-columns:minmax(0,1fr)!important}
+ #awRegisterModal .hd20PopupSectionTitle,#hd20ActionRegisterModal .hd20PopupSectionTitle{display:block!important}
+ #awRegisterModal .hd20PopupSectionTitle span,#hd20ActionRegisterModal .hd20PopupSectionTitle span{display:block;margin-top:3px}
+}
