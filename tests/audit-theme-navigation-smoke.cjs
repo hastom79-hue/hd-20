@@ -12,7 +12,7 @@ const {chromium}=require('playwright');
   let v=await state();if(v.area!=='audit'||!v.theme||v.audit||v.action||v.sub!=='theme')throw Error('Theme deep link '+JSON.stringify(v));
   await page.reload({waitUntil:'domcontentloaded'});
   await page.waitForTimeout(2200);v=await state();if(v.area!=='audit'||!v.theme||v.audit||v.action)throw Error('Theme refresh '+JSON.stringify(v));
-  await page.locator('#hd20MergedAuditTabs [data-merged-section="audit"]').first().click();
+  await page.locator('[data-merged-audit-tabs] [data-merged-section="audit"]').first().click();
   await page.waitForTimeout(500);v=await state();if(v.area!=='audit'||!v.audit||v.theme||v.action)throw Error('Audit switch '+JSON.stringify(v));
   await page.evaluate(()=>window.HD20_NAV.go('action'));
   await page.waitForTimeout(500);v=await state();if(v.area!=='action'||!v.action||v.audit||v.theme)throw Error('Standalone Action '+JSON.stringify(v));
