@@ -75,7 +75,7 @@ function themeActionInMonth(a,month,checks){
  return ids.size>0&&checks.some(rec=>ids.has(String(rec.id))&&monthKey(rec.month||rec.auditedAt)===month);
 }
 function actionTable(month){
- const rows=load().filter(x=>themeActionInMonth(x,month,loadChecks())).sort((a,b)=>String(b.lastAuditedAt||b.createdAt||'').localeCompare(String(a.lastAuditedAt||a.createdAt||'')));
+ const checks=loadChecks();const rows=load().filter(x=>themeActionInMonth(x,month,checks)).sort((a,b)=>String(b.lastAuditedAt||b.createdAt||'').localeCompare(String(a.lastAuditedAt||a.createdAt||'')));
  if(!rows.length)return '<div class="themeEmptyNote">선택 월에 연결된 테마점검 개선조치가 없습니다.</div>';
  const recurrenceCount=rows.filter(a=>a.recurrence===true).length;const recurrenceRate=rows.length?((recurrenceCount/rows.length)*100).toFixed(1):'0.0';
  const statuses=[...new Set(rows.map(a=>String(a.status||'미분류')))].sort();
@@ -211,7 +211,7 @@ function render(){
  const auditRows=loadChecks().filter(x=>monthKey(x.month||x.auditedAt)===month);
  const latestAuditByLine=new Map();
  auditRows.forEach(rec=>{const prev=latestAuditByLine.get(rec.line);if(!prev||String(rec.auditedAt||'').localeCompare(String(prev.auditedAt||''))>=0)latestAuditByLine.set(rec.line,rec)});
- const monthActions=load().filter(x=>themeActionInMonth(x,month,loadChecks()));
+ const monthActions=load().filter(x=>themeActionInMonth(x,month,auditRows));
  const lineSummaryRows=LINES.map(ln=>{
    const themes=plannedThemes(month,ln),rec=latestAuditByLine.get(ln),states=Object.values(rec?.states||{});
    const ng=states.filter(v=>v==='미흡').length;
