@@ -375,7 +375,7 @@ function bulkSet(value){
  });
  updateProgress();
 }
-async function saveAudit(){
+async async function saveAudit(){
  const host=document.getElementById('awTheme');if(!host)return;
  const line=host.dataset.line,team=host.dataset.team,month=host.dataset.month;
  const rows=$$('.themeCheckRow',host),states={};
