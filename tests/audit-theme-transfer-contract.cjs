@@ -30,7 +30,7 @@ assert.match(theme,/const previousCompleted=themeFindPreviousCompleted\(actions,
 assert.match(theme,/const normalizeThemeStatus=/);
 assert.match(theme,/THEME_ACTIVE_STATUSES/);
 assert.match(theme,/THEME_COMPLETED_STATUSES/);
-assert.match(theme,/THEME_ACTIVE_STATUSES.has\(normalizeThemeStatus\(a.status\)\)/);
+assert.match(theme,/!THEME_COMPLETED_STATUSES.has\(normalizeThemeStatus\(a.status\)\)/);
 assert.match(theme,/THEME_COMPLETED_STATUSES.has\(normalizeThemeStatus\(a.status\)\)/);
 assert.match(theme,/recurrence:!!previousCompleted/);
 assert.match(theme,/recurrenceOfActionId:previousCompleted\?\.id/);
