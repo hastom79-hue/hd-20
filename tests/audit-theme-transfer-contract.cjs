@@ -1,0 +1,16 @@
+'use strict';
+const fs=require('node:fs'),assert=require('node:assert/strict');
+const audit=fs.readFileSync('audit-closed-loop-workflow.js','utf8');
+const theme=fs.readFileSync('theme-inspection.js','utf8');
+assert.match(audit,/sourceStage:'AUDIT-REQUEST'/);
+assert.match(audit,/sourceCaseId:String\(draw\.id\)/);
+assert.match(audit,/initialAuditor\|\|draw\.auditor/);
+assert.match(audit,/improvementPhoto/);
+assert.match(audit,/acts\.find\(a=>a\.sourceStage==='AUDIT-REQUEST'/);
+assert.match(theme,/sourceStage:'THEME-AUDIT'/);
+assert.match(theme,/sourceCaseId:rec\.id/);
+assert.match(theme,/relatedAuditRecordIds/);
+assert.match(theme,/const dueDate=dueDays===null\?'':addDaysStr\(today\(\),dueDays\)/);
+assert.doesNotMatch(theme,/dueDate:addDaysStr\(today\(\),14\)/);
+assert.match(theme,/hd20-action-updated/);
+console.log('Audit and theme improvement transfer source-contract PASS');
