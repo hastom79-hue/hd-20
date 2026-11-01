@@ -23,6 +23,27 @@ try{
  });
  if(masterLayout.height>masterLayout.viewport||!['auto','scroll'].includes(masterLayout.overflowY))
    throw Error('Integrated master panel exceeds viewport '+JSON.stringify(masterLayout));
+ // Check the actual internal scroll rather than only its CSS declaration.
+ if(masterLayout.scrollHeight>masterLayout.height+2){
+   const scrolled=await page.evaluate(()=>{
+     const panel=document.querySelector('#masterModal .masterInfoBox');
+     panel.scrollTop=Math.min(240,panel.scrollHeight-panel.clientHeight);
+     return {top:panel.scrollTop,documentWidth:document.documentElement.scrollWidth,viewportWidth:innerWidth};
+   });
+   if(scrolled.top<=0)throw Error('Master internal scrolling is blocked '+JSON.stringify(scrolled));
+ }
+ // Responsive regression: master content should remain within the narrow viewport.
+ await page.setViewportSize({width:375,height:812});
+ const mobile=await page.evaluate(()=>{
+   const panel=document.querySelector('#masterModal .masterInfoBox');
+   const rect=panel.getBoundingClientRect();
+   return {panelHeight:rect.height,viewportHeight:innerHeight,overflowY:getComputedStyle(panel).overflowY,
+     panelWidth:rect.width,viewportWidth:innerWidth};
+ });
+ if(mobile.panelHeight>mobile.viewportHeight+2||mobile.panelWidth>mobile.viewportWidth+2||
+    !['auto','scroll'].includes(mobile.overflowY))
+   throw Error('Master mobile viewport overflow '+JSON.stringify(mobile));
+ await page.setViewportSize({width:1440,height:900});
  await page.reload({waitUntil:'domcontentloaded'});
  await page.waitForSelector('#hd20MasterWorkspace [data-hm-target="integrated-team"]',{timeout:25000});
  if(await page.locator('#hd20MasterWorkspace [data-hm-target]').count()<10)throw Error('Master missing after refresh');
