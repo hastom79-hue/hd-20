@@ -51,6 +51,8 @@ jobs:
         run: node tests/theme-action-filters-smoke.cjs
       - name: Verify intermediate-month audit linkage in Chromium
         run: node tests/theme-month-linkage-smoke.cjs
+      - name: Verify theme audit to action lifecycle in Chromium
+        run: node tests/theme-audit-lifecycle-smoke.cjs
       - name: Verify integrated master workspace navigation and refresh
         run: node tests/master-workspace-v2-smoke.cjs
       - name: Execute browser boot and five-area contracts
