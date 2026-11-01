@@ -99,7 +99,14 @@ function newId(prefix){const id=window.crypto&&typeof window.crypto.randomUUID==
 function formatAuditDate(value){if(!value)return'—';const d=new Date(value);if(Number.isNaN(d.getTime()))return esc(value);return new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',year:'2-digit',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).format(d)}
 function css(){if(document.getElementById('hd20ThemeStyle'))return;const s=document.createElement('style');s.id='hd20ThemeStyle';
  s.textContent=`
- #awTheme{padding-bottom:20px}
+ #awTheme{padding-bottom:20px;min-height:0;max-width:100%;overflow-x:hidden}
+ #awTheme .themePanel[hidden]{display:none!important}
+ #awTheme .themePanel{min-height:0;max-width:100%}
+ #awTheme .themeLineSummary{min-width:0;max-width:100%;overflow-x:auto}
+ #awTheme .themeLineSummaryBody{min-height:0}
+ #awTheme .themePageControls{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin:10px 0 0;color:#536d81;font-size:12px}
+ #awTheme .themePageControls button{padding:6px 12px;border:1px solid #c8d9e5;border-radius:7px;background:#fff;color:#24445c;cursor:pointer}
+ #awTheme .themePageControls button:disabled{opacity:.4;cursor:default}
  #awTheme .awHero{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap}
  #awTheme .themeSubtitle{color:#5c7489;font-size:13px;margin-top:4px}
  #awTheme .themeOwner{display:inline-block;margin-top:6px;padding:3px 10px;border-radius:999px;background:#eef4fb;color:#2c5f8a;font-size:12px;font-weight:700}
@@ -211,11 +218,13 @@ function render(){
  const monthOpts=monthOptions();
  const view=host.dataset.view||'plan';host.dataset.view=view;
  const planThemes=plannedThemes(month,line);
+ const pageSize=10,totalPages=Math.max(1,Math.ceil(LINES.length/pageSize));
+ const page=Math.min(Math.max(0,Number(host.dataset.planPage)||0),totalPages-1);host.dataset.planPage=String(page);
  const auditRows=loadChecks().filter(x=>monthKey(x.month||x.auditedAt)===month);
  const latestAuditByLine=new Map();
  auditRows.forEach(rec=>{const prev=latestAuditByLine.get(rec.line);if(!prev||String(rec.auditedAt||'').localeCompare(String(prev.auditedAt||''))>=0)latestAuditByLine.set(rec.line,rec)});
  const monthAuditIds=themeAuditIdsForMonth(auditRows,month);const monthActions=load().filter(x=>themeActionInMonth(x,month,monthAuditIds));
- const lineSummaryRows=LINES.map(ln=>{
+ const lineSummaryRows=LINES.slice(page*pageSize,(page+1)*pageSize).map(ln=>{
    const themes=plannedThemes(month,ln),rec=latestAuditByLine.get(ln),states=Object.values(rec?.states||{});
    const ng=states.filter(v=>v==='미흡').length;
    const actionCount=monthActions.filter(a=>a.workplace===ln).length;
@@ -248,6 +257,7 @@ function render(){
    <div class="themeLineSummaryHead"><span>라인 / 구역</span><span>계획된 취약 테마</span><span>최근 점검</span><span>미흡</span><span>연계 조치</span><span></span></div>
    <div class="themeLineSummaryBody">${lineSummaryRows}</div>
  </div>
+ <div class="themePageControls" aria-label="라인별 점검현황 페이지"><span>전체 ${LINES.length}개 라인 · ${page+1}/${totalPages} 페이지 (페이지당 최대 ${pageSize}개)</span><button type="button" data-theme-page="-1" ${page===0?'disabled':''}>이전</button><button type="button" data-theme-page="1" ${page===totalPages-1?'disabled':''}>다음</button></div>
  <div class="themeSummaryFoot">라인을 선택하면 해당 라인의 현장점검 화면으로 이동합니다. 점검계획이 없는 라인은 먼저 계획을 저장해야 Audit 결과를 등록할 수 있습니다.</div> </section>
  <section class="themePanel" data-theme-panel="history" ${view==='history'?'':'hidden'}><div class="themeHistoryBox"><div class="themeSectionHead" style="margin-top:0"><h3>최근 점검 이력</h3><small>선택 월의 점검 회차·미흡 건수·연계 조치를 확인합니다</small></div>${historyTable(month)}</div></section>
  <section class="themePanel" data-theme-panel="audit" ${view==='audit'?'':'hidden'}><div class="themeAuditBox" id="themeAuditBox">
@@ -271,6 +281,7 @@ function render(){
   const actionSearch=$('#themeActionSearch',host),actionStatus=$('#themeActionStatus',host),actionRecurrence=$('#themeActionRecurrence',host);
   const filterActions=()=>{const query=(actionSearch?.value||'').trim().toLocaleLowerCase(),status=actionStatus?.value||'',rows=Array.from(host.querySelectorAll('#themeActionTableBody tr'));let shown=0;rows.forEach(row=>{const visible=(!query||(row.dataset.search||'').includes(query))&&(!status||row.dataset.status===status)&&(!actionRecurrence?.value||row.dataset.recurrence===actionRecurrence.value);row.hidden=!visible;if(visible)shown++});const count=$('#themeActionCount',host);if(count)count.textContent='표시 '+shown+'/'+rows.length+'건';const empty=$('#themeActionNoResults',host);if(empty)empty.hidden=shown>0};
   actionSearch?.addEventListener('input',filterActions);actionStatus?.addEventListener('change',filterActions);actionRecurrence?.addEventListener('change',filterActions);
+ Array.from(host.querySelectorAll('[data-theme-page]')).forEach(btn=>btn.addEventListener('click',()=>{host.dataset.planPage=String(Math.min(totalPages-1,Math.max(0,page+Number(btn.dataset.themePage))));render()}));
  Array.from(host.querySelectorAll('[data-theme-view]')).forEach(btn=>btn.addEventListener('click',()=>{host.dataset.view=btn.dataset.themeView;render()}));
  $('#themePlanLineSel',host).addEventListener('change',e=>{host.dataset.line=e.target.value;host.dataset.team=LINE_DEFAULT_TEAM[e.target.value]||host.dataset.team;render()});
  Array.from(host.querySelectorAll('input[name="themePlanTheme"]')).forEach(box=>box.addEventListener('change',()=>{const n=host.querySelectorAll('input[name="themePlanTheme"]:checked').length;const count=$('#themePlanCount',host);if(count)count.textContent=n}));
