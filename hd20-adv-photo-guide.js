@@ -95,9 +95,11 @@ const sourceNotice=document.createElement('p');
 sourceNotice.style.cssText='margin:10px 0 0;font-size:11px;color:#856129;line-height:1.6';
 sourceNotice.textContent='현재 가이드 사진은 등록한 브라우저에만 저장됩니다. 전체 사용자 공유에는 별도 공용 저장소 연동이 필요합니다.';
 guideUploader.appendChild(sourceNotice);
-const guideTextBoxes=evidenceRoot.querySelectorAll('div');
-const guideTextAnchor=[...guideTextBoxes].find(el=>el.textContent?.trim().startsWith('BEFORE 사진 가이드'));
-if(guideTextAnchor?.parentElement)guideTextAnchor.parentElement.before(guideUploader);
+// Insert strictly INSIDE the dialog section. Previous parentElement.before()
+// could insert next to the dialog itself, causing a floating second panel.
+const recognitionHeading=[...evidenceRoot.querySelectorAll('h4')]
+  .find(el=>el.textContent?.includes('인정 곤란 사례'));
+if(recognitionHeading)recognitionHeading.before(guideUploader);
 else evidenceRoot.appendChild(guideUploader);
 
 const evidence=document.createElement('div');
@@ -193,6 +195,8 @@ for(const kind of ['before','after']){
  evidence.appendChild(cell);
 }
 evidenceRoot.appendChild(evidence);
+// Keep the entire guide inside a single scrolled dialog with no sibling panels.
+if(guideUploader.parentElement!==evidenceRoot)evidenceRoot.appendChild(guideUploader);
 overlay.querySelector('[data-guide-close]').onclick=close;
 overlay.querySelectorAll('[data-guide-tab]').forEach(b=>b.onclick=()=>open(Number(b.dataset.guideTab)));
 overlay.querySelector('[data-guide-close]')?.focus();
