@@ -1,5 +1,5 @@
 /* HD-20 master workspace v2 — preserve canonical editors and storage */
-#masterModal .masterInfoBox{display:flex!important;flex-direction:column!important;grid-template-columns:none!important;max-width:1480px!important;max-height:none!important;overflow:visible!important;background:#f5f8fb!important}
+#masterModal .masterInfoBox{display:flex!important;flex-direction:column!important;grid-template-columns:none!important;max-width:1480px!important;max-height:calc(100vh - 32px)!important;max-height:calc(100dvh - 32px)!important;overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior:contain;background:#f5f8fb!important}
 #masterModal .masterInfoBox>.modalHead{display:none!important}
 #masterModal #hd20MasterWorkspace{padding:24px 28px 18px;background:#fff;border-bottom:1px solid #dce6ee}
 #masterModal .hmTitle{display:flex;align-items:center;justify-content:space-between;gap:16px}
