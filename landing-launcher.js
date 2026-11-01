@@ -66,29 +66,20 @@ function hideOverview(){document.body.classList.remove('hd20InquiryActive');cons
 function navigate(area){
  if(area==='activity'||area==='action')internalRegistrationNavigation=true;
  hideOverview();
- // Only the registration-launch path opts out of synchronous full-app refresh.
- // The normal main navigation remains unchanged.
- window.__HD20_FAST_REGISTER_NAV=area;
- try{
-   if(window.HD20_NAV?.go)window.HD20_NAV.go(area);
-   else document.querySelector('.beginnerNav button[data-key="'+area+'"]')?.click();
- }finally{window.__HD20_FAST_REGISTER_NAV=null}
+ if(window.HD20_NAV?.go)window.HD20_NAV.go(area);
+ else document.querySelector('.beginnerNav button[data-key="'+area+'"]')?.click();
 }
 function goActivityRegister(){
  if(internalRegistrationNavigation)return;
  internalRegistrationNavigation=true;
- const start=performance.now();
  close();navigate('activity');
- clickWhenReady(()=>document.querySelector('#awActivity [data-aw="new"]'),'awRegisterModal','activity');
- window.HD20_POPUP_DIAGNOSTICS={area:'activity',navigationMs:Math.round(performance.now()-start)};
+ setTimeout(()=>clickWhenReady(()=>document.querySelector('#awActivity [data-aw="new"]'),'awRegisterModal','activity'),0);
 }
 function goActionRegister(){
  if(internalRegistrationNavigation)return;
  internalRegistrationNavigation=true;
- const start=performance.now();
  close();navigate('action');
- clickWhenReady(()=>document.getElementById('hd20ActionRegisterBtn'),'hd20ActionRegisterModal','action');
- window.HD20_POPUP_DIAGNOSTICS={area:'action',navigationMs:Math.round(performance.now()-start)};
+ setTimeout(()=>clickWhenReady(()=>document.getElementById('hd20ActionRegisterBtn'),'hd20ActionRegisterModal','action'),0);
 }
 function getRows(key){try{const a=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(a)?a:[]}catch{return[]}}
 function sourceRows(){
