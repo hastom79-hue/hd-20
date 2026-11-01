@@ -31,6 +31,8 @@ jobs:
         run: node tests/audit-theme-transfer-contract.cjs
       - name: Execute theme status classification cases
         run: node tests/theme-status-classification.cjs
+      - name: Execute theme recurrence matching cases
+        run: node tests/theme-recurrence-matching.cjs
       - name: Install Playwright Chromium
         run: |
           npm init -y >/dev/null 2>&1
