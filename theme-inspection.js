@@ -154,7 +154,7 @@ function css(){if(document.getElementById('hd20ThemeStyle'))return;const s=docum
  `;document.head.appendChild(s);
 }
 function monthOptions(){
- const actionMonths=load().filter(x=>x.source==='테마Audit').map(x=>monthKey(x.auditMonth||x.createdAt||x.date));
+ const actionMonths=load().filter(x=>x.source==='테마Audit').flatMap(x=>[monthKey(x.auditMonth||x.createdAt||x.date),monthKey(x.lastAuditMonth||x.lastAuditedAt)]);
  const auditMonths=loadChecks().map(x=>monthKey(x.month||x.auditedAt));
  const planMonths=loadPlans().map(x=>monthKey(x.month));
  const set=new Set([...actionMonths,...auditMonths,...planMonths].filter(Boolean));
