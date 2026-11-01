@@ -35,6 +35,7 @@ function open(index=0){
 // case satisfying the currently viewed criterion. Never substitute examples.
 // Reference guide images are independent from improvement-case evidence.
 // All six examples need authorized, real source photos; none are fabricated.
+const evidenceRoot=overlay.querySelector('section');
 const GUIDE_KEY='hd20AdvGuideReferencePhotosV1';
 const loadGuide=()=>{try{const x=JSON.parse(localStorage.getItem(GUIDE_KEY)||'{}');return x&&typeof x==='object'?x:{}}catch{return{}}};
 const guideImages=loadGuide();
@@ -98,7 +99,7 @@ const guideTextBoxes=evidenceRoot.querySelectorAll('div');
 const guideTextAnchor=[...guideTextBoxes].find(el=>el.textContent?.trim().startsWith('BEFORE 사진 가이드'));
 if(guideTextAnchor?.parentElement)guideTextAnchor.parentElement.before(guideUploader);
 else evidenceRoot.appendChild(guideUploader);
-const evidenceRoot=overlay.querySelector('section');
+
 const evidence=document.createElement('div');
 evidence.id='hd20AdvGuideEvidence';
 evidence.style.cssText='margin:16px 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px';
