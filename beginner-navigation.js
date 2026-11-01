@@ -56,23 +56,7 @@ function scheduleAreaReconcile(){
  setTimeout(reconcileVisibleArea,450);
  setTimeout(reconcileVisibleArea,1800);
 }
-function syncNav(nav,key){
- activeKey=key;navGeneration++;
- nav.querySelectorAll('button[data-key]').forEach(b=>b.classList.toggle('active',b.dataset.key===key));
- // Popup launches should not synchronously dispatch an expensive full-app refresh
- // before the small registration dialog can be painted. Only defer on this route.
- if(window.__HD20_FAST_REGISTER_NAV===key){
-   const generation=navGeneration;
-   requestAnimationFrame(()=>requestAnimationFrame(()=>{
-     if(generation!==navGeneration)return;
-     window.dispatchEvent(new CustomEvent('hd20-nav-area-changed',{detail:{area:key}}));
-     scheduleAreaReconcile();
-   }));
-   return;
- }
- window.dispatchEvent(new CustomEvent('hd20-nav-area-changed',{detail:{area:key}}));
- scheduleAreaReconcile();
-}
+function syncNav(nav,key){activeKey=key;navGeneration++;nav.querySelectorAll('button[data-key]').forEach(b=>b.classList.toggle('active',b.dataset.key===key));window.dispatchEvent(new CustomEvent('hd20-nav-area-changed',{detail:{area:key}}));scheduleAreaReconcile()}
 function syncMergedSwitch(key){}
 function openScreen(id){
  const el=document.getElementById(id);if(!el)return false;
