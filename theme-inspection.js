@@ -104,6 +104,13 @@ function css(){if(document.getElementById('hd20ThemeStyle'))return;const s=docum
  #awTheme .themePanel{min-height:0;max-width:100%}
  #awTheme .themeLineSummary{min-width:0;max-width:100%;overflow-x:auto}
  #awTheme .themeLineSummaryBody{min-height:0}
+ #awTheme .themeLineSummaryHead,#awTheme .themeLineSummaryRow{min-width:840px;box-sizing:border-box}
+ #awTheme .themeLineSummaryRow{min-height:46px;max-height:120px;overflow:hidden}
+ #awTheme .themeLineChips{display:flex;flex-wrap:wrap;gap:4px;max-height:76px;overflow:hidden}
+ #awTheme .themeLineName{overflow-wrap:anywhere}
+ #awTheme .themePlanBox,#awTheme .themeLineSummary,#awTheme .themeSummaryFoot{box-sizing:border-box}
+ #awTheme .themePlanChoices{display:flex;flex-wrap:wrap;gap:8px;max-width:100%}
+ #awTheme .themePlanChoices label{max-width:100%;overflow-wrap:anywhere}
  #awTheme .themePageControls{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin:10px 0 0;color:#536d81;font-size:12px}
  #awTheme .themePageControls button{padding:6px 12px;border:1px solid #c8d9e5;border-radius:7px;background:#fff;color:#24445c;cursor:pointer}
  #awTheme .themePageControls button:disabled{opacity:.4;cursor:default}
