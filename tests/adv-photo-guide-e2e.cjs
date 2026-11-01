@@ -49,6 +49,10 @@ const assert = require('node:assert/strict');
    assert.equal(await dialog.locator('[data-guide-tab]').count(),3,'guide must expose three requirement tabs');
    assert.equal(await dialog.getByText('BEFORE 사진 가이드').count(),1);
    assert.equal(await dialog.getByText('AFTER 사진 가이드').count(),1);
+   assert.equal(await dialog.locator('#hd20AdvGuidePhotoReference').count(),1,
+     'independent photo guide section must always be visible');
+   assert.equal(await dialog.locator('#hd20AdvGuidePhotoReference img').count(),0,
+     'never fabricate photographic references when none are registered');
    const imageCount=await dialog.locator('#hd20AdvGuideEvidence img').count();
    assert.equal(imageCount,2,ln+' should show real stored before/after case photographs for criterion one');
    assert.match(await dialog.locator('#hd20AdvGuideEvidence').innerText(),/GUIDE-TEST-EVIDENCE-1/,
