@@ -27,11 +27,13 @@ const {chromium}=require('playwright');
   await page.waitForSelector('#awTheme .themeCheckRow',{timeout:15000});
   const photo={name:'audit.png',mimeType:'image/png',buffer:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/qN8AAAAASUVORK5CYII=','base64')};
   const submit=async()=>{
+   const before=await page.evaluate(()=>JSON.parse(localStorage.getItem('hd20ThemeAuditChecksV1')||'[]').filter(x=>x.line==='TEST-LINE').length);
    await page.locator('#themeBulkAllOk').click();
    await page.locator('#awTheme .themeCheckRow').first().locator('[data-v="미흡"]').click();
    await page.locator('#themeAuditAuditor').fill('E2E 점검자');
    await page.locator('#themeAuditPhoto').setInputFiles(photo);
    await page.locator('#themeSaveBtn').click();
+   await page.waitForFunction(expected=>JSON.parse(localStorage.getItem('hd20ThemeAuditChecksV1')||'[]').filter(x=>x.line==='TEST-LINE').length===expected,before+1,{timeout:15000});
    await page.waitForFunction(()=>document.querySelector('#themeSaveResult')?.textContent?.includes('점검 이력 저장 완료'),null,{timeout:15000});
   };
   await submit();
