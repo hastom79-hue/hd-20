@@ -261,7 +261,7 @@ function render(){
  $('#themeMonthSel',host).addEventListener('change',e=>{host.dataset.month=e.target.value;render()});
   const actionSearch=$('#themeActionSearch',host),actionStatus=$('#themeActionStatus',host),actionRecurrence=$('#themeActionRecurrence',host);
   const filterActions=()=>{const query=(actionSearch?.value||'').trim().toLocaleLowerCase(),status=actionStatus?.value||'',rows=$('#themeActionTableBody tr',host);let shown=0;rows.forEach(row=>{const visible=(!query||(row.dataset.search||'').includes(query))&&(!status||row.dataset.status===status)&&(!actionRecurrence?.value||row.dataset.recurrence===actionRecurrence.value);row.hidden=!visible;if(visible)shown++});const count=$('#themeActionCount',host);if(count)count.textContent='표시 '+shown+'/'+rows.length+'건';const empty=$('#themeActionNoResults',host);if(empty)empty.hidden=shown>0};
-  actionSearch?.addEventListener('input',filterActions);actionStatus?.addEventListener('change',filterActions);
+  actionSearch?.addEventListener('input',filterActions);actionStatus?.addEventListener('change',filterActions);actionRecurrence?.addEventListener('change',filterActions);
  Array.from(host.querySelectorAll('[data-theme-view]')).forEach(btn=>btn.addEventListener('click',()=>{host.dataset.view=btn.dataset.themeView;render()}));
  $('#themePlanLineSel',host).addEventListener('change',e=>{host.dataset.line=e.target.value;host.dataset.team=LINE_DEFAULT_TEAM[e.target.value]||host.dataset.team;render()});
  Array.from(host.querySelectorAll('input[name="themePlanTheme"]')).forEach(box=>box.addEventListener('change',()=>{const n=host.querySelectorAll('input[name="themePlanTheme"]:checked').length;const count=$('#themePlanCount',host);if(count)count.textContent=n}));
