@@ -32,6 +32,16 @@ const {chromium}=require('playwright');
    await page.locator('#awTheme [data-theme-page="-1"]').click();
    assert.equal((await metrics()).page,first.page,'previous page returns to first');
   }
+  // Regression: switching to Audit and returning to theme must not create an endless page.
+  await page.evaluate(()=>window.HD20_NAV?.openAuditSection?.('audit'));
+  await page.waitForFunction(()=>new URLSearchParams(location.search).get('sub')==='audit',null,{timeout:15000});
+  await page.evaluate(()=>window.HD20_NAV?.openAuditSection?.('theme'));
+  await page.waitForFunction(()=>new URLSearchParams(location.search).get('sub')==='theme',null,{timeout:15000});
+  await page.evaluate(()=>document.querySelector('#awTheme [data-theme-view="plan"]')?.click());
+  const returned=await metrics();
+  assert.equal(returned.visiblePanels,1,'only one theme panel visible after Audit round trip');
+  assert.ok(returned.rows<=10&&returned.hostHeight<5000&&returned.pageHeight<12000,
+    'Audit round trip must preserve bounded theme layout');
   await page.reload({waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>window.HD20_NAV?.ready?.()&&document.querySelector('#awTheme [data-theme-view="plan"]'),null,{timeout:25000});
   await page.evaluate(()=>{document.getElementById('hd20Launcher')?.remove();document.querySelector('#awTheme [data-theme-view="plan"]')?.click()});
