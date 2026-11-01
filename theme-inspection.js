@@ -65,6 +65,9 @@ function plannedThemes(month,line){
 const THEME_COMPLETED_STATUSES=new Set(['완료','조치완료','개선완료','종결','종료','유지점검완료','효과검증완료']);
 const THEME_ACTIVE_STATUSES=new Set(['조치대기','미착수','진행중','기한경과','보완요청','조치중','효과검증대기']);
 const normalizeThemeStatus=v=>String(v??'').replace(/\s+/g,'').trim();
+function themeSameIssue(a,line,team,cat,problem){return a.source==='테마Audit'&&a.workplace===line&&a.team===team&&a.themeCategory===cat&&a.problem===problem}
+function themeFindActive(actions,line,team,cat,problem){return actions.find(a=>themeSameIssue(a,line,team,cat,problem)&&THEME_ACTIVE_STATUSES.has(normalizeThemeStatus(a.status)))}
+function themeFindPreviousCompleted(actions,line,team,cat,problem){return actions.filter(a=>themeSameIssue(a,line,team,cat,problem)&&THEME_COMPLETED_STATUSES.has(normalizeThemeStatus(a.status))).sort((a,b)=>String(b.completedAt||b.updatedAt||b.createdAt||'').localeCompare(String(a.completedAt||a.updatedAt||a.createdAt||'')))[0]}
 function actionTable(month){
  const rows=load().filter(x=>x.source==='테마Audit'&&(monthKey(x.auditMonth||x.createdAt||x.date)===month||monthKey(x.lastAuditMonth||x.lastAuditedAt)===month)).sort((a,b)=>String(b.lastAuditedAt||b.createdAt||'').localeCompare(String(a.lastAuditedAt||a.createdAt||'')));
  if(!rows.length)return '<div class="themeEmptyNote">선택 월에 연결된 테마점검 개선조치가 없습니다.</div>';
@@ -376,11 +379,10 @@ async function saveAudit(){
  checks.push(rec);
  if(!saveChecks(checks)){alert('점검 결과를 저장하지 못했습니다. 브라우저 저장공간을 확인한 뒤 다시 시도해 주세요.');return}
  const ngItems=rows.filter(row=>states[row.dataset.key]==='미흡'),actions=load(),originalActions=JSON.stringify(actions);
- const activeStatuses=THEME_ACTIVE_STATUSES;
  const linkedActionIds=[],createdActionIds=[],reusedActionIds=[];
  ngItems.forEach(row=>{
    const cat=row.dataset.cat,item=row.dataset.item,problem='[테마 점검] '+line+' · '+item;
-   const dup=actions.find(a=>a.source==='테마Audit'&&a.workplace===line&&a.team===team&&a.themeCategory===cat&&a.problem===problem&&activeStatuses.has(normalizeThemeStatus(a.status)));
+   const dup=themeFindActive(actions,line,team,cat,problem);
    if(dup){
      const related=Array.isArray(dup.relatedAuditRecordIds)?dup.relatedAuditRecordIds.slice():[dup.auditRecordId].filter(Boolean);
      if(!related.includes(rec.id))related.push(rec.id);
@@ -398,8 +400,7 @@ async function saveAudit(){
      linkedActionIds.push(dup.id);reusedActionIds.push(dup.id);
      return;
    }
-   const completedStatuses=THEME_COMPLETED_STATUSES;
-   const previousCompleted=actions.filter(a=>a.source==='테마Audit'&&a.workplace===line&&a.team===team&&a.themeCategory===cat&&a.problem===problem&&completedStatuses.has(normalizeThemeStatus(a.status))).sort((a,b)=>String(b.completedAt||b.updatedAt||b.createdAt||'').localeCompare(String(a.completedAt||a.updatedAt||a.createdAt||'')))[0];
+   const previousCompleted=themeFindPreviousCompleted(actions,line,team,cat,problem);
    const actionId=newId('THEME');
    actions.unshift({
      id:actionId,source:'테마Audit',team,auditMonth:month,workplace:line,themeCategory:cat,type:cat,problem,recurrence:!!previousCompleted,recurrenceOfActionId:previousCompleted?.id||'',recurrenceDetectedAt:previousCompleted?rec.auditedAt:'',
