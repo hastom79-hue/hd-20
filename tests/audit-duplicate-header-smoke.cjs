@@ -44,6 +44,21 @@ fs.mkdirSync('artifacts',{recursive:true});
   assert.equal(theme.visible,true,'theme workspace must remain visible');
   assert.equal(theme.active,true,'Audit main navigation remains selected');
   await page.screenshot({path:'artifacts/audit-theme.png',fullPage:false});
+  // Switching back must not resurrect duplicate Audit headers or lose retention content.
+  await page.evaluate(()=>window.HD20_NAV?.openAuditSection?.('audit'));
+  await page.waitForFunction(()=>new URLSearchParams(location.search).get('sub')==='audit',null,{timeout:15000});
+  const returned=await page.evaluate(()=>{
+    const visible=el=>!!el&&getComputedStyle(el).display!=='none';
+    return {
+      duplicateBanner:visible(document.querySelector('#hd20PurposePanel[data-contract="audit.draw"]')),
+      duplicateHero:visible(document.querySelector('#awAudit>.awHero')),
+      sixMonthTable:!!document.querySelector('#awAudit .audit6m table')
+    };
+  });
+  assert.equal(returned.duplicateBanner,false,'Audit duplicate banner must remain hidden after theme return');
+  assert.equal(returned.duplicateHero,false,'Audit duplicate hero must remain hidden after theme return');
+  assert.ok(returned.sixMonthTable,'Audit six-month table must remain mounted after theme return');
+  await page.screenshot({path:'artifacts/audit-return.png',fullPage:false});
   await page.evaluate(()=>window.HD20_NAV?.go?.('dashboard'));
   await page.waitForFunction(()=>document.querySelector('.beginnerNav button[data-key="dashboard"]')?.classList.contains('active'),null,{timeout:15000});
   console.log('AUDIT DUPLICATE HEADER BROWSER PASS');
