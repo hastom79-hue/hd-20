@@ -45,6 +45,8 @@ jobs:
           cat /tmp/hd20-http.log; exit 1
       - name: Verify Audit theme merged navigation and standalone Action
         run: node tests/audit-theme-navigation-smoke.cjs
+      - name: Verify theme action combined filters in Chromium
+        run: node tests/theme-action-filters-smoke.cjs
       - name: Verify integrated master workspace navigation and refresh
         run: node tests/master-workspace-v2-smoke.cjs
       - name: Execute browser boot and five-area contracts
