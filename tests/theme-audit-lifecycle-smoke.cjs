@@ -55,6 +55,33 @@ const {chromium}=require('playwright');
   assert.ok(recurring,'recurrence flag');
   assert.equal(recurring.recurrenceOfActionId,state.actions.find(x=>x.status==='완료').id);
   assert.equal(state.audits.length,3);
+  // Bidirectional linkage: every audit references its action, and every action references its audits.
+  const verifyLinks=(data)=>{
+   const actionById=new Map(data.actions.map(a=>[a.id,a]));
+   const auditById=new Map(data.audits.map(a=>[a.id,a]));
+   for(const audit of data.audits){
+    assert.equal(audit.linkedActionIds.length,1,'each NG audit links exactly one action');
+    const action=actionById.get(audit.linkedActionIds[0]);
+    assert.ok(action,'audit references an existing action');
+    assert.ok(action.relatedAuditRecordIds.includes(audit.id),'action links back to audit');
+    assert.equal(action.initialAuditor,'E2E 점검자','original auditor preserved');
+   }
+   for(const action of data.actions){
+    for(const auditId of action.relatedAuditRecordIds){
+     assert.ok(auditById.has(auditId),'action references an existing audit');
+     assert.ok(auditById.get(auditId).linkedActionIds.includes(action.id),'audit links back to action');
+    }
+   }
+  };
+  verifyLinks(state);
+  assert.equal(state.audits.filter(x=>x.createdActionIds.length===1).length,2,'first and recurrent audits create actions');
+  assert.equal(state.audits.filter(x=>x.reusedActionIds.length===1).length,1,'second audit reuses action');
+  await page.reload({waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>window.HD20_NAV?.ready?.()&&document.querySelector('#awTheme [data-theme-view="audit"]'),null,{timeout:25000});
+  state=await page.evaluate(()=>({actions:JSON.parse(localStorage.getItem('hd20ActionCasesV2')||'[]').filter(x=>x.source==='테마Audit'&&x.workplace==='TEST-LINE'),audits:JSON.parse(localStorage.getItem('hd20ThemeAuditChecksV1')||'[]').filter(x=>x.line==='TEST-LINE')}));
+  assert.equal(state.actions.length,2,'two actions persist after refresh');
+  assert.equal(state.audits.length,3,'three audit records persist after refresh');
+  verifyLinks(state);
   console.log('THEME AUDIT ACTION LIFECYCLE BROWSER PASS');
  }finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exit(1)});
