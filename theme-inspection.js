@@ -402,6 +402,7 @@ function saveAudit(){
  }
  const savedChecks=loadChecks(),savedRec=savedChecks.find(x=>x.id===rec.id);
  if(savedRec){Object.assign(savedRec,{linkedActionIds:rec.linkedActionIds,createdActionIds:createdActionIds,reusedActionIds:reusedActionIds,linkedAt:rec.linkedAt,ngCount:rec.ngCount});if(!saveChecks(savedChecks))console.error('[HD20 Theme] audit-to-action link metadata could not be saved',rec.id)}
+ window.dispatchEvent(new CustomEvent('hd20-action-updated',{detail:{added:createdActionIds.length,reused:reusedActionIds.length,source:'theme-audit',auditRecordId:rec.id}}));
  window.dispatchEvent(new CustomEvent('hd20-activity-updated',{detail:{source:'테마Audit',auditRecordId:rec.id}}));
  window.dispatchEvent(new CustomEvent('hd20-theme-audit-updated',{detail:{auditRecordId:rec.id,line,month}}));
  const msg='점검 이력 저장 완료 · 미흡 '+ngItems.length+'건 · 신규 개선조치 '+createdActionIds.length+'건 · 기존 미완료 조치 재연계 '+reusedActionIds.length+'건';
