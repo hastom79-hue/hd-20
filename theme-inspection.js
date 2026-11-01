@@ -265,7 +265,12 @@ function render(){
  $('#themeSavePlanBtn',host).addEventListener('click',()=>{const selected=Array.from(host.querySelectorAll('input[name="themePlanTheme"]:checked')).map(x=>x.value);if(!selected.length){alert('최소 1개 이상의 취약 테마를 선택해 주세요.');return}const plans=loadPlans(),entry={month,line:host.dataset.line,themes:selected,updatedAt:new Date().toISOString()};const i=plans.findIndex(x=>x.month===month&&x.line===host.dataset.line);if(i>=0)plans[i]=entry;else plans.push(entry);if(!savePlans(plans)){alert('점검계획 저장에 실패했습니다. 저장공간을 확인해 주세요.');return}render()});
  $('#themeLineSel',host).addEventListener('change',e=>{host.dataset.line=e.target.value;host.dataset.team=LINE_DEFAULT_TEAM[e.target.value]||host.dataset.team;render()});
  $('#themeTeamSel',host).addEventListener('change',e=>{host.dataset.team=e.target.value});
- $('#themeSaveBtn',host).addEventListener('click',saveAudit);
+ $('#themeSaveBtn',host).addEventListener('click',async e=>{
+   const button=e.currentTarget;
+   if(button.dataset.saving==='true')return;
+   button.dataset.saving='true';button.disabled=true;
+   try{await saveAudit()}catch(error){console.error('[HD20 Theme] unexpected audit save error',error);alert('점검 저장 중 오류가 발생했습니다. 저장 결과를 확인한 뒤 다시 시도해 주세요.')}finally{button.dataset.saving='false';button.disabled=false}
+ });
  $('#themeBulkAllOk',host).addEventListener('click',()=>bulkSet('적합'));
  $('#themeLoadPrevious',host).addEventListener('click',loadPreviousJudgements);
   $('#themeBulkClear',host).addEventListener('click',()=>{bulkSet('');const note=$('#themePreviousNote',host);if(note)note.textContent='새 회차 입력 상태로 초기화했습니다.'});
