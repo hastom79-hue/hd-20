@@ -16,4 +16,7 @@ assert.match(theme,/relatedAuditRecordIds/);
 assert.match(theme,/const dueDate=dueDays===null\?'':addDaysStr\(today\(\),dueDays\)/);
 assert.doesNotMatch(theme,/dueDate:addDaysStr\(today\(\),14\)/);
 assert.match(theme,/hd20-action-updated/);
+assert.match(theme,/originalActions=JSON.stringify\(actions\)/);
+assert.match(theme,/saveChecks\(checks.filter\(x=>x.id!==rec.id\)\)/);
+assert.match(theme,/localStorage.setItem\(ACT_KEY,originalActions\)/);
 console.log('Audit and theme improvement transfer source-contract PASS');
