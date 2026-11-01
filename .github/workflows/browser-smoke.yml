@@ -22,6 +22,7 @@ jobs:
           node --check audit-close-evaluation.js
           node --check audit-six-month-control.js
           node --check audit-closed-loop-workflow.js
+          node --check theme-inspection.js
           node --check action-audit-linkage.js
           node --check dashboard-kpi-source.js
       - name: Verify Audit six-month and recurrence contracts
