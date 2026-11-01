@@ -16,6 +16,15 @@ const {chromium}=require('playwright');
   });
   assert.equal(audit.bannerVisible,false,'redundant Audit banner hidden');
   assert.equal(audit.heroVisible,false,'redundant Audit hero hidden');
+  // The theme sub-section must remain accessible and must not be hidden by the Audit-only rule.
+  await page.evaluate(()=>window.HD20_NAV?.openAuditSection?.('theme'));
+  await page.waitForFunction(()=>new URLSearchParams(location.search).get('sub')==='theme',null,{timeout:15000});
+  const theme=await page.evaluate(()=>{
+   const host=document.getElementById('awTheme');
+   return {visible:!!host&&getComputedStyle(host).display!=='none',active:document.querySelector('.beginnerNav button[data-key="audit"]')?.classList.contains('active')};
+  });
+  assert.equal(theme.visible,true,'theme workspace must remain visible');
+  assert.equal(theme.active,true,'Audit main navigation remains selected');
   await page.evaluate(()=>window.HD20_NAV?.go?.('dashboard'));
   await page.waitForFunction(()=>document.querySelector('.beginnerNav button[data-key="dashboard"]')?.classList.contains('active'),null,{timeout:15000});
   console.log('AUDIT DUPLICATE HEADER BROWSER PASS');
