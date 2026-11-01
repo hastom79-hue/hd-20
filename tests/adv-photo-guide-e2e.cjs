@@ -16,6 +16,15 @@ const assert = require('node:assert/strict');
  await page.waitForFunction(()=>!!window.HD20AdvPhotoGuide && !!window.HD20_NAV,{},{timeout:30000});
  /* 랜딩 런처 팝업을 닫아야 이후 클릭이 가로막히지 않음 */
  await page.evaluate(()=>{document.querySelector('[data-ln="skip"]')?.click()||document.getElementById('hd20Launcher')?.remove()});
+ // Regression fixture exists only in this isolated test browser, never in production.
+ await page.evaluate(()=>{
+   const img='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScL9GQAAAABJRU5ErkJggg==';
+   localStorage.setItem('hd20GMES5SAutoImproveRawV1',JSON.stringify([{
+     id:'GUIDE-TEST-EVIDENCE-1',date:'2030-01-01',team:'QA test team',
+     criteriaVisual:true,criteriaGreen:false,criteriaSpace:false,
+     before:img,after:img,source:'web-validation-fixture'
+   }]));
+ });
  const evidence={};
  /* 등록 진입 경로: 02 탭 통합조회 화면의 "+ 신규등록" → 런처의 "자율개선/개선요청 등록하기 →" 선택 → 각 등록 모달.
     (예전의 [data-aw="new"] / #hd20ActionRegisterBtn 직접 진입 버튼은 통합조회 개편으로 더 이상 보이지 않음) */
@@ -40,6 +49,14 @@ const assert = require('node:assert/strict');
    assert.equal(await dialog.locator('[data-guide-tab]').count(),3,'guide must expose three requirement tabs');
    assert.equal(await dialog.getByText('BEFORE 사진 가이드').count(),1);
    assert.equal(await dialog.getByText('AFTER 사진 가이드').count(),1);
+   const imageCount=await dialog.locator('#hd20AdvGuideEvidence img').count();
+   assert.equal(imageCount,2,ln+' should show real stored before/after case photographs for criterion one');
+   assert.match(await dialog.locator('#hd20AdvGuideEvidence').innerText(),/GUIDE-TEST-EVIDENCE-1/,
+     'evidence must disclose the actual stored case identifier');
+   await dialog.locator('[data-guide-tab="1"]').click();
+   assert.equal(await dialog.locator('#hd20AdvGuideEvidence img').count(),0,
+     'a non-matching criterion must not borrow photographs from another criterion');
+   await dialog.locator('[data-guide-tab="0"]').click();
    for(let i=0;i<3;i++){
      await dialog.locator('[data-guide-tab="'+i+'"]').click();
      assert.match(await dialog.locator('h3').innerText(),new RegExp('^'+(i+1)+'\\.'),'tab '+i+' title');
