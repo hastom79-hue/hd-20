@@ -33,6 +33,8 @@ jobs:
         run: node tests/theme-status-classification.cjs
       - name: Execute theme recurrence matching cases
         run: node tests/theme-recurrence-matching.cjs
+      - name: Verify intermediate theme audit month linkage
+        run: node tests/theme-action-month-linkage.cjs
       - name: Install Playwright Chromium
         run: |
           npm init -y >/dev/null 2>&1
