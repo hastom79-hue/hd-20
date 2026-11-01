@@ -30,44 +30,100 @@ function open(index=0){
  const d=items[n];
  overlay.innerHTML='<section role="dialog" aria-modal="true" aria-label="5S 고도화 3대 요건 평가자료·사진 가이드" style="background:#fff;border-radius:12px;max-width:920px;width:100%;max-height:92vh;overflow:auto;padding:22px;box-shadow:0 12px 40px #0004;color:#263e51;box-sizing:border-box"><header style="display:flex;justify-content:space-between;gap:12px;align-items:center"><div><b style="font-size:18px">5S 고도화 3대 요건 · 평가자료 및 사진 가이드</b><p style="font-size:12px;color:#667b8b;margin:6px 0">개별 개선사례 기준 · 3대 요건 중 1개 이상 충족 시 요건 충족 · 최종 채택은 마스터관리자</p></div><button type="button" data-guide-close style="padding:8px 13px;border:1px solid #cddae4;border-radius:8px;background:#fff;cursor:pointer">닫기 ×</button></header><nav style="display:flex;gap:7px;flex-wrap:wrap;margin:16px 0">'+items.map((x,i)=>'<button type="button" data-guide-tab="'+i+'" style="padding:9px 12px;border:1px solid #a6bfd1;border-radius:8px;cursor:pointer;background:'+(i===n?'#1b5d92':'#fff')+';color:'+(i===n?'#fff':'#24455f')+'">요건 '+(i+1)+'</button>').join('')+'</nav><h3 style="font-size:17px;margin:12px 0">'+(n+1)+'. '+esc(d.title)+'</h3><p style="line-height:1.8;background:#f3f8fc;padding:12px;border-radius:8px">'+esc(d.definition)+'</p><h4>현장 평가 체크포인트</h4><ul style="line-height:1.9">'+d.checks.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px"><div style="border:1px solid #d8e3eb;border-radius:9px;padding:13px"><b>BEFORE 사진 가이드</b><p style="line-height:1.8;font-size:13px">'+esc(d.before)+'</p></div><div style="border:1px solid #d8e3eb;border-radius:9px;padding:13px"><b>AFTER 사진 가이드</b><p style="line-height:1.8;font-size:13px">'+esc(d.after)+'</p></div></div><h4>인정 곤란 사례</h4><p style="line-height:1.8">'+esc(d.fail)+'</p><p style="font-size:12px;color:#687e8e">※ 실제 현장 참고사진은 등록된 BEFORE·AFTER 원본을 사용합니다. 임의 생성 사진을 평가 근거로 사용하지 않습니다.</p></section>';
 
-// Render actual registered BEFORE/AFTER evidence when supplied by the registration form.
-// Never replace missing evidence with fabricated photographs.
+// The reference panel displays actual, traceable case evidence only.
+// The active unsaved draft takes precedence; otherwise select a registered
+// case satisfying the currently viewed criterion. Never substitute examples.
 const evidenceRoot=overlay.querySelector('section');
 const evidence=document.createElement('div');
 evidence.id='hd20AdvGuideEvidence';
-evidence.style.cssText='display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:16px 0';
-/* 사용자 지적: "사진은 어디에도 반영되어 있지 않다" — 원인은 이 함수가 찾던 속성명(beforeImage,
-   afterPhoto 등)이 실제 등록 폼과 전혀 달랐기 때문. 실제 구조를 확인한 결과: 자율개선 등록 폼은
-   #awBefore/#awAfter, 개선요청 등록 폼은 #amBefore/#amEvidence라는 ID를 가진 요소의
-   dataset.data(Base64 또는 URL 문자열)에 사진이 저장됨(activity-workflow.js·action-mail-workflow.js
-   의 register() 함수가 바로 이 속성을 읽어 레코드에 저장하는 것과 동일한 경로). */
-const findPhoto=(kind)=>{
- /* 가시성 체크를 getClientRects/display 기반에서 ".on" 클래스 기반으로 교체 — 두 등록 모달
-    (activity-register-modal.js·action-register-modal.js) 모두 open()/hide()에서 overlay 자체가
-    아니라 overlay.classList의 "on" 토글로 열림·닫힘을 표시하는데, 바깥 wrapper의 display 계산값이
-    항상 'none'이 아니어서(내부 레이아웃 방식) 이전 체크가 "열려 있어도 안 보인다"고 오판했음. */
- const active=[...document.querySelectorAll('#awRegisterModal.on,#hd20ActionRegisterModal.on')][0];
- if(!active)return '';
- const ids=kind==='before'?['awBefore','amBefore']:['awAfter','amEvidence'];
- for(const id of ids){
-   const el=active.querySelector('#'+id);
-   const value=el?.dataset?.data;
-   if(typeof value==='string'&&value)return value;
- }
- return '';
+evidence.style.cssText='margin:16px 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px';
+const validImage=(v)=>typeof v==='string'&&(/^(data:image\/(?:png|jpeg|jpg|webp|gif);base64,)/i.test(v)||/^(https?:\/\/|blob:)/i.test(v));
+const getImage=(record,keys)=>{for(const key of keys){const v=record?.[key];if(validImage(v))return v}return ''};
+const fromStorage=(key)=>{
+ try{const arr=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(arr)?arr:[]}catch{return[]}
 };
-['before','after'].forEach(kind=>{
- const cell=document.createElement('div');cell.style.cssText='border:1px solid #d8e3eb;border-radius:9px;padding:12px;min-height:175px';
- const label=document.createElement('b');label.textContent=kind.toUpperCase()+' 실제 등록 사진';cell.appendChild(label);
- const src=findPhoto(kind);
+const matchingCriterion=(record,index)=>{
+ const keys=[['criteriaVisual','visualization','criterionVisual'],['criteriaGreen','greenZone','criterionGreen'],['criteriaSpace','spaceUtilization','criterionSpace']][index];
+ return keys.some(key=>record?.[key]===true||record?.[key]===1||String(record?.[key]||'').toLowerCase()==='충족');
+};
+const active=document.querySelector('#awRegisterModal.on,#hd20ActionRegisterModal.on');
+const isActivity=active?.id==='awRegisterModal';
+const draftBefore=isActivity?active?.querySelector('#awBefore'):active?.querySelector('#amBefore');
+const draftAfter=isActivity?active?.querySelector('#awAfter'):null;
+// "Additional Evidence" in a request is NOT an AFTER photograph.
+const draftPhoto=(el)=>validImage(el?.dataset?.data)?el.dataset.data:'';
+const draft={before:draftPhoto(draftBefore),after:draftPhoto(draftAfter)};
+const casePair=(record,source)=>{
+ const before=getImage(record,['before','beforePhoto','beforeImage']);
+ const after=getImage(record,['after','afterPhoto','afterImage']);
+ if(!before&&!after)return null;
+ return {before,after,source,id:String(record.id||record.activityId||record.improvementId||''),
+   team:String(record.team||''),date:String(record.date||record.regDate||record.createdAt||'').slice(0,10)};
+};
+let selected=null;
+if(draft.before||draft.after){
+ selected={...draft,source:'현재 작성 중인 사례',id:'',team:'',date:''};
+}else{
+ let cases=[];
+ try{
+   const kpi=window.HD20KPIData;
+   const snap=kpi?.snapshot?.();
+   if(Array.isArray(snap?.activities))cases.push(...snap.activities.map(r=>({record:r,source:'자율개선 등록'})));
+   if(typeof kpi?.actionCases==='function'){
+     const actions=kpi.actionCases();
+     if(Array.isArray(actions))cases.push(...actions.map(r=>({record:r,source:'개선조치 등록'})));
+   }
+ }catch(err){console.warn('[HD20 photo guide] reference query fallback',err)}
+ // Stored cases are also read because the KPI snapshot may omit photo payloads.
+ cases.push(...fromStorage('hd20GMES5SAutoImproveRawV1').map(r=>({record:r,source:'자율개선 등록'})));
+ cases.push(...fromStorage('hd20ActionCasesV2').map(r=>({record:r,source:'개선조치 등록'})));
+ const seen=new Set();
+ const relevant=cases.filter(({record})=>{
+   if(!record||!matchingCriterion(record,n))return false;
+   const id=String(record.id||'');
+   const key=id||'';
+   if(key&&seen.has(key))return false;
+   if(key)seen.add(key);
+   return true;
+ });
+ relevant.sort((a,b)=>String(b.record.createdAt||b.record.created||b.record.date||'')
+   .localeCompare(String(a.record.createdAt||a.record.created||a.record.date||'')));
+ // Preserve photo provenance: both pictures must belong to one actual case.
+ selected=relevant.map(({record,source})=>casePair(record,source))
+   .find(pair=>pair&&(pair.before||pair.after))||null;
+}
+const evidenceHeading=document.createElement('h4');
+evidenceHeading.textContent='실제 등록된 현장사진 · '+(n+1)+'번 요건';
+evidenceHeading.style.cssText='grid-column:1/-1;margin:0;font-size:15px;color:#183e59';
+evidence.appendChild(evidenceHeading);
+const identity=document.createElement('p');
+identity.style.cssText='grid-column:1/-1;margin:0;color:#56748a;font-size:12px;line-height:1.6';
+identity.textContent=selected
+ ?[selected.source,selected.id&&'사례 '+selected.id,selected.team&&'생산팀 '+selected.team,selected.date].filter(Boolean).join(' · ')
+ :'해당 요건을 충족한 사례에서 연결 가능한 원본 사진을 찾지 못했습니다. 사진을 임의로 생성하거나 다른 사례의 사진으로 대체하지 않습니다.';
+evidence.appendChild(identity);
+for(const kind of ['before','after']){
+ const cell=document.createElement('div');
+ cell.style.cssText='border:1px solid #d8e3eb;border-radius:9px;padding:12px;min-height:175px;min-width:0';
+ const title=document.createElement('b');
+ title.textContent=kind.toUpperCase()+' 실제 등록 사진';cell.appendChild(title);
+ const src=selected?.[kind]||'';
  if(src){
-  const img=document.createElement('img');img.src=src;img.alt=kind.toUpperCase()+' 원본 사진';img.style.cssText='display:block;max-width:100%;max-height:300px;object-fit:contain;margin:12px auto;cursor:zoom-in';
-  img.onclick=()=>window.open(img.src,'_blank','noopener,noreferrer');cell.appendChild(img);
+   const img=document.createElement('img');img.src=src;img.alt=kind.toUpperCase()+' 등록 원본 사진';
+   img.style.cssText='display:block;max-width:100%;max-height:300px;object-fit:contain;margin:12px auto;cursor:zoom-in';
+   img.onclick=()=>window.open(img.src,'_blank','noopener,noreferrer');
+   img.onerror=()=>{img.remove();const p=document.createElement('p');p.textContent='등록된 사진 주소를 읽을 수 없습니다. 원본 보관 상태를 확인하세요.';cell.appendChild(p)};
+   cell.appendChild(img);
  }else{
-  const missing=document.createElement('p');missing.textContent='등록된 원본 사진 없음 · 해당 사례의 사진 첨부 후 확인';missing.style.cssText='color:#758595;padding:30px 5px;text-align:center;font-size:13px';cell.appendChild(missing);
+   const missing=document.createElement('p');
+   missing.textContent=selected
+     ?'이 사례에는 '+kind.toUpperCase()+' 원본 사진이 등록되어 있지 않습니다.'
+     :'해당 요건의 실제 등록 사진이 없습니다.';
+   missing.style.cssText='color:#758595;padding:30px 5px;text-align:center;font-size:13px;line-height:1.5';
+   cell.appendChild(missing);
  }
  evidence.appendChild(cell);
-});
+}
 evidenceRoot.appendChild(evidence);
 overlay.querySelector('[data-guide-close]').onclick=close;
 overlay.querySelectorAll('[data-guide-tab]').forEach(b=>b.onclick=()=>open(Number(b.dataset.guideTab)));
