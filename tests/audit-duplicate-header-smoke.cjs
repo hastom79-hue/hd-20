@@ -39,7 +39,7 @@ fs.mkdirSync('artifacts',{recursive:true});
   await page.waitForFunction(()=>new URLSearchParams(location.search).get('sub')==='theme',null,{timeout:15000});
   const theme=await page.evaluate(()=>{
    const host=document.getElementById('awTheme');
-   return {visible:!!host&&getComputedStyle(host).display!=='none',active:document.querySelector('.beginnerNav button[data-key="audit"]')?.classList.contains('active')};
+   return {visible:!!host&&!host.hidden&&getComputedStyle(host).display!=='none'&&host.getClientRects().length>0,active:document.querySelector('.beginnerNav button[data-key="audit"]')?.classList.contains('active')};
   });
   assert.equal(theme.visible,true,'theme workspace must remain visible');
   assert.equal(theme.active,true,'Audit main navigation remains selected');
@@ -48,7 +48,7 @@ fs.mkdirSync('artifacts',{recursive:true});
   await page.evaluate(()=>window.HD20_NAV?.openAuditSection?.('audit'));
   await page.waitForFunction(()=>new URLSearchParams(location.search).get('sub')==='audit',null,{timeout:15000});
   const returned=await page.evaluate(()=>{
-    const visible=el=>!!el&&getComputedStyle(el).display!=='none';
+    const visible=el=>!!el&&!el.hidden&&getComputedStyle(el).display!=='none'&&getComputedStyle(el).visibility!=='hidden'&&el.getClientRects().length>0;
     return {
       duplicateBanner:visible(document.querySelector('#hd20PurposePanel[data-contract="audit.draw"]')),
       duplicateHero:visible(document.querySelector('#awAudit>.awHero')),
