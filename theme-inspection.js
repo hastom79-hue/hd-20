@@ -66,7 +66,7 @@ const THEME_COMPLETED_STATUSES=new Set(['완료','조치완료','개선완료','
 const THEME_ACTIVE_STATUSES=new Set(['조치대기','미착수','진행중','기한경과','보완요청','조치중','효과검증대기']);
 const normalizeThemeStatus=v=>String(v??'').replace(/\s+/g,'').trim();
 function themeSameIssue(a,line,team,cat,problem){return a.source==='테마Audit'&&a.workplace===line&&a.team===team&&a.themeCategory===cat&&a.problem===problem}
-function themeFindActive(actions,line,team,cat,problem){return actions.find(a=>themeSameIssue(a,line,team,cat,problem)&&THEME_ACTIVE_STATUSES.has(normalizeThemeStatus(a.status)))}
+function themeFindActive(actions,line,team,cat,problem){return actions.find(a=>themeSameIssue(a,line,team,cat,problem)&&!THEME_COMPLETED_STATUSES.has(normalizeThemeStatus(a.status)))}
 function themeFindPreviousCompleted(actions,line,team,cat,problem){return actions.filter(a=>themeSameIssue(a,line,team,cat,problem)&&THEME_COMPLETED_STATUSES.has(normalizeThemeStatus(a.status))).sort((a,b)=>String(b.completedAt||b.updatedAt||b.createdAt||'').localeCompare(String(a.completedAt||a.updatedAt||a.createdAt||'')))[0]}
 function actionTable(month){
  const rows=load().filter(x=>x.source==='테마Audit'&&(monthKey(x.auditMonth||x.createdAt||x.date)===month||monthKey(x.lastAuditMonth||x.lastAuditedAt)===month)).sort((a,b)=>String(b.lastAuditedAt||b.createdAt||'').localeCompare(String(a.lastAuditedAt||a.createdAt||'')));
