@@ -50,9 +50,12 @@ const desc=document.createElement('p');desc.textContent=approved.name+' · '+app
 desc.style.cssText='font-size:12px;color:#425e72;line-height:1.7;margin:0 0 10px';
 guideUploader.appendChild(desc);
 if(approved.image||approved.beforeImage){
- const images=approved.image?[{src:approved.image,alt:'사용자가 승인한 원본 BEFORE(상단) AFTER(하단) 비교사진'}]:[{src:approved.beforeImage,alt:'EPA Figure 7 BEFORE 원본'},{src:approved.afterImage,alt:'EPA Figure 8 AFTER 원본'}];
+ const images=n===2
+  ?[{src:approved.image,alt:'BEFORE · 승인된 원본 상단',half:'top'},{src:approved.image,alt:'AFTER · 승인된 원본 하단',half:'bottom'}]
+  :approved.image?[{src:approved.image,alt:'사용자가 승인한 원본 비교사진'}]
+  :[{src:approved.beforeImage,alt:'EPA Figure 7 BEFORE 원본'},{src:approved.afterImage,alt:'EPA Figure 8 AFTER 원본'}];
  const imageGrid=document.createElement('div');
- imageGrid.style.cssText='display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px';
+ imageGrid.style.cssText='display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px';
  images.forEach(item=>{
   const figure=document.createElement('figure');
   figure.style.cssText='margin:0;background:#fff;border:1px solid #d3e0e9;border-radius:8px;overflow:hidden';
@@ -60,7 +63,16 @@ if(approved.image||approved.beforeImage){
   img.style.cssText='display:block;width:100%;height:auto;max-height:530px;object-fit:contain';
   img.onerror=()=>{img.remove();const msg=document.createElement('p');msg.textContent='원본 이미지가 열리지 않습니다. 아래 원문에서 사진을 확인해 주세요.';msg.style.cssText='padding:14px;font-size:12px;color:#6a788a';figure.appendChild(msg)};
   const caption=document.createElement('figcaption');caption.textContent=item.alt;caption.style.cssText='padding:8px;font-size:12px;text-align:center;color:#45647c';
-  figure.appendChild(img);figure.appendChild(caption);imageGrid.appendChild(figure);
+  if(item.half){
+   // Approved source is one vertically stacked BEFORE/AFTER image.
+   // Clip halves visually without replacing, resampling or modifying source pixels.
+   const crop=document.createElement('div');
+   crop.style.cssText='position:relative;width:100%;aspect-ratio:440/267;overflow:hidden;background:#f3f6f8';
+   img.style.cssText='position:absolute;left:0;width:100%;height:auto;max-height:none;object-fit:initial;'+(item.half==='bottom'?'bottom:0':'top:0');
+   crop.appendChild(img);
+   figure.appendChild(crop);
+  }else figure.appendChild(img);
+  figure.appendChild(caption);imageGrid.appendChild(figure);
  });
  guideUploader.appendChild(imageGrid);
 }else{
