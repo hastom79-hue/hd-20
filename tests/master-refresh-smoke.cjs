@@ -52,12 +52,14 @@ const {chromium}=require('playwright');
     const visible=x=>!!x&&getComputedStyle(x).display!=='none'&&x.getClientRects().length>0;
     return {selected:document.querySelector('.beginnerNav button.active')?.dataset.key,
       advancementVisible:visible(el),activityVisible:visible(activity),
+      overviewVisible:visible(document.getElementById('hd20LauncherOverview')),
+      inquiryMode:document.body.classList.contains('hd20InquiryActive'),
       standardSticky:el?.classList.contains('hd20AdvancementStandard'),
       forcedHidden:el?.style.getPropertyValue('display')==='none'&&el?.style.getPropertyPriority('display')==='important',
       area:window.HD20_SUBNAV?.state?.().area};
   });
   console.log('advancement standard to activity',activityState);
-  if(activityState.selected!=='activity'||activityState.advancementVisible||!activityState.activityVisible||activityState.standardSticky||!activityState.forcedHidden||activityState.area!=='activity')
+  if(activityState.selected!=='activity'||activityState.advancementVisible||!(activityState.activityVisible||(activityState.inquiryMode&&activityState.overviewVisible))||activityState.standardSticky||!activityState.forcedHidden||activityState.area!=='activity')
     throw new Error('activity/advancement screen leakage: '+JSON.stringify(activityState));
   await page.reload({waitUntil:'domcontentloaded'});
   await page.waitForTimeout(1600);
