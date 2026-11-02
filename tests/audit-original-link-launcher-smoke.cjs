@@ -42,6 +42,32 @@ const {chromium}=require('playwright');
   for(const expected of ['AUDIT-LINK-E2E-01','검증점검자','테스트라인','ACTION-LINK-E2E-01'])assert.ok(body.includes(expected),'missing linked original field: '+expected);
   await modal.locator('[data-had-close]').first().click();
   assert.equal(await page.locator('#hd20AuditOriginalPopup').count(),0,'detail popup closes');
+  // Exercise Audit-only corrective queue: overdue first and combined filters, without
+  // changing any original Audit or theme case outside this isolated browser profile.
+  await page.evaluate(()=>{
+   const key='hd20ActionCasesV2',cases=JSON.parse(localStorage.getItem(key)||'[]');
+   cases.push(
+    {id:'ACTION-OVERDUE-E2E',sourceStage:'AUDIT-REQUEST',auditDrawId:'AUDIT-LINK-E2E-01',
+     team:'테스트팀',workplace:'테스트라인',problem:'긴급 기한경과',status:'진행중',receivedAt:'2025-01-01',due:'2025-01-02',registeredAt:'2025-01-01'},
+    {id:'ACTION-COMPLETE-E2E',sourceStage:'AUDIT-REQUEST',auditDrawId:'AUDIT-LINK-E2E-01',
+     team:'타팀',workplace:'타라인',problem:'완료 사례',status:'완료',completedAt:'2025-02-02',registeredAt:'2025-01-01'}
+   );
+   localStorage.setItem(key,JSON.stringify(cases));
+   window.dispatchEvent(new CustomEvent('hd20-action-updated',{detail:{source:'audit-priority-e2e'}}));
+  });
+  await page.waitForFunction(()=>document.querySelector('#hd20AuditActionMonitor [data-had-filter-workplace]')&&document.querySelector('#hd20AuditActionMonitor [data-had-table]')?.textContent?.includes('ACTION-OVERDUE-E2E'),null,{timeout:15000});
+  const queue=page.locator('#hd20AuditActionMonitor');
+  assert.match(await queue.locator('.hadNumbers').innerText(),/기한경과 1건/,'past-due Audit action must be counted');
+  assert.match(await queue.locator('[data-had-table] tbody tr').first().innerText(),/ACTION-OVERDUE-E2E/,'overdue action must appear first');
+  await queue.locator('[data-had-filter-team]').selectOption('테스트팀');
+  await queue.locator('[data-had-filter-workplace]').selectOption('테스트라인');
+  await queue.locator('[data-had-filter-due]').selectOption('overdue');
+  await queue.locator('[data-had-filter-text]').fill('긴급 기한경과');
+  assert.equal(await queue.locator('[data-had-table] tbody tr').count(),1,'combined Audit team/workplace/due/text filters must narrow to one');
+  assert.match(await queue.locator('[data-had-table] tbody tr').first().innerText(),/ACTION-OVERDUE-E2E/);
+  await queue.locator('[data-had-filter-reset]').click();
+  assert.equal(await queue.locator('[data-had-table] tbody tr').count(),3,'reset restores all Audit actions');
+  console.log('PASS: Audit overdue priority, combined filters and reset');
   assert.deepEqual(errors.filter(s=>/TypeError|ReferenceError/.test(s)),[],'browser errors');
   console.log('PASS: Audit number opens original detail with exact linked action and closes');
  }finally{await browser.close()}
