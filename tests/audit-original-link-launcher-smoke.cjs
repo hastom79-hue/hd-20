@@ -42,6 +42,28 @@ const {chromium}=require('playwright');
   for(const expected of ['AUDIT-LINK-E2E-01','검증점검자','테스트라인','ACTION-LINK-E2E-01'])assert.ok(body.includes(expected),'missing linked original field: '+expected);
   await modal.locator('[data-had-close]').first().click();
   assert.equal(await page.locator('#hd20AuditOriginalPopup').count(),0,'detail popup closes');
+  // Two corrective cases may share one Audit ID. Clicking the second row must
+  // display the exact action, not whichever matching case is stored first.
+  await page.evaluate(()=>{
+    const key='hd20ActionCasesV2',cases=JSON.parse(localStorage.getItem(key)||'[]');
+    cases.push({id:'ACTION-LINK-E2E-02',sourceStage:'AUDIT-REQUEST',
+      auditDrawId:'AUDIT-LINK-E2E-01',sourceCaseId:'AUDIT-LINK-E2E-01',
+      team:'테스트팀',workplace:'테스트라인',problem:'두 번째 조치 연결 검증',
+      status:'진행중',registeredAt:'2026-11-02'});
+    localStorage.setItem(key,JSON.stringify(cases));
+    window.dispatchEvent(new CustomEvent('hd20-action-updated'));
+  });
+  const secondLink=page.locator('#awAudit #hd20AuditActionMonitor [data-had-action-id="ACTION-LINK-E2E-02"]');
+  await secondLink.waitFor({state:'visible',timeout:10000});
+  await secondLink.click();
+  await modal.waitFor({state:'visible',timeout:10000});
+  assert.match(await modal.innerText(),/ACTION-LINK-E2E-02/,'second linked action opens exactly');
+  await modal.locator('[data-had-close]').first().click();
+  await page.evaluate(()=>{
+    const key='hd20ActionCasesV2';
+    localStorage.setItem(key,JSON.stringify(JSON.parse(localStorage.getItem(key)||'[]').filter(x=>x.id!=='ACTION-LINK-E2E-02')));
+    window.dispatchEvent(new CustomEvent('hd20-action-updated'));
+  });
   // Exercise Audit-only corrective queue: overdue first and combined filters, without
   // changing any original Audit or theme case outside this isolated browser profile.
   await page.evaluate(()=>{
