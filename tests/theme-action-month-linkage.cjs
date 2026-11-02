@@ -1,7 +1,7 @@
 'use strict';
 const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
 const source=fs.readFileSync('theme-inspection.js','utf8');
-const start=source.indexOf('function themeActionInMonth('),end=source.indexOf('function actionTable(month)',start);
+const start=source.indexOf('function themeAuditIdsForMonth('),end=source.indexOf('function actionTable(month)',start);
 assert.ok(start>=0&&end>start);
 const context=vm.createContext({});
 vm.runInContext('const monthKey=d=>String(d||"").slice(0,7);\n'+source.slice(start,end)+'\nthis.inMonth=themeActionInMonth;this.idsForMonth=themeAuditIdsForMonth;',context,{timeout:1000});
