@@ -461,17 +461,28 @@ function hideDuplicateWorkKpis(root){
 }
 function applyAudit(sub){
  const root=$('#awAudit');if(!root)return;
- root.dataset.subview=sub;showAll(root);hideDuplicateWorkKpis(root);show($('.awFlow',root),false);show($('.awAuditLane',root),false);
+ // Audit / 유지점검 / 종료판정은 동일한 원천 Case를 공유하되 화면 구성은 엄격히 분리한다.
+ // 기존 showAll(root)는 다른 서브탭의 .awCard를 다시 노출해 화면 중복을 일으켰다.
+ root.dataset.subview=sub;showAll(root);hideDuplicateWorkKpis(root);
  const draw=$('.auditDraw',root),batch=$('#hd20AuditBatchExecution',root),closed=$('.auditClosedLoop',root),ongoing=$('.audit6m',root);
  const closeEval=ensureAuditCloseEvaluation(root);
  if(sub==='retention'&&closeEval?.dataset.hd20Fallback==='true')renderAuditCloseEvaluation(closeEval);
- // 첫 화면에서 Risk 추출과 실제 현장점검을 함께 수행한다.
+ const sampling=sub==='ongoing'?(renderRetentionSampling(root),root.querySelector('#hd20RetentionSampling')):root.querySelector('#hd20RetentionSampling');
  show(draw,sub==='draw');show(batch,sub==='draw');show(closed,sub==='draw');
- show(ongoing,false);if(sub==='ongoing')renderRetentionSampling(root);else show(root.querySelector('#hd20RetentionSampling'),false);show(closeEval,sub==='retention');
- let bar=root.querySelector('#hd20AuditWorkGuide');
- if(!bar){bar=document.createElement('div');bar.id='hd20AuditWorkGuide';bar.className='hd20AuditWorkGuide';(root.querySelector('.awAuditLane')||root.firstElementChild)?.insertAdjacentElement('beforebegin',bar)}
- const guide={draw:['01 · Audit 실시','Risk 대상선정과 현장 Audit을 한 화면에서 관리'],ongoing:['02 · 유지점검','실시일부터 6개월 동안 미점검·유지미흡·재발을 추적'],retention:['03 · 결과·재조치','최종 판정 미입력과 재조치 필요 사례를 구분']}[sub];
- if(bar&&guide){bar.innerHTML='<strong>'+guide[0]+'</strong>';const lane=root.querySelector('.awAuditLane');if(lane&&bar.nextElementSibling!==lane)lane.insertAdjacentElement('beforebegin',bar)}
+ show(ongoing,false);show(sampling,sub==='ongoing');show(closeEval,sub==='retention');
+ show($('.awFlow',root),false);show($('.awAuditLane',root),false);
+ // 등록·대상선정 공통부품은 Audit 실시 화면에서만 표시한다.
+ show($('.awActions',root),sub==='draw');show($('.awGrid',root),sub==='draw');
+ // 모든 일반 카드는 Audit 실시에만 둔다. 유지점검은 랜덤 유지검증,
+ // 결과·재조치는 종료판정 전용 카드만 노출한다. 내부 데이터는 삭제하지 않는다.
+ root.querySelectorAll('.awCard').forEach(card=>{
+   const inSampling=!!(sampling&&(card===sampling||sampling.contains(card)));
+   const inClosure=!!(closeEval&&(card===closeEval||closeEval.contains(card)));
+   const keep=sub==='draw'?!inSampling&&!inClosure:sub==='ongoing'?inSampling:inClosure;
+   show(card,keep);
+ });
+ // 중복된 단계 제목은 상단 서브탭에 이미 있으므로 별도 렌더링하지 않는다.
+ root.querySelector('#hd20AuditWorkGuide')?.remove();
 }
 function ensureActionVerify(root){let host=$('#hd20ActionVerifyStatus',root);if(!host){host=document.createElement('section');host.id='hd20ActionVerifyStatus';host.className='awCard';const anchor=$('.awKpis',root)||$('.awFlow',root)||$('.amHeroNote',root)||$('.awHero',root);if(anchor)anchor.insertAdjacentElement('afterend',host);else root.appendChild(host)}return host}
 function renderActionVerify(root){const host=ensureActionVerify(root);if(!host)return;const rows=readStore('hd20ActionCasesV2'),done=rows.filter(doneStatus),verified=done.filter(effectVerified),pendingVerify=done.filter(x=>!effectVerified(x)),recurrence=verified.filter(recurrenceConfirmed);/* 전면 재설계 2단계 재평가 중 발견: "③ 효과검증·최종종결"이 요약 카드(검증완료 209건·재발 45건)와
