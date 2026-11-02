@@ -62,10 +62,13 @@ function organizeActionModal(modal,form){
  // The highlighted explanatory banner is explicitly removed by user request.
  // Keep only the real registration controls and do not recreate the message.
  modal.querySelectorAll('.amRegisterNote,.hd20ActionIntroTop').forEach(el=>el.remove());
- const send=body.querySelector('.amSendMethod');
- if(send){
-   send.classList.add('hd20ActionSendCompact');
-   body.prepend(send);
+ const send=modal.querySelector('.amSendMethod');
+ const top=modal.querySelector('.hd20ModalTopActions');
+ const registerButton=top?.querySelector('[data-modal-register]');
+ if(send&&registerButton){
+   send.classList.remove('hd20ActionSendCompact');
+   send.classList.add('hd20ActionSendHeader');
+   if(send.nextElementSibling!==registerButton||send.parentNode!==top)top.insertBefore(send,registerButton);
  }
  const recent=body.querySelector('.hd20ActionRecentFirst');
  if(recent){
