@@ -2,7 +2,7 @@
 const MAP={dashboard:[['summary','오늘의 운영판단'],['analysis','성과·건전성 추이'],['map','고도화 맵']],activity:[['manage','① 문제·개선 등록'],['analysis','② 실행현황·우수활동 선별']],/* 사용자 지시: "고도화·표준화는 남이되, '① 3대요건 즉시판정' 만 간소화/삭제하고 '② 확정사례 관리'는
    남겨라" — 네비게이션에서 judge 서브탭 버튼을 제거(렌더링 함수 자체는 안전하게 코드에 남겨두되
    호출 경로를 모두 standard로 돌려 사실상 비활성화). */
-advancement:[['standard','확정사례 관리']],audit:[['draw','① Audit 실시'],['ongoing','② 유지점검'],['retention','③ 결과·재조치']],action:[['manage','① 개선조치 등록·실행'],['leadtime','② 미완료·지연관리'],['verify','③ 효과검증·최종종결']]};
+advancement:[['standard','확정사례 관리']],audit:[['draw','① Audit 실시'],['action','② 개선조치·완료관리'],['ongoing','③ 유지점검'],['retention','④ 결과·재조치']],action:[['manage','① 개선조치 등록·실행'],['leadtime','② 미완료·지연관리'],['verify','③ 효과검증·최종종결']]};
 const CONTRACT={
  'dashboard.summary':{title:'종합현황',purpose:'울산캠퍼스 5S 운영상태를 한 화면에서 파악하고 오늘 우선 확인할 영역을 정합니다.',judge:'목표 대비 성과, 고도화 확보, Audit 대기, 미완료·기한경과·재발을 동시에 확인',next:'이상 KPI·Risk 카드를 상세근거로 Drill-down하여 담당 업무 탭으로 이동',features:['핵심 KPI','팀별 성과','Action Summary','우선순위']},
  'dashboard.analysis':{title:'성과·운영분석',purpose:'단순 실적 건수를 넘어 판정 Lead Time, 유지율, 재발률, 조치완료율 등 운영 건전성을 분석합니다.',judge:'성과 증가가 프로세스 건전성 개선과 함께 일어나는지 확인',next:'취약 지표의 원천 데이터를 확인하고 원인 업무영역에서 조치',features:['운영 KPI','월별 추이','유지율','재발·기한']},
@@ -523,14 +523,16 @@ function applyAudit(sub){
  show($('.awFlow',root),false);show($('.awAuditLane',root),false);
  // 등록·대상선정 공통부품은 Audit 실시 화면에서만 표시한다.
  show($('.awActions',root),sub==='draw');
+ show(root.querySelector('#hd20AuditActionMonitor'),sub==='action');
  const auditGrid=$('.awGrid',root);
- show(auditGrid,sub==='draw'||!!(auditGrid&&((sub==='ongoing'&&sampling&&auditGrid.contains(sampling))||(sub==='retention'&&closeEval&&auditGrid.contains(closeEval)))));
+ show(auditGrid,sub==='draw'||!!(auditGrid&&((sub==='ongoing'&&sampling&&auditGrid.contains(sampling))||(sub==='retention'&&closeEval&&auditGrid.contains(closeEval))||(sub==='action'&&auditGrid.contains(root.querySelector('#hd20AuditActionMonitor'))))));
  // 모든 일반 카드는 Audit 실시에만 둔다. 유지점검은 랜덤 유지검증,
  // 결과·재조치는 종료판정 전용 카드만 노출한다. 내부 데이터는 삭제하지 않는다.
  root.querySelectorAll('.awCard').forEach(card=>{
    const inSampling=!!(sampling&&(card===sampling||sampling.contains(card)||card.contains(sampling)));
    const inClosure=!!((closeEval&&(card===closeEval||closeEval.contains(card)||card.contains(closeEval)))||(trace&&(card===trace||trace.contains(card)||card.contains(trace))));
-   const keep=sub==='draw'?!inSampling&&!inClosure:sub==='ongoing'?inSampling:inClosure;
+   const inActions=card.id==='hd20AuditActionMonitor';
+   const keep=sub==='draw'?!inSampling&&!inClosure&&!inActions:sub==='action'?inActions:sub==='ongoing'?inSampling:inClosure&&!inActions;
    show(card,keep);
  });
  // 중복된 단계 제목은 상단 서브탭에 이미 있으므로 별도 렌더링하지 않는다.
