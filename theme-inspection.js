@@ -239,20 +239,14 @@ function render(){
    return '<div class="themeLineSummaryRow '+(ln===line?'isSelected':'')+'"><div class="themeLineName">'+esc(ln)+'</div><div><div class="themeLineChips">'+themeChips+'</div></div><div class="themeLineDate">'+(rec?esc(formatAuditDate(rec.auditedAt)):'<span class="themeMuted">미실시</span>')+'</div><div><span class="themeCountPill '+(ng?'hasFinding':'')+'">'+ng+'건</span></div><div><span class="themeCountPill">'+actionCount+'건</span></div><div><button type="button" class="themeLineAction" data-pick-line="'+esc(ln)+'">현장점검 열기</button></div></div>';
  }).join('');
  host.innerHTML=`<div class="awHero">
-   <div><h2>테마점검 운영센터</h2><div class="themeSubtitle">라인별 5S 취약점을 동일 기준으로 점검하고, 미흡 항목을 개선조치·완료관리와 연결합니다. 재점검 이력은 누적 보존됩니다.</div><span class="themeOwner">5S모듈 주관</span></div>
+   <div><h2>테마점검</h2><div class="themeSubtitle">월별·라인별 취약테마 설정부터 현장점검, 개선조치 접수·완료, 재점검까지 관리합니다.</div><span class="themeOwner">5S모듈 주관</span></div>
    <div class="themeControls"><label>조회 월 <select id="themeMonthSel">${monthOpts.map(m=>`<option${m===month?' selected':''}>${m}</option>`).join('')}</select></label></div>
  </div>
- <div class="themeWorkflowRail" aria-label="테마점검 업무 흐름">
-   <div class="themeWorkflowStep"><span>01</span><div><b>점검계획</b><small>5S 모듈이 월별 취약 테마 지정</small></div></div><div class="themeWorkflowConnector"></div>
-   <div class="themeWorkflowStep"><span>02</span><div><b>현장 Audit</b><small>계획된 항목 전수 판정</small></div></div><div class="themeWorkflowConnector"></div>
-   <div class="themeWorkflowStep"><span>03</span><div><b>개선조치</b><small>미흡사항을 원본 조치와 연결</small></div></div><div class="themeWorkflowConnector"></div>
-   <div class="themeWorkflowStep"><span>04</span><div><b>재점검</b><small>완료·재발 여부와 이력 누적</small></div></div>
- </div>
  <nav class="themeTabNav" aria-label="테마점검 작업영역">
-   <button type="button" data-theme-view="plan" class="${view==='plan'?'active':''}">점검계획·취약현황</button>
-   <button type="button" data-theme-view="audit" class="${view==='audit'?'active':''}">현장점검 실시</button>
-   <button type="button" data-theme-view="actions" class="${view==='actions'?'active':''}">미흡·개선조치 추적</button>
-   <button type="button" data-theme-view="history" class="${view==='history'?'active':''}">재점검·이력</button>
+   <button type="button" data-theme-view="plan" data-step="01" class="${view==='plan'?'active':''}">점검계획·취약현황</button>
+   <button type="button" data-theme-view="audit" data-step="02" class="${view==='audit'?'active':''}">현장점검 실시</button>
+   <button type="button" data-theme-view="actions" data-step="03" class="${view==='actions'?'active':''}">미흡·개선조치 추적</button>
+   <button type="button" data-theme-view="history" data-step="04" class="${view==='history'?'active':''}">재점검·이력</button>
  </nav>
  <section class="themePanel" data-theme-panel="plan" ${view==='plan'?'':'hidden'}>
  <div class="themePlanBox"><div class="themeSectionHead"><h3>월별·라인별 취약 테마 계획</h3><small>5S 모듈이 해당 월에 중점 점검할 테마를 지정합니다.</small></div>
