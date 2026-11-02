@@ -46,6 +46,7 @@ fs.mkdirSync('artifacts',{recursive:true});
     assert.equal(result.draw,sub==='draw','Audit execution content only in draw tab');
     assert.equal(result.sampling,sub==='ongoing','Retention sampling only in ongoing tab');
     assert.equal(result.closure,sub==='retention','Closure and corrective action only in retention tab');
+    if(sub==='retention')assert.ok(await page.locator('#hd20AuditCloseEvaluation, #hd20RetentionActionTrace').count(),'Closure content should be mounted');
   };
   await assertAuditSubtab('ongoing');
   await assertAuditSubtab('retention');
@@ -60,8 +61,9 @@ fs.mkdirSync('artifacts',{recursive:true});
     localStorage.setItem('hd20ActionCasesV2',JSON.stringify(actions));
     window.HD20_SUBNAV.select('audit','retention');
   });
-  assert.ok(await page.locator('#hd20AuditCloseEvaluation').getByText('E2E-RET-TRACE-1').count(),'third tab must show retention failure case reference');
-  assert.ok(await page.locator('#hd20AuditCloseEvaluation').getByText('E2E-ACTION-TRACE-1').count(),'third tab must show linked corrective action');
+  assert.ok(await page.locator('#hd20AuditCloseEvaluation, #hd20RetentionActionTrace').getByText('E2E-RET-TRACE-1').count(),'third tab must show retention failure case reference');
+  assert.ok(await page.locator('#hd20AuditCloseEvaluation, #hd20RetentionActionTrace').getByText('E2E-ACTION-TRACE-1').count(),'third tab must show linked corrective action');
+  assert.equal(await page.locator('#hd20RetentionActionTrace').count()<=1,true,'only one retention trace panel may exist');
   await page.evaluate(()=>{
     for(const [key,id] of [['hd20RetentionRandomChecksV1','E2E-RET-TRACE-1'],['hd20ActionCasesV2','E2E-ACTION-TRACE-1']]){
       const rows=JSON.parse(localStorage.getItem(key)||'[]');
