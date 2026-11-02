@@ -16,7 +16,7 @@ try{
    const state=await page.evaluate(k=>{
      const root=document.querySelector('#masterModal'),box=root?.querySelector('.masterInfoBox');
      const t=root?.querySelector('[data-master-tab="'+k+'"]');
-     const editor=k==='policy'?document.querySelector('#hd20OperatingPolicyPanel'):document.querySelector('#hd20IntegratedMasterFactors');
+     const editor=k==='policy'?document.querySelector('#hd20OperatingPolicyPanel'):k==='integrated-theme'?document.querySelector('#hd20ThemeCatalogPanel'):document.querySelector('#hd20IntegratedMasterFactors');
      const visible=el=>!!el&&getComputedStyle(el).display!=='none'&&el.getClientRects().length>0;
      return {ready:box?.classList.contains('hd20MasterWorkspaceReady'),navVisible:visible(root?.querySelector('#hd20MasterWorkspace')),tabActive:t?.classList.contains('on'),editorVisible:visible(editor),editorText:editor?.innerText?.trim().length||0};
    },key);
