@@ -62,8 +62,10 @@ const assert = require('node:assert/strict');
      'duplicate legacy registered-case panel must not appear');
    assert.equal(await dialog.locator('#hd20AdvGuideRejectedSamples').count(),1,
      'nonqualifying examples must be shown once');
-   assert.equal(await dialog.locator('#hd20AdvGuidePhotoReference object[type="application/pdf"]').count(),1,
-     'criterion 1 must embed approved Expert Engineering source page');
+   assert.equal(await dialog.locator('#hd20AdvGuidePhotoReference object[type="application/pdf"]').count(),0,
+     'criterion 1 must not embed the PDF viewer');
+   assert.equal(await dialog.locator('#hd20AdvGuidePhotoReference img').count(),2,
+     'criterion 1 must render two separate approved manufacturing photos');
    await dialog.locator('[data-guide-tab="1"]').click();
    assert.equal(await dialog.locator('#hd20AdvGuidePhotoReference img').count(),0,
      'unverified Novo image URLs must not be substituted with unrelated images');
