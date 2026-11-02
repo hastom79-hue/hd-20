@@ -36,7 +36,7 @@ function open(index=0){
 // Do not imply that external photos are first-party inspection records.
 const evidenceRoot=overlay.querySelector('section');
 const sourceCases=[
- {name:'Expert Engineering Enterprises · 산업용 밸브 제조공장 공구 형적관리',url:'https://www.sibmbengaluru.edu.in/wp-content/uploads/2023/08/4_Kaizen.pdf',detail:'승인된 제조공장 실제 Kaizen 사례. 논문 인쇄 57페이지(파일 14페이지)에 BEFORE: 혼재된 공구함, AFTER: 형상별 정위치 Shadow Board 사진이 있습니다. 개선 전 공구 탐색 약 10분. 개선 후 수치는 원문에 없습니다.',image:'',pdfPage:14},
+ {name:'승인 대안 · 제조현장 공구·자재 정위치 및 형적관리 개선',url:'https://www.lagerundwerkstatt.de/',detail:'승인된 BEFORE·AFTER 한 장 원본. BEFORE: 공구·케이블·부품이 혼재된 작업대. AFTER: 형적관리형 공구 정위치와 정돈된 작업대로 전환. 개선시간·정량효과는 사진만으로 확정하지 않습니다.',image:'https://www.lagerundwerkstatt.de/galerie/blog/die-5s-methode-ordnung-in-der-werkstatt-als-voraussetzun_305.webp'},
  {name:'승인 원본 · 작업높이 개선을 통한 인간공학적 자세 개선',url:'https://kyodonewsprwire.jp/prwfile/release/M101579/201902012813/_prw_PI1lg_0ovR24Er.jpg',detail:'사용자가 재확인한 실제 승인 이미지. BEFORE: 허리를 굽힌 작업 자세 / AFTER: 작업높이 조정으로 정상 작업 자세 확보. 동선 감소 정량 효과는 확인되지 않았습니다.',image:'https://kyodonewsprwire.jp/prwfile/release/M101579/201902012813/_prw_PI1lg_0ovR24Er.jpg'},
  {name:'동성 농기계 제조공장 · 승인된 컬러 BEFORE / AFTER',url:'https://bizn.donga.com/3/all/20170724/85506925/2',detail:'승인한 원본 한 장의 상단은 BEFORE, 하단은 AFTER입니다. 출처: 동아일보 비즈N(2017.07.24). 사진만으로 정량축소의 절대 수치가 입증되지는 않습니다.',image:'https://dimg.donga.com/wps/ECONOMY/IMAGE/2017/07/24/85506918.2.jpg'}
 ];
@@ -49,24 +49,19 @@ hd.style.cssText='margin:0 0 8px;color:#154869';guideUploader.appendChild(hd);
 const desc=document.createElement('p');desc.textContent=approved.name+' · '+approved.detail;
 desc.style.cssText='font-size:12px;color:#425e72;line-height:1.7;margin:0 0 10px';
 guideUploader.appendChild(desc);
-if(n===0){
- const notice=document.createElement('p');
- notice.textContent='요건 1의 기존 Expert Engineering 사진은 승인하신 「후보 1 · 제조현장 작업대 개선」 사진과 달라 제외했습니다. 승인 후보 1의 정확한 원본 파일을 아직 확인하지 못해 다른 사진을 임의로 표시하지 않습니다.';
- notice.style.cssText='padding:16px;border:1px solid #e6d4ac;background:#fffaf0;border-radius:9px;line-height:1.8;font-size:13px;color:#78561e';
- guideUploader.appendChild(notice);
-}else if(approved.image||approved.beforeImage){
+if(approved.image||approved.beforeImage){
  const images=n===2
   ?[{src:approved.image,alt:'BEFORE · 승인된 원본 상단',half:'top'},{src:approved.image,alt:'AFTER · 승인된 원본 하단',half:'bottom'}]
   :n===1?[{src:approved.image,alt:'BEFORE · 허리를 굽힌 작업 자세',half:'left'},{src:approved.image,alt:'AFTER · 높이 조정 후 정상 자세',half:'right'}]
   :approved.image?[{src:approved.image,alt:'승인된 원본 비교사진'}]
   :[{src:approved.beforeImage,alt:'EPA Figure 7 BEFORE 원본'},{src:approved.afterImage,alt:'EPA Figure 8 AFTER 원본'}];
  const imageGrid=document.createElement('div');
- imageGrid.style.cssText='display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px';
+ imageGrid.style.cssText='display:grid;grid-template-columns:'+(n===0?'minmax(0,1fr)':'repeat(2,minmax(0,1fr))')+';gap:12px';
  images.forEach(item=>{
   const figure=document.createElement('figure');
   figure.style.cssText='margin:0;background:#fff;border:1px solid #d3e0e9;border-radius:8px;overflow:hidden';
   const img=document.createElement('img');img.src=item.src;img.alt=item.alt;img.loading='eager';
-  img.style.cssText='display:block;width:100%;height:auto;max-height:530px;object-fit:contain';
+  img.style.cssText='display:block;width:100%;height:auto;'+(n===0?'max-height:650px':'max-height:530px')+';object-fit:contain;margin:auto';
   img.onerror=()=>{img.remove();const msg=document.createElement('p');msg.textContent='원본 이미지가 열리지 않습니다. 아래 원문에서 사진을 확인해 주세요.';msg.style.cssText='padding:14px;font-size:12px;color:#6a788a';figure.appendChild(msg)};
   const caption=document.createElement('figcaption');caption.textContent=item.alt;caption.style.cssText='padding:8px;font-size:12px;text-align:center;color:#45647c';
   if(item.half){
