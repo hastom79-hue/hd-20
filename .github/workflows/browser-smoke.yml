@@ -50,6 +50,8 @@ jobs:
           cat /tmp/hd20-http.log; exit 1
       - name: Verify Audit theme merged navigation and standalone Action
         run: node tests/audit-theme-navigation-smoke.cjs
+      - name: Verify launcher refresh and Audit original-number detail link
+        run: node tests/audit-original-link-launcher-smoke.cjs
       - name: Verify theme action combined filters in Chromium
         run: node tests/theme-action-filters-smoke.cjs
       - name: Verify intermediate-month audit linkage in Chromium
