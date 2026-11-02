@@ -16,7 +16,8 @@ const {chromium}=require('playwright');
   await page.waitForFunction(()=>!!window.HD20IntegratedMaster&&!!document.querySelector('[data-master-tab="integrated-factor"]'),null,{timeout:25000});
   await page.evaluate(()=>{document.querySelector('[data-ln="skip"]')?.click()||document.getElementById('hd20Launcher')?.remove()}); /* 랜딩 런처가 클릭을 가로채므로 닫는다 */
   await page.evaluate(()=>window.HD20_NAV?.go?.('master'));
-  await page.locator('[data-master-tab="integrated-factor"]').click({force:true});
+  await page.waitForSelector('#hd20MasterWorkspace [data-hm-target="integrated-factor"]',{state:'visible',timeout:25000});
+  await page.locator('#hd20MasterWorkspace [data-hm-target="integrated-factor"]').click();
   await page.waitForSelector('#imfFactorAddForm');
   const init=await page.evaluate(()=>({
    categories:document.querySelectorAll('.imfFactorCategory').length,
@@ -35,7 +36,8 @@ const {chromium}=require('playwright');
   await page.waitForFunction(()=>!!document.querySelector('[data-master-tab="integrated-factor"]'),null,{timeout:25000});
   await page.evaluate(()=>{document.querySelector('[data-ln="skip"]')?.click()||document.getElementById('hd20Launcher')?.remove()}); /* 랜딩 런처가 클릭을 가로채므로 닫는다 */
   await page.evaluate(()=>window.HD20_NAV?.go?.('master'));
-  await page.locator('[data-master-tab="integrated-factor"]').click({force:true});
+  await page.waitForSelector('#hd20MasterWorkspace [data-hm-target="integrated-factor"]',{state:'visible',timeout:25000});
+  await page.locator('#hd20MasterWorkspace [data-hm-target="integrated-factor"]').click();
   await page.waitForSelector('.imfFactorRow');
   const after=await page.locator('.imfFactorRow input').evaluateAll(xs=>xs.map(x=>x.value));
   if(!after.includes('회귀검증 임시항목'))throw Error('reload persistence failed');
