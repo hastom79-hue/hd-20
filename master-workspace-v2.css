@@ -24,7 +24,14 @@
 #masterModal .hmLinks button[hidden],#masterModal .hmGroup[hidden]{display:none!important}
 #masterModal .hmCurrent{display:flex;align-items:center;gap:14px;margin-top:18px;padding:12px 15px;border-top:1px solid #e6edf2;color:#71899a;font-size:12px}
 #masterModal .hmCurrent strong{font-size:15px;color:#163f59}
-#masterModal .masterInfoBox>.masterTabs{display:none!important}
+/* Only hide the original functional menu after the replacement workspace mounted.
+   If master workspace initialization fails, preserve the legacy editor navigation. */
+#masterModal .masterInfoBox.hd20MasterWorkspaceReady>.masterTabs{display:none!important}
+#masterModal .masterInfoBox:not(.hd20MasterWorkspaceReady)>.masterTabs{
+ display:grid!important;visibility:visible!important;position:relative!important;
+ grid-template-columns:repeat(auto-fit,minmax(130px,1fr))!important;
+ width:auto!important;max-width:100%!important;margin:12px 16px!important;
+}
 #masterModal .masterInfoBox>#hd20IntegratedMasterFactors{padding:22px 28px 34px!important;width:100%;box-sizing:border-box}
 #masterModal .masterInfoBox>#masterOrderPanel,#masterModal .masterInfoBox>#masterTargetPanel{padding:0 28px}
 #masterModal .masterInfoBox>.modalFoot{padding:12px 28px 22px}
