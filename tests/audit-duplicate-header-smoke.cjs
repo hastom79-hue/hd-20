@@ -49,6 +49,10 @@ fs.mkdirSync('artifacts',{recursive:true});
   };
   await assertAuditSubtab('ongoing');
   await assertAuditSubtab('retention');
+  // New Audit data may re-render the same DOM. The active view must remain isolated.
+  await page.evaluate(()=>window.dispatchEvent(new Event('hd20-audit-updated')));
+  await page.waitForTimeout(180);
+  await assertAuditSubtab('retention');
   await assertAuditSubtab('draw');
 
 
