@@ -49,26 +49,16 @@ hd.style.cssText='margin:0 0 8px;color:#154869';guideUploader.appendChild(hd);
 const desc=document.createElement('p');desc.textContent=approved.name+' · '+approved.detail;
 desc.style.cssText='font-size:12px;color:#425e72;line-height:1.7;margin:0 0 10px';
 guideUploader.appendChild(desc);
-if(n===0&&approved.pdfPage){
- const header=document.createElement('p');
- header.textContent='제조공장 공구 개선 사례 · BEFORE: 공구 혼재 보관 / AFTER: 형적판 정위치 관리. 두 사진은 촬영 각도가 달라 동일 구도의 직접 비교는 어렵습니다.';
- header.style.cssText='font-size:12px;line-height:1.7;color:#425e72;margin:5px 0 12px';
- guideUploader.appendChild(header);
- const grid=document.createElement('div');
- grid.style.cssText='display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:stretch';
- [['BEFORE','assets/adv-guide/expert-5s-before.png'],['AFTER','assets/adv-guide/expert-5s-after.png']].forEach(([label,src])=>{
-   const figure=document.createElement('figure');figure.style.cssText='margin:0;border:1px solid #d3e0e9;border-radius:8px;overflow:hidden;background:white;display:flex;flex-direction:column';
-   const img=document.createElement('img');img.src=src;img.alt='승인 제조현장 '+label+' 사진';img.loading='eager';
-   img.style.cssText='display:block;width:100%;height:290px;object-fit:contain;object-position:center;background:#f3f6f8';
-   img.onerror=()=>{img.remove();const notice=document.createElement('p');notice.textContent='승인 원본 사진을 불러올 수 없습니다. 원문에서 사진을 확인해 주세요.';notice.style.cssText='padding:14px;font-size:12px;color:#9b4d25';figure.prepend(notice)};
-   const cap=document.createElement('figcaption');cap.textContent=label==='BEFORE'?'BEFORE · 공구 혼재 보관':'AFTER · 공구 형적관리';cap.style.cssText='text-align:center;padding:10px;font-weight:700;color:#36566d;border-top:1px solid #e3eaf0';
-   figure.append(img,cap);grid.appendChild(figure);
- });
- guideUploader.appendChild(grid);
+if(n===0){
+ const notice=document.createElement('p');
+ notice.textContent='요건 1의 기존 Expert Engineering 사진은 승인하신 「후보 1 · 제조현장 작업대 개선」 사진과 달라 제외했습니다. 승인 후보 1의 정확한 원본 파일을 아직 확인하지 못해 다른 사진을 임의로 표시하지 않습니다.';
+ notice.style.cssText='padding:16px;border:1px solid #e6d4ac;background:#fffaf0;border-radius:9px;line-height:1.8;font-size:13px;color:#78561e';
+ guideUploader.appendChild(notice);
 }else if(approved.image||approved.beforeImage){
  const images=n===2
   ?[{src:approved.image,alt:'BEFORE · 승인된 원본 상단',half:'top'},{src:approved.image,alt:'AFTER · 승인된 원본 하단',half:'bottom'}]
-  :approved.image?[{src:approved.image,alt:n===1?'승인된 작업높이 개선 BEFORE AFTER 동일 원본 사진':'승인된 원본 비교사진'}]
+  :n===1?[{src:approved.image,alt:'BEFORE · 허리를 굽힌 작업 자세',half:'left'},{src:approved.image,alt:'AFTER · 높이 조정 후 정상 자세',half:'right'}]
+  :approved.image?[{src:approved.image,alt:'승인된 원본 비교사진'}]
   :[{src:approved.beforeImage,alt:'EPA Figure 7 BEFORE 원본'},{src:approved.afterImage,alt:'EPA Figure 8 AFTER 원본'}];
  const imageGrid=document.createElement('div');
  imageGrid.style.cssText='display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px';
@@ -80,11 +70,11 @@ if(n===0&&approved.pdfPage){
   img.onerror=()=>{img.remove();const msg=document.createElement('p');msg.textContent='원본 이미지가 열리지 않습니다. 아래 원문에서 사진을 확인해 주세요.';msg.style.cssText='padding:14px;font-size:12px;color:#6a788a';figure.appendChild(msg)};
   const caption=document.createElement('figcaption');caption.textContent=item.alt;caption.style.cssText='padding:8px;font-size:12px;text-align:center;color:#45647c';
   if(item.half){
-   // Approved source is one vertically stacked BEFORE/AFTER image.
+   // Present the exact same approved composite source in paired views, without changing the source.
    // Clip halves visually without replacing, resampling or modifying source pixels.
    const crop=document.createElement('div');
-   crop.style.cssText='position:relative;width:100%;aspect-ratio:440/220;overflow:hidden;background:#f3f6f8';
-   img.style.cssText='position:absolute;left:0;width:100%;height:auto;max-height:none;object-fit:initial;'+(item.half==='bottom'?'bottom:0':'top:0');
+   crop.style.cssText='position:relative;width:100%;aspect-ratio:'+(item.half==='left'||item.half==='right'?'1/1.03':'440/220')+';overflow:hidden;background:#f3f6f8';
+   img.style.cssText=(item.half==='left'||item.half==='right')?'position:absolute;top:0;height:100%;max-height:none;width:200%;max-width:none;object-fit:fill;'+(item.half==='right'?'right:0':'left:0'):'position:absolute;left:0;width:100%;height:auto;max-height:none;object-fit:initial;'+(item.half==='bottom'?'bottom:0':'top:0');
    crop.appendChild(img);
    figure.appendChild(crop);
   }else figure.appendChild(img);
