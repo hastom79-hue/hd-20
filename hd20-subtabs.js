@@ -504,6 +504,18 @@ function applyAudit(sub){
  // Audit / 유지점검 / 종료판정은 동일한 원천 Case를 공유하되 화면 구성은 엄격히 분리한다.
  // 기존 showAll(root)는 다른 서브탭의 .awCard를 다시 노출해 화면 중복을 일으켰다.
  root.dataset.subview=sub;showAll(root);hideDuplicateWorkKpis(root);
+ // Keep one canonical first-work screen: the random selection/action form,
+ // not the legacy KPI/guide/checklist cards. Reorder only DOM nodes, never source data.
+ const hero=root.querySelector(':scope > .awHero');
+ const primaryDraw=root.querySelector('.auditDraw');
+ if(primaryDraw&&sub==='draw'){
+   const at=hero||root.querySelector(':scope > .awActions');
+   if(at&&at.parentElement===root&&primaryDraw.parentElement===root&&at.nextElementSibling!==primaryDraw)at.insertAdjacentElement('afterend',primaryDraw);
+   else if(primaryDraw.parentElement===root&&!at&&root.firstElementChild!==primaryDraw)root.prepend(primaryDraw);
+ }
+ const topHero=root.querySelector(':scope > .awHero');
+ if(topHero){topHero.classList.toggle('hd20AuditCompactHeader',true);}
+ root.querySelectorAll(':scope > .awGrid,:scope > .awFlow,:scope > .awAuditLane').forEach(node=>node.classList.toggle('hd20AuditLegacyBelow',sub==='draw'));
  const draw=$('.auditDraw',root),batch=$('#hd20AuditBatchExecution',root),closed=$('.auditClosedLoop',root),ongoing=$('.audit6m',root);
  const closeEval=ensureAuditCloseEvaluation(root);
  // The existing close-evaluation panel may be owned by another module: never overwrite it.
