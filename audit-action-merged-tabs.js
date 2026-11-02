@@ -30,6 +30,18 @@ function ensureStyle(){
 }
 function install(){
  ensureStyle();
+ // The legacy subnav may be re-inserted or styled inline after the audit area
+ // opens. Keep it hidden while the unified four-button row is active.
+ const legacy=document.getElementById('hd20Subnav');
+ if(legacy){
+   if(window.HD20_NAV?.active?.()==='audit'){
+     legacy.style.setProperty('display','none','important');
+     legacy.setAttribute('aria-hidden','true');
+   }else{
+     legacy.style.removeProperty('display');
+     legacy.removeAttribute('aria-hidden');
+   }
+ }
  for(const id of ['awAudit','awTheme']){
   const host=document.getElementById(id);if(!host)continue;
   let bar=$('[data-merged-audit-tabs]',host);
