@@ -68,6 +68,32 @@ fs.mkdirSync('artifacts',{recursive:true});
   await assertAuditSubtab('action');
   await assertAuditSubtab('checklist');
   await assertAuditSubtab('ongoing');
+  // Retention workspace must keep actionable checks above completed cases.
+  await page.evaluate(()=>{
+    const key='hd20RetentionRandomChecksV1',rows=JSON.parse(localStorage.getItem(key)||'[]');
+    rows.push(
+      {id:'E2E-RET-PENDING',kind:'자율개선',caseId:'E2E-PENDING',team:'검증팀',result:'점검대기',drawDate:'2026-11-01'},
+      {id:'E2E-RET-RECHECK',kind:'개선요청',caseId:'E2E-RECHECK',team:'검증팀',result:'부적합',drawDate:'2026-10-01'},
+      {id:'E2E-RET-CLOSED',kind:'자율개선',caseId:'E2E-CLOSED',team:'검증팀',result:'적합',evaluatedAt:'2026-11-02',drawDate:'2026-10-01'}
+    );
+    localStorage.setItem(key,JSON.stringify(rows));
+    window.HD20_SUBNAV.select('audit','ongoing');
+  });
+  const retention=page.locator('#hd20RetentionSampling');
+  assert.equal(await retention.locator('.hd20RsActive [data-rs-id]').count(),2,'only pending and unresolved cases appear in actionable queue');
+  assert.equal(await retention.locator('.hd20RsActive [data-rs-id="E2E-RET-PENDING"]').count(),1,'pending check remains actionable');
+  assert.equal(await retention.locator('.hd20RsActive [data-rs-id="E2E-RET-RECHECK"]').count(),1,'failed check remains actionable');
+  assert.equal(await retention.locator('.hd20RsHistoryFold [data-rs-id="E2E-RET-CLOSED"]').count(),1,'completed cases remain in history');
+  assert.equal(await retention.locator('.hd20RsHistoryFold').evaluate(el=>el.open),false,'completed history is collapsed initially');
+  await retention.locator('.hd20RsHistoryFold summary').click();
+  assert.equal(await retention.locator('.hd20RsHistoryFold [data-rs-id="E2E-RET-CLOSED"]').isVisible(),true,'completed history opens on request');
+  await page.evaluate(()=>{
+    const key='hd20RetentionRandomChecksV1';
+    localStorage.setItem(key,JSON.stringify(JSON.parse(localStorage.getItem(key)||'[]').filter(x=>!['E2E-RET-PENDING','E2E-RET-RECHECK','E2E-RET-CLOSED'].includes(x.id))));
+    window.HD20_SUBNAV.select('audit','ongoing');
+  });
+  await assertAuditSubtab('ongoing');
+
   await assertAuditSubtab('retention');
   // The third tab must expose exact-source retention failures and linked corrective actions.
   await page.evaluate(()=>{
