@@ -34,7 +34,7 @@ const {chromium}=require('playwright');
   await checkTabs();
   await page.locator('#awAudit [data-merged-audit-tabs] button[data-merged-sub="theme"]').click();
   await page.waitForTimeout(650);
-  await page.locator('[data-merged-audit-tabs] [data-merged-section="audit"]').first().click();
+  await page.locator('#awTheme [data-merged-audit-tabs] button[data-merged-sub="draw"]').click();
   await page.waitForTimeout(500);v=await state();if(v.area!=='audit'||!v.audit||v.theme||v.action)throw Error('Audit switch '+JSON.stringify(v));
   await page.evaluate(()=>window.HD20_NAV.go('action'));
   await page.waitForTimeout(500);v=await state();if(v.area!=='action'||!v.action||v.audit||v.theme)throw Error('Standalone Action '+JSON.stringify(v));
