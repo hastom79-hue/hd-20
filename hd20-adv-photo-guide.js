@@ -49,7 +49,9 @@ hd.style.cssText='margin:0 0 8px;color:#154869';guideUploader.appendChild(hd);
 const desc=document.createElement('p');desc.textContent=approved.name+' · '+approved.detail;
 desc.style.cssText='font-size:12px;color:#425e72;line-height:1.7;margin:0 0 10px';
 guideUploader.appendChild(desc);
-if(approved.image||approved.beforeImage){
+if(n===0){
+ const pending=document.createElement('p');pending.textContent='기존 EPA 적치·정돈 사진은 요건 1(형적관리·찾는 낭비 삭제)의 인정 가이드로 부적합하여 표시하지 않습니다. 현장 개선 전후가 확인되는 형적관리 승인 사진을 적용해야 합니다.';pending.style.cssText='padding:14px;background:#fff7e9;border:1px solid #ebd3a7;border-radius:8px;font-size:13px;line-height:1.7';guideUploader.appendChild(pending);
+}else if(approved.image||approved.beforeImage){
  const images=n===2
   ?[{src:approved.image,alt:'BEFORE · 승인된 원본 상단',half:'top'},{src:approved.image,alt:'AFTER · 승인된 원본 하단',half:'bottom'}]
   :approved.image?[{src:approved.image,alt:'사용자가 승인한 원본 비교사진'}]
@@ -67,7 +69,7 @@ if(approved.image||approved.beforeImage){
    // Approved source is one vertically stacked BEFORE/AFTER image.
    // Clip halves visually without replacing, resampling or modifying source pixels.
    const crop=document.createElement('div');
-   crop.style.cssText='position:relative;width:100%;aspect-ratio:440/267;overflow:hidden;background:#f3f6f8';
+   crop.style.cssText='position:relative;width:100%;aspect-ratio:440/220;overflow:hidden;background:#f3f6f8';
    img.style.cssText='position:absolute;left:0;width:100%;height:auto;max-height:none;object-fit:initial;'+(item.half==='bottom'?'bottom:0':'top:0');
    crop.appendChild(img);
    figure.appendChild(crop);
@@ -82,7 +84,7 @@ if(approved.image||approved.beforeImage){
  guideUploader.appendChild(label);
 }
 const sourceLink=document.createElement('a');sourceLink.href=approved.url;sourceLink.target='_blank';sourceLink.rel='noopener noreferrer';
-sourceLink.textContent='승인 사례 원문 및 사진 확인 ↗';
+sourceLink.textContent=n===0?'요건 1 기존 부적합 사진의 출처(참고용) ↗':'승인 사례 원문 및 사진 확인 ↗';
 sourceLink.style.cssText='display:inline-block;color:#11629e;font-size:13px;font-weight:700;text-decoration:underline;margin:4px 0';
 guideUploader.appendChild(sourceLink);
 const negativeExamples=[
