@@ -165,7 +165,8 @@ function init(){if(initialized)return;const nav=document.querySelector('.beginne
   /* canonical area/sub가 있으면 legacy tab보다 우선한다. restore sub는 go() 전에 예약해
      subnav 초기화 race에서 기본 첫 탭으로 되돌아가는 것을 막는다. */
   const AREAS=['dashboard','activity','audit','theme','action','advancement','master'];
-  if(area==='audit'&&sub==='theme'){go('theme',nav);return;}\n  if(area&&AREAS.includes(area)){
+  if(area==='audit'&&sub==='theme'){go('theme',nav);return;}
+  if(area&&AREAS.includes(area)){
     if(sub&&area!=='master')window.__HD20_RESTORE_SUB=sub;
     if(area==='dashboard')goDashboard(nav,section||((sub==='map')?'map':''));else go(area,nav,{preserveSub:!!sub&&area!=='master'});
     /* 안전망: 다른 스크립트들이 각자 타이밍에 기본값(요약/종합현황)으로 되돌리는 경합이 있어, 페이지가
