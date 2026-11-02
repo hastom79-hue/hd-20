@@ -6,6 +6,7 @@ page.on('dialog',d=>d.dismiss());
 try{
  await page.goto('http://127.0.0.1:4173/index.html?area=master',{waitUntil:'domcontentloaded',timeout:30000});
  await page.waitForSelector('#hd20MasterWorkspace [data-hm-target="integrated-team"]',{timeout:25000});
+ await page.evaluate(()=>{document.querySelector('[data-ln="skip"]')?.click();document.getElementById('hd20Launcher')?.remove()});
  const buttons=page.locator('#hd20MasterWorkspace [data-hm-target]');
  if(await buttons.count()<10)throw Error('Master groups missing editors');
  // Verify users can actually open editors, not just see ten decorative tiles.
