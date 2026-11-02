@@ -652,6 +652,11 @@ function auditNavComplete(){
 function reconcileAuditSubnav(){
  if(window.HD20_NAV?.active?.()!=='audit')return;
  const bar=ensure(),items=MAP.audit;
+ // Anchor the canonical subnav directly after the top-level navigation.
+ const topNav=document.querySelector('.app > .beginnerNav')||document.querySelector('.beginnerNav');
+ if(topNav&&bar.parentElement===topNav.parentElement&&topNav.nextElementSibling!==bar){
+   topNav.insertAdjacentElement('afterend',bar);
+ }
  const current=items.some(([key])=>key===state.sub)?state.sub:'draw';
  if(!auditNavComplete()){
    const selectedKey=bar.querySelector('button.on[data-sub]')?.dataset.sub;
