@@ -143,3 +143,65 @@
  #awTheme .themeLineSummaryBody>.themeLineSummaryRow>div:nth-child(6){grid-column:1 / -1;grid-row:4}
  #awTheme .themeLineAction{width:100%}
 }
+
+/* 2026-11-02 Theme task navigation V6: one clean secondary-nav row, without duplicate workflow rail. */
+html body #awTheme .awHero{
+ display:flex!important;align-items:center!important;justify-content:space-between!important;
+ gap:16px!important;flex-wrap:wrap!important;padding:15px 20px!important;
+ margin:0 0 12px!important;min-height:0!important;background:#f5f8fb!important;
+ border:1px solid #dae5ed!important;border-radius:10px!important;color:#173a56!important
+}
+html body #awTheme .awHero h2{font-size:19px!important;color:#173a56!important;margin:0 0 3px!important;line-height:1.4!important}
+html body #awTheme .awHero .themeSubtitle{color:#577187!important;font-size:12px!important;line-height:1.5!important}
+html body #awTheme .awHero .themeOwner{display:none!important}
+html body #awTheme .awHero .themeControls{margin:0!important}
+html body #awTheme .awHero .themeControls select{min-width:136px!important;background:#fff!important}
+html body #awTheme .themeWorkflowRail{display:none!important}
+html body #awTheme nav.themeTabNav{
+ display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;
+ gap:8px!important;align-items:stretch!important;padding:0!important;
+ margin:0 0 14px!important;border:0!important;background:transparent!important;
+ overflow:visible!important;box-sizing:border-box!important
+}
+html body #awTheme nav.themeTabNav>button[data-theme-view]{
+ display:flex!important;flex-direction:column!important;align-items:flex-start!important;
+ justify-content:center!important;min-height:66px!important;min-width:0!important;
+ padding:12px 16px!important;margin:0!important;box-sizing:border-box!important;
+ white-space:normal!important;text-align:left!important;word-break:keep-all!important;
+ border:1px solid #d5e2ec!important;border-radius:9px!important;
+ border-bottom:3px solid #d5e2ec!important;background:#f5f8fb!important;
+ color:#46647b!important;font-size:14px!important;font-weight:800!important;
+ line-height:1.4!important;box-shadow:none!important
+}
+html body #awTheme nav.themeTabNav>button[data-theme-view]::before{
+ content:attr(data-step)!important;display:block!important;
+ margin-bottom:4px!important;font-size:10px!important;line-height:1!important;
+ letter-spacing:.06em!important;font-weight:800!important;color:#7a92a3!important
+}
+html body #awTheme nav.themeTabNav>button[data-theme-view].active{
+ background:#fff!important;border-color:#b6d4e6!important;
+ border-bottom:3px solid #1977b9!important;color:#125b91!important;
+ box-shadow:0 2px 6px rgba(20,74,112,.08)!important
+}
+html body #awTheme nav.themeTabNav>button[data-theme-view].active::before{color:#1977b9!important}
+html body #awTheme nav.themeTabNav>button[data-theme-view]:hover:not(.active){
+ background:#eaf3f9!important;color:#145f8e!important
+}
+html body #awTheme .themePanel{margin:0!important;padding:0!important}
+html body #awTheme .themePanel>.themePlanBox:first-child,
+html body #awTheme .themePanel>.themeAuditBox:first-child,
+html body #awTheme .themePanel>.themeHistoryBox:first-child{
+ margin-top:0!important
+}
+@media(max-width:900px){
+ html body #awTheme nav.themeTabNav{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ html body #awTheme nav.themeTabNav>button[data-theme-view]{min-height:58px!important;padding:10px 12px!important}
+}
+@media(max-width:520px){
+ html body #awTheme .awHero{padding:12px!important}
+ html body #awTheme .awHero .themeControls{width:100%!important}
+ html body #awTheme .awHero .themeControls label{width:100%!important;justify-content:space-between!important}
+ html body #awTheme .awHero .themeControls select{flex:1!important;max-width:220px!important}
+ html body #awTheme nav.themeTabNav{gap:6px!important}
+ html body #awTheme nav.themeTabNav>button[data-theme-view]{font-size:12px!important;min-height:64px!important;padding:10px!important}
+}
