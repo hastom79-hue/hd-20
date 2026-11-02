@@ -19,7 +19,7 @@ if(actionForm&&!actionForm.dataset.hd20PopupStructured){
  const photo=$('.amPhoto',actionForm);if(photo)photo.before(heading('03 · 현장 증빙','BEFORE / 추가 Evidence'));
  const criteria=actionForm.querySelector('[class*="criteria"],[class*="Criteria"],[id*="Criteria"]');if(criteria)criteria.before(heading('04 · 고도화 판정','기존 3대 요건 및 판정 절차 유지'));
 }
-const originalRegister=$('#amRegister',card),originalDraft=$('#amDraft',card);const sendMethod=$('.amSendMethod',card);const top=$('.hd20ModalTopActions',modal);if(originalRegister)originalRegister.style.display='none';if(originalDraft)originalDraft.style.display='none';if(sendMethod){sendMethod.style.marginLeft='auto';const head=$('.armBody',modal);head.insertBefore(sendMethod,head.firstChild)}
+const originalRegister=$('#amRegister',card),originalDraft=$('#amDraft',card);const sendMethod=$('.amSendMethod',card);const top=$('.hd20ModalTopActions',modal);if(originalRegister)originalRegister.style.display='none';if(originalDraft)originalDraft.style.display='none';if(sendMethod){sendMethod.style.marginLeft='0';sendMethod.classList.add('hd20ActionSendHeader');const registerButton=top.querySelector('[data-modal-register]');if(registerButton)top.insertBefore(sendMethod,registerButton)}
 // Show the selected team's latest three completed actions before entering a new request.
 // Move existing nodes, rather than copying them, to preserve team-driven updates and data.
 const recentList=$('#amRecentDone',card),recentTitle=recentList?.previousElementSibling;
