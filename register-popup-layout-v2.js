@@ -56,26 +56,37 @@ function addSummary(conf,modal,form){
 function organizeActionModal(modal,form){
  const body=modal.querySelector('.armBody');
  if(!body)return;
+ // The input form already exposes team, 5S theme and request date.
+ // Do not repeat those values in a static 3-column summary.
+ body.querySelectorAll('.hd20RegSummary').forEach(el=>el.remove());
  const note=modal.querySelector('.amRegisterNote');
  if(note){
    note.classList.add('hd20ActionIntroTop');
-   if(body.firstElementChild!==note)body.insertBefore(note,body.firstElementChild);
-   // Moving the existing node (not cloning) prevents duplicate instructions.
-   body.querySelectorAll('.amRegisterNote').forEach(other=>{if(other!==note)other.remove()});
+   if(note.parentNode!==body||body.firstElementChild!==note)body.prepend(note);
+   body.querySelectorAll('.amRegisterNote').forEach(el=>{if(el!==note)el.remove()});
  }
- const summary=body.querySelector('.hd20RegSummary');
- if(summary){
-   summary.classList.add('hd20ActionCompactSummary');
-   const lead=summary.querySelector('.hd20RegSummaryLead');
-   if(lead)lead.remove(); // modal title already says "개선요청 등록"
-   if(note&&note.nextElementSibling!==summary)note.insertAdjacentElement('afterend',summary);
+ // Mailing mode is an actual functional input: keep it accessible, below the
+ // notice and above the form, without a large dedicated blank row.
+ const send=body.querySelector('.amSendMethod');
+ if(send){
+   send.classList.add('hd20ActionSendCompact');
+   if(note)note.insertAdjacentElement('afterend',send);
+   else body.prepend(send);
  }
  const recent=body.querySelector('.hd20ActionRecentFirst');
  if(recent){
-   recent.classList.add('hd20ActionRecentBottom');
-   const formCard=body.querySelector('.amRegisterFormCard')||form.closest('.amRegisterFormCard');
-   if(formCard&&formCard.parentNode===body)formCard.insertAdjacentElement('afterend',recent);
-   else body.appendChild(recent);
+   let fold=body.querySelector('.hd20ActionRecentFold');
+   if(!fold){
+     fold=document.createElement('details');
+     fold.className='hd20ActionRecentFold';
+     const caption=document.createElement('summary');
+     caption.textContent='최근 완료된 개선조치 · 선택 팀 3건 보기';
+     fold.appendChild(caption);
+   }
+   fold.appendChild(recent); // preserve the original live-list node
+   const formCard=form.closest('.amRegisterFormCard');
+   if(formCard&&formCard.parentNode===body)formCard.insertAdjacentElement('afterend',fold);
+   else body.appendChild(fold);
  }
 }
 function apply(conf){
@@ -83,7 +94,7 @@ function apply(conf){
  const form=modal?.querySelector(conf.form);
  if(!form)return false;
  if(!form.dataset.hd20LayoutV2)groupForm(form);
- if(form.dataset.hd20LayoutV2==='1')addSummary(conf,modal,form);
+ if(form.dataset.hd20LayoutV2==='1'&&conf.modal!=='hd20ActionRegisterModal')addSummary(conf,modal,form);
  if(conf.modal==='hd20ActionRegisterModal')organizeActionModal(modal,form);
  return form.dataset.hd20LayoutV2==='1';
 }
