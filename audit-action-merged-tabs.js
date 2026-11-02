@@ -10,8 +10,18 @@ function active(){
 function change(key){
  if(key==='theme'){window.HD20_NAV?.openAuditSection?.('theme');return}
  if($('#awTheme')?.classList.contains('on')||new URLSearchParams(location.search).get('sub')==='theme'){
+   // hd20-subtabs.syncArea runs asynchronously after the area switch.
+   // Reserve the requested subtab so that its late initialization does not reset to 'draw'.
+   window.__HD20_RESTORE_SUB=key;
    window.HD20_NAV?.openAuditSection?.('audit');
    requestAnimationFrame(()=>window.HD20_SUBNAV?.select?.('audit',key));
+   setTimeout(()=>{
+     if(window.HD20_NAV?.active?.()==='audit'&&document.getElementById('awAudit')?.classList.contains('on')){
+       if(window.HD20_SUBNAV?.state?.().sub!==key)window.HD20_SUBNAV?.select?.('audit',key);
+     }
+     if(window.__HD20_RESTORE_SUB===key)delete window.__HD20_RESTORE_SUB;
+     refresh();
+   },140);
  }else window.HD20_SUBNAV?.select?.('audit',key);
  refresh();
 }
