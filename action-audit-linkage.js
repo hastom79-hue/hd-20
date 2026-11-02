@@ -49,7 +49,7 @@ function auditDueDate(a){
 }
 function auditIsOverdue(a){
  const due=auditDueDate(a);
- return !actionDone(a)&&/^\\d{4}-\\d{2}-\\d{2}$/.test(due)&&due<seoulDate();
+ return !actionDone(a)&&/^\d{4}-\d{2}-\d{2}$/.test(due)&&due<seoulDate();
 }
 function auditActionPriority(a){
  return auditIsOverdue(a)?0:!actionDone(a)&&!a.receivedAt?1:!actionDone(a)?2:3;
