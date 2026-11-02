@@ -76,7 +76,7 @@ jobs:
             'local theme master is preserved if remote key is missing': /k==='hd20ThemeCatalogMasterV1'/.test(sync),
             'sync cache refreshed': /supabase-sync\.js\?v=20261029-theme-plan-sync-v2/.test(html),
             'maturity drilldown cache refreshed': /maturity-team-case-drilldown\.js\?v=20261028-strict-3criteria-2/.test(html),
-            'theme inspection cache refreshed': /theme-inspection\.js\?v=20261102-planned-line-selector-v32/.test(html),
+            'theme inspection cache refreshed': /theme-inspection\.js\?v=20261102-save-feedback-persist-v33/.test(html),
             'theme workflow has four task views': ['plan','audit','actions','history'].every(v=>theme.includes('data-theme-view="'+v+'"')),
             'theme plans are stored by month and line': theme.includes("PLAN_KEY='hd20ThemeAuditPlansV1'") && theme.includes('themes:selected'),
             'only planned themes are shown in checklist': /THEMES\.filter\(cat=>activeThemes\.includes\(cat\)\)/.test(theme),
