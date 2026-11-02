@@ -30,78 +30,57 @@ function open(index=0){
  const d=items[n];
  overlay.innerHTML='<section role="dialog" aria-modal="true" aria-label="5S 고도화 3대 요건 평가자료·사진 가이드" style="background:#fff;border-radius:12px;max-width:920px;width:100%;max-height:92vh;overflow:auto;padding:22px;box-shadow:0 12px 40px #0004;color:#263e51;box-sizing:border-box"><header style="display:flex;justify-content:space-between;gap:12px;align-items:center"><div><b style="font-size:18px">5S 고도화 3대 요건 · 평가자료 및 사진 가이드</b><p style="font-size:12px;color:#667b8b;margin:6px 0">개별 개선사례 기준 · 3대 요건 중 1개 이상 충족 시 요건 충족 · 최종 채택은 마스터관리자</p></div><button type="button" data-guide-close style="padding:8px 13px;border:1px solid #cddae4;border-radius:8px;background:#fff;cursor:pointer">닫기 ×</button></header><nav style="display:flex;gap:7px;flex-wrap:wrap;margin:16px 0">'+items.map((x,i)=>'<button type="button" data-guide-tab="'+i+'" style="padding:9px 12px;border:1px solid #a6bfd1;border-radius:8px;cursor:pointer;background:'+(i===n?'#1b5d92':'#fff')+';color:'+(i===n?'#fff':'#24455f')+'">요건 '+(i+1)+'</button>').join('')+'</nav><h3 style="font-size:17px;margin:12px 0">'+(n+1)+'. '+esc(d.title)+'</h3><p style="line-height:1.8;background:#f3f8fc;padding:12px;border-radius:8px">'+esc(d.definition)+'</p><h4>현장 평가 체크포인트</h4><ul style="line-height:1.9">'+d.checks.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px"><div style="border:1px solid #d8e3eb;border-radius:9px;padding:13px"><b>BEFORE 사진 가이드</b><p style="line-height:1.8;font-size:13px">'+esc(d.before)+'</p></div><div style="border:1px solid #d8e3eb;border-radius:9px;padding:13px"><b>AFTER 사진 가이드</b><p style="line-height:1.8;font-size:13px">'+esc(d.after)+'</p></div></div><h4>인정 곤란 사례</h4><p style="line-height:1.8">'+esc(d.fail)+'</p><p style="font-size:12px;color:#687e8e">※ 실제 현장 참고사진은 등록된 BEFORE·AFTER 원본을 사용합니다. 임의 생성 사진을 평가 근거로 사용하지 않습니다.</p></section>';
 
-// The reference panel displays actual, traceable case evidence only.
-// The active unsaved draft takes precedence; otherwise select a registered
-// case satisfying the currently viewed criterion. Never substitute examples.
-// Reference guide images are independent from improvement-case evidence.
-// All six examples need authorized, real source photos; none are fabricated.
+// Approved examples are editorial references, never editable case evidence.
+// Show only the exact sources approved by the reviewer. The composite for item 3
+// is the SAME photo supplied in chat, independently matched to its publisher URL.
+// Do not imply that external photos are first-party inspection records.
 const evidenceRoot=overlay.querySelector('section');
-const GUIDE_KEY='hd20AdvGuideReferencePhotosV1';
-const loadGuide=()=>{try{const x=JSON.parse(localStorage.getItem(GUIDE_KEY)||'{}');return x&&typeof x==='object'?x:{}}catch{return{}}};
-const guideImages=loadGuide();
+const sourceCases=[
+ {name:'미국 EPA · 5S 적용 전후 사례',url:'https://www.epa.gov/sustainability/environmental-professionals-guide-lean-and-six-sigma-chapter-2',detail:'원본 문서 Figure 7(BEFORE) · Figure 8(AFTER). 표시·정위치·찾는 낭비 개선의 비교 기준.',image:''},
+ {name:'Novo Lean Solutions · Team Member Workstation',url:'https://www.novoleansolutions.com/case-studies/methodology-for-developing-team-member-workstations/',detail:'원본 Figure 2(BEFORE) · Figure 5(AFTER). 작업자 자세 REBA 7→3, 고빈도 동작의 Green Zone 배치.',image:''},
+ {name:'동성 농기계 제조공장 · 승인된 컬러 BEFORE / AFTER',url:'https://bizn.donga.com/3/all/20170724/85506925/2',detail:'승인한 원본 한 장의 상단은 BEFORE, 하단은 AFTER입니다. 출처: 동아일보 비즈N(2017.07.24). 사진만으로 정량축소의 절대 수치가 입증되지는 않습니다.',image:'https://dimg.donga.com/wps/ECONOMY/IMAGE/2017/07/24/85506918.2.jpg'}
+];
+const approved=sourceCases[n];
 const guideUploader=document.createElement('section');
 guideUploader.id='hd20AdvGuidePhotoReference';
 guideUploader.style.cssText='margin:15px 0;padding:14px;background:#f4f8fc;border:1px solid #d0dfeb;border-radius:10px';
-const guideTitle=document.createElement('strong');
-guideTitle.textContent='BEFORE · AFTER 평가 사진 가이드';
-guideUploader.appendChild(guideTitle);
-const guideHint=document.createElement('p');
-guideHint.textContent='현장 촬영 예시 원본을 등록하여 사용하는 영역입니다. 아래 실제 개선사례 증빙사진과 구분합니다.';
-guideHint.style.cssText='margin:5px 0 12px;font-size:12px;color:#536c7d;line-height:1.6';
-guideUploader.appendChild(guideHint);
-const guideGrid=document.createElement('div');
-guideGrid.style.cssText='display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px';
-const isMaster=!!window.HD20MasterAccess?.isMaster?.();
-for(const kind of ['before','after']){
- const key='criterion'+(n+1)+'_'+kind;
- const photo=guideImages[key];
- const cell=document.createElement('div');
- cell.style.cssText='padding:12px;background:white;border:1px solid #d5e1eb;border-radius:9px;min-height:170px';
- const title=document.createElement('b');title.textContent=kind.toUpperCase()+' 가이드 원본';
- cell.appendChild(title);
- if(typeof photo==='string'&&/^data:image\/(png|jpeg|webp);base64,/i.test(photo)){
-  const img=document.createElement('img');img.src=photo;img.alt=(n+1)+'번 요건 '+kind.toUpperCase()+' 평가 참고사진';
-  img.style.cssText='display:block;width:100%;max-height:300px;object-fit:contain;margin:9px auto;border-radius:6px;background:#f8fafb';
-  cell.appendChild(img);
- }else{
-  const missing=document.createElement('p');
-  missing.textContent='평가용 원본 사진 미등록';
-  missing.style.cssText='min-height:90px;display:flex;align-items:center;justify-content:center;text-align:center;color:#677e91;background:#f7f9fb;border:1px dashed #cbd9e4;border-radius:7px;font-size:13px';
-  cell.appendChild(missing);
- }
- if(isMaster){
-   const wrap=document.createElement('label');
-   wrap.style.cssText='display:block;font-size:12px;font-weight:700;color:#145a81;cursor:pointer;margin-top:9px';
-   wrap.textContent='현장 원본 사진 '+(photo?'교체':'등록')+' (마스터)';
-   const input=document.createElement('input');input.type='file';input.accept='image/jpeg,image/png,image/webp';
-   input.style.cssText='display:block;width:100%;margin-top:7px;font-size:11px';
-   input.onchange=async()=>{
-     const file=input.files?.[0];if(!file)return;
-     if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>600000){
-       alert('가이드 사진은 JPG/PNG/WEBP, 600KB 이하로 등록해 주세요.');input.value='';return;
-     }
-     const data=await new Promise((resolve,reject)=>{const rd=new FileReader();rd.onload=()=>resolve(rd.result);rd.onerror=reject;rd.readAsDataURL(file)});
-     const next=loadGuide();next[key]=data;
-     try{localStorage.setItem(GUIDE_KEY,JSON.stringify(next))}
-     catch(e){alert('브라우저 저장공간 부족으로 등록하지 못했습니다.');return}
-     open(n);
-   };
-   wrap.appendChild(input);cell.appendChild(wrap);
- }
- guideGrid.appendChild(cell);
+const hd=document.createElement('h4');hd.textContent='승인된 BEFORE · AFTER 사진 가이드';
+hd.style.cssText='margin:0 0 8px;color:#154869';guideUploader.appendChild(hd);
+const desc=document.createElement('p');desc.textContent=approved.name+' · '+approved.detail;
+desc.style.cssText='font-size:12px;color:#425e72;line-height:1.7;margin:0 0 10px';
+guideUploader.appendChild(desc);
+if(approved.image){
+ const figure=document.createElement('figure');
+ figure.style.cssText='max-width:610px;margin:8px auto 12px';
+ const img=document.createElement('img');img.src=approved.image;
+ img.alt='승인 원본 제조현장 BEFORE(상단) AFTER(하단) 비교사진';
+ img.style.cssText='display:block;width:100%;height:auto;border-radius:8px;border:1px solid #d3e0e9';
+ img.onerror=()=>{img.style.display='none';const msg=document.createElement('p');msg.textContent='원본 이미지 서버에서 사진을 불러오지 못했습니다. 아래 원문을 확인해 주세요.';figure.appendChild(msg)};
+ figure.appendChild(img);guideUploader.appendChild(figure);
+}else{
+ const label=document.createElement('p');
+ label.textContent='승인된 외부 사례의 원문 Figure 사진을 확인해 주세요. 원본 사진의 재게시 허가 및 직접 이미지 URL은 아직 검증되지 않아 임의 사진을 표시하지 않습니다.';
+ label.style.cssText='padding:12px;background:#fff;border:1px solid #d3e1eb;border-radius:8px;font-size:12px;line-height:1.65;color:#536a7e';
+ guideUploader.appendChild(label);
 }
-guideUploader.appendChild(guideGrid);
-const sourceNotice=document.createElement('p');
-sourceNotice.style.cssText='margin:10px 0 0;font-size:11px;color:#856129;line-height:1.6';
-sourceNotice.textContent='현재 가이드 사진은 등록한 브라우저에만 저장됩니다. 전체 사용자 공유에는 별도 공용 저장소 연동이 필요합니다.';
-guideUploader.appendChild(sourceNotice);
-// Insert strictly INSIDE the dialog section. Previous parentElement.before()
-// could insert next to the dialog itself, causing a floating second panel.
-const recognitionHeading=[...evidenceRoot.querySelectorAll('h4')]
-  .find(el=>el.textContent?.includes('인정 곤란 사례'));
-if(recognitionHeading)recognitionHeading.before(guideUploader);
-else evidenceRoot.appendChild(guideUploader);
-
+const sourceLink=document.createElement('a');sourceLink.href=approved.url;sourceLink.target='_blank';sourceLink.rel='noopener noreferrer';
+sourceLink.textContent='승인 사례 원문 및 사진 확인 ↗';
+sourceLink.style.cssText='display:inline-block;color:#11629e;font-size:13px;font-weight:700;text-decoration:underline;margin:4px 0';
+guideUploader.appendChild(sourceLink);
+const negativeExamples=[
+ ['공구함의 위치 표시만 추가했지만 공구가 여전히 뒤섞여 있으며 실제 탐색시간·탐색동작이 줄지 않은 경우','사진촬영 직전에만 형적판에 공구를 맞춰놓고 평상시 사용·반납 기준이 지켜지지 않는 경우','정위치 표시와 현물의 규격·수량이 서로 달라 신규 작업자가 공구를 다시 찾아야 하는 경우'],
+ ['작업대에 Green Zone 선만 그려놓고 고빈도 부품이 여전히 팔을 과도하게 뻗어야 닿는 곳에 있는 경우','한 작업자에게만 맞춘 배치로 다른 작업자가 반복 굽힘·비틀기 동작을 계속 수행하는 경우','공구 위치만 이동했을 뿐 동작·동선·위험도 개선 전후 근거가 없거나 안전 위험이 증가한 경우'],
+ ['보관랙의 외관만 정돈했을 뿐 정량기준·보유수량·점유면적에 실질적인 변화가 없는 경우','사진 촬영을 위해 다른 구역에 자재를 잠시 이동하여 빈 공간을 만들었으나 작업 후 원상복귀되는 경우','정위치만 바꿔 다른 통로를 점유하거나 확보한 공간의 실제 활용·유지 상태를 확인할 수 없는 경우']
+];
+const rejectBox=document.createElement('section');rejectBox.id='hd20AdvGuideRejectedSamples';
+rejectBox.style.cssText='margin:16px 0;padding:13px;border:1px solid #efc7c7;background:#fffafa;border-radius:9px';
+const rejectTitle=document.createElement('b');rejectTitle.textContent='인정 곤란 사례 · 현장 판정 예시';rejectBox.appendChild(rejectTitle);
+const rejectList=document.createElement('ul');rejectList.style.cssText='margin:10px 0 0;padding-left:20px;line-height:1.85;font-size:13px';
+negativeExamples[n].forEach(t=>{const li=document.createElement('li');li.textContent=t;rejectList.appendChild(li)});
+rejectBox.appendChild(rejectList);
+const recognitionHeading=[...evidenceRoot.querySelectorAll('h4')].find(el=>el.textContent?.includes('인정 곤란 사례'));
+if(recognitionHeading){recognitionHeading.parentNode.insertBefore(guideUploader,recognitionHeading);recognitionHeading.before(rejectBox);recognitionHeading.remove();}
+else{evidenceRoot.appendChild(guideUploader);evidenceRoot.appendChild(rejectBox)}
 const evidence=document.createElement('div');
 evidence.id='hd20AdvGuideEvidence';
 evidence.style.cssText='margin:16px 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px';
