@@ -73,8 +73,8 @@ if(n===0){
    // Present the exact same approved composite source in paired views, without changing the source.
    // Clip halves visually without replacing, resampling or modifying source pixels.
    const crop=document.createElement('div');
-   crop.style.cssText='position:relative;width:100%;'+((item.half==='left'||item.half==='right')?'max-width:270px;margin:auto;aspect-ratio:1/2':'aspect-ratio:440/220')+';overflow:hidden;background:#f3f6f8';
-   img.style.cssText=(item.half==='left'||item.half==='right')?'position:absolute;top:0;height:auto;max-height:none;width:200%;max-width:none;'+(item.half==='right'?'right:0':'left:0'):'position:absolute;left:0;width:100%;height:auto;max-height:none;object-fit:initial;'+(item.half==='bottom'?'bottom:0':'top:0');
+   crop.style.cssText='position:relative;width:100%;'+((item.half==='left'||item.half==='right')?'max-width:270px;margin:auto;aspect-ratio:1/2':'aspect-ratio:440/285')+';overflow:hidden;background:#f3f6f8';
+   img.style.cssText=(item.half==='left'||item.half==='right')?'position:absolute;top:0;height:auto;max-height:none;width:200%;max-width:none;'+(item.half==='right'?'right:0':'left:0'):'position:absolute;'+(item.half==='bottom'?'bottom:0;':'top:0;')+'left:-12.5%;width:125%;height:auto;max-height:none;max-width:none;object-fit:initial;';
    crop.appendChild(img);
    figure.appendChild(crop);
   }else figure.appendChild(img);
