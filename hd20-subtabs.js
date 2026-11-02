@@ -584,7 +584,9 @@ function applyAudit(sub){
    const inSampling=!!(sampling&&(card===sampling||sampling.contains(card)||card.contains(sampling)));
    const inClosure=!!((closeEval&&(card===closeEval||closeEval.contains(card)||card.contains(closeEval)))||(trace&&(card===trace||trace.contains(card)||card.contains(trace))));
    const inActions=card.id==='hd20AuditActionMonitor';
-   const isChecklist=card.classList.contains('acWrap');
+   const isChecklist=card.classList.contains('acWrap')||!!card.querySelector('.acWrap');
+   // Keep a checklist's enclosing .awCard visible, even when a legacy renderer
+   // nests the checklist instead of mounting it at the Audit root.
    const keep=sub==='checklist'?isChecklist:sub==='draw'?!inSampling&&!inClosure&&!inActions&&!isChecklist:sub==='action'?inActions:sub==='ongoing'?inSampling:inClosure&&!inActions&&!isChecklist;
    show(card,keep);
  });
