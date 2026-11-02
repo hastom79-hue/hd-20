@@ -37,7 +37,7 @@ try{
    const before=window.scrollY;
    target?.click();
    await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
-   return {pageBefore:before,pageAfter:window.scrollY,modalScrollOwner:!!modal&&getComputedStyle(modal).overflowY==='auto'};
+   return {pageBefore:before,pageAfter:window.scrollY,overflowY:modal?getComputedStyle(modal).overflowY:'MISSING',modalScrollOwner:!!modal&&['auto','scroll'].includes(getComputedStyle(modal).overflowY)};
  });
  if(!scrollContract.modalScrollOwner||Math.abs(scrollContract.pageAfter-scrollContract.pageBefore)>2)
    throw Error('Master selection moved the outer page '+JSON.stringify(scrollContract));
