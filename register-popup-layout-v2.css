@@ -199,3 +199,43 @@
  #awRegisterModal .hd20EvalPanel .hd20EvalOptions>.hd20EvalChoice,
  #hd20ActionRegisterModal .hd20EvalPanel .hd20EvalOptions>.hd20EvalChoice{padding:9px 7px!important;font-size:12px!important}
 }
+
+
+/* 2026-11-02: approved improvement-request popup hierarchy.
+   The introductory instruction belongs directly below the sticky heading,
+   followed by the compact 3-field context strip, then the registration form.
+   Recent completed cases are reference-only and appear after the form. */
+#hd20ActionRegisterModal .armBody>.hd20ActionIntroTop{
+ display:block!important;position:relative!important;
+ width:100%!important;max-width:none!important;box-sizing:border-box!important;
+ margin:0 0 10px!important;padding:12px 16px!important;
+ background:#fff6ed!important;border:1px solid #efd8bc!important;
+ border-left:4px solid #d18f48!important;border-radius:9px!important;
+ color:#674b2e!important;font-size:12.5px!important;line-height:1.65!important;
+}
+#hd20ActionRegisterModal .armBody>.hd20ActionCompactSummary{
+ grid-template-columns:repeat(3,minmax(0,1fr))!important;
+ margin:0 0 12px!important;
+}
+#hd20ActionRegisterModal .armBody>.hd20ActionCompactSummary .hd20RegSummaryCell:first-child{
+ border-left:0!important;
+}
+#hd20ActionRegisterModal .armBody>.hd20ActionRecentBottom{
+ margin:14px 0 0!important;padding:10px 14px!important;
+ border:1px solid #dce7f0!important;border-left:3px solid #7ca9cb!important;
+ background:#f7fafc!important;
+}
+#hd20ActionRegisterModal .armBody>.hd20ActionRecentBottom .amRecentList{
+ max-height:115px!important;
+}
+#hd20ActionRegisterModal .armBody>.hd20ActionRecentBottom>.amHead2{
+ padding-bottom:4px!important;font-size:13px!important;
+}
+@media(max-width:650px){
+ #hd20ActionRegisterModal .armBody>.hd20ActionCompactSummary{
+  grid-template-columns:minmax(0,1fr)!important;
+ }
+ #hd20ActionRegisterModal .armBody>.hd20ActionCompactSummary .hd20RegSummaryCell{
+  border-left:0!important;border-top:1px solid #e6edf2!important;
+ }
+}
