@@ -36,7 +36,7 @@ function open(index=0){
 // Do not imply that external photos are first-party inspection records.
 const evidenceRoot=overlay.querySelector('section');
 const sourceCases=[
- {name:'5S Center · 제조현장 공구 작업장 형적관리 BEFORE / AFTER',url:'https://www.linkedin.com/posts/5s-center-a06174248_before-vs-after-5s-implementation-see-activity-7336320714855088128-b7NM',detail:'제조현장 공구 작업장의 BEFORE(좌) · AFTER(우). 개선 후 공구 형적·정위치 식별이 가능해진 실제 공개 사례. 탐색시간 단축의 정량값은 확인되지 않았습니다.',image:'https://media.licdn.com/dms/image/v2/D4D22AQG3rgUcoaawGg/feedshare-shrink_800/B4DZc_YxNNGgAo-/0/1749115158789?e=2147483647&t=UV0k3LxBO1PAw2EBFt4kFb9ZCghF8eGfynwli8SIglw&v=beta'},
+ {name:'Expert Engineering Enterprises · 산업용 밸브 제조공장 공구 형적관리',url:'https://www.sibmbengaluru.edu.in/wp-content/uploads/2023/08/4_Kaizen.pdf',detail:'승인된 제조공장 실제 Kaizen 사례. 논문 인쇄 57페이지(파일 14페이지)에 BEFORE: 혼재된 공구함, AFTER: 형상별 정위치 Shadow Board 사진이 있습니다. 개선 전 공구 탐색 약 10분. 개선 후 수치는 원문에 없습니다.',image:'',pdfPage:14},
  {name:'Novo Lean Solutions · Team Member Workstation',url:'https://www.novoleansolutions.com/case-studies/methodology-for-developing-team-member-workstations/',detail:'원본 Figure 2(BEFORE) · Figure 5(AFTER). 작업자 자세 REBA 7→3, 고빈도 동작의 Green Zone 배치.',image:''},
  {name:'동성 농기계 제조공장 · 승인된 컬러 BEFORE / AFTER',url:'https://bizn.donga.com/3/all/20170724/85506925/2',detail:'승인한 원본 한 장의 상단은 BEFORE, 하단은 AFTER입니다. 출처: 동아일보 비즈N(2017.07.24). 사진만으로 정량축소의 절대 수치가 입증되지는 않습니다.',image:'https://dimg.donga.com/wps/ECONOMY/IMAGE/2017/07/24/85506918.2.jpg'}
 ];
@@ -49,7 +49,10 @@ hd.style.cssText='margin:0 0 8px;color:#154869';guideUploader.appendChild(hd);
 const desc=document.createElement('p');desc.textContent=approved.name+' · '+approved.detail;
 desc.style.cssText='font-size:12px;color:#425e72;line-height:1.7;margin:0 0 10px';
 guideUploader.appendChild(desc);
-if(approved.image||approved.beforeImage){
+if(n===0&&approved.pdfPage){
+ const notice=document.createElement('p');notice.textContent='승인된 제조현장 원문 사진 · 생산부서 5S 형적관리 BEFORE / AFTER (인쇄 57페이지). 현재 이미지 원본을 별도 추출하지 못해 해당 논문 페이지를 직접 표시합니다.';notice.style.cssText='font-size:12px;line-height:1.7;color:#425e72;margin:5px 0 12px';guideUploader.appendChild(notice);
+ const viewer=document.createElement('object');viewer.type='application/pdf';viewer.data=approved.url+'#page='+approved.pdfPage+'&zoom=140';viewer.setAttribute('aria-label','승인된 Expert Engineering 제조공장 BEFORE AFTER 사례 원문 PDF 14페이지');viewer.style.cssText='display:block;width:100%;height:530px;border:1px solid #d3e0e9;border-radius:8px;background:#fff';viewer.innerHTML='<p>PDF 미리보기가 지원되지 않습니다. 아래 원문 링크에서 인쇄 57페이지의 BEFORE·AFTER 사진을 확인하세요.</p>';guideUploader.appendChild(viewer);
+}else if(approved.image||approved.beforeImage){
  const images=n===2
   ?[{src:approved.image,alt:'BEFORE · 승인된 원본 상단',half:'top'},{src:approved.image,alt:'AFTER · 승인된 원본 하단',half:'bottom'}]
   :approved.image?[{src:approved.image,alt:n===0?'제조현장 공구 작업장 형적관리 BEFORE(좌) AFTER(우)':'승인된 원본 비교사진'}]
