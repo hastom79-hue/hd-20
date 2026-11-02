@@ -63,7 +63,7 @@ function plannedThemes(month,line){
  return [];
 }
 const THEME_COMPLETED_STATUSES=new Set(['완료','조치완료','개선완료','종결','종료','유지점검완료','효과검증완료']);
-const THEME_ACTIVE_STATUSES=new Set(['조치대기','미착수','진행중','기한경과','보완요청','조치중','효과검증대기']);
+const THEME_ACTIVE_STATUSES=new Set(['조치대기','미착수','진행중','조치진행중','기한경과','보완요청','조치중','효과검증대기']);
 const normalizeThemeStatus=v=>String(v??'').replace(/\s+/g,'').trim();
 function themeSameIssue(a,line,team,cat,problem){return a.source==='테마Audit'&&a.workplace===line&&a.team===team&&a.themeCategory===cat&&a.problem===problem}
 function themeFindActive(actions,line,team,cat,problem){return actions.find(a=>themeSameIssue(a,line,team,cat,problem)&&!THEME_COMPLETED_STATUSES.has(normalizeThemeStatus(a.status)))}
