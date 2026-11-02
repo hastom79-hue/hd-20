@@ -57,13 +57,15 @@ const assert = require('node:assert/strict');
      'no floating reference panel may appear beside dialog');
    assert.equal(await dialog.locator('#hd20AdvGuidePhotoReference input[type=file]').count(),0,
      'reference guide must not include manual file uploads');
-   const imageCount=await dialog.locator('#hd20AdvGuideEvidence img').count();
-   assert.equal(imageCount,2,ln+' should show real stored before/after case photographs for criterion one');
-   assert.match(await dialog.locator('#hd20AdvGuideEvidence').innerText(),/GUIDE-TEST-EVIDENCE-1/,
-     'evidence must disclose the actual stored case identifier');
+   assert.equal(await dialog.locator('#hd20AdvGuideEvidence').count(),0,
+     'duplicate legacy registered-case panel must not appear');
+   assert.equal(await dialog.locator('#hd20AdvGuideRejectedSamples').count(),1,
+     'nonqualifying examples must be shown once');
+   assert.equal(await dialog.locator('#hd20AdvGuidePhotoReference img').count(),2,
+     'EPA guide should show before and after photos directly');
    await dialog.locator('[data-guide-tab="1"]').click();
-   assert.equal(await dialog.locator('#hd20AdvGuideEvidence img').count(),0,
-     'a non-matching criterion must not borrow photographs from another criterion');
+   assert.equal(await dialog.locator('#hd20AdvGuidePhotoReference img').count(),0,
+     'unverified Novo image URLs must not be substituted with unrelated images');
    await dialog.locator('[data-guide-tab="0"]').click();
    for(let i=0;i<3;i++){
      await dialog.locator('[data-guide-tab="'+i+'"]').click();
@@ -84,6 +86,8 @@ const assert = require('node:assert/strict');
    await refDialog.locator('[data-guide-tab="'+i+'"]').click();
    assert.equal(await refDialog.locator('#hd20AdvGuidePhotoReference input[type=file]').count(),0,'no master photo picker');
    assert.equal(await refDialog.locator('#hd20AdvGuideRejectedSamples li').count(),3,'three nonqualifying case explanations');
+   assert.equal(await refDialog.locator('#hd20AdvGuideRejectedSamples').count(),1,'no duplicate rejected examples');
+   assert.equal(await refDialog.locator('#hd20AdvGuideEvidence').count(),0,'no duplicate registered activity photo panels');
    assert.equal(await refDialog.locator('#hd20AdvGuidePhotoReference a[href]').count(),1,'approved source reference link');
  }
  assert.equal(await refDialog.locator('#hd20AdvGuidePhotoReference img').count(),1,'third criterion should render exact published photo');
