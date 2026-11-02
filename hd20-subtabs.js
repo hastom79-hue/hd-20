@@ -351,40 +351,45 @@ function ensureAuditCloseEvaluation(root){
  return host;
 }
 function renderAuditCloseEvaluation(host,traceOnly=false){
- const audits=readStore('hd20AuditRandomDrawsV1');
- const actions=readStore('hd20ActionCasesV2');
- const retentions=readStore('hd20RetentionRandomChecksV1');
- const conducted=audits.filter(x=>txt(x.auditDate));
- const pending=conducted.filter(x=>!txt(x.finalEvaluation)).length;
- const done=conducted.length-pending;
- const notDone=audits.length-conducted.length;
- const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const audits=readStore('hd20AuditRandomDrawsV1'),actions=readStore('hd20ActionCasesV2'),retentions=readStore('hd20RetentionRandomChecksV1');
+ const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','"':'&quot;'}[c]));
+ const auditId=a=>txt(a.id||a.drawId||a.auditDrawId);
+ const conducted=audits.filter(a=>txt(a.auditDate));
+ const pendingFinal=conducted.filter(a=>!txt(a.finalEvaluation));
+ const evaluated=conducted.filter(a=>txt(a.finalEvaluation));
  const flagged=retentions.filter(r=>r.result==='부적합');
+ const unresolved=flagged.filter(r=>!(r.recheckResult==='적합'&&r.recheckedAt));
+ const resolved=flagged.filter(r=>r.recheckResult==='적합'&&r.recheckedAt);
  const linked=r=>{
-   // Recheck failures create a new corrective action; never show a stale initial action.
    const byId=id=>id?actions.find(a=>String(a.id||'')===String(id)):null;
-   const direct=byId(r.followupActionId)||byId(r.actionId);
-   if(direct)return direct;
-   const rechecks=actions.filter(a=>a.sourceStage==='RETENTION-RECHECK'&&String(a.sourceCaseId||'')===String(r.id));
-   if(rechecks.length)return rechecks[0];
+   const direct=byId(r.followupActionId)||byId(r.actionId);if(direct)return direct;
+   const followups=actions.filter(a=>a.sourceStage==='RETENTION-RECHECK'&&String(a.sourceCaseId||'')===String(r.id));
+   if(followups.length)return followups[0];
    return actions.find(a=>a.sourceStage==='RETENTION-RANDOM'&&String(a.sourceCaseId||'')==='RET-AUDIT-'+r.id)||null;
  };
- const isDone=a=>['완료','조치완료','개선완료','종료','종결','종결완료'].includes(String(a?.status||'').trim());
- const toReview=r=>r.recheckResult!=='적합'||!r.recheckedAt;
- const outstanding=flagged.filter(toReview);
- const rows=outstanding.slice().reverse().slice(0,80).map(r=>{
-   const act=linked(r),closed=!!r.recheckedAt&&r.recheckResult==='적합';
-   const progress=!act?'개선조치 연결 확인 필요':isDone(act)?'개선조치 완료 · 재점검 필요':(r.recheckResult==='부적합'?'재부적합 · 재조치 진행·대기':'개선조치 진행·대기');
-   return '<tr><td>'+esc(r.id)+'</td><td>'+esc(r.team||'—')+'</td><td>'+esc(r.kind||'—')+' · '+esc(r.caseId||'—')+'</td><td>'+esc(r.evaluator||'미입력')+'</td><td>'+esc(act?.id||'미연결')+'</td><td>'+esc(closed?'종료':progress)+'</td></tr>';
- }).join('');
- const summary=traceOnly?'':'<div class="awHead"><div><b>종료·재조치 판정현황</b><small>Audit 최종판정과 유지점검 재조치를 별도 원천으로 조회 · 미입력 결과는 자동으로 적합 판정하지 않습니다.</small></div></div>'+
- '<div class="awKpis"><div><small>Audit 미실시</small><b>'+notDone+'건</b></div><div><small>최종판정 입력</small><b>'+done+'건</b></div><div><small>최종판정 미입력</small><b>'+pending+'건</b></div></div>'+
- '<div class="awHint">최종판정 미입력은 Audit 실시 건 기준입니다. 6개월 도래·종료 가능 여부는 개별 근거로 확인해야 합니다.</div>';
- host.innerHTML=summary+
- '<div style="margin-top:14px"><b>유지점검 부적합 · 재조치 추적</b><small style="display:block;color:#647b8c;margin:6px 0">부적합 '+flagged.length+'건 / 재점검 적합·종료 '+(flagged.length-outstanding.length)+'건 / 재조치·재점검 필요 '+outstanding.length+'건</small></div>'+
- (rows?'<div style="overflow:auto"><table class="awTable"><thead><tr><th>유지점검 ID</th><th>생산팀</th><th>원본 개선사례</th><th>최초 평가자</th><th>연계 조치번호</th><th>진행 상태</th></tr></thead><tbody>'+rows+'</tbody></table></div><div class="awHint">최대 80건 표시. 현장 재점검 입력은 ② 유지점검에서 수행하고, 개선조치 실행은 개선조치·완료관리 탭에서 수행합니다.</div>':'<p class="awHint">현재 부적합 후 재조치·재점검이 필요한 유지점검 기록이 없습니다.</p>');
+ const done=a=>['완료','조치완료','개선완료','종료','종결','종결완료'].includes(String(a?.status||'').trim());
+ const auditTable=rows=>'<div class="hd20CloseTableWrap"><table class="awTable"><thead><tr><th>Audit 번호</th><th>생산팀 · 작업장</th><th>점검일</th><th>점검자</th><th>최종판정</th></tr></thead><tbody>'+rows.map(a=>'<tr><td><button type="button" class="hadAuditLink" data-had-open-audit="'+esc(auditId(a))+'">'+esc(auditId(a)||'—')+'</button></td><td>'+esc(a.team||'—')+' · '+esc(a.workplace||'—')+'</td><td>'+esc(a.auditDate||'—')+'</td><td>'+esc(a.initialAuditor||a.auditor||'—')+'</td><td>'+esc(a.finalEvaluation||'미입력')+'</td></tr>').join('')+'</tbody></table></div>';
+ const actionTable=rows=>'<div class="hd20CloseTableWrap"><table class="awTable"><thead><tr><th>유지점검 번호</th><th>생산팀</th><th>원본 개선사례</th><th>최초 평가자</th><th>최신 개선조치</th><th>재조치 상태</th></tr></thead><tbody>'+rows.map(r=>{
+   const action=linked(r),status=!action?'개선조치 연결 확인 필요':done(action)?'개선조치 완료 · 재점검 필요':r.recheckResult==='부적합'?'재부적합 · 재조치 진행·대기':'개선조치 진행·대기';
+   return '<tr><td>'+esc(r.id)+'</td><td>'+esc(r.team||'—')+'</td><td>'+esc(r.kind||'—')+' · '+esc(r.caseId||'—')+'</td><td>'+esc(r.evaluator||'미입력')+'</td><td>'+esc(action?.id||'미연결')+'</td><td>'+esc(r.recheckResult==='적합'?'종결':status)+'</td></tr>';
+ }).join('')+'</tbody></table></div>';
+ const existingOpen=host.querySelector('.hd20CloseHistory')?.open===true;
+ const firstBlock=traceOnly?'':'<div class="awHead"><div><b>Audit 최종판정 · 재조치 관리</b><small>판정 미입력과 재조치 필요 건 우선 · 기존 원본 기록 보존</small></div></div>'+
+ '<section class="hd20CloseSection" data-close-final-pending><div class="hd20CloseSectionHead"><b>최종판정 대기</b><small>'+pendingFinal.length+'건 · 실시 완료, 최종판정 미입력</small></div>'+
+ (pendingFinal.length?auditTable(pendingFinal.slice().reverse().slice(0,80)):'<p class="awHint">현재 최종판정 대기 Audit가 없습니다.</p>')+'</section>';
+ const corrective='<section class="hd20CloseSection" data-close-rework><div class="hd20CloseSectionHead"><b>재조치·재점검 필요</b><small>'+unresolved.length+'건 · 현장 점검/판정은 ③ 유지점검에서 수행</small></div>'+
+ (unresolved.length?actionTable(unresolved.slice().reverse().slice(0,80)):'<p class="awHint">현재 재조치·재점검이 필요한 부적합 기록이 없습니다.</p>')+'</section>';
+ const history='<details class="hd20CloseHistory" '+(existingOpen?'open':'')+'><summary>종결·최종판정 완료 이력 ('+(evaluated.length+resolved.length)+'건) 상세보기</summary>'+
+ (evaluated.length?'<div class="hd20CloseSectionHead"><b>최종판정 완료</b><small>'+evaluated.length+'건</small></div>'+auditTable(evaluated.slice().reverse().slice(0,80)):'')+
+ (resolved.length?'<div class="hd20CloseSectionHead"><b>재점검 적합·종결</b><small>'+resolved.length+'건</small></div>'+actionTable(resolved.slice().reverse().slice(0,80)):'')+
+ (!evaluated.length&&!resolved.length?'<p class="awHint">종결된 점검 이력이 없습니다.</p>':'')+'</details>';
+ host.innerHTML=firstBlock+corrective+history;
+ if(!document.getElementById('hd20AuditClosureLayoutStyle')){
+   const style=document.createElement('style');style.id='hd20AuditClosureLayoutStyle';
+   style.textContent='#awAudit .hd20CloseSection{margin:12px 0 18px}#awAudit .hd20CloseSectionHead{display:flex;justify-content:space-between;align-items:center;gap:10px;border-bottom:1px solid #dce7ef;padding:10px 2px}#awAudit .hd20CloseSectionHead b{font-size:15px;color:#24475f}#awAudit .hd20CloseSectionHead small{font-size:12px;color:#627e91}#awAudit .hd20CloseTableWrap{width:100%;overflow:auto;margin-top:8px}#awAudit .hd20CloseTableWrap .awTable{width:100%;border-collapse:collapse}#awAudit .hd20CloseHistory{margin-top:17px;border:1px solid #dce7ef;border-radius:9px;background:#fbfdff}#awAudit .hd20CloseHistory>summary{cursor:pointer;padding:12px 14px;color:#24516f;font-weight:800}#awAudit .hd20CloseHistory>.hd20CloseTableWrap,#awAudit .hd20CloseHistory>.hd20CloseSectionHead,#awAudit .hd20CloseHistory>.awHint{margin:9px 12px 13px}';
+   document.head.appendChild(style);
+ }
 }
-
 function renderRetentionSampling(root){
  let host=root.querySelector('#hd20RetentionSampling');
  if(!host){host=document.createElement('section');host.id='hd20RetentionSampling';host.className='awCard';root.insertBefore(host,root.firstChild)}
