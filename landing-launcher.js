@@ -240,23 +240,27 @@ function boot(){
   ['hd20-kpi-source-updated','hd20-action-updated','hd20-activity-updated'].forEach(e=>window.addEventListener(e,()=>{if(document.body.classList.contains('hd20InquiryActive'))renderOverview()}));
   window.addEventListener('storage',()=>{if(document.body.classList.contains('hd20InquiryActive'))renderOverview()});
 
-  // Initial launcher: only once after authenticated app becomes visible.
-  let launchScheduled=false;
+  // Reload / revisit: always show the registration-choice popup after the company mail gate.
+  // The page can restore any deep-linked area; do not suppress the popup for that reason.
+  let launchScheduled=false,initialLauncherOpened=false;
   function showInitialLauncher(){
-    if(launchScheduled)return;
+    if(launchScheduled||initialLauncherOpened)return;
     if(document.documentElement.classList.contains('hd20-auth-pending'))return;
     if(document.querySelector('.hd20AuthGate.on'))return;
-    if(document.getElementById('hd20Launcher'))return;
-    // Never obscure an explicitly selected working screen (notably master data).
-    const requested=new URLSearchParams(location.search).get('area');
-    if(requested&&requested!=='dashboard')return;
-    if(window.HD20_NAV?.active?.()&&window.HD20_NAV.active()!=='dashboard')return;
+    if(!window.HD20_AUTH_BYPASS)return;
     launchScheduled=true;
-    setTimeout(()=>{
-      const current=new URLSearchParams(location.search).get('area');
-      if((current&&current!=='dashboard')||(window.HD20_NAV?.active?.()&&window.HD20_NAV.active()!=='dashboard'))return;
-      try{open()}catch(err){console.error('[HD20 launcher]',err);hideOverview()}
-    },0);
+    let attempts=0;
+    const reveal=()=>{
+      if(initialLauncherOpened)return;
+      if(document.querySelector('.hd20AuthGate.on')||!window.HD20_AUTH_BYPASS){launchScheduled=false;return}
+      if(!window.HD20_NAV?.ready?.()||!document.getElementById('awActivity')){
+        if(++attempts<50){setTimeout(reveal,100);return}
+        launchScheduled=false;return;
+      }
+      try{open();initialLauncherOpened=!!document.getElementById('hd20Launcher');if(!initialLauncherOpened)launchScheduled=false}
+      catch(err){launchScheduled=false;console.error('[HD20 launcher]',err)}
+    };
+    setTimeout(reveal,150);
   }
   window.addEventListener('hd20-nav-area-changed',e=>{
     if(e.detail?.area!=='dashboard'&&document.getElementById('hd20Launcher'))close();
@@ -268,8 +272,7 @@ function boot(){
   setTimeout(showInitialLauncher,250);
   // 복구 우선: 초기 로드에서 통합조회 자동 생성/화면 은닉을 하지 않는다.
   // 메뉴 클릭 후에만 조회를 생성하며, 조회 렌더 오류가 나도 기본 앱은 남는다.
-  // 팝업은 사용자가 명시적으로 신규등록을 선택했을 때만 연다.
-  // 로그인/새로고침에서 자동 팝업을 열지 않아 조회 탭과 화면 충돌을 방지한다.
+  // 로그인 확인 후 매 로드마다 등록 선택 팝업을 먼저 표시한다.
 
 }
 boot();
