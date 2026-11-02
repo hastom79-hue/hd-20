@@ -352,7 +352,7 @@ function ensureAuditCloseEvaluation(root){
 }
 function renderAuditCloseEvaluation(host,traceOnly=false){
  const audits=readStore('hd20AuditRandomDrawsV1'),actions=readStore('hd20ActionCasesV2'),retentions=readStore('hd20RetentionRandomChecksV1');
- const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','"':'&quot;'}[c]));
+ const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const auditId=a=>txt(a.id||a.drawId||a.auditDrawId);
  const conducted=audits.filter(a=>txt(a.auditDate));
  const pendingFinal=conducted.filter(a=>!txt(a.finalEvaluation));
