@@ -247,9 +247,20 @@ function boot(){
     if(document.documentElement.classList.contains('hd20-auth-pending'))return;
     if(document.querySelector('.hd20AuthGate.on'))return;
     if(document.getElementById('hd20Launcher'))return;
+    // Never obscure an explicitly selected working screen (notably master data).
+    const requested=new URLSearchParams(location.search).get('area');
+    if(requested&&requested!=='dashboard')return;
+    if(window.HD20_NAV?.active?.()&&window.HD20_NAV.active()!=='dashboard')return;
     launchScheduled=true;
-    setTimeout(()=>{try{open()}catch(err){console.error('[HD20 launcher]',err);hideOverview()}},0);
+    setTimeout(()=>{
+      const current=new URLSearchParams(location.search).get('area');
+      if((current&&current!=='dashboard')||(window.HD20_NAV?.active?.()&&window.HD20_NAV.active()!=='dashboard'))return;
+      try{open()}catch(err){console.error('[HD20 launcher]',err);hideOverview()}
+    },0);
   }
+  window.addEventListener('hd20-nav-area-changed',e=>{
+    if(e.detail?.area!=='dashboard'&&document.getElementById('hd20Launcher'))close();
+  });
   window.addEventListener('hd20-auth-bypass',showInitialLauncher,{once:true});
   window.addEventListener('hd20-auth-success',showInitialLauncher,{once:true});
   // 인증 완료가 스크립트 초기화보다 먼저 발생한 경우에도 즉시 팝업을 요청한다.
