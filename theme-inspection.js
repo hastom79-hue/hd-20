@@ -278,6 +278,12 @@ function render(){
    <div class="themeSaveResult" id="themeSaveResult"></div>
  </div></section>
  <section class="themePanel" data-theme-panel="actions" ${view==='actions'?'':'hidden'}><details class="themeHistoryBox"><summary style="cursor:pointer;padding:10px 14px;font-weight:800;color:#24516f">상세 원본 점검·개선조치 이력 보기</summary><div class="themeSectionHead" style="margin-top:0"><h3>테마점검 원본 개선조치 추적</h3><small>기존 등록·완료 이력을 보존한 상세조회</small></div>${actionTable(month)}</details></section>`;
+ // Preserve a confirmed save acknowledgement across event-triggered re-renders of the same audit context.
+ const resultBox=$('#themeSaveResult',host);
+ if(resultBox&&host.dataset.themeSaveContext===month+'|'+line&&host.dataset.themeSaveResult){
+   resultBox.classList.add('on');
+   resultBox.textContent=host.dataset.themeSaveResult;
+ }
  // Mount only the selected workspace. Hidden panels must never retain tall layout boxes.
  host.querySelectorAll('.themePanel[hidden]').forEach(panel=>panel.remove());
  $('#themeMonthSel',host).addEventListener('change',e=>{host.dataset.month=e.target.value;render()});
@@ -447,9 +453,9 @@ async function saveAudit(){
  window.dispatchEvent(new CustomEvent('hd20-activity-updated',{detail:{source:'테마Audit',auditRecordId:rec.id}}));
  window.dispatchEvent(new CustomEvent('hd20-theme-audit-updated',{detail:{auditRecordId:rec.id,line,month}}));
  const msg='점검 이력 저장 완료 · 미흡 '+ngItems.length+'건 · 신규 개선조치 '+createdActionIds.length+'건 · 기존 미완료 조치 재연계 '+reusedActionIds.length+'건';
+ host.dataset.themeSaveResult=msg;
+ host.dataset.themeSaveContext=month+'|'+line;
  render();
- const resultBox=document.getElementById('themeSaveResult');
- if(resultBox){resultBox.classList.add('on');resultBox.textContent=msg}
 }
 
 function build(){
