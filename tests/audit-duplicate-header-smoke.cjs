@@ -67,6 +67,22 @@ fs.mkdirSync('artifacts',{recursive:true});
   };
   await assertAuditSubtab('action');
   await assertAuditSubtab('checklist');
+  const checklistFilter=await page.evaluate(()=>{
+    const panel=document.querySelector('#awAudit .acWrap'),trs=[...panel?.querySelectorAll('.acTable tbody tr')||[]];
+    const query=panel?.querySelector('[data-ac-filter-text]'),category=panel?.querySelector('[data-ac-filter-cat]'),status=panel?.querySelector('[data-ac-filter-status]');
+    const first=trs[0],firstCat=first?.querySelector('[data-f="cat"]')?.value||'',firstText=first?.querySelector('[data-f="item"]')?.value||'',firstStatus=first?.querySelector('.acJudge')?.textContent||'N/A';
+    if(category){category.value=firstCat;category.dispatchEvent(new Event('input',{bubbles:true}))}
+    if(status){status.value=firstStatus;status.dispatchEvent(new Event('input',{bubbles:true}))}
+    if(query){query.value=firstText;query.dispatchEvent(new Event('input',{bubbles:true}))}
+    const filtered=trs.filter(tr=>!tr.hidden).length;
+    panel?.querySelector('[data-ac-filter-reset]')?.click();
+    return {count:trs.length,filtered,reset:trs.filter(tr=>!tr.hidden).length,summaryCollapsed:panel?.querySelector('.acSummaryFold')?.open===false,filtersPresent:!!query&&!!category&&!!status};
+  });
+  assert.ok(checklistFilter.count>0,'Audit checklist must preserve current evaluation rows');
+  assert.equal(checklistFilter.filtersPresent,true,'Audit checklist needs category, status and text filters');
+  assert.ok(checklistFilter.filtered>0&&checklistFilter.filtered<=checklistFilter.count,'combined checklist filter must show matching items');
+  assert.equal(checklistFilter.reset,checklistFilter.count,'reset must restore full checklist');
+  assert.equal(checklistFilter.summaryCollapsed,true,'duplicate evaluation summary remains collapsed initially');
   await assertAuditSubtab('ongoing');
   // Retention workspace must keep actionable checks above completed cases.
   await page.evaluate(()=>{
