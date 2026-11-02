@@ -1,6 +1,14 @@
 const { chromium } = require('playwright');
 const assert = require('node:assert/strict');
 (async()=>{
+ // One-shot audit: read the publisher's own HTML to identify exact Figure 2/5 URLs.
+ try {
+   const response=await fetch('https://www.novoleansolutions.com/case-studies/methodology-for-developing-team-member-workstations/',{signal:AbortSignal.timeout(8000)});
+   const html=await response.text();
+   const images=[...html.matchAll(/<img\\b[^>]*>/gi)].map(x=>x[0].slice(0,650));
+   const figureContext=['Figure 2','Figure 5'].map(term=>{const p=html.indexOf(term);return {term,near:p<0?'not found':html.slice(Math.max(0,p-700),p+250).replace(/\\s+/g,' ').slice(0,950)}});
+   console.log('HD20_NOVO_SOURCE_AUDIT',JSON.stringify({status:response.status,images:images.slice(0,35),figureContext}).slice(0,14000));
+ }catch(err){console.log('HD20_NOVO_SOURCE_AUDIT_UNAVAILABLE',String(err))}
  const browser=await chromium.launch({headless:true});
  const page=await browser.newPage({viewport:{width:1440,height:900}});
  const errors=[];
