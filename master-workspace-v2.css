@@ -37,3 +37,59 @@
 #masterModal .masterInfoBox>.modalFoot{padding:12px 28px 22px}
 @media(max-width:1050px){#masterModal .hmGroups{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:600px){#masterModal #hd20MasterWorkspace{padding:16px}#masterModal .hmGroups{grid-template-columns:1fr}#masterModal .hmTitle{align-items:flex-start;flex-direction:column}#masterModal .hmToolbar{flex-wrap:wrap}#masterModal .hmToolbar label{width:100%}#masterModal .masterInfoBox>#hd20IntegratedMasterFactors{padding:14px!important}}
+
+/* Emergency canonical master view isolation.
+   Old integrated-master-factors injects a later, equally specific two-pane
+   grid with overflow:hidden!important. The newer ready state must win by
+   selector specificity, without affecting fallback master navigation. */
+html body #masterModal .masterInfoBox.hd20MasterWorkspaceReady{
+ display:flex!important;
+ flex-direction:column!important;
+ grid-template-columns:none!important;grid-template-rows:none!important;
+ align-items:stretch!important;justify-content:flex-start!important;
+ width:min(1480px,calc(100vw - 24px))!important;
+ max-width:1480px!important;min-width:0!important;
+ height:auto!important;min-height:0!important;
+ max-height:calc(100dvh - 28px)!important;
+ overflow-x:hidden!important;overflow-y:auto!important;
+ margin:12px auto!important;
+ box-sizing:border-box!important;
+ overscroll-behavior:contain!important;
+}
+html body #masterModal .masterInfoBox.hd20MasterWorkspaceReady>.modalHead,
+html body #masterModal .masterInfoBox.hd20MasterWorkspaceReady>.masterTabs{
+ display:none!important;
+}
+html body #masterModal .masterInfoBox.hd20MasterWorkspaceReady>#hd20MasterWorkspace{
+ display:block!important;flex:0 0 auto!important;width:100%!important;
+ max-height:none!important;min-height:0!important;
+ box-sizing:border-box!important;
+}
+html body #masterModal .masterInfoBox.hd20MasterWorkspaceReady>#hd20IntegratedMasterFactors,
+html body #masterModal .masterInfoBox.hd20MasterWorkspaceReady>#hd20OperatingPolicyPanel,
+html body #masterModal .masterInfoBox.hd20MasterWorkspaceReady>#hd20ThemeCatalogPanel{
+ position:relative!important;flex:0 0 auto!important;
+ width:100%!important;max-width:100%!important;
+ height:auto!important;max-height:none!important;min-height:0!important;
+ overflow:visible!important;
+ grid-row:auto!important;grid-column:auto!important;
+ box-sizing:border-box!important;
+ padding:16px 22px 28px!important;
+}
+html body #masterModal .masterInfoBox.hd20MasterWorkspaceReady .imfSec{
+ max-width:100%!important;min-width:0!important;
+}
+html body #masterModal .masterInfoBox.hd20MasterWorkspaceReady .imfSec .imfTbl{
+ max-width:none!important;
+}
+@media(max-width:650px){
+ html body #masterModal .masterInfoBox.hd20MasterWorkspaceReady{
+  width:calc(100vw - 12px)!important;max-height:calc(100dvh - 12px)!important;
+  margin:6px auto!important;
+ }
+ html body #masterModal .masterInfoBox.hd20MasterWorkspaceReady>#hd20IntegratedMasterFactors,
+ html body #masterModal .masterInfoBox.hd20MasterWorkspaceReady>#hd20OperatingPolicyPanel,
+ html body #masterModal .masterInfoBox.hd20MasterWorkspaceReady>#hd20ThemeCatalogPanel{
+  padding:12px!important;
+ }
+}
