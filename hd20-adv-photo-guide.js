@@ -53,22 +53,22 @@ if(approved.image||approved.beforeImage){
  const images=n===2
   ?[{src:approved.image,alt:'BEFORE · 승인된 원본 상단',half:'top'},{src:approved.image,alt:'AFTER · 승인된 원본 하단',half:'bottom'}]
   :n===1?[{src:approved.image,alt:'BEFORE · 허리를 굽힌 작업 자세',half:'left'},{src:approved.image,alt:'AFTER · 높이 조정 후 정상 자세',half:'right'}]
-  :approved.image?[{src:approved.image,alt:'승인된 원본 비교사진'}]
+  :approved.image?[{src:approved.image,alt:'BEFORE · 공구 및 자재 혼재',half:'left'},{src:approved.image,alt:'AFTER · 공구 정위치 및 형적관리',half:'right'}]
   :[{src:approved.beforeImage,alt:'EPA Figure 7 BEFORE 원본'},{src:approved.afterImage,alt:'EPA Figure 8 AFTER 원본'}];
  const imageGrid=document.createElement('div');
- imageGrid.style.cssText='display:grid;grid-template-columns:'+(n===0?'minmax(0,1fr)':'repeat(2,minmax(0,1fr))')+';gap:12px';
+ imageGrid.style.cssText='display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:stretch';
  images.forEach(item=>{
   const figure=document.createElement('figure');
   figure.style.cssText='margin:0;background:#fff;border:1px solid #d3e0e9;border-radius:8px;overflow:hidden';
   const img=document.createElement('img');img.src=item.src;img.alt=item.alt;img.loading='eager';
   img.style.cssText='display:block;width:100%;height:auto;'+(n===0?'max-height:650px':'max-height:530px')+';object-fit:contain;margin:auto';
   img.onerror=()=>{img.remove();const msg=document.createElement('p');msg.textContent='원본 이미지가 열리지 않습니다. 아래 원문에서 사진을 확인해 주세요.';msg.style.cssText='padding:14px;font-size:12px;color:#6a788a';figure.appendChild(msg)};
-  const caption=document.createElement('figcaption');caption.textContent=item.alt;caption.style.cssText='padding:8px;font-size:12px;text-align:center;color:#45647c';
+  const caption=document.createElement('figcaption');caption.textContent=(item.half==='top'||item.half==='left'||item.alt.startsWith('BEFORE'))?'BEFORE':'AFTER';caption.style.cssText='padding:11px 8px;font-size:15px;font-weight:900;letter-spacing:1px;text-align:center;color:'+(caption.textContent==='BEFORE'?'#a44923':'#08754d')+';background:#f8fbfd;border-top:1px solid #dce7ee';
   if(item.half){
    // Present the exact same approved composite source in paired views, without changing the source.
    // Clip halves visually without replacing, resampling or modifying source pixels.
    const crop=document.createElement('div');
-   crop.style.cssText='position:relative;width:100%;'+((item.half==='left'||item.half==='right')?'max-width:270px;margin:auto;aspect-ratio:1/2':'aspect-ratio:440/330')+';overflow:hidden;background:#f3f6f8';
+   crop.style.cssText='position:relative;width:100%;'+((item.half==='left'||item.half==='right')?(n===0?'aspect-ratio:1/1.1':'max-width:270px;margin:auto;aspect-ratio:1/2'):'aspect-ratio:440/330')+';overflow:hidden;background:#f3f6f8';
    img.style.cssText=(item.half==='left'||item.half==='right')?'position:absolute;top:0;height:auto;max-height:none;width:200%;max-width:none;'+(item.half==='right'?'right:0':'left:0'):'position:absolute;'+(item.half==='bottom'?'bottom:0;':'top:0;')+'left:-22.5%;width:145%;height:auto;max-height:none;max-width:none;object-fit:initial;';
    crop.appendChild(img);
    figure.appendChild(crop);
