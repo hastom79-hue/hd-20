@@ -10,7 +10,7 @@ const {chromium}=require('playwright');
    if(sessionStorage.getItem('themeLifecycleSeeded'))return;
    const p=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit'}).formatToParts(new Date());
    const month=p.find(x=>x.type==='year').value+'-'+p.find(x=>x.type==='month').value;
-   localStorage.setItem('hd20ThemeAuditPlansV1',JSON.stringify([{month,line:'TEST-LINE',themes:['정리']}]));
+   localStorage.setItem('hd20ThemeAuditPlansV1',JSON.stringify([{month,line:'TEST-LINE',themes:['불용품·폐자재 정리']}]));
    sessionStorage.setItem('themeLifecycleSeeded','1');
   });
   await page.goto('http://127.0.0.1:4173/index.html?area=audit&sub=theme',{waitUntil:'domcontentloaded',timeout:30000});
@@ -24,7 +24,7 @@ const {chromium}=require('playwright');
    host.querySelector('[data-theme-view="audit"]').click();
   });
   // The plan is injected for an isolated test line. No production master data is modified.
-  await page.waitForSelector('#awTheme .themeCheckRow',{timeout:15000});
+  await page.waitForSelector('#awTheme .themeCheckRow',{timeout:15000}).catch(async error=>{const diagnostic=await page.evaluate(()=>({line:document.getElementById('awTheme')?.dataset.line,month:document.getElementById('awTheme')?.dataset.month,view:document.getElementById('awTheme')?.dataset.view,plan:JSON.parse(localStorage.getItem('hd20ThemeAuditPlansV1')||'[]'),master:window.HD20ThemeMaster?.checklist?.().slice(0,4),note:document.getElementById('themeChecklistWrap')?.innerText?.slice(0,500)}));throw new Error(error.message+' '+JSON.stringify(diagnostic))});
   const photo={name:'audit.png',mimeType:'image/png',buffer:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/qN8AAAAASUVORK5CYII=','base64')};
   const submit=async()=>{
    const before=await page.evaluate(()=>JSON.parse(localStorage.getItem('hd20ThemeAuditChecksV1')||'[]').filter(x=>x.line==='TEST-LINE').length);
