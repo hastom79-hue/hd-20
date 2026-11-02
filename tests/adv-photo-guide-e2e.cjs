@@ -77,6 +77,31 @@ const assert = require('node:assert/strict');
  await verify('activity','#awRegisterModal');
  await page.locator('#awRegisterModal .awRegisterClose').click();
  await verify('action','#hd20ActionRegisterModal');
+ // Verify master-owned reference uploads independently from actual activity evidence.
+ await page.evaluate(()=>{
+   const original=window.HD20MasterAccess;
+   window.__HD20_TEST_ORIGINAL_MASTER=original;
+   window.HD20MasterAccess={...(original||{}),isMaster:()=>true};
+   window.HD20AdvPhotoGuide.open(0);
+ });
+ const refDialog=page.locator('#hd20AdvPhotoGuidePopup');
+ const uploader=refDialog.locator('#hd20AdvGuidePhotoReference input[type=file]');
+ assert.equal(await uploader.count(),2,'master must be able to provide two reference photographs');
+ const fixture='iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScL9GQAAAABJRU5ErkJggg==';
+ await uploader.first().setInputFiles({name:'approved-before.png',mimeType:'image/png',buffer:Buffer.from(fixture,'base64')});
+ await refDialog.locator('#hd20AdvGuidePhotoReference img').first().waitFor({state:'visible',timeout:5000});
+ const stored=await page.evaluate(()=>JSON.parse(localStorage.getItem('hd20AdvGuideReferencePhotosV1')||'{}'));
+ assert.match(stored.criterion1_before||'',/^data:image\/png;base64,/,'the uploaded reference must persist');
+ await refDialog.locator('[data-guide-tab="1"]').click();
+ assert.equal(await refDialog.locator('#hd20AdvGuidePhotoReference img').count(),0,'criterion two must not reuse criterion one reference');
+ await refDialog.locator('[data-guide-tab="0"]').click();
+ assert.equal(await refDialog.locator('#hd20AdvGuidePhotoReference img').count(),1,'criterion one reference must survive tab switching');
+ await refDialog.locator('[data-guide-close]').click();
+ await page.evaluate(()=>{
+   localStorage.removeItem('hd20AdvGuideReferencePhotosV1');
+   window.HD20MasterAccess=window.__HD20_TEST_ORIGINAL_MASTER;
+   delete window.__HD20_TEST_ORIGINAL_MASTER;
+ });
  await page.locator('#hd20ActionRegisterModal .armClose').click();
  assert.deepEqual(errors,[],'no uncaught browser errors');
  console.log('HD20_ADV_GUIDE_E2E_PASS',JSON.stringify(evidence));
