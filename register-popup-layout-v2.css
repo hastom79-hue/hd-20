@@ -275,3 +275,30 @@
  #hd20ActionRegisterModal .armBody{padding:10px!important}
  #hd20ActionRegisterModal .armBody>.hd20ActionSendCompact{justify-content:flex-start!important}
 }
+
+/* 2026-11-02: one-line 5S criteria cue, placed left of the register action. */
+#hd20ActionRegisterModal .hd20CompactCriteriaHeader{
+ display:inline-flex;align-items:center;justify-content:flex-end;
+ max-width:340px;min-width:0;white-space:normal;word-break:keep-all;
+ padding:5px 8px;font-size:10.5px;line-height:1.45;font-weight:700;
+ color:#536e84;background:#f5f8fb;border:1px solid #e2eaf0;
+ border-radius:6px;box-sizing:border-box;text-align:right;
+}
+#hd20ActionRegisterModal .hd20ModalTopActions{
+ display:flex!important;align-items:center!important;gap:8px!important;
+}
+#hd20ActionRegisterModal .hd20CriteriaGuideOnly{
+ display:flex!important;justify-content:flex-end!important;align-items:center!important;
+ margin:0 0 4px!important;padding:0!important;
+}
+#hd20ActionRegisterModal .hd20CriteriaGuideOnly .hd20GuideOpen{
+ max-width:100%!important;
+}
+@media(max-width:850px){
+ #hd20ActionRegisterModal .hd20CompactCriteriaHeader{max-width:185px;font-size:10px}
+}
+@media(max-width:620px){
+ #hd20ActionRegisterModal .hd20CompactCriteriaHeader{
+  flex:1 1 100%;max-width:none;text-align:left;justify-content:flex-start;
+ }
+}
