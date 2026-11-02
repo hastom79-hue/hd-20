@@ -37,7 +37,7 @@ function open(index=0){
 const evidenceRoot=overlay.querySelector('section');
 const sourceCases=[
  {name:'Expert Engineering Enterprises · 산업용 밸브 제조공장 공구 형적관리',url:'https://www.sibmbengaluru.edu.in/wp-content/uploads/2023/08/4_Kaizen.pdf',detail:'승인된 제조공장 실제 Kaizen 사례. 논문 인쇄 57페이지(파일 14페이지)에 BEFORE: 혼재된 공구함, AFTER: 형상별 정위치 Shadow Board 사진이 있습니다. 개선 전 공구 탐색 약 10분. 개선 후 수치는 원문에 없습니다.',image:'',pdfPage:14},
- {name:'Novo Lean Solutions · Team Member Workstation',url:'https://www.novoleansolutions.com/case-studies/methodology-for-developing-team-member-workstations/',detail:'원본 Figure 2(BEFORE) · Figure 5(AFTER). 작업자 자세 REBA 7→3, 고빈도 동작의 Green Zone 배치.',image:''},
+ {name:'승인 원본 · 작업높이 개선을 통한 인간공학적 자세 개선',url:'https://kyodonewsprwire.jp/prwfile/release/M101579/201902012813/_prw_PI1lg_0ovR24Er.jpg',detail:'사용자가 재확인한 실제 승인 이미지. BEFORE: 허리를 굽힌 작업 자세 / AFTER: 작업높이 조정으로 정상 작업 자세 확보. 동선 감소 정량 효과는 확인되지 않았습니다.',image:'https://kyodonewsprwire.jp/prwfile/release/M101579/201902012813/_prw_PI1lg_0ovR24Er.jpg'},
  {name:'동성 농기계 제조공장 · 승인된 컬러 BEFORE / AFTER',url:'https://bizn.donga.com/3/all/20170724/85506925/2',detail:'승인한 원본 한 장의 상단은 BEFORE, 하단은 AFTER입니다. 출처: 동아일보 비즈N(2017.07.24). 사진만으로 정량축소의 절대 수치가 입증되지는 않습니다.',image:'https://dimg.donga.com/wps/ECONOMY/IMAGE/2017/07/24/85506918.2.jpg'}
 ];
 const approved=sourceCases[n];
@@ -68,7 +68,7 @@ if(n===0&&approved.pdfPage){
 }else if(approved.image||approved.beforeImage){
  const images=n===2
   ?[{src:approved.image,alt:'BEFORE · 승인된 원본 상단',half:'top'},{src:approved.image,alt:'AFTER · 승인된 원본 하단',half:'bottom'}]
-  :approved.image?[{src:approved.image,alt:n===0?'제조현장 공구 작업장 형적관리 BEFORE(좌) AFTER(우)':'승인된 원본 비교사진'}]
+  :approved.image?[{src:approved.image,alt:n===1?'승인된 작업높이 개선 BEFORE AFTER 동일 원본 사진':'승인된 원본 비교사진'}]
   :[{src:approved.beforeImage,alt:'EPA Figure 7 BEFORE 원본'},{src:approved.afterImage,alt:'EPA Figure 8 AFTER 원본'}];
  const imageGrid=document.createElement('div');
  imageGrid.style.cssText='display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px';
@@ -93,7 +93,7 @@ if(n===0&&approved.pdfPage){
  guideUploader.appendChild(imageGrid);
 }else{
  const label=document.createElement('p');
- label.textContent='승인된 외부 사례의 원문 Figure 사진을 확인해 주세요. 원본 사진의 재게시 허가 및 직접 이미지 URL은 아직 검증되지 않아 임의 사진을 표시하지 않습니다.';
+ label.textContent='승인 원본 사진을 불러올 수 없습니다. 아래 출처 링크에서 확인해 주세요.';
  label.style.cssText='padding:12px;background:#fff;border:1px solid #d3e1eb;border-radius:8px;font-size:12px;line-height:1.65;color:#536a7e';
  guideUploader.appendChild(label);
 }
