@@ -19,8 +19,9 @@ const selected=tabs.querySelector('[data-master-tab].on:not([hidden])');
 if(selected)select(selected.dataset.masterTab);
 else if(all.length)all[0].click();
 // The original menu must remain operable unless the entire replacement interface is ready.
-box.classList.toggle('hd20MasterWorkspaceReady',all.length>=10);
-return all.length>=10}
+if(all.length<10){ws.remove();box.classList.remove('hd20MasterWorkspaceReady');return false}
+box.classList.add('hd20MasterWorkspaceReady');
+return true}
 function boot(){let n=0;const go=()=>{if(init())return;if(++n<80)setTimeout(go,180)};go()}
 document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot,{once:true}):boot();
 })();
