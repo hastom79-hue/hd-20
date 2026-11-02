@@ -44,7 +44,62 @@ async function autoNotifyAuditAction(draw){const id=txt(draw?.id);if(!id)return;
 }
 function statusBadge(a){const v=progress(a);return '<span class="hadStatus '+(v==='조치완료'?'done':v==='조치중'?'doing':'waiting')+'">'+v+'</span>'}
 function tableHtml(area,items){const byAudit=new Map(audits().map(x=>[txt(x.id),x]));return '<div class="hadTableWrap"><table class="hadTable"><thead><tr><th>Audit 번호·점검일</th><th>생산팀 / 작업장</th><th>점검결과</th><th>통보</th><th>접수</th><th>개선조치</th><th>완료일</th><th>업무</th></tr></thead><tbody>'+items.map(a=>{const audit=byAudit.get(txt(a.auditDrawId||a.sourceCaseId))||{},id=txt(a.id),done=actionDone(a),received=!!a.receivedAt;return '<tr><td><button class="hadAuditLink" type="button" data-had-open-audit="'+safe(a.auditDrawId||a.sourceCaseId||a.auditRecordId)+'">'+safe(audit.id||a.auditDrawId||a.sourceCaseId||a.auditRecordId)+'</button><small>'+safe(audit.auditDate||a.auditDate||'—')+'</small><small>'+safe(id)+'</small></td><td>'+safe(a.team||'—')+'<small>'+safe(a.workplace||'—')+'</small></td><td>'+safe(audit.auditResult||'개선요청')+'<small>'+safe(a.problem||audit.improvementRequest||'')+'</small></td><td>'+safe(a.noticeSentAt?'발송확인':'발송 미확인')+'</td><td>'+safe(received?String(a.receivedAt).slice(0,10)+' · '+(a.receivedBy||''):'미접수')+'</td><td>'+statusBadge(a)+'</td><td>'+safe(a.completedAt?String(a.completedAt).slice(0,10):'—')+'</td><td>'+(!done&&area==='action'?(!received?'<button type="button" data-had-receive="'+safe(id)+'">접수</button>':'<button type="button" data-had-complete="'+safe(id)+'">완료등록</button>'):'')+(!a.noticeSentAt?'<button type="button" data-had-notify="'+safe(id)+'">팀 통보메일</button>':'')+'</td></tr>'}).join('')+'</tbody></table></div>'}
-function renderAuditMonitor(){const root=document.getElementById('awAudit');if(!root)return;let box=root.querySelector('#hd20AuditActionMonitor');if(!box){box=document.createElement('section');box.id='hd20AuditActionMonitor';box.className='hadPanel awCard'}/* Keep the Audit action worklist directly below the section header instead of appending it to the page bottom. */const anchor=root.querySelector(':scope > .awActions')||root.querySelector(':scope > .awHero');if(anchor&&anchor.parentElement===root){if(anchor.nextElementSibling!==box)anchor.insertAdjacentElement('afterend',box)}else if(box.parentElement!==root||root.firstElementChild!==box){root.prepend(box)}const items=auditActions(),open=items.filter(x=>!actionDone(x));const pending=open.filter(x=>!x.receivedAt);box.innerHTML='<div class="hadHeading"><div><b>Audit 점검결과 · 개선조치 모니터링</b><small>Audit 원본과 개선조치 접수·완료를 동일 관리번호로 조회</small></div><div class="hadNumbers"><span>연계 '+items.length+'건</span><span>미접수 '+pending.length+'건</span><span>진행 '+(open.length-pending.length)+'건</span><span>완료 '+(items.length-open.length)+'건</span></div></div><div class="hadFilter"><label>생산팀 <select data-had-filter-team><option value="">전체</option>'+[...new Set(items.map(a=>txt(a.team)).filter(Boolean))].sort().map(x=>'<option>'+safe(x)+'</option>').join('')+'</select></label><label>조치 상태 <select data-had-filter-state><option value="">전체</option><option>미접수</option><option>조치중</option><option>조치완료</option></select></label><label>관리번호/내용 <input data-had-filter-text placeholder="Audit ID 또는 내용 검색"></label></div><div data-had-table></div>';const apply=()=>{const team=box.querySelector('[data-had-filter-team]').value,state=box.querySelector('[data-had-filter-state]').value,query=txt(box.querySelector('[data-had-filter-text]').value).toLowerCase();const filtered=items.filter(a=>(!team||a.team===team)&&(!state||progress(a)===state)&&(!query||[a.id,a.auditDrawId,a.sourceCaseId,a.problem,a.team,a.workplace].some(v=>txt(v).toLowerCase().includes(query))));box.querySelector('[data-had-table]').innerHTML=filtered.length?tableHtml('action',filtered):'<p class="hadEmpty">조건에 해당하는 Audit 개선조치 내역이 없습니다.</p>'};box.querySelectorAll('.hadFilter select,.hadFilter input').forEach(el=>el.addEventListener('input',apply));apply()}
+function auditDueDate(a){
+ return txt(a.due||a.dueDate||a.targetDate||a.deadline||a.deadlineDate).slice(0,10);
+}
+function auditIsOverdue(a){
+ const due=auditDueDate(a);
+ return !actionDone(a)&&/^\\d{4}-\\d{2}-\\d{2}$/.test(due)&&due<seoulDate();
+}
+function auditActionPriority(a){
+ return auditIsOverdue(a)?0:!actionDone(a)&&!a.receivedAt?1:!actionDone(a)?2:3;
+}
+function renderAuditMonitor(){
+ const root=document.getElementById('awAudit');if(!root)return;
+ let box=root.querySelector('#hd20AuditActionMonitor');
+ if(!box){box=document.createElement('section');box.id='hd20AuditActionMonitor';box.className='hadPanel awCard'}
+ // The Audit-specific worklist follows the toolbar. Theme actions remain separate.
+ const anchor=root.querySelector(':scope > .awActions')||root.querySelector(':scope > .awHero');
+ if(anchor&&anchor.parentElement===root){
+   if(anchor.nextElementSibling!==box)anchor.insertAdjacentElement('afterend',box);
+ }else if(box.parentElement!==root||root.firstElementChild!==box){root.prepend(box)}
+ const last={
+   team:box.querySelector('[data-had-filter-team]')?.value||'',
+   workplace:box.querySelector('[data-had-filter-workplace]')?.value||'',
+   state:box.querySelector('[data-had-filter-state]')?.value||'',
+   due:box.querySelector('[data-had-filter-due]')?.value||'',
+   query:box.querySelector('[data-had-filter-text]')?.value||''
+ };
+ const items=auditActions(),open=items.filter(a=>!actionDone(a)),pending=open.filter(a=>!a.receivedAt),overdue=open.filter(auditIsOverdue);
+ const options=(field)=>[...new Set(items.map(a=>txt(a[field])).filter(Boolean))].sort().map(x=>'<option value="'+safe(x)+'">'+safe(x)+'</option>').join('');
+ box.innerHTML='<div class="hadHeading"><div><b>Audit 개선조치 · 접수·완료관리</b><small>기한경과 → 미접수 → 진행 → 완료 순서 · Audit 원본번호 연결</small></div></div>'+
+ '<div class="hadFilter"><label>생산팀 <select data-had-filter-team><option value="">전체</option>'+options('team')+'</select></label>'+
+ '<label>작업장 <select data-had-filter-workplace><option value="">전체</option>'+options('workplace')+'</select></label>'+
+ '<label>조치상태 <select data-had-filter-state><option value="">전체</option><option>미접수</option><option>조치중</option><option>조치완료</option></select></label>'+
+ '<label>기한 <select data-had-filter-due><option value="">전체</option><option value="overdue">기한경과</option><option value="undated">기한 미지정</option></select></label>'+
+ '<label>관리번호·내용 <input data-had-filter-text placeholder="Audit·개선조치 번호, 내용 검색"></label>'+
+ '<button type="button" data-had-filter-reset>초기화</button></div>'+
+ '<div class="hadNumbers" aria-label="Audit 개선조치 현황"><span>기한경과 '+overdue.length+'건</span><span>미접수 '+pending.length+'건</span><span>조치중 '+(open.length-pending.length)+'건</span><span>완료 '+(items.length-open.length)+'건</span></div>'+
+ '<div class="hadListHead"><b>Audit 개선조치 목록</b><small data-had-filter-count></small></div><div data-had-table></div>';
+ for(const [key,value] of Object.entries(last)){
+   const field=box.querySelector('[data-had-filter-'+(key==='query'?'text':key)+']');
+   if(field&&[...field.options||[]].some(x=>x.value===value)||field&&key==='query')field.value=value;
+ }
+ const apply=()=>{
+   const team=box.querySelector('[data-had-filter-team]').value;
+   const workplace=box.querySelector('[data-had-filter-workplace]').value;
+   const state=box.querySelector('[data-had-filter-state]').value;
+   const due=box.querySelector('[data-had-filter-due]').value;
+   const query=txt(box.querySelector('[data-had-filter-text]').value).toLowerCase();
+   const filtered=items.filter(a=>(!team||a.team===team)&&(!workplace||a.workplace===workplace)&&(!state||progress(a)===state)&&(!due||(due==='overdue'?auditIsOverdue(a):!auditDueDate(a)))&&(!query||[a.id,a.auditDrawId,a.sourceCaseId,a.problem,a.team,a.workplace].some(v=>txt(v).toLowerCase().includes(query))));
+   filtered.sort((a,b)=>auditActionPriority(a)-auditActionPriority(b)||auditDueDate(a).localeCompare(auditDueDate(b))||txt(b.registeredAt||b.date).localeCompare(txt(a.registeredAt||a.date)));
+   box.querySelector('[data-had-filter-count]').textContent='조회 '+filtered.length+' / '+items.length+'건';
+   box.querySelector('[data-had-table]').innerHTML=filtered.length?tableHtml('action',filtered):'<p class="hadEmpty">조건에 해당하는 Audit 개선조치 내역이 없습니다.</p>';
+ };
+ box.querySelectorAll('.hadFilter select,.hadFilter input').forEach(el=>el.addEventListener('input',apply));
+ box.querySelector('[data-had-filter-reset]').addEventListener('click',()=>{box.querySelectorAll('.hadFilter select,.hadFilter input').forEach(el=>el.value='');apply()});
+ apply();
+}
 function renderTeamQueue(){const root=document.getElementById('awTheme');if(!root)return;const panel=root.querySelector('[data-theme-panel="actions"]');if(!panel)return;let box=panel.querySelector('#hd20ThemeActionQueue');if(!box){box=document.createElement('section');box.id='hd20ThemeActionQueue';box.className='hadPanel';panel.prepend(box)}const list=themeActions(),pending=list.filter(a=>!actionDone(a));box.innerHTML='<div class="hadHeading"><div><b>테마점검 개선조치 · 접수·완료관리</b><small>점검 미흡사항 → 해당팀 접수 → AFTER 근거 → 개선조치 완료 → 재점검</small></div><div class="hadNumbers"><span>미접수 '+pending.filter(a=>!a.receivedAt).length+'</span><span>조치중 '+pending.filter(a=>a.receivedAt).length+'</span><span>완료 '+(list.length-pending.length)+'</span></div></div>'+(list.length?tableHtml('action',list):'<p class="hadEmpty">등록된 테마점검 개선조치가 없습니다.</p>')}
 
 function openAuditOriginal(id){
