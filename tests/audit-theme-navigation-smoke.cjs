@@ -22,7 +22,21 @@ const {chromium}=require('playwright');
   await page.evaluate(()=>window.HD20_NAV.go('audit'));
   await page.waitForTimeout(700);
   v=await state();
-  if(v.area!=='audit'||!v.audit||v.theme||v.merged||!v.subnav.some(s=>s.includes('유지점검')))throw Error('Standalone Audit '+JSON.stringify(v));
+  if(v.area!=='audit'||!v.audit||v.theme||v.merged||v.subnav.length!==5||!v.subnav.some(s=>s.includes('유지점검')))throw Error('Standalone Audit '+JSON.stringify(v));
+  const expectedAudit=['draw','action','ongoing','retention','checklist'];
+  for(const sub of expectedAudit){
+    await page.evaluate(key=>window.HD20_SUBNAV.select('audit',key),sub);
+    await page.waitForTimeout(120);
+    const state=await page.evaluate(()=>({
+      active:window.HD20_SUBNAV.state().sub,
+      count:document.querySelectorAll('#hd20Subnav button[data-sub]').length,
+      visible:[...document.querySelectorAll('#hd20Subnav button[data-sub]')].map(el=>({key:el.dataset.sub,ok:getComputedStyle(el).display!=='none'&&el.getClientRects().length>0})),
+      top:document.querySelector('.beginnerNav')?.getBoundingClientRect().bottom||0,
+      subTop:document.querySelector('#hd20Subnav')?.getBoundingClientRect().top||0
+    }));
+    if(state.active!==sub||state.count!==5||state.visible.some(x=>!x.ok)||state.subTop<state.top-2)
+      throw Error('Audit five-subtab layout '+sub+' '+JSON.stringify(state));
+  }
   await page.evaluate(()=>window.HD20_SUBNAV.select('audit','ongoing'));
   await page.waitForTimeout(400);
   if((await page.evaluate(()=>window.HD20_SUBNAV.state().sub))!=='ongoing')throw Error('Audit retention subtab missing');
