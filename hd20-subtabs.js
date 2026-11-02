@@ -587,7 +587,10 @@ function applyAudit(sub){
    const isChecklist=card.classList.contains('acWrap')||!!card.querySelector('.acWrap');
    // Keep a checklist's enclosing .awCard visible, even when a legacy renderer
    // nests the checklist instead of mounting it at the Audit root.
-   const keep=sub==='checklist'?isChecklist:sub==='draw'?!inSampling&&!inClosure&&!inActions&&!isChecklist:sub==='action'?inActions:sub==='ongoing'?inSampling:inClosure&&!inActions&&!isChecklist;
+   const inExecution=!!([draw,closed,batch].some(panel=>panel&&(card===panel||card.contains(panel)||panel.contains(card))));
+   // Keep only execution work panels in tab ①. The previous broad fallback
+   // displayed unrelated legacy cards and duplicate reporting content.
+   const keep=sub==='checklist'?isChecklist:sub==='draw'?inExecution&&!inSampling&&!inClosure&&!inActions&&!isChecklist:sub==='action'?inActions:sub==='ongoing'?inSampling:inClosure&&!inActions&&!isChecklist;
    show(card,keep);
  });
  // 중복된 단계 제목은 상단 서브탭에 이미 있으므로 별도 렌더링하지 않는다.
