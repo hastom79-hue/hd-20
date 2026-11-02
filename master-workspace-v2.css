@@ -93,3 +93,10 @@ html body #masterModal .masterInfoBox.hd20MasterWorkspaceReady .imfSec .imfTbl{
   padding:12px!important;
  }
 }
+
+/* 2026-11-02: restore visible, keyboard-accessible master close action. */
+#masterModal #hd20MasterWorkspace .hmCounters{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:12px}
+#masterModal #hd20MasterWorkspace [data-hm-close]{display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;border:1px solid #cbdce8;background:#fff;color:#24465e;border-radius:8px;min-height:36px;padding:7px 13px;font:inherit;font-weight:800;cursor:pointer}
+#masterModal #hd20MasterWorkspace [data-hm-close]:hover{background:#eaf4fb;border-color:#9fc6dd}
+#masterModal #hd20MasterWorkspace [data-hm-close]:focus-visible{outline:3px solid #85b9d7;outline-offset:2px}
+@media(max-width:600px){#masterModal #hd20MasterWorkspace .hmCounters{width:100%;justify-content:space-between}}
