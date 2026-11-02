@@ -7,6 +7,9 @@ on:
       - 'integrated-master-redesign.css'
       - 'index.html'
       - 'tests/integrated-master-redesign-smoke.cjs'
+      - 'tests/master-workspace-v2-smoke.cjs'
+      - 'master-workspace-v2.js'
+      - 'master-workspace-v2.css'
       - '.github/workflows/integrated-master-redesign-smoke.yml'
   workflow_dispatch:
 permissions:
@@ -29,3 +32,4 @@ jobs:
           python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/hd20-master-http.log 2>&1 &
           for i in {1..30}; do curl -fsS http://127.0.0.1:4173/index.html >/dev/null && break; sleep 1; done
           node tests/integrated-master-redesign-smoke.cjs
+          node tests/master-workspace-v2-smoke.cjs
