@@ -42,7 +42,11 @@ function reconcileVisibleArea(){
  const screens={activity:'awActivity',audit:'awAudit',action:'awAction',master:'masterModal',theme:'awTheme'};
  Object.entries(screens).forEach(([area,id])=>{
    const el=document.getElementById(id);if(!el)return;
-   if((selected===area&&!(area==='audit'&&mergedAuditSection==='theme'))||(selected==='audit'&&mergedAuditSection==='theme'&&area==='theme')){if(area==='theme'&&selected==='audit')el.style.setProperty('display','block','important');else el.style.removeProperty('display')}
+   if((selected===area&&!(area==='audit'&&mergedAuditSection==='theme'))||(selected==='audit'&&mergedAuditSection==='theme'&&area==='theme')){
+     if(area==='audit'||area==='theme')el.classList.add('on'); // late renderers must not leave the requested inspection screen inactive
+     if(area==='theme'&&selected==='audit')el.style.setProperty('display','block','important');
+     else el.style.removeProperty('display');
+   }
    else{el.classList.remove('on');el.style.setProperty('display','none','important')}
  });
  if(selected!=='advancement')document.getElementById('awWorkplace')?.classList.remove('on');
