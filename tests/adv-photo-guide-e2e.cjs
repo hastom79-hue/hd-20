@@ -55,8 +55,8 @@ const assert = require('node:assert/strict');
      'photo reference must be inside the single dialog panel, not a sibling overlay');
    assert.equal(await dialog.locator(':scope > #hd20AdvGuidePhotoReference').count(),0,
      'no floating reference panel may appear beside dialog');
-   assert.equal(await dialog.locator('#hd20AdvGuidePhotoReference img').count(),0,
-     'never fabricate photographic references when none are registered');
+   assert.equal(await dialog.locator('#hd20AdvGuidePhotoReference input[type=file]').count(),0,
+     'reference guide must not include manual file uploads');
    const imageCount=await dialog.locator('#hd20AdvGuideEvidence img').count();
    assert.equal(imageCount,2,ln+' should show real stored before/after case photographs for criterion one');
    assert.match(await dialog.locator('#hd20AdvGuideEvidence').innerText(),/GUIDE-TEST-EVIDENCE-1/,
@@ -77,31 +77,17 @@ const assert = require('node:assert/strict');
  await verify('activity','#awRegisterModal');
  await page.locator('#awRegisterModal .awRegisterClose').click();
  await verify('action','#hd20ActionRegisterModal');
- // Verify master-owned reference uploads independently from actual activity evidence.
- await page.evaluate(()=>{
-   const original=window.HD20MasterAccess;
-   window.__HD20_TEST_ORIGINAL_MASTER=original;
-   window.HD20MasterAccess={...(original||{}),isMaster:()=>true};
-   window.HD20AdvPhotoGuide.open(0);
- });
+ // Verify three approved reference source panels and nonqualifying examples.
+ await page.evaluate(()=>window.HD20AdvPhotoGuide.open(0));
  const refDialog=page.locator('#hd20AdvPhotoGuidePopup');
- const uploader=refDialog.locator('#hd20AdvGuidePhotoReference input[type=file]');
- assert.equal(await uploader.count(),2,'master must be able to provide two reference photographs');
- const fixture='iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScL9GQAAAABJRU5ErkJggg==';
- await uploader.first().setInputFiles({name:'approved-before.png',mimeType:'image/png',buffer:Buffer.from(fixture,'base64')});
- await refDialog.locator('#hd20AdvGuidePhotoReference img').first().waitFor({state:'visible',timeout:5000});
- const stored=await page.evaluate(()=>JSON.parse(localStorage.getItem('hd20AdvGuideReferencePhotosV1')||'{}'));
- assert.match(stored.criterion1_before||'',/^data:image\/png;base64,/,'the uploaded reference must persist');
- await refDialog.locator('[data-guide-tab="1"]').click();
- assert.equal(await refDialog.locator('#hd20AdvGuidePhotoReference img').count(),0,'criterion two must not reuse criterion one reference');
- await refDialog.locator('[data-guide-tab="0"]').click();
- assert.equal(await refDialog.locator('#hd20AdvGuidePhotoReference img').count(),1,'criterion one reference must survive tab switching');
+ for(let i=0;i<3;i++){
+   await refDialog.locator('[data-guide-tab="'+i+'"]').click();
+   assert.equal(await refDialog.locator('#hd20AdvGuidePhotoReference input[type=file]').count(),0,'no master photo picker');
+   assert.equal(await refDialog.locator('#hd20AdvGuideRejectedSamples li').count(),3,'three nonqualifying case explanations');
+   assert.equal(await refDialog.locator('#hd20AdvGuidePhotoReference a[href]').count(),1,'approved source reference link');
+ }
+ assert.equal(await refDialog.locator('#hd20AdvGuidePhotoReference img').count(),1,'third criterion should render exact published photo');
  await refDialog.locator('[data-guide-close]').click();
- await page.evaluate(()=>{
-   localStorage.removeItem('hd20AdvGuideReferencePhotosV1');
-   window.HD20MasterAccess=window.__HD20_TEST_ORIGINAL_MASTER;
-   delete window.__HD20_TEST_ORIGINAL_MASTER;
- });
  await page.locator('#hd20ActionRegisterModal .armClose').click();
  assert.deepEqual(errors,[],'no uncaught browser errors');
  console.log('HD20_ADV_GUIDE_E2E_PASS',JSON.stringify(evidence));
