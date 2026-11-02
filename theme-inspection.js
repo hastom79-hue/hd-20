@@ -262,18 +262,18 @@ function render(){
  <div class="themeSummaryFoot">라인을 선택하면 해당 라인의 현장점검 화면으로 이동합니다. 점검계획이 없는 라인은 먼저 계획을 저장해야 Audit 결과를 등록할 수 있습니다.</div> </section>
  <section class="themePanel" data-theme-panel="history" ${view==='history'?'':'hidden'}><div class="themeHistoryBox"><div class="themeSectionHead" style="margin-top:0"><h3>최근 점검 이력</h3><small>선택 월의 점검 회차·미흡 건수·연계 조치를 확인합니다</small></div>${historyTable(month)}</div></section>
  <section class="themePanel" data-theme-panel="audit" ${view==='audit'?'':'hidden'}><div class="themeAuditBox" id="themeAuditBox">
-   <div class="themeSectionHead" style="margin-top:0"><h3>테마 Audit 실시 — <span id="themeAuditLineLabel">${esc(line)}</span></h3></div>
+   <div class="themeSectionHead" style="margin-top:0"><h3>현장점검 실시 <span class="themeAuditLineBadge" id="themeAuditLineLabel">${esc(line)}</span></h3></div>
    <div class="themeControls">
      <label>라인 <select id="themeLineSel">${LINES.map(l=>`<option${l===line?' selected':''}>${esc(l)}</option>`).join('')}</select></label>
      <label>담당 생산팀 <select id="themeTeamSel">${teamOptions().map(t=>`<option${t===team?' selected':''}>${esc(t)}</option>`).join('')}</select></label>
    </div>
-   <div class="themeBulkRow"><span class="themeWorkflowNote">점검 흐름　① 라인 선택 → ② 전 항목 판정 → ③ 결과 저장 → ④ 개선조치 확인</span>
+   <div class="themeBulkRow"><span class="themeWorkflowNote">평가 도구 · 선택한 라인의 점검항목에 적용</span>
      <button type="button" class="themeBulkBtn" id="themeBulkAllOk">전체 적합으로 일괄 설정</button>
      <button type="button" class="themeBulkBtn" id="themeLoadPrevious">직전 결과 참고</button>
      <button type="button" class="themeBulkBtn" id="themeBulkClear">전체 초기화</button>
      <span id="themePreviousNote" class="themePreviousNote" aria-live="polite"></span>
    </div>
-   <div class="themeAuditMeta"><label>최초 점검자 <input id="themeAuditAuditor" type="text" maxlength="80" placeholder="점검자 성명 (필수)" required></label><label>현장사진 <input id="themeAuditPhoto" type="file" accept="image/jpeg,image/png,image/webp"><small>미흡 항목 발생 시 사진 필수 · 최대 1MB</small></label><label>현장 관찰 메모 <textarea id="themeAuditMemo" rows="2" placeholder="현장 특이사항, 즉시조치, 재발 위험 등을 기록"></textarea></label><div id="themeProgress" aria-live="polite"></div></div><div id="themeChecklistWrap"></div>
+   <div class="themeAuditMeta"><label class="themeAuditAuditorField">최초 점검자 <input id="themeAuditAuditor" type="text" maxlength="80" placeholder="점검자 성명 (필수)" required></label><label class="themeAuditPhotoField">현장사진 <input id="themeAuditPhoto" type="file" accept="image/jpeg,image/png,image/webp"><small>미흡 항목 발생 시 사진 필수 · 최대 1MB</small></label><label class="themeAuditMemoField">현장 관찰 메모 <textarea id="themeAuditMemo" rows="2" placeholder="현장 특이사항, 즉시조치, 재발 위험 등을 기록"></textarea></label><div id="themeProgress" aria-live="polite"></div></div><div id="themeChecklistWrap"></div>
    <button type="button" class="themeSaveBtn" id="themeSaveBtn">점검 결과 저장 · 미흡 항목 자동 등록</button>
    <div class="themeSaveResult" id="themeSaveResult"></div>
  </div></section>
