@@ -32,6 +32,21 @@ fs.mkdirSync('artifacts',{recursive:true});
   assert.equal(compact.lifecycleDiagramCount,0,'redundant six-month workflow diagram removed');
   assert.equal(compact.registrationHeading,'Audit 결과 등록','Audit form heading simplified');
   assert.ok(compact.sixMonthTableCount>=1,'six-month monitoring table preserved');
+  // Canonical first workspace: selection guide -> execution buttons -> selected
+  // teams -> result form. Both history views must start collapsed.
+  const layout=await page.evaluate(()=>{
+    const root=document.querySelector('#awAudit'),draw=root?.querySelector('.auditDraw'),closed=root?.querySelector('.auditClosedLoop');
+    const hint=draw?.querySelector('.auditDrawHint'),buttons=draw?.querySelector('.auditDrawBtns'),results=draw?.querySelector('.auditDrawResult');
+    const precedes=(a,b)=>!!a&&!!b&&!!(a.compareDocumentPosition(b)&Node.DOCUMENT_POSITION_FOLLOWING);
+    const visible=e=>!!e&&getComputedStyle(e).display!=='none'&&e.getClientRects().length>0;
+    return {drawBeforeEntry:precedes(draw,closed),guideBeforeButtons:precedes(hint,buttons),
+      buttonsBeforeResults:precedes(buttons,results),drawVisible:visible(draw),entryVisible:visible(closed),
+      batchHistoryCollapsed:!draw?.querySelector('.auditDrawHistoryPanel')?.open,
+      resultHistoryCollapsed:!closed?.querySelector('.auditCLHistoryFold')?.open};
+  });
+  assert.deepEqual(layout,{drawBeforeEntry:true,guideBeforeButtons:true,buttonsBeforeResults:true,
+    drawVisible:true,entryVisible:true,batchHistoryCollapsed:true,resultHistoryCollapsed:true},
+    'Audit first tab must display execution in order and collapse historical detail');
   await page.screenshot({path:'artifacts/audit-compact.png',fullPage:false});
   // Each subtab must exclusively show its own operational cards, never the other two.
   const assertAuditSubtab=async(sub)=>{
