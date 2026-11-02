@@ -672,8 +672,8 @@ function reconcileAuditSubnav(){
  }
  bar.removeAttribute('hidden');bar.removeAttribute('aria-hidden');
  bar.style.setProperty('display','grid','important');
- bar.style.setProperty('grid-template-columns','repeat(5,minmax(0,1fr))','important');
- bar.style.setProperty('grid-auto-flow','row','important');
+ bar.style.removeProperty('grid-template-columns');
+ bar.style.removeProperty('grid-auto-flow');
  bar.style.removeProperty('visibility');
  bar.classList.add('hd20AuditFiveSubnav');
  bar.querySelectorAll(':scope > button[data-sub]').forEach(button=>{
