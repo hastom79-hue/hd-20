@@ -91,7 +91,7 @@ const assert = require('node:assert/strict');
    assert.equal(await refDialog.locator('#hd20AdvGuideEvidence').count(),0,'no duplicate registered activity photo panels');
    assert.equal(await refDialog.locator('#hd20AdvGuidePhotoReference a[href]').count(),1,'approved source reference link');
  }
- assert.equal(await refDialog.locator('#hd20AdvGuidePhotoReference img').count(),1,'third criterion should render exact published photo');
+ assert.equal(await refDialog.locator('#hd20AdvGuidePhotoReference img').count(),2,'third criterion must show original composite as two side-by-side clipped views');
  await refDialog.locator('[data-guide-close]').click();
  await page.locator('#hd20ActionRegisterModal .armClose').click();
  assert.deepEqual(errors,[],'no uncaught browser errors');
