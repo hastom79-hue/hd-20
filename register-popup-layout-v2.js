@@ -51,12 +51,40 @@ function addSummary(conf,modal,form){
  modal.addEventListener('transitionend',update);
  modal.addEventListener('focusin',update);
 }
+/* Keep one instruction notice directly below the modal header, one compact
+   team/theme/date context strip, and recent cases beneath the input form. */
+function organizeActionModal(modal,form){
+ const body=modal.querySelector('.armBody');
+ if(!body)return;
+ const note=modal.querySelector('.amRegisterNote');
+ if(note){
+   note.classList.add('hd20ActionIntroTop');
+   if(body.firstElementChild!==note)body.insertBefore(note,body.firstElementChild);
+   // Moving the existing node (not cloning) prevents duplicate instructions.
+   body.querySelectorAll('.amRegisterNote').forEach(other=>{if(other!==note)other.remove()});
+ }
+ const summary=body.querySelector('.hd20RegSummary');
+ if(summary){
+   summary.classList.add('hd20ActionCompactSummary');
+   const lead=summary.querySelector('.hd20RegSummaryLead');
+   if(lead)lead.remove(); // modal title already says "개선요청 등록"
+   if(note&&note.nextElementSibling!==summary)note.insertAdjacentElement('afterend',summary);
+ }
+ const recent=body.querySelector('.hd20ActionRecentFirst');
+ if(recent){
+   recent.classList.add('hd20ActionRecentBottom');
+   const formCard=body.querySelector('.amRegisterFormCard')||form.closest('.amRegisterFormCard');
+   if(formCard&&formCard.parentNode===body)formCard.insertAdjacentElement('afterend',recent);
+   else body.appendChild(recent);
+ }
+}
 function apply(conf){
  const modal=document.getElementById(conf.modal);
  const form=modal?.querySelector(conf.form);
  if(!form)return false;
  if(!form.dataset.hd20LayoutV2)groupForm(form);
  if(form.dataset.hd20LayoutV2==='1')addSummary(conf,modal,form);
+ if(conf.modal==='hd20ActionRegisterModal')organizeActionModal(modal,form);
  return form.dataset.hd20LayoutV2==='1';
 }
 let count=0;function boot(){
