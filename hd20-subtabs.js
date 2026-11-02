@@ -352,11 +352,30 @@ function ensureAuditCloseEvaluation(root){
 }
 function renderAuditCloseEvaluation(host){
  const audits=readStore('hd20AuditRandomDrawsV1');
+ const actions=readStore('hd20ActionCasesV2');
+ const retentions=readStore('hd20RetentionRandomChecksV1');
  const conducted=audits.filter(x=>txt(x.auditDate));
  const pending=conducted.filter(x=>!txt(x.finalEvaluation)).length;
  const done=conducted.length-pending;
  const notDone=audits.length-conducted.length;
- host.innerHTML='<div class="awHead"><div><b>종료·재조치 판정현황</b><small>Audit 실시 여부와 최종판정을 분리 · 종료판정은 자동 생성하지 않습니다.</small></div></div><div class="awKpis"><div><small>Audit 미실시</small><b>'+notDone+'건</b></div><div><small>최종판정 입력</small><b>'+done+'건</b></div><div><small>최종판정 미입력</small><b>'+pending+'건</b></div></div><div class="awHint">최종판정 미입력은 Audit 실시 건만 집계합니다. 6개월 도래 여부 및 증빙은 개별 원천기록에서 확인해야 하며, 미입력·미실시는 정상으로 처리하지 않습니다.</div>';
+ const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const flagged=retentions.filter(r=>r.result==='부적합');
+ const linked=r=>actions.find(a=>String(a.id||'')===String(r.followupActionId||r.actionId||''))||
+  actions.find(a=>a.sourceStage==='RETENTION-RANDOM'&&String(a.sourceCaseId||'')==='RET-AUDIT-'+r.id)||
+  actions.find(a=>a.sourceStage==='RETENTION-RECHECK'&&String(a.sourceCaseId||'')===String(r.id))||null;
+ const isDone=a=>['완료','조치완료','개선완료','종료','종결','종결완료'].includes(String(a?.status||'').trim());
+ const toReview=r=>r.recheckResult!=='적합'||!r.recheckedAt;
+ const outstanding=flagged.filter(toReview);
+ const rows=outstanding.slice().reverse().slice(0,80).map(r=>{
+   const act=linked(r),closed=!!r.recheckedAt&&r.recheckResult==='적합';
+   const progress=!act?'개선조치 연결 확인 필요':isDone(act)?'개선조치 완료 · 재점검 필요':'개선조치 진행·대기';
+   return '<tr><td>'+esc(r.id)+'</td><td>'+esc(r.team||'—')+'</td><td>'+esc(r.kind||'—')+' · '+esc(r.caseId||'—')+'</td><td>'+esc(r.evaluator||'미입력')+'</td><td>'+esc(act?.id||'미연결')+'</td><td>'+esc(closed?'종료':progress)+'</td></tr>';
+ }).join('');
+ host.innerHTML='<div class="awHead"><div><b>종료·재조치 판정현황</b><small>Audit 최종판정과 유지점검 재조치를 별도 원천으로 조회 · 미입력 결과는 자동으로 적합 판정하지 않습니다.</small></div></div>'+
+ '<div class="awKpis"><div><small>Audit 미실시</small><b>'+notDone+'건</b></div><div><small>최종판정 입력</small><b>'+done+'건</b></div><div><small>최종판정 미입력</small><b>'+pending+'건</b></div></div>'+
+ '<div class="awHint">최종판정 미입력은 Audit 실시 건 기준입니다. 6개월 도래·종료 가능 여부는 개별 근거로 확인해야 합니다.</div>'+
+ '<div style="margin-top:14px"><b>유지점검 부적합 · 재조치 추적</b><small style="display:block;color:#647b8c;margin:6px 0">부적합 '+flagged.length+'건 / 재점검 적합·종료 '+(flagged.length-outstanding.length)+'건 / 재조치·재점검 필요 '+outstanding.length+'건</small></div>'+
+ (rows?'<div style="overflow:auto"><table class="awTable"><thead><tr><th>유지점검 ID</th><th>생산팀</th><th>원본 개선사례</th><th>최초 평가자</th><th>연계 조치번호</th><th>진행 상태</th></tr></thead><tbody>'+rows+'</tbody></table></div><div class="awHint">최대 80건 표시. 현장 재점검 입력은 ② 유지점검에서 수행하고, 개선조치 실행은 개선조치·완료관리 탭에서 수행합니다.</div>':'<p class="awHint">현재 부적합 후 재조치·재점검이 필요한 유지점검 기록이 없습니다.</p>');
 }
 
 function renderRetentionSampling(root){
