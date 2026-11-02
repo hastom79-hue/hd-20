@@ -59,19 +59,13 @@ function organizeActionModal(modal,form){
  // The input form already exposes team, 5S theme and request date.
  // Do not repeat those values in a static 3-column summary.
  body.querySelectorAll('.hd20RegSummary').forEach(el=>el.remove());
- const note=modal.querySelector('.amRegisterNote');
- if(note){
-   note.classList.add('hd20ActionIntroTop');
-   if(note.parentNode!==body||body.firstElementChild!==note)body.prepend(note);
-   body.querySelectorAll('.amRegisterNote').forEach(el=>{if(el!==note)el.remove()});
- }
- // Mailing mode is an actual functional input: keep it accessible, below the
- // notice and above the form, without a large dedicated blank row.
+ // The highlighted explanatory banner is explicitly removed by user request.
+ // Keep only the real registration controls and do not recreate the message.
+ modal.querySelectorAll('.amRegisterNote,.hd20ActionIntroTop').forEach(el=>el.remove());
  const send=body.querySelector('.amSendMethod');
  if(send){
    send.classList.add('hd20ActionSendCompact');
-   if(note)note.insertAdjacentElement('afterend',send);
-   else body.prepend(send);
+   body.prepend(send);
  }
  const recent=body.querySelector('.hd20ActionRecentFirst');
  if(recent){
