@@ -50,8 +50,21 @@ const desc=document.createElement('p');desc.textContent=approved.name+' · '+app
 desc.style.cssText='font-size:12px;color:#425e72;line-height:1.7;margin:0 0 10px';
 guideUploader.appendChild(desc);
 if(n===0&&approved.pdfPage){
- const notice=document.createElement('p');notice.textContent='승인된 제조현장 원문 사진 · 생산부서 5S 형적관리 BEFORE / AFTER (인쇄 57페이지). 현재 이미지 원본을 별도 추출하지 못해 해당 논문 페이지를 직접 표시합니다.';notice.style.cssText='font-size:12px;line-height:1.7;color:#425e72;margin:5px 0 12px';guideUploader.appendChild(notice);
- const viewer=document.createElement('object');viewer.type='application/pdf';viewer.data=approved.url+'#page='+approved.pdfPage+'&zoom=140';viewer.setAttribute('aria-label','승인된 Expert Engineering 제조공장 BEFORE AFTER 사례 원문 PDF 14페이지');viewer.style.cssText='display:block;width:100%;height:530px;border:1px solid #d3e0e9;border-radius:8px;background:#fff';viewer.innerHTML='<p>PDF 미리보기가 지원되지 않습니다. 아래 원문 링크에서 인쇄 57페이지의 BEFORE·AFTER 사진을 확인하세요.</p>';guideUploader.appendChild(viewer);
+ const header=document.createElement('p');
+ header.textContent='승인 원본 · Expert Engineering Enterprises 밸브 제조공장. BEFORE(좌) · AFTER(우).';
+ header.style.cssText='font-size:12px;line-height:1.7;color:#425e72;margin:5px 0 12px';
+ guideUploader.appendChild(header);
+ const grid=document.createElement('div');
+ grid.style.cssText='display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px';
+ [['BEFORE','assets/adv-guide/expert-5s-before.png'],['AFTER','assets/adv-guide/expert-5s-after.png']].forEach(([label,src])=>{
+   const figure=document.createElement('figure');figure.style.cssText='margin:0;border:1px solid #d3e0e9;border-radius:8px;overflow:hidden;background:white';
+   const img=document.createElement('img');img.src=src;img.alt='승인 제조현장 '+label+' 사진';img.loading='eager';
+   img.style.cssText='display:block;width:100%;height:auto;object-fit:contain';
+   img.onerror=()=>{img.remove();const notice=document.createElement('p');notice.textContent='승인 원본 사진을 불러올 수 없습니다. 원문에서 사진을 확인해 주세요.';notice.style.cssText='padding:14px;font-size:12px;color:#9b4d25';figure.prepend(notice)};
+   const cap=document.createElement('figcaption');cap.textContent=label;cap.style.cssText='text-align:center;padding:8px;font-weight:700;color:#36566d';
+   figure.append(img,cap);grid.appendChild(figure);
+ });
+ guideUploader.appendChild(grid);
 }else if(approved.image||approved.beforeImage){
  const images=n===2
   ?[{src:approved.image,alt:'BEFORE · 승인된 원본 상단',half:'top'},{src:approved.image,alt:'AFTER · 승인된 원본 하단',half:'bottom'}]
