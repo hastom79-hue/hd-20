@@ -672,8 +672,15 @@ function reconcileAuditSubnav(){
  }
  bar.removeAttribute('hidden');bar.removeAttribute('aria-hidden');
  bar.style.setProperty('display','grid','important');
+ bar.style.setProperty('grid-template-columns','repeat(5,minmax(0,1fr))','important');
+ bar.style.setProperty('grid-auto-flow','row','important');
  bar.style.removeProperty('visibility');
  bar.classList.add('hd20AuditFiveSubnav');
+ bar.querySelectorAll(':scope > button[data-sub]').forEach(button=>{
+   button.hidden=false;button.removeAttribute('aria-hidden');
+   button.style.setProperty('display','flex','important');
+   button.style.setProperty('visibility','visible','important');
+ });
  if(state.area!=='audit')state.area='audit';
 }
 function installAuditSubnavGuard(){
@@ -686,6 +693,12 @@ function installAuditSubnavGuard(){
    if(window.HD20_NAV?.active?.()!=='audit')return;
    if(records.some(r=>r.type==='childList'&&(r.target?.id==='hd20Subnav'||r.addedNodes?.length||r.removedNodes?.length)))schedule();
  });
+ // Watch only navigation removal/replacement at the app root; other cards may update freely.
+ const app=document.querySelector('.app');
+ if(app)new MutationObserver(records=>{
+   if(window.HD20_NAV?.active?.()!=='audit')return;
+   if(records.some(r=>[...r.removedNodes,...r.addedNodes].some(n=>n.nodeType===1&&(n.id==='hd20Subnav'||n.querySelector?.('#hd20Subnav')))))schedule();
+ }).observe(app,{childList:true});
  const attach=()=>{
    const nav=document.getElementById('hd20Subnav');
    if(nav)observer.observe(nav,{childList:true,subtree:false});
