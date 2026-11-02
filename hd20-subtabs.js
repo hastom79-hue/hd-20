@@ -388,6 +388,12 @@ function renderAuditCloseEvaluation(host,traceOnly=false){
 function renderRetentionSampling(root){
  let host=root.querySelector('#hd20RetentionSampling');
  if(!host){host=document.createElement('section');host.id='hd20RetentionSampling';host.className='awCard';root.insertBefore(host,root.firstChild)}
+ if(!document.getElementById('hd20RetentionWorkspaceLayoutStyle')){
+  const style=document.createElement('style');style.id='hd20RetentionWorkspaceLayoutStyle';
+  style.textContent='#hd20RetentionSampling .hd20RsActive{margin:14px 0 10px}#hd20RetentionSampling .hd20RsSectionTitle{display:flex;justify-content:space-between;gap:12px;align-items:center;border-bottom:1px solid #dce7ef;padding:8px 2px 11px}#hd20RetentionSampling .hd20RsSectionTitle b{font-size:15px;color:#1c415b}#hd20RetentionSampling .hd20RsSectionTitle small{color:#627b8f;font-size:12px}#hd20RetentionSampling .hd20RsHistoryFold,#hd20RetentionSampling .hd20RsModuleConfigFold{border:1px solid #dce7ef;border-radius:9px;margin:12px 0;background:#fbfdff}#hd20RetentionSampling .hd20RsHistoryFold>summary,#hd20RetentionSampling .hd20RsModuleConfigFold>summary{cursor:pointer;padding:12px 14px;color:#24516f;font-weight:800}#hd20RetentionSampling .hd20RsHistoryFold>.hd20RsList,#hd20RetentionSampling .hd20RsModuleConfigFold>.hd20RsModuleConfig{margin:0 12px 12px}#hd20RetentionSampling .hd20RsActive>.hd20RsList>.awHint{padding:16px 3px}';
+  document.head.appendChild(style);
+ }
+
  const load=key=>{try{const v=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(v)?v:[]}catch{return[]}};
  const save=(key,val)=>{const raw=JSON.stringify(val);localStorage.setItem(key,raw);if(localStorage.getItem(key)!==raw)throw new Error('유지점검 저장 검증 실패: '+key)};
  const activity=load('hd20GMES5SAutoImproveRawV1'),actions=load('hd20ActionCasesV2'),stored=load('hd20RetentionRandomChecksV1');
