@@ -10,6 +10,7 @@ const assert = require('node:assert/strict');
    const u=new URL(route.request().url());
    if(['127.0.0.1','localhost'].includes(u.hostname))return route.continue();
    if(route.request().resourceType()==='script')return route.fulfill({status:200,contentType:'application/javascript',body:'/* external dependency stub */'});
+   if(route.request().resourceType()==='image')return route.fulfill({status:200,contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScL9GQAAAABJRU5ErkJggg==','base64')});
    return route.abort();
  });
  await page.goto('http://127.0.0.1:4173/index.html?validation=1',{waitUntil:'domcontentloaded',timeout:30000});
