@@ -8,6 +8,21 @@ try{
  await page.waitForSelector('#hd20MasterWorkspace [data-hm-target="integrated-team"]',{timeout:25000});
  const buttons=page.locator('#hd20MasterWorkspace [data-hm-target]');
  if(await buttons.count()<10)throw Error('Master groups missing editors');
+ // Verify users can actually open editors, not just see ten decorative tiles.
+ const checks=['integrated-team','integrated-target','integrated-factor','integrated-workplace','integrated-theme','policy','integrated-admins','integrated-mail'];
+ for(const key of checks){
+   await page.locator('#hd20MasterWorkspace [data-hm-target="'+key+'"]').click();
+   await page.waitForTimeout(160);
+   const state=await page.evaluate(k=>{
+     const root=document.querySelector('#masterModal'),box=root?.querySelector('.masterInfoBox');
+     const t=root?.querySelector('[data-master-tab="'+k+'"]');
+     const editor=k==='policy'?document.querySelector('#hd20OperatingPolicyPanel'):document.querySelector('#hd20IntegratedMasterFactors');
+     const visible=el=>!!el&&getComputedStyle(el).display!=='none'&&el.getClientRects().length>0;
+     return {ready:box?.classList.contains('hd20MasterWorkspaceReady'),navVisible:visible(root?.querySelector('#hd20MasterWorkspace')),tabActive:t?.classList.contains('on'),editorVisible:visible(editor),editorText:editor?.innerText?.trim().length||0};
+   },key);
+   if(!state.ready||!state.navVisible||!state.tabActive||!state.editorVisible||state.editorText<8)throw Error('Master editor malfunction '+key+': '+JSON.stringify(state));
+ }
+
  await page.locator('#hmSearch').fill('Audit');
  if(await page.locator('#hd20MasterWorkspace [data-hm-target]:visible').count()!==1)throw Error('Master search filter failed');
  await page.locator('[data-hm-reset]').click();
