@@ -95,7 +95,41 @@ fs.mkdirSync('artifacts',{recursive:true});
   await assertAuditSubtab('ongoing');
 
   await assertAuditSubtab('retention');
-  // The third tab must expose exact-source retention failures and linked corrective actions.
+  // Closure workspace: final-evaluation pending and unresolved rework precede collapsed histories.
+  await page.evaluate(()=>{
+    const load=key=>JSON.parse(localStorage.getItem(key)||'[]');
+    const audits=load('hd20AuditRandomDrawsV1'),checks=load('hd20RetentionRandomChecksV1');
+    audits.push(
+      {id:'E2E-AUDIT-FINAL-PENDING',team:'검증팀',workplace:'검증라인',auditDate:'2026-11-02',initialAuditor:'검증점검자'},
+      {id:'E2E-AUDIT-FINAL-DONE',team:'검증팀',workplace:'검증라인',auditDate:'2026-11-01',finalEvaluation:'종결'}
+    );
+    checks.push(
+      {id:'E2E-REWORK-PENDING',kind:'자율개선',caseId:'E2E-REWORK',team:'검증팀',result:'부적합',evaluator:'최초 점검자'},
+      {id:'E2E-REWORK-CLOSED',kind:'자율개선',caseId:'E2E-CLOSED',team:'검증팀',result:'부적합',recheckResult:'적합',recheckedAt:'2026-11-02'}
+    );
+    localStorage.setItem('hd20AuditRandomDrawsV1',JSON.stringify(audits));
+    localStorage.setItem('hd20RetentionRandomChecksV1',JSON.stringify(checks));
+    window.HD20_SUBNAV.select('audit','retention');
+  });
+  const closure=page.locator('#hd20AuditCloseEvaluation, #hd20RetentionActionTrace');
+  assert.ok(await closure.locator('[data-close-rework]').getByText('E2E-REWORK-PENDING').count(),'unresolved rework must be in primary queue');
+  assert.equal(await closure.locator('[data-close-rework]').getByText('E2E-REWORK-CLOSED').count(),0,'closed rework must not be mixed into active queue');
+  assert.ok(await closure.locator('.hd20CloseHistory').getByText('E2E-REWORK-CLOSED').count(),'closed rework stays in history');
+  assert.equal(await closure.locator('.hd20CloseHistory').first().evaluate(el=>el.open),false,'closure history starts collapsed');
+  if(await page.locator('#hd20AuditCloseEvaluation').getAttribute('data-hd20-fallback')==='true'){
+    assert.ok(await closure.locator('[data-close-final-pending]').getByText('E2E-AUDIT-FINAL-PENDING').count(),'unjudged Audit must be in first queue');
+    assert.ok(await closure.locator('.hd20CloseHistory').getByText('E2E-AUDIT-FINAL-DONE').count(),'evaluated Audit remains in history');
+  }
+  await page.evaluate(()=>{
+    for(const [key,ids] of [
+      ['hd20AuditRandomDrawsV1',['E2E-AUDIT-FINAL-PENDING','E2E-AUDIT-FINAL-DONE']],
+      ['hd20RetentionRandomChecksV1',['E2E-REWORK-PENDING','E2E-REWORK-CLOSED']]
+    ]){
+      localStorage.setItem(key,JSON.stringify(JSON.parse(localStorage.getItem(key)||'[]').filter(x=>!ids.includes(x.id))));
+    }
+    window.HD20_SUBNAV.select('audit','retention');
+  });
+  // The fourth tab must expose exact-source retention failures and linked corrective actions.
   await page.evaluate(()=>{
     const read=k=>{try{return JSON.parse(localStorage.getItem(k)||'[]')}catch{return[]}};
     const checks=read('hd20RetentionRandomChecksV1');
