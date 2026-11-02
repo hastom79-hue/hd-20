@@ -639,9 +639,59 @@ function syncArea(area){
   }
   [ensure(),ensurePurpose(),$('#hd20OpsMetrics')].forEach(el=>el&&el.style.removeProperty('display'));
   state.sub=(MAP[area]||[])[0]?.[0]||'';state.area=area;const bar=ensure(),items=MAP[area]||[];bar.innerHTML=items.map(([k,n])=>`<button type="button" data-sub="${k}" class="${k===state.sub?'on':''}">${n}</button>`).join('');$$('button',bar).forEach(b=>b.onclick=()=>select(area,b.dataset.sub));renderPurpose(area,state.sub);requestAnimationFrame(()=>apply(area,state.sub))}
-function bindMain(){const nav=$('.beginnerNav');if(!nav)return;nav.addEventListener('click',e=>{const b=e.target.closest('button[data-key]');if(!b)return;setTimeout(()=>syncArea(b.dataset.key),60)});window.addEventListener('hd20-nav-area-changed',e=>{const area=e.detail?.area;if(!MAP[area]){setTimeout(()=>syncArea(area),0);return}if(state.area===area&&$('#hd20PurposePanel')&&getComputedStyle(ensure()).display!=='none')return;setTimeout(()=>syncArea(area),0)})}
+
+/* Audit subnav integrity: five canonical operations must remain visible.
+   Legacy modules sometimes leave a single "① Audit 실시" button in the shared bar.
+   Repair navigation only; never mutate Audit or dashboard source data. */
+function auditNavComplete(){
+ const bar=document.getElementById('hd20Subnav'),expected=MAP.audit||[];
+ if(!bar||bar.children.length!==expected.length)return false;
+ const buttons=[...bar.children];
+ return expected.every(([key,label],i)=>buttons[i]?.dataset?.sub===key&&buttons[i]?.textContent?.trim()===label);
+}
+function reconcileAuditSubnav(){
+ if(window.HD20_NAV?.active?.()!=='audit')return;
+ const bar=ensure(),items=MAP.audit;
+ const current=items.some(([key])=>key===state.sub)?state.sub:'draw';
+ if(!auditNavComplete()){
+   const selectedKey=bar.querySelector('button.on[data-sub]')?.dataset.sub;
+   const sub=items.some(([key])=>key===selectedKey)?selectedKey:current;
+   state.area='audit';state.sub=sub;
+   bar.replaceChildren(...items.map(([key,label])=>{
+     const button=document.createElement('button');button.type='button';button.dataset.sub=key;
+     button.textContent=label;button.classList.toggle('on',key===sub);
+     button.addEventListener('click',()=>select('audit',key));
+     return button;
+   }));
+   apply('audit',sub);
+ }
+ bar.removeAttribute('hidden');bar.removeAttribute('aria-hidden');
+ bar.style.setProperty('display','grid','important');
+ bar.style.removeProperty('visibility');
+ bar.classList.add('hd20AuditFiveSubnav');
+ if(state.area!=='audit')state.area='audit';
+}
+function installAuditSubnavGuard(){
+ let pending=false;
+ const schedule=()=>{if(pending)return;pending=true;setTimeout(()=>{pending=false;reconcileAuditSubnav()},0)};
+ window.addEventListener('hd20-nav-area-changed',schedule);
+ window.addEventListener('hd20-subtab-changed',e=>{if(e.detail?.area==='audit')schedule()});
+ document.addEventListener('click',e=>{if(e.target.closest?.('.beginnerNav button[data-key="audit"]'))setTimeout(schedule,100)},true);
+ const observer=new MutationObserver(records=>{
+   if(window.HD20_NAV?.active?.()!=='audit')return;
+   if(records.some(r=>r.type==='childList'&&(r.target?.id==='hd20Subnav'||r.addedNodes?.length||r.removedNodes?.length)))schedule();
+ });
+ const attach=()=>{
+   const nav=document.getElementById('hd20Subnav');
+   if(nav)observer.observe(nav,{childList:true,subtree:false});
+ };
+ attach();
+ window.addEventListener('hd20-nav-area-changed',()=>{attach();setTimeout(schedule,200)});
+ setTimeout(schedule,180);
+}
+function bindMain(){const nav=$('.beginnerNav');if(!nav)return;nav.addEventListener('click',e=>{const b=e.target.closest('button[data-key]');if(!b)return;setTimeout(()=>syncArea(b.dataset.key),60)});window.addEventListener('hd20-nav-area-changed',e=>{const area=e.detail?.area;if(!MAP[area]){setTimeout(()=>syncArea(area),0);return}if(state.area===area&&$('#hd20PurposePanel')&&getComputedStyle(ensure()).display!=='none'&&(area!=='audit'||auditNavComplete()))return;setTimeout(()=>syncArea(area),0)})}
 function refreshActiveAdvancement(){if(state.area!=='advancement'||window.HD20_NAV?.active?.()!=='advancement')return;if(state.sub==='judge'){renderAdvJudge();installAdvJudgeTools()}else if(state.sub==='analysis')renderAdvAnalysis();else if(state.sub==='detail')renderAdvDetail();else if(state.sub==='process')renderAdvProcess();else if(state.sub==='standard')renderAdvStandard();else if(state.sub==='map')window.HD20_MATURITY_MAP_TAB?.render?.();else if(state.sub==='judge')renderAdvJudge()}
-function boot(){ensureAdvancementUiStyle();ensure();ensureGridModal();bindMain();window.addEventListener('hd20-action-updated',()=>{if(state.area==='action'&&state.sub==='verify')renderActionVerify($('#awAction'))});
+function boot(){ensureAdvancementUiStyle();ensure();ensureGridModal();bindMain();installAuditSubnavGuard();window.addEventListener('hd20-action-updated',()=>{if(state.area==='action'&&state.sub==='verify')renderActionVerify($('#awAction'))});
  // Audit/유지점검/조치 갱신 후 동적으로 새로 그려진 패널에도 전용 표시 규칙을 재적용.
  // 데이터에는 접근하지 않고 활성 Audit 탭에 한정해 렌더 이후 1회만 실행한다.
  let auditRefresh=null;
