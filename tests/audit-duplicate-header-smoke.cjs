@@ -33,6 +33,24 @@ fs.mkdirSync('artifacts',{recursive:true});
   assert.equal(compact.registrationHeading,'Audit 결과 등록','Audit form heading simplified');
   assert.ok(compact.sixMonthTableCount>=1,'six-month monitoring table preserved');
   await page.screenshot({path:'artifacts/audit-compact.png',fullPage:false});
+  // Each subtab must exclusively show its own operational cards, never the other two.
+  const assertAuditSubtab=async(sub)=>{
+    await page.evaluate(s=>window.HD20_SUBNAV.select('audit',s),sub);
+    await page.waitForTimeout(200);
+    const result=await page.evaluate(()=>{
+      const visible=selector=>{const el=document.querySelector('#awAudit '+selector);return !!el&&!el.classList.contains('hd20SubHidden')&&getComputedStyle(el).display!=='none'&&el.getClientRects().length>0};
+      const root=document.getElementById('awAudit');
+      return {sub:root?.dataset.subview,draw:visible('.auditDraw'),sampling:visible('#hd20RetentionSampling'),closure:visible('#hd20AuditCloseEvaluation')};
+    });
+    assert.equal(result.sub,sub,'Audit subview must match selected tab');
+    assert.equal(result.draw,sub==='draw','Audit execution content only in draw tab');
+    assert.equal(result.sampling,sub==='ongoing','Retention sampling only in ongoing tab');
+    assert.equal(result.closure,sub==='retention','Closure and corrective action only in retention tab');
+  };
+  await assertAuditSubtab('ongoing');
+  await assertAuditSubtab('retention');
+  await assertAuditSubtab('draw');
+
 
   // The theme sub-section must remain accessible and must not be hidden by the Audit-only rule.
   await page.evaluate(()=>window.HD20_NAV?.openAuditSection?.('theme'));
