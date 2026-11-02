@@ -55,14 +55,18 @@ fs.mkdirSync('artifacts',{recursive:true});
     const result=await page.evaluate(()=>{
       const visible=selector=>{const el=document.querySelector('#awAudit '+selector);return !!el&&!el.classList.contains('hd20SubHidden')&&getComputedStyle(el).display!=='none'&&el.getClientRects().length>0};
       const root=document.getElementById('awAudit');
-      return {sub:root?.dataset.subview,draw:visible('.auditDraw'),sampling:visible('#hd20RetentionSampling'),closure:visible('#hd20AuditCloseEvaluation')};
+      return {sub:root?.dataset.subview,draw:visible('.auditDraw'),actions:visible('#hd20AuditActionMonitor'),sampling:visible('#hd20RetentionSampling'),closure:visible('#hd20AuditCloseEvaluation'),checklist:visible('.acWrap')};
     });
     assert.equal(result.sub,sub,'Audit subview must match selected tab');
     assert.equal(result.draw,sub==='draw','Audit execution content only in draw tab');
+    assert.equal(result.actions,sub==='action','Audit corrective worklist only in its own tab');
+    assert.equal(result.checklist,sub==='checklist','Audit checklist only in fifth tab');
     assert.equal(result.sampling,sub==='ongoing','Retention sampling only in ongoing tab');
     assert.equal(result.closure,sub==='retention','Closure and corrective action only in retention tab');
     if(sub==='retention')assert.ok(await page.locator('#hd20AuditCloseEvaluation, #hd20RetentionActionTrace').count(),'Closure content should be mounted');
   };
+  await assertAuditSubtab('action');
+  await assertAuditSubtab('checklist');
   await assertAuditSubtab('ongoing');
   await assertAuditSubtab('retention');
   // The third tab must expose exact-source retention failures and linked corrective actions.
