@@ -1,0 +1,35 @@
+name: HD20 approved factory photo extraction
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/extract_approved_factory_5s.py'
+      - '.github/workflows/extract-approved-factory-photos.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  extract-verified-before-after:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install exact PDF renderer
+        run: python -m pip install pymupdf==1.26.5
+      - name: Extract approved original page 14 images
+        run: python scripts/extract_approved_factory_5s.py
+      - name: Validate generated image files
+        run: |
+          test -s assets/adv-guide/expert-5s-before.png
+          test -s assets/adv-guide/expert-5s-after.png
+      - name: Commit ONLY extracted approved images
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/adv-guide/expert-5s-before.png assets/adv-guide/expert-5s-after.png
+          if git diff --staged --quiet; then echo 'Already up to date'; exit 0; fi
+          git commit -m 'assets: approved Expert Engineering 5S before and after photos'
+          git push
