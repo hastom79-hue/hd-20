@@ -283,7 +283,7 @@ function render(){
    <button type="button" class="themeSaveBtn" id="themeSaveBtn">점검 결과 저장 · 미흡 항목 자동 등록</button>
    <div class="themeSaveResult" id="themeSaveResult"></div>
  </div></section>
- <section class="themePanel" data-theme-panel="actions" ${view==='actions'?'':'hidden'}><div class="themeHistoryBox"><div class="themeSectionHead" style="margin-top:0"><h3>테마점검 미흡사항 · 개선조치 추적</h3><small>개선조치·완료관리와 같은 원본 조치 레코드를 조회합니다</small></div>${actionTable(month)}</div></section>`;
+ <section class="themePanel" data-theme-panel="actions" ${view==='actions'?'':'hidden'}><details class="themeHistoryBox"><summary style="cursor:pointer;padding:10px 14px;font-weight:800;color:#24516f">상세 원본 점검·개선조치 이력 보기</summary><div class="themeSectionHead" style="margin-top:0"><h3>테마점검 원본 개선조치 추적</h3><small>기존 등록·완료 이력을 보존한 상세조회</small></div>${actionTable(month)}</details></section>`;
  // Mount only the selected workspace. Hidden panels must never retain tall layout boxes.
  host.querySelectorAll('.themePanel[hidden]').forEach(panel=>panel.remove());
  $('#themeMonthSel',host).addEventListener('change',e=>{host.dataset.month=e.target.value;render()});
