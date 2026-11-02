@@ -576,6 +576,15 @@ function syncArea(area){
   state.sub=(MAP[area]||[])[0]?.[0]||'';state.area=area;const bar=ensure(),items=MAP[area]||[];bar.innerHTML=items.map(([k,n])=>`<button type="button" data-sub="${k}" class="${k===state.sub?'on':''}">${n}</button>`).join('');$$('button',bar).forEach(b=>b.onclick=()=>select(area,b.dataset.sub));renderPurpose(area,state.sub);requestAnimationFrame(()=>apply(area,state.sub))}
 function bindMain(){const nav=$('.beginnerNav');if(!nav)return;nav.addEventListener('click',e=>{const b=e.target.closest('button[data-key]');if(!b)return;setTimeout(()=>syncArea(b.dataset.key),60)});window.addEventListener('hd20-nav-area-changed',e=>{const area=e.detail?.area;if(!MAP[area]){setTimeout(()=>syncArea(area),0);return}if(state.area===area&&$('#hd20PurposePanel')&&getComputedStyle(ensure()).display!=='none')return;setTimeout(()=>syncArea(area),0)})}
 function refreshActiveAdvancement(){if(state.area!=='advancement'||window.HD20_NAV?.active?.()!=='advancement')return;if(state.sub==='judge'){renderAdvJudge();installAdvJudgeTools()}else if(state.sub==='analysis')renderAdvAnalysis();else if(state.sub==='detail')renderAdvDetail();else if(state.sub==='process')renderAdvProcess();else if(state.sub==='standard')renderAdvStandard();else if(state.sub==='map')window.HD20_MATURITY_MAP_TAB?.render?.();else if(state.sub==='judge')renderAdvJudge()}
-function boot(){ensureAdvancementUiStyle();ensure();ensureGridModal();bindMain();window.addEventListener('hd20-action-updated',()=>{if(state.area==='action'&&state.sub==='verify')renderActionVerify($('#awAction'))});['hd20-kpi-source-updated','hd20-gmes-5s-imported','hd20-gmes-5s-judged','hd20-refresh-requested'].forEach(e=>window.addEventListener(e,()=>setTimeout(refreshActiveAdvancement,0)));setTimeout(()=>syncArea(window.HD20_NAV?.active?.()||'dashboard'),120)}
+function boot(){ensureAdvancementUiStyle();ensure();ensureGridModal();bindMain();window.addEventListener('hd20-action-updated',()=>{if(state.area==='action'&&state.sub==='verify')renderActionVerify($('#awAction'))});
+ // Audit/유지점검/조치 갱신 후 동적으로 새로 그려진 패널에도 전용 표시 규칙을 재적용.
+ // 데이터에는 접근하지 않고 활성 Audit 탭에 한정해 렌더 이후 1회만 실행한다.
+ let auditRefresh=null;
+ ['hd20-audit-updated','hd20-audit-draw','hd20-action-updated','hd20-refresh-requested'].forEach(eventName=>window.addEventListener(eventName,()=>{
+   if(state.area!=='audit'||window.HD20_NAV?.active?.()!=='audit')return;
+   if(auditRefresh!==null)clearTimeout(auditRefresh);
+   auditRefresh=setTimeout(()=>{auditRefresh=null;if(state.area==='audit'&&window.HD20_NAV?.active?.()==='audit')applyAudit(state.sub)},80);
+ }));
+ ['hd20-kpi-source-updated','hd20-gmes-5s-imported','hd20-gmes-5s-judged','hd20-refresh-requested'].forEach(e=>window.addEventListener(e,()=>setTimeout(refreshActiveAdvancement,0)));setTimeout(()=>syncArea(window.HD20_NAV?.active?.()||'dashboard'),120)}
 window.HD20_SUBNAV={render,select,state:()=>({...state}),map:MAP,contracts:CONTRACT,purpose:CONTRACT,contractMap:(area)=>area?{[area]:MAP[area]}:MAP,contractPurpose:(area)=>area?Object.fromEntries(Object.entries(CONTRACT).filter(([k])=>k.startsWith(area+'.'))):CONTRACT,openGrid:()=>openGrid(state.area,state.sub),advancementType,advancementCandidate,advancementConfirmed};document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot,{once:true}):boot();
 })();
