@@ -476,8 +476,8 @@ function applyAudit(sub){
  // 모든 일반 카드는 Audit 실시에만 둔다. 유지점검은 랜덤 유지검증,
  // 결과·재조치는 종료판정 전용 카드만 노출한다. 내부 데이터는 삭제하지 않는다.
  root.querySelectorAll('.awCard').forEach(card=>{
-   const inSampling=!!(sampling&&(card===sampling||sampling.contains(card)));
-   const inClosure=!!(closeEval&&(card===closeEval||closeEval.contains(card)));
+   const inSampling=!!(sampling&&(card===sampling||sampling.contains(card)||card.contains(sampling)));
+   const inClosure=!!(closeEval&&(card===closeEval||closeEval.contains(card)||card.contains(closeEval)));
    const keep=sub==='draw'?!inSampling&&!inClosure:sub==='ongoing'?inSampling:inClosure;
    show(card,keep);
  });
