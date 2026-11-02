@@ -67,8 +67,8 @@ const assert = require('node:assert/strict');
    assert.equal(await dialog.locator('#hd20AdvGuidePhotoReference img').count(),2,
      'criterion 1 must render two separate approved manufacturing photos');
    await dialog.locator('[data-guide-tab="1"]').click();
-   assert.equal(await dialog.locator('#hd20AdvGuidePhotoReference img').count(),1,
-     'criterion 2 must display the reviewer-confirmed composite before-after photo');
+   assert.equal(await dialog.locator('#hd20AdvGuidePhotoReference img').count(),2,
+     'criterion 2 must show both halves of the same approved original');
    await dialog.locator('[data-guide-tab="0"]').click();
    for(let i=0;i<3;i++){
      await dialog.locator('[data-guide-tab="'+i+'"]').click();
