@@ -499,20 +499,33 @@ function hideDuplicateWorkKpis(root){
  root.querySelectorAll(':scope > .awKpis,:scope > .awAuditLane,:scope > .auditTopTiles').forEach(el=>el.classList.add('hd20SubHidden'));
  if(!document.getElementById('hd20WorkKpiDedupStyle')){const st=document.createElement('style');st.id='hd20WorkKpiDedupStyle';st.textContent='#awAudit .awKpis,#awAudit .awAuditLane,#awAudit .auditTopTiles,#awAudit .auditDrillTiles,#awAudit .auditSummaryTiles,#awAction .awKpis{display:none!important}';document.head.appendChild(st)}
 }
+/* Canonical Audit work-area layout. Move existing live panels only; never clone,
+   re-create or delete a form, its event handlers, records or histories. */
+function placeAuditWorkPanels(root,sub,panels){
+ const anchor=root.querySelector(':scope > .awActions')||root.querySelector(':scope > .awHero');
+ const sequence=sub==='draw'?[panels.draw,panels.closed]:
+   sub==='action'?[panels.action]:
+   sub==='ongoing'?[panels.sampling]:
+   sub==='retention'?[panels.closeEval,panels.trace]:
+   sub==='checklist'?[panels.checklist]:[];
+ let previous=anchor?.parentElement===root?anchor:null;
+ for(const node of sequence){
+   // Do not steal panels owned by a grid, or relocate nested forms.
+   if(!node||node.parentElement!==root||node===previous)continue;
+   if(previous){
+     if(previous.nextElementSibling!==node)previous.insertAdjacentElement('afterend',node);
+   }else if(root.firstElementChild!==node){
+     root.prepend(node);
+   }
+   previous=node;
+ }
+}
 function applyAudit(sub){
  const root=$('#awAudit');if(!root)return;
  // Audit / 유지점검 / 종료판정은 동일한 원천 Case를 공유하되 화면 구성은 엄격히 분리한다.
  // 기존 showAll(root)는 다른 서브탭의 .awCard를 다시 노출해 화면 중복을 일으켰다.
  root.dataset.subview=sub;showAll(root);hideDuplicateWorkKpis(root);
- // Keep one canonical first-work screen: the random selection/action form,
- // not the legacy KPI/guide/checklist cards. Reorder only DOM nodes, never source data.
- const hero=root.querySelector(':scope > .awHero');
- const primaryDraw=root.querySelector('.auditDraw');
- if(primaryDraw&&sub==='draw'){
-   const at=hero||root.querySelector(':scope > .awActions');
-   if(at&&at.parentElement===root&&primaryDraw.parentElement===root&&at.nextElementSibling!==primaryDraw)at.insertAdjacentElement('afterend',primaryDraw);
-   else if(primaryDraw.parentElement===root&&!at&&root.firstElementChild!==primaryDraw)root.prepend(primaryDraw);
- }
+ // Every subtab has one predictable work area; historical panels remain intact.
  const topHero=root.querySelector(':scope > .awHero');
  if(topHero){topHero.classList.toggle('hd20AuditCompactHeader',true);}
  root.querySelectorAll(':scope > .awGrid,:scope > .awFlow,:scope > .awAuditLane').forEach(node=>node.classList.toggle('hd20AuditLegacyBelow',sub==='draw'));
@@ -530,6 +543,12 @@ function applyAudit(sub){
    }
  }
  const sampling=sub==='ongoing'?(renderRetentionSampling(root),root.querySelector('#hd20RetentionSampling')):root.querySelector('#hd20RetentionSampling');
+ // Order each live work panel before unrelated legacy cards, including on
+ // re-entry after Audit updates. The first screen always follows work sequence.
+ placeAuditWorkPanels(root,sub,{
+   draw,closed,action:root.querySelector('#hd20AuditActionMonitor'),
+   sampling,closeEval,trace,checklist:root.querySelector('.acWrap')
+ });
  show(draw,sub==='draw');show(batch,sub==='draw');show(closed,sub==='draw');
  show(ongoing,false);show(sampling,sub==='ongoing');show(closeEval,sub==='retention');show(trace,sub==='retention');
  show($('.awFlow',root),false);show($('.awAuditLane',root),false);
