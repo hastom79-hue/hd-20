@@ -66,7 +66,7 @@ jobs:
             'KPI counts latest audit per line': /latestByLine\.set\(rec\.line,rec\)/.test(theme),
             'theme action records selected audit month': theme.includes('auditMonth:month'),
             'theme matrix groups by audit month': theme.includes('monthKey(x.auditMonth||x.createdAt||x.date)'),
-            'active theme action dedupe uses stable issue identity': theme.includes("a.source==='테마Audit'&&a.workplace===line&&a.themeCategory===cat&&a.problem===problem&&activeStatuses.includes(String(a.status||''))"),
+            'active theme action dedupe uses stable issue identity': theme.includes("a.source==='테마Audit'&&a.workplace===line&&a.team===team&&a.themeCategory===cat&&a.problem===problem") && theme.includes('themeSameIssue(a,line,team,cat,problem)&&!THEME_COMPLETED_STATUSES.has(normalizeThemeStatus(a.status))'),
             'matrix is based on latest audit checklist': /function matrixData\(month\)\{[\s\S]*?const audits=loadChecks\(\)/.test(theme),
             'visible audit history table exists': theme.includes('themeHistoryTable'),
             'repeat audit trace is attached to active action': theme.includes('relatedAuditRecordIds') && theme.includes('lastAuditRecordId'),
@@ -76,14 +76,14 @@ jobs:
             'local theme master is preserved if remote key is missing': /k==='hd20ThemeCatalogMasterV1'/.test(sync),
             'sync cache refreshed': /supabase-sync\.js\?v=20261029-theme-plan-sync-v2/.test(html),
             'maturity drilldown cache refreshed': /maturity-team-case-drilldown\.js\?v=20261028-strict-3criteria-2/.test(html),
-            'theme inspection cache refreshed': /theme-inspection\.js\?v=20261030-master-catalog-v2/.test(html),
+            'theme inspection cache refreshed': /theme-inspection\.js\?v=20261102-planned-line-selector-v32/.test(html),
             'theme workflow has four task views': ['plan','audit','actions','history'].every(v=>theme.includes('data-theme-view="'+v+'"')),
             'theme plans are stored by month and line': theme.includes("PLAN_KEY='hd20ThemeAuditPlansV1'") && theme.includes('themes:selected'),
             'only planned themes are shown in checklist': /THEMES\.filter\(cat=>activeThemes\.includes\(cat\)\)/.test(theme),
             'active Ulsan workplace master is used for line choices': theme.includes('window.HD20WorkplaceMaster?.active?.()'),
             'theme plan store is included in canonical sync': /const KEYS=\[[^\]]*'hd20ThemeAuditPlansV1'/.test(sync),
             'local theme plans are preserved if remote key is missing': /k==='hd20ThemeAuditChecksV1'\|\|k==='hd20ThemeAuditPlansV1'/.test(sync),
-            'theme workflow CSS cache refreshed': /theme-inspection-v5\.css\?v=20261029-line-first-v6/.test(html),
+            'theme workflow CSS cache refreshed': /theme-inspection-v5\.css\?v=20261102-audit-form-layout-v8/.test(html),
             'new line-month has no implicit all-theme plan': /function plannedThemes\(month,line\)\{[\s\S]*?return \[\];/.test(theme),
             'new audit round starts blank': /function checklistState\(line\)\{return \{\}\}/.test(theme),
             'previous judgements are loaded only by explicit action': theme.includes('id="themeLoadPrevious"') && theme.includes('addEventListener(\'click\',loadPreviousJudgements)'),
@@ -100,8 +100,8 @@ jobs:
             'theme audit reads integrated master checklist': theme.includes('window.HD20ThemeMaster?.checklist?.()'),
             'theme catalog is included in canonical sync': /const KEYS=\[[^\]]*'hd20ThemeCatalogMasterV1'/.test(sync),
             'theme master asset loaded before theme audit': html.indexOf('theme-master.js') < html.indexOf('theme-inspection.js'),
-            'theme master cache refreshed': /theme-master\.js\?v=20261030-granular-crud-v3/.test(html),
-            'theme v6 assets cache refreshed': /theme-inspection-v5\.css\?v=20261029-line-first-v6/.test(html)
+            'theme master cache refreshed': /theme-master\.js\?v=20261102-master-click-handler-v4/.test(html),
+            'theme v6 assets cache refreshed': /theme-inspection-v5\.css\?v=20261102-audit-form-layout-v8/.test(html)
           };
           for (const [name, ok] of Object.entries(checks)) {
             console.log((ok ? 'PASS ' : 'FAIL ') + name);
