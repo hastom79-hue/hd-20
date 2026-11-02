@@ -20,7 +20,31 @@ function render(){const a=document.getElementById('awAudit');if(!a)return false;
 function sync(host){host.querySelectorAll('tbody tr').forEach(tr=>{const r=rows[+tr.dataset.i];tr.querySelectorAll('[data-f]').forEach(x=>r[x.dataset.f]=x.type==='number'?+x.value:x.value);r.cat=normCat(r.cat);r.result=judgement(r.score)})}
 const CAT_COLOR={'정리':'#2f80ed','정돈':'#c98416','청소':'#27ae60','시각화':'#7a5af8','위험구역관리':'#e45757','설비 자주보전':'#8a5fd6','5S 고도화':'#1fa6a6'};
 function applyCatColors(host){host.querySelectorAll('.acTable tbody tr').forEach(tr=>{const sel=tr.querySelector('[data-f="cat"]');if(!sel)return;tr.dataset.catColor='1';tr.style.setProperty('--cat-color',CAT_COLOR[sel.value]||'transparent')})}
-function wire(host){host.querySelectorAll('.acRate').forEach(btn=>btn.onclick=()=>{const tr=btn.closest('tr'),r=rows[+tr.dataset.i],score=+btn.dataset.score;r.score=score;r.result=judgement(score);tr.querySelectorAll('.acRate').forEach(x=>x.classList.toggle('on',x===btn));const j=tr.querySelector('.acJudge');j.textContent=r.result;j.className='acJudge '+judgeClass(r.result);tr.querySelector('[data-scoretext]').textContent=score;const ab=tr.querySelector('.acToAction');if(ab)ab.disabled=!(score>=1&&score<=3);summary(host)});host.querySelectorAll('.acToAction').forEach(btn=>btn.onclick=()=>{sync(host);const r=rows[+btn.dataset.i];sendToActionTab(r)});host.querySelectorAll('[data-f="cat"]').forEach(sel=>sel.addEventListener('change',()=>applyCatColors(host)));applyCatColors(host);host.querySelector('[data-ac=add]').onclick=()=>{sync(host);rows.push({cat:'정리',item:'',weight:5,result:'N/A',score:0,note:'',source:'manual'});render()};host.querySelector('[data-ac=save]').onclick=()=>{sync(host);save();render();alert('AUDIT 점검항목을 저장했습니다.')};host.querySelector('[data-ac=delete]').onclick=()=>{const del=[...host.querySelectorAll('.acSel')].map((x,i)=>x.checked?i:-1).filter(i=>i>=0);rows=rows.filter((_,i)=>!del.includes(i));save();render()};const file=host.querySelector('.acFile');host.querySelector('[data-ac=upload]').onclick=()=>file.click();file.onchange=e=>importFile(e.target.files?.[0])}
+function applyFilters(host){
+ const entries=[...host.querySelectorAll('.acTable tbody tr')];let visible=0;
+ for(const tr of entries){
+   const record=rows[Number(tr.dataset.i)]||{},cat=tr.querySelector('[data-f="cat"]')?.value||record.cat||'';
+   const status=record.result||'N/A';
+   const words=[tr.querySelector('[data-f="item"]')?.value, tr.querySelector('[data-f="note"]')?.value].join(' ').toLowerCase();
+   const show=(!filterState.cat||filterState.cat===cat)&&(!filterState.status||filterState.status===status)&&(!filterState.text||words.includes(filterState.text.trim().toLowerCase()));
+   tr.hidden=!show;if(show)visible++;
+ }
+ const count=host.querySelector('.acFilterCount');if(count)count.textContent='조회 '+visible+' / '+entries.length+'개';
+}
+function wireFilters(host){
+ const fields=[['cat','cat'],['status','status'],['text','text']];
+ for(const [attribute,key] of fields){
+   const element=host.querySelector('[data-ac-filter-'+attribute+']');
+   element?.addEventListener('input',()=>{filterState[key]=element.value;applyFilters(host)});
+ }
+ host.querySelector('[data-ac-filter-reset]')?.addEventListener('click',()=>{
+   filterState.cat='';filterState.status='';filterState.text='';
+   fields.forEach(([attribute])=>{const e=host.querySelector('[data-ac-filter-'+attribute+']');if(e)e.value=''});
+   applyFilters(host);
+ });
+ applyFilters(host);
+}
+function wire(host){host.querySelectorAll('.acRate').forEach(btn=>btn.onclick=()=>{const tr=btn.closest('tr'),r=rows[+tr.dataset.i],score=+btn.dataset.score;r.score=score;r.result=judgement(score);tr.querySelectorAll('.acRate').forEach(x=>x.classList.toggle('on',x===btn));const j=tr.querySelector('.acJudge');j.textContent=r.result;j.className='acJudge '+judgeClass(r.result);tr.querySelector('[data-scoretext]').textContent=score;const ab=tr.querySelector('.acToAction');if(ab)ab.disabled=!(score>=1&&score<=3);summary(host);applyFilters(host)});host.querySelectorAll('.acToAction').forEach(btn=>btn.onclick=()=>{sync(host);const r=rows[+btn.dataset.i];sendToActionTab(r)});host.querySelectorAll('[data-f="cat"]').forEach(sel=>sel.addEventListener('change',()=>applyCatColors(host)));applyCatColors(host);wireFilters(host);host.querySelector('[data-ac=add]').onclick=()=>{sync(host);rows.push({cat:'정리',item:'',weight:5,result:'N/A',score:0,note:'',source:'manual'});filterState.cat='';filterState.status='';filterState.text='';render()};host.querySelector('[data-ac=save]').onclick=()=>{sync(host);save();render();alert('AUDIT 점검항목을 저장했습니다.')};host.querySelector('[data-ac=delete]').onclick=()=>{const del=[...host.querySelectorAll('.acSel')].map((x,i)=>x.checked?i:-1).filter(i=>i>=0);rows=rows.filter((_,i)=>!del.includes(i));save();render()};const file=host.querySelector('.acFile');host.querySelector('[data-ac=upload]').onclick=()=>file.click();file.onchange=e=>importFile(e.target.files?.[0])}
 function currentAuditTarget(){
   try{
     const draws=JSON.parse(localStorage.getItem('hd20AuditRandomDrawsV1')||'[]');
