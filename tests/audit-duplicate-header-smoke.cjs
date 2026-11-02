@@ -49,6 +49,26 @@ fs.mkdirSync('artifacts',{recursive:true});
   };
   await assertAuditSubtab('ongoing');
   await assertAuditSubtab('retention');
+  // The third tab must expose exact-source retention failures and linked corrective actions.
+  await page.evaluate(()=>{
+    const read=k=>{try{return JSON.parse(localStorage.getItem(k)||'[]')}catch{return[]}};
+    const checks=read('hd20RetentionRandomChecksV1');
+    const actions=read('hd20ActionCasesV2');
+    checks.push({id:'E2E-RET-TRACE-1',caseId:'E2E-ORIGINAL-1',kind:'자율개선',team:'E2E 점검팀',result:'부적합',evaluator:'E2E 평가자',actionId:'E2E-ACTION-TRACE-1'});
+    actions.push({id:'E2E-ACTION-TRACE-1',status:'조치대기'});
+    localStorage.setItem('hd20RetentionRandomChecksV1',JSON.stringify(checks));
+    localStorage.setItem('hd20ActionCasesV2',JSON.stringify(actions));
+    window.HD20_SUBNAV.select('audit','retention');
+  });
+  assert.ok(await page.locator('#hd20AuditCloseEvaluation').getByText('E2E-RET-TRACE-1').count(),'third tab must show retention failure case reference');
+  assert.ok(await page.locator('#hd20AuditCloseEvaluation').getByText('E2E-ACTION-TRACE-1').count(),'third tab must show linked corrective action');
+  await page.evaluate(()=>{
+    for(const [key,id] of [['hd20RetentionRandomChecksV1','E2E-RET-TRACE-1'],['hd20ActionCasesV2','E2E-ACTION-TRACE-1']]){
+      const rows=JSON.parse(localStorage.getItem(key)||'[]');
+      localStorage.setItem(key,JSON.stringify(rows.filter(x=>x.id!==id)));
+    }
+    window.HD20_SUBNAV.select('audit','retention');
+  });
   // New Audit data may re-render the same DOM. The active view must remain isolated.
   await page.evaluate(()=>window.dispatchEvent(new Event('hd20-audit-updated')));
   await page.waitForTimeout(180);
