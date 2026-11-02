@@ -91,7 +91,7 @@ jobs:
             'action tracker has text and status filters': theme.includes('id="themeActionSearch"') && theme.includes('id="themeActionStatus"'),
             'action tracker includes latest reinspection month': theme.includes('monthKey(a.lastAuditMonth||a.lastAuditedAt)===month') && theme.includes('ids.some(id=>id!=null&&monthAuditIds.has(String(id)))'),
             'KPI month filter supports legacy audit timestamps': /loadChecks\(\)\.filter\(x=>monthKey\(x\.month\|\|x\.auditedAt\)===month\)/.test(theme),
-            'theme workflow uses explicit four-step process rail': theme.includes('themeWorkflowRail') && ['점검계획','현장 Audit','개선조치','재점검'].every(v=>theme.includes(v)),
+            'theme workflow retains four task workspaces': ['plan','audit','actions','history'].every(v=>theme.includes('data-theme-view="'+v+'"')),
             'line overview is compact and line-first': theme.includes('themeLineSummaryBody') && theme.includes('themeLineAction') && theme.includes('계획된 취약 테마'),
             'line overview no longer renders a wide heatmap table': !theme.includes('<table class="themeMatrix">'),
             'dashboard-like KPI tile row removed from theme screen': !theme.includes('<div class="themeKpiRow">'),
