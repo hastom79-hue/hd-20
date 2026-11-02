@@ -65,7 +65,20 @@ fs.mkdirSync('artifacts',{recursive:true});
   assert.ok(await page.locator('#hd20AuditCloseEvaluation, #hd20RetentionActionTrace').getByText('E2E-ACTION-TRACE-1').count(),'third tab must show linked corrective action');
   assert.equal(await page.locator('#hd20RetentionActionTrace').count()<=1,true,'only one retention trace panel may exist');
   await page.evaluate(()=>{
-    for(const [key,id] of [['hd20RetentionRandomChecksV1','E2E-RET-TRACE-1'],['hd20ActionCasesV2','E2E-ACTION-TRACE-1']]){
+    const checks=JSON.parse(localStorage.getItem('hd20RetentionRandomChecksV1')||'[]');
+    const actions=JSON.parse(localStorage.getItem('hd20ActionCasesV2')||'[]');
+    const row=checks.find(x=>x.id==='E2E-RET-TRACE-1');
+    row.recheckResult='부적합';row.recheckedAt=new Date().toISOString();row.followupActionId='E2E-ACTION-TRACE-2';
+    actions.push({id:'E2E-ACTION-TRACE-2',sourceStage:'RETENTION-RECHECK',sourceCaseId:row.id,previousActionId:'E2E-ACTION-TRACE-1',status:'조치대기'});
+    localStorage.setItem('hd20RetentionRandomChecksV1',JSON.stringify(checks));
+    localStorage.setItem('hd20ActionCasesV2',JSON.stringify(actions));
+    window.HD20_SUBNAV.select('audit','retention');
+  });
+  const latestTrace=await page.locator('#hd20AuditCloseEvaluation, #hd20RetentionActionTrace').getByText('E2E-ACTION-TRACE-2').count();
+  assert.ok(latestTrace,'recheck failure must show latest followup corrective action ID');
+
+  await page.evaluate(()=>{
+    for(const [key,id] of [['hd20RetentionRandomChecksV1','E2E-RET-TRACE-1'],['hd20ActionCasesV2','E2E-ACTION-TRACE-1'],['hd20ActionCasesV2','E2E-ACTION-TRACE-2']]){
       const rows=JSON.parse(localStorage.getItem(key)||'[]');
       localStorage.setItem(key,JSON.stringify(rows.filter(x=>x.id!==id)));
     }
