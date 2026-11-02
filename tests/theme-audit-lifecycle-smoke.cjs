@@ -5,7 +5,7 @@ const {chromium}=require('playwright');
  const browser=await chromium.launch({headless:true});
  try{
   const page=await browser.newPage({viewport:{width:1440,height:900}});
-  page.on('dialog',d=>d.dismiss());
+  const dialogs=[];page.on('dialog',d=>{dialogs.push(d.message());d.dismiss()});
   await page.addInitScript(()=>{
    if(sessionStorage.getItem('themeLifecycleSeeded'))return;
    const p=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit'}).formatToParts(new Date());
@@ -33,7 +33,7 @@ const {chromium}=require('playwright');
    await page.locator('#themeAuditAuditor').fill('E2E 점검자');
    await page.locator('#themeAuditPhoto').setInputFiles(photo);
    await page.locator('#themeSaveBtn').click();
-   await page.waitForFunction(expected=>JSON.parse(localStorage.getItem('hd20ThemeAuditChecksV1')||'[]').filter(x=>x.line==='TEST-LINE').length===expected,before+1,{timeout:15000});
+   await page.waitForFunction(expected=>JSON.parse(localStorage.getItem('hd20ThemeAuditChecksV1')||'[]').filter(x=>x.line==='TEST-LINE').length===expected,before+1,{timeout:15000}).catch(async err=>{const details=await page.evaluate(()=>{const host=document.getElementById('awTheme'),r=document.getElementById('themeSaveResult');return {view:host?.dataset.view,line:host?.dataset.line,team:host?.dataset.team,month:host?.dataset.month,checks:JSON.parse(localStorage.getItem('hd20ThemeAuditChecksV1')||'[]').filter(x=>x.line==='TEST-LINE').length,actions:JSON.parse(localStorage.getItem('hd20ActionCasesV2')||'[]').filter(x=>x.workplace==='TEST-LINE').length,rows:document.querySelectorAll('#awTheme .themeCheckRow').length,ng:document.querySelectorAll('#awTheme .themeCheckRow [data-v="미흡"].active').length,button:document.getElementById('themeSaveBtn')?.disabled,result:r?.textContent,planned:JSON.parse(localStorage.getItem('hd20ThemeAuditPlansV1')||'[]')}});throw new Error('THEME_SAVE_DIAGNOSTIC '+JSON.stringify({details,dialogs})+' '+err.message)});
    await page.waitForFunction(()=>document.querySelector('#themeSaveResult')?.textContent?.includes('점검 이력 저장 완료'),null,{timeout:15000});
   };
   // Reject NG without photo: neither audit history nor action cases may be written.
