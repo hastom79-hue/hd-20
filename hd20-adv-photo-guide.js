@@ -51,17 +51,17 @@ desc.style.cssText='font-size:12px;color:#425e72;line-height:1.7;margin:0 0 10px
 guideUploader.appendChild(desc);
 if(n===0&&approved.pdfPage){
  const header=document.createElement('p');
- header.textContent='승인 원본 · Expert Engineering Enterprises 밸브 제조공장. BEFORE(좌) · AFTER(우).';
+ header.textContent='제조공장 공구 개선 사례 · BEFORE: 공구 혼재 보관 / AFTER: 형적판 정위치 관리. 두 사진은 촬영 각도가 달라 동일 구도의 직접 비교는 어렵습니다.';
  header.style.cssText='font-size:12px;line-height:1.7;color:#425e72;margin:5px 0 12px';
  guideUploader.appendChild(header);
  const grid=document.createElement('div');
- grid.style.cssText='display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px';
+ grid.style.cssText='display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:stretch';
  [['BEFORE','assets/adv-guide/expert-5s-before.png'],['AFTER','assets/adv-guide/expert-5s-after.png']].forEach(([label,src])=>{
-   const figure=document.createElement('figure');figure.style.cssText='margin:0;border:1px solid #d3e0e9;border-radius:8px;overflow:hidden;background:white';
+   const figure=document.createElement('figure');figure.style.cssText='margin:0;border:1px solid #d3e0e9;border-radius:8px;overflow:hidden;background:white;display:flex;flex-direction:column';
    const img=document.createElement('img');img.src=src;img.alt='승인 제조현장 '+label+' 사진';img.loading='eager';
-   img.style.cssText='display:block;width:100%;height:auto;object-fit:contain';
+   img.style.cssText='display:block;width:100%;height:290px;object-fit:contain;object-position:center;background:#f3f6f8';
    img.onerror=()=>{img.remove();const notice=document.createElement('p');notice.textContent='승인 원본 사진을 불러올 수 없습니다. 원문에서 사진을 확인해 주세요.';notice.style.cssText='padding:14px;font-size:12px;color:#9b4d25';figure.prepend(notice)};
-   const cap=document.createElement('figcaption');cap.textContent=label;cap.style.cssText='text-align:center;padding:8px;font-weight:700;color:#36566d';
+   const cap=document.createElement('figcaption');cap.textContent=label==='BEFORE'?'BEFORE · 공구 혼재 보관':'AFTER · 공구 형적관리';cap.style.cssText='text-align:center;padding:10px;font-weight:700;color:#36566d;border-top:1px solid #e3eaf0';
    figure.append(img,cap);grid.appendChild(figure);
  });
  guideUploader.appendChild(grid);
