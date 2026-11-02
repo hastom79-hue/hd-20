@@ -47,6 +47,21 @@ fs.mkdirSync('artifacts',{recursive:true});
   assert.deepEqual(layout,{drawBeforeEntry:true,guideBeforeButtons:true,buttonsBeforeResults:true,
     drawVisible:true,entryVisible:true,batchHistoryCollapsed:true,resultHistoryCollapsed:true},
     'Audit first tab must display execution in order and collapse historical detail');
+  // Tab ① must not reveal arbitrary legacy cards or checklist/closure cards.
+  const executionCards=await page.evaluate(()=>{
+    const root=document.getElementById('awAudit');
+    return [...root.querySelectorAll('.awCard')].filter(el=>{
+      const st=getComputedStyle(el);
+      return st.display!=='none'&&el.getClientRects().length>0;
+    }).map(el=>({
+      cls:el.className,id:el.id,
+      execution:!!(el.matches('.auditDraw,.auditClosedLoop,#hd20AuditBatchExecution')||
+        el.querySelector('.auditDraw,.auditClosedLoop,#hd20AuditBatchExecution')||
+        el.closest('.auditDraw,.auditClosedLoop,#hd20AuditBatchExecution'))
+    }));
+  });
+  assert.ok(executionCards.every(x=>x.execution),
+    'first Audit subtab must not show unrelated legacy cards: '+JSON.stringify(executionCards));
   await page.screenshot({path:'artifacts/audit-compact.png',fullPage:false});
   // Each subtab must exclusively show its own operational cards, never the other two.
   const assertAuditSubtab=async(sub)=>{
