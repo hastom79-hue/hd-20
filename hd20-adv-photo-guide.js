@@ -36,7 +36,7 @@ function open(index=0){
 // Do not imply that external photos are first-party inspection records.
 const evidenceRoot=overlay.querySelector('section');
 const sourceCases=[
- {name:'미국 EPA · 5S 적용 전후 사례',url:'https://www.epa.gov/sustainability/environmental-professionals-guide-lean-and-six-sigma-chapter-2',detail:'원본 문서 Figure 7(BEFORE) · Figure 8(AFTER). 표시·정위치·찾는 낭비 개선의 비교 기준.',image:'',beforeImage:'https://www.epa.gov/sites/default/files/2017-03/figure-7.gif',afterImage:'https://www.epa.gov/sites/default/files/2017-03/figure-8.gif'},
+ {name:'5S Center · 제조현장 공구 작업장 형적관리 BEFORE / AFTER',url:'https://www.linkedin.com/posts/5s-center-a06174248_before-vs-after-5s-implementation-see-activity-7336320714855088128-b7NM',detail:'제조현장 공구 작업장의 BEFORE(좌) · AFTER(우). 개선 후 공구 형적·정위치 식별이 가능해진 실제 공개 사례. 탐색시간 단축의 정량값은 확인되지 않았습니다.',image:'https://media.licdn.com/dms/image/v2/D4D22AQG3rgUcoaawGg/feedshare-shrink_800/B4DZc_YxNNGgAo-/0/1749115158789?e=2147483647&t=UV0k3LxBO1PAw2EBFt4kFb9ZCghF8eGfynwli8SIglw&v=beta'},
  {name:'Novo Lean Solutions · Team Member Workstation',url:'https://www.novoleansolutions.com/case-studies/methodology-for-developing-team-member-workstations/',detail:'원본 Figure 2(BEFORE) · Figure 5(AFTER). 작업자 자세 REBA 7→3, 고빈도 동작의 Green Zone 배치.',image:''},
  {name:'동성 농기계 제조공장 · 승인된 컬러 BEFORE / AFTER',url:'https://bizn.donga.com/3/all/20170724/85506925/2',detail:'승인한 원본 한 장의 상단은 BEFORE, 하단은 AFTER입니다. 출처: 동아일보 비즈N(2017.07.24). 사진만으로 정량축소의 절대 수치가 입증되지는 않습니다.',image:'https://dimg.donga.com/wps/ECONOMY/IMAGE/2017/07/24/85506918.2.jpg'}
 ];
@@ -49,12 +49,10 @@ hd.style.cssText='margin:0 0 8px;color:#154869';guideUploader.appendChild(hd);
 const desc=document.createElement('p');desc.textContent=approved.name+' · '+approved.detail;
 desc.style.cssText='font-size:12px;color:#425e72;line-height:1.7;margin:0 0 10px';
 guideUploader.appendChild(desc);
-if(n===0){
- const pending=document.createElement('p');pending.textContent='기존 EPA 적치·정돈 사진은 요건 1(형적관리·찾는 낭비 삭제)의 인정 가이드로 부적합하여 표시하지 않습니다. 현장 개선 전후가 확인되는 형적관리 승인 사진을 적용해야 합니다.';pending.style.cssText='padding:14px;background:#fff7e9;border:1px solid #ebd3a7;border-radius:8px;font-size:13px;line-height:1.7';guideUploader.appendChild(pending);
-}else if(approved.image||approved.beforeImage){
+if(approved.image||approved.beforeImage){
  const images=n===2
   ?[{src:approved.image,alt:'BEFORE · 승인된 원본 상단',half:'top'},{src:approved.image,alt:'AFTER · 승인된 원본 하단',half:'bottom'}]
-  :approved.image?[{src:approved.image,alt:'사용자가 승인한 원본 비교사진'}]
+  :approved.image?[{src:approved.image,alt:n===0?'제조현장 공구 작업장 형적관리 BEFORE(좌) AFTER(우)':'승인된 원본 비교사진'}]
   :[{src:approved.beforeImage,alt:'EPA Figure 7 BEFORE 원본'},{src:approved.afterImage,alt:'EPA Figure 8 AFTER 원본'}];
  const imageGrid=document.createElement('div');
  imageGrid.style.cssText='display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px';
@@ -84,7 +82,7 @@ if(n===0){
  guideUploader.appendChild(label);
 }
 const sourceLink=document.createElement('a');sourceLink.href=approved.url;sourceLink.target='_blank';sourceLink.rel='noopener noreferrer';
-sourceLink.textContent=n===0?'요건 1 기존 부적합 사진의 출처(참고용) ↗':'승인 사례 원문 및 사진 확인 ↗';
+sourceLink.textContent='사례 원문 및 사진 확인 ↗';
 sourceLink.style.cssText='display:inline-block;color:#11629e;font-size:13px;font-weight:700;text-decoration:underline;margin:4px 0';
 guideUploader.appendChild(sourceLink);
 const negativeExamples=[
