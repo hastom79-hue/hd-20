@@ -47,8 +47,8 @@ const assert = require('node:assert/strict');
    const dialog=page.locator('#hd20AdvPhotoGuidePopup');
    await dialog.waitFor({state:'visible',timeout:10000});
    assert.equal(await dialog.locator('[data-guide-tab]').count(),3,'guide must expose three requirement tabs');
-   assert.equal(await dialog.getByText('BEFORE 사진 가이드').count(),1);
-   assert.equal(await dialog.getByText('AFTER 사진 가이드').count(),1);
+   assert.equal(await dialog.getByText('BEFORE 사진 가이드',{exact:true}).count(),1);
+   assert.equal(await dialog.getByText('AFTER 사진 가이드',{exact:true}).count(),1);
    assert.equal(await dialog.locator('#hd20AdvGuidePhotoReference').count(),1,
      'independent photo guide section must always be visible');
    assert.equal(await dialog.locator('section[role="dialog"] > #hd20AdvGuidePhotoReference').count(),1,
