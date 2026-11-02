@@ -139,7 +139,7 @@ jobs:
                  hd20InquiryActive)이 기본으로 뜨도록 바뀌어, 서브탭 바가 의도적으로 숨겨짐(실측
                  확인: dashboard를 거치지 않고 activity를 바로 클릭해도 동일) — 깊은 서브탭 검증
                  대상에서 제외하고 통합조회 화면 자체를 별도로 가볍게 확인. */
-              const areaSubs={advancement:['확정사례 관리'],audit:['① Audit 실시','② 유지점검','③ 결과·재조치'],action:['① 개선조치 등록·실행','② 미완료·지연관리','③ 효과검증·최종종결']};
+              const areaSubs={advancement:['확정사례 관리'],audit:['① Audit 실시','② 개선조치·완료관리','③ 유지점검','④ 결과·재조치','⑤ Audit 점검항목'],action:['① 개선조치 등록·실행','② 미완료·지연관리','③ 효과검증·최종종결']};
               await page.evaluate(()=>document.querySelector('.beginnerNav button[data-key="activity"]')?.click());
               await page.waitForTimeout(500);
               const activityInquiry=await page.evaluate(()=>({inquiryActive:document.body.classList.contains('hd20InquiryActive'),hasRegisterBtn:[...document.querySelectorAll('button')].some(b=>b.textContent.includes('신규등록'))}));
