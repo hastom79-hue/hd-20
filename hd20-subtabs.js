@@ -472,7 +472,9 @@ function applyAudit(sub){
  show(ongoing,false);show(sampling,sub==='ongoing');show(closeEval,sub==='retention');
  show($('.awFlow',root),false);show($('.awAuditLane',root),false);
  // 등록·대상선정 공통부품은 Audit 실시 화면에서만 표시한다.
- show($('.awActions',root),sub==='draw');show($('.awGrid',root),sub==='draw');
+ show($('.awActions',root),sub==='draw');
+ const auditGrid=$('.awGrid',root);
+ show(auditGrid,sub==='draw'||!!(auditGrid&&((sub==='ongoing'&&sampling&&auditGrid.contains(sampling))||(sub==='retention'&&closeEval&&auditGrid.contains(closeEval)))));
  // 모든 일반 카드는 Audit 실시에만 둔다. 유지점검은 랜덤 유지검증,
  // 결과·재조치는 종료판정 전용 카드만 노출한다. 내부 데이터는 삭제하지 않는다.
  root.querySelectorAll('.awCard').forEach(card=>{
