@@ -201,6 +201,36 @@ fs.mkdirSync('artifacts',{recursive:true});
   await assertAuditSubtab('draw');
 
 
+  // Batch selector and in-progress Audit form must survive an unrelated queue refresh.
+  const draftRetention=await page.evaluate(()=>{
+    const key='hd20AuditRandomDrawsV1',original=localStorage.getItem(key);
+    try{
+      const current=JSON.parse(original||'[]');
+      current.unshift(
+        {id:'E2E-BATCH-KEEP-01',batchId:'E2E-BATCH-KEEP',batchIndex:1,batchSize:2,team:'E2E팀1',date:'2026-11-03'},
+        {id:'E2E-BATCH-KEEP-02',batchId:'E2E-BATCH-KEEP',batchIndex:2,batchSize:2,team:'E2E팀2',date:'2026-11-03'}
+      );
+      localStorage.setItem(key,JSON.stringify(current));
+      window.HD20AuditClosedLoop?.render?.();
+      window.HD20AuditBatchExecution?.patch?.();
+      const select=document.querySelector('#hd20AuditBatchExecution [data-abe-select]');
+      if(!select)return {error:'Audit batch selector missing'};
+      select.value='E2E-BATCH-KEEP-02';select.dispatchEvent(new Event('change',{bubbles:true}));
+      const form=document.querySelector('#awAudit .auditClosedLoop'),request=form?.querySelector('[data-cl-request]');
+      if(!request)return {error:'Audit request field missing'};
+      request.value='보존해야 할 작성중 Audit 내용';
+      window.HD20AuditBatchExecution.patch();
+      const after=document.querySelector('#hd20AuditBatchExecution [data-abe-select]');
+      return {selected:after?.value,draft:request.value};
+    }finally{
+      if(original===null)localStorage.removeItem(key);else localStorage.setItem(key,original);
+      window.HD20AuditClosedLoop?.render?.();
+      window.HD20AuditBatchExecution?.patch?.();
+    }
+  });
+  assert.deepEqual(draftRetention,{selected:'E2E-BATCH-KEEP-02',draft:'보존해야 할 작성중 Audit 내용'},
+    'Audit batch refresh preserves active selection and unsaved fields');
+
   // The theme sub-section must remain accessible and must not be hidden by the Audit-only rule.
   await page.evaluate(()=>window.HD20_NAV?.openAuditSection?.('theme'));
   await page.waitForFunction(()=>window.HD20_NAV?.active?.()==='theme',null,{timeout:15000});
