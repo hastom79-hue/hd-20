@@ -360,15 +360,21 @@ function renderAuditCloseEvaluation(host,traceOnly=false){
  const notDone=audits.length-conducted.length;
  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const flagged=retentions.filter(r=>r.result==='부적합');
- const linked=r=>actions.find(a=>String(a.id||'')===String(r.followupActionId||r.actionId||''))||
-  actions.find(a=>a.sourceStage==='RETENTION-RANDOM'&&String(a.sourceCaseId||'')==='RET-AUDIT-'+r.id)||
-  actions.find(a=>a.sourceStage==='RETENTION-RECHECK'&&String(a.sourceCaseId||'')===String(r.id))||null;
+ const linked=r=>{
+   // Recheck failures create a new corrective action; never show a stale initial action.
+   const byId=id=>id?actions.find(a=>String(a.id||'')===String(id)):null;
+   const direct=byId(r.followupActionId)||byId(r.actionId);
+   if(direct)return direct;
+   const rechecks=actions.filter(a=>a.sourceStage==='RETENTION-RECHECK'&&String(a.sourceCaseId||'')===String(r.id));
+   if(rechecks.length)return rechecks[0];
+   return actions.find(a=>a.sourceStage==='RETENTION-RANDOM'&&String(a.sourceCaseId||'')==='RET-AUDIT-'+r.id)||null;
+ };
  const isDone=a=>['완료','조치완료','개선완료','종료','종결','종결완료'].includes(String(a?.status||'').trim());
  const toReview=r=>r.recheckResult!=='적합'||!r.recheckedAt;
  const outstanding=flagged.filter(toReview);
  const rows=outstanding.slice().reverse().slice(0,80).map(r=>{
    const act=linked(r),closed=!!r.recheckedAt&&r.recheckResult==='적합';
-   const progress=!act?'개선조치 연결 확인 필요':isDone(act)?'개선조치 완료 · 재점검 필요':'개선조치 진행·대기';
+   const progress=!act?'개선조치 연결 확인 필요':isDone(act)?'개선조치 완료 · 재점검 필요':(r.recheckResult==='부적합'?'재부적합 · 재조치 진행·대기':'개선조치 진행·대기');
    return '<tr><td>'+esc(r.id)+'</td><td>'+esc(r.team||'—')+'</td><td>'+esc(r.kind||'—')+' · '+esc(r.caseId||'—')+'</td><td>'+esc(r.evaluator||'미입력')+'</td><td>'+esc(act?.id||'미연결')+'</td><td>'+esc(closed?'종료':progress)+'</td></tr>';
  }).join('');
  const summary=traceOnly?'':'<div class="awHead"><div><b>종료·재조치 판정현황</b><small>Audit 최종판정과 유지점검 재조치를 별도 원천으로 조회 · 미입력 결과는 자동으로 적합 판정하지 않습니다.</small></div></div>'+
