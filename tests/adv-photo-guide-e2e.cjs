@@ -62,8 +62,8 @@ const assert = require('node:assert/strict');
      'duplicate legacy registered-case panel must not appear');
    assert.equal(await dialog.locator('#hd20AdvGuideRejectedSamples').count(),1,
      'nonqualifying examples must be shown once');
-   assert.equal(await dialog.locator('#hd20AdvGuidePhotoReference img').count(),1,
-     'criterion 1 must show real manufacturing shadow-board before/after reference');
+   assert.equal(await dialog.locator('#hd20AdvGuidePhotoReference object[type="application/pdf"]').count(),1,
+     'criterion 1 must embed approved Expert Engineering source page');
    await dialog.locator('[data-guide-tab="1"]').click();
    assert.equal(await dialog.locator('#hd20AdvGuidePhotoReference img').count(),0,
      'unverified Novo image URLs must not be substituted with unrelated images');
