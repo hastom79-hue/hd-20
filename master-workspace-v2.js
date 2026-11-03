@@ -77,7 +77,7 @@ root.addEventListener('click',e=>{if(e.target.closest('[data-hm-close],#openMast
 auditMaster();
 
 const grid=ws.querySelector('[data-hm-groups]');const all=[];
-for(const [group,...keys] of GROUPS){const section=document.createElement('div');section.className='hmGroup';section.dataset.hmGroup=group;const heading=document.createElement('h3');heading.textContent=group;heading.setAttribute('role','tab');heading.tabIndex=0;heading.setAttribute('aria-selected','false');section.appendChild(heading);const wrap=document.createElement('div');wrap.className='hmLinks';wrap.setAttribute('role','group');wrap.setAttribute('aria-label',group+' 항목');for(const key of keys){const original=tabs.querySelector('[data-master-tab="'+key+'"]');if(!original||original.hidden)continue;const btn=document.createElement('button');btn.type='button';btn.dataset.hmTarget=key;btn.title=NOTES[key]||group;btn.innerHTML='<strong></strong><small></small>';btn.querySelector('strong').textContent=original.textContent.trim();btn.querySelector('small').textContent=NOTES[key]||group;btn.addEventListener('click',()=>{original.click();select(key);requestAnimationFrame(()=>{const current=box.querySelector('#hd20IntegratedMasterFactors .imfPanel:not([style*="display: none"])');{const target=current||box.querySelector('#hd20IntegratedMasterFactors');if(!target)return;const viewport=box.getBoundingClientRect(),rect=target.getBoundingClientRect();/* 상단 고정 헤더(ws)가 가리지 않도록 그 높이만큼 더 올려서 맞춘다 */const sticky=ws.getBoundingClientRect().height+8;const next=Math.max(0,Math.min(box.scrollHeight-box.clientHeight,box.scrollTop+rect.top-viewport.top-sticky));box.scrollTo({top:next,behavior:'smooth'})}})});wrap.appendChild(btn);all.push(btn)}section.appendChild(wrap);if(wrap.children.length)grid.appendChild(section)}
+for(const [group,...keys] of GROUPS){const section=document.createElement('div');section.className='hmGroup';section.dataset.hmGroup=group;const heading=document.createElement('h3');heading.textContent=group;heading.setAttribute('role','tab');heading.tabIndex=0;heading.setAttribute('aria-selected','false');section.appendChild(heading);const wrap=document.createElement('div');wrap.className='hmLinks';wrap.setAttribute('role','group');wrap.setAttribute('aria-label',group+' 항목');for(const key of keys){const original=tabs.querySelector('[data-master-tab="'+key+'"]');if(!original||original.hidden)continue;const btn=document.createElement('button');btn.type='button';btn.dataset.hmTarget=key;btn.title=NOTES[key]||group;btn.innerHTML='<strong></strong><small></small>';btn.querySelector('strong').textContent=original.textContent.trim();btn.querySelector('small').textContent=NOTES[key]||group;btn.addEventListener('click',()=>openMasterTarget(key));wrap.appendChild(btn);all.push(btn)}section.appendChild(wrap);if(wrap.children.length)grid.appendChild(section)}
 /* 대분류 탭: 눌렀을 때 해당 그룹의 칩만 보이게 하고, 그 그룹에서 지금 열려 있는 항목이 없으면 첫 항목을 연다(사용자가 빈 분류를 보지 않도록). */
 function openMasterTarget(key){
  const b=all.find(x=>x.dataset.hmTarget===key);
@@ -92,14 +92,10 @@ function openMasterTarget(key){
  select(key);
  // Bring the functional settings section into view, not the button which launched it.
  requestAnimationFrame(()=>{
-   const candidates=[
-     '#hd20IntegratedMasterFactors .imfPanel:not([hidden]):not([style*="display: none"])',
-     '#hd20ThemeCatalogPanel:not([hidden])',
-     '#hd20OperatingPolicyPanel:not([hidden])',
-     '#hd20IntegratedMasterFactors:not([hidden])',
-     '#masterOrderPanel:not([hidden])',
-     '#masterTargetPanel:not([hidden])'
-   ];
+   const candidates=key==='integrated-theme'?['#hd20ThemeCatalogPanel']:
+    key==='policy'?['#hd20OperatingPolicyPanel']:
+    key==='integrated-admins'||key.startsWith('integrated-')?['#hd20IntegratedMasterFactors']:
+    ['#masterOrderPanel','#masterTargetPanel'];
    let destination=null;
    for(const selector of candidates){
      for(const el of box.querySelectorAll(selector)){
