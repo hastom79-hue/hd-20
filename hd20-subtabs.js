@@ -423,13 +423,19 @@ function renderAuditCloseEvaluation(host,traceOnly=false){
        const allowed=!selectedState||kind===selectedState;
        section.hidden=!allowed;
        if(!allowed)continue;
+       let matchedInSection=0;
        for(const row of section.querySelectorAll('tbody tr')){
          const cols=row.querySelectorAll('td');
          const rowTeam=kind==='pending'?cols[1]?.textContent?.split(' · ')[0]?.trim():kind==='rework'?cols[1]?.textContent?.trim():cols.length===5?cols[1]?.textContent?.split(' · ')[0]?.trim():cols[1]?.textContent?.trim();
          const matchesTeam=!selectedTeam||rowTeam===selectedTeam;
          const matchesText=!needle||row.textContent.toLocaleLowerCase().includes(needle);
          row.hidden=!(matchesTeam&&matchesText);
-         if(!row.hidden)visible++;
+         if(!row.hidden){visible++;matchedInSection++}
+       }
+       // A matching closed record is invisible when the details element
+       // remains collapsed; open it only for an explicit status/text search.
+       if(kind==='closed'&&matchedInSection>0&&(selectedState==='closed'||!!needle)){
+         section.open=true;
        }
      }
      const count=host.querySelector('[data-close-filter-count]');
