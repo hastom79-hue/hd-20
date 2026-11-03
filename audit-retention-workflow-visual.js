@@ -104,6 +104,7 @@ function render(){
  else if(root.firstElementChild!==el)root.prepend(el);
  el.hidden=root.dataset.subview!=='ongoing';
  updateMetrics(el);
+ bindActions(el);
 }
 window.addEventListener('hd20-subtab-changed',e=>{if(e.detail?.area==='audit')render()});
 window.addEventListener('hd20-audit-updated',()=>{if(document.getElementById('awAudit')?.dataset.subview==='ongoing')render()});
