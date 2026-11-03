@@ -82,7 +82,7 @@ function clickWhenReady(findFn,modalId,area,tries=0,clicked=false){
  if(window.HD20_NAV?.active?.()!==area){internalRegistrationNavigation=false;return}
  if(document.getElementById(modalId)?.classList.contains('on')){internalRegistrationNavigation=false;return}
  const el=findFn();
- if(!clicked&&el?.isConnected&&!el.disabled&&typeof el.onclick==='function'){
+ if(!clicked&&el?.isConnected&&!el.disabled){
    el.click();clicked=true;
    if(document.getElementById(modalId)?.classList.contains('on')){internalRegistrationNavigation=false;return}
  }
@@ -116,7 +116,7 @@ function goActionRegister(){
  close();navigate('activity');
  setTimeout(()=>{
    window.HD20_SUBNAV?.select?.('activity','request');
-   clickWhenReady(()=>document.querySelector('#hd20ImprovementTaskPortal [data-im-task="request"]'),'hd20ActionRegisterModal','activity');
+   clickWhenReady(()=>document.querySelector('#hd20ActivityLookupPanel [data-ln-new-register]'),'hd20ActionRegisterModal','activity');
  },0);
 }
 function getRows(key){try{const a=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(a)?a:[]}catch{return[]}}
@@ -153,7 +153,7 @@ function textMatch(x,q){const needle=String(q||'').trim().replace(/\s+/g,' ').to
 function renderOverview(mode='overview'){
  const separate=mode==='self'||mode==='request';
  const root=document.getElementById(separate?'hd20ActivityLookupPanel':'hd20LauncherOverview');if(!root)return;
- let view=separate?SUBGRID[mode]:view;
+ let view=separate?SUBGRID[mode]:GRID;
  const saveView=(next)=>{view=next;if(separate)SUBGRID[mode]=next;else GRID=next};
 
  const {activities,actions}=sourceRows();
@@ -345,8 +345,8 @@ function boot(){
     if(e.detail.sub==='overview')setTimeout(syncImprovementSubview,0);
     else{hideOverview();document.querySelector('.app')?.classList.add('awFocused');document.getElementById('awActivity')?.classList.add('on')}
   });
-  ['hd20-kpi-source-updated','hd20-action-updated','hd20-activity-updated'].forEach(e=>window.addEventListener(e,()=>{if(document.body.classList.contains('hd20InquiryActive'))renderOverview()}));
-  window.addEventListener('storage',()=>{if(document.body.classList.contains('hd20InquiryActive'))renderOverview()});
+  ['hd20-kpi-source-updated','hd20-action-updated','hd20-activity-updated'].forEach(e=>window.addEventListener(e,()=>{if(document.body.classList.contains('hd20InquiryActive'))renderOverview();const sub=document.getElementById('awActivity')?.dataset.subview;if(window.HD20_NAV?.active?.()==='activity'&&(sub==='self'||sub==='request'))renderOverview(sub)}));
+  window.addEventListener('storage',()=>{if(document.body.classList.contains('hd20InquiryActive'))renderOverview();const sub=document.getElementById('awActivity')?.dataset.subview;if(window.HD20_NAV?.active?.()==='activity'&&(sub==='self'||sub==='request'))renderOverview(sub)});
 
   // Reload / revisit: always show the registration-choice popup after the company mail gate.
   // The page can restore any deep-linked area; do not suppress the popup for that reason.
