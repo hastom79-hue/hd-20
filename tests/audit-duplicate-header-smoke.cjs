@@ -117,6 +117,7 @@ fs.mkdirSync('artifacts',{recursive:true});
       catch(e){duplicateRejected=/이미 실시결과/.test(String(e.message))}
       return {savedId:saved.id,result:saved.auditResult,
         actionCount:actions.length,sourceStage:actions[0]?.sourceStage,
+        sourceCaseId:actions[0]?.sourceCaseId,registeredBy:actions[0]?.registeredBy,
         initialAuditor:actions[0]?.initialAuditor,duplicateRejected};
     }finally{
       if(originalSource===null)localStorage.removeItem(sourceKey);
@@ -128,6 +129,7 @@ fs.mkdirSync('artifacts',{recursive:true});
   assert.deepEqual(correctiveLinkage,{
     savedId:'E2E-AUDIT-LINK-ONCE-20261103',result:'부적합',
     actionCount:1,sourceStage:'AUDIT-REQUEST',
+    sourceCaseId:'E2E-AUDIT-LINK-ONCE-20261103',registeredBy:'최초 감사자',
     initialAuditor:'최초 감사자',duplicateRejected:true
   },'Audit registration links one action and preserves original auditor without duplicate submission');
   const firstWorkspaceOrder=await page.evaluate(()=>{
