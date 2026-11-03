@@ -94,11 +94,11 @@ const {chromium}=require('playwright');
     window.HD20_DASHBOARD_WORK_METRICS.render();
     return [...document.querySelectorAll('#hd20DashboardWorkMetrics .hd20DwmGroup')].map(card=>
       [...card.querySelectorAll('.hd20DwmMonth')].map(month=>
-        [...month.querySelectorAll('.hd20DwmChartBar')].map(bar=>Number((bar.title.match(/: (\\d+)건/)||[])[1]||0))
+        [...month.querySelectorAll('.hd20DwmChartBar')].map(bar=>Number((bar.title.match(/: (\d+)건/)||[])[1]||0))
       )
     );
   });
-  const expectedMonthly=[[[0,1],[1,0]],[[0,0],[0,0]],[[0,0],[0,0]]];
+
   assert.equal(monthlyDates.length,3,'all KPI categories remain present');
   const expectedMonths=[[1,2],[3,4],[5,6]];
   for(let k=0;k<3;k++){
