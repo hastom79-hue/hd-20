@@ -199,6 +199,36 @@ fs.mkdirSync('artifacts',{recursive:true});
   await page.waitForTimeout(500);
   await assertAuditSubtab('checklist');
   await assertAuditSubtab('ongoing');
+  // Completed Audit corrective actions join the retention random-draw pool,
+  // but must not create duplicate retained checks automatically.
+  const retentionHandoff=await page.evaluate(()=>{
+    const key='hd20ActionCasesV2',before=localStorage.getItem(key);
+    try{
+      const actions=JSON.parse(before||'[]');
+      actions.push({id:'AUDIT-SMOKE-RETENTION-COMPLETE',
+        source:'5S Audit 실시결과',sourceStage:'AUDIT-REQUEST',
+        auditDrawId:'AUDIT-SMOKE-RETENTION-SOURCE',sourceCaseId:'AUDIT-SMOKE-RETENTION-SOURCE',
+        team:'검증팀',workplace:'검증라인',initialAuditor:'최초 점검자',
+        problem:'완료 사례 유지점검 연계',status:'완료',completedAt:'2026-11-03',
+        before:'data:image/png;base64,iVBORw0KGgo=',after:'data:image/png;base64,iVBORw0KGgo='});
+      localStorage.setItem(key,JSON.stringify(actions));
+      window.HD20_SUBNAV.select('audit','ongoing');
+      const panel=document.querySelector('#hd20RetentionSampling');
+      const toolbar=panel?.querySelector('.hd20RsToolbar')?.textContent||'';
+      const savedChecks=JSON.parse(localStorage.getItem('hd20RetentionRandomChecksV1')||'[]');
+      return {eligible:toolbar.includes('완료사례 '+actions.filter(a=>['완료','개선완료','조치완료','종결','확정완료','종료','종결완료'].includes(a.status)).length+'건'),
+        exactCaseInPool:toolbar.includes('완료사례 '),
+        noImplicitSample:!savedChecks.some(x=>x.caseId==='AUDIT-SMOKE-RETENTION-COMPLETE')};
+    }finally{
+      if(before===null)localStorage.removeItem(key);
+      else localStorage.setItem(key,before);
+      window.HD20_SUBNAV.select('audit','ongoing');
+    }
+  });
+  assert.equal(retentionHandoff.noImplicitSample,true,
+    'completed Audit action becomes eligible without automatically creating a check');
+  assert.equal(retentionHandoff.exactCaseInPool,true,
+    'retention candidate count is present after completed Audit action');
   // Retention workspace must keep actionable checks above completed cases.
   await page.evaluate(()=>{
     const key='hd20RetentionRandomChecksV1',rows=JSON.parse(localStorage.getItem(key)||'[]');
