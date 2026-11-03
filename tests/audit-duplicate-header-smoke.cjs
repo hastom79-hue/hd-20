@@ -232,6 +232,50 @@ fs.mkdirSync('artifacts',{recursive:true});
     'completed Audit action becomes eligible without automatically creating a check');
   assert.equal(retentionHandoff.eligible,true,
     'completed Audit action increments retention candidate pool by exactly one');
+  // A failed retention check must create a retention-specific corrective case,
+  // not a second ordinary Audit action. Original evaluator must be preserved.
+  const retentionFailure=await page.evaluate(()=>{
+    const keys=['hd20RetentionRandomChecksV1','hd20AuditRandomDrawsV1',
+      'hd20ActionCasesV2','hd20_company_session_v1'];
+    const original=Object.fromEntries(keys.map(k=>[k,localStorage.getItem(k)]));
+    const auth=window.HD20MasterAuth;
+    const id='AUDIT-SMOKE-RET-FAIL-01',email='retention.evaluator@hd.com';
+    try{
+      localStorage.setItem('hd20_company_session_v1',JSON.stringify({
+        email,expiresAt:Date.now()+600000
+      }));
+      window.HD20MasterAuth={...auth,canEvaluateRetention:()=>true};
+      const rows=JSON.parse(original.hd20RetentionRandomChecksV1||'[]');
+      rows.push({id,kind:'개선요청',caseId:'AUDIT-SMOKE-RET-ORIGIN',
+        team:'검증팀',workplace:'검증라인',drawDate:'2026-11-03',result:'점검대기'});
+      localStorage.setItem('hd20RetentionRandomChecksV1',JSON.stringify(rows));
+      window.HD20_SUBNAV.select('audit','ongoing');
+      const card=document.querySelector('#hd20RetentionSampling [data-rs-id="'+id+'"]');
+      if(!card)throw Error('Retention test card missing');
+      card.querySelector('[data-rs-check="부적합"]').click();
+      card.querySelector('[data-rs-save]').click();
+      const actions=JSON.parse(localStorage.getItem('hd20ActionCasesV2')||'[]')
+        .filter(x=>x.sourceCaseId==='RET-AUDIT-'+id);
+      const result=JSON.parse(localStorage.getItem('hd20RetentionRandomChecksV1')||'[]')
+        .find(x=>x.id===id);
+      return {actionCount:actions.length,stage:actions[0]?.sourceStage,
+        initialAuditor:actions[0]?.initialAuditor,
+        result:result?.result,linkedId:result?.actionId,
+        actionId:actions[0]?.id};
+    }finally{
+      for(const k of keys){
+        if(original[k]===null)localStorage.removeItem(k);
+        else localStorage.setItem(k,original[k]);
+      }
+      window.HD20MasterAuth=auth;
+      window.HD20_SUBNAV.select('audit','ongoing');
+    }
+  });
+  assert.equal(retentionFailure.actionCount,1,'one corrective case per failed retention check');
+  assert.equal(retentionFailure.stage,'RETENTION-RANDOM','retention case is not mixed with ordinary Audit');
+  assert.equal(retentionFailure.initialAuditor,'retention.evaluator@hd.com','original evaluator stays attached');
+  assert.equal(retentionFailure.result,'부적합','failed retention result saved');
+  assert.equal(retentionFailure.linkedId,retentionFailure.actionId,'retention record points to created case');
   // Retention workspace must keep actionable checks above completed cases.
   await page.evaluate(()=>{
     const key='hd20RetentionRandomChecksV1',rows=JSON.parse(localStorage.getItem(key)||'[]');
