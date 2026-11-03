@@ -67,7 +67,7 @@ function rowMonth(row,headers,preferredHeader){
  if(Array.isArray(row)){
   const labels=Array.isArray(headers)?headers:[];
   if(preferredHeader){const i=labels.findIndex(h=>String(h)===preferredHeader);if(i>=0)return rowMonth({date:row[i]});}
-  const dateColumns=labels.map((h,i)=>/일자|일시|날짜|등록일|선정일|점검일|Audit일|확정일|판정일|요청일|완료일|기한/i.test(String(h))?i:-1).filter(i=>i>=0);
+  const dateColumns=labels.map((h,i)=>/일자|일시|날짜|등록일|선정일|후보일|점검일|Audit일|확정일|판정일|요청일|완료일|기한/i.test(String(h))?i:-1).filter(i=>i>=0);
   for(const i of dateColumns){const found=rowMonth({date:row[i]});if(found)return found}
   return null;
  }
@@ -100,17 +100,17 @@ function render(){
   document.head.appendChild(style);
  }
  const specs=[
-  {area:'audit',title:'Audit·유지점검',metrics:[['draw',0,'Audit 등록'],['draw',2,'Audit 완료']]},
-  {area:'action',title:'개선조치·완료관리',metrics:[['manage',0,'개선요청'],['manage',2,'조치완료']]},
-  {area:'advancement',title:'고도화·표준화',metrics:[['judge',0,'고도화 후보'],['standard',0,'공식확정']]}
+  {area:'audit',title:'Audit·유지점검',metrics:[['draw',0,'Audit 등록','선정일'],['draw',2,'Audit 완료','Audit일']]},
+  {area:'action',title:'개선조치·완료관리',metrics:[['manage',0,'개선요청','등록일'],['manage',2,'조치완료','완료일']]},
+  {area:'advancement',title:'고도화·표준화',metrics:[['judge',0,'고도화 후보','후보일'],['standard',0,'공식확정','확정일']]}
  ];
  const year=Number(window.HD20KPIData?.selectedYear?.()||new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Seoul',year:'numeric'}).format(new Date()));
  root.innerHTML='<div class="hd20DwmHead"><div><h2>운영 종합진단 · 집중관리 추이</h2><p style="display:block!important;margin:5px 0 0;color:#74899d;font-size:12px">월별 관리대상 발생 추이 · 단위 건 · '+year+'년</p></div></div><div class="hd20DwmGroups">'+specs.map(spec=>{
-  const metrics=spec.metrics.map(([sub,index,label])=>{
+  const metrics=spec.metrics.map(([sub,index,label,dateHeader])=>{
    const expected=CONTRACTS[spec.area]?.[sub]?.[index];let ev=null;
    try{ev=window.HD20_KPI_EVIDENCE?.evidence?.(spec.area,sub,index)}catch(e){console.warn('[HD20] 월별 근거 조회 실패',spec.area,sub,e)}
    const valid=ev?.title===expected&&Array.isArray(ev.rows);
-   return {sub,index,label,count:valid?ev.rows.length:null,series:valid?monthlyEvidence(ev.rows,year,ev.headers,(spec.area==='audit'&&sub==='draw'&&index===2)?'Audit일':(spec.area==='advancement'&&sub==='standard'&&index===0)?'확정일':(spec.area==='action'&&sub==='manage'&&index===2)?'완료일':null):null};
+   return {sub,index,label,count:valid?ev.rows.length:null,series:valid?monthlyEvidence(ev.rows,year,ev.headers,dateHeader):null};
   });
   const anyDated=metrics.some(m=>m.series?.dated&&m.series?.values.some(v=>v>0));
   const missing=metrics.filter(m=>!m.series?.dated&&m.count>0).map(m=>m.label);
