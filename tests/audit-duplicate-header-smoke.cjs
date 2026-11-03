@@ -307,15 +307,15 @@ fs.mkdirSync('artifacts',{recursive:true});
     try{
       const current=JSON.parse(original||'[]');
       current.unshift(
-        {id:'E2E-BATCH-KEEP-01',batchId:'E2E-BATCH-KEEP',batchIndex:1,batchSize:2,team:'E2E팀1',date:'2026-11-03'},
-        {id:'E2E-BATCH-KEEP-02',batchId:'E2E-BATCH-KEEP',batchIndex:2,batchSize:2,team:'E2E팀2',date:'2026-11-03'}
+        {id:'AUDIT-SMOKE-BATCH-KEEP-01',batchId:'AUDIT-SMOKE-BATCH-KEEP',batchIndex:1,batchSize:2,team:'E2E팀1',date:'2026-11-03'},
+        {id:'AUDIT-SMOKE-BATCH-KEEP-02',batchId:'AUDIT-SMOKE-BATCH-KEEP',batchIndex:2,batchSize:2,team:'E2E팀2',date:'2026-11-03'}
       );
       localStorage.setItem(key,JSON.stringify(current));
       window.HD20AuditClosedLoop?.render?.();
       window.HD20AuditBatchExecution?.patch?.();
       const select=document.querySelector('#hd20AuditBatchExecution [data-abe-select]');
       if(!select)return {error:'Audit batch selector missing'};
-      select.value='E2E-BATCH-KEEP-02';select.dispatchEvent(new Event('change',{bubbles:true}));
+      select.value='AUDIT-SMOKE-BATCH-KEEP-02';select.dispatchEvent(new Event('change',{bubbles:true}));
       const form=document.querySelector('#awAudit .auditClosedLoop'),request=form?.querySelector('[data-cl-request]');
       if(!request)return {error:'Audit request field missing'};
       request.value='보존해야 할 작성중 Audit 내용';
@@ -328,8 +328,47 @@ fs.mkdirSync('artifacts',{recursive:true});
       window.HD20AuditBatchExecution?.patch?.();
     }
   });
-  assert.deepEqual(draftRetention,{selected:'E2E-BATCH-KEEP-02',draft:'보존해야 할 작성중 Audit 내용'},
+  assert.deepEqual(draftRetention,{selected:'AUDIT-SMOKE-BATCH-KEEP-02',draft:'보존해야 할 작성중 Audit 내용'},
     'Audit batch refresh preserves active selection and unsaved fields');
+  // The drawn-target event must synchronize the Batch selector and the
+  // canonical form to one exact Audit ID, even when both teams are pending.
+  const synchronizedBatch=await page.evaluate(()=>{
+    const key='hd20AuditRandomDrawsV1',original=localStorage.getItem(key);
+    try{
+      const rows=JSON.parse(original||'[]');
+      rows.unshift(
+        {id:'AUDIT-SMOKE-SYNC-01',team:'검증팀1',date:'2026-11-03'},
+        {id:'AUDIT-SMOKE-SYNC-02',team:'검증팀2',date:'2026-11-03'}
+      );
+      localStorage.setItem(key,JSON.stringify(rows));
+      window.HD20AuditClosedLoop.render();
+      window.HD20AuditBatchExecution.patch();
+      const form=document.querySelector('#awAudit .auditClosedLoop');
+      const team=form?.querySelector('[data-cl-team]');
+      if(!team)return {error:'Audit execution team missing'};
+      const target=rows.find(x=>x.id==='AUDIT-SMOKE-SYNC-02');
+      if(![...team.options].some(x=>x.value===target.team))team.add(new Option(target.team,target.team));
+      team.value=target.team;
+      team.dispatchEvent(new Event('change',{bubbles:true}));
+      form.dataset.selectedAuditId=target.id;
+      window.HD20AuditBatchExecution.patch();
+      return {
+        selectedId:form.dataset.selectedAuditId,
+        batchId:document.querySelector('#hd20AuditBatchExecution [data-abe-select]')?.value,
+        team:form.querySelector('[data-cl-team]')?.value
+      };
+    }finally{
+      if(original===null)localStorage.removeItem(key);else localStorage.setItem(key,original);
+      const form=document.querySelector('#awAudit .auditClosedLoop');
+      if(form)delete form.dataset.selectedAuditId;
+      window.HD20AuditClosedLoop.render();
+      window.HD20AuditBatchExecution.patch();
+    }
+  });
+  assert.deepEqual(synchronizedBatch,{
+    selectedId:'AUDIT-SMOKE-SYNC-02',batchId:'AUDIT-SMOKE-SYNC-02',team:'검증팀2'
+  },'Batch selector and Audit result form share the exact pending Audit source');
+
 
   // The theme sub-section must remain accessible and must not be hidden by the Audit-only rule.
   await page.evaluate(()=>window.HD20_NAV?.openAuditSection?.('theme'));
