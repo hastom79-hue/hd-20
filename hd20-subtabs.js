@@ -377,10 +377,10 @@ function renderAuditCloseEvaluation(host,traceOnly=false){
    return actions.find(a=>a.sourceStage==='RETENTION-RANDOM'&&String(a.sourceCaseId||'')===baseId)||null;
  };
  const done=a=>['완료','조치완료','개선완료','종료','종결','종결완료'].includes(String(a?.status||'').trim());
- const auditTable=rows=>'<div class="hd20CloseTableWrap"><table class="awTable"><thead><tr><th>Audit 번호</th><th>생산팀 · 작업장</th><th>점검일</th><th>점검자</th><th>최종판정</th></tr></thead><tbody>'+rows.map(a=>'<tr><td><button type="button" class="hadAuditLink" data-had-open-audit="'+esc(auditId(a))+'">'+esc(auditId(a)||'—')+'</button></td><td>'+esc(a.team||'—')+' · '+esc(a.workplace||'—')+'</td><td>'+esc(a.auditDate||'—')+'</td><td>'+esc(a.initialAuditor||a.auditor||'—')+'</td><td>'+esc(a.finalEvaluation||'미입력')+'</td></tr>').join('')+'</tbody></table></div>';
+ const auditTable=rows=>'<div class="hd20CloseTableWrap"><table class="awTable"><thead><tr><th>Audit 번호</th><th>생산팀 · 작업장</th><th>점검일</th><th>점검자</th><th>최종판정</th></tr></thead><tbody>'+rows.map(a=>'<tr data-close-team="'+esc(a.team||'')+'"><td><button type="button" class="hadAuditLink" data-had-open-audit="'+esc(auditId(a))+'">'+esc(auditId(a)||'—')+'</button></td><td>'+esc(a.team||'—')+' · '+esc(a.workplace||'—')+'</td><td>'+esc(a.auditDate||'—')+'</td><td>'+esc(a.initialAuditor||a.auditor||'—')+'</td><td>'+esc(a.finalEvaluation||'미입력')+'</td></tr>').join('')+'</tbody></table></div>';
  const actionTable=rows=>'<div class="hd20CloseTableWrap"><table class="awTable"><thead><tr><th>유지점검 번호</th><th>생산팀</th><th>원본 개선사례</th><th>최초 평가자</th><th>최신 개선조치</th><th>재조치 상태</th></tr></thead><tbody>'+rows.map(r=>{
    const action=linked(r),status=r.result==='적합'?'유지점검 적합 · 종료':!action?'개선조치 연결 확인 필요':done(action)?'개선조치 완료 · 재점검 필요':r.recheckResult==='부적합'?'재부적합 · 재조치 진행·대기':'개선조치 진행·대기';
-   return '<tr><td><button type="button" class="hadAuditLink" data-had-open-retention="'+esc(r.id)+'">'+esc(r.id)+'</button></td><td>'+esc(r.team||'—')+'</td><td>'+esc(r.kind||'—')+' · '+esc(r.caseId||'—')+'</td><td>'+esc(r.evaluator||'미입력')+'</td><td>'+esc(action?.id||'미연결')+'</td><td>'+esc(r.recheckResult==='적합'?'종결':status)+'</td></tr>';
+   return '<tr data-close-team="'+esc(r.team||'')+'"><td><button type="button" class="hadAuditLink" data-had-open-retention="'+esc(r.id)+'">'+esc(r.id)+'</button></td><td>'+esc(r.team||'—')+'</td><td>'+esc(r.kind||'—')+' · '+esc(r.caseId||'—')+'</td><td>'+esc(r.evaluator||'미입력')+'</td><td>'+esc(action?.id||'미연결')+'</td><td>'+esc(r.recheckResult==='적합'?'종결':status)+'</td></tr>';
  }).join('')+'</tbody></table></div>';
  const existingOpen=host.querySelector('.hd20CloseHistory')?.open===true;
  const previousFilters={
@@ -425,8 +425,7 @@ function renderAuditCloseEvaluation(host,traceOnly=false){
        if(!allowed)continue;
        let matchedInSection=0;
        for(const row of section.querySelectorAll('tbody tr')){
-         const cols=row.querySelectorAll('td');
-         const rowTeam=kind==='pending'?cols[1]?.textContent?.split(' · ')[0]?.trim():kind==='rework'?cols[1]?.textContent?.trim():cols.length===5?cols[1]?.textContent?.split(' · ')[0]?.trim():cols[1]?.textContent?.trim();
+         const rowTeam=row.dataset.closeTeam||'';
          const matchesTeam=!selectedTeam||rowTeam===selectedTeam;
          const matchesText=!needle||row.textContent.toLocaleLowerCase().includes(needle);
          row.hidden=!(matchesTeam&&matchesText);
