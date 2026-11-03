@@ -197,7 +197,7 @@ function renderOverview(mode='overview'){
  const shown=filtered.slice((view.page-1)*view.size,view.page*view.size);
  const cell=(v)=>'<td>'+escapeText(v||'—')+'</td>';
  root.innerHTML='<div class="hd20LnInquiryTitle hd20LnLookupHeader"><div><b>'+(mode==='self'?'자율개선조회':mode==='request'?'개선요청조회':'자율개선 · 개선요청 통합조회')+'</b><span>'+(separate?'상세 검색조건으로 등록 사례를 조회하고, 우측 등록 버튼에서 원본 팝업을 엽니다.':'등록 이력 검색 및 개선조치 진행현황 관리')+'</span></div>'+(separate?'<button class="hd20LnTopRegister" type="button" data-ln-new-register>+ '+(mode==='self'?'자율개선 등록':'개선요청 등록')+'</button>':'')+'</div>'+
- (separate?'':'<nav class="hd20LnThreeTabs" aria-label="개선활동 등록 이력 조회"><button type="button" data-ln-tab="all" class="'+(view.route==='all'?'on':'')+'">① 총괄조회</button><button type="button" data-ln-tab="activity" class="'+(view.route==='activity'?'on':'')+'">② 자체개선 조회</button><button type="button" data-ln-tab="action" class="'+(view.route==='action'?'on':'')+'">③ 개선요청 조회</button></nav><div class="hd20LnActionBar"><button type="button" data-ln-new-register>+ 신규등록</button></div>')+
+ (separate?'':'<div class="hd20LnActionBar"><button type="button" data-ln-new-register>+ 신규등록</button></div>')+
  '<div class="hd20LnGridTools"><div class="hd20LnSearchHint"><strong>검색조건</strong><span>기본조건 + 상세조건 + 내용 검색을 모두 동시에 적용합니다.</span></div><div class="hd20LnFilters hd20LnPrimaryFilters">'+
  '<label>등록 구분 <select aria-label="등록 구분" data-ln-filter>'+option('all','전체 구분',view.route==='all')+option('activity','자율개선',view.route==='activity')+option('action','개선요청',view.route==='action')+'</select></label>'+
  '<label>생산팀 <select aria-label="생산팀" data-ln-team>'+option('all','전체 팀',view.team==='all')+teams.map(t=>option(t,t,view.team===t)).join('')+'</select></label>'+
@@ -231,7 +231,6 @@ cell(x.problem||x.improvement||x.title||x.subject||x.description||x.content||x.i
   }else open();
  });
  
- root.querySelectorAll('[data-ln-tab]').forEach(btn=>btn.onclick=()=>{view.route=btn.dataset.lnTab;view.page=1;renderOverview(mode)});
  root.querySelector('[data-ln-filter]').value=view.route;if(separate)root.querySelector('[data-ln-filter]').disabled=true;
  root.querySelector('[data-ln-filter]').onchange=e=>{view.route=e.target.value;view.page=1;renderOverview(mode)};
  root.querySelector('[data-ln-search-btn]').onclick=()=>{
