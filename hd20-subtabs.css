@@ -275,3 +275,129 @@ html body #hd20ActivityLookupPanel .hd20LnTopRegister{
   align-self:flex-end;
  }
 }
+
+/* 2026-11-04 shared non-dashboard search layout */
+/* Search presentation only. All existing controls, events and filtering logic are retained. */
+html body #hd20LauncherOverview .hd20LnGridTools,
+html body #hd20ActivityLookupPanel .hd20LnGridTools{
+ display:block!important;margin:10px 0 13px!important;padding:14px 16px!important;
+ border:1px solid #dce6ee!important;border-radius:10px!important;background:#fbfdff!important;
+}
+html body #hd20LauncherOverview .hd20LnInquiryTitle,
+html body #hd20ActivityLookupPanel .hd20LnInquiryTitle{
+ display:flex!important;align-items:center!important;justify-content:space-between!important;
+ gap:12px!important;margin:0 0 12px!important;padding:0 0 11px!important;
+ border-bottom:1px solid #e3ebf1!important;
+}
+html body #hd20LauncherOverview .hd20LnActionBar{display:none!important}
+html body #hd20LauncherOverview .hd20LnInquiryTitle>div,
+html body #hd20ActivityLookupPanel .hd20LnInquiryTitle>div{min-width:0}
+html body #hd20LauncherOverview .hd20LnPrimaryFilters,
+html body #hd20LauncherOverview .hd20LnAdvancedFilters,
+html body #hd20ActivityLookupPanel .hd20LnPrimaryFilters,
+html body #hd20ActivityLookupPanel .hd20LnAdvancedFilters{
+ display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;
+ align-items:end!important;gap:11px 13px!important;width:100%!important;
+}
+html body #hd20LauncherOverview .hd20LnFilters label,
+html body #hd20ActivityLookupPanel .hd20LnFilters label,
+html body #hd20LauncherOverview .hd20LnTextSearch label,
+html body #hd20ActivityLookupPanel .hd20LnTextSearch label{
+ display:flex!important;flex-direction:column!important;min-width:0!important;gap:5px!important;
+}
+html body #hd20LauncherOverview .hd20LnFilters :is(input,select),
+html body #hd20ActivityLookupPanel .hd20LnFilters :is(input,select),
+html body #hd20LauncherOverview .hd20LnTextSearch input,
+html body #hd20ActivityLookupPanel .hd20LnTextSearch input{
+ width:100%!important;min-width:0!important;max-width:none!important;
+ box-sizing:border-box!important;height:36px!important;
+}
+html body #hd20LauncherOverview .hd20LnAdvanced,
+html body #hd20ActivityLookupPanel .hd20LnAdvanced{display:block;margin:12px 0 10px}
+html body #hd20LauncherOverview .hd20LnAdvanced summary,
+html body #hd20ActivityLookupPanel .hd20LnAdvanced summary{cursor:pointer;font-weight:800;padding:9px 0;color:#315773}
+html body #hd20LauncherOverview .hd20LnTextSearch,
+html body #hd20ActivityLookupPanel .hd20LnTextSearch{
+ display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto!important;
+ gap:11px!important;align-items:end!important;
+}
+html body #hd20LauncherOverview .hd20LnSearchActions,
+html body #hd20ActivityLookupPanel .hd20LnSearchActions{
+ display:flex!important;align-items:center!important;gap:7px!important;
+ white-space:nowrap!important;justify-content:flex-end!important;
+}
+html body #hd20LauncherOverview .hd20LnTopRegister,
+html body #hd20ActivityLookupPanel .hd20LnTopRegister{
+ flex:none!important;white-space:nowrap!important;border-radius:8px!important;
+ background:#17699c!important;color:white!important;padding:10px 16px!important;
+ border:1px solid #17699c!important;cursor:pointer!important;
+}
+/* Shared compact filter grids across operational tabs; never style dashboard charts. */
+html body #awAudit :is(.amFilterBar,.acFilter,.auditFilter),
+html body #awAction :is(.amFilterBar,.acFilter),
+html body #awActivity :is(.amFilterBar,.acFilter),
+html body #awTheme :is(.amFilterBar,.acFilter,.themeActionFilters),
+html body #themeInspection :is(.amFilterBar,.acFilter,.themeActionFilters),
+html body #performanceConversionAnalysis :is(.amFilterBar,.acFilter){
+ display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;
+ align-items:end!important;gap:10px 12px!important;margin:12px 0!important;
+ padding:12px 14px!important;border:1px solid #dce7ef!important;
+ border-radius:9px!important;background:#f8fbfd!important;
+}
+html body #awAudit :is(.amFilterBar,.acFilter,.auditFilter)>label,
+html body #awAction :is(.amFilterBar,.acFilter)>label,
+html body #awActivity :is(.amFilterBar,.acFilter)>label,
+html body #awTheme :is(.amFilterBar,.acFilter,.themeActionFilters)>label,
+html body #themeInspection :is(.amFilterBar,.acFilter,.themeActionFilters)>label,
+html body #performanceConversionAnalysis :is(.amFilterBar,.acFilter)>label{
+ min-width:0!important;display:flex!important;flex-direction:column!important;
+ gap:5px!important;align-self:end!important;
+}
+html body #awAudit :is(.amFilterBar,.acFilter,.auditFilter) :is(input,select),
+html body #awAction :is(.amFilterBar,.acFilter) :is(input,select),
+html body #awActivity :is(.amFilterBar,.acFilter) :is(input,select),
+html body #awTheme :is(.amFilterBar,.acFilter,.themeActionFilters) :is(input,select),
+html body #themeInspection :is(.amFilterBar,.acFilter,.themeActionFilters) :is(input,select),
+html body #performanceConversionAnalysis :is(.amFilterBar,.acFilter) :is(input,select){
+ width:100%!important;min-width:0!important;max-width:none!important;
+ box-sizing:border-box!important;height:36px!important;
+}
+html body #awAudit :is(.amFilterBar,.acFilter,.auditFilter)>button,
+html body #awAction :is(.amFilterBar,.acFilter)>button,
+html body #awActivity :is(.amFilterBar,.acFilter)>button,
+html body #awTheme :is(.amFilterBar,.acFilter,.themeActionFilters)>button,
+html body #themeInspection :is(.amFilterBar,.acFilter,.themeActionFilters)>button{
+ min-height:36px;align-self:end;white-space:nowrap;
+}
+@media(max-width:1200px){
+ html body #hd20LauncherOverview .hd20LnPrimaryFilters,
+ html body #hd20LauncherOverview .hd20LnAdvancedFilters,
+ html body #hd20ActivityLookupPanel .hd20LnPrimaryFilters,
+ html body #hd20ActivityLookupPanel .hd20LnAdvancedFilters,
+ html body #awAudit :is(.amFilterBar,.acFilter,.auditFilter),
+ html body #awAction :is(.amFilterBar,.acFilter),
+ html body #awActivity :is(.amFilterBar,.acFilter),
+ html body #awTheme :is(.amFilterBar,.acFilter,.themeActionFilters),
+ html body #themeInspection :is(.amFilterBar,.acFilter,.themeActionFilters),
+ html body #performanceConversionAnalysis :is(.amFilterBar,.acFilter){
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ }
+}
+@media(max-width:700px){
+ html body #hd20LauncherOverview .hd20LnPrimaryFilters,
+ html body #hd20LauncherOverview .hd20LnAdvancedFilters,
+ html body #hd20ActivityLookupPanel .hd20LnPrimaryFilters,
+ html body #hd20ActivityLookupPanel .hd20LnAdvancedFilters,
+ html body #awAudit :is(.amFilterBar,.acFilter,.auditFilter),
+ html body #awAction :is(.amFilterBar,.acFilter),
+ html body #awActivity :is(.amFilterBar,.acFilter),
+ html body #awTheme :is(.amFilterBar,.acFilter,.themeActionFilters),
+ html body #themeInspection :is(.amFilterBar,.acFilter,.themeActionFilters),
+ html body #performanceConversionAnalysis :is(.amFilterBar,.acFilter){
+  grid-template-columns:minmax(0,1fr)!important;
+ }
+ html body #hd20LauncherOverview .hd20LnTextSearch,
+ html body #hd20ActivityLookupPanel .hd20LnTextSearch{grid-template-columns:minmax(0,1fr)!important}
+ html body #hd20LauncherOverview .hd20LnSearchActions,
+ html body #hd20ActivityLookupPanel .hd20LnSearchActions{justify-content:flex-end!important}
+}
