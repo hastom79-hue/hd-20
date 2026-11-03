@@ -42,7 +42,7 @@ jobs:
           grep -Fq "const preferredActivity=area==='activity'" hd20-subtabs.js
           node --check hd20-subtabs.js
           grep -Fq 'hd20LnThreeTabs{display:none!important}' landing-launcher.js
-          grep -Fq 'landing-launcher.js?v=20261103-stable-lookup-register-v18' index.html
+          grep -Fq 'landing-launcher.js?v=20261103-lookup-merge-search-v19' index.html
           grep -Fq 'activity-register-modal.js?v=20261103-contextual-close-v4' index.html
           node --check action-register-modal.js
           node --check activity-register-modal.js
@@ -51,6 +51,8 @@ jobs:
           node --check master-workspace-v2.js
           grep -Fq 'function clickWhenReady(findFn,modalId,area,tries=0,lastClickAt=-1)' landing-launcher.js
           grep -Fq "clickWhenReady(()=>document.getElementById('hd20ActionRegisterBtn')" landing-launcher.js
+          grep -Fq "snapshotActivities.forEach((x,i)=>" landing-launcher.js
+          grep -Fq "localActions.forEach((x,i)=>" landing-launcher.js
           node --check landing-launcher.js
           node --check beginner-navigation.js
           node --check hd20-action-notification-routing.js
