@@ -27,7 +27,7 @@ jobs:
           test -f audit-as-is-to-be-manager.js
           test -f hd20-action-notification-routing.js
           grep -q 'audit-as-is-to-be-manager.js?v=20261103-improvement-tobe-v6' index.html
-          grep -q 'hd20-subtabs.js?v=20261103-self-request-lookup-v56' index.html
+          grep -q 'hd20-subtabs.js?v=20261103-activity-stability-v57' index.html
           grep -q 'beginner-navigation.js?v=20261103-improvement-menu-v22' index.html
           grep -q 'action-register-modal.js?v=20261103-evidence-height-v42' index.html
           # Ensure approved 4 improvement + 3 Audit menu contract is bundled.
@@ -39,6 +39,7 @@ jobs:
           grep -Fq "['self','② 자율개선조회']" hd20-subtabs.js
           grep -Fq "['request','③ 개선요청조회']" hd20-subtabs.js
           grep -Fq 'function renderOverview(mode=' landing-launcher.js
+          grep -Fq "const preferredActivity=area==='activity'" hd20-subtabs.js
           node --check hd20-subtabs.js
           grep -Fq 'hd20LnThreeTabs{display:none!important}' landing-launcher.js
           grep -Fq 'landing-launcher.js?v=20261103-individual-lookup-v16' index.html
