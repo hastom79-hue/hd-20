@@ -158,10 +158,19 @@ function applyDashboard(sub){const cards=$('.cards'),main=$('.mainGrid'),bottom=
 function applyActivity(sub){const root=$('#awActivity');if(!root)return;
 root.dataset.subview=sub;
 if(['overview','self','request','tobe'].includes(sub)){
+ let portal=root.querySelector('#hd20ImprovementTaskPortal');
+ if(!portal){portal=document.createElement('section');portal.id='hd20ImprovementTaskPortal';portal.innerHTML='<div class="hd20ImTaskTitle"><strong>개선활동 등록·관리</strong><span>등록할 업무를 선택하면 원본 작성 팝업이 열립니다.</span></div><div class="hd20ImTaskBtns"><button type="button" data-im-task="self">자율개선 등록 팝업 열기</button><button type="button" data-im-task="request">개선요청 등록 팝업 열기</button></div>';root.prepend(portal);
+ portal.querySelector('[data-im-task="self"]').onclick=()=>{const btn=root.querySelector('[data-aw="new"]');if(btn)btn.click();else alert('자율개선 등록 기능을 불러오지 못했습니다.')};
+ portal.querySelector('[data-im-task="request"]').onclick=()=>{const modal=document.getElementById('hd20ActionRegisterModal'),btn=document.getElementById('hd20ActionRegisterBtn');if(modal&&modal.parentElement!==document.body)document.body.appendChild(modal);if(btn)btn.click();else alert('개선요청 등록 기능을 불러오지 못했습니다.')};
+ }
+ portal.hidden=!['self','request'].includes(sub);
+ portal.querySelector('.hd20ImTaskBtns').style.display='flex';
+ portal.querySelector('[data-im-task="self"]').hidden=sub!=='self';
+ portal.querySelector('[data-im-task="request"]').hidden=sub!=='request';
  const oldPanel=root.querySelector('#hd20ImprovementTaskPortal');
  if(oldPanel)oldPanel.hidden=!['self','request'].includes(sub);
  show($('.awGrid',root),false);show($('.awFlow',root),false);show($('.awActions',root),false);show(document.getElementById('hd20ActivityExcelImport'),false);show(document.getElementById('hd20ImportAnalysis'),false);show($('.adcCard',root),false);
- const tobe=root.querySelector('#hd20AsIsToBeManager');if(tobe)tobe.hidden=sub!=='tobe';
+ const tobe=root.querySelector('#hd20AsIsToBeManager');if(tobe)tobe.hidden=sub!=='tobe';if(sub==='tobe')window.HD20ToBeManager?.render?.();
  return;
 }showAll(root);show($('.awGrid',root),true);const form=$('.awRegisterFormCard',root);if(form)show(form,sub==='manage');
   /* 실적분석: 등록/가져오기 도구를 숨기고 팀별 분석 콘텐츠 위주로 구성해
