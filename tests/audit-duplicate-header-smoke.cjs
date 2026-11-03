@@ -79,6 +79,18 @@ fs.mkdirSync('artifacts',{recursive:true});
     team:document.querySelector('#awAudit .auditClosedLoop [data-cl-team]')?.value
   }));
   assert.deepEqual(linkedSelection,{id:selection.first,team:'검증팀'},'selected Audit ID is preserved across same-team batches');
+  await page.evaluate(()=>window.HD20AuditBatchExecution.patch());
+  const selector=page.locator('#hd20AuditBatchExecution [data-abe-select]');
+  await selector.selectOption(selection.latest);
+  const noticeAfterSelection=await page.evaluate(()=>({
+    id:document.querySelector('#awAudit .auditClosedLoop')?.dataset.selectedAuditId,
+    notice:document.querySelector('#awAudit .auditClosedLoop [data-cl-notice]')?.textContent||''
+  }));
+  assert.equal(noticeAfterSelection.id,selection.latest,
+    'Batch change selects the exact Audit, not just the same team');
+  assert.ok(noticeAfterSelection.notice.includes(selection.latest)&&
+    !noticeAfterSelection.notice.includes(selection.first),
+    'Audit result notice must immediately update to selected Batch source');
   await page.evaluate(()=>{
     const key='hd20AuditRandomDrawsV1';
     localStorage.setItem(key,JSON.stringify(JSON.parse(localStorage.getItem(key)||'[]').filter(x=>!['E2E-AUDIT-SELECT-OLD','E2E-AUDIT-SELECT-NEW'].includes(x.id))));
