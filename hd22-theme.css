@@ -131,3 +131,11 @@ html,body{background:var(--h22-bg)!important}
 .hd20JudgeReadiness{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;padding:10px 0 12px}.hd20JudgeReadiness>div{padding:9px 10px;border:1px solid #d9e4ea;border-radius:7px;background:#f8fafc}.hd20JudgeReadiness small{display:block;color:#687f8e;font-size:9.5px}.hd20JudgeReadiness b{display:block;margin-top:3px;color:#173a57;font-size:17px}.hd20JudgeReadiness .risk{border-color:#efcaca;background:#fff7f7}.hd20JudgeReadiness .risk b{color:#a92c2c}@media(max-width:700px){.hd20JudgeReadiness{grid-template-columns:1fr 1fr}}
 
 .hd20CriteriaMiss{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;padding:10px 0 12px}.hd20CriteriaMiss>div{padding:9px 10px;border:1px solid #d9e4ea;border-radius:7px;background:#f8fafc}.hd20CriteriaMiss small{display:block;color:#687f8e;font-size:9.5px}.hd20CriteriaMiss b{display:block;margin-top:3px;color:#173a57;font-size:17px}.hd20CriteriaMiss .risk{border-color:#efcaca;background:#fff7f7}.hd20CriteriaMiss .risk b{color:#a92c2c}@media(max-width:700px){.hd20CriteriaMiss{grid-template-columns:1fr 1fr}}
+
+/* 모바일 메인 탭 겹침 보정: `.app>.beginnerNav{flex-wrap:nowrap!important}` 가 5개 탭을 한 줄(각 55px)에 몰아 넣어 390px 화면에서 라벨이
+   최대 11px 겹쳤다. 650px 이하에서는 줄바꿈을 허용해 3열(3+2)로 배치한다. hd20-five-area.css 가 `html body .beginnerNav>button[data-key]`
+   로 width:100%!important 를 강제하므로(명시도 높음) 동일한 선택자 형태로 우선순위를 맞춘다. 데스크톱·태블릿 배치는 그대로. */
+@media(max-width:650px){
+ html body .app>.beginnerNav{flex-wrap:wrap!important;overflow-x:visible!important;gap:6px!important;padding:6px 10px 12px!important}
+ html body .app>.beginnerNav>button[data-key]{flex:0 0 calc(33.333% - 4px)!important;width:calc(33.333% - 4px)!important;min-width:0!important;box-sizing:border-box!important;white-space:normal!important;overflow-wrap:anywhere;line-height:1.25;padding:10px 4px!important}
+}

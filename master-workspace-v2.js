@@ -19,7 +19,9 @@ function select(key){all.forEach(b=>{const yes=b.dataset.hmTarget===key;b.classL
 const search=ws.querySelector('#hmSearch');function filter(){const q=search.value.trim().toLocaleLowerCase();let count=0;for(const btn of all){const show=!q||btn.textContent.toLocaleLowerCase().includes(q);btn.hidden=!show;if(show)count++}for(const group of grid.children)group.hidden=![...group.querySelectorAll('[data-hm-target]')].some(b=>!b.hidden);ws.querySelector('[data-hm-count]').textContent=count+'개 관리 항목'+(q?' 검색됨':'')}search.addEventListener('input',filter);ws.querySelector('[data-hm-reset]').onclick=()=>{search.value='';filter();search.focus()};filter();
 tabs.addEventListener('click',e=>{const b=e.target.closest('[data-master-tab]');if(b)select(b.dataset.masterTab)});
 const selected=tabs.querySelector('[data-master-tab].on:not([hidden])');
-if(selected)select(selected.dataset.masterTab);
+/* 실제 버그: 원본 탭에 이미 .on 이 붙어 있으면 하이라이트(select)만 하고 패널 렌더를 호출하지 않아, 통합기준정보에 처음 들어오면 조직·팀 표가 0행·'0 / 0' 빈 화면으로 남았다(다른 메뉴를 눌렀다 돌아와야 19행이 표시됨).
+   .on 은 마스터 모듈이 선택 상태만 먼저 세팅한 것일 수 있으므로, 이미 선택된 탭도 한 번 눌러 해당 화면을 확실히 렌더한다. */
+if(selected){select(selected.dataset.masterTab);const mine=all.find(b=>b.dataset.hmTarget===selected.dataset.masterTab);setTimeout(()=>{(mine?mine:all[0])?.click()},0)}
 else if(all.length)all[0].click();
 // The original menu must remain operable unless the entire replacement interface is ready.
 if(all.length<10){ws.remove();box.classList.remove('hd20MasterWorkspaceReady');return false}
