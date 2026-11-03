@@ -1,0 +1,32 @@
+name: HD20 dashboard monthly visibility smoke
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'dashboard-work-kpi-migration.js'
+      - 'tests/dashboard-monthly-visibility-smoke.cjs'
+      - '.github/workflows/dashboard-monthly-visibility-smoke.yml'
+      - 'index.html'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  monthly-chart:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Start local server
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/hd20-monthly-visibility.log 2>&1 &
+          for i in {1..30}; do curl -fsS http://127.0.0.1:4173/index.html >/dev/null && exit 0; sleep 1; done
+          cat /tmp/hd20-monthly-visibility.log; exit 1
+      - name: Verify responsive grouped chart labels and readability
+        run: node tests/dashboard-monthly-visibility-smoke.cjs
