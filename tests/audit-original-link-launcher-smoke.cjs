@@ -12,7 +12,7 @@ const {chromium}=require('playwright');
    localStorage.setItem('hd20AuditRandomDrawsV1',JSON.stringify([{
      id:'AUDIT-LINK-E2E-01',team:'테스트팀',workplace:'테스트라인',
      date:'2026-11-02',auditDate:'2026-11-02',initialAuditor:'검증점검자',
-     auditResult:'부적합',improvementRequest:'원본 연결 검증'
+     auditResult:'부적합',improvementRequest:'원본 연결 검증',improvementPhoto:'data:image/png;base64,iVBORw0KGgo='
    }]));
    localStorage.setItem('hd20ActionCasesV2',JSON.stringify([{
      id:'ACTION-LINK-E2E-01',sourceStage:'AUDIT-REQUEST',
@@ -40,6 +40,10 @@ const {chromium}=require('playwright');
   await modal.waitFor({state:'visible',timeout:10000});
   const body=await modal.innerText();
   for(const expected of ['AUDIT-LINK-E2E-01','검증점검자','테스트라인','ACTION-LINK-E2E-01'])assert.ok(body.includes(expected),'missing linked original field: '+expected);
+  assert.ok(body.includes('부적합'),'original Audit judgment is present');
+  assert.ok(body.includes('원본 연결 검증'),'original improvement request is present');
+  assert.equal(await modal.locator('[data-had-photo] img').count(),1,'original evidence photo remains linked');
+  assert.ok(body.includes('미접수'),'linked action status is visible');
   await modal.locator('[data-had-close]').first().click();
   assert.equal(await page.locator('#hd20AuditOriginalPopup').count(),0,'detail popup closes');
   // Two corrective cases may share one Audit ID. Clicking the second row must
