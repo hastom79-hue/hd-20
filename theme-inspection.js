@@ -82,7 +82,7 @@ function themeActionInMonth(a,month,monthAuditIds){
  return ids.some(id=>id!=null&&monthAuditIds.has(String(id)));
 }
 function actionTable(month){
- const owner=selectedOwner();const monthAuditIds=themeAuditIdsForMonth(loadChecks().filter(x=>ownerOf(x)===owner),month);const rows=load().filter(x=>ownerOf(x)===owner&&themeActionInMonth(x,month,monthAuditIds)).sort((a,b)=>String(b.lastAuditedAt||b.createdAt||'').localeCompare(String(a.lastAuditedAt||a.createdAt||'')));
+ const owner=selectedOwner();const monthAuditIds=themeAuditIdsForMonth(loadChecks().filter(x=>ownerOf(x)===owner),month);const rows=load().filter(x=>{const ids=[x.auditRecordId,x.lastAuditRecordId,...(Array.isArray(x.relatedAuditRecordIds)?x.relatedAuditRecordIds:[])].filter(Boolean).map(String);return themeActionInMonth(x,month,monthAuditIds)&&(ownerOf(x)===owner||ids.some(id=>monthAuditIds.has(id)))} ).sort((a,b)=>String(b.lastAuditedAt||b.createdAt||'').localeCompare(String(a.lastAuditedAt||a.createdAt||'')));
  if(!rows.length)return '<div class="themeEmptyNote">선택 월에 연결된 테마점검 개선조치가 없습니다.</div>';
  const recurrenceCount=rows.filter(a=>a.recurrence===true).length;const recurrenceRate=rows.length?((recurrenceCount/rows.length)*100).toFixed(1):'0.0';
  const statuses=[...new Set(rows.map(a=>String(a.status||'미분류')))].sort();
