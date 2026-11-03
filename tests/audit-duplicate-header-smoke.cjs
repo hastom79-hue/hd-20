@@ -432,7 +432,8 @@ fs.mkdirSync('artifacts',{recursive:true});
     const audits=load('hd20AuditRandomDrawsV1'),checks=load('hd20RetentionRandomChecksV1');
     audits.push(
       {id:'E2E-AUDIT-FINAL-PENDING',team:'검증팀',workplace:'검증라인',auditDate:'2026-11-02',initialAuditor:'검증점검자'},
-      {id:'E2E-AUDIT-FINAL-DONE',team:'검증팀',workplace:'검증라인',auditDate:'2026-11-01',finalEvaluation:'종결'}
+      {id:'E2E-AUDIT-FINAL-DONE',team:'검증팀',workplace:'검증라인',auditDate:'2026-11-01',finalEvaluation:'종결'},
+      {id:'RET-AUDIT-E2E-REWORK-PENDING',team:'검증팀',sourceStage:'RETENTION-RANDOM',auditDate:'2026-11-02',auditResult:'부적합'}
     );
     checks.push(
       {id:'E2E-REWORK-PENDING',kind:'자율개선',caseId:'E2E-REWORK',team:'검증팀',result:'부적합',evaluator:'최초 점검자'},
@@ -444,6 +445,8 @@ fs.mkdirSync('artifacts',{recursive:true});
   });
   const closure=page.locator('#hd20AuditCloseEvaluation, #hd20RetentionActionTrace');
   assert.ok(await closure.locator('[data-close-rework]').getByText('E2E-REWORK-PENDING').count(),'unresolved rework must be in primary queue');
+  assert.equal(await closure.locator('[data-close-final-pending]').getByText('RET-AUDIT-E2E-REWORK-PENDING').count(),0,
+    'retention bridge must not appear as another unjudged regular Audit');
   assert.equal(await closure.locator('[data-close-rework]').getByText('E2E-REWORK-CLOSED').count(),0,'closed rework must not be mixed into active queue');
   assert.ok(await closure.locator('.hd20CloseHistory').getByText('E2E-REWORK-CLOSED').count(),'closed rework stays in history');
   assert.equal(await closure.locator('.hd20CloseHistory').first().evaluate(el=>el.open),false,'closure history starts collapsed');
@@ -473,7 +476,7 @@ fs.mkdirSync('artifacts',{recursive:true});
   }
   await page.evaluate(()=>{
     for(const [key,ids] of [
-      ['hd20AuditRandomDrawsV1',['E2E-AUDIT-FINAL-PENDING','E2E-AUDIT-FINAL-DONE']],
+      ['hd20AuditRandomDrawsV1',['E2E-AUDIT-FINAL-PENDING','E2E-AUDIT-FINAL-DONE','RET-AUDIT-E2E-REWORK-PENDING']],
       ['hd20RetentionRandomChecksV1',['E2E-REWORK-PENDING','E2E-REWORK-CLOSED']]
     ]){
       localStorage.setItem(key,JSON.stringify(JSON.parse(localStorage.getItem(key)||'[]').filter(x=>!ids.includes(x.id))));
