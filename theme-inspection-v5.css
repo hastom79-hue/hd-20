@@ -359,3 +359,16 @@ html body #awTheme #themeAuditBox>.themeSaveResult{
 #awTheme .themeFindingItem b{white-space:nowrap}
 #awTheme .themeFindingEmpty{padding:10px 12px;background:#f4f8fa;border:1px solid #e1eaef;border-radius:8px;color:#60798b;font-size:12px}
 @media(max-width:680px){#awTheme .themeThemeTabs button{flex:1 1 140px;justify-content:space-between}#awTheme .themeFindingList{grid-template-columns:1fr}}
+
+/* 2026-11-04 inspection screen cleanup: prioritize the active evaluation task. */
+#awTheme .themeAuditTitle{display:flex;align-items:center;justify-content:space-between;gap:12px}
+#awTheme .themeAuditOwnerName{color:#42647d;font-size:12px;font-weight:700;padding:5px 9px;background:#edf5fa;border-radius:99px}
+#awTheme .themeBulkTools{margin:0 0 10px;border:1px solid #dfe9ef;border-radius:8px;background:#f8fafc}
+#awTheme .themeBulkTools>summary{cursor:pointer;padding:9px 12px;color:#58758a;font-size:12px;font-weight:700}
+#awTheme .themeBulkTools[open]>.themeBulkRow{margin:0;padding:8px 12px 12px;border-top:1px solid #e1eaf0}
+#awTheme .themeBulkTools .themeWorkflowNote{font-size:11px;color:#71899b}
+#awTheme .themeAuditBox>.themeControls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#awTheme .themeAuditBox>.themeControls label{display:flex;align-items:center;gap:9px;min-width:0;font-size:12px}
+#awTheme .themeAuditBox>.themeControls select{flex:1;min-width:0;width:100%;max-width:100%}
+#awTheme .themeAuditBox .themeAuditFlowLabel{margin-top:15px!important}
+@media(max-width:740px){#awTheme .themeAuditBox>.themeControls{grid-template-columns:1fr}#awTheme .themeAuditTitle{align-items:flex-start}}
