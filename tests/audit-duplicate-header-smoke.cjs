@@ -469,8 +469,13 @@ fs.mkdirSync('artifacts',{recursive:true});
         content.includes('AUDIT-SMOKE-RET-SECOND')&&content.includes('최초 평가자')&&
         content.includes('재점검 부적합')&&
         !document.querySelector('#hd20AuditOriginalPopup');
-      popup?.querySelector('[data-had-close]')?.click();
-      return {matched,closed:!document.querySelector('#hd20RetentionOriginalPopup')};
+      const workButton=popup?.querySelector('[data-had-retention-work]');
+      if(!workButton)throw Error('Unresolved retention work-link missing');
+      workButton.click();
+      const returned=window.HD20_SUBNAV.state().sub==='ongoing'&&
+        !!document.querySelector('#hd20RetentionSampling [data-rs-id="'+id+'"]');
+      window.HD20_SUBNAV.select('audit','retention');
+      return {matched,closed:!document.querySelector('#hd20RetentionOriginalPopup'),returned};
     }finally{
       for(const key of keys){
         if(originals[key]===null)localStorage.removeItem(key);
@@ -480,7 +485,7 @@ fs.mkdirSync('artifacts',{recursive:true});
       window.HD20_SUBNAV.select('audit','retention');
     }
   });
-  assert.deepEqual(exactRetentionDetail,{matched:true,closed:true},
+  assert.deepEqual(exactRetentionDetail,{matched:true,closed:true,returned:true},
     '④ retention source popup preserves exact recheck linkage and closes');
   // The fourth tab must expose exact-source retention failures and linked corrective actions.
   await page.evaluate(()=>{
