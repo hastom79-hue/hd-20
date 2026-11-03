@@ -354,7 +354,10 @@ function renderAuditCloseEvaluation(host,traceOnly=false){
  const audits=readStore('hd20AuditRandomDrawsV1'),actions=readStore('hd20ActionCasesV2'),retentions=readStore('hd20RetentionRandomChecksV1');
  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const auditId=a=>txt(a.id||a.drawId||a.auditDrawId);
- const conducted=audits.filter(a=>txt(a.auditDate));
+ // Retention failures create RET-AUDIT bridge records only for corrective
+ // linkage. They are not independent scheduled Audits awaiting final judgment.
+ // Display them once under retention/rework, never in general Audit finalization.
+ const conducted=audits.filter(a=>txt(a.auditDate)&&a.sourceStage!=='RETENTION-RANDOM'&&!/^RET-AUDIT-/.test(auditId(a)));
  const pendingFinal=conducted.filter(a=>!txt(a.finalEvaluation));
  const evaluated=conducted.filter(a=>txt(a.finalEvaluation));
  const flagged=retentions.filter(r=>r.result==='부적합');
