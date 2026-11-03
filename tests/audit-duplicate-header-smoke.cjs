@@ -153,9 +153,19 @@ fs.mkdirSync('artifacts',{recursive:true});
     const result=await page.evaluate(()=>{
       const visible=selector=>{const el=document.querySelector('#awAudit '+selector);return !!el&&!el.classList.contains('hd20SubHidden')&&getComputedStyle(el).display!=='none'&&el.getClientRects().length>0};
       const root=document.getElementById('awAudit');
-      return {sub:root?.dataset.subview,draw:visible('.auditDraw'),actions:visible('#hd20AuditActionMonitor'),sampling:visible('#hd20RetentionSampling'),closure:visible('#hd20AuditCloseEvaluation'),checklist:visible('.acWrap')};
+      const grid=root?.querySelector('.awGrid');
+      const relevant=sub==='draw'?['.auditDraw','#hd20AuditBatchExecution','.auditClosedLoop']:
+        sub==='action'?['#hd20AuditActionMonitor']:
+        sub==='ongoing'?['#hd20RetentionSampling']:
+        sub==='retention'?['#hd20AuditCloseEvaluation','#hd20RetentionActionTrace']:
+        ['.acWrap'];
+      const gridHasWork=!!(grid&&relevant.some(sel=>grid.querySelector(sel)));
+      const gridShown=!!(grid&&getComputedStyle(grid).display!=='none');
+      return {sub:root?.dataset.subview,draw:visible('.auditDraw'),actions:visible('#hd20AuditActionMonitor'),sampling:visible('#hd20RetentionSampling'),closure:visible('#hd20AuditCloseEvaluation'),checklist:visible('.acWrap'),gridHasWork,gridShown};
     });
     assert.equal(result.sub,sub,'Audit subview must match selected tab');
+    assert.equal(result.gridShown,result.gridHasWork,
+      'legacy Audit grid must exist visually only when it contains the active work area');
     assert.equal(result.draw,sub==='draw','Audit execution content only in draw tab');
     assert.equal(result.actions,sub==='action','Audit corrective worklist only in its own tab');
     assert.equal(result.checklist,sub==='checklist','Audit checklist only in fifth tab');
