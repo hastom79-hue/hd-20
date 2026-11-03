@@ -360,6 +360,7 @@ function renderAuditCloseEvaluation(host,traceOnly=false){
  const flagged=retentions.filter(r=>r.result==='부적합');
  const unresolved=flagged.filter(r=>!(r.recheckResult==='적합'&&r.recheckedAt));
  const resolved=flagged.filter(r=>r.recheckResult==='적합'&&r.recheckedAt);
+ const closedChecks=retentions.filter(r=>r.result==='적합');
  const linked=r=>{
    const byId=id=>id?actions.find(a=>String(a.id||'')===String(id)):null;
    const direct=byId(r.followupActionId)||byId(r.actionId);if(direct)return direct;
@@ -379,10 +380,11 @@ function renderAuditCloseEvaluation(host,traceOnly=false){
  (pendingFinal.length?auditTable(pendingFinal.slice().reverse().slice(0,80)):'<p class="awHint">현재 최종판정 대기 Audit가 없습니다.</p>')+'</section>';
  const corrective='<section class="hd20CloseSection" data-close-rework><div class="hd20CloseSectionHead"><b>재조치·재점검 필요</b><small>'+unresolved.length+'건 · 현장 점검/판정은 ③ 유지점검에서 수행</small></div>'+
  (unresolved.length?actionTable(unresolved.slice().reverse().slice(0,80)):'<p class="awHint">현재 재조치·재점검이 필요한 부적합 기록이 없습니다.</p>')+'</section>';
- const history='<details class="hd20CloseHistory" '+(existingOpen?'open':'')+'><summary>종결·최종판정 완료 이력 ('+(evaluated.length+resolved.length)+'건) 상세보기</summary>'+
+ const history='<details class="hd20CloseHistory" '+(existingOpen?'open':'')+'><summary>종결·최종판정 완료 이력 ('+(evaluated.length+resolved.length+closedChecks.length)+'건) 상세보기</summary>'+
  (evaluated.length?'<div class="hd20CloseSectionHead"><b>최종판정 완료</b><small>'+evaluated.length+'건</small></div>'+auditTable(evaluated.slice().reverse().slice(0,80)):'')+
  (resolved.length?'<div class="hd20CloseSectionHead"><b>재점검 적합·종결</b><small>'+resolved.length+'건</small></div>'+actionTable(resolved.slice().reverse().slice(0,80)):'')+
- (!evaluated.length&&!resolved.length?'<p class="awHint">종결된 점검 이력이 없습니다.</p>':'')+'</details>';
+ (closedChecks.length?'<div class="hd20CloseSectionHead"><b>유지점검 적합·종결</b><small>'+closedChecks.length+'건</small></div>'+actionTable(closedChecks.slice().reverse().slice(0,80)):'')+
+ (!evaluated.length&&!resolved.length&&!closedChecks.length?'<p class="awHint">종결된 점검 이력이 없습니다.</p>':'')+'</details>';
  host.innerHTML=firstBlock+corrective+history;
  if(!document.getElementById('hd20AuditClosureLayoutStyle')){
    const style=document.createElement('style');style.id='hd20AuditClosureLayoutStyle';
@@ -436,12 +438,12 @@ function renderRetentionSampling(root){
  const unresolved=records.filter(r=>r.result==='부적합'&&!(r.recheckResult==='적합'&&r.recheckedAt));
  const active=[...pending,...unresolved],history=records.filter(r=>!active.includes(r));
  const item=r=>'<section class="hd20RsRow" data-rs-id="'+esc(r.id)+'"><div class="hd20RsInfo"><b>'+esc(r.kind)+' · '+esc(r.caseId)+'</b><span>'+esc(r.team||'팀 미지정')+' · '+esc(r.workplace||'작업장 미입력')+'</span><small>추출 '+esc(r.drawDate)+' · '+esc(r.result)+'</small></div>'+sourcePreview(r)+actionTrace(r)+recheckHistory(r)+'<div class="hd20RsInput">'+(r.result==='점검대기'?'<label class="hd20RsCheck"><input type="checkbox" data-rs-check="적합">현재 유지</label><label class="hd20RsCheck"><input type="checkbox" data-rs-check="부적합">미유지</label><input type="hidden" data-rs-result value=""><input type="hidden" data-rs-evaluator value=""><label>비고 (선택)<input data-rs-comment placeholder="미유지 사유 또는 현장 특이사항" value="'+esc(r.comment||'')+'"></label><button type="button" data-rs-save>점검 저장</button><button type="button" data-rs-notify>5S모듈 알림메일</button>':'<strong class="hd20RsResult">'+esc(r.result==='적합'?'✓ 유지':'✕ 미유지')+'</strong><small>점검 '+esc(String(r.evaluatedAt||'').slice(0,10))+' · '+esc(r.evaluator||'')+'</small>')+'</div></section>';
- const isHistoryOpen=host.querySelector('.hd20RsHistoryFold')?.open===true;
+ // Completed histories are reviewed in ④ 결과·재조치, not duplicated in ③.
  host.innerHTML='<div class="awHead"><div><b>5S 개선사례 유지점검</b><small>기존 완료사례 랜덤 추출 → 5S모듈 알림 → 유지/미유지 체크 → 미유지 자동 개선조치</small></div></div>'+
  '<div class="hd20RsToolbar"><span>점검주기 '+intervalDays+'일 · 표본 '+sampleCount+'건 · 완료사례 '+pool.length+'건</span><button type="button" data-rs-draw>랜덤 추출</button><span>점검대기 '+pending.length+'건</span></div>'+
  (canEvaluate()?'<details class="hd20RsModuleConfigFold"><summary>5S모듈 담당자 알림 설정</summary><div class="hd20RsModuleConfig"><label>5S모듈 알림 수신자 (@hd.com, 쉼표 구분)<input type="text" data-rs-module-emails value="'+esc(moduleEmails().join(', '))+'" placeholder="담당자 이메일 입력"></label><button type="button" data-rs-module-save>수신자 저장</button></div></details>':'')+
  '<div class="hd20RsActive"><div class="hd20RsSectionTitle"><b>점검대기·재점검 필요</b><small>점검대기 '+pending.length+'건 · 재조치/재점검 '+unresolved.length+'건</small></div><div class="hd20RsList">'+(active.length?active.map(item).join(''):'<p class="awHint">'+(records.length?'현재 점검대기 또는 재점검이 필요한 사례가 없습니다.':'아직 추출된 유지점검 대상이 없습니다.')+'</p>')+'</div></div>'+
- '<details class="hd20RsHistoryFold" '+(isHistoryOpen?'open':'')+'><summary>완료·종결 점검 이력 ('+history.length+'건) 상세보기</summary><div class="hd20RsList">'+(history.length?history.map(item).join(''):'<p class="awHint">완료·종결된 유지점검 이력이 없습니다.</p>')+'</div></details>';
+ '<div class="hd20RsArchiveHint">완료·종결된 점검 이력 '+history.length+'건은 ④ 결과·재조치에서 조회합니다.</div>';
 
  host.querySelector('[data-rs-module-save]')?.addEventListener('click',()=>{if(!canEvaluate())return;const value=host.querySelector('[data-rs-module-emails]').value;const emails=[...new Set(value.split(/[,;\s]+/).map(x=>x.trim().toLowerCase()).filter(Boolean))];if(emails.some(x=>!/^[^@\s]+@hd\.com$/.test(x))){window.alert('유효한 @hd.com 이메일 주소만 등록할 수 있습니다.');return}save(MODULE_KEY,emails);render()});
  host.querySelectorAll('[data-rs-id]').forEach(box=>{
