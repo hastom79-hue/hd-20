@@ -472,20 +472,24 @@ fs.mkdirSync('artifacts',{recursive:true});
       const workButton=popup?.querySelector('[data-had-retention-work]');
       if(!workButton)throw Error('Unresolved retention work-link missing');
       workButton.click();
+      const selected=()=>document.querySelector('#hd20RetentionSampling [data-rs-id="'+id+'"]');
       const returned=window.HD20_SUBNAV.state().sub==='ongoing'&&
-        !!document.querySelector('#hd20RetentionSampling [data-rs-id="'+id+'"]');
+        selected()?.dataset.hd20RetentionFocused==='true';
+      window.HD20_SUBNAV.select('audit','ongoing');
+      const survivesRedraw=selected()?.dataset.hd20RetentionFocused==='true';
       window.HD20_SUBNAV.select('audit','retention');
-      return {matched,closed:!document.querySelector('#hd20RetentionOriginalPopup'),returned};
+      return {matched,closed:!document.querySelector('#hd20RetentionOriginalPopup'),returned,survivesRedraw};
     }finally{
       for(const key of keys){
         if(originals[key]===null)localStorage.removeItem(key);
         else localStorage.setItem(key,originals[key]);
       }
       document.querySelector('#hd20RetentionOriginalPopup')?.remove();
+      document.getElementById('awAudit')?.removeAttribute('data-hd20-retention-focus-id');
       window.HD20_SUBNAV.select('audit','retention');
     }
   });
-  assert.deepEqual(exactRetentionDetail,{matched:true,closed:true,returned:true},
+  assert.deepEqual(exactRetentionDetail,{matched:true,closed:true,returned:true,survivesRedraw:true},
     '④ retention source popup preserves exact recheck linkage and closes');
   // ④ must reject an action whose ID was mistakenly stored in another
   // retention source; the row must show a missing link rather than a false status.
