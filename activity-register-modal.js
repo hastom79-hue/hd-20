@@ -29,7 +29,7 @@ const draftKey='hd20ActivityPopupDraftV1';const fields=()=>[...formCard.querySel
    (문제·개선 등록 ①~④ 단계 화면)을 띄운 뒤 그 위에 이 등록 모달을 여는 구조인데, 모달을 닫아도
    배경이 원래 의도된 "통합조회"가 아니라 이 구형 패널에 그대로 남아 있었음. 모달이 닫힐 때(등록
    성공·취소·배경클릭·ESC 전부 이 hide()를 거침) 통합조회로 복귀시켜 일관된 화면으로 돌아가게 함. */
-function hide(){overlay.classList.remove('on');overlay.setAttribute('aria-hidden','true');document.body.style.overflow='';if(window.HD20_NAV?.active?.()==='activity'&&document.getElementById('awActivity')?.dataset.subview==='self'){window.HD20_LAUNCHER?.refreshActive?.()}else window.HD20_LAUNCHER?.openOverview?.()}
+function hide(){overlay.classList.remove('on');overlay.setAttribute('aria-hidden','true');document.body.style.overflow='';if(window.HD20_NAV?.active?.()==='activity'){const sub=document.getElementById('awActivity')?.dataset.subview;if(sub==='overview')window.HD20_LAUNCHER?.openOverview?.();else if(sub==='self'||sub==='request')window.HD20_LAUNCHER?.refreshActive?.()}}
 window.addEventListener('hd20-activity-register-success',()=>{localStorage.removeItem(draftKey);hide()});open.onclick=e=>{e.preventDefault();e.stopPropagation();show()};overlay.querySelector('.awRegisterClose').onclick=hide;overlay.addEventListener('click',e=>{if(e.target===overlay)hide()});document.addEventListener('keydown',e=>{if(e.key==='Escape'&&overlay.classList.contains('on'))hide()});return true}
 function boot(){let n=0;const run=()=>{if(enhance())return;if(++n<80)setTimeout(run,100)};run()}document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot,{once:true}):boot();
 })();
