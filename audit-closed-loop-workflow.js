@@ -109,7 +109,7 @@ function syncSelectedAuditTarget(event){
  current.dispatchEvent(new Event('change',{bubbles:true}));
  const form=document.querySelector('#awAudit .auditClosedLoop');if(form)form.dataset.selectedAuditId=id;
  const notice=document.querySelector('#awAudit .auditClosedLoop [data-cl-notice]');
- if(notice)notice.textContent='선택한 Audit 대상: '+row.team+' / 추출일 '+String(row.date||'').slice(0,10)+' — 아래에서 실시결과를 등록하세요.';
+ if(notice)notice.textContent='선택 Audit: '+id+' · '+row.team+' · 추출일 '+String(row.date||'').slice(0,10);
 }
 function boot(){css();let n=0;const run=()=>{if(render())return;if(++n<40)setTimeout(run,150)};run();window.addEventListener('hd20-audit-draw',()=>setTimeout(render,0));window.addEventListener('hd20-audit-target-selected',e=>setTimeout(()=>syncSelectedAuditTarget(e),0));window.addEventListener('hd20-action-updated',()=>setTimeout(render,0));window.addEventListener('hd20-policy-updated',()=>setTimeout(render,0));window.addEventListener('hd20-master-factors-updated',()=>setTimeout(render,0))}
 window.HD20AuditClosedLoop={registerAudit,latestPending,syncAction,leaderFor,controlState,render};document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot,{once:true}):boot();
