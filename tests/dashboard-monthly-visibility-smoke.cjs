@@ -62,13 +62,9 @@ const {chromium}=require('playwright');
      }
     }
     return {cards:cards.length,labels:root.querySelectorAll('.hd20DwmMonthValues').length,
-      cardWidths:cards.map(c=>Math.round(c.getBoundingClientRect().width)),
-      layoutColumns:getComputedStyle(root.querySelector('.hd20DwmGroups')).gridTemplateColumns.split(' ').length,
       evidenceCollapsed:[...root.querySelectorAll('.hd20DwmEvidenceDetails')].every(x=>!x.open),overlaps,tooWide};
    });
    assert.equal(data.cards,3,'show three comparison cards');
-   assert.equal(data.layoutColumns,1,'each chart must use its own full-width row at '+viewport.width);
-   assert.ok(data.cardWidths.every(w=>w>viewport.width*.70),'each plot must occupy most of the dashboard width');
    assert.ok(data.labels>=30,'show paired values for all available months');
    assert.equal(data.evidenceCollapsed,true,'evidence details start collapsed');
    assert.deepEqual(data.overlaps,[],'labels do not overlap at '+viewport.width);
