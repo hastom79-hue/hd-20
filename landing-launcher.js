@@ -126,7 +126,7 @@ function goActionRegister(){
  close();navigate('activity');
  setTimeout(()=>{
    window.HD20_SUBNAV?.select?.('activity','request');
-   clickWhenReady(()=>document.querySelector('#hd20ActivityLookupPanel [data-ln-new-register]'),'hd20ActionRegisterModal','activity');
+   clickWhenReady(()=>document.getElementById('hd20ActionRegisterBtn'),'hd20ActionRegisterModal','activity');
  },0);
 }
 function getRows(key){try{const a=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(a)?a:[]}catch{return[]}}
@@ -224,13 +224,9 @@ cell(x.problem||x.improvement||x.title||x.subject||x.description||x.content||x.i
  '<div class="hd20LnPager"><span>조회 '+filtered.length+'건 · '+view.page+' / '+pages+' 페이지</span><div><button type="button" data-ln-prev '+(view.page<=1?'disabled':'')+'>이전</button><button type="button" data-ln-next '+(view.page>=pages?'disabled':'')+'>다음</button></div></div>';
  root.querySelector('[data-ln-new-register]')?.addEventListener('click',()=>{
   if(mode==='self'){
-   const button=document.querySelector('#awActivity [data-aw="new"]');
-   if(button)button.click();else alert('자율개선 등록 기능을 불러오지 못했습니다.');
+   clickWhenReady(()=>document.querySelector('#awActivity [data-aw="new"]'),'awRegisterModal','activity');
   }else if(mode==='request'){
-   const modal=document.getElementById('hd20ActionRegisterModal'),button=document.getElementById('hd20ActionRegisterBtn');
-   if(!modal||!button){alert('개선요청 등록 기능을 불러오지 못했습니다.');return}
-   if(modal.parentElement!==document.body)document.body.appendChild(modal);
-   button.click();
+   clickWhenReady(()=>document.getElementById('hd20ActionRegisterBtn'),'hd20ActionRegisterModal','activity');
   }else open();
  });
  
