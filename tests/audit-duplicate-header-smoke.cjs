@@ -129,6 +129,15 @@ fs.mkdirSync('artifacts',{recursive:true});
   assert.ok(checklistFilter.filtered>0&&checklistFilter.filtered<=checklistFilter.count,'combined checklist filter must show matching items');
   assert.equal(checklistFilter.reset,checklistFilter.count,'reset must restore full checklist');
   assert.equal(checklistFilter.summaryCollapsed,true,'duplicate evaluation summary remains collapsed initially');
+  // Async refreshes must not reintroduce other work cards into tab ⑤.
+  await page.evaluate(()=>{
+    window.HD20_SUBNAV.select('audit','checklist');
+    window.HD20AuditRiskDraw?.render?.();
+    window.HD20AuditClosedLoop?.render?.();
+    window.dispatchEvent(new CustomEvent('hd20-action-updated'));
+  });
+  await page.waitForTimeout(500);
+  await assertAuditSubtab('checklist');
   await assertAuditSubtab('ongoing');
   // Retention workspace must keep actionable checks above completed cases.
   await page.evaluate(()=>{
