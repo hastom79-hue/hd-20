@@ -345,3 +345,17 @@ html body #awTheme #themeAuditBox>.themeSaveResult{
 #awTheme .themeSelfTeamSelector select{min-width:180px;padding:8px;border:1px solid #b7cede;background:white;border-radius:7px}
 #awTheme .themeSelfTeamSelector small{font-size:12px;color:#607b91}
 #awTheme #themeTeamSel:disabled{background:#eff5fa;opacity:1;color:#254760;cursor:not-allowed}
+
+/* 2026-11-04 focused thematic field inspection V2 */
+#awTheme .themeAuditFlowLabel{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:18px 0 10px;padding:0 0 8px;border-bottom:1px solid #dce5ed;font-size:15px;font-weight:800;color:#24435b}
+#awTheme .themeAuditFlowLabel small{color:#647e90;font-size:12px;font-weight:400}
+#awTheme .themeThemeTabs{display:flex;flex-wrap:wrap;gap:8px;margin:9px 0 14px}
+#awTheme .themeThemeTabs button{display:flex;align-items:center;gap:8px;border:1px solid #bcd1e0;background:#fff;color:#31516a;padding:9px 13px;border-radius:9px;font-size:13px;font-weight:750;cursor:pointer}
+#awTheme .themeThemeTabs button.active{background:#214d70;color:white;border-color:#214d70}
+#awTheme .themeThemeTabCount{font-size:11px;font-weight:500;opacity:.85}
+#awTheme .themeChecklistGroup[hidden]{display:none!important}
+#awTheme .themeFindingList{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:8px;margin-bottom:10px}
+#awTheme .themeFindingItem{display:flex;gap:7px;align-items:flex-start;background:#fff8f4;border:1px solid #f1cfbf;border-radius:8px;padding:10px;color:#7d4435;font-size:12px}
+#awTheme .themeFindingItem b{white-space:nowrap}
+#awTheme .themeFindingEmpty{padding:10px 12px;background:#f4f8fa;border:1px solid #e1eaef;border-radius:8px;color:#60798b;font-size:12px}
+@media(max-width:680px){#awTheme .themeThemeTabs button{flex:1 1 140px;justify-content:space-between}#awTheme .themeFindingList{grid-template-columns:1fr}}
