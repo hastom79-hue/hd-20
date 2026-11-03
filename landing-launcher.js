@@ -105,17 +105,43 @@ function improvementId(x){return String(x?.improvementNo||x?.improvementNumber||
 function rowDate(x){return String(x?.date||x?.regDate||x?.createdAt||x?.registeredAt||'').slice(0,10)}
 function rowTeam(x){return String(x?.team||x?.teamName||x?.ownerTeam||x?.department||'팀 미지정')}
 function rowStatus(x){return String(x?.activityStatus||x?.status||x?.auditState||'등록')}
-let GRID={route:'all',query:'',team:'all',status:'all',source:'all',registrar:'',textFilter:'',from:'',to:'',page:1,size:20};
+let GRID={route:'all',query:'',team:'all',workplace:'all',theme:'all',status:'all',source:'all',registrar:'',assignee:'',caseId:'',textFilter:'',from:'',to:'',dueFrom:'',dueTo:'',evidence:'all',overdue:'all',page:1,size:20};
 function auditSource(x){if(x.__area!=='action')return '자율개선';if(x.sourceCaseId||x.auditDrawId||/audit/i.test(String(x.source||''))||/audit/i.test(String(x.requestSource||'')))return 'Audit 연계';return '일반 개선요청'}
 function registrar(x){return String(x.owner||x.registeredBy||x.registrant||x.auditor||x.requester||'').trim()}
+function field(x,...names){for(const name of names){const v=x?.[name];if(v!==undefined&&v!==null&&String(v).trim())return String(v).trim()}return ''}
+function workplace(x){return field(x,'workplace','workplaceName','location','line','workArea','workstation','area')||'작업장 미지정'}
+function theme(x){return field(x,'theme','themeName','type','typeName','category','fiveSTheme','themeTitle')||'테마 미지정'}
+function assignee(x){return field(x,'assignee','actionOwner','actionAssignee','responsiblePerson','actionManager')||''}
+function dueDate(x){return field(x,'dueDate','due','deadline','targetDate','actionDueDate').slice(0,10)}
+function evidence(x){const v=[x.before,x.beforePhoto,x.beforeImage,x.evidence,x.after,x.afterPhoto,x.afterEvidence,x.photo,x.photos,x.image,x.images];return v.some(a=>Array.isArray(a)?a.length>0:!!a&&String(a)!=='false')}
+function overdue(x){const due=dueDate(x);return !!due&&due<new Date().toISOString().slice(0,10)&&!/완료|종결|채택|확정|closed|done/i.test(rowStatus(x))}
+function matchesText(value,query){return !query||String(value??'').toLocaleLowerCase().includes(String(query).trim().toLocaleLowerCase())}
 function textMatch(x,q){const needle=String(q||'').trim().replace(/\s+/g,' ').toLocaleLowerCase();if(!needle)return true;return [x.title,x.subject,x.description,x.content,x.issue,x.problem,x.activityName,x.item,x.actionText,x.improvementRequest,x.before,x.after,x.evidence,x.afterEvidence].some(v=>typeof v==='string'&&v.replace(/\s+/g,' ').toLocaleLowerCase().includes(needle))}
 function renderOverview(){
  const root=document.getElementById('hd20LauncherOverview');if(!root)return;
  const {activities,actions}=sourceRows();
  const records=[...activities.map(x=>({...x,__route:'자율개선',__area:'activity'})),...actions.map(x=>({...x,__route:'개선요청',__area:'action'}))];
- const conditionRows=records.filter(x=>(GRID.route==='all'||x.__area===GRID.route)&&(GRID.team==='all'||rowTeam(x)===GRID.team)&&(GRID.status==='all'||rowStatus(x)===GRID.status)&&(GRID.source==='all'||auditSource(x)===GRID.source)&&(!GRID.registrar||registrar(x).toLowerCase().includes(GRID.registrar.toLowerCase()))&&(!GRID.from||rowDate(x)>=GRID.from)&&(!GRID.to||rowDate(x)<=GRID.to)&&(!GRID.query||[x.__route,rowDate(x),rowTeam(x),rowStatus(x),x.title,x.subject,x.description,x.content,x.issue,x.problem,x.workplace,registrar(x),x.sourceCaseId,x.id].some(v=>String(v??'').toLowerCase().includes(GRID.query.toLowerCase()))));
+ const conditionRows=records.filter(x=>
+  (GRID.route==='all'||x.__area===GRID.route)&&
+  (GRID.team==='all'||rowTeam(x)===GRID.team)&&
+  (GRID.workplace==='all'||workplace(x)===GRID.workplace)&&
+  (GRID.theme==='all'||theme(x)===GRID.theme)&&
+  (GRID.status==='all'||rowStatus(x)===GRID.status)&&
+  (GRID.source==='all'||auditSource(x)===GRID.source)&&
+  matchesText(registrar(x),GRID.registrar)&&
+  matchesText(assignee(x),GRID.assignee)&&
+  matchesText(improvementId(x),GRID.caseId)&&
+  (!GRID.from||rowDate(x)>=GRID.from)&&(!GRID.to||rowDate(x)<=GRID.to)&&
+  (!GRID.dueFrom||dueDate(x)>=GRID.dueFrom)&&(!GRID.dueTo||dueDate(x)<=GRID.dueTo)&&
+  (GRID.evidence==='all'||(GRID.evidence==='yes'?evidence(x):!evidence(x)))&&
+  (GRID.overdue==='all'||(GRID.overdue==='yes'?overdue(x):!overdue(x)))&&
+  (!GRID.query||[x.__route,rowDate(x),rowTeam(x),rowStatus(x),improvementId(x),x.title,x.subject,x.description,x.content,x.issue,x.problem,x.improvement,x.improvementRequest,workplace(x),theme(x),registrar(x),assignee(x),x.sourceCaseId].some(v=>matchesText(v,GRID.query)))
+ );
  const filtered=conditionRows.filter(x=>textMatch(x,GRID.textFilter)).sort((a,b)=>rowDate(b).localeCompare(rowDate(a)));
- const teams=[...new Set(records.map(rowTeam))].sort();const statuses=[...new Set(records.map(rowStatus))].sort();
+ const teams=[...new Set(records.map(rowTeam))].sort();
+ const workplaces=[...new Set(records.map(workplace))].sort();
+ const themes=[...new Set(records.map(theme))].sort();
+ const statuses=[...new Set(records.map(rowStatus))].sort();
  const option=(value,label,selected)=>'<option value="'+escapeText(value)+'"'+(selected?' selected':'')+'>'+escapeText(label)+'</option>';
  const pages=Math.max(1,Math.ceil(filtered.length/GRID.size));GRID.page=Math.min(GRID.page,pages);
  const shown=filtered.slice((GRID.page-1)*GRID.size,GRID.page*GRID.size);
