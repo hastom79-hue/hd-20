@@ -456,6 +456,14 @@ fs.mkdirSync('artifacts',{recursive:true});
   }
   if(await page.locator('#hd20AuditCloseEvaluation').getAttribute('data-hd20-fallback')==='true'){
     const filters=page.locator('#hd20AuditCloseEvaluation .hd20CloseFilters');
+    // Row filtering uses the exact stored team, not the display text that
+    // also contains workplace information separated by a middle dot.
+    assert.equal(await page.locator('#hd20AuditCloseEvaluation [data-close-final-pending] tbody tr')
+      .filter({hasText:'E2E-AUDIT-FINAL-PENDING'}).first().getAttribute('data-close-team'),
+      '검증팀','Audit results retain exact team metadata for filtering');
+    assert.equal(await page.locator('#hd20AuditCloseEvaluation [data-close-rework] tbody tr')
+      .filter({hasText:'E2E-REWORK-PENDING'}).first().getAttribute('data-close-team'),
+      '검증팀','Retention results retain exact team metadata for filtering');
     await filters.locator('[data-close-filter-team]').selectOption('검증팀');
     await filters.locator('[data-close-filter-state]').selectOption('rework');
     await filters.locator('[data-close-filter-text]').fill('E2E-REWORK-PENDING');
