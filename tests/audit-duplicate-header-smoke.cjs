@@ -408,6 +408,26 @@ fs.mkdirSync('artifacts',{recursive:true});
     assert.ok(await closure.locator('[data-close-final-pending]').getByText('E2E-AUDIT-FINAL-PENDING').count(),'unjudged Audit must be in first queue');
     assert.ok(await closure.locator('.hd20CloseHistory').getByText('E2E-AUDIT-FINAL-DONE').count(),'evaluated Audit remains in history');
   }
+  if(await page.locator('#hd20AuditCloseEvaluation').getAttribute('data-hd20-fallback')==='true'){
+    const filters=page.locator('#hd20AuditCloseEvaluation .hd20CloseFilters');
+    await filters.locator('[data-close-filter-team]').selectOption('검증팀');
+    await filters.locator('[data-close-filter-state]').selectOption('rework');
+    await filters.locator('[data-close-filter-text]').fill('E2E-REWORK-PENDING');
+    assert.equal(await page.locator('#hd20AuditCloseEvaluation [data-close-rework] tbody tr:visible').count(),1,
+      'team + state + text filters isolate the specific open rework');
+    assert.match(await filters.locator('[data-close-filter-count]').innerText(),/조회 1건/,
+      'combined filter count matches the visible row');
+    await page.evaluate(()=>window.HD20_SUBNAV.select('audit','retention'));
+    assert.equal(await filters.locator('[data-close-filter-text]').inputValue(),'E2E-REWORK-PENDING',
+      're-render keeps the free-text filter');
+    await filters.locator('[data-close-filter-reset]').click();
+    assert.equal(await filters.locator('[data-close-filter-state]').inputValue(),'',
+      'reset clears status');
+    assert.equal(await filters.locator('[data-close-filter-team]').inputValue(),'',
+      'reset clears team');
+    assert.equal(await filters.locator('[data-close-filter-text]').inputValue(),'',
+      'reset clears text');
+  }
   await page.evaluate(()=>{
     for(const [key,ids] of [
       ['hd20AuditRandomDrawsV1',['E2E-AUDIT-FINAL-PENDING','E2E-AUDIT-FINAL-DONE']],
