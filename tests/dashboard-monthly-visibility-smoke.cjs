@@ -65,7 +65,7 @@ const {chromium}=require('playwright');
       evidenceCollapsed:[...root.querySelectorAll('.hd20DwmEvidenceDetails')].every(x=>!x.open),overlaps,tooWide};
    });
    assert.equal(data.cards,3,'show three comparison cards');
-   assert.deepEqual(data.barColors,['rgb(40, 90, 150)','rgb(22, 140, 145)'],'paired bars use approved contrasting blue/teal colors');
+   assert.deepEqual(data.barColors,['rgb(66, 75, 84)','rgb(22, 140, 145)'],'paired bars use approved contrasting dark gray/teal colors');
    assert.deepEqual(data.legendColors,data.barColors,'legend colors must match the respective chart bars');
    if(viewport.width>=1366)assert.equal(data.layoutColumns,3,'retain the approved side-by-side three-card layout at '+viewport.width);
    else assert.ok(data.layoutColumns>=1&&data.layoutColumns<=3,'retain responsive card layout at '+viewport.width);
