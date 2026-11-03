@@ -23,6 +23,32 @@ const {chromium}=require('playwright');
   await page.waitForTimeout(700);
   v=await state();
   if(v.area!=='audit'||!v.audit||v.theme||v.merged||v.subnav.length!==5||!v.subnav.some(s=>s.includes('유지점검')))throw Error('Standalone Audit '+JSON.stringify(v));
+  // Regression: Audit menu may not flash a lone "① Audit 실시" button or
+  // alternate between grid/flex during repeated subtab update events.
+  const stableMenu=await page.evaluate(async()=>{
+    const bar=document.getElementById('hd20Subnav');
+    const before=[...bar.querySelectorAll(':scope > button[data-sub]')];
+    let mutations=0,oneButtonFrames=0,nonGridFrames=0;
+    const obs=new MutationObserver(records=>{
+      mutations+=records.filter(r=>r.type==='childList').length;
+      if(bar.querySelectorAll(':scope > button[data-sub]').length!==5)oneButtonFrames++;
+    });
+    obs.observe(bar,{childList:true});
+    for(let i=0;i<8;i++){
+      window.dispatchEvent(new CustomEvent('hd20-subtab-changed',{detail:{area:'audit',sub:'draw'}}));
+      await new Promise(resolve=>requestAnimationFrame(()=>{
+        if(getComputedStyle(bar).display!=='grid')nonGridFrames++;
+        resolve();
+      }));
+    }
+    await new Promise(resolve=>setTimeout(resolve,350));
+    obs.disconnect();
+    return {mutations,oneButtonFrames,nonGridFrames,
+      stable:before.every((button,i)=>bar.querySelectorAll(':scope > button[data-sub]')[i]===button),
+      labels:[...bar.querySelectorAll(':scope > button[data-sub]')].map(x=>x.textContent.trim())};
+  });
+  if(stableMenu.mutations||stableMenu.oneButtonFrames||stableMenu.nonGridFrames||!stableMenu.stable||stableMenu.labels.length!==5)
+    throw Error('Audit tab label flicker or nav rebuild '+JSON.stringify(stableMenu));
   const expectedAudit=['draw','action','ongoing','retention','checklist'];
   for(const sub of expectedAudit){
     await page.evaluate(key=>window.HD20_SUBNAV.select('audit',key),sub);
