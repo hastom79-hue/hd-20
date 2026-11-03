@@ -327,3 +327,80 @@
  #hd20ActionRegisterModal .armHead .hd20ActionSendHeader{max-width:130px!important;font-size:9px!important}
  #hd20ActionRegisterModal .armHead .hd20ActionSendHeader select{width:95px!important;font-size:10px!important}
 }
+
+/* 2026-11-03: Compact 5S advancement criteria in improvement request popup.
+   Preserve exact definitions, image guide, assessment events and master-only adoption. */
+#hd20ActionRegisterModal .hd20RegGroup4 .hd20RegGroupGrid{
+  padding:10px 12px!important;gap:8px!important;
+  align-items:start!important;grid-auto-rows:min-content!important;
+}
+#hd20ActionRegisterModal .hd20RegGroup4 .hd20DirectCriteria{
+  display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;
+  grid-auto-rows:min-content!important;align-content:start!important;
+  column-gap:14px!important;row-gap:7px!important;
+  padding:14px 16px!important;margin:0!important;
+  min-height:0!important;height:auto!important;
+  box-sizing:border-box!important;
+}
+#hd20ActionRegisterModal .hd20RegGroup4 .hd20DirectCriteria>strong{
+  grid-column:1!important;grid-row:1!important;
+  margin:0!important;padding:0!important;align-self:center!important;
+  font-size:16px!important;line-height:1.35!important;
+}
+#hd20ActionRegisterModal .hd20RegGroup4 .hd20DirectCriteria>span{
+  grid-column:1!important;grid-row:2!important;
+  margin:0!important;padding:0!important;line-height:1.45!important;
+  font-size:12px!important;
+}
+#hd20ActionRegisterModal .hd20RegGroup4 .hd20CriteriaGuideOnly{
+  grid-column:2!important;grid-row:1/span 2!important;
+  margin:0!important;padding:0!important;min-height:0!important;
+  justify-content:flex-end!important;align-self:center!important;
+}
+#hd20ActionRegisterModal .hd20RegGroup4 .hd20CriteriaGuideOnly button{
+  margin:0!important;padding:9px 12px!important;min-height:36px!important;
+}
+#hd20ActionRegisterModal .hd20RegGroup4 .hd20CriteriaChecks{
+  grid-column:1/-1!important;grid-row:3!important;display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;gap:5px!important;
+  margin:2px 0 0!important;padding:0!important;
+  min-height:0!important;align-content:start!important;
+}
+#hd20ActionRegisterModal .hd20RegGroup4 .hd20CriteriaChecks>label{
+  display:flex!important;flex-direction:row!important;align-items:center!important;
+  gap:9px!important;min-height:34px!important;height:auto!important;
+  padding:6px 10px!important;margin:0!important;
+  line-height:1.35!important;box-sizing:border-box!important;
+}
+#hd20ActionRegisterModal .hd20RegGroup4 .hd20CriteriaChecks>label input{
+  flex:0 0 18px!important;margin:0!important;align-self:center!important;
+}
+#hd20ActionRegisterModal .hd20RegGroup4 .hd20DirectCriteria>output{
+  grid-column:1/-1!important;grid-row:4!important;
+  margin:3px 0 0!important;padding:9px 0!important;
+  min-height:0!important;line-height:1.4!important;
+  border-top:1px solid #dce7ef!important;border-bottom:1px solid #dce7ef!important;
+}
+#hd20ActionRegisterModal .hd20RegGroup4 .hd20FinalAdoptionRow:not([hidden]){
+  grid-column:1/-1!important;grid-row:5!important;
+  display:flex!important;flex-direction:row!important;align-items:center!important;
+  gap:10px!important;margin:0!important;padding:6px 2px!important;
+  min-height:0!important;line-height:1.4!important;
+}
+#hd20ActionRegisterModal .hd20RegGroup4 .hd20FinalAdoptionRow[hidden]{
+  display:none!important;
+}
+#hd20ActionRegisterModal .hd20RegGroup4 .hd20FinalAdoptionRow small{
+  display:block!important;margin-top:3px!important;line-height:1.4!important;
+}
+@media(max-width:700px){
+  #hd20ActionRegisterModal .hd20RegGroup4 .hd20DirectCriteria{
+    grid-template-columns:minmax(0,1fr)!important;padding:12px!important;
+  }
+  #hd20ActionRegisterModal .hd20RegGroup4 .hd20CriteriaGuideOnly{
+    grid-column:1!important;grid-row:3!important;justify-content:flex-start!important;
+  }
+  #hd20ActionRegisterModal .hd20RegGroup4 .hd20CriteriaChecks{grid-row:4!important}
+  #hd20ActionRegisterModal .hd20RegGroup4 .hd20DirectCriteria>output{grid-row:5!important}
+  #hd20ActionRegisterModal .hd20RegGroup4 .hd20FinalAdoptionRow:not([hidden]){grid-row:6!important}
+}
