@@ -78,21 +78,31 @@ function css(){
   document.head.appendChild(s);
 }
 function close(){document.getElementById('hd20Launcher')?.remove();try{sessionStorage.setItem(SEEN_KEY,'1')}catch{}}
-function clickWhenReady(findFn,modalId,area,tries=0,clicked=false){
+function clickWhenReady(findFn,modalId,area,tries=0,lastClickAt=-1){
  if(window.HD20_NAV?.active?.()!==area){internalRegistrationNavigation=false;return}
- if(document.getElementById(modalId)?.classList.contains('on')){internalRegistrationNavigation=false;return}
- const el=findFn();
- if(!clicked&&el?.isConnected&&!el.disabled){
-   el.click();clicked=true;
-   if(document.getElementById(modalId)?.classList.contains('on')){internalRegistrationNavigation=false;return}
+ const modal=document.getElementById(modalId);
+ if(modal?.classList.contains('on')||modal?.getAttribute('aria-hidden')==='false'){
+   internalRegistrationNavigation=false;return
  }
- if(tries>=20){
+ const el=findFn();
+ // Registration modules may mount after navigation. Retry a missing button,
+ // and allow another click when the first click did not open its modal.
+ if(el?.isConnected&&!el.disabled&&(lastClickAt<0||tries-lastClickAt>=5)){
+   el.click();lastClickAt=tries;
+   const after=document.getElementById(modalId);
+   if(after?.classList.contains('on')||after?.getAttribute('aria-hidden')==='false'){
+     internalRegistrationNavigation=false;return
+   }
+ }
+ if(tries>=40){
    internalRegistrationNavigation=false;
-   console.warn('[HD20 launcher] 등록 팝업 열기 실패: '+area);
-   if(window.HD20_NAV?.active?.()===area)openOverview();
+   console.error('[HD20 launcher] 등록 팝업 연결 확인 실패:',modalId);
+   // Stay on the intended lookup tab for a clear retry instead of
+   // unexpectedly returning to the integrated overview.
+   window.HD20_LAUNCHER?.refreshActive?.();
    return
  }
- setTimeout(()=>clickWhenReady(findFn,modalId,area,tries+1,clicked),50);
+ setTimeout(()=>clickWhenReady(findFn,modalId,area,tries+1,lastClickAt),75);
 }
 function hideOverview(){document.body.classList.remove('hd20InquiryActive');const grid=document.getElementById('hd20LauncherOverview');if(!grid)return;grid.classList.remove('hd20LnVisible');grid.style.removeProperty('display');grid.style.removeProperty('visibility');document.body.classList.remove('hd20UnifiedLanding')}
 function navigate(area){
