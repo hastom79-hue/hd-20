@@ -296,7 +296,7 @@ fs.mkdirSync('artifacts',{recursive:true});
   assert.equal(guard,true,'retention collision fixture must be representable');
   // Verify the latest completed corrective action can be rechecked and
   // closed, while preserving the history of an earlier failed recheck.
-  const closure=await page.evaluate(()=>{
+  const retentionFinalClosure=await page.evaluate(()=>{
     const retentionKey='hd20RetentionRandomChecksV1',actionKey='hd20ActionCasesV2';
     const originalRetention=localStorage.getItem(retentionKey);
     const originalActions=localStorage.getItem(actionKey);
@@ -345,7 +345,7 @@ fs.mkdirSync('artifacts',{recursive:true});
       window.HD20_SUBNAV.select('audit','ongoing');
     }
   });
-  assert.deepEqual(closure,{closed:true,finalResult:'적합',historyCount:2,
+  assert.deepEqual(retentionFinalClosure,{closed:true,finalResult:'적합',historyCount:2,
     previousFailure:'부적합',latestAction:'AUDIT-SMOKE-ACTION-2',
     notActive:true,noRecheckButton:true},
     'latest completed rework closes case and retains failed recheck history');
