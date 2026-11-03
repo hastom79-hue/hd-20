@@ -2,7 +2,7 @@
 const MAP={dashboard:[['summary','오늘의 운영판단'],['analysis','성과·건전성 추이'],['map','고도화 맵']],activity:[['manage','① 문제·개선 등록'],['analysis','② 실행현황·우수활동 선별']],/* 사용자 지시: "고도화·표준화는 남이되, '① 3대요건 즉시판정' 만 간소화/삭제하고 '② 확정사례 관리'는
    남겨라" — 네비게이션에서 judge 서브탭 버튼을 제거(렌더링 함수 자체는 안전하게 코드에 남겨두되
    호출 경로를 모두 standard로 돌려 사실상 비활성화). */
-advancement:[['standard','확정사례 관리']],audit:[['draw','① Audit 실시'],['action','② 개선조치·완료관리'],['ongoing','③ 유지점검'],['retention','④ 결과·재조치'],['checklist','⑤ Audit 점검항목']],action:[['manage','① 개선조치 등록·실행'],['leadtime','② 미완료·지연관리'],['verify','③ 효과검증·최종종결']]};
+advancement:[['standard','확정사례 관리']],audit:[['draw','① Audit 실시'],['action','② AS-IS / TO-BE 조치관리'],['ongoing','③ 유지점검'],['checklist','④ Audit 점검항목']],action:[['manage','① 개선조치 등록·실행'],['leadtime','② 미완료·지연관리'],['verify','③ 효과검증·최종종결']]};
 const CONTRACT={
  'dashboard.summary':{title:'종합현황',purpose:'울산캠퍼스 5S 운영상태를 한 화면에서 파악하고 오늘 우선 확인할 영역을 정합니다.',judge:'목표 대비 성과, 고도화 확보, Audit 대기, 미완료·기한경과·재발을 동시에 확인',next:'이상 KPI·Risk 카드를 상세근거로 Drill-down하여 담당 업무 탭으로 이동',features:['핵심 KPI','팀별 성과','Action Summary','우선순위']},
  'dashboard.analysis':{title:'성과·운영분석',purpose:'단순 실적 건수를 넘어 판정 Lead Time, 유지율, 재발률, 조치완료율 등 운영 건전성을 분석합니다.',judge:'성과 증가가 프로세스 건전성 개선과 함께 일어나는지 확인',next:'취약 지표의 원천 데이터를 확인하고 원인 업무영역에서 조치',features:['운영 KPI','월별 추이','유지율','재발·기한']},
@@ -396,7 +396,7 @@ function renderAuditCloseEvaluation(host,traceOnly=false){
   '<button type="button" data-close-filter-reset>초기화</button>'+
   '<span data-close-filter-count aria-live="polite"></span></div>';
 
- const firstBlock=traceOnly?'':'<div class="awHead"><div><b>Audit 최종판정 · 재조치 관리</b><small>판정 미입력과 재조치 필요 건 우선 · 기존 원본 기록 보존</small></div></div>'+
+ const firstBlock=traceOnly?'':'<div class="awHead"><div><b>Audit 종료평가 · 유지점검 이력</b><small>판정 미입력과 재조치 필요 건 우선 · 기존 원본 기록 보존</small></div></div>'+
  '<section class="hd20CloseSection" data-close-final-pending><div class="hd20CloseSectionHead"><b>최종판정 대기</b><small>'+pendingFinal.length+'건 · 실시 완료, 최종판정 미입력</small></div>'+
  (pendingFinal.length?auditTable(pendingFinal.slice().reverse().slice(0,80)):'<p class="awHint">현재 최종판정 대기 Audit가 없습니다.</p>')+'</section>';
  const corrective='<section class="hd20CloseSection" data-close-rework><div class="hd20CloseSectionHead"><b>재조치·재점검 필요</b><small>'+unresolved.length+'건 · 현장 점검/판정은 ③ 유지점검에서 수행</small></div>'+
@@ -609,9 +609,9 @@ function ensureAuditSubviewIsolation(){
  const style=document.createElement('style');style.id='hd20AuditSubviewIsolationStyle';
  const rules=[
   ['.auditDraw,.auditClosedLoop,#hd20AuditBatchExecution','draw'],
-  ['#hd20AuditActionMonitor','action'],
+  ['#hd20AuditActionMonitor,#hd20AsIsToBeManager','action'],
   ['#hd20RetentionSampling','ongoing'],
-  ['#hd20AuditCloseEvaluation,#hd20RetentionActionTrace','retention'],
+  ['#hd20AuditCloseEvaluation,#hd20RetentionActionTrace','ongoing'],
   ['.acWrap','checklist']
  ];
  style.textContent=rules.map(([selectors,active])=>
@@ -634,8 +634,8 @@ function hideDuplicateWorkKpis(root){
 function placeAuditWorkPanels(root,sub,panels){
  const anchor=root.querySelector(':scope > .awActions')||root.querySelector(':scope > .awHero');
  const sequence=sub==='draw'?[panels.draw,panels.batch,panels.closed]:
-   sub==='action'?[panels.action]:
-   sub==='ongoing'?[panels.sampling]:
+   sub==='action'?[panels.toBe,panels.action]:
+   sub==='ongoing'?[panels.sampling,panels.closeEval,panels.trace]:
    sub==='retention'?[panels.closeEval,panels.trace]:
    sub==='checklist'?[panels.checklist]:[];
  let previous=anchor?.parentElement===root?anchor:null;
@@ -664,7 +664,7 @@ function applyAudit(sub){
  // The existing close-evaluation panel may be owned by another module: never overwrite it.
  // Attach the retention/action trace as a sibling only when a real panel already exists.
  let trace=root.querySelector('#hd20RetentionActionTrace');
- if(sub==='retention'){
+ if(sub==='ongoing'){
    if(closeEval?.dataset.hd20Fallback==='true'){
      renderAuditCloseEvaluation(closeEval);
    }else{
@@ -676,15 +676,15 @@ function applyAudit(sub){
  // Order each live work panel before unrelated legacy cards, including on
  // re-entry after Audit updates. The first screen always follows work sequence.
  placeAuditWorkPanels(root,sub,{
-   draw,batch,closed,action:root.querySelector('#hd20AuditActionMonitor'),
+   draw,batch,closed,toBe:root.querySelector('#hd20AsIsToBeManager'),action:root.querySelector('#hd20AuditActionMonitor'),
    sampling,closeEval,trace,checklist:root.querySelector('.acWrap')
  });
  show(draw,sub==='draw');show(batch,sub==='draw');show(closed,sub==='draw');
- show(ongoing,false);show(sampling,sub==='ongoing');show(closeEval,sub==='retention');show(trace,sub==='retention');
+ show(ongoing,false);show(sampling,sub==='ongoing');show(closeEval,sub==='ongoing');show(trace,sub==='ongoing');show(root.querySelector('#hd20AsIsToBeManager'),sub==='action');
  show($('.awFlow',root),false);show($('.awAuditLane',root),false);
  // 등록·대상선정 공통부품은 Audit 실시 화면에서만 표시한다.
  show($('.awActions',root),sub==='draw');
- show(root.querySelector('#hd20AuditActionMonitor'),sub==='action');
+ show(root.querySelector('#hd20AuditActionMonitor'),false);
  const auditGrid=$('.awGrid',root);
  const checklistPanel=root.querySelector('.acWrap');
  // A checklist can be nested inside .awGrid. Keep its parent visible in the
@@ -693,8 +693,8 @@ function applyAudit(sub){
  // work panel. The old unconditional draw branch left empty grid spacing
  // above the Audit execution workspace after cards were separated.
  const activeGridPanels=sub==='draw'?[draw,batch,closed]:
-  sub==='action'?[root.querySelector('#hd20AuditActionMonitor')]:
-  sub==='ongoing'?[sampling]:
+  sub==='action'?[root.querySelector('#hd20AsIsToBeManager')]:
+  sub==='ongoing'?[sampling,closeEval,trace]:
   sub==='retention'?[closeEval,trace]:
   sub==='checklist'?[checklistPanel]:[];
  show(auditGrid,!!(auditGrid&&activeGridPanels.some(panel=>panel&&auditGrid.contains(panel))));
@@ -703,14 +703,14 @@ function applyAudit(sub){
  root.querySelectorAll('.awCard').forEach(card=>{
    const inSampling=!!(sampling&&(card===sampling||sampling.contains(card)||card.contains(sampling)));
    const inClosure=!!((closeEval&&(card===closeEval||closeEval.contains(card)||card.contains(closeEval)))||(trace&&(card===trace||trace.contains(card)||card.contains(trace))));
-   const inActions=card.id==='hd20AuditActionMonitor';
+   const inActions=card.id==='hd20AsIsToBeManager';
    const isChecklist=card.classList.contains('acWrap')||!!card.querySelector('.acWrap');
    // Keep a checklist's enclosing .awCard visible, even when a legacy renderer
    // nests the checklist instead of mounting it at the Audit root.
    const inExecution=!!([draw,closed,batch].some(panel=>panel&&(card===panel||card.contains(panel)||panel.contains(card))));
    // Keep only execution work panels in tab ①. The previous broad fallback
    // displayed unrelated legacy cards and duplicate reporting content.
-   const keep=sub==='checklist'?isChecklist:sub==='draw'?inExecution&&!inSampling&&!inClosure&&!inActions&&!isChecklist:sub==='action'?inActions:sub==='ongoing'?inSampling:inClosure&&!inActions&&!isChecklist;
+   const keep=sub==='checklist'?isChecklist:sub==='draw'?inExecution&&!inSampling&&!inClosure&&!inActions&&!isChecklist:sub==='action'?inActions:sub==='ongoing'?(inSampling||inClosure):false;
    show(card,keep);
  });
  // 중복된 단계 제목은 상단 서브탭에 이미 있으므로 별도 렌더링하지 않는다.
@@ -762,7 +762,7 @@ function installAdvJudgeTools(){
  tools.querySelectorAll('button').forEach(b=>{b.style.cssText='padding:8px 12px;border-radius:7px;border:1px solid #cbd8e3;background:#fff;color:#24445c;cursor:pointer;font-weight:700';b.onclick=()=>openAdvDetailTool(b.dataset.advTool)});
  host.appendChild(tools);
 }
-function select(area,sub){if(window.HD20_NAV?.active?.()!==area)return;/* 서브탭 체계가 없는 영역(통합기준정보 등)에 URL 딥링크의 낡은 sub(예: ?area=master&sub=judge)가 들어와도 무시 — 그렇지 않으면 data-hd-view가 'master.judge'로 덮이고 URL에 sub가 다시 써져 화면 격리가 깨졌음. */if(!MAP[area])return;document.getElementById('hd20AdvBack')?.remove();if(area==='advancement'&&(sub==='map'||sub==='trend'||sub==='judge'))sub='standard';if(area==='audit'&&sub==='inspect')sub='draw';if(area==='audit'&&state.area==='audit'&&state.sub===sub&&$('#awAudit')?.dataset.subview===sub)return;state={area,sub};if(area==='advancement'&&sub==='process')ensureAdvProcess();document.querySelectorAll('#hd20Subnav button').forEach(b=>b.classList.toggle('on',b.dataset.sub===sub));apply(area,sub);renderPurpose(area,sub);if(area!=='audit'&&area!=='advancement')requestAnimationFrame(()=>apply(area,sub));
+function select(area,sub){if(window.HD20_NAV?.active?.()!==area)return;/* 서브탭 체계가 없는 영역(통합기준정보 등)에 URL 딥링크의 낡은 sub(예: ?area=master&sub=judge)가 들어와도 무시 — 그렇지 않으면 data-hd-view가 'master.judge'로 덮이고 URL에 sub가 다시 써져 화면 격리가 깨졌음. */if(!MAP[area])return;document.getElementById('hd20AdvBack')?.remove();if(area==='advancement'&&(sub==='map'||sub==='trend'||sub==='judge'))sub='standard';if(area==='audit'&&sub==='inspect')sub='draw';if(area==='audit'&&sub==='retention')sub='ongoing';if(area==='audit'&&state.area==='audit'&&state.sub===sub&&$('#awAudit')?.dataset.subview===sub)return;state={area,sub};if(area==='advancement'&&sub==='process')ensureAdvProcess();document.querySelectorAll('#hd20Subnav button').forEach(b=>b.classList.toggle('on',b.dataset.sub===sub));apply(area,sub);renderPurpose(area,sub);if(area!=='audit'&&area!=='advancement')requestAnimationFrame(()=>apply(area,sub));
   try{const u=new URL(location.href);if(u.searchParams.get('area')===area)u.searchParams.set('sub',sub);history.replaceState(null,'',u)}catch{}}
 function syncArea(area){
   if(window.HD20_NAV?.active?.()!==area)return;
@@ -787,7 +787,7 @@ function syncArea(area){
   if(area==='dashboard'){render('dashboard');return;}
   if(area==='advancement'&&window.__HD20_RESTORE_SUB&&['analysis','detail','process','judge'].includes(window.__HD20_RESTORE_SUB))window.__HD20_RESTORE_SUB='standard';
   if(area==='advancement'&&['map','trend'].includes(window.__HD20_RESTORE_SUB))window.__HD20_RESTORE_SUB='standard';
-  if(area==='audit'&&window.__HD20_RESTORE_SUB==='inspect')window.__HD20_RESTORE_SUB='draw';
+  if(area==='audit'&&window.__HD20_RESTORE_SUB==='inspect')window.__HD20_RESTORE_SUB='draw';if(area==='audit'&&window.__HD20_RESTORE_SUB==='retention')window.__HD20_RESTORE_SUB='ongoing';
   if(window.__HD20_RESTORE_SUB&&MAP[area]?.some(([k])=>k===window.__HD20_RESTORE_SUB)){
     const restoreSub=window.__HD20_RESTORE_SUB;window.__HD20_RESTORE_SUB=null;
     state.sub=restoreSub;state.area=area;const bar=ensure(),items=MAP[area]||[];
@@ -808,10 +808,10 @@ function syncArea(area){
   // Other areas retain their existing default behavior.
   const urlParams=new URLSearchParams(location.search);
   const urlAuditSub=area==='audit'&&urlParams.get('area')==='audit'?urlParams.get('sub'):'';
-  const preferredAudit=area==='audit'?(candidates.some(([key])=>key===urlAuditSub)?urlAuditSub:(state.area==='audit'&&candidates.some(([key])=>key===state.sub)?state.sub:'draw')):'';
+  const preferredAudit=area==='audit'?(urlAuditSub==='retention'?'ongoing':candidates.some(([key])=>key===urlAuditSub)?urlAuditSub:(state.area==='audit'&&candidates.some(([key])=>key===state.sub)?state.sub:'draw')):'';
   state.sub=area==='audit'?preferredAudit:candidates[0]?.[0]||'';state.area=area;const bar=ensure(),items=MAP[area]||[];if(area==='audit')syncAuditButtons(bar,state.sub);else{bar.innerHTML=items.map(([k,n])=>`<button type="button" data-sub="${k}" class="${k===state.sub?'on':''}">${n}</button>`).join('');$$('button',bar).forEach(b=>b.onclick=()=>select(area,b.dataset.sub))}renderPurpose(area,state.sub);requestAnimationFrame(()=>apply(area,state.sub))}
 
-/* Audit subnav integrity: five canonical operations must remain visible.
+/* Audit subnav integrity: four canonical operations must remain visible.
    Legacy modules sometimes leave a single "① Audit 실시" button in the shared bar.
    Repair navigation only; never mutate Audit or dashboard source data. */
 // Audit buttons are stable across refreshes: avoid a mutation-triggered rebuild.
@@ -852,7 +852,7 @@ function reconcileAuditSubnav(){
  bar.style.removeProperty('grid-template-columns');
  bar.style.removeProperty('grid-auto-flow');
  bar.style.removeProperty('visibility');
- bar.classList.add('hd20AuditFiveSubnav');
+ bar.classList.remove('hd20AuditFiveSubnav');bar.classList.add('hd20AuditFourSubnav');
  bar.querySelectorAll(':scope > button[data-sub]').forEach(button=>{
    button.hidden=false;button.removeAttribute('aria-hidden');
    button.style.setProperty('display','flex','important');
