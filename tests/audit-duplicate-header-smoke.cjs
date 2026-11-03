@@ -62,6 +62,29 @@ fs.mkdirSync('artifacts',{recursive:true});
   });
   assert.ok(executionCards.every(x=>x.execution),
     'first Audit subtab must not show unrelated legacy cards: '+JSON.stringify(executionCards));
+  // Exact Audit ID selection must carry into the result form even when two
+  // batches contain the same production team.
+  const selection=await page.evaluate(()=>{
+    const source='hd20AuditRandomDrawsV1',old=JSON.parse(localStorage.getItem(source)||'[]');
+    const first={id:'E2E-AUDIT-SELECT-OLD',team:'검증팀',date:'2026-10-10'};
+    const latest={id:'E2E-AUDIT-SELECT-NEW',team:'검증팀',date:'2026-11-03'};
+    localStorage.setItem(source,JSON.stringify([latest,first,...old]));
+    window.HD20AuditClosedLoop.render();
+    window.dispatchEvent(new CustomEvent('hd20-audit-target-selected',{detail:{id:first.id,team:first.team}}));
+    return {first:first.id,latest:latest.id};
+  });
+  await page.waitForFunction(id=>document.querySelector('#awAudit .auditClosedLoop')?.dataset.selectedAuditId===id,selection.first);
+  const linkedSelection=await page.evaluate(()=>({
+    id:document.querySelector('#awAudit .auditClosedLoop')?.dataset.selectedAuditId,
+    team:document.querySelector('#awAudit .auditClosedLoop [data-cl-team]')?.value
+  }));
+  assert.deepEqual(linkedSelection,{id:selection.first,team:'검증팀'},'selected Audit ID is preserved across same-team batches');
+  await page.evaluate(()=>{
+    const key='hd20AuditRandomDrawsV1';
+    localStorage.setItem(key,JSON.stringify(JSON.parse(localStorage.getItem(key)||'[]').filter(x=>!['E2E-AUDIT-SELECT-OLD','E2E-AUDIT-SELECT-NEW'].includes(x.id))));
+    document.querySelector('#awAudit .auditClosedLoop')?.removeAttribute('data-selected-audit-id');
+    window.HD20AuditClosedLoop.render();
+  });
   await page.screenshot({path:'artifacts/audit-compact.png',fullPage:false});
   // Each subtab must exclusively show its own operational cards, never the other two.
   const assertAuditSubtab=async(sub)=>{
