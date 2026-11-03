@@ -29,7 +29,7 @@ jobs:
           grep -q 'audit-as-is-to-be-manager.js?v=20261103-improvement-tobe-v6' index.html
           grep -q 'hd20-subtabs.js?v=20261103-activity-stability-v57' index.html
           grep -q 'beginner-navigation.js?v=20261103-improvement-menu-v22' index.html
-          grep -q 'action-register-modal.js?v=20261103-evidence-height-v42' index.html
+          grep -q 'action-register-modal.js?v=20261103-request-lookup-return-v43' index.html
           # Ensure approved 4 improvement + 3 Audit menu contract is bundled.
           grep -Fq "['overview','① 통합조회']" hd20-subtabs.js
           grep -Fq "['tobe','④ 개선조치등록·관리']" hd20-subtabs.js
@@ -44,6 +44,7 @@ jobs:
           grep -Fq 'hd20LnThreeTabs{display:none!important}' landing-launcher.js
           grep -Fq 'landing-launcher.js?v=20261103-popup-retry-v17' index.html
           grep -Fq 'activity-register-modal.js?v=20261103-lookup-return-v3' index.html
+          node --check action-register-modal.js
           node --check activity-register-modal.js
           grep -Fq 'master-workspace-v2.js?v=20261103-master-open-fix-v10' index.html
           grep -Fq 'master-workspace-v2.css?v=20261103-master-layout-fix-v15' index.html
