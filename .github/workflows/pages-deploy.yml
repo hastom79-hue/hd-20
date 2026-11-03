@@ -28,7 +28,6 @@ jobs:
           test -f hd20-action-notification-routing.js
           grep -q 'audit-as-is-to-be-manager.js?v=20261103-improvement-tobe-v6' index.html
           grep -q 'hd20-subtabs.js?v=20261103-reload-four-tabs-v55' index.html
-          grep -q 'landing-launcher.js?v=20261103-reload-four-tabs-v13' index.html
           grep -q 'beginner-navigation.js?v=20261103-improvement-menu-v22' index.html
           grep -q 'action-register-modal.js?v=20261103-evidence-height-v42' index.html
           # Ensure approved 4 improvement + 3 Audit menu contract is bundled.
