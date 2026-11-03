@@ -28,5 +28,5 @@ jobs:
           python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/hd20-monthly-visibility.log 2>&1 &
           for i in {1..30}; do curl -fsS http://127.0.0.1:4173/index.html >/dev/null && exit 0; sleep 1; done
           cat /tmp/hd20-monthly-visibility.log; exit 1
-      - name: Verify responsive grouped chart labels and readability
+      - name: Verify monthly data dates, chart colors and approved card layout
         run: node tests/dashboard-monthly-visibility-smoke.cjs
