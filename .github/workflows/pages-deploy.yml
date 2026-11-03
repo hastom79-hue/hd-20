@@ -52,11 +52,12 @@ jobs:
           node --check hd20-subtabs.js
           grep -Fq 'hd20LnThreeTabs{display:none!important}' landing-launcher.js
           grep -Fq 'landing-launcher.js?v=20261103-remove-legacy-tabs-v21' index.html
-          grep -Fq 'activity-register-modal.js?v=20261103-self-modal-body-v5' index.html
+          grep -Fq 'activity-register-modal.js?v=20261103-body-modal-save-handler-v6' index.html
           node --check action-register-modal.js
           grep -Fq 'document.body.appendChild(overlay)' activity-register-modal.js
           grep -Fq 'html body>#awRegisterModal.on' hd20-subtabs.css
           grep -Fq '자율개선 등록 모달의 상위 화면 숨김 영향 제거' DEVELOPMENT_LOG.md
+          node --check activity-workflow.js
           node --check activity-register-modal.js
           grep -Fq 'master-workspace-v2.js?v=20261103-master-open-fix-v10' index.html
           grep -Fq 'master-workspace-v2.css?v=20261103-master-layout-fix-v15' index.html
