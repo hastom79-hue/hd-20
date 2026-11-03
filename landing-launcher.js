@@ -218,24 +218,30 @@ function open(){
   el.addEventListener('click',e=>{if(e.target===el)openOverview()});
   document.addEventListener('keydown',function esc(e){if(e.key!=='Escape')return;if(!document.getElementById('hd20Launcher')){document.removeEventListener('keydown',esc);return}document.removeEventListener('keydown',esc);openOverview()});
 }
-window.HD20_LAUNCHER={openOverview,openRegister:open,renderOverview};
+window.HD20_LAUNCHER={openOverview,hideOverview,openRegister:open,renderOverview};
 function boot(){
-  // 상위 '자율개선등록 / 개선조치등록' 메뉴 클릭은 기존 업무관리 패널이 아니라 통합조회로 진입.
-  // 등록 팝업 내부 버튼 및 HD20_NAV.go('activity') 내부 호출에는 개입하지 않는다.
+  // Navigation subtab owns overview visibility; never override self/request/TO-BE.
+  const syncImprovementSubview=()=>{
+    const active=window.HD20_NAV?.active?.();
+    const sub=document.getElementById('awActivity')?.dataset.subview||'overview';
+    if(active!=='activity'||sub!=='overview'){hideOverview();return}
+    if(document.getElementById('hd20Launcher'))return;
+    if(!document.body.classList.contains('hd20InquiryActive')){
+      try{openOverview()}catch(err){console.error('[HD20 inquiry]',err);hideOverview()}
+    }
+  };
   document.addEventListener('click',e=>{
-    const tab=e.target?.closest?.('.beginnerNav button[data-key="activity"]');
-    if(!tab)return;
-    setTimeout(()=>{if(!internalRegistrationNavigation&&window.HD20_NAV?.active?.()==='activity'&&!document.getElementById('hd20Launcher')){try{openOverview()}catch(err){console.error('[HD20 inquiry]',err);hideOverview()}}},0);
+    if(!e.target?.closest?.('.beginnerNav button[data-key="activity"]'))return;
+    setTimeout(syncImprovementSubview,30);
   },true);
   window.addEventListener('hd20-nav-area-changed',e=>{
     if(e.detail?.area!=='activity'){hideOverview();return}
-    if(internalRegistrationNavigation||document.getElementById('hd20Launcher'))return;
-    setTimeout(()=>{
-      if(internalRegistrationNavigation||document.getElementById('hd20Launcher'))return;
-      if(window.HD20_NAV?.active?.()==='activity'&&!document.body.classList.contains('hd20InquiryActive')){
-        try{openOverview()}catch(err){console.error('[HD20 inquiry]',err);hideOverview()}
-      }
-    },30);
+    setTimeout(syncImprovementSubview,40);
+  });
+  window.addEventListener('hd20-subtab-changed',e=>{
+    if(e.detail?.area!=='activity')return;
+    if(e.detail.sub==='overview')setTimeout(syncImprovementSubview,0);
+    else hideOverview();
   });
   ['hd20-kpi-source-updated','hd20-action-updated','hd20-activity-updated'].forEach(e=>window.addEventListener(e,()=>{if(document.body.classList.contains('hd20InquiryActive'))renderOverview()}));
   window.addEventListener('storage',()=>{if(document.body.classList.contains('hd20InquiryActive'))renderOverview()});
