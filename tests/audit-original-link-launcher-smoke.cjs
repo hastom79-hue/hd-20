@@ -28,6 +28,24 @@ const {chromium}=require('playwright');
   await page.reload({waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>window.HD20_NAV?.ready?.()&&window.HD20_AUTH_BYPASS===true,null,{timeout:25000});
   await page.waitForSelector('#hd20Launcher',{timeout:15000,state:'visible'});
+  // Initial navigation restores (including deep links) must not dismiss the
+  // launcher before a user explicitly chooses a registration route or closes it.
+  await page.evaluate(()=>{
+    window.dispatchEvent(new CustomEvent('hd20-nav-area-changed',
+      {detail:{area:'audit'}}));
+    window.dispatchEvent(new CustomEvent('hd20-nav-area-changed',
+      {detail:{area:'activity'}}));
+  });
+  assert.equal(await page.locator('#hd20Launcher').isVisible(),true,
+    'programmatic navigation during startup must not close the launcher');
+  // Re-enter on a deep-linked Audit workspace and check the same guarantee.
+  await page.goto('http://127.0.0.1:4173/index.html?area=audit&sub=checklist',
+    {waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>window.HD20_NAV?.ready?.()&&window.HD20_AUTH_BYPASS===true,
+    null,{timeout:25000});
+  await page.waitForSelector('#hd20Launcher',{state:'visible',timeout:15000});
+  assert.equal(await page.locator('#hd20Launcher').isVisible(),true,
+    'Audit deep link still opens registration launcher first');
   console.log('PASS: registration launcher reopens after refresh');
   await page.evaluate(()=>{document.querySelector('[data-ln="skip"]')?.click();document.getElementById('hd20Launcher')?.remove();window.HD20_NAV.go('audit')});
   await page.waitForFunction(()=>window.HD20_NAV?.active?.()==='audit'&&!!window.HD20_SUBNAV?.select,null,{timeout:15000});
