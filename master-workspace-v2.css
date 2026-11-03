@@ -247,3 +247,9 @@ html body #masterModal #hd20MasterWorkspace>.hmAudit>.hmAuditTop{padding:10px 14
 html body #masterModal #hd20MasterWorkspace>.hmAudit>.hmAuditDetails{padding:0 14px 13px;border:0}
 html body #masterModal #hd20MasterWorkspace>.hmAudit>.hmAuditDetails .hmAuditRows{margin-top:5px!important}
 @media(max-width:650px){html body #masterModal #hd20MasterWorkspace>.hmAudit>.hmAuditSummary small{flex-basis:100%}}
+
+/* Keep optional linkage check on its own full-width row in the sticky workspace grid. */
+html body #masterModal .masterInfoBox.hd20MasterWorkspaceReady>#hd20MasterWorkspace>.hmAudit{
+  grid-column:1/-1!important;grid-row:auto!important;width:100%!important;
+  min-width:0!important;box-sizing:border-box!important
+}
