@@ -862,13 +862,13 @@ function reconcileAuditSubnav(){
 }
 function installAuditSubnavGuard(){
  let pending=false;
- const schedule=()=>{if(pending)return;pending=true;setTimeout(()=>{pending=false;reconcileAuditSubnav()},0)};
+ const schedule=()=>{if(pending)return;pending=true;queueMicrotask(()=>{pending=false;reconcileAuditSubnav()})};
  window.addEventListener('hd20-nav-area-changed',schedule);
  window.addEventListener('hd20-subtab-changed',e=>{if(e.detail?.area==='audit')schedule()});
- document.addEventListener('click',e=>{if(e.target.closest?.('.beginnerNav button[data-key="audit"]'))setTimeout(schedule,100)},true);
+ document.addEventListener('click',e=>{if(e.target.closest?.('.beginnerNav button[data-key="audit"]')){const bar=document.getElementById('hd20Subnav');if(bar)syncAuditButtons(bar,'draw');queueMicrotask(schedule)}},true);
  const observer=new MutationObserver(records=>{
    if(window.HD20_NAV?.active?.()!=='audit')return;
-   if(records.some(r=>r.type==='childList'&&(r.target?.id==='hd20Subnav'||r.addedNodes?.length||r.removedNodes?.length)))schedule();
+   if(records.some(r=>r.type==='childList'||r.type==='characterData'||r.type==='attributes'))schedule();
  });
  // Watch only navigation removal/replacement at the app root; other cards may update freely.
  const app=document.querySelector('.app');
@@ -878,7 +878,7 @@ function installAuditSubnavGuard(){
  }).observe(app,{childList:true});
  const attach=()=>{
    const nav=document.getElementById('hd20Subnav');
-   if(nav)observer.observe(nav,{childList:true,subtree:false});
+   if(nav)observer.observe(nav,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['data-sub']});
  };
  attach();
  window.addEventListener('hd20-nav-area-changed',()=>{attach();setTimeout(schedule,200)});
