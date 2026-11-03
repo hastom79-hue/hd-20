@@ -5,7 +5,9 @@ function unmerge(){
  document.querySelectorAll('#awAudit [data-merged-audit-tabs],#awTheme [data-merged-audit-tabs]').forEach(el=>el.remove());
  const old=document.getElementById('hd20MergedAuditSingleNavStyle');if(old)old.remove();
  const nav=document.getElementById('hd20Subnav');
- if(nav){nav.removeAttribute('aria-hidden');if(window.HD20_NAV?.active?.()==='audit')nav.style.setProperty('display','flex','important');else nav.style.removeProperty('display')}
+ // Visibility and layout are exclusively owned by HD20_SUBNAV; do not
+ // force flex on every Audit subtab update while the canonical controller uses grid.
+ if(nav&&window.HD20_NAV?.active?.()!=='audit')nav.style.removeProperty('display');
 }
 window.addEventListener('hd20-nav-area-changed',unmerge);
 window.addEventListener('hd20-subtab-changed',unmerge);
