@@ -63,6 +63,9 @@ function renderAuditMonitor(){
  if(anchor&&anchor.parentElement===root){
    if(anchor.nextElementSibling!==box)anchor.insertAdjacentElement('afterend',box);
  }else if(box.parentElement!==root||root.firstElementChild!==box){root.prepend(box)}
+ // This renderer also runs after async action/storage events. Do not reveal its
+ // card in tab ①, ③, ④ or ⑤ simply because it was re-created after subnav apply.
+ box.classList.toggle('hd20SubHidden',root.dataset.subview!=='action');
  const last={
    team:box.querySelector('[data-had-filter-team]')?.value||'',
    workplace:box.querySelector('[data-had-filter-workplace]')?.value||'',
