@@ -293,7 +293,7 @@ function ensureOverview(deferRender=false){
  el.addEventListener('click',e=>{if(e.target.closest('[data-ln-route]'))return});
  if(!deferRender)renderOverview();
 }
-function openOverview(){if(window.HD20_NAV?.active?.()==='activity'&&document.getElementById('awActivity')?.dataset.subview!=='overview')return;if(overviewOpening)return;overviewOpening=true;try{close();if(window.HD20_NAV?.active?.()!=='activity')window.HD20_NAV?.go?.('activity');try{const u=new URL(location.href);if(u.searchParams.get('sub')==='unified'){u.searchParams.delete('sub');history.replaceState(null,'',u)}}catch{}ensureOverview(true);document.body.classList.remove('hd20UnifiedLanding');window.HD20_SUBNAV?.reconcileImprovement?.();const grid=document.getElementById('hd20LauncherOverview');grid?.classList.add('hd20LnVisible');document.body.classList.add('hd20InquiryActive');window.HD20_SUBNAV?.reconcileImprovement?.();renderOverview();if(grid){grid.style.removeProperty('display');grid.style.removeProperty('visibility');document.querySelector('.app')?.classList.remove('awFocused');document.getElementById('awActivity')?.classList.remove('on');document.getElementById('awAction')?.classList.remove('on');grid.scrollTop=0;window.scrollTo(0,0)}}finally{overviewOpening=false}}
+function openOverview(){const currentSub=document.getElementById('awActivity')?.dataset.subview;if(window.HD20_NAV?.active?.()==='activity'&&['self','request','tobe'].includes(currentSub))return;if(overviewOpening)return;overviewOpening=true;try{close();if(window.HD20_NAV?.active?.()!=='activity')window.HD20_NAV?.go?.('activity');try{const u=new URL(location.href);if(u.searchParams.get('sub')==='unified'){u.searchParams.delete('sub');history.replaceState(null,'',u)}}catch{}ensureOverview(true);document.body.classList.remove('hd20UnifiedLanding');window.HD20_SUBNAV?.reconcileImprovement?.();const grid=document.getElementById('hd20LauncherOverview');grid?.classList.add('hd20LnVisible');document.body.classList.add('hd20InquiryActive');window.HD20_SUBNAV?.reconcileImprovement?.();renderOverview();if(grid){grid.style.removeProperty('display');grid.style.removeProperty('visibility');document.querySelector('.app')?.classList.remove('awFocused');document.getElementById('awActivity')?.classList.remove('on');document.getElementById('awAction')?.classList.remove('on');grid.scrollTop=0;window.scrollTo(0,0)}}finally{overviewOpening=false}}
 function open(){
   if(document.getElementById('hd20Launcher'))return;
   /* defer 전환 이후 발견된 심각한 회귀(대시보드 포함 여러 탭이 완전히 빈 화면으로 보임)의 근본
@@ -353,8 +353,22 @@ function boot(){
     if(e.detail.sub==='overview')setTimeout(syncImprovementSubview,0);
     else{hideOverview();document.querySelector('.app')?.classList.add('awFocused');document.getElementById('awActivity')?.classList.add('on')}
   });
-  ['hd20-kpi-source-updated','hd20-action-updated','hd20-activity-updated'].forEach(e=>window.addEventListener(e,()=>{if(document.body.classList.contains('hd20InquiryActive'))renderOverview();const sub=document.getElementById('awActivity')?.dataset.subview;if(window.HD20_NAV?.active?.()==='activity'&&(sub==='self'||sub==='request'))renderOverview(sub)}));
-  window.addEventListener('storage',()=>{if(document.body.classList.contains('hd20InquiryActive'))renderOverview();const sub=document.getElementById('awActivity')?.dataset.subview;if(window.HD20_NAV?.active?.()==='activity'&&(sub==='self'||sub==='request'))renderOverview(sub)});
+  // Do not destroy a focused input while the operator is entering compound filters.
+  // The next explicit search or tab revisit renders up-to-date data.
+  const refreshLookup=(mode)=>{
+    const target=document.getElementById(mode==='overview'?'hd20LauncherOverview':'hd20ActivityLookupPanel');
+    const focused=document.activeElement;
+    if(target?.contains(focused)&&focused?.matches?.('input,select,textarea'))return;
+    renderOverview(mode);
+  };
+  const refreshVisibleLookup=()=>{
+    if(window.HD20_NAV?.active?.()!=='activity')return;
+    const sub=document.getElementById('awActivity')?.dataset.subview;
+    if(sub==='overview'&&document.body.classList.contains('hd20InquiryActive'))refreshLookup('overview');
+    else if(sub==='self'||sub==='request')refreshLookup(sub);
+  };
+  ['hd20-kpi-source-updated','hd20-action-updated','hd20-activity-updated'].forEach(e=>window.addEventListener(e,refreshVisibleLookup));
+  window.addEventListener('storage',refreshVisibleLookup);
 
   // Reload / revisit: always show the registration-choice popup after the company mail gate.
   // The page can restore any deep-linked area; do not suppress the popup for that reason.
