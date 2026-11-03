@@ -26,7 +26,8 @@ jobs:
           test -f hd20-subtabs.js
           test -f audit-as-is-to-be-manager.js
           test -f hd20-action-notification-routing.js
-          grep -q '20261103-as-is-leadtime-v3' index.html
+          grep -q 'audit-as-is-to-be-manager.js?v=20261103-two-pane-v4' index.html
+          grep -q 'action-register-modal.js?v=20261103-compact-photo-v40' index.html
           node --check audit-as-is-to-be-manager.js
           node --check hd20-subtabs.js
           node --check hd20-action-notification-routing.js
