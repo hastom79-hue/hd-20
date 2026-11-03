@@ -22,7 +22,8 @@ function patch(){const box=document.querySelector('.auditClosedLoop');if(!box||!
  sel.onchange=()=>{current=pending().find(d=>txt(d.id||d.drawId||d.auditDrawId)===sel.value)||null;fill(box,current)};
  // Submission belongs exclusively to audit-closed-loop-workflow.js, which
  // validates evidence photos, saves the original Audit and opens the linked
- // corrective-action popup. Never overwrite its save button handler.;return true}
+ // corrective-action popup. Never overwrite its save button handler.
+ return true}
 function boot(){css();let n=0;const run=()=>{if(patch())return;if(++n<50)setTimeout(run,150)};run();['hd20-audit-draw','hd20-audit-updated','hd20-policy-updated','hd20-action-updated','hd20-subtab-changed'].forEach(e=>window.addEventListener(e,()=>setTimeout(patch,0)))}
 window.HD20AuditBatchExecution={pending,progress,patch,nonProd};document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot,{once:true}):boot();
 })();
