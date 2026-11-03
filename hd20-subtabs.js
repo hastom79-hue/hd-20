@@ -686,7 +686,15 @@ function applyAudit(sub){
  const checklistPanel=root.querySelector('.acWrap');
  // A checklist can be nested inside .awGrid. Keep its parent visible in the
  // dedicated checklist tab; otherwise the child is hidden despite show(card,true).
- show(auditGrid,sub==='draw'||!!(auditGrid&&((sub==='checklist'&&checklistPanel&&auditGrid.contains(checklistPanel))||(sub==='ongoing'&&sampling&&auditGrid.contains(sampling))||(sub==='retention'&&closeEval&&auditGrid.contains(closeEval))||(sub==='action'&&auditGrid.contains(root.querySelector('#hd20AuditActionMonitor'))))));
+ // A legacy grid is visible only if it actually encloses an active
+ // work panel. The old unconditional draw branch left empty grid spacing
+ // above the Audit execution workspace after cards were separated.
+ const activeGridPanels=sub==='draw'?[draw,batch,closed]:
+  sub==='action'?[root.querySelector('#hd20AuditActionMonitor')]:
+  sub==='ongoing'?[sampling]:
+  sub==='retention'?[closeEval,trace]:
+  sub==='checklist'?[checklistPanel]:[];
+ show(auditGrid,!!(auditGrid&&activeGridPanels.some(panel=>panel&&auditGrid.contains(panel))));
  // 모든 일반 카드는 Audit 실시에만 둔다. 유지점검은 랜덤 유지검증,
  // 결과·재조치는 종료판정 전용 카드만 노출한다. 내부 데이터는 삭제하지 않는다.
  root.querySelectorAll('.awCard').forEach(card=>{
