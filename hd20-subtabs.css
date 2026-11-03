@@ -239,3 +239,39 @@ html body #awAudit:not([data-subview="checklist"])>.acWrap{
  html body #awAudit .awHero.hd20AuditCompactHeader{padding:10px 12px!important}
  html body #awAudit[data-subview="draw"]>.auditDraw>.awBody{padding:11px 12px!important}
 }
+
+/* 2026-11-03 improvement lookup and registration modal stability.
+   Scope strictly to activity listings and their existing registration dialogs. */
+html body .app[data-hd-view="activity.self"] #hd20ActivityLookupPanel,
+html body .app[data-hd-view="activity.request"] #hd20ActivityLookupPanel{
+ display:block!important;visibility:visible!important;min-width:0;max-width:100%;
+}
+html body #awActivity[data-subview="overview"]>#hd20ActivityLookupPanel,
+html body #awActivity[data-subview="tobe"]>#hd20ActivityLookupPanel{
+ display:none!important;
+}
+html body #awActivity #awRegisterModal.on{
+ position:fixed!important;inset:0!important;display:flex!important;
+ visibility:visible!important;z-index:99990!important;
+}
+html body>#hd20ActionRegisterModal.on{
+ position:fixed!important;inset:0!important;display:grid!important;
+ visibility:visible!important;z-index:99990!important;
+}
+html body #hd20ActivityLookupPanel .hd20LnDataTable{
+ width:100%;border-collapse:collapse;
+}
+html body #hd20ActivityLookupPanel .hd20LnTableScroll{
+ width:100%;overflow-x:auto;
+}
+html body #hd20ActivityLookupPanel .hd20LnTopRegister{
+ flex-shrink:0;white-space:nowrap;
+}
+@media(max-width:640px){
+ html body #hd20ActivityLookupPanel .hd20LnLookupHeader{
+  display:flex;flex-direction:column;align-items:stretch;
+ }
+ html body #hd20ActivityLookupPanel .hd20LnTopRegister{
+  align-self:flex-end;
+ }
+}
