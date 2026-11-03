@@ -149,7 +149,7 @@ function dashboardMapClose(){hide()}
 function maturityDashboardCss(){
   if(document.getElementById('hd20MaturityDashboardModeStyle'))return;
   const st=document.createElement('style');st.id='hd20MaturityDashboardModeStyle';
-  st.textContent='body.hd20MaturityDashboardMode #hd20MaturityMapTab{display:block!important;visibility:visible!important;position:relative!important;z-index:2!important;width:100%!important;min-height:360px!important}body.hd20MaturityDashboardMode #hd20DashboardSectionTabs~*:not(#hd20MaturityMapTab){display:none!important}body.hd20MaturityDashboardMode #hd20DashboardSectionTabs [data-dashboard-section="map"]{background:#2875ed!important;color:#fff!important}';
+  st.textContent='body.hd20MaturityDashboardMode #hd20MaturityMapTab{display:block!important;visibility:visible!important;position:relative!important;z-index:2!important;width:100%!important;min-height:360px!important}body.hd20MaturityDashboardMode #hd20DashboardSectionTabs~*:not(#hd20MaturityMapTab){display:none!important}body.hd20MaturityDashboardMode .app :is(.cards,.mainGrid,.bottomGrid,#hd20DashboardPriority,#hd20OperationalBridge,#hd20ImproveBoard,#hd20RequestBoard,#hd20OpsTrend,#hd20SummaryExecutionMetrics,#hd20V3Execution,#hd20FieldShowcaseBootstrap){display:none!important}body.hd20MaturityDashboardMode #hd20DashboardSectionTabs [data-dashboard-section="map"]{background:#2875ed!important;color:#fff!important}';
   document.head.appendChild(st);
 }
 window.HD20_MATURITY_DASHBOARD={open:dashboardMapOpen,close:dashboardMapClose};
