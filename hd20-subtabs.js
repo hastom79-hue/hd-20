@@ -762,7 +762,7 @@ function installAdvJudgeTools(){
  tools.querySelectorAll('button').forEach(b=>{b.style.cssText='padding:8px 12px;border-radius:7px;border:1px solid #cbd8e3;background:#fff;color:#24445c;cursor:pointer;font-weight:700';b.onclick=()=>openAdvDetailTool(b.dataset.advTool)});
  host.appendChild(tools);
 }
-function select(area,sub){if(window.HD20_NAV?.active?.()!==area)return;/* 서브탭 체계가 없는 영역(통합기준정보 등)에 URL 딥링크의 낡은 sub(예: ?area=master&sub=judge)가 들어와도 무시 — 그렇지 않으면 data-hd-view가 'master.judge'로 덮이고 URL에 sub가 다시 써져 화면 격리가 깨졌음. */if(!MAP[area])return;document.getElementById('hd20AdvBack')?.remove();if(area==='advancement'&&(sub==='map'||sub==='trend'||sub==='judge'))sub='standard';if(area==='audit'&&sub==='inspect')sub='draw';state={area,sub};if(area==='advancement'&&sub==='process')ensureAdvProcess();document.querySelectorAll('#hd20Subnav button').forEach(b=>b.classList.toggle('on',b.dataset.sub===sub));apply(area,sub);renderPurpose(area,sub);if(area!=='audit'&&area!=='advancement')requestAnimationFrame(()=>apply(area,sub));
+function select(area,sub){if(window.HD20_NAV?.active?.()!==area)return;/* 서브탭 체계가 없는 영역(통합기준정보 등)에 URL 딥링크의 낡은 sub(예: ?area=master&sub=judge)가 들어와도 무시 — 그렇지 않으면 data-hd-view가 'master.judge'로 덮이고 URL에 sub가 다시 써져 화면 격리가 깨졌음. */if(!MAP[area])return;document.getElementById('hd20AdvBack')?.remove();if(area==='advancement'&&(sub==='map'||sub==='trend'||sub==='judge'))sub='standard';if(area==='audit'&&sub==='inspect')sub='draw';if(area==='audit'&&state.area==='audit'&&state.sub===sub&&$('#awAudit')?.dataset.subview===sub)return;state={area,sub};if(area==='advancement'&&sub==='process')ensureAdvProcess();document.querySelectorAll('#hd20Subnav button').forEach(b=>b.classList.toggle('on',b.dataset.sub===sub));apply(area,sub);renderPurpose(area,sub);if(area!=='audit'&&area!=='advancement')requestAnimationFrame(()=>apply(area,sub));
   try{const u=new URL(location.href);if(u.searchParams.get('area')===area)u.searchParams.set('sub',sub);history.replaceState(null,'',u)}catch{}}
 function syncArea(area){
   if(window.HD20_NAV?.active?.()!==area)return;
@@ -791,8 +791,8 @@ function syncArea(area){
   if(window.__HD20_RESTORE_SUB&&MAP[area]?.some(([k])=>k===window.__HD20_RESTORE_SUB)){
     const restoreSub=window.__HD20_RESTORE_SUB;window.__HD20_RESTORE_SUB=null;
     state.sub=restoreSub;state.area=area;const bar=ensure(),items=MAP[area]||[];
-    bar.innerHTML=items.map(([k,n])=>`<button type="button" data-sub="${k}" class="${k===restoreSub?'on':''}">${n}</button>`).join('');
-    $$('button',bar).forEach(b=>b.onclick=()=>select(area,b.dataset.sub));
+    if(area==='audit')syncAuditButtons(bar,restoreSub);
+    else{bar.innerHTML=items.map(([k,n])=>`<button type="button" data-sub="${k}" class="${k===restoreSub?'on':''}">${n}</button>`).join('');$('button',bar).forEach(b=>b.onclick=()=>select(area,b.dataset.sub))}
     ensure().style.removeProperty('display');ensurePurpose().style.removeProperty('display');
     renderPurpose(area,restoreSub);requestAnimationFrame(()=>apply(area,restoreSub));return;
   }
@@ -844,13 +844,8 @@ function reconcileAuditSubnav(){
    const selectedKey=bar.querySelector('button.on[data-sub]')?.dataset.sub;
    const sub=items.some(([key])=>key===selectedKey)?selectedKey:current;
    state.area='audit';state.sub=sub;
-   bar.replaceChildren(...items.map(([key,label])=>{
-     const button=document.createElement('button');button.type='button';button.dataset.sub=key;
-     button.textContent=label;button.classList.toggle('on',key===sub);
-     button.addEventListener('click',()=>select('audit',key));
-     return button;
-   }));
-   apply('audit',sub);
+   syncAuditButtons(bar,sub);
+   if($('#awAudit')?.dataset.subview!==sub)apply('audit',sub);
  }
  bar.removeAttribute('hidden');bar.removeAttribute('aria-hidden');
  bar.style.setProperty('display','grid','important');
