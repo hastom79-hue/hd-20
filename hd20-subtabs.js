@@ -683,7 +683,13 @@ function syncArea(area){
     [ensure(),ensurePurpose(),$('#hd20OpsMetrics')].forEach(el=>el&&el.style.setProperty('display','none','important'));return
   }
   [ensure(),ensurePurpose(),$('#hd20OpsMetrics')].forEach(el=>el&&el.style.removeProperty('display'));
-  state.sub=(MAP[area]||[])[0]?.[0]||'';state.area=area;const bar=ensure(),items=MAP[area]||[];bar.innerHTML=items.map(([k,n])=>`<button type="button" data-sub="${k}" class="${k===state.sub?'on':''}">${n}</button>`).join('');$$('button',bar).forEach(b=>b.onclick=()=>select(area,b.dataset.sub));renderPurpose(area,state.sub);requestAnimationFrame(()=>apply(area,state.sub))}
+  const candidates=MAP[area]||[];
+  // Preserve the requested Audit subtab on reload and return navigation.
+  // Other areas retain their existing default behavior.
+  const urlParams=new URLSearchParams(location.search);
+  const urlAuditSub=area==='audit'&&urlParams.get('area')==='audit'?urlParams.get('sub'):'';
+  const preferredAudit=area==='audit'?(candidates.some(([key])=>key===urlAuditSub)?urlAuditSub:(state.area==='audit'&&candidates.some(([key])=>key===state.sub)?state.sub:'draw')):'';
+  state.sub=area==='audit'?preferredAudit:candidates[0]?.[0]||'';state.area=area;const bar=ensure(),items=MAP[area]||[];bar.innerHTML=items.map(([k,n])=>`<button type="button" data-sub="${k}" class="${k===state.sub?'on':''}">${n}</button>`).join('');$$('button',bar).forEach(b=>b.onclick=()=>select(area,b.dataset.sub));renderPurpose(area,state.sub);requestAnimationFrame(()=>apply(area,state.sub))}
 
 /* Audit subnav integrity: five canonical operations must remain visible.
    Legacy modules sometimes leave a single "① Audit 실시" button in the shared bar.
