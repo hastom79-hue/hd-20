@@ -594,6 +594,24 @@ function renderRetentionSampling(root){
  if(!host.dataset.rsActionSync){host.dataset.rsActionSync='1';window.addEventListener('hd20-action-updated',()=>{if(host.isConnected)render()})}
  if(!document.getElementById('hd20RetentionSamplingStyle')){const st=document.createElement('style');st.id='hd20RetentionSamplingStyle';st.textContent='#hd20RetentionSampling{margin:12px 0 20px}#hd20RetentionSampling .hd20RsToolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:12px 0}#hd20RetentionSampling .hd20RsToolbar input{width:66px;padding:8px}#hd20RetentionSampling button{padding:9px 14px;border:1px solid #bdd0df;background:#eef5fb;border-radius:7px;cursor:pointer;color:#173b55;font-weight:700}#hd20RetentionSampling .hd20RsRow{border:1px solid #dce6ee;border-radius:8px;padding:12px;margin:9px 0;background:white}#hd20RetentionSampling .hd20RsInfo{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px;font-size:13px}#hd20RetentionSampling .hd20RsInfo span,#hd20RetentionSampling .hd20RsInfo small{color:#62788a}#hd20RetentionSampling .hd20RsInput{display:flex;gap:10px;flex-wrap:wrap;align-items:end}#hd20RetentionSampling .hd20RsInput label{display:flex;flex-direction:column;gap:5px;font-size:12px;color:#63788b}#hd20RetentionSampling .hd20RsInput input,#hd20RetentionSampling .hd20RsInput select{padding:9px;border:1px solid #cbdbe5;border-radius:6px;max-width:240px}@media(max-width:700px){#hd20RetentionSampling .hd20RsInput label{width:100%}#hd20RetentionSampling .hd20RsInput input{max-width:100%;width:100%}}#hd20RetentionSampling .hd20RsSource{margin:8px 0 12px;border:1px solid #dce6ee;border-radius:8px;padding:10px}#hd20RetentionSampling .hd20RsSource summary{cursor:pointer;color:#1a5179;font-weight:800}#hd20RetentionSampling .hd20RsEvidence{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:10px}#hd20RetentionSampling .hd20RsEvidence section{padding:10px;background:#f5f9fb;min-width:0}#hd20RetentionSampling .hd20RsEvidence p{white-space:pre-wrap;overflow-wrap:anywhere}#hd20RetentionSampling .hd20RsEvidence img{display:block;width:100%;max-height:220px;object-fit:contain}#hd20RetentionSampling .hd20RsSourceEmpty{color:#a23d36;padding:8px}#hd20RetentionSampling .hd20RsTrace{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:8px 0;padding:9px 11px;background:#f2f8fb;border:1px solid #d9e7ed;border-radius:7px;font-size:12px;color:#385a70}#hd20RetentionSampling .hd20RsTrace.pending{border-color:#eacdaa;background:#fff9ed}#hd20RetentionSampling .hd20RsTrace.complete{border-color:#b5d9c5;background:#f0faf3}#hd20RetentionSampling .hd20RsTrace.missing{border-color:#e8b4af;background:#fff0ee;color:#a23d36}@media(max-width:650px){#hd20RetentionSampling .hd20RsEvidence{grid-template-columns:1fr}}#hd20RetentionSampling .hd20RsModuleConfig{display:flex;gap:10px;align-items:end;flex-wrap:wrap;border:1px solid #e0e9ef;padding:10px;border-radius:8px;background:#f6f9fc;margin-bottom:12px}#hd20RetentionSampling .hd20RsModuleConfig label{flex:1;min-width:240px;font-size:12px;font-weight:700}#hd20RetentionSampling .hd20RsModuleConfig input{display:block;width:100%;box-sizing:border-box;margin-top:6px;padding:9px;border:1px solid #cbdbe5;border-radius:7px}#hd20RetentionSampling .hd20RsCheck{display:inline-flex!important;flex-direction:row!important;gap:7px!important;align-items:center!important;padding:8px 12px;border:1px solid #cbdbe5;border-radius:8px;color:#214d69!important;font-weight:800}#hd20RetentionSampling .hd20RsCheck input{width:19px;height:19px;accent-color:#16844e}#hd20RetentionSampling .hd20RsResult{color:#18653d}';document.head.appendChild(st)}
 }
+// Guard asynchronous renders: a late Audit panel must not appear in an
+// unrelated subtab between successive JavaScript render cycles.
+function ensureAuditSubviewIsolation(){
+ if(document.getElementById('hd20AuditSubviewIsolationStyle'))return;
+ const style=document.createElement('style');style.id='hd20AuditSubviewIsolationStyle';
+ const rules=[
+  ['.auditDraw,.auditClosedLoop,#hd20AuditBatchExecution','draw'],
+  ['#hd20AuditActionMonitor','action'],
+  ['#hd20RetentionSampling','ongoing'],
+  ['#hd20AuditCloseEvaluation,#hd20RetentionActionTrace','retention'],
+  ['.acWrap','checklist']
+ ];
+ style.textContent=rules.map(([selectors,active])=>
+  selectors.split(',').map(selector=>
+   '#awAudit[data-subview]:not([data-subview="'+active+'"]) '+selector+
+   '{display:none!important}').join('')).join('');
+ document.head.appendChild(style);
+}
 function hideDuplicateWorkKpis(root){
  if(!root)return;
  // 집계 카드는 대시보드로 일원화하고 업무 화면은 입력·처리 도구 중심으로 구성.
@@ -625,7 +643,7 @@ function applyAudit(sub){
  const root=$('#awAudit');if(!root)return;
  // Audit / 유지점검 / 종료판정은 동일한 원천 Case를 공유하되 화면 구성은 엄격히 분리한다.
  // 기존 showAll(root)는 다른 서브탭의 .awCard를 다시 노출해 화면 중복을 일으켰다.
- root.dataset.subview=sub;showAll(root);hideDuplicateWorkKpis(root);
+ root.dataset.subview=sub;ensureAuditSubviewIsolation();showAll(root);hideDuplicateWorkKpis(root);
  // Every subtab has one predictable work area; historical panels remain intact.
  const topHero=root.querySelector(':scope > .awHero');
  if(topHero){topHero.classList.toggle('hd20AuditCompactHeader',true);}
