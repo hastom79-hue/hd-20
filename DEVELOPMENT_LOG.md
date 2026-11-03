@@ -2029,3 +2029,10 @@ Canonical Store는 다음을 기준으로 한다.
 - `index.html` 파일 참조를 `action-mail-workflow.js?v=20261103-body-modal-save-v4`로 동기화하고 GitHub Pages 검증 조건에 등록·임시저장 경로 검사 추가.
 - 자율개선 `activity-workflow.js`, `activity-register-modal.js`에 적용한 동일 위치 대응과 함께, ②/③ 등록 성공이 실제 저장과 연결되도록 보완. 원본 사례·권한·대시보드 변경 없음.
 - 배포 워크플로의 구문·문자열 검증 결과와 실제 GitHub Pages 배포 성공 및 팝업 E2E 테스트는 별개로 구분한다.
+
+### 2026-11-03 개선활동관리 추가 안정화 — 등록 팝업 실행 중 조회목록 재렌더 방지
+- 확인: 자율개선·개선요청 등록 팝업을 최상위에 배치하고 저장 경로를 수정한 뒤에도, 원본 데이터 변경 이벤트(`hd20-kpi-source-updated`, `hd20-action-updated`, `hd20-activity-updated`, `storage`)가 조회목록을 갱신할 수 있음.
+- 변경: `landing-launcher.js`의 `refreshVisibleLookup()`에서 `#awRegisterModal.on` 또는 `#hd20ActionRegisterModal.on`이 존재하면 자동 재렌더를 보류함. 편집 중 입력값·포커스·저장 이벤트를 보호하고, 등록 성공·종료 직후 기존 팝업 종료 핸들러가 원래 ②/③ 조회 목록을 갱신하도록 유지.
+- 관련 파일: `landing-launcher.js`, `index.html`, `.github/workflows/pages-deploy.yml`, `DEVELOPMENT_LOG.md`.
+- 보호범위: ① 통합조회, ② 자율개선조회, ③ 개선요청조회, ④ 개선조치등록·관리, 확정 대시보드 및 기존 이력 삭제·수정 없음.
+- 검증: JavaScript 구문 및 HTML 참조/워크플로 정적 검사. 등록·임시저장 실사용 성공과 GitHub Pages 게시 상태는 실제 브라우저 확인 전까지 미검증.
