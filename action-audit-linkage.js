@@ -26,7 +26,7 @@ const txt=v=>String(v??'').trim();
 function audits(){try{const x=JSON.parse(localStorage.getItem(AUDIT_KEY)||'[]');return Array.isArray(x)?x:[]}catch{return[]}}
 function sessionEmail(){try{const x=JSON.parse(localStorage.getItem('hd20_company_session_v1')||'null');return x&&Number(x.expiresAt)>Date.now()?txt(x.email).toLowerCase():''}catch{return''}}
 function teamRecipient(team){try{const a=JSON.parse(localStorage.getItem(TEAM_KEY)||'[]');const x=Array.isArray(a)?a.find(v=>txt(v.team)===txt(team)):null;return /^[^@\s]+@hd\.com$/i.test(txt(x?.email))?txt(x.email):''}catch{return''}}
-function auditActions(){return loadCases().filter(a=>a.sourceStage==='AUDIT-REQUEST'&&txt(a.auditDrawId||a.sourceCaseId)).sort((a,b)=>txt(b.registeredAt||b.date||b.created).localeCompare(txt(a.registeredAt||a.date||a.created)))}
+function auditActions(){return loadCases().filter(a=>a.sourceStage==='AUDIT-REQUEST'&&txt(a.auditDrawId||a.sourceCaseId||a.auditRecordId)).sort((a,b)=>txt(b.registeredAt||b.date||b.created).localeCompare(txt(a.registeredAt||a.date||a.created)))}
 function themeActions(){return loadCases().filter(a=>a.sourceStage==='THEME-AUDIT'||a.source==='테마Audit').sort((a,b)=>txt(b.registeredAt||b.date||b.created).localeCompare(txt(a.registeredAt||a.date||a.created)))}
 function workflowAction(id){return loadCases().find(a=>txt(a.id)===txt(id)&&(a.sourceStage==='AUDIT-REQUEST'||a.sourceStage==='THEME-AUDIT'||a.source==='테마Audit'))}
 function actionDone(a){const x=txt(a.status||a.actionStatus);return /완료|종료|종결/.test(x)&&!/미완료|대기|예정|진행/.test(x)}
