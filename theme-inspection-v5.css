@@ -331,3 +331,10 @@ html body #awTheme #themeAuditBox>.themeSaveResult{
  }
  html body #awTheme #themeAuditBox>.themeSaveResult{margin:0 12px 12px!important}
 }
+
+/* Theme inspection owner switch: two distinct operating streams; no global dashboard changes. */
+#awTheme .themeOwnerSwitch{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:12px 14px;margin:12px 0;border:1px solid #d7e4ed;border-radius:12px;background:#f7fafc}
+#awTheme .themeOwnerSwitch button{border:1px solid #b7cede;border-radius:8px;background:white;color:#34546a;font-size:14px;font-weight:750;padding:10px 16px;cursor:pointer}
+#awTheme .themeOwnerSwitch button.active{color:white;background:#164f79;border-color:#164f79}
+#awTheme .themeOwnerExplanation{font-size:12px;color:#547087;margin-left:6px}
+@media(max-width:650px){#awTheme .themeOwnerSwitch button{flex:1;min-width:130px}#awTheme .themeOwnerExplanation{flex-basis:100%;margin-left:0}}
