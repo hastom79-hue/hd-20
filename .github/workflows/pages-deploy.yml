@@ -26,10 +26,14 @@ jobs:
           test -f hd20-subtabs.js
           test -f audit-as-is-to-be-manager.js
           test -f hd20-action-notification-routing.js
-          grep -q 'audit-as-is-to-be-manager.js?v=20261103-two-pane-v4' index.html
-          grep -q 'action-register-modal.js?v=20261103-compact-photo-v40' index.html
+          grep -q 'audit-as-is-to-be-manager.js?v=20261103-improvement-tobe-v6' index.html
+          grep -q 'hd20-subtabs.js?v=20261103-approved-four-plus-three-v52' index.html
+          grep -q 'beginner-navigation.js?v=20261103-improvement-menu-v22' index.html
+          grep -q 'action-register-modal.js?v=20261103-evidence-height-v42' index.html
           node --check audit-as-is-to-be-manager.js
           node --check hd20-subtabs.js
+          node --check landing-launcher.js
+          node --check beginner-navigation.js
           node --check hd20-action-notification-routing.js
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
