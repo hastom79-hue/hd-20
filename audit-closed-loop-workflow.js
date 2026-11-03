@@ -17,6 +17,7 @@ function syncAction(draw){const needs=draw.auditResult==='부적합'||draw.audit
 function registerAudit(drawId,data){
  const draws=load(DRAW_KEY),previous=JSON.stringify(draws),i=draws.findIndex(d=>d.id===drawId);
  if(i<0)throw new Error('Audit 추출 이력을 찾을 수 없습니다.');
+ if(draws[i].auditDate)throw new Error('이미 실시결과가 등록된 Audit입니다. 원본을 중복 등록할 수 없습니다.');
  const actor=String(data.auditActor||''),result=String(data.auditResult||''),auditor=String(data.auditor||'').trim(),request=String(data.improvementRequest||'').trim(),date=String(data.auditDate||today()).slice(0,10);
  if(!['현장 조직','5S 모듈 조직','현장 팀장','현장 자율점검 담당','5S 모듈 담당','5S 모듈 리더','생산혁신 담당','합동 Audit'].includes(actor))throw new Error('Audit 주체를 선택해야 합니다.');
  if(!['적합','개선요청','부적합'].includes(result))throw new Error('Audit 판정 결과를 선택해야 합니다.');
