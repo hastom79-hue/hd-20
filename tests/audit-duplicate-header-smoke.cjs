@@ -294,6 +294,61 @@ fs.mkdirSync('artifacts',{recursive:true});
     }
   });
   assert.equal(guard,true,'retention collision fixture must be representable');
+  // Verify the latest completed corrective action can be rechecked and
+  // closed, while preserving the history of an earlier failed recheck.
+  const closure=await page.evaluate(()=>{
+    const retentionKey='hd20RetentionRandomChecksV1',actionKey='hd20ActionCasesV2';
+    const originalRetention=localStorage.getItem(retentionKey);
+    const originalActions=localStorage.getItem(actionKey);
+    const oldAuth=window.HD20MasterAuth;
+    const id='AUDIT-SMOKE-FINAL-CLOSURE';
+    try{
+      window.HD20MasterAuth={...oldAuth,canEvaluateRetention:()=>true};
+      const records=JSON.parse(originalRetention||'[]');
+      records.push({id,kind:'개선요청',caseId:'AUDIT-SMOKE-ORIGIN',
+        team:'검증팀',drawDate:'2026-11-03',result:'부적합',
+        evaluator:'original.evaluator@hd.com',
+        actionId:'AUDIT-SMOKE-ACTION-1',
+        followupActionId:'AUDIT-SMOKE-ACTION-2',
+        recheckResult:'부적합',
+        recheckHistory:[{at:'2026-11-01',result:'부적합',
+          comment:'1차 재점검 실패',actionId:'AUDIT-SMOKE-ACTION-1'}]});
+      localStorage.setItem(retentionKey,JSON.stringify(records));
+      const actions=JSON.parse(originalActions||'[]');
+      actions.push({id:'AUDIT-SMOKE-ACTION-1',status:'완료',
+          sourceStage:'RETENTION-RANDOM',sourceCaseId:'RET-AUDIT-'+id},
+        {id:'AUDIT-SMOKE-ACTION-2',status:'완료',
+          sourceStage:'RETENTION-RECHECK',sourceCaseId:id});
+      localStorage.setItem(actionKey,JSON.stringify(actions));
+      window.HD20_SUBNAV.select('audit','ongoing');
+      const card=document.querySelector('#hd20RetentionSampling [data-rs-id="'+id+'"]');
+      if(!card)throw Error('Closure test fixture missing');
+      const recheck=card.querySelector('[data-rs-recheck="적합"]');
+      if(!recheck)throw Error('Completed follow-up recheck not available');
+      card.querySelector('[data-rs-recheck-comment]').value='2차 재점검 적합 확인';
+      recheck.click();
+      const result=JSON.parse(localStorage.getItem(retentionKey)||'[]').find(x=>x.id===id);
+      const current=document.querySelector('#hd20RetentionSampling [data-rs-id="'+id+'"]');
+      return {closed:!!result?.closedAt,
+        finalResult:result?.recheckResult,
+        historyCount:result?.recheckHistory?.length,
+        previousFailure:result?.recheckHistory?.[0]?.result,
+        latestAction:result?.recheckHistory?.[1]?.actionId,
+        notActive:!current?.closest('.hd20RsActive'),
+        noRecheckButton:!current?.querySelector('[data-rs-recheck]')};
+    }finally{
+      if(originalRetention===null)localStorage.removeItem(retentionKey);
+      else localStorage.setItem(retentionKey,originalRetention);
+      if(originalActions===null)localStorage.removeItem(actionKey);
+      else localStorage.setItem(actionKey,originalActions);
+      window.HD20MasterAuth=oldAuth;
+      window.HD20_SUBNAV.select('audit','ongoing');
+    }
+  });
+  assert.deepEqual(closure,{closed:true,finalResult:'적합',historyCount:2,
+    previousFailure:'부적합',latestAction:'AUDIT-SMOKE-ACTION-2',
+    notActive:true,noRecheckButton:true},
+    'latest completed rework closes case and retains failed recheck history');
   // Retention workspace must keep actionable checks above completed cases.
   await page.evaluate(()=>{
     const key='hd20RetentionRandomChecksV1',rows=JSON.parse(localStorage.getItem(key)||'[]');
