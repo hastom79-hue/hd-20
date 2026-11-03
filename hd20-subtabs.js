@@ -452,11 +452,17 @@ function renderRetentionSampling(root){
  host.querySelectorAll('[data-rs-recheck]').forEach(btn=>btn.onclick=()=>{
  if(!canEvaluate()){window.alert('유지 재점검은 마스터 권한자 인증이 필요합니다.');return}
  const box=btn.closest('[data-rs-id]'),id=box?.dataset.rsId,rows=load('hd20RetentionRandomChecksV1'),n=rows.findIndex(x=>x.id===id);
- if(n<0||rows[n].result!=='부적합'||rows[n].recheckResult==='적합')return;
+ if(n<0||rows[n].result!=='부적합'||rows[n].closedAt||(rows[n].recheckResult==='적합'&&rows[n].recheckedAt))return;
  if(btn.disabled||box.dataset.rsSaving==='1')return;box.dataset.rsSaving='1';box.querySelectorAll('[data-rs-recheck]').forEach(b=>b.disabled=true);
  const action=linkedAction(rows[n]);if(!action||!doneStatus(action)){box.dataset.rsSaving='';box.querySelectorAll('[data-rs-recheck]').forEach(b=>b.disabled=false);window.alert('개선조치 완료 후 재점검할 수 있습니다.');return}
  const comment=box.querySelector('[data-rs-recheck-comment]')?.value.trim()||'',result=btn.dataset.rsRecheck;
  if(!comment){box.dataset.rsSaving='';box.querySelectorAll('[data-rs-recheck]').forEach(b=>b.disabled=false);window.alert('재점검 현장 확인 의견을 입력하세요.');return}
+ // The final recheck must close the latest completed corrective action only.
+ // A stale/foreign action reference must never finalize another retention case.
+ if(result==='적합'&&String(action.id)!==String(rows[n].followupActionId||rows[n].actionId||'')){
+  box.dataset.rsSaving='';box.querySelectorAll('[data-rs-recheck]').forEach(b=>b.disabled=false);
+  window.alert('마지막 개선조치 원본번호가 일치하지 않습니다. 종결할 수 없습니다.');return;
+ }
  const at=new Date().toISOString(),actionDay=seoulDay(),record={at,result,comment,actionId:action.id};
  let followupActionId='',createdFollowupId='';
  if(result==='부적합'){
