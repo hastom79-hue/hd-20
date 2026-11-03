@@ -131,6 +131,20 @@ fs.mkdirSync('artifacts',{recursive:true});
   });
   assert.ok(firstWorkspaceOrder.drawFirst&&firstWorkspaceOrder.batchInRegistration&&firstWorkspaceOrder.drawBeforeBatch,
     'Audit first workspace order must be target draw → Batch selector in registration → result form');
+  // Batch selection must never replace the canonical result submission handler:
+  // only the canonical handler verifies mandatory corrective photo evidence.
+  const canonicalSubmit=await page.evaluate(()=>{
+    const save=document.querySelector('#awAudit .auditClosedLoop [data-cl-save]');
+    const before=String(save?.onclick||'');
+    window.HD20AuditBatchExecution?.patch?.();
+    const after=String(save?.onclick||'');
+    return {beforeValidatesPhoto:before.includes('data-cl-photo'),
+      afterValidatesPhoto:after.includes('data-cl-photo'),
+      sameHandler:before===after};
+  });
+  assert.deepEqual(canonicalSubmit,{
+    beforeValidatesPhoto:true,afterValidatesPhoto:true,sameHandler:true
+  },'Batch patch must not replace the result handler or bypass the required photo evidence');
   await page.screenshot({path:'artifacts/audit-compact.png',fullPage:false});
   // Each subtab must exclusively show its own operational cards, never the other two.
   const assertAuditSubtab=async(sub)=>{
