@@ -196,8 +196,7 @@ function renderOverview(mode='overview'){
  const pages=Math.max(1,Math.ceil(filtered.length/view.size));view.page=Math.min(view.page,pages);
  const shown=filtered.slice((view.page-1)*view.size,view.page*view.size);
  const cell=(v)=>'<td>'+escapeText(v||'—')+'</td>';
- root.innerHTML='<div class="hd20LnInquiryTitle hd20LnLookupHeader"><div><b>'+(mode==='self'?'자율개선조회':mode==='request'?'개선요청조회':'자율개선 · 개선요청 통합조회')+'</b><span>'+(separate?'상세 검색조건으로 등록 사례를 조회하고, 우측 등록 버튼에서 원본 팝업을 엽니다.':'등록 이력 검색 및 개선조치 진행현황 관리')+'</span></div>'+(separate?'<button class="hd20LnTopRegister" type="button" data-ln-new-register>+ '+(mode==='self'?'자율개선 등록':'개선요청 등록')+'</button>':'')+'</div>'+
- (separate?'':'<div class="hd20LnActionBar"><button type="button" data-ln-new-register>+ 신규등록</button></div>')+
+ root.innerHTML='<div class="hd20LnInquiryTitle hd20LnLookupHeader"><div><b>'+(mode==='self'?'자율개선 조회':mode==='request'?'개선요청 조회':'개선활동 통합조회')+'</b><span>등록 사례를 조건별로 검색하고 상세 이력을 확인합니다.</span></div><button class="hd20LnTopRegister" type="button" data-ln-new-register>+ '+(mode==='self'?'자율개선 등록':mode==='request'?'개선요청 등록':'신규등록')+'</button></div>'+
  '<div class="hd20LnGridTools"><div class="hd20LnSearchHint"><strong>검색조건</strong><span>기본조건 + 상세조건 + 내용 검색을 모두 동시에 적용합니다.</span></div><div class="hd20LnFilters hd20LnPrimaryFilters">'+
  '<label>등록 구분 <select aria-label="등록 구분" data-ln-filter>'+option('all','전체 구분',view.route==='all')+option('activity','자율개선',view.route==='activity')+option('action','개선요청',view.route==='action')+'</select></label>'+
  '<label>생산팀 <select aria-label="생산팀" data-ln-team>'+option('all','전체 팀',view.team==='all')+teams.map(t=>option(t,t,view.team===t)).join('')+'</select></label>'+
