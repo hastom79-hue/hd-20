@@ -349,6 +349,33 @@ fs.mkdirSync('artifacts',{recursive:true});
     previousFailure:'부적합',latestAction:'AUDIT-SMOKE-ACTION-2',
     notActive:true,noRecheckButton:true},
     'latest completed rework closes case and retains failed recheck history');
+  // ③ must not allow rechecking using a completed action attached to
+  // another retention source, even when its ID is stored in this record.
+  const foreignRecheck=await page.evaluate(()=>{
+    const rk='hd20RetentionRandomChecksV1',ak='hd20ActionCasesV2';
+    const beforeR=localStorage.getItem(rk),beforeA=localStorage.getItem(ak);
+    const id='AUDIT-SMOKE-FOREIGN-RECHECK',aid='AUDIT-SMOKE-FOREIGN-CLOSED';
+    try{
+      const checks=JSON.parse(beforeR||'[]'),actions=JSON.parse(beforeA||'[]');
+      checks.push({id,kind:'개선요청',caseId:'AUDIT-SMOKE-ORIGIN',
+        team:'검증팀',result:'부적합',evaluator:'최초 평가자',actionId:aid});
+      actions.push({id:aid,sourceStage:'RETENTION-RANDOM',
+        sourceCaseId:'RET-AUDIT-ANOTHER-CASE',status:'완료'});
+      localStorage.setItem(rk,JSON.stringify(checks));
+      localStorage.setItem(ak,JSON.stringify(actions));
+      window.HD20_SUBNAV.select('audit','ongoing');
+      const row=document.querySelector('#hd20RetentionSampling [data-rs-id="'+id+'"]');
+      const text=row?.textContent||'';
+      return {present:!!row,missing:text.includes('개선조치 연계 확인 필요'),
+        noRecheck:!row?.querySelector('[data-rs-recheck]')};
+    }finally{
+      if(beforeR===null)localStorage.removeItem(rk);else localStorage.setItem(rk,beforeR);
+      if(beforeA===null)localStorage.removeItem(ak);else localStorage.setItem(ak,beforeA);
+      window.HD20_SUBNAV.select('audit','ongoing');
+    }
+  });
+  assert.deepEqual(foreignRecheck,{present:true,missing:true,noRecheck:true},
+    '③ must not accept another retention case completed action for recheck');
   // Retention workspace must keep actionable checks above completed cases.
   await page.evaluate(()=>{
     const key='hd20RetentionRandomChecksV1',rows=JSON.parse(localStorage.getItem(key)||'[]');
