@@ -98,11 +98,10 @@ function syncSelectedAuditTarget(event){
  const box=document.querySelector('#awAudit .auditClosedLoop');
  const team=box?.querySelector('[data-cl-team]');
  if(!team)return;
- if(![...team.options].some(o=>o.value===row.team)){
-   render();
- }
- const current=document.querySelector('#awAudit .auditClosedLoop [data-cl-team]');
- if(!current||![...current.options].some(o=>o.value===row.team))return;
+ // Drawn team is canonical Audit source data. It may not yet appear in
+ // the cached team dropdown (e.g. master sync delayed), so keep it selectable.
+ if(![...team.options].some(o=>o.value===row.team))team.add(new Option(row.team,row.team));
+ const current=team;
  current.value=row.team;
  current.dispatchEvent(new Event('change',{bubbles:true}));
  const form=document.querySelector('#awAudit .auditClosedLoop');if(form)form.dataset.selectedAuditId=id;
