@@ -499,6 +499,25 @@ function renderRetentionSampling(root){
  '<div class="hd20RsActive"><div class="hd20RsSectionTitle"><b>점검대기·재점검 필요</b><small>점검대기 '+pending.length+'건 · 재조치/재점검 '+unresolved.length+'건</small></div><div class="hd20RsList">'+(active.length?active.map(item).join(''):'<p class="awHint">'+(records.length?'현재 점검대기 또는 재점검이 필요한 사례가 없습니다.':'아직 추출된 유지점검 대상이 없습니다.')+'</p>')+'</div></div>'+
  '<div class="hd20RsArchiveHint">완료·종결된 점검 이력 '+history.length+'건은 ④ 결과·재조치에서 조회합니다.</div>';
 
+ // Preserve the exact case selected in ④ across re-renders triggered by
+ // action updates. Never silently jump to a different pending retention case.
+ const focusId=String(root.dataset.hd20RetentionFocusId||'');
+ if(focusId){
+   const focused=[...host.querySelectorAll('[data-rs-id]')].find(x=>x.dataset.rsId===focusId);
+   if(focused){
+     focused.dataset.hd20RetentionFocused='true';
+     focused.setAttribute('aria-label','선택한 유지점검 · '+focusId);
+   }else if(!records.some(x=>String(x.id)===focusId)){
+     delete root.dataset.hd20RetentionFocusId;
+   }
+ }
+ if(!document.getElementById('hd20RetentionFocusedStyle')){
+   const style=document.createElement('style');
+   style.id='hd20RetentionFocusedStyle';
+   style.textContent='#hd20RetentionSampling [data-hd20-retention-focused="true"]{outline:2px solid #2870a8;outline-offset:3px;border-radius:9px}';
+   document.head.appendChild(style);
+ }
+
  host.querySelector('[data-rs-module-save]')?.addEventListener('click',()=>{if(!canEvaluate())return;const value=host.querySelector('[data-rs-module-emails]').value;const emails=[...new Set(value.split(/[,;\s]+/).map(x=>x.trim().toLowerCase()).filter(Boolean))];if(emails.some(x=>!/^[^@\s]+@hd\.com$/.test(x))){window.alert('유효한 @hd.com 이메일 주소만 등록할 수 있습니다.');return}save(MODULE_KEY,emails);render()});
  host.querySelectorAll('[data-rs-id]').forEach(box=>{
   const checks=[...box.querySelectorAll('[data-rs-check]')];
