@@ -73,13 +73,19 @@ function goActivityRegister(){
  if(internalRegistrationNavigation)return;
  internalRegistrationNavigation=true;
  close();navigate('activity');
- setTimeout(()=>clickWhenReady(()=>document.querySelector('#awActivity [data-aw="new"]'),'awRegisterModal','activity'),0);
+ setTimeout(()=>{
+   window.HD20_SUBNAV?.select?.('activity','self');
+   clickWhenReady(()=>document.querySelector('#awActivity [data-aw="new"]'),'awRegisterModal','activity');
+ },0);
 }
 function goActionRegister(){
  if(internalRegistrationNavigation)return;
  internalRegistrationNavigation=true;
- close();navigate('action');
- setTimeout(()=>clickWhenReady(()=>document.getElementById('hd20ActionRegisterBtn'),'hd20ActionRegisterModal','action'),0);
+ close();navigate('activity');
+ setTimeout(()=>{
+   window.HD20_SUBNAV?.select?.('activity','request');
+   clickWhenReady(()=>document.querySelector('#hd20ImprovementTaskPortal [data-im-task="request"]'),'hd20ActionRegisterModal','activity');
+ },0);
 }
 function getRows(key){try{const a=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(a)?a:[]}catch{return[]}}
 function sourceRows(){
@@ -183,7 +189,7 @@ function ensureOverview(deferRender=false){
  el.addEventListener('click',e=>{if(e.target.closest('[data-ln-route]'))return});
  if(!deferRender)renderOverview();
 }
-function openOverview(){if(overviewOpening)return;overviewOpening=true;try{close();if(window.HD20_NAV?.active?.()!=='activity')window.HD20_NAV?.go?.('activity');try{const u=new URL(location.href);if(u.searchParams.get('sub')==='unified'){u.searchParams.delete('sub');history.replaceState(null,'',u)}}catch{}ensureOverview(true);document.body.classList.remove('hd20UnifiedLanding');const grid=document.getElementById('hd20LauncherOverview');grid?.classList.add('hd20LnVisible');document.body.classList.add('hd20InquiryActive');renderOverview();if(grid){grid.style.removeProperty('display');grid.style.removeProperty('visibility');document.querySelector('.app')?.classList.remove('awFocused');document.getElementById('awActivity')?.classList.remove('on');document.getElementById('awAction')?.classList.remove('on');grid.scrollTop=0;window.scrollTo(0,0)}}finally{overviewOpening=false}}
+function openOverview(){if(window.HD20_NAV?.active?.()==='activity'&&document.getElementById('awActivity')?.dataset.subview!=='overview')return;if(overviewOpening)return;overviewOpening=true;try{close();if(window.HD20_NAV?.active?.()!=='activity')window.HD20_NAV?.go?.('activity');try{const u=new URL(location.href);if(u.searchParams.get('sub')==='unified'){u.searchParams.delete('sub');history.replaceState(null,'',u)}}catch{}ensureOverview(true);document.body.classList.remove('hd20UnifiedLanding');const grid=document.getElementById('hd20LauncherOverview');grid?.classList.add('hd20LnVisible');document.body.classList.add('hd20InquiryActive');renderOverview();if(grid){grid.style.removeProperty('display');grid.style.removeProperty('visibility');document.querySelector('.app')?.classList.remove('awFocused');document.getElementById('awActivity')?.classList.remove('on');document.getElementById('awAction')?.classList.remove('on');grid.scrollTop=0;window.scrollTo(0,0)}}finally{overviewOpening=false}}
 function open(){
   if(document.getElementById('hd20Launcher'))return;
   /* defer 전환 이후 발견된 심각한 회귀(대시보드 포함 여러 탭이 완전히 빈 화면으로 보임)의 근본
