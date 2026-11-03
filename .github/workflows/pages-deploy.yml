@@ -29,7 +29,16 @@ jobs:
           grep -q 'audit-as-is-to-be-manager.js?v=20261103-improvement-tobe-v6' index.html
           grep -q 'hd20-subtabs.js?v=20261103-activity-stability-v57' index.html
           grep -q 'beginner-navigation.js?v=20261103-improvement-menu-v22' index.html
-          grep -q 'action-register-modal.js?v=20261103-contextual-close-v44' index.html
+          grep -q 'action-register-modal.js?v=20261103-modal-hoist-v45' index.html
+          test -f DEVELOPMENT_LOG.md
+          test -f hd20-subtabs.css
+          test -f activity-register-modal.js
+          test -f action-register-modal.js
+          test -f landing-launcher.js
+          grep -Fq 'hd20-subtabs.css?v=20261103-activity-modal-visibility-v8' index.html
+          grep -Fq 'document.body.appendChild(m)' action-register-modal.js
+          grep -Fq 'body>#hd20ActionRegisterModal.on' hd20-subtabs.css
+          grep -Fq '2026-11-03 — 개선활동관리 4개 조회/등록 하위탭 연동 및 팝업 표시 안정화' DEVELOPMENT_LOG.md
           # Ensure approved 4 improvement + 3 Audit menu contract is bundled.
           grep -Fq "['overview','① 통합조회']" hd20-subtabs.js
           grep -Fq "['tobe','④ 개선조치등록·관리']" hd20-subtabs.js
