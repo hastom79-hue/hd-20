@@ -1,4 +1,7 @@
 'use strict';
+/* 통합기준정보는 "대분류 탭 → 하위 칩" 2단 구성: 칩은 선택된 분류 안에서만 보이므로, 사용자와 같은 순서로 먼저 해당 분류 탭을 연다. */
+const HM_GROUP={'integrated-team':'조직·목표','integrated-target':'조직·목표','integrated-source':'등록·분류','integrated-discovery':'등록·분류','integrated-factor':'등록·분류','integrated-workplace':'현장·점검','integrated-theme':'현장·점검','policy':'현장·점검','integrated-mail':'시스템','integrated-admins':'시스템'};
+async function openMaster(page,key){const g=HM_GROUP[key];if(g)await page.locator('#hd20MasterWorkspace .hmGroup>h3',{hasText:g}).click();await page.locator('#hd20MasterWorkspace [data-hm-target="'+key+'"]').click();}
 const {chromium}=require('playwright');
 (async()=>{const browser=await chromium.launch({headless:true});const page=await browser.newPage({viewport:{width:1440,height:900}});
 const errors=[];page.on('pageerror',e=>errors.push(String(e)));
@@ -12,7 +15,7 @@ try{
  // Verify users can actually open editors, not just see ten decorative tiles.
  const checks=['integrated-team','integrated-target','integrated-factor','integrated-workplace','integrated-theme','policy','integrated-admins','integrated-mail'];
  for(const key of checks){
-   await page.locator('#hd20MasterWorkspace [data-hm-target="'+key+'"]').click();
+   await openMaster(page,key);
    await page.waitForTimeout(160);
    const state=await page.evaluate(k=>{
      const root=document.querySelector('#masterModal'),box=root?.querySelector('.masterInfoBox');
@@ -27,9 +30,9 @@ try{
  await page.locator('#hmSearch').fill('Audit');
  if(await page.locator('#hd20MasterWorkspace [data-hm-target]:visible').count()!==1)throw Error('Master search filter failed');
  await page.locator('[data-hm-reset]').click();
- await page.locator('[data-hm-target="integrated-theme"]').click();
+ await openMaster(page,'integrated-theme');
  if(await page.locator('#hd20ThemeCatalogPanel').isVisible()!==true)throw Error('5S theme master editor not visible');
- await page.locator('[data-hm-target="integrated-workplace"]').click();
+ await openMaster(page,'integrated-workplace');
  if(await page.locator('[data-hm-target="integrated-workplace"]').getAttribute('aria-pressed')!=='true')throw Error('Workspace selection failed');
  if(await page.locator('#hd20IntegratedMasterFactors').count()===0)throw Error('Canonical master editor missing');
  const scrollContract=await page.evaluate(async()=>{

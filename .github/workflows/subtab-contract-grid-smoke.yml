@@ -137,7 +137,7 @@ jobs:
             await page.evaluate(()=>window.HD20_NAV?.go?.('master')); await page.waitForTimeout(250);
             const masterTabs=['team','target','source','factor','mail'];
             for(const key of masterTabs){
-              await page.locator('#hd20MasterWorkspace [data-hm-target="integrated-'+key+'"]').click(); await page.waitForTimeout(70);
+              await page.locator('#hd20MasterWorkspace .hmGroup>h3',{hasText:{team:'조직·목표',target:'조직·목표',source:'등록·분류',factor:'등록·분류',mail:'시스템'}[key]}).click(); await page.locator('#hd20MasterWorkspace [data-hm-target="integrated-'+key+'"]').click(); await page.waitForTimeout(70);
               const state=await page.evaluate(k=>{const vis=e=>!!e&&getComputedStyle(e).display!=='none'&&e.getClientRects().length>0;const legacyTabs=['order','target','sourceOrder','leader'].filter(x=>vis(document.querySelector('#masterModal [data-master-tab="'+x+'"]')));const legacyPanels=['masterOrderPanel','masterTargetPanel','hd20SourceOrderPanel','hd20OperatingPolicyPanel','hd20TeamLeaderMasterPanel'].filter(id=>vis(document.getElementById(id)));return{active:document.querySelector('#masterModal .masterTabs button.on')?.dataset.masterTab||'',integrated:vis(document.getElementById('hd20IntegratedMasterFactors')),legacyTabs,legacyPanels,save:[...document.querySelectorAll('#hd20IntegratedMasterFactors .imfBtn')].filter(vis).length}},key);
               assert(state.active==='integrated-'+key&&state.integrated&&state.legacyTabs.length===0&&state.legacyPanels.length===0&&state.save===1,'integrated operating master ownership failed '+key+': '+JSON.stringify(state));
             }

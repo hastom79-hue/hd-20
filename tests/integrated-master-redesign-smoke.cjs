@@ -1,3 +1,6 @@
+/* 통합기준정보는 "대분류 탭 → 하위 칩" 2단 구성: 칩은 선택된 분류 안에서만 보이므로, 사용자와 같은 순서로 먼저 해당 분류 탭을 연다. */
+const HM_GROUP={'integrated-team':'조직·목표','integrated-target':'조직·목표','integrated-source':'등록·분류','integrated-discovery':'등록·분류','integrated-factor':'등록·분류','integrated-workplace':'현장·점검','integrated-theme':'현장·점검','policy':'현장·점검','integrated-mail':'시스템','integrated-admins':'시스템'};
+async function openMaster(page,key){const g=HM_GROUP[key];if(g)await page.locator('#hd20MasterWorkspace .hmGroup>h3',{hasText:g}).click();await page.locator('#hd20MasterWorkspace [data-hm-target="'+key+'"]').click();}
 const {chromium}=require('playwright');
 (async()=>{
  const browser=await chromium.launch({headless:true});
@@ -16,8 +19,8 @@ const {chromium}=require('playwright');
   await page.waitForFunction(()=>!!window.HD20IntegratedMaster&&!!document.querySelector('[data-master-tab="integrated-factor"]'),null,{timeout:25000});
   await page.evaluate(()=>{document.querySelector('[data-ln="skip"]')?.click()||document.getElementById('hd20Launcher')?.remove()}); /* 랜딩 런처가 클릭을 가로채므로 닫는다 */
   await page.evaluate(()=>window.HD20_NAV?.go?.('master'));
-  await page.waitForSelector('#hd20MasterWorkspace [data-hm-target="integrated-factor"]',{state:'visible',timeout:25000});
-  await page.locator('#hd20MasterWorkspace [data-hm-target="integrated-factor"]').click();
+  await page.waitForSelector('#hd20MasterWorkspace [data-hm-target="integrated-factor"]',{state:'attached',timeout:25000});
+  await openMaster(page,'integrated-factor');
   await page.waitForSelector('#imfFactorAddForm');
   const init=await page.evaluate(()=>({
    categories:document.querySelectorAll('.imfFactorCategory').length,
@@ -36,8 +39,8 @@ const {chromium}=require('playwright');
   await page.waitForFunction(()=>!!document.querySelector('[data-master-tab="integrated-factor"]'),null,{timeout:25000});
   await page.evaluate(()=>{document.querySelector('[data-ln="skip"]')?.click()||document.getElementById('hd20Launcher')?.remove()}); /* 랜딩 런처가 클릭을 가로채므로 닫는다 */
   await page.evaluate(()=>window.HD20_NAV?.go?.('master'));
-  await page.waitForSelector('#hd20MasterWorkspace [data-hm-target="integrated-factor"]',{state:'visible',timeout:25000});
-  await page.locator('#hd20MasterWorkspace [data-hm-target="integrated-factor"]').click();
+  await page.waitForSelector('#hd20MasterWorkspace [data-hm-target="integrated-factor"]',{state:'attached',timeout:25000});
+  await openMaster(page,'integrated-factor');
   await page.waitForSelector('.imfFactorRow');
   const after=await page.locator('.imfFactorRow input').evaluateAll(xs=>xs.map(x=>x.value));
   if(!after.includes('회귀검증 임시항목'))throw Error('reload persistence failed');
