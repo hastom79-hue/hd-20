@@ -27,7 +27,7 @@ jobs:
           test -f audit-as-is-to-be-manager.js
           test -f hd20-action-notification-routing.js
           grep -q 'audit-as-is-to-be-manager.js?v=20261103-improvement-tobe-v6' index.html
-          grep -q 'hd20-subtabs.js?v=20261103-activity-isolation-v53' index.html
+          grep -q 'hd20-subtabs.js?v=20261103-activity-four-nav-guard-v54' index.html
           grep -q 'landing-launcher.js?v=20261103-launcher-subtabs-v12' index.html
           grep -q 'beginner-navigation.js?v=20261103-improvement-menu-v22' index.html
           grep -q 'action-register-modal.js?v=20261103-evidence-height-v42' index.html
@@ -36,6 +36,7 @@ jobs:
           grep -Fq "['tobe','④ 개선조치등록·관리']" hd20-subtabs.js
           grep -Fq "['checklist','③ Audit 점검항목']" hd20-subtabs.js
           node --check audit-as-is-to-be-manager.js
+          grep -Fq 'function installImprovementSubnavGuard()' hd20-subtabs.js
           node --check hd20-subtabs.js
           node --check landing-launcher.js
           node --check beginner-navigation.js
