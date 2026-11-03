@@ -140,7 +140,7 @@ function sourceRows(){
  snapshotActivities.forEach((x,i)=>{const id=improvementId(x);activityRows.set(id?'id:'+id:'snapshot:'+i,x)});
  localActivities.forEach((x,i)=>{const date=String(x.date||x.regDate||x.createdAt||'').slice(0,4);if(date!==year)return;const id=improvementId(x);activityRows.set(id?'id:'+id:'local:'+i,x)});
  const activities=[...activityRows.values()];
- const localActions=getRows('hd20ActionCasesV2');if(localActions.length){const byId=new Map((Array.isArray(actions)?actions:[]).map(x=>[String(x.id||x.caseId||''),x]));localActions.forEach(x=>byId.set(String(x.id||x.caseId||''),x));actions=[...byId.values()]}else if(!Array.isArray(actions))actions=[];
+ const localActions=getRows('hd20ActionCasesV2');if(localActions.length){const byId=new Map();(Array.isArray(actions)?actions:[]).forEach((x,i)=>{const id=improvementId(x);byId.set(id?'id:'+id:'snapshot:'+i,x)});localActions.forEach((x,i)=>{const id=improvementId(x);byId.set(id?'id:'+id:'local:'+i,x)});actions=[...byId.values()]}else if(!Array.isArray(actions))actions=[];
  return {activities,actions};
 }
 function escapeText(x){return String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
