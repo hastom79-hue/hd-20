@@ -617,7 +617,10 @@ function ensureAuditSubviewIsolation(){
  style.textContent=rules.map(([selectors,active])=>
   selectors.split(',').map(selector=>
    '#awAudit[data-subview]:not([data-subview="'+active+'"]) '+selector+
-   '{display:none!important}').join('')).join('');
+   '{display:none!important}').join('')).join('')+
+  // Retired six-month summary and old flow are never work surfaces in ①–⑤.
+  // Defend against delayed legacy renderers toggling their own visibility.
+  '#awAudit[data-subview] .audit6m,#awAudit[data-subview] > .awFlow{display:none!important}';
  document.head.appendChild(style);
 }
 function hideDuplicateWorkKpis(root){
