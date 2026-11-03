@@ -338,3 +338,10 @@ html body #awTheme #themeAuditBox>.themeSaveResult{
 #awTheme .themeOwnerSwitch button.active{color:white;background:#164f79;border-color:#164f79}
 #awTheme .themeOwnerExplanation{font-size:12px;color:#547087;margin-left:6px}
 @media(max-width:650px){#awTheme .themeOwnerSwitch button{flex:1;min-width:130px}#awTheme .themeOwnerExplanation{flex-basis:100%;margin-left:0}}
+
+/* 2026-11-04 self-inspection context: team-bound plan selection */
+#awTheme .themeSelfTeamSelector{display:flex;align-items:center;flex-wrap:wrap;gap:10px;padding:11px 13px;margin-bottom:12px;background:#f1f7fb;border:1px solid #d3e4ef;border-radius:9px}
+#awTheme .themeSelfTeamSelector label{display:flex;align-items:center;gap:8px;font-weight:750;font-size:13px;color:#244763}
+#awTheme .themeSelfTeamSelector select{min-width:180px;padding:8px;border:1px solid #b7cede;background:white;border-radius:7px}
+#awTheme .themeSelfTeamSelector small{font-size:12px;color:#607b91}
+#awTheme #themeTeamSel:disabled{background:#eff5fa;opacity:1;color:#254760;cursor:not-allowed}
