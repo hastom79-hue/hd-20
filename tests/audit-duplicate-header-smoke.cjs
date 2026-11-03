@@ -557,7 +557,7 @@ fs.mkdirSync('artifacts',{recursive:true});
       const after=findRow()?.textContent||'';
       return {initialPending:initial.includes('진행·대기'),
         updatedDone:after.includes('개선조치 완료'),
-        filtersRetained:team.value==='검증팀'&&state.value==='rework'&&query.value===id,
+        filtersRetained:panel.querySelector('[data-close-filter-team]')?.value==='검증팀'&&panel.querySelector('[data-close-filter-state]')?.value==='rework'&&panel.querySelector('[data-close-filter-text]')?.value===id,
         exactAction:after.includes(aid)};
     }finally{
       if(originalChecks===null)localStorage.removeItem(ck);else localStorage.setItem(ck,originalChecks);
