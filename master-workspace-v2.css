@@ -192,3 +192,11 @@ html body #masterModal #imfGovernance .imfGovStat small{display:none}
 #masterModal .hmLinks{gap:5px!important}
 #masterModal .hmLinks button{padding:8px 10px!important}
 #masterModal .hmCurrent{margin-top:12px!important;padding:8px 11px!important}
+
+/* Detailed cross-tab checks remain available without consuming the whole first screen. */
+#masterModal .hmAuditDetails{margin-top:10px;border-top:1px solid #e0e9f0;padding-top:8px}
+#masterModal .hmAuditDetails>summary{cursor:pointer;display:list-item;padding:7px 5px;font-weight:750;font-size:12px;color:#285672;outline-offset:3px}
+#masterModal .hmAuditDetails[open]>summary{margin-bottom:8px}
+#masterModal .hmAuditDetails .hmAuditRows{margin-top:5px}
+#masterModal .hmAuditTop p{max-width:780px}
+#masterModal .hmAuditActions [data-hm-audit-summary]{font-variant-numeric:tabular-nums}
