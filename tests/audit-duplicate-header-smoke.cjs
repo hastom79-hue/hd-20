@@ -173,6 +173,14 @@ fs.mkdirSync('artifacts',{recursive:true});
     'responsive layout must preserve selected Audit ID');
   assert.equal(afterResponsive.handler,beforeResponsive.handler,
     'responsive layout must preserve canonical form handler');
+  const batchLabels=await page.locator('#hd20AuditBatchExecution [data-abe-select] option').allTextContents();
+  const batchValues=await page.locator('#hd20AuditBatchExecution [data-abe-select] option')
+    .evaluateAll(options=>options.map(x=>x.value));
+  assert.equal(batchLabels.length,batchValues.length,'every Batch candidate has a label');
+  for(let i=0;i<batchLabels.length;i++){
+    assert.ok(batchLabels[i].includes(batchValues[i]),
+      'Batch option must expose exact Audit number: '+batchValues[i]);
+  }
   // Batch selection must never replace the canonical result submission handler:
   // only the canonical handler verifies mandatory corrective photo evidence.
   const canonicalSubmit=await page.evaluate(()=>{
