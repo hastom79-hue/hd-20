@@ -75,6 +75,7 @@ function themeFindPreviousCompleted(actions,line,team,cat,problem){return action
 function themeAuditIdsForMonth(checks,month){
  return new Set(checks.filter(rec=>rec?.id!=null&&String(rec.id).trim()&&monthKey(rec.month||rec.auditedAt)===month).map(rec=>String(rec.id)));
 }
+function themeActionLinkedToChecks(a,auditIds){return [a.auditRecordId,a.lastAuditRecordId,...(Array.isArray(a.relatedAuditRecordIds)?a.relatedAuditRecordIds:[])].some(id=>id!=null&&auditIds.has(String(id)));}
 function themeActionInMonth(a,month,monthAuditIds){
  if(a.source!=='테마Audit')return false;
  if(monthKey(a.auditMonth||a.createdAt||a.date)===month||monthKey(a.lastAuditMonth||a.lastAuditedAt)===month)return true;
@@ -82,7 +83,7 @@ function themeActionInMonth(a,month,monthAuditIds){
  return ids.some(id=>id!=null&&monthAuditIds.has(String(id)));
 }
 function actionTable(month){
- const owner=selectedOwner(),team=document.getElementById('awTheme')?.dataset.team||'';const monthAuditIds=themeAuditIdsForMonth(loadChecks().filter(x=>ownerOf(x)===owner&&(owner!=='team'||x.team===team)),month);const rows=load().filter(x=>{const ids=[x.auditRecordId,x.lastAuditRecordId,...(Array.isArray(x.relatedAuditRecordIds)?x.relatedAuditRecordIds:[])].filter(Boolean).map(String);return themeActionInMonth(x,month,monthAuditIds)&&(ownerOf(x)===owner||ids.some(id=>monthAuditIds.has(id)))&&(owner!=='team'||x.team===team)} ).sort((a,b)=>String(b.lastAuditedAt||b.createdAt||'').localeCompare(String(a.lastAuditedAt||a.createdAt||'')));
+ const owner=selectedOwner(),team=document.getElementById('awTheme')?.dataset.team||'';const monthAuditIds=themeAuditIdsForMonth(loadChecks().filter(x=>ownerOf(x)===owner&&(owner!=='team'||x.team===team)),month);const rows=load().filter(x=>themeActionLinkedToChecks(x,monthAuditIds)).sort((a,b)=>String(b.lastAuditedAt||b.createdAt||'').localeCompare(String(a.lastAuditedAt||a.createdAt||'')));
  if(!rows.length)return '<div class="themeEmptyNote">선택 월에 연결된 테마점검 개선조치가 없습니다.</div>';
  const recurrenceCount=rows.filter(a=>a.recurrence===true).length;const recurrenceRate=rows.length?((recurrenceCount/rows.length)*100).toFixed(1):'0.0';
  const statuses=[...new Set(rows.map(a=>String(a.status||'미분류')))].sort();
@@ -180,7 +181,7 @@ function monthOptions(){
  return[...set].sort().reverse();
 }
 function matrixData(month){
- const audits=loadChecks().filter(x=>monthKey(x.month||x.auditedAt)===month);
+ const audits=loadChecks().filter(x=>ownerOf(x)===selectedOwner()&&(selectedOwner()!=='team'||x.team===document.getElementById('awTheme')?.dataset.team)&&monthKey(x.month||x.auditedAt)===month);
  const latestByLine=new Map();
  audits.forEach(rec=>{const prev=latestByLine.get(rec.line);if(!prev||String(rec.auditedAt||'').localeCompare(String(prev.auditedAt||''))>=0)latestByLine.set(rec.line,rec)});
  const rows=[...latestByLine.values()];
@@ -193,7 +194,7 @@ function matrixData(month){
 }
 function cellColor(n){if(n<=0)return'#ffffff';if(n===1)return'#fff3d6';if(n===2)return'#ffe2a8';if(n<=4)return'#ffc877';return'#ff9d52'}
 function kpis(month){
- const allChecks=loadChecks().filter(x=>monthKey(x.month||x.auditedAt)===month);
+ const allChecks=loadChecks().filter(x=>ownerOf(x)===selectedOwner()&&(selectedOwner()!=='team'||x.team===document.getElementById('awTheme')?.dataset.team)&&monthKey(x.month||x.auditedAt)===month);
  const latestByLine=new Map();
  allChecks.forEach(rec=>{const prev=latestByLine.get(rec.line);if(!prev||String(rec.auditedAt||'').localeCompare(String(prev.auditedAt||''))>=0)latestByLine.set(rec.line,rec)});
  const checks=[...latestByLine.values()];
@@ -235,7 +236,7 @@ function render(){
  const auditRows=loadChecks().filter(x=>ownerOf(x)===owner&&(owner!=='team'||x.team===team)&&monthKey(x.month||x.auditedAt)===month);
  const latestAuditByLine=new Map();
  auditRows.forEach(rec=>{const prev=latestAuditByLine.get(rec.line);if(!prev||String(rec.auditedAt||'').localeCompare(String(prev.auditedAt||''))>=0)latestAuditByLine.set(rec.line,rec)});
- const monthAuditIds=themeAuditIdsForMonth(auditRows,month);const monthActions=load().filter(x=>(ownerOf(x)===owner||[x.auditRecordId,x.lastAuditRecordId,...(Array.isArray(x.relatedAuditRecordIds)?x.relatedAuditRecordIds:[])].some(id=>monthAuditIds.has(String(id))))&&(owner!=='team'||x.team===team)&&themeActionInMonth(x,month,monthAuditIds));
+ const monthAuditIds=themeAuditIdsForMonth(auditRows,month);const monthActions=load().filter(x=>themeActionLinkedToChecks(x,monthAuditIds));
  const lineSummaryRows=LINES.slice(page*pageSize,(page+1)*pageSize).map(ln=>{
    const themes=plannedThemes(month,ln,owner,team),rec=latestAuditByLine.get(ln),states=Object.values(rec?.states||{});
    const ng=states.filter(v=>v==='미흡').length;
@@ -338,7 +339,7 @@ function loadPreviousJudgements(){
  const host=document.getElementById('awTheme');if(!host)return;
  const line=host.dataset.line,month=host.dataset.month;
  const rec=loadChecks().filter(x=>x.line===line&&ownerOf(x)===selectedOwner()&&(selectedOwner()!=='team'||x.team===host.dataset.team)&&monthKey(x.month||x.auditedAt)===month).sort((a,b)=>String(b.auditedAt||'').localeCompare(String(a.auditedAt||'')))[0];
- if(!rec){alert('선택한 라인·월에 참고할 이전 점검 결과가 없습니다.');return}
+ if(!rec){alert('선택한 점검 주체·생산팀·라인·월에 참고할 이전 결과가 없습니다.');return}
  const wrap=$('#themeChecklistWrap',host);
  $$('.themeCheckRow',wrap).forEach(row=>{
   const value=rec.states?.[row.dataset.key]||'';
