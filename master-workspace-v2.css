@@ -235,3 +235,15 @@ html body #masterModal .hmAuditRow button:focus-visible{outline:3px solid #6daed
  #masterModal .hmToolbar input{grid-column:1}
  #masterModal .hmToolbar button{grid-column:2}
 }
+
+/* 2026-11-04 integrated master: editing-first screen, optional diagnostics. */
+html body #masterModal #hd20MasterWorkspace>.hmAudit{margin:8px 0 4px!important;padding:0!important;background:#f7fafc!important;border:1px solid #dce8f0!important;box-shadow:none!important;overflow:hidden}
+html body #masterModal #hd20MasterWorkspace>.hmAudit>.hmAuditSummary{display:flex;align-items:center;flex-wrap:wrap;gap:10px;padding:10px 14px;font-size:12px;font-weight:800;color:#28536e;cursor:pointer;list-style:revert}
+html body #masterModal #hd20MasterWorkspace>.hmAudit>.hmAuditSummary [data-hm-audit-summary]{color:#8b5a23;font-weight:700}
+html body #masterModal #hd20MasterWorkspace>.hmAudit>.hmAuditSummary small{color:#718797;font-size:11px;font-weight:400}
+html body #masterModal #hd20MasterWorkspace>.hmAudit:not([open])>.hmAuditTop,
+html body #masterModal #hd20MasterWorkspace>.hmAudit:not([open])>.hmAuditDetails{display:none!important}
+html body #masterModal #hd20MasterWorkspace>.hmAudit>.hmAuditTop{padding:10px 14px 3px}
+html body #masterModal #hd20MasterWorkspace>.hmAudit>.hmAuditDetails{padding:0 14px 13px;border:0}
+html body #masterModal #hd20MasterWorkspace>.hmAudit>.hmAuditDetails .hmAuditRows{margin-top:5px!important}
+@media(max-width:650px){html body #masterModal #hd20MasterWorkspace>.hmAudit>.hmAuditSummary small{flex-basis:100%}}
