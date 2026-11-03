@@ -170,10 +170,13 @@ function openRetentionOriginal(id){
  const close=()=>outer.remove();
  outer.querySelectorAll('[data-had-close]').forEach(btn=>btn.addEventListener('click',close));
  outer.querySelector('[data-had-retention-work]')?.addEventListener('click',()=>{
-  close();window.HD20_SUBNAV?.select?.('audit','ongoing');
-  const target=document.querySelector('#hd20RetentionSampling [data-rs-id]');
+  close();
+  const root=document.getElementById('awAudit');
+  if(root)root.dataset.hd20RetentionFocusId=key;
+  window.HD20_SUBNAV?.select?.('audit','ongoing');
   const match=[...document.querySelectorAll('#hd20RetentionSampling [data-rs-id]')].find(el=>el.dataset.rsId===key);
-  (match||target)?.scrollIntoView?.({block:'center',behavior:'auto'});
+  if(match)match.scrollIntoView?.({block:'center',behavior:'auto'});
+  else alert('해당 유지점검이 현재 실행 목록에 없습니다. ④ 결과·재조치의 종결 이력을 확인해 주세요.');
  });
  outer.addEventListener('click',e=>{if(e.target===outer)close()});
  outer.querySelector('[data-had-close]')?.focus();
