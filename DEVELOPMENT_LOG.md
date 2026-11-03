@@ -2050,3 +2050,9 @@ Canonical Store는 다음을 기준으로 한다.
 - `dashboard-work-kpi-migration.js`에서 레이블의 막대 끝 수직 간격 `bottom:calc(100% + 4px)`을 유지하면서 진회색(첫 막대) 레이블을 해당 막대 중심에서 왼쪽으로, 청록색(둘째 막대) 레이블을 중심에서 오른쪽으로 정렬하도록 CSS 보완. 월별 값/막대 높이/색상/배열은 변경하지 않음.
 - `index.html`의 캐시 버전을 `20261104-label-overlap-v12`로 갱신하고 Pages CI 정적 검사 항목에 레이블의 막대별 분리와 좌우 정렬을 추가.
 - 배포 사이트 접근은 외부 연결 문제로 직접 확인하지 못함. 코드 구문·정적 일치 검증과 실제 운영 화면 검증은 구분함.
+
+### 2026-11-04 GitHub Pages 배포 재요청 — 월별 막대 끝 레이블
+- 배포 대상: `dashboard-work-kpi-migration.js?v=20261104-label-overlap-v12` (`index.html` 참조 확인).
+- 수정 내용: 3개 운영종합진단 월별 차트의 진회색/청록색 각각의 막대에 값을 표시하고, 막대 끝 4px 위에 좌우 분리하여 겹침 방지.
+- 배포 방법: GitHub `main`의 본 개발일지 커밋으로 `.github/workflows/pages-deploy.yml`의 push 자동배포 재실행을 요청.
+- 검증 상태: GitHub 저장소 소스 반영 확인. GitHub Actions 실제 배포 성공 및 외부 운영 URL에 대한 접근은 연결 제한으로 미확인.
