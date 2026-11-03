@@ -487,6 +487,38 @@ fs.mkdirSync('artifacts',{recursive:true});
   });
   assert.deepEqual(exactRetentionDetail,{matched:true,closed:true,returned:true},
     '④ retention source popup preserves exact recheck linkage and closes');
+  // ④ must reject an action whose ID was mistakenly stored in another
+  // retention source; the row must show a missing link rather than a false status.
+  const wrongActionLink=await page.evaluate(()=>{
+    const keys=['hd20RetentionRandomChecksV1','hd20ActionCasesV2'];
+    const snapshot=Object.fromEntries(keys.map(k=>[k,localStorage.getItem(k)]));
+    const id='AUDIT-SMOKE-RET-WRONG-LINK';
+    try{
+      const checks=JSON.parse(snapshot[keys[0]]||'[]');
+      const actions=JSON.parse(snapshot[keys[1]]||'[]');
+      checks.push({id,kind:'개선요청',caseId:'AUDIT-SMOKE-OTHER',
+        team:'검증팀',result:'부적합',evaluator:'검증 평가자',
+        actionId:'AUDIT-SMOKE-UNRELATED-ACTION'});
+      actions.push({id:'AUDIT-SMOKE-UNRELATED-ACTION',
+        sourceStage:'RETENTION-RANDOM',sourceCaseId:'RET-AUDIT-OTHER',
+        team:'다른팀',status:'완료'});
+      localStorage.setItem(keys[0],JSON.stringify(checks));
+      localStorage.setItem(keys[1],JSON.stringify(actions));
+      window.HD20_SUBNAV.select('audit','retention');
+      const row=[...document.querySelectorAll('#hd20AuditCloseEvaluation [data-close-rework] tr')]
+        .find(el=>el.textContent.includes(id));
+      return {found:!!row,missing:!!row&&row.textContent.includes('미연결'),
+        unrelated:!!row&&row.textContent.includes('AUDIT-SMOKE-UNRELATED-ACTION')};
+    }finally{
+      for(const k of keys){
+        if(snapshot[k]===null)localStorage.removeItem(k);
+        else localStorage.setItem(k,snapshot[k]);
+      }
+      window.HD20_SUBNAV.select('audit','retention');
+    }
+  });
+  assert.deepEqual(wrongActionLink,{found:true,missing:true,unrelated:false},
+    '④ must not resolve a rework action belonging to another retention source');
   // The fourth tab must expose exact-source retention failures and linked corrective actions.
   await page.evaluate(()=>{
     const read=k=>{try{return JSON.parse(localStorage.getItem(k)||'[]')}catch{return[]}};
