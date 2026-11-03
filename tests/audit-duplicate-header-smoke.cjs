@@ -166,6 +166,12 @@ fs.mkdirSync('artifacts',{recursive:true});
     assert.equal(result.sub,sub,'Audit subview must match selected tab');
     assert.equal(result.gridShown,result.gridHasWork,
       'legacy Audit grid must exist visually only when it contains the active work area');
+    const legacy=await page.evaluate(()=>({
+      sixMonth:getComputedStyle(document.querySelector('#awAudit .audit6m')).display,
+      flow:(()=>{const n=document.querySelector('#awAudit>.awFlow');return n?getComputedStyle(n).display:'none'})()
+    }));
+    assert.equal(legacy.sixMonth,'none','retired six-month panel stays hidden after tab transitions');
+    assert.equal(legacy.flow,'none','legacy Audit flow stays hidden after tab transitions');
     assert.equal(result.draw,sub==='draw','Audit execution content only in draw tab');
     assert.equal(result.actions,sub==='action','Audit corrective worklist only in its own tab');
     assert.equal(result.checklist,sub==='checklist','Audit checklist only in fifth tab');
