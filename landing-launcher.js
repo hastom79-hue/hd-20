@@ -43,6 +43,25 @@ function css(){
   /* 긴급 복구: 전체 앱을 숨기거나 고정 오버레이로 덮는 CSS 제거 */
   s.textContent+=`body #hd20LauncherOverview{display:none}#hd20LauncherOverview.hd20LnVisible{display:block;position:relative;z-index:auto;max-width:1500px;margin:20px auto;padding:20px;background:white}#hd20LauncherOverview .hd20LnTableScroll{overflow:auto;max-height:70vh}#hd20LauncherOverview [data-ln-exit-grid]{background:#173a57;color:white}`;
   s.textContent+=`body.hd20InquiryActive #hd20LauncherOverview.hd20LnVisible{display:block}body.hd20InquiryActive .app{display:block!important}body.hd20InquiryActive .app > :not(.top):not(.beginnerNav):not(#hd20Subnav):not(#hd20LauncherOverview):not(script):not(style){display:none!important}body.hd20InquiryActive .app > #hd20Subnav{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;grid-auto-flow:row!important;visibility:visible!important;width:100%!important}body.hd20InquiryActive #hd20LauncherOverview .hd20LnThreeTabs{display:none!important}body.hd20InquiryActive .app > #hd20LauncherOverview.hd20LnVisible{display:block!important;width:100%;box-sizing:border-box}body.hd20InquiryActive .app #hd20LauncherOverview.hd20LnVisible{display:block!important;position:relative;z-index:2}body.hd20InquiryActive .app > .awScreen,body.hd20InquiryActive .app > .awArea{display:none!important}body.hd20InquiryActive #hd20LauncherOverview{margin-bottom:24px}`;
+  s.textContent+=`
+#hd20LauncherOverview .hd20LnGridTools{padding:14px 16px;border:1px solid #dce8f0;border-radius:10px;background:#fbfdff;margin-bottom:12px}
+#hd20LauncherOverview .hd20LnSearchHint{display:flex;align-items:baseline;gap:12px;margin-bottom:10px}
+#hd20LauncherOverview .hd20LnSearchHint strong{font-size:14px;color:#234e6c}
+#hd20LauncherOverview .hd20LnSearchHint span{font-size:11px;color:#698397}
+#hd20LauncherOverview .hd20LnPrimaryFilters,#hd20LauncherOverview .hd20LnAdvancedFilters{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px 12px!important;align-items:end!important}
+#hd20LauncherOverview .hd20LnFilters label,#hd20LauncherOverview .hd20LnTextSearch label{display:flex;flex-direction:column;align-items:stretch;min-width:0;gap:5px;font-size:11px;font-weight:750;color:#436276}
+#hd20LauncherOverview .hd20LnFilters input,#hd20LauncherOverview .hd20LnFilters select,#hd20LauncherOverview .hd20LnTextSearch input{box-sizing:border-box;width:100%;max-width:none;min-width:0;height:36px;border:1px solid #c9dae6;border-radius:7px;background:white;padding:6px 9px;font-size:12px;color:#1c445e}
+#hd20LauncherOverview .hd20LnAdvanced{margin-top:10px;border:1px solid #e0eaf1;border-radius:8px;background:#fff}
+#hd20LauncherOverview .hd20LnAdvanced summary{font-size:12px;font-weight:800;color:#24628a;padding:10px 12px;cursor:pointer}
+#hd20LauncherOverview .hd20LnAdvancedFilters{padding:4px 12px 12px}
+#hd20LauncherOverview .hd20LnTextSearch{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;align-items:end;gap:10px;margin-top:12px}
+#hd20LauncherOverview .hd20LnSearchActions{display:flex;align-items:center;gap:7px}
+#hd20LauncherOverview .hd20LnSearchActions button{min-height:36px;border-radius:7px;border:1px solid #9ebed3;padding:7px 13px;font-size:12px;font-weight:800;white-space:nowrap;cursor:pointer}
+#hd20LauncherOverview [data-ln-search-btn]{background:#166a9d;color:#fff;border-color:#166a9d}
+#hd20LauncherOverview [data-ln-reset]{background:#fff;color:#275873}
+@media(max-width:1100px){#hd20LauncherOverview .hd20LnPrimaryFilters,#hd20LauncherOverview .hd20LnAdvancedFilters{grid-template-columns:repeat(2,minmax(0,1fr))}#hd20LauncherOverview .hd20LnTextSearch{grid-template-columns:1fr 1fr}#hd20LauncherOverview .hd20LnSearchActions{grid-column:1/-1}}
+@media(max-width:620px){#hd20LauncherOverview .hd20LnPrimaryFilters,#hd20LauncherOverview .hd20LnAdvancedFilters,#hd20LauncherOverview .hd20LnTextSearch{grid-template-columns:1fr}#hd20LauncherOverview .hd20LnSearchHint{flex-direction:column;gap:4px}}
+`;
   document.head.appendChild(s);
 }
 function close(){document.getElementById('hd20Launcher')?.remove();try{sessionStorage.setItem(SEEN_KEY,'1')}catch{}}
