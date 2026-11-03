@@ -35,7 +35,7 @@ jobs:
           test -f activity-register-modal.js
           test -f action-register-modal.js
           test -f landing-launcher.js
-          grep -Fq 'hd20-subtabs.css?v=20261103-self-body-overlay-v9' index.html
+          grep -Fq 'hd20-subtabs.css?v=20261104-shared-filter-grid-v10' index.html
           grep -Fq 'document.body.appendChild(m)' action-register-modal.js
           grep -Fq 'body>#hd20ActionRegisterModal.on' hd20-subtabs.css
           grep -Fq '2026-11-03 — 개선활동관리 4개 조회/등록 하위탭 연동 및 팝업 표시 안정화' DEVELOPMENT_LOG.md
@@ -51,7 +51,7 @@ jobs:
           grep -Fq "const preferredActivity=area==='activity'" hd20-subtabs.js
           node --check hd20-subtabs.js
           grep -Fq 'hd20LnThreeTabs{display:none!important}' landing-launcher.js
-          grep -Fq 'landing-launcher.js?v=20261103-defer-modal-refresh-v22' index.html
+          grep -Fq 'landing-launcher.js?v=20261104-compact-search-header-v23' index.html
           grep -Fq 'activity-register-modal.js?v=20261103-body-modal-save-handler-v6' index.html
           grep -Fq 'action-mail-workflow.js?v=20261103-body-modal-save-v4' index.html
           grep -Fq "const formRoot=document.getElementById('hd20ActionRegisterModal')||a" action-mail-workflow.js
@@ -70,7 +70,7 @@ jobs:
           node --check activity-workflow.js
           node --check activity-register-modal.js
           grep -Fq 'master-workspace-v2.js?v=20261103-master-open-fix-v10' index.html
-          grep -Fq 'master-workspace-v2.css?v=20261103-master-layout-fix-v15' index.html
+          grep -Fq 'master-workspace-v2.css?v=20261104-master-search-grid-v16' index.html
           node --check master-workspace-v2.js
           grep -Fq 'function clickWhenReady(findFn,modalId,area,tries=0,lastClickAt=-1)' landing-launcher.js
           grep -Fq "clickWhenReady(()=>document.getElementById('hd20ActionRegisterBtn')" landing-launcher.js
@@ -92,6 +92,12 @@ jobs:
           grep -Fq 'left:calc(50% - 4px)' dashboard-work-kpi-migration.js
           grep -Fq '차트 막대 끝 레이블 간 겹침 방지 보완' DEVELOPMENT_LOG.md
           node --check dashboard-work-kpi-migration.js
+          grep -Fq '2026-11-04 shared non-dashboard search layout' hd20-subtabs.css
+          grep -Fq '#masterModal .hmToolbar' master-workspace-v2.css
+          grep -Fq 'landing-launcher.js?v=20261104-compact-search-header-v23' index.html
+          grep -Fq 'hd20-subtabs.css?v=20261104-shared-filter-grid-v10' index.html
+          grep -Fq 'master-workspace-v2.css?v=20261104-master-search-grid-v16' index.html
+          grep -Fq '운영탭 공통 검색조건 레이아웃 정리' DEVELOPMENT_LOG.md
           node --check landing-launcher.js
           node --check beginner-navigation.js
           node --check hd20-action-notification-routing.js
