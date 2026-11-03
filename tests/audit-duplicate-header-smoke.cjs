@@ -206,7 +206,7 @@ fs.mkdirSync('artifacts',{recursive:true});
     try{
       window.HD20_SUBNAV.select('audit','ongoing');
       const existingText=document.querySelector('#hd20RetentionSampling .hd20RsToolbar')?.textContent||'';
-      const existingCount=Number(existingText.match(/완료사례 (\\d+)건/)?.[1]);
+      const existingCount=Number(existingText.match(/완료사례 (\d+)건/)?.[1]);
       const actions=JSON.parse(before||'[]');
       actions.push({id:'AUDIT-SMOKE-RETENTION-COMPLETE',
         source:'5S Audit 실시결과',sourceStage:'AUDIT-REQUEST',
@@ -219,7 +219,7 @@ fs.mkdirSync('artifacts',{recursive:true});
       const panel=document.querySelector('#hd20RetentionSampling');
       const toolbar=panel?.querySelector('.hd20RsToolbar')?.textContent||'';
       const savedChecks=JSON.parse(localStorage.getItem('hd20RetentionRandomChecksV1')||'[]');
-      const nextCount=Number(toolbar.match(/완료사례 (\\d+)건/)?.[1]);
+      const nextCount=Number(toolbar.match(/완료사례 (\d+)건/)?.[1]);
       return {eligible:Number.isFinite(existingCount)&&nextCount===existingCount+1,
         noImplicitSample:!savedChecks.some(x=>x.caseId==='AUDIT-SMOKE-RETENTION-COMPLETE')};
     }finally{
