@@ -364,10 +364,17 @@ fs.mkdirSync('artifacts',{recursive:true});
   assert.equal(await retention.locator('.hd20RsActive [data-rs-id]').count(),2,'only pending and unresolved cases appear in actionable queue');
   assert.equal(await retention.locator('.hd20RsActive [data-rs-id="E2E-RET-PENDING"]').count(),1,'pending check remains actionable');
   assert.equal(await retention.locator('.hd20RsActive [data-rs-id="E2E-RET-RECHECK"]').count(),1,'failed check remains actionable');
-  assert.equal(await retention.locator('.hd20RsHistoryFold [data-rs-id="E2E-RET-CLOSED"]').count(),1,'completed cases remain in history');
-  assert.equal(await retention.locator('.hd20RsHistoryFold').evaluate(el=>el.open),false,'completed history is collapsed initially');
-  await retention.locator('.hd20RsHistoryFold summary').click();
-  assert.equal(await retention.locator('.hd20RsHistoryFold [data-rs-id="E2E-RET-CLOSED"]').isVisible(),true,'completed history opens on request');
+  assert.equal(await retention.locator('.hd20RsHistoryFold').count(),0,
+    '③ retention execution must not repeat completed history');
+  assert.match(await retention.locator('.hd20RsArchiveHint').innerText(),/④ 결과·재조치/,
+    '③ directs completed records to ④');
+  await assertAuditSubtab('retention');
+  const closeHistory=page.locator('#hd20AuditCloseEvaluation .hd20CloseHistory');
+  assert.match(await closeHistory.locator('summary').innerText(),/종결·최종판정 완료 이력/,
+    '④ owns the completed history');
+  await closeHistory.locator('summary').click();
+  assert.ok((await closeHistory.innerText()).includes('E2E-RET-CLOSED'),
+    '④ retains compliant retention history');
   await page.evaluate(()=>{
     const key='hd20RetentionRandomChecksV1';
     localStorage.setItem(key,JSON.stringify(JSON.parse(localStorage.getItem(key)||'[]').filter(x=>!['E2E-RET-PENDING','E2E-RET-RECHECK','E2E-RET-CLOSED'].includes(x.id))));
