@@ -103,6 +103,14 @@ fs.mkdirSync('artifacts',{recursive:true});
     assert.equal(result.closure,sub==='retention','Closure and corrective action only in retention tab');
     if(sub==='retention')assert.ok(await page.locator('#hd20AuditCloseEvaluation, #hd20RetentionActionTrace').count(),'Closure content should be mounted');
   };
+  // Returning to Audit from another area must keep the last operational subtab.
+  await page.evaluate(()=>window.HD20_SUBNAV.select('audit','checklist'));
+  await page.evaluate(()=>window.HD20_NAV.go('action'));
+  await page.waitForFunction(()=>window.HD20_NAV.active()==='action');
+  await page.evaluate(()=>window.HD20_NAV.go('audit'));
+  await page.waitForFunction(()=>window.HD20_NAV.active()==='audit');
+  await page.waitForFunction(()=>window.HD20_SUBNAV.state().area==='audit'&&window.HD20_SUBNAV.state().sub==='checklist');
+  assert.equal(await page.locator('#hd20Subnav button.on').getAttribute('data-sub'),'checklist','Audit return preserves the active subtab');
   await assertAuditSubtab('action');
   await assertAuditSubtab('checklist');
   const checklistFilter=await page.evaluate(()=>{
