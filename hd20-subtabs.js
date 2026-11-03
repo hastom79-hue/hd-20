@@ -836,7 +836,9 @@ function syncArea(area){
   const urlParams=new URLSearchParams(location.search);
   const urlAuditSub=area==='audit'&&urlParams.get('area')==='audit'?urlParams.get('sub'):'';
   const preferredAudit=area==='audit'?(urlAuditSub==='retention'?'ongoing':candidates.some(([key])=>key===urlAuditSub)?urlAuditSub:(state.area==='audit'&&candidates.some(([key])=>key===state.sub)?state.sub:'draw')):'';
-  state.sub=area==='audit'?preferredAudit:candidates[0]?.[0]||'';state.area=area;const bar=ensure(),items=MAP[area]||[];if(area==='audit')syncAuditButtons(bar,state.sub);else{bar.innerHTML=items.map(([k,n])=>`<button type="button" data-sub="${k}" class="${k===state.sub?'on':''}">${n}</button>`).join('');$$('button',bar).forEach(b=>b.onclick=()=>select(area,b.dataset.sub))}renderPurpose(area,state.sub);requestAnimationFrame(()=>apply(area,state.sub))}
+  const activityParam=area==='activity'&&urlParams.get('area')==='activity'?urlParams.get('sub'):null;
+  const preferredActivity=area==='activity'?(candidates.some(([k])=>k===activityParam)?activityParam:state.area==='activity'&&candidates.some(([k])=>k===state.sub)?state.sub:'overview'):'';
+  state.sub=area==='audit'?preferredAudit:area==='activity'?preferredActivity:candidates[0]?.[0]||'';state.area=area;const bar=ensure(),items=MAP[area]||[];if(area==='audit')syncAuditButtons(bar,state.sub);else{bar.innerHTML=items.map(([k,n])=>`<button type="button" data-sub="${k}" class="${k===state.sub?'on':''}">${n}</button>`).join('');$$('button',bar).forEach(b=>b.onclick=()=>select(area,b.dataset.sub))}renderPurpose(area,state.sub);requestAnimationFrame(()=>apply(area,state.sub))}
 
 /* Audit subnav integrity: four canonical operations must remain visible.
    Legacy modules sometimes leave a single "① Audit 실시" button in the shared bar.
