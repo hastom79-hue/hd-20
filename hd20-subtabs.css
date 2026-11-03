@@ -401,3 +401,11 @@ html body #themeInspection :is(.amFilterBar,.acFilter,.themeActionFilters)>butto
  html body #hd20LauncherOverview .hd20LnSearchActions,
  html body #hd20ActivityLookupPanel .hd20LnSearchActions{justify-content:flex-end!important}
 }
+
+/* 2026-11-04: compact, responsive two-condition AND search for operational data tables */
+html body .teToolbar{display:grid!important;grid-template-columns:minmax(150px,1.4fr) minmax(125px,1fr) minmax(110px,1fr) minmax(125px,1fr) minmax(110px,1fr) auto auto!important;align-items:center;gap:8px!important;max-width:100%;box-sizing:border-box}
+html body .teToolbar :is(input,select){height:36px;min-width:0;width:100%;box-sizing:border-box}
+html body .teToolbar .teReset{height:36px;white-space:nowrap}
+html body .teToolbar .teCount{white-space:nowrap;font-variant-numeric:tabular-nums}
+@media(max-width:1199px){html body .teToolbar{grid-template-columns:repeat(3,minmax(0,1fr))!important}html body .teToolbar .teSearch{grid-column:span 3}}
+@media(max-width:650px){html body .teToolbar{grid-template-columns:repeat(2,minmax(0,1fr))!important}html body .teToolbar .teSearch{grid-column:span 2}}
