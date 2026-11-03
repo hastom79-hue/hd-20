@@ -650,8 +650,8 @@ function placeAuditWorkPanels(root,sub,panels){
 function applyAudit(sub){
  const root=$('#awAudit');if(!root)return;
  // Audit / 유지점검 / 종료판정은 동일한 원천 Case를 공유하되 화면 구성은 엄격히 분리한다.
- // 기존 showAll(root)는 다른 서브탭의 .awCard를 다시 노출해 화면 중복을 일으켰다.
- root.dataset.subview=sub;ensureAuditSubviewIsolation();showAll(root);hideDuplicateWorkKpis(root);
+ // 다른 탭의 모든 .awCard를 일시 재노출하지 않고 필요한 카드만 직접 표시한다.
+ root.dataset.subview=sub;ensureAuditSubviewIsolation();hideDuplicateWorkKpis(root);
  // Every subtab has one predictable work area; historical panels remain intact.
  const topHero=root.querySelector(':scope > .awHero');
  if(topHero){topHero.classList.toggle('hd20AuditCompactHeader',true);}
