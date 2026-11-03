@@ -52,7 +52,7 @@ function sendOnce(id,stage){const k=id+':'+stage;if(inflight.has(k))return;infli
 window.HD20_ACTION_NOTIFIER={sendOnce};
 window.addEventListener('hd20-action-updated',e=>{
  const source=e.detail?.source,id=e.detail?.id;if(!id)return;
- if(source==='action-mail-register')sendOnce(String(id),'REQUEST');
+ if(source==='action-mail-register'&&e.detail?.via!==false)sendOnce(String(id),'REQUEST');
  if(source==='audit-tobe')sendOnce(String(id),'TOBE');
 });
 })();
