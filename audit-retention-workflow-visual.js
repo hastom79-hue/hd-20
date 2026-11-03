@@ -54,7 +54,7 @@ function bindActions(el){
   const btn=e.target.closest('button[data-rw-action]');if(!btn)return;
   const action=btn.dataset.rwAction;
   const feedback=el.querySelector('[data-rw-feedback]');
-  if(action==='results'){window.HD20_SUBNAV?.select?.('audit','retention');return}
+  if(action==='results'){const target=document.querySelector('#awAudit #hd20AuditCloseEvaluation')||document.querySelector('#awAudit #hd20RetentionActionTrace');if(target){target.scrollIntoView({behavior:'smooth',block:'start'});const history=target.querySelector('.hd20CloseHistory');if(history)history.open=true;feedback.textContent='③ 유지점검의 결과·종료평가 이력으로 이동했습니다.'}else feedback.textContent='종료평가 이력 영역이 아직 준비되지 않았습니다.';return}
   if(action==='policy'){
    const host=focusWork(el);
    const settings=host?.querySelector('.hd20RsModuleConfigFold');
@@ -94,7 +94,7 @@ function render(){
  <span class="rwMetric" data-rw-count aria-live="polite">원천 개선조치 및 점검대상 확인</span>
  <button class="rwButton primary" type="button" data-rw-action="draw">자동 랜덤 추출</button>
  <button class="rwButton" type="button" data-rw-action="pending">점검대기 · 결과 입력</button>
- <button class="rwButton" type="button" data-rw-action="results">결과 · 재조치 조회</button>
+ <button class="rwButton" type="button" data-rw-action="results">결과 · 종료평가 이력</button>
  <button class="rwButton" type="button" data-rw-action="policy">점검 기준 확인</button>
  <span class="rwFeedback" role="status" data-rw-feedback>추출·결과저장은 기존 권한과 점검주기 정책을 따릅니다.</span>
  </div>
