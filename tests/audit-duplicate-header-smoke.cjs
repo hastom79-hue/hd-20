@@ -85,6 +85,39 @@ fs.mkdirSync('artifacts',{recursive:true});
     document.querySelector('#awAudit .auditClosedLoop')?.removeAttribute('data-selected-audit-id');
     window.HD20AuditClosedLoop.render();
   });
+  // Audit source -> corrective action linkage must be unique and keep the
+  // original auditor. Use only isolated browser storage and restore it.
+  const correctiveLinkage=await page.evaluate(()=>{
+    const sourceKey='hd20AuditRandomDrawsV1',actionKey='hd20ActionCasesV2';
+    const originalSource=localStorage.getItem(sourceKey),originalActions=localStorage.getItem(actionKey);
+    const id='E2E-AUDIT-LINK-ONCE-20261103';
+    try{
+      const sources=JSON.parse(originalSource||'[]');
+      sources.unshift({id,team:'검증팀',date:'2026-11-03',initialAuditor:'최초 감사자'});
+      localStorage.setItem(sourceKey,JSON.stringify(sources));
+      const input={team:'검증팀',auditActor:'현장 조직',auditDate:'2026-11-03',
+        auditResult:'부적합',auditor:'후속 점검자',workplace:'검증라인',
+        improvementRequest:'Audit 자동이관 회귀검증'};
+      const saved=window.HD20AuditClosedLoop.registerAudit(id,input);
+      const actions=JSON.parse(localStorage.getItem(actionKey)||'[]').filter(a=>a.auditDrawId===id);
+      let duplicateRejected=false;
+      try{window.HD20AuditClosedLoop.registerAudit(id,input)}
+      catch(e){duplicateRejected=/이미 실시결과/.test(String(e.message))}
+      return {savedId:saved.id,result:saved.auditResult,
+        actionCount:actions.length,sourceStage:actions[0]?.sourceStage,
+        initialAuditor:actions[0]?.initialAuditor,duplicateRejected};
+    }finally{
+      if(originalSource===null)localStorage.removeItem(sourceKey);
+      else localStorage.setItem(sourceKey,originalSource);
+      if(originalActions===null)localStorage.removeItem(actionKey);
+      else localStorage.setItem(actionKey,originalActions);
+    }
+  });
+  assert.deepEqual(correctiveLinkage,{
+    savedId:'E2E-AUDIT-LINK-ONCE-20261103',result:'부적합',
+    actionCount:1,sourceStage:'AUDIT-REQUEST',
+    initialAuditor:'최초 감사자',duplicateRejected:true
+  },'Audit registration links one action and preserves original auditor without duplicate submission');
   await page.screenshot({path:'artifacts/audit-compact.png',fullPage:false});
   // Each subtab must exclusively show its own operational cards, never the other two.
   const assertAuditSubtab=async(sub)=>{
