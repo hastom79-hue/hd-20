@@ -204,6 +204,9 @@ fs.mkdirSync('artifacts',{recursive:true});
   const retentionHandoff=await page.evaluate(()=>{
     const key='hd20ActionCasesV2',before=localStorage.getItem(key);
     try{
+      window.HD20_SUBNAV.select('audit','ongoing');
+      const existingText=document.querySelector('#hd20RetentionSampling .hd20RsToolbar')?.textContent||'';
+      const existingCount=Number(existingText.match(/완료사례 (\\d+)건/)?.[1]);
       const actions=JSON.parse(before||'[]');
       actions.push({id:'AUDIT-SMOKE-RETENTION-COMPLETE',
         source:'5S Audit 실시결과',sourceStage:'AUDIT-REQUEST',
@@ -216,8 +219,8 @@ fs.mkdirSync('artifacts',{recursive:true});
       const panel=document.querySelector('#hd20RetentionSampling');
       const toolbar=panel?.querySelector('.hd20RsToolbar')?.textContent||'';
       const savedChecks=JSON.parse(localStorage.getItem('hd20RetentionRandomChecksV1')||'[]');
-      return {eligible:toolbar.includes('완료사례 '+actions.filter(a=>['완료','개선완료','조치완료','종결','확정완료','종료','종결완료'].includes(a.status)).length+'건'),
-        exactCaseInPool:toolbar.includes('완료사례 '),
+      const nextCount=Number(toolbar.match(/완료사례 (\\d+)건/)?.[1]);
+      return {eligible:Number.isFinite(existingCount)&&nextCount===existingCount+1,
         noImplicitSample:!savedChecks.some(x=>x.caseId==='AUDIT-SMOKE-RETENTION-COMPLETE')};
     }finally{
       if(before===null)localStorage.removeItem(key);
@@ -227,8 +230,8 @@ fs.mkdirSync('artifacts',{recursive:true});
   });
   assert.equal(retentionHandoff.noImplicitSample,true,
     'completed Audit action becomes eligible without automatically creating a check');
-  assert.equal(retentionHandoff.exactCaseInPool,true,
-    'retention candidate count is present after completed Audit action');
+  assert.equal(retentionHandoff.eligible,true,
+    'completed Audit action increments retention candidate pool by exactly one');
   // Retention workspace must keep actionable checks above completed cases.
   await page.evaluate(()=>{
     const key='hd20RetentionRandomChecksV1',rows=JSON.parse(localStorage.getItem(key)||'[]');
