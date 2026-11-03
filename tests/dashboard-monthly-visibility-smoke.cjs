@@ -61,10 +61,11 @@ const {chromium}=require('playwright');
       }
      }
     }
-    return {cards:cards.length,labels:root.querySelectorAll('.hd20DwmMonthValues').length,
+    return {cards:cards.length,layoutColumns:getComputedStyle(root.querySelector('.hd20DwmGroups')).gridTemplateColumns.split(' ').length,labels:root.querySelectorAll('.hd20DwmMonthValues').length,
       evidenceCollapsed:[...root.querySelectorAll('.hd20DwmEvidenceDetails')].every(x=>!x.open),overlaps,tooWide};
    });
    assert.equal(data.cards,3,'show three comparison cards');
+   assert.equal(data.layoutColumns,viewport.width>1550?3:viewport.width>900?2:1,'preserve established chart card columns at '+viewport.width);
    assert.ok(data.labels>=30,'show paired values for all available months');
    assert.equal(data.evidenceCollapsed,true,'evidence details start collapsed');
    assert.deepEqual(data.overlaps,[],'labels do not overlap at '+viewport.width);
