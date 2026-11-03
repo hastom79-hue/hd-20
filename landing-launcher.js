@@ -62,6 +62,19 @@ function css(){
 @media(max-width:1100px){#hd20LauncherOverview .hd20LnPrimaryFilters,#hd20LauncherOverview .hd20LnAdvancedFilters{grid-template-columns:repeat(2,minmax(0,1fr))}#hd20LauncherOverview .hd20LnTextSearch{grid-template-columns:1fr 1fr}#hd20LauncherOverview .hd20LnSearchActions{grid-column:1/-1}}
 @media(max-width:620px){#hd20LauncherOverview .hd20LnPrimaryFilters,#hd20LauncherOverview .hd20LnAdvancedFilters,#hd20LauncherOverview .hd20LnTextSearch{grid-template-columns:1fr}#hd20LauncherOverview .hd20LnSearchHint{flex-direction:column;gap:4px}}
 `;
+  s.textContent+=s.textContent.replaceAll('#hd20LauncherOverview','#hd20ActivityLookupPanel').replaceAll('body.hd20InquiryActive','body.hd20ActivityLookupStandalone');
+  s.textContent+=`
+#awActivity #hd20ActivityLookupPanel{display:block!important;position:relative;width:100%;padding:16px!important;margin:0!important;box-sizing:border-box;background:#fff}
+#hd20ActivityLookupPanel .hd20LnLookupHeader{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:0 0 14px}
+#hd20ActivityLookupPanel .hd20LnLookupHeader>div{display:flex;flex-direction:column;gap:5px;min-width:0}
+#hd20ActivityLookupPanel .hd20LnLookupHeader b{font-size:19px;color:#163f5b}
+#hd20ActivityLookupPanel .hd20LnLookupHeader span{font-size:12px;color:#637f90}
+#hd20ActivityLookupPanel .hd20LnTopRegister{flex:none;border:1px solid #11699e;background:#166ba2;color:#fff;font-size:13px;font-weight:800;border-radius:8px;padding:11px 18px;cursor:pointer}
+#hd20ActivityLookupPanel .hd20LnTopRegister:hover{background:#095781}
+#hd20ActivityLookupPanel [data-ln-filter]:disabled{background:#edf3f7;color:#496679}
+#hd20ActivityLookupPanel .hd20LnThreeTabs{display:none!important}
+@media(max-width:650px){#hd20ActivityLookupPanel .hd20LnLookupHeader{align-items:stretch;flex-direction:column}#hd20ActivityLookupPanel .hd20LnTopRegister{align-self:flex-end}}
+`;
   document.head.appendChild(s);
 }
 function close(){document.getElementById('hd20Launcher')?.remove();try{sessionStorage.setItem(SEEN_KEY,'1')}catch{}}
@@ -125,6 +138,7 @@ function rowDate(x){return String(x?.date||x?.regDate||x?.createdAt||x?.register
 function rowTeam(x){return String(x?.team||x?.teamName||x?.ownerTeam||x?.department||'팀 미지정')}
 function rowStatus(x){return String(x?.activityStatus||x?.status||x?.auditState||'등록')}
 let GRID={route:'all',query:'',team:'all',workplace:'all',theme:'all',status:'all',source:'all',registrar:'',assignee:'',caseId:'',textFilter:'',from:'',to:'',dueFrom:'',dueTo:'',evidence:'all',overdue:'all',page:1,size:20};
+const SUBGRID={self:{...GRID,route:'activity'},request:{...GRID,route:'action'}};
 function auditSource(x){if(x.__area!=='action')return '자율개선';if(x.sourceCaseId||x.auditDrawId||/audit/i.test(String(x.source||''))||/audit/i.test(String(x.requestSource||'')))return 'Audit 연계';return '일반 개선요청'}
 function registrar(x){return String(x.owner||x.registeredBy||x.registrant||x.auditor||x.requester||'').trim()}
 function field(x,...names){for(const name of names){const v=x?.[name];if(v!==undefined&&v!==null&&String(v).trim())return String(v).trim()}return ''}
@@ -136,77 +150,93 @@ function evidence(x){const v=[x.before,x.beforePhoto,x.beforeImage,x.evidence,x.
 function overdue(x){const due=dueDate(x);return !!due&&due<new Date().toISOString().slice(0,10)&&!/완료|종결|채택|확정|closed|done/i.test(rowStatus(x))}
 function matchesText(value,query){return !query||String(value??'').toLocaleLowerCase().includes(String(query).trim().toLocaleLowerCase())}
 function textMatch(x,q){const needle=String(q||'').trim().replace(/\s+/g,' ').toLocaleLowerCase();if(!needle)return true;return [x.title,x.subject,x.description,x.content,x.issue,x.problem,x.activityName,x.item,x.actionText,x.improvementRequest,x.before,x.after,x.evidence,x.afterEvidence].some(v=>typeof v==='string'&&v.replace(/\s+/g,' ').toLocaleLowerCase().includes(needle))}
-function renderOverview(){
- const root=document.getElementById('hd20LauncherOverview');if(!root)return;
+function renderOverview(mode='overview'){
+ const separate=mode==='self'||mode==='request';
+ const root=document.getElementById(separate?'hd20ActivityLookupPanel':'hd20LauncherOverview');if(!root)return;
+ let view=separate?SUBGRID[mode]:view;
+ const saveView=(next)=>{view=next;if(separate)SUBGRID[mode]=next;else GRID=next};
+
  const {activities,actions}=sourceRows();
+ if(separate&&view.route!==(mode==='self'?'activity':'action'))view.route=mode==='self'?'activity':'action';
  const records=[...activities.map(x=>({...x,__route:'자율개선',__area:'activity'})),...actions.map(x=>({...x,__route:'개선요청',__area:'action'}))];
  const conditionRows=records.filter(x=>
-  (GRID.route==='all'||x.__area===GRID.route)&&
-  (GRID.team==='all'||rowTeam(x)===GRID.team)&&
-  (GRID.workplace==='all'||workplace(x)===GRID.workplace)&&
-  (GRID.theme==='all'||theme(x)===GRID.theme)&&
-  (GRID.status==='all'||rowStatus(x)===GRID.status)&&
-  (GRID.source==='all'||auditSource(x)===GRID.source)&&
-  matchesText(registrar(x),GRID.registrar)&&
-  matchesText(assignee(x),GRID.assignee)&&
-  matchesText(improvementId(x),GRID.caseId)&&
-  (!GRID.from||rowDate(x)>=GRID.from)&&(!GRID.to||rowDate(x)<=GRID.to)&&
-  (!GRID.dueFrom||dueDate(x)>=GRID.dueFrom)&&(!GRID.dueTo||dueDate(x)<=GRID.dueTo)&&
-  (GRID.evidence==='all'||(GRID.evidence==='yes'?evidence(x):!evidence(x)))&&
-  (GRID.overdue==='all'||(GRID.overdue==='yes'?overdue(x):!overdue(x)))&&
-  (!GRID.query||[x.__route,rowDate(x),rowTeam(x),rowStatus(x),improvementId(x),x.title,x.subject,x.description,x.content,x.issue,x.problem,x.improvement,x.improvementRequest,workplace(x),theme(x),registrar(x),assignee(x),x.sourceCaseId].some(v=>matchesText(v,GRID.query)))
+  (view.route==='all'||x.__area===view.route)&&
+  (view.team==='all'||rowTeam(x)===view.team)&&
+  (view.workplace==='all'||workplace(x)===view.workplace)&&
+  (view.theme==='all'||theme(x)===view.theme)&&
+  (view.status==='all'||rowStatus(x)===view.status)&&
+  (view.source==='all'||auditSource(x)===view.source)&&
+  matchesText(registrar(x),view.registrar)&&
+  matchesText(assignee(x),view.assignee)&&
+  matchesText(improvementId(x),view.caseId)&&
+  (!view.from||rowDate(x)>=view.from)&&(!view.to||rowDate(x)<=view.to)&&
+  (!view.dueFrom||dueDate(x)>=view.dueFrom)&&(!view.dueTo||dueDate(x)<=view.dueTo)&&
+  (view.evidence==='all'||(view.evidence==='yes'?evidence(x):!evidence(x)))&&
+  (view.overdue==='all'||(view.overdue==='yes'?overdue(x):!overdue(x)))&&
+  (!view.query||[x.__route,rowDate(x),rowTeam(x),rowStatus(x),improvementId(x),x.title,x.subject,x.description,x.content,x.issue,x.problem,x.improvement,x.improvementRequest,workplace(x),theme(x),registrar(x),assignee(x),x.sourceCaseId].some(v=>matchesText(v,view.query)))
  );
- const filtered=conditionRows.filter(x=>textMatch(x,GRID.textFilter)).sort((a,b)=>rowDate(b).localeCompare(rowDate(a)));
+ const filtered=conditionRows.filter(x=>textMatch(x,view.textFilter)).sort((a,b)=>rowDate(b).localeCompare(rowDate(a)));
  const teams=[...new Set(records.map(rowTeam))].sort();
  const workplaces=[...new Set(records.map(workplace))].sort();
  const themes=[...new Set(records.map(theme))].sort();
  const statuses=[...new Set(records.map(rowStatus))].sort();
  const option=(value,label,selected)=>'<option value="'+escapeText(value)+'"'+(selected?' selected':'')+'>'+escapeText(label)+'</option>';
- const pages=Math.max(1,Math.ceil(filtered.length/GRID.size));GRID.page=Math.min(GRID.page,pages);
- const shown=filtered.slice((GRID.page-1)*GRID.size,GRID.page*GRID.size);
+ const pages=Math.max(1,Math.ceil(filtered.length/view.size));view.page=Math.min(view.page,pages);
+ const shown=filtered.slice((view.page-1)*view.size,view.page*view.size);
  const cell=(v)=>'<td>'+escapeText(v||'—')+'</td>';
- root.innerHTML='<div class="hd20LnInquiryTitle"><b>자율개선 · 개선요청 통합조회</b><span>등록 이력 검색 및 개선조치 진행현황 관리</span></div><nav class="hd20LnThreeTabs" aria-label="개선활동 등록 이력 조회"><button type="button" data-ln-tab="all" class="'+(GRID.route==='all'?'on':'')+'">① 총괄조회</button><button type="button" data-ln-tab="activity" class="'+(GRID.route==='activity'?'on':'')+'">② 자체개선 조회</button><button type="button" data-ln-tab="action" class="'+(GRID.route==='action'?'on':'')+'">③ 개선요청 조회</button></nav><div class="hd20LnActionBar"><button type="button" data-ln-new-register>+ 신규등록</button></div>'+
+ root.innerHTML='<div class="hd20LnInquiryTitle hd20LnLookupHeader"><div><b>'+(mode==='self'?'자율개선조회':mode==='request'?'개선요청조회':'자율개선 · 개선요청 통합조회')+'</b><span>'+(separate?'상세 검색조건으로 등록 사례를 조회하고, 우측 등록 버튼에서 원본 팝업을 엽니다.':'등록 이력 검색 및 개선조치 진행현황 관리')+'</span></div>'+(separate?'<button class="hd20LnTopRegister" type="button" data-ln-new-register>+ '+(mode==='self'?'자율개선 등록':'개선요청 등록')+'</button>':'')+'</div>'+
+ (separate?'':'<nav class="hd20LnThreeTabs" aria-label="개선활동 등록 이력 조회"><button type="button" data-ln-tab="all" class="'+(view.route==='all'?'on':'')+'">① 총괄조회</button><button type="button" data-ln-tab="activity" class="'+(view.route==='activity'?'on':'')+'">② 자체개선 조회</button><button type="button" data-ln-tab="action" class="'+(view.route==='action'?'on':'')+'">③ 개선요청 조회</button></nav><div class="hd20LnActionBar"><button type="button" data-ln-new-register>+ 신규등록</button></div>')+
  '<div class="hd20LnGridTools"><div class="hd20LnSearchHint"><strong>검색조건</strong><span>기본조건 + 상세조건 + 내용 검색을 모두 동시에 적용합니다.</span></div><div class="hd20LnFilters hd20LnPrimaryFilters">'+
- '<label>등록 구분 <select aria-label="등록 구분" data-ln-filter>'+option('all','전체 구분',GRID.route==='all')+option('activity','자율개선',GRID.route==='activity')+option('action','개선요청',GRID.route==='action')+'</select></label>'+
- '<label>생산팀 <select aria-label="생산팀" data-ln-team>'+option('all','전체 팀',GRID.team==='all')+teams.map(t=>option(t,t,GRID.team===t)).join('')+'</select></label>'+
- '<label>작업장·라인 <select aria-label="작업장·라인" data-ln-workplace>'+option('all','전체 작업장',GRID.workplace==='all')+workplaces.map(t=>option(t,t,GRID.workplace===t)).join('')+'</select></label>'+
- '<label>5S 테마 <select aria-label="5S 테마" data-ln-theme>'+option('all','전체 테마',GRID.theme==='all')+themes.map(t=>option(t,t,GRID.theme===t)).join('')+'</select></label>'+
- '<label>진행 상태 <select aria-label="진행 상태" data-ln-status>'+option('all','전체 상태',GRID.status==='all')+statuses.map(t=>option(t,t,GRID.status===t)).join('')+'</select></label>'+
- '<label>요청 출처 <select aria-label="요청 출처" data-ln-source>'+option('all','전체 출처',GRID.source==='all')+['자율개선','Audit 연계','일반 개선요청'].map(v=>option(v,v,GRID.source===v)).join('')+'</select></label>'+
- '<label>등록일 시작 <input type="date" data-ln-from value="'+escapeText(GRID.from)+'"></label>'+
- '<label>등록일 종료 <input type="date" data-ln-to value="'+escapeText(GRID.to)+'"></label></div>'+
- '<details class="hd20LnAdvanced" '+([GRID.caseId,GRID.registrar,GRID.assignee,GRID.dueFrom,GRID.dueTo].some(Boolean)||GRID.evidence!=='all'||GRID.overdue!=='all'?'open':'')+'><summary>상세 검색조건 · 관리번호 / 담당자 / 증빙 / 기한</summary><div class="hd20LnFilters hd20LnAdvancedFilters">'+
- '<label>관리번호 <input data-ln-caseid placeholder="개선번호·관리번호 검색" value="'+escapeText(GRID.caseId)+'"></label>'+
- '<label>등록자 <input data-ln-registrar placeholder="등록자 이름" value="'+escapeText(GRID.registrar)+'"></label>'+
- '<label>조치담당자 <input data-ln-assignee placeholder="조치담당자 이름" value="'+escapeText(GRID.assignee)+'"></label>'+
- '<label>조치기한 시작 <input type="date" data-ln-duefrom value="'+escapeText(GRID.dueFrom)+'"></label>'+
- '<label>조치기한 종료 <input type="date" data-ln-dueto value="'+escapeText(GRID.dueTo)+'"></label>'+
- '<label>사진증빙 <select data-ln-evidence>'+option('all','전체',GRID.evidence==='all')+option('yes','첨부 있음',GRID.evidence==='yes')+option('no','첨부 없음',GRID.evidence==='no')+'</select></label>'+
- '<label>기한경과 여부 <select data-ln-overdue>'+option('all','전체',GRID.overdue==='all')+option('yes','기한경과',GRID.overdue==='yes')+option('no','기한 내 / 기한 없음',GRID.overdue==='no')+'</select></label></div></details>'+
- '<div class="hd20LnTextSearch"><label>내용 텍스트 필터<input aria-label="내용 텍스트 필터" data-ln-text placeholder="문제점·개선요청·조치내용 (2차 필터)" value="'+escapeText(GRID.textFilter)+'"></label><label>통합 키워드<input aria-label="통합 검색" data-ln-search placeholder="관리번호·생산팀·작업장·등록내용" value="'+escapeText(GRID.query)+'"></label><div class="hd20LnSearchActions"><button type="button" data-ln-search-btn>조회</button><button type="button" data-ln-reset>전체 초기화</button></div></div></div>'+
- '<div class="hd20LnResultHeading">기본조건 '+conditionRows.length+'건 → 텍스트 필터 '+(GRID.textFilter?'적용':'미적용')+' → 최종 '+filtered.length+'건</div>'+
- '<div class="hd20LnTableScroll"><table class="hd20LnDataTable"><thead><tr><th>번호</th><th>개선번호</th><th>등록 구분</th><th>등록일</th><th>담당 팀</th><th>등록 내용</th><th>상태</th><th>조회</th></tr></thead><tbody>'+ (shown.map((x,i)=>'<tr>'+cell((GRID.page-1)*GRID.size+i+1)+'<td><button type="button" class="hd20LnIdLink" data-ln-detail="'+i+'">'+escapeText(improvementId(x)||'미부여')+'</button></td>'+cell(x.__route)+cell(rowDate(x))+cell(rowTeam(x))+/* 사용자 지적(실제 화면 캡처): "등록 내용"이 자율개선 레코드마다 전부 "내용 미입력"으로 보임 — 원인:
+ '<label>등록 구분 <select aria-label="등록 구분" data-ln-filter>'+option('all','전체 구분',view.route==='all')+option('activity','자율개선',view.route==='activity')+option('action','개선요청',view.route==='action')+'</select></label>'+
+ '<label>생산팀 <select aria-label="생산팀" data-ln-team>'+option('all','전체 팀',view.team==='all')+teams.map(t=>option(t,t,view.team===t)).join('')+'</select></label>'+
+ '<label>작업장·라인 <select aria-label="작업장·라인" data-ln-workplace>'+option('all','전체 작업장',view.workplace==='all')+workplaces.map(t=>option(t,t,view.workplace===t)).join('')+'</select></label>'+
+ '<label>5S 테마 <select aria-label="5S 테마" data-ln-theme>'+option('all','전체 테마',view.theme==='all')+themes.map(t=>option(t,t,view.theme===t)).join('')+'</select></label>'+
+ '<label>진행 상태 <select aria-label="진행 상태" data-ln-status>'+option('all','전체 상태',view.status==='all')+statuses.map(t=>option(t,t,view.status===t)).join('')+'</select></label>'+
+ '<label>요청 출처 <select aria-label="요청 출처" data-ln-source>'+option('all','전체 출처',view.source==='all')+['자율개선','Audit 연계','일반 개선요청'].map(v=>option(v,v,view.source===v)).join('')+'</select></label>'+
+ '<label>등록일 시작 <input type="date" data-ln-from value="'+escapeText(view.from)+'"></label>'+
+ '<label>등록일 종료 <input type="date" data-ln-to value="'+escapeText(view.to)+'"></label></div>'+
+ '<details class="hd20LnAdvanced" '+([view.caseId,view.registrar,view.assignee,view.dueFrom,view.dueTo].some(Boolean)||view.evidence!=='all'||view.overdue!=='all'?'open':'')+'><summary>상세 검색조건 · 관리번호 / 담당자 / 증빙 / 기한</summary><div class="hd20LnFilters hd20LnAdvancedFilters">'+
+ '<label>관리번호 <input data-ln-caseid placeholder="개선번호·관리번호 검색" value="'+escapeText(view.caseId)+'"></label>'+
+ '<label>등록자 <input data-ln-registrar placeholder="등록자 이름" value="'+escapeText(view.registrar)+'"></label>'+
+ '<label>조치담당자 <input data-ln-assignee placeholder="조치담당자 이름" value="'+escapeText(view.assignee)+'"></label>'+
+ '<label>조치기한 시작 <input type="date" data-ln-duefrom value="'+escapeText(view.dueFrom)+'"></label>'+
+ '<label>조치기한 종료 <input type="date" data-ln-dueto value="'+escapeText(view.dueTo)+'"></label>'+
+ '<label>사진증빙 <select data-ln-evidence>'+option('all','전체',view.evidence==='all')+option('yes','첨부 있음',view.evidence==='yes')+option('no','첨부 없음',view.evidence==='no')+'</select></label>'+
+ '<label>기한경과 여부 <select data-ln-overdue>'+option('all','전체',view.overdue==='all')+option('yes','기한경과',view.overdue==='yes')+option('no','기한 내 / 기한 없음',view.overdue==='no')+'</select></label></div></details>'+
+ '<div class="hd20LnTextSearch"><label>내용 텍스트 필터<input aria-label="내용 텍스트 필터" data-ln-text placeholder="문제점·개선요청·조치내용 (2차 필터)" value="'+escapeText(view.textFilter)+'"></label><label>통합 키워드<input aria-label="통합 검색" data-ln-search placeholder="관리번호·생산팀·작업장·등록내용" value="'+escapeText(view.query)+'"></label><div class="hd20LnSearchActions"><button type="button" data-ln-search-btn>조회</button><button type="button" data-ln-reset>전체 초기화</button></div></div></div>'+
+ '<div class="hd20LnResultHeading">기본조건 '+conditionRows.length+'건 → 텍스트 필터 '+(view.textFilter?'적용':'미적용')+' → 최종 '+filtered.length+'건</div>'+
+ '<div class="hd20LnTableScroll"><table class="hd20LnDataTable"><thead><tr><th>번호</th><th>개선번호</th><th>등록 구분</th><th>등록일</th><th>담당 팀</th><th>등록 내용</th><th>상태</th><th>조회</th></tr></thead><tbody>'+ (shown.map((x,i)=>'<tr>'+cell((view.page-1)*view.size+i+1)+'<td><button type="button" class="hd20LnIdLink" data-ln-detail="'+i+'">'+escapeText(improvementId(x)||'미부여')+'</button></td>'+cell(x.__route)+cell(rowDate(x))+cell(rowTeam(x))+/* 사용자 지적(실제 화면 캡처): "등록 내용"이 자율개선 레코드마다 전부 "내용 미입력"으로 보임 — 원인:
    이 fallback 체인이 title·subject·description·content·issue·activityName·item만 찾는데, 실제
    자율개선(activity) 레코드의 내용 필드명은 problem/improvement(통합기준정보·등록 폼과 동일한
    필드명)이고 개선요청(action) 레코드는 problem — 둘 다 이 체인에 없어 항상 fallback으로 떨어짐. */
 cell(x.problem||x.improvement||x.title||x.subject||x.description||x.content||x.issue||x.activityName||x.item||'내용 미입력')+cell(rowStatus(x))+'<td><button type="button" data-ln-detail="'+i+'">열기</button></td></tr>').join('')||'<tr><td colspan="8" class="hd20LnEmpty">조회된 데이터가 없습니다.</td></tr>')+'</tbody></table></div>'+
- '<div class="hd20LnPager"><span>조회 '+filtered.length+'건 · '+GRID.page+' / '+pages+' 페이지</span><div><button type="button" data-ln-prev '+(GRID.page<=1?'disabled':'')+'>이전</button><button type="button" data-ln-next '+(GRID.page>=pages?'disabled':'')+'>다음</button></div></div>';
- root.querySelector('[data-ln-new-register]')?.addEventListener('click',open);
+ '<div class="hd20LnPager"><span>조회 '+filtered.length+'건 · '+view.page+' / '+pages+' 페이지</span><div><button type="button" data-ln-prev '+(view.page<=1?'disabled':'')+'>이전</button><button type="button" data-ln-next '+(view.page>=pages?'disabled':'')+'>다음</button></div></div>';
+ root.querySelector('[data-ln-new-register]')?.addEventListener('click',()=>{
+  if(mode==='self'){
+   const button=document.querySelector('#awActivity [data-aw="new"]');
+   if(button)button.click();else alert('자율개선 등록 기능을 불러오지 못했습니다.');
+  }else if(mode==='request'){
+   const modal=document.getElementById('hd20ActionRegisterModal'),button=document.getElementById('hd20ActionRegisterBtn');
+   if(!modal||!button){alert('개선요청 등록 기능을 불러오지 못했습니다.');return}
+   if(modal.parentElement!==document.body)document.body.appendChild(modal);
+   button.click();
+  }else open();
+ });
  
- root.querySelectorAll('[data-ln-tab]').forEach(btn=>btn.onclick=()=>{GRID.route=btn.dataset.lnTab;GRID.page=1;renderOverview()});
- root.querySelector('[data-ln-filter]').value=GRID.route;
- root.querySelector('[data-ln-filter]').onchange=e=>{GRID.route=e.target.value;GRID.page=1;renderOverview()};
+ root.querySelectorAll('[data-ln-tab]').forEach(btn=>btn.onclick=()=>{view.route=btn.dataset.lnTab;view.page=1;renderOverview(mode)});
+ root.querySelector('[data-ln-filter]').value=view.route;if(separate)root.querySelector('[data-ln-filter]').disabled=true;
+ root.querySelector('[data-ln-filter]').onchange=e=>{view.route=e.target.value;view.page=1;renderOverview(mode)};
  root.querySelector('[data-ln-search-btn]').onclick=()=>{
  const get=s=>root.querySelector(s)?.value??'';
- const draft={...GRID,route:get('[data-ln-filter]'),query:get('[data-ln-search]').trim(),team:get('[data-ln-team]'),workplace:get('[data-ln-workplace]'),theme:get('[data-ln-theme]'),status:get('[data-ln-status]'),source:get('[data-ln-source]'),registrar:get('[data-ln-registrar]').trim(),assignee:get('[data-ln-assignee]').trim(),caseId:get('[data-ln-caseid]').trim(),textFilter:get('[data-ln-text]').trim(),from:get('[data-ln-from]'),to:get('[data-ln-to]'),dueFrom:get('[data-ln-duefrom]'),dueTo:get('[data-ln-dueto]'),evidence:get('[data-ln-evidence]'),overdue:get('[data-ln-overdue]'),page:1};
+ const draft={...view,route:get('[data-ln-filter]'),query:get('[data-ln-search]').trim(),team:get('[data-ln-team]'),workplace:get('[data-ln-workplace]'),theme:get('[data-ln-theme]'),status:get('[data-ln-status]'),source:get('[data-ln-source]'),registrar:get('[data-ln-registrar]').trim(),assignee:get('[data-ln-assignee]').trim(),caseId:get('[data-ln-caseid]').trim(),textFilter:get('[data-ln-text]').trim(),from:get('[data-ln-from]'),to:get('[data-ln-to]'),dueFrom:get('[data-ln-duefrom]'),dueTo:get('[data-ln-dueto]'),evidence:get('[data-ln-evidence]'),overdue:get('[data-ln-overdue]'),page:1};
  if(draft.from&&draft.to&&draft.from>draft.to){alert('등록일 시작일은 종료일보다 늦을 수 없습니다.');return}
  if(draft.dueFrom&&draft.dueTo&&draft.dueFrom>draft.dueTo){alert('조치기한 시작일은 종료일보다 늦을 수 없습니다.');return}
- GRID=draft;renderOverview();
+ saveView(draft);renderOverview(mode);
  };
  root.querySelectorAll('.hd20LnGridTools input').forEach(el=>el.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();root.querySelector('[data-ln-search-btn]').click()}});
- root.querySelector('[data-ln-reset]').onclick=()=>{GRID={route:'all',query:'',team:'all',workplace:'all',theme:'all',status:'all',source:'all',registrar:'',assignee:'',caseId:'',textFilter:'',from:'',to:'',dueFrom:'',dueTo:'',evidence:'all',overdue:'all',page:1,size:20};renderOverview()};
- root.querySelector('[data-ln-prev]').onclick=()=>{GRID.page--;renderOverview()};
- root.querySelector('[data-ln-next]').onclick=()=>{GRID.page++;renderOverview()};
+ root.querySelector('[data-ln-reset]').onclick=()=>{saveView({route: (mode==='self'?'activity':mode==='request'?'action':'all'),query:'',team:'all',workplace:'all',theme:'all',status:'all',source:'all',registrar:'',assignee:'',caseId:'',textFilter:'',from:'',to:'',dueFrom:'',dueTo:'',evidence:'all',overdue:'all',page:1,size:20});renderOverview(mode)};
+ root.querySelector('[data-ln-prev]').onclick=()=>{view.page--;renderOverview(mode)};
+ root.querySelector('[data-ln-next]').onclick=()=>{view.page++;renderOverview(mode)};
  root.querySelectorAll('[data-ln-detail]').forEach(btn=>btn.onclick=()=>{const x=shown[Number(btn.dataset.lnDetail)];if(!x)return;let modal=document.getElementById('hd20LnDetailModal');if(!modal){modal=document.createElement('div');modal.id='hd20LnDetailModal';document.body.appendChild(modal)}const fields=[['개선번호',improvementId(x)||'미부여'],['등록 구분',x.__route],['등록일',rowDate(x)],['담당 팀',rowTeam(x)],['상태',rowStatus(x)],['등록자',registrar(x)||'미입력'],['작업장',x.workplace||'미입력'],['요청 출처',auditSource(x)],['원본 Audit ID',x.sourceCaseId||x.auditDrawId||'—']];
 const extract=(keys)=>{for(const k of keys){const v=x[k];if(typeof v==='string'&&v.trim())return v.trim();if(v&&typeof v==='object'){for(const a of [v.url,v.src,v.dataUrl,v.imageUrl,v.path])if(typeof a==='string'&&a.trim())return a.trim();if(Array.isArray(v)){for(const item of v){const a=typeof item==='string'?item:item?.url||item?.src||item?.dataUrl;if(typeof a==='string'&&a.trim())return a.trim()}}}}return ''};
 const media=(keys)=>{const v=extract(keys);if(!v)return '<div class="hd20LnNoPhoto">등록된 사진 없음</div>';if(!(v.startsWith('https://')||v.startsWith('http://')||v.startsWith('blob:')||v.startsWith('data:image/')))return '<div class="hd20LnNoPhoto">사진 경로 확인 필요</div>';return '<img alt="개선 증빙사진" loading="lazy" src="'+escapeText(v)+'">'};
@@ -290,7 +320,7 @@ function open(){
   el.addEventListener('click',e=>{if(e.target===el)openOverview()});
   document.addEventListener('keydown',function esc(e){if(e.key!=='Escape')return;if(!document.getElementById('hd20Launcher')){document.removeEventListener('keydown',esc);return}document.removeEventListener('keydown',esc);openOverview()});
 }
-window.HD20_LAUNCHER={openOverview,hideOverview,openRegister:open,renderOverview};
+window.HD20_LAUNCHER={openOverview,hideOverview,openRegister:open,renderOverview,renderSubtab:renderOverview,refreshActive:()=>{const sub=document.getElementById('awActivity')?.dataset.subview;if(sub==='self'||sub==='request')renderOverview(sub);else if(document.body.classList.contains('hd20InquiryActive'))renderOverview()}};
 function boot(){
   // Navigation subtab owns overview visibility; never override self/request/TO-BE.
   const syncImprovementSubview=()=>{
