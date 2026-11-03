@@ -39,6 +39,10 @@ jobs:
           grep -Fq 'function installImprovementSubnavGuard()' hd20-subtabs.js
           node --check hd20-subtabs.js
           grep -Fq 'hd20LnThreeTabs{display:none!important}' landing-launcher.js
+          grep -Fq 'landing-launcher.js?v=20261103-composite-search-v14' index.html
+          grep -Fq 'master-workspace-v2.js?v=20261103-master-open-fix-v10' index.html
+          grep -Fq 'master-workspace-v2.css?v=20261103-master-layout-fix-v15' index.html
+          node --check master-workspace-v2.js
           node --check landing-launcher.js
           node --check beginner-navigation.js
           node --check hd20-action-notification-routing.js
