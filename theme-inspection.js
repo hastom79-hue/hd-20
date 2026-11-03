@@ -59,10 +59,10 @@ function loadChecks(){try{const v=JSON.parse(localStorage.getItem(CHECK_KEY)||'[
 function saveChecks(rows){try{localStorage.setItem(CHECK_KEY,JSON.stringify(rows));return true}catch(e){console.error('[HD20 Theme] audit history save failed',e);return false}}
 function loadPlans(){try{const v=JSON.parse(localStorage.getItem(PLAN_KEY)||'[]');return Array.isArray(v)?v:[]}catch{return[]}}
 function savePlans(rows){try{localStorage.setItem(PLAN_KEY,JSON.stringify(rows));return true}catch(e){console.error('[HD20 Theme] plan save failed',e);return false}}
-function plannedThemes(month,line,owner=selectedOwner()){
- const p=loadPlans().find(x=>x.month===month&&x.line===line&&ownerOf(x)===owner);
+function plannedThemes(month,line,owner=selectedOwner(),team=document.getElementById('awTheme')?.dataset.team||''){
+ const p=loadPlans().find(x=>x.month===month&&x.line===line&&ownerOf(x)===owner&&(owner!=='team'||x.team===team));
  if(p&&Array.isArray(p.themes))return THEMES.filter(t=>p.themes.includes(t));
- const prior=loadChecks().filter(x=>x.line===line&&ownerOf(x)===owner&&monthKey(x.month||x.auditedAt)===month).sort((a,b)=>String(b.auditedAt||'').localeCompare(String(a.auditedAt||'')))[0];
+ const prior=loadChecks().filter(x=>x.line===line&&ownerOf(x)===owner&&(owner!=='team'||x.team===team)&&monthKey(x.month||x.auditedAt)===month).sort((a,b)=>String(b.auditedAt||'').localeCompare(String(a.auditedAt||'')))[0];
  if(prior?.states)return THEMES.filter(t=>CHECKLIST.some(item=>item.cat===t&&Object.prototype.hasOwnProperty.call(prior.states,item.cat+'::'+item.item)));
  return [];
 }
@@ -82,7 +82,7 @@ function themeActionInMonth(a,month,monthAuditIds){
  return ids.some(id=>id!=null&&monthAuditIds.has(String(id)));
 }
 function actionTable(month){
- const owner=selectedOwner();const monthAuditIds=themeAuditIdsForMonth(loadChecks().filter(x=>ownerOf(x)===owner),month);const rows=load().filter(x=>{const ids=[x.auditRecordId,x.lastAuditRecordId,...(Array.isArray(x.relatedAuditRecordIds)?x.relatedAuditRecordIds:[])].filter(Boolean).map(String);return themeActionInMonth(x,month,monthAuditIds)&&(ownerOf(x)===owner||ids.some(id=>monthAuditIds.has(id)))} ).sort((a,b)=>String(b.lastAuditedAt||b.createdAt||'').localeCompare(String(a.lastAuditedAt||a.createdAt||'')));
+ const owner=selectedOwner(),team=document.getElementById('awTheme')?.dataset.team||'';const monthAuditIds=themeAuditIdsForMonth(loadChecks().filter(x=>ownerOf(x)===owner&&(owner!=='team'||x.team===team)),month);const rows=load().filter(x=>{const ids=[x.auditRecordId,x.lastAuditRecordId,...(Array.isArray(x.relatedAuditRecordIds)?x.relatedAuditRecordIds:[])].filter(Boolean).map(String);return themeActionInMonth(x,month,monthAuditIds)&&(ownerOf(x)===owner||ids.some(id=>monthAuditIds.has(id)))&&(owner!=='team'||x.team===team)} ).sort((a,b)=>String(b.lastAuditedAt||b.createdAt||'').localeCompare(String(a.lastAuditedAt||a.createdAt||'')));
  if(!rows.length)return '<div class="themeEmptyNote">선택 월에 연결된 테마점검 개선조치가 없습니다.</div>';
  const recurrenceCount=rows.filter(a=>a.recurrence===true).length;const recurrenceRate=rows.length?((recurrenceCount/rows.length)*100).toFixed(1):'0.0';
  const statuses=[...new Set(rows.map(a=>String(a.status||'미분류')))].sort();
@@ -211,7 +211,7 @@ function kpis(month){
  return{linesAudited,ng,autoRegistered,okRate};
 }
 function historyTable(month){
- const all=loadChecks().filter(x=>ownerOf(x)===selectedOwner()&&monthKey(x.month||x.auditedAt)===month).sort((a,b)=>String(b.auditedAt||'').localeCompare(String(a.auditedAt||'')));
+ const all=loadChecks().filter(x=>ownerOf(x)===selectedOwner()&&(selectedOwner()!=='team'||x.team===document.getElementById('awTheme')?.dataset.team)&&monthKey(x.month||x.auditedAt)===month).sort((a,b)=>String(b.auditedAt||'').localeCompare(String(a.auditedAt||'')));
  if(!all.length)return '<div class="themeEmptyNote">이번 달 점검 이력이 없습니다. 점검 결과를 저장하면 회차별 이력이 여기에 누적됩니다.</div>';
  const actions=load();
  const body=all.slice(0,8).map(rec=>{
@@ -229,15 +229,15 @@ function render(){
  const monthOpts=monthOptions();
  const view=host.dataset.view||'plan';host.dataset.view=view;
  const owner=selectedOwner();host.dataset.inspectionOwner=owner;
- const planThemes=plannedThemes(month,line);
+ const planThemes=plannedThemes(month,line,owner,team);
  const pageSize=10,totalPages=Math.max(1,Math.ceil(LINES.length/pageSize));
  const page=Math.min(Math.max(0,Number(host.dataset.planPage)||0),totalPages-1);host.dataset.planPage=String(page);
- const auditRows=loadChecks().filter(x=>ownerOf(x)===owner&&monthKey(x.month||x.auditedAt)===month);
+ const auditRows=loadChecks().filter(x=>ownerOf(x)===owner&&(owner!=='team'||x.team===team)&&monthKey(x.month||x.auditedAt)===month);
  const latestAuditByLine=new Map();
  auditRows.forEach(rec=>{const prev=latestAuditByLine.get(rec.line);if(!prev||String(rec.auditedAt||'').localeCompare(String(prev.auditedAt||''))>=0)latestAuditByLine.set(rec.line,rec)});
- const monthAuditIds=themeAuditIdsForMonth(auditRows,month);const monthActions=load().filter(x=>ownerOf(x)===owner&&themeActionInMonth(x,month,monthAuditIds));
+ const monthAuditIds=themeAuditIdsForMonth(auditRows,month);const monthActions=load().filter(x=>(ownerOf(x)===owner||[x.auditRecordId,x.lastAuditRecordId,...(Array.isArray(x.relatedAuditRecordIds)?x.relatedAuditRecordIds:[])].some(id=>monthAuditIds.has(String(id))))&&(owner!=='team'||x.team===team)&&themeActionInMonth(x,month,monthAuditIds));
  const lineSummaryRows=LINES.slice(page*pageSize,(page+1)*pageSize).map(ln=>{
-   const themes=plannedThemes(month,ln),rec=latestAuditByLine.get(ln),states=Object.values(rec?.states||{});
+   const themes=plannedThemes(month,ln,owner,team),rec=latestAuditByLine.get(ln),states=Object.values(rec?.states||{});
    const ng=states.filter(v=>v==='미흡').length;
    const actionCount=monthActions.filter(a=>a.workplace===ln).length;
    const themeChips=themes.length?themes.map(t=>'<span class="themeLineChip">'+esc(t)+'</span>').join(''):'<span class="themePlanMissing">계획 미설정</span>';
@@ -259,7 +259,7 @@ function render(){
    <button type="button" data-theme-view="history" data-step="04" class="${view==='history'?'active':''}">재점검·이력</button>
  </nav>
  <section class="themePanel" data-theme-panel="plan" ${view==='plan'?'':'hidden'}>
- <div class="themePlanBox"><div class="themeSectionHead"><h3>월별·라인별 취약 테마 계획</h3><small>5S 모듈이 해당 월에 중점 점검할 테마를 지정합니다.</small></div>
+ <div class="themePlanBox">${owner==='team'?'<div class="themeSelfTeamSelector"><label>자율점검 생산팀 <select id="themeSelfPlanTeam">'+teamOptions().map(t=>'<option'+(t===team?' selected':'')+'>'+esc(t)+'</option>').join('')+'</select></label><small>생산팀장 자율점검 계획은 생산팀·라인별로 독립 저장됩니다.</small></div>':''}<div class="themeSectionHead"><h3>월별·라인별 취약 테마 계획</h3><small>5S 모듈이 해당 월에 중점 점검할 테마를 지정합니다.</small></div>
  <div class="themeControls"><label>계획 라인/구역 <select id="themePlanLineSel">${LINES.map(l=>`<option${l===line?' selected':''}>${esc(l)}</option>`).join('')}</select></label><span class="themePlanHint">체크한 테마만 현장 점검표에 표시됩니다. 기존 점검 이력은 보존됩니다.</span></div>
  <div class="themePlanChoices">${THEMES.map(t=>`<label><input type="checkbox" name="themePlanTheme" value="${esc(t)}" ${planThemes.includes(t)?'checked':''}><span>${esc(t)}</span></label>`).join('')}</div>
  <div class="themePlanFooter"><span>선택 테마 <b id="themePlanCount">${planThemes.length}</b> / ${THEMES.length} · <b class="themePlanState">${planThemes.length?'계획 설정됨':'계획 미설정'}</b></span><button type="button" class="themePlanSave" id="themeSavePlanBtn">계획 저장</button></div>${planThemes.length?'':'<div class="themeEmptyNote themePlanEmpty">이 라인의 해당 월 점검 테마가 아직 지정되지 않았습니다. 5S 모듈에서 취약 테마를 선택한 후 저장해야 현장점검을 시작할 수 있습니다.</div>'}</div>
@@ -275,7 +275,7 @@ function render(){
    <div class="themeSectionHead" style="margin-top:0"><h3>현장점검 실시 <span class="themeAuditLineBadge" id="themeAuditLineLabel">${esc(line)}</span></h3></div>
    <div class="themeControls">
      <label>라인 <select id="themeLineSel">${LINES.map(l=>`<option${l===line?' selected':''}>${esc(l)}</option>`).join('')}</select></label>
-     <label>담당 생산팀 <select id="themeTeamSel">${teamOptions().map(t=>`<option${t===team?' selected':''}>${esc(t)}</option>`).join('')}</select></label>
+     <label>담당 생산팀 <select id="themeTeamSel" ${owner==='team'?'disabled':''}>${teamOptions().map(t=>`<option${t===team?' selected':''}>${esc(t)}</option>`).join('')}</select></label>
    </div>
    <div class="themeBulkRow"><span class="themeWorkflowNote">평가 도구 · 선택한 라인의 점검항목에 적용</span>
      <button type="button" class="themeBulkBtn" id="themeBulkAllOk">전체 적합으로 일괄 설정</button>
@@ -290,7 +290,7 @@ function render(){
  <section class="themePanel" data-theme-panel="actions" ${view==='actions'?'':'hidden'}><details class="themeHistoryBox"><summary style="cursor:pointer;padding:10px 14px;font-weight:800;color:#24516f">상세 원본 점검·개선조치 이력 보기</summary><div class="themeSectionHead" style="margin-top:0"><h3>테마점검 원본 개선조치 추적</h3><small>기존 등록·완료 이력을 보존한 상세조회</small></div>${actionTable(month)}</details></section>`;
  // Preserve a confirmed save acknowledgement across event-triggered re-renders of the same audit context.
  const resultBox=$('#themeSaveResult',host);
- if(resultBox&&host.dataset.themeSaveContext===month+'|'+line&&host.dataset.themeSaveResult){
+ if(resultBox&&host.dataset.themeSaveContext===month+'|'+line+'|'+owner+'|'+team&&host.dataset.themeSaveResult){
    resultBox.classList.add('on');
    resultBox.textContent=host.dataset.themeSaveResult;
  }
@@ -303,11 +303,12 @@ function render(){
  Array.from(host.querySelectorAll('[data-theme-page]')).forEach(btn=>btn.addEventListener('click',()=>{host.dataset.planPage=String(Math.min(totalPages-1,Math.max(0,page+Number(btn.dataset.themePage))));render()}));
  Array.from(host.querySelectorAll('[data-theme-owner]')).forEach(btn=>btn.addEventListener('click',()=>{if(host.dataset.inspectionOwner===btn.dataset.themeOwner)return;host.dataset.inspectionOwner=btn.dataset.themeOwner;host.dataset.view='plan';host.dataset.planPage='0';render()}));
  Array.from(host.querySelectorAll('[data-theme-view]')).forEach(btn=>btn.addEventListener('click',()=>{host.dataset.view=btn.dataset.themeView;render()}));
- $('#themePlanLineSel',host)?.addEventListener('change',e=>{host.dataset.line=e.target.value;host.dataset.team=LINE_DEFAULT_TEAM[e.target.value]||host.dataset.team;render()});
+ $('#themeSelfPlanTeam',host)?.addEventListener('change',e=>{host.dataset.team=e.target.value;host.dataset.planPage='0';render()});
+ $('#themePlanLineSel',host)?.addEventListener('change',e=>{host.dataset.line=e.target.value;host.dataset.team=owner==='team'?host.dataset.team:(LINE_DEFAULT_TEAM[e.target.value]||host.dataset.team);render()});
  Array.from(host.querySelectorAll('input[name="themePlanTheme"]')).forEach(box=>box.addEventListener('change',()=>{const n=host.querySelectorAll('input[name="themePlanTheme"]:checked').length;const count=$('#themePlanCount',host);if(count)count.textContent=n}));
- $('#themeSavePlanBtn',host)?.addEventListener('click',()=>{const selected=Array.from(host.querySelectorAll('input[name="themePlanTheme"]:checked')).map(x=>x.value);if(!selected.length){alert('최소 1개 이상의 취약 테마를 선택해 주세요.');return}const plans=loadPlans(),entry={month,line:host.dataset.line,themes:selected,inspectionOwner:owner,updatedAt:new Date().toISOString()};const i=plans.findIndex(x=>x.month===month&&x.line===host.dataset.line&&ownerOf(x)===owner);if(i>=0)plans[i]=entry;else plans.push(entry);if(!savePlans(plans)){alert('점검계획 저장에 실패했습니다. 저장공간을 확인해 주세요.');return}render()});
+ $('#themeSavePlanBtn',host)?.addEventListener('click',()=>{const selected=Array.from(host.querySelectorAll('input[name="themePlanTheme"]:checked')).map(x=>x.value);if(!selected.length){alert('최소 1개 이상의 취약 테마를 선택해 주세요.');return}const plans=loadPlans(),entry={month,line:host.dataset.line,team:owner==='team'?host.dataset.team:'',themes:selected,inspectionOwner:owner,updatedAt:new Date().toISOString()};const i=plans.findIndex(x=>x.month===month&&x.line===host.dataset.line&&ownerOf(x)===owner&&(owner!=='team'||x.team===host.dataset.team));if(i>=0)plans[i]=entry;else plans.push(entry);if(!savePlans(plans)){alert('점검계획 저장에 실패했습니다. 저장공간을 확인해 주세요.');return}render()});
  $('#themeLineSel',host)?.addEventListener('change',e=>{host.dataset.line=e.target.value;host.dataset.team=LINE_DEFAULT_TEAM[e.target.value]||host.dataset.team;render()});
- $('#themeTeamSel',host)?.addEventListener('change',e=>{host.dataset.team=e.target.value});
+ $('#themeTeamSel',host)?.addEventListener('change',e=>{host.dataset.team=e.target.value;render()});
  $('#themeSaveBtn',host)?.addEventListener('click',async e=>{
    const button=e.currentTarget;
    if(button.dataset.saving==='true')return;
@@ -319,7 +320,7 @@ function render(){
   $('#themeBulkClear',host)?.addEventListener('click',()=>{bulkSet('');const note=$('#themePreviousNote',host);if(note)note.textContent='새 회차 입력 상태로 초기화했습니다.'});
  Array.from(host.querySelectorAll('[data-pick-line]')).forEach(el=>el.addEventListener('click',()=>{
    const ln=el.getAttribute('data-pick-line');
-   host.dataset.line=ln;host.dataset.team=LINE_DEFAULT_TEAM[ln]||host.dataset.team;host.dataset.view='audit';render();
+   host.dataset.line=ln;host.dataset.team=owner==='team'?host.dataset.team:(LINE_DEFAULT_TEAM[ln]||host.dataset.team);host.dataset.view='audit';render();
    $('#themeAuditBox',host)?.scrollIntoView({behavior:'smooth',block:'start'});
  }));
  renderChecklist();
@@ -336,7 +337,7 @@ function checklistState(line){return {}}
 function loadPreviousJudgements(){
  const host=document.getElementById('awTheme');if(!host)return;
  const line=host.dataset.line,month=host.dataset.month;
- const rec=loadChecks().filter(x=>x.line===line&&ownerOf(x)===selectedOwner()&&monthKey(x.month||x.auditedAt)===month).sort((a,b)=>String(b.auditedAt||'').localeCompare(String(a.auditedAt||'')))[0];
+ const rec=loadChecks().filter(x=>x.line===line&&ownerOf(x)===selectedOwner()&&(selectedOwner()!=='team'||x.team===host.dataset.team)&&monthKey(x.month||x.auditedAt)===month).sort((a,b)=>String(b.auditedAt||'').localeCompare(String(a.auditedAt||'')))[0];
  if(!rec){alert('선택한 라인·월에 참고할 이전 점검 결과가 없습니다.');return}
  const wrap=$('#themeChecklistWrap',host);
  $$('.themeCheckRow',wrap).forEach(row=>{
@@ -465,7 +466,7 @@ async function saveAudit(){
  window.dispatchEvent(new CustomEvent('hd20-theme-audit-updated',{detail:{auditRecordId:rec.id,line,month,inspectionOwner:rec.inspectionOwner}}));
  const msg=ownerTitle(selectedOwner())+' · 점검 이력 저장 완료 · 미흡 '+ngItems.length+'건 · 신규 개선조치 '+createdActionIds.length+'건 · 기존 미완료 조치 재연계 '+reusedActionIds.length+'건';
  host.dataset.themeSaveResult=msg;
- host.dataset.themeSaveContext=month+'|'+line;
+ host.dataset.themeSaveContext=month+'|'+line+'|'+selectedOwner()+'|'+team;
  render();
 }
 
