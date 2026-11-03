@@ -132,6 +132,63 @@ fs.mkdirSync('artifacts',{recursive:true});
     sourceCaseId:'E2E-AUDIT-LINK-ONCE-20261103',registeredBy:'최초 감사자',
     initialAuditor:'최초 감사자',duplicateRejected:true
   },'Audit registration links one action and preserves original auditor without duplicate submission');
+  // Register one isolated negative Audit through the actual form, verify
+  // its auto-created action popup, then navigate to the exact row in tab ②.
+  const registrationNavigation=await page.evaluate(async()=>{
+    const drawKey='hd20AuditRandomDrawsV1',actionKey='hd20ActionCasesV2';
+    const priorDraws=localStorage.getItem(drawKey),priorActions=localStorage.getItem(actionKey);
+    const id='E2E-AUDIT-POPUP-ROUTE-01',teamName='E2E 팝업팀';
+    const box=document.querySelector('#awAudit .auditClosedLoop');
+    const setSelect=(selector,value)=>{
+      const el=box.querySelector(selector);
+      if(![...el.options].some(o=>o.value===value))el.add(new Option(value,value));
+      el.value=value;
+    };
+    try{
+      const draws=JSON.parse(priorDraws||'[]');
+      draws.unshift({id,team:teamName,date:'2026-11-03',initialAuditor:'원본 점검자'});
+      localStorage.setItem(drawKey,JSON.stringify(draws));
+      window.HD20AuditClosedLoop.render();
+      window.HD20AuditBatchExecution.patch();
+      box.dataset.selectedAuditId=id;
+      setSelect('[data-cl-team]',teamName);
+      setSelect('[data-cl-actor]','현장 조직');
+      setSelect('[data-cl-result]','부적합');
+      setSelect('[data-cl-auditor]','현장 실시자');
+      box.querySelector('[data-cl-date]').value='2026-11-03';
+      box.querySelector('[data-cl-request]').value='E2E 개선요청 원본';
+      const dt=new DataTransfer();
+      dt.items.add(new File([new Uint8Array([137,80,78,71])],'before.png',{type:'image/png'}));
+      box.querySelector('[data-cl-photo]').files=dt.files;
+      await box.querySelector('[data-cl-save]').onclick();
+      const action=JSON.parse(localStorage.getItem(actionKey)||'[]').find(a=>a.auditDrawId===id);
+      const popup=document.getElementById('hd20AuditActionPopup');
+      const popupCorrect=!!popup&&popup.textContent.includes(id)&&
+        popup.textContent.includes(action?.id||'invalid')&&popup.textContent.includes('원본 점검자');
+      popup?.querySelector('[data-audit-popup-actions]')?.click();
+      await new Promise(resolve=>setTimeout(resolve,140));
+      const list=document.querySelector('#hd20AuditActionMonitor');
+      const moved=window.HD20_SUBNAV?.state?.().sub==='action';
+      const query=list?.querySelector('[data-had-filter-text]')?.value;
+      const rowVisible=[...list?.querySelectorAll('[data-had-table] tr')||[]].some(row=>
+        row.textContent.includes(action?.id||'invalid'));
+      return {actionCount:JSON.parse(localStorage.getItem(actionKey)||'[]')
+        .filter(a=>a.auditDrawId===id).length,popupCorrect,moved,
+        exactQuery:query===action?.id,rowVisible};
+    }finally{
+      if(priorDraws===null)localStorage.removeItem(drawKey);
+      else localStorage.setItem(drawKey,priorDraws);
+      if(priorActions===null)localStorage.removeItem(actionKey);
+      else localStorage.setItem(actionKey,priorActions);
+      document.getElementById('hd20AuditActionPopup')?.remove();
+      window.HD20_SUBNAV.select('audit','draw');
+      window.HD20AuditClosedLoop.render();
+      window.HD20AuditBatchExecution.patch();
+    }
+  });
+  assert.deepEqual(registrationNavigation,{
+    actionCount:1,popupCorrect:true,moved:true,exactQuery:true,rowVisible:true
+  },'registered Audit opens exact linked action in ② from completion popup');
   const firstWorkspaceOrder=await page.evaluate(()=>{
     const root=document.querySelector('#awAudit');
     const draw=root?.querySelector('.auditDraw');
