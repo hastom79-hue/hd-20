@@ -118,6 +118,18 @@ fs.mkdirSync('artifacts',{recursive:true});
     actionCount:1,sourceStage:'AUDIT-REQUEST',
     initialAuditor:'최초 감사자',duplicateRejected:true
   },'Audit registration links one action and preserves original auditor without duplicate submission');
+  const firstWorkspaceOrder=await page.evaluate(()=>{
+    const root=document.querySelector('#awAudit');
+    const draw=root?.querySelector('.auditDraw');
+    const batch=root?.querySelector('#hd20AuditBatchExecution');
+    const registration=root?.querySelector('.auditClosedLoop');
+    const before=(a,b)=>!!a&&!!b&&!!(a.compareDocumentPosition(b)&Node.DOCUMENT_POSITION_FOLLOWING);
+    return {drawFirst:before(draw,registration),
+      batchBeforeRegistration:!batch||before(batch,registration),
+      drawBeforeBatch:!batch||before(draw,batch)};
+  });
+  assert.ok(firstWorkspaceOrder.drawFirst&&firstWorkspaceOrder.batchBeforeRegistration&&firstWorkspaceOrder.drawBeforeBatch,
+    'Audit first workspace order must be target draw → batch execution → result registration');
   await page.screenshot({path:'artifacts/audit-compact.png',fullPage:false});
   // Each subtab must exclusively show its own operational cards, never the other two.
   const assertAuditSubtab=async(sub)=>{
