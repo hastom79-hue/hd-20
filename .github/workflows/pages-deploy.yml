@@ -35,7 +35,7 @@ jobs:
           test -f activity-register-modal.js
           test -f action-register-modal.js
           test -f landing-launcher.js
-          grep -Fq 'hd20-subtabs.css?v=20261103-activity-modal-visibility-v8' index.html
+          grep -Fq 'hd20-subtabs.css?v=20261103-self-body-overlay-v9' index.html
           grep -Fq 'document.body.appendChild(m)' action-register-modal.js
           grep -Fq 'body>#hd20ActionRegisterModal.on' hd20-subtabs.css
           grep -Fq '2026-11-03 — 개선활동관리 4개 조회/등록 하위탭 연동 및 팝업 표시 안정화' DEVELOPMENT_LOG.md
@@ -52,8 +52,11 @@ jobs:
           node --check hd20-subtabs.js
           grep -Fq 'hd20LnThreeTabs{display:none!important}' landing-launcher.js
           grep -Fq 'landing-launcher.js?v=20261103-remove-legacy-tabs-v21' index.html
-          grep -Fq 'activity-register-modal.js?v=20261103-contextual-close-v4' index.html
+          grep -Fq 'activity-register-modal.js?v=20261103-self-modal-body-v5' index.html
           node --check action-register-modal.js
+          grep -Fq 'document.body.appendChild(overlay)' activity-register-modal.js
+          grep -Fq 'html body>#awRegisterModal.on' hd20-subtabs.css
+          grep -Fq '자율개선 등록 모달의 상위 화면 숨김 영향 제거' DEVELOPMENT_LOG.md
           node --check activity-register-modal.js
           grep -Fq 'master-workspace-v2.js?v=20261103-master-open-fix-v10' index.html
           grep -Fq 'master-workspace-v2.css?v=20261103-master-layout-fix-v15' index.html
