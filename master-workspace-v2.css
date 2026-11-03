@@ -253,3 +253,7 @@ html body #masterModal .masterInfoBox.hd20MasterWorkspaceReady>#hd20MasterWorksp
   grid-column:1/-1!important;grid-row:auto!important;width:100%!important;
   min-width:0!important;box-sizing:border-box!important
 }
+
+/* 2026-11-04 master search no-results state */
+#masterModal .hmSearchEmpty{margin:10px 0 0;padding:12px 14px;border:1px solid #e2eaf0;border-radius:8px;background:#f9fbfd;color:#526f82;font-size:12px}
+#masterModal .hmSearchEmpty[hidden]{display:none!important}
