@@ -132,6 +132,15 @@ function render(){
   }).join('');
   return '<section class="hd20DwmGroup"><div class="hd20DwmGroupHead"><h3>'+esc(spec.title)+'</h3></div><div class="hd20DwmChart">'+(anyDated?bars:'<div class="hd20DwmNoData">해당 연도 월별 발생 기록 없음 · 날짜 근거 확인 필요</div>')+'</div><div class="hd20DwmLegend">'+metrics.map((m,j)=>'<button type="button" data-dwm-detail="'+spec.area+'" data-dwm-sub="'+m.sub+'" data-dwm-index="'+m.index+'"><i class="'+(j?'secondary':'primary')+'"></i>'+esc(m.label)+' <strong>'+(m.count===null?'—':(m.series?m.series.values.reduce((a,b)=>a+b,0):0)+'건')+'</strong></button>').join('')+'</div><details class="hd20DwmEvidenceDetails"><summary>월별 근거 확인</summary><div class="hd20DwmFocusNote">'+(missing.length?'날짜 미확인: '+esc(missing.join(', '))+' · ':'')+esc(diagnostics)+'</div></details></section>';
  }).join('')+'</div>';
+ // Force the operational chart row layout on the actual rendered node.
+ // Legacy stylesheet versions can retain the same style element ID across
+ // rerenders, so stylesheet text changes alone are not sufficient.
+ const chartRows=root.querySelector('.hd20DwmGroups');
+ if(chartRows){
+  chartRows.style.setProperty('display','grid','important');
+  chartRows.style.setProperty('grid-template-columns','minmax(0,1fr)','important');
+  chartRows.style.setProperty('gap','14px','important');
+ }
  root.querySelectorAll('[data-dwm-detail]').forEach(el=>el.addEventListener('click',()=>openEvidence(el.dataset.dwmDetail,el.dataset.dwmSub,Number(el.dataset.dwmIndex))));
 
 }
