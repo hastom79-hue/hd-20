@@ -37,3 +37,6 @@ body:has(.beginnerNav button[data-key="action"].active) #hd20OpsMetrics,
 body:has(.beginnerNav button[data-key="advancement"].active) #hd20OpsMetrics{display:none!important}
 #hd20DashboardPriority > #hd20DashboardWorkMetrics{display:block;clear:both;width:100%;box-sizing:border-box;margin:18px 0 6px}
 body:not(.hd20DashboardSummaryActive) #hd20DashboardPriority > #hd20DashboardWorkMetrics{display:none!important}
+
+/* Work tabs are input and search surfaces, not duplicate dashboard scorecards. */
+.app[data-hd-view^="activity."] #hd20OpsMetrics{display:none!important;visibility:hidden!important;height:0!important;min-height:0!important;margin:0!important;padding:0!important;overflow:hidden!important}
