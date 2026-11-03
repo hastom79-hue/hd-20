@@ -151,6 +151,7 @@ function overdue(x){const due=dueDate(x);return !!due&&due<new Date().toISOStrin
 function matchesText(value,query){return !query||String(value??'').toLocaleLowerCase().includes(String(query).trim().toLocaleLowerCase())}
 function textMatch(x,q){const needle=String(q||'').trim().replace(/\s+/g,' ').toLocaleLowerCase();if(!needle)return true;return [x.title,x.subject,x.description,x.content,x.issue,x.problem,x.activityName,x.item,x.actionText,x.improvementRequest,x.before,x.after,x.evidence,x.afterEvidence].some(v=>typeof v==='string'&&v.replace(/\s+/g,' ').toLocaleLowerCase().includes(needle))}
 function renderOverview(mode='overview'){
+ css();
  const separate=mode==='self'||mode==='request';
  const root=document.getElementById(separate?'hd20ActivityLookupPanel':'hd20LauncherOverview');if(!root)return;
  let view=separate?SUBGRID[mode]:GRID;
