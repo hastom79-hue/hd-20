@@ -132,6 +132,17 @@ function render(){
   }).join('');
   return '<section class="hd20DwmGroup"><div class="hd20DwmGroupHead"><h3>'+esc(spec.title)+'</h3></div><div class="hd20DwmChart">'+(anyDated?bars:'<div class="hd20DwmNoData">해당 연도 월별 발생 기록 없음 · 날짜 근거 확인 필요</div>')+'</div><div class="hd20DwmLegend">'+metrics.map((m,j)=>'<button type="button" data-dwm-detail="'+spec.area+'" data-dwm-sub="'+m.sub+'" data-dwm-index="'+m.index+'"><i class="'+(j?'secondary':'primary')+'"></i>'+esc(m.label)+' <strong>'+(m.count===null?'—':(m.series?m.series.values.reduce((a,b)=>a+b,0):0)+'건')+'</strong></button>').join('')+'</div><details class="hd20DwmEvidenceDetails"><summary>월별 근거 확인</summary><div class="hd20DwmFocusNote">'+(missing.length?'날짜 미확인: '+esc(missing.join(', '))+' · ':'')+esc(diagnostics)+'</div></details></section>';
  }).join('')+'</div>';
+ // Apply palette on the actual rendered elements. Legacy stylesheets
+ // can override runtime CSS; inline colors preserve the approved layout.
+ const palette={primary:'#285A96',secondary:'#DB8732'};
+ root.querySelectorAll('.hd20DwmChartBar,.hd20DwmLegend i').forEach(el=>{
+  const key=el.classList.contains('secondary')?'secondary':'primary';
+  el.style.setProperty('background-color',palette[key],'important');
+ });
+ root.querySelectorAll('.hd20DwmMonthValues b').forEach(el=>{
+  const key=el.classList.contains('secondary')?'secondary':'primary';
+  el.style.setProperty('color',key==='secondary'?'#AD5914':'#285A96','important');
+ });
  root.querySelectorAll('[data-dwm-detail]').forEach(el=>el.addEventListener('click',()=>openEvidence(el.dataset.dwmDetail,el.dataset.dwmSub,Number(el.dataset.dwmIndex))));
 
 }
