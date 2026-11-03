@@ -148,6 +148,31 @@ fs.mkdirSync('artifacts',{recursive:true});
   if(batchAnchor.available)assert.deepEqual(batchAnchor,{
     available:true,misplaced:true,repaired:true,correctlyPlaced:true
   },'Batch selector must return directly above canonical Audit result form');
+  // Batch progress stays beside the selector on desktop and stacks on narrow
+  // viewports. The currently selected source ID and save handler survive.
+  const beforeResponsive=await page.evaluate(()=>{
+    const box=document.querySelector('#awAudit .auditClosedLoop');
+    return {selected:box?.dataset.selectedAuditId||'',
+      handler:String(box?.querySelector('[data-cl-save]')?.onclick||''),
+      columns:getComputedStyle(document.getElementById('hd20AuditBatchExecution')).gridTemplateColumns};
+  });
+  assert.ok(beforeResponsive.columns.split(' ').length>=2,
+    'desktop Batch selector and progress should share a row');
+  await page.setViewportSize({width:680,height:900});
+  const narrowColumns=await page.locator('#hd20AuditBatchExecution')
+    .evaluate(el=>getComputedStyle(el).gridTemplateColumns);
+  assert.equal(narrowColumns.split(' ').length,1,
+    'narrow Batch selector should use one column');
+  await page.setViewportSize({width:1440,height:900});
+  const afterResponsive=await page.evaluate(()=>{
+    const box=document.querySelector('#awAudit .auditClosedLoop');
+    return {selected:box?.dataset.selectedAuditId||'',
+      handler:String(box?.querySelector('[data-cl-save]')?.onclick||'')};
+  });
+  assert.equal(afterResponsive.selected,beforeResponsive.selected,
+    'responsive layout must preserve selected Audit ID');
+  assert.equal(afterResponsive.handler,beforeResponsive.handler,
+    'responsive layout must preserve canonical form handler');
   // Batch selection must never replace the canonical result submission handler:
   // only the canonical handler verifies mandatory corrective photo evidence.
   const canonicalSubmit=await page.evaluate(()=>{
