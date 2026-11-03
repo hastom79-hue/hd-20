@@ -124,12 +124,13 @@ fs.mkdirSync('artifacts',{recursive:true});
     const batch=root?.querySelector('#hd20AuditBatchExecution');
     const registration=root?.querySelector('.auditClosedLoop');
     const before=(a,b)=>!!a&&!!b&&!!(a.compareDocumentPosition(b)&Node.DOCUMENT_POSITION_FOLLOWING);
+    const form=registration?.querySelector('.auditCLForm');
     return {drawFirst:before(draw,registration),
-      batchBeforeRegistration:!batch||before(batch,registration),
+      batchInRegistration:!batch||(registration.contains(batch)&&before(batch,form)),
       drawBeforeBatch:!batch||before(draw,batch)};
   });
-  assert.ok(firstWorkspaceOrder.drawFirst&&firstWorkspaceOrder.batchBeforeRegistration&&firstWorkspaceOrder.drawBeforeBatch,
-    'Audit first workspace order must be target draw → batch execution → result registration');
+  assert.ok(firstWorkspaceOrder.drawFirst&&firstWorkspaceOrder.batchInRegistration&&firstWorkspaceOrder.drawBeforeBatch,
+    'Audit first workspace order must be target draw → Batch selector in registration → result form');
   await page.screenshot({path:'artifacts/audit-compact.png',fullPage:false});
   // Each subtab must exclusively show its own operational cards, never the other two.
   const assertAuditSubtab=async(sub)=>{
