@@ -61,10 +61,12 @@ const {chromium}=require('playwright');
       }
      }
     }
-    return {cards:cards.length,layoutColumns:getComputedStyle(root.querySelector('.hd20DwmGroups')).gridTemplateColumns.split(' ').length,labels:root.querySelectorAll('.hd20DwmMonthValues').length,
+    return {cards:cards.length,layoutColumns:getComputedStyle(root.querySelector('.hd20DwmGroups')).gridTemplateColumns.split(' ').length,barColors:[getComputedStyle(root.querySelector('.hd20DwmChartBar.primary')).backgroundColor,getComputedStyle(root.querySelector('.hd20DwmChartBar.secondary')).backgroundColor],legendColors:[getComputedStyle(root.querySelector('.hd20DwmLegend i.primary')).backgroundColor,getComputedStyle(root.querySelector('.hd20DwmLegend i.secondary')).backgroundColor],labels:root.querySelectorAll('.hd20DwmMonthValues').length,
       evidenceCollapsed:[...root.querySelectorAll('.hd20DwmEvidenceDetails')].every(x=>!x.open),overlaps,tooWide};
    });
    assert.equal(data.cards,3,'show three comparison cards');
+   assert.deepEqual(data.barColors,['rgb(40, 90, 150)','rgb(219, 135, 50)'],'paired bars use approved contrasting navy/orange colors');
+   assert.deepEqual(data.legendColors,data.barColors,'legend colors must match the respective chart bars');
    if(viewport.width>=1366)assert.equal(data.layoutColumns,3,'retain the approved side-by-side three-card layout at '+viewport.width);
    else assert.ok(data.layoutColumns>=1&&data.layoutColumns<=3,'retain responsive card layout at '+viewport.width);
    assert.ok(data.labels>=30,'show paired values for all available months');
