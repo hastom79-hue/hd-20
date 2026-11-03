@@ -1,8 +1,8 @@
 (()=>{'use strict';
-const MAP={dashboard:[['summary','오늘의 운영판단'],['analysis','성과·건전성 추이'],['map','고도화 맵']],activity:[['manage','① 문제·개선 등록'],['analysis','② 실행현황·우수활동 선별']],/* 사용자 지시: "고도화·표준화는 남이되, '① 3대요건 즉시판정' 만 간소화/삭제하고 '② 확정사례 관리'는
+const MAP={dashboard:[['summary','오늘의 운영판단'],['analysis','성과·건전성 추이'],['map','고도화 맵']],activity:[['overview','① 통합조회'],['self','② 자율개선등록'],['request','③ 개선요청등록'],['tobe','④ 개선조치등록·관리']],/* 사용자 지시: "고도화·표준화는 남이되, '① 3대요건 즉시판정' 만 간소화/삭제하고 '② 확정사례 관리'는
    남겨라" — 네비게이션에서 judge 서브탭 버튼을 제거(렌더링 함수 자체는 안전하게 코드에 남겨두되
    호출 경로를 모두 standard로 돌려 사실상 비활성화). */
-advancement:[['standard','확정사례 관리']],audit:[['draw','① Audit 실시'],['action','② 조치내역 등록·관리'],['ongoing','③ 유지점검'],['checklist','④ Audit 점검항목']],action:[['manage','① 개선조치 등록·실행'],['leadtime','② 미완료·지연관리'],['verify','③ 효과검증·최종종결']]};
+advancement:[['standard','확정사례 관리']],audit:[['draw','① Audit 실시'],['ongoing','② 유지점검'],['checklist','③ Audit 점검항목']],action:[['manage','① 개선조치 등록·실행'],['leadtime','② 미완료·지연관리'],['verify','③ 효과검증·최종종결']]};
 const CONTRACT={
  'dashboard.summary':{title:'종합현황',purpose:'울산캠퍼스 5S 운영상태를 한 화면에서 파악하고 오늘 우선 확인할 영역을 정합니다.',judge:'목표 대비 성과, 고도화 확보, Audit 대기, 미완료·기한경과·재발을 동시에 확인',next:'이상 KPI·Risk 카드를 상세근거로 Drill-down하여 담당 업무 탭으로 이동',features:['핵심 KPI','팀별 성과','Action Summary','우선순위']},
  'dashboard.analysis':{title:'성과·운영분석',purpose:'단순 실적 건수를 넘어 판정 Lead Time, 유지율, 재발률, 조치완료율 등 운영 건전성을 분석합니다.',judge:'성과 증가가 프로세스 건전성 개선과 함께 일어나는지 확인',next:'취약 지표의 원천 데이터를 확인하고 원인 업무영역에서 조치',features:['운영 KPI','월별 추이','유지율','재발·기한']},
@@ -156,7 +156,14 @@ function ensureAdvancementUiStyle(){if(document.getElementById('hd20AdvancementU
 function show(el,on){if(!el)return;el.classList.toggle('hd20SubHidden',!on);if(on&&el.id==='hd20AdvProcessOperational'){el.hidden=false;el.style.setProperty('display','block','important');el.style.setProperty('visibility','visible','important')}else if(!on&&el.id==='hd20AdvProcessOperational'){el.style.removeProperty('display');el.style.removeProperty('visibility')}}function showAll(root,sel='.awCard'){if(root)$$(sel,root).forEach(el=>show(el,true))}
 function applyDashboard(sub){const cards=$('.cards'),main=$('.mainGrid'),bottom=$('.bottomGrid'),priority=$('#hd20DashboardPriority'),bridge=$('#hd20OperationalBridge');if(sub==='summary'){show(cards,true);show(main,true);show(priority,true);show(bridge,false);show(bottom,false);if(main){show(main.children?.[0],true);show($('.sideStack',main),true)}}else{show(cards,false);show(main,true);show(priority,true);show(bridge,true);show(bottom,true);if(main){show(main.children?.[0],false);show($('.sideStack',main),true)}}}
 function applyActivity(sub){const root=$('#awActivity');if(!root)return;
-root.dataset.subview=sub;showAll(root);show($('.awGrid',root),true);const form=$('.awRegisterFormCard',root);if(form)show(form,sub==='manage');
+root.dataset.subview=sub;
+if(['overview','self','request','tobe'].includes(sub)){
+ const oldPanel=root.querySelector('#hd20ImprovementTaskPortal');
+ if(oldPanel)oldPanel.hidden=!['self','request'].includes(sub);
+ show($('.awGrid',root),false);show($('.awFlow',root),false);show($('.awActions',root),false);show(document.getElementById('hd20ActivityExcelImport'),false);show(document.getElementById('hd20ImportAnalysis'),false);show($('.adcCard',root),false);
+ const tobe=root.querySelector('#hd20AsIsToBeManager');if(tobe)tobe.hidden=sub!=='tobe';
+ return;
+}showAll(root);show($('.awGrid',root),true);const form=$('.awRegisterFormCard',root);if(form)show(form,sub==='manage');
   /* 실적분석: 등록/가져오기 도구를 숨기고 팀별 분석 콘텐츠 위주로 구성해
      활동관리(등록·조회)와 실질적으로 구분되도록 함(내용 삭제가 아니라
      서브탭별 표시 범위 재구성). */
@@ -762,7 +769,7 @@ function installAdvJudgeTools(){
  tools.querySelectorAll('button').forEach(b=>{b.style.cssText='padding:8px 12px;border-radius:7px;border:1px solid #cbd8e3;background:#fff;color:#24445c;cursor:pointer;font-weight:700';b.onclick=()=>openAdvDetailTool(b.dataset.advTool)});
  host.appendChild(tools);
 }
-function select(area,sub){if(window.HD20_NAV?.active?.()!==area)return;/* 서브탭 체계가 없는 영역(통합기준정보 등)에 URL 딥링크의 낡은 sub(예: ?area=master&sub=judge)가 들어와도 무시 — 그렇지 않으면 data-hd-view가 'master.judge'로 덮이고 URL에 sub가 다시 써져 화면 격리가 깨졌음. */if(!MAP[area])return;document.getElementById('hd20AdvBack')?.remove();if(area==='advancement'&&(sub==='map'||sub==='trend'||sub==='judge'))sub='standard';if(area==='audit'&&sub==='inspect')sub='draw';if(area==='audit'&&sub==='retention')sub='ongoing';if(area==='audit'&&state.area==='audit'&&state.sub===sub&&$('#awAudit')?.dataset.subview===sub)return;state={area,sub};if(area==='advancement'&&sub==='process')ensureAdvProcess();document.querySelectorAll('#hd20Subnav button').forEach(b=>b.classList.toggle('on',b.dataset.sub===sub));apply(area,sub);renderPurpose(area,sub);if(area!=='audit'&&area!=='advancement')requestAnimationFrame(()=>apply(area,sub));
+function select(area,sub){if(window.HD20_NAV?.active?.()!==area)return;/* 서브탭 체계가 없는 영역(통합기준정보 등)에 URL 딥링크의 낡은 sub(예: ?area=master&sub=judge)가 들어와도 무시 — 그렇지 않으면 data-hd-view가 'master.judge'로 덮이고 URL에 sub가 다시 써져 화면 격리가 깨졌음. */if(!MAP[area])return;document.getElementById('hd20AdvBack')?.remove();if(area==='advancement'&&(sub==='map'||sub==='trend'||sub==='judge'))sub='standard';if(area==='audit'&&sub==='inspect')sub='draw';if(area==='audit'&&sub==='retention')sub='ongoing';if(area==='audit'&&sub==='action'){window.HD20_NAV?.go?.('activity');setTimeout(()=>window.HD20_SUBNAV?.select?.('activity','tobe'),0);return}if(area==='activity'&&sub==='manage')sub='overview';if(area==='activity'&&sub==='analysis')sub='overview';if(area==='audit'&&state.area==='audit'&&state.sub===sub&&$('#awAudit')?.dataset.subview===sub)return;state={area,sub};if(area==='advancement'&&sub==='process')ensureAdvProcess();document.querySelectorAll('#hd20Subnav button').forEach(b=>b.classList.toggle('on',b.dataset.sub===sub));apply(area,sub);renderPurpose(area,sub);if(area!=='audit'&&area!=='advancement')requestAnimationFrame(()=>apply(area,sub));
   try{const u=new URL(location.href);if(u.searchParams.get('area')===area)u.searchParams.set('sub',sub);history.replaceState(null,'',u)}catch{}}
 function syncArea(area){
   if(window.HD20_NAV?.active?.()!==area)return;
@@ -787,7 +794,7 @@ function syncArea(area){
   if(area==='dashboard'){render('dashboard');return;}
   if(area==='advancement'&&window.__HD20_RESTORE_SUB&&['analysis','detail','process','judge'].includes(window.__HD20_RESTORE_SUB))window.__HD20_RESTORE_SUB='standard';
   if(area==='advancement'&&['map','trend'].includes(window.__HD20_RESTORE_SUB))window.__HD20_RESTORE_SUB='standard';
-  if(area==='audit'&&window.__HD20_RESTORE_SUB==='inspect')window.__HD20_RESTORE_SUB='draw';if(area==='audit'&&window.__HD20_RESTORE_SUB==='retention')window.__HD20_RESTORE_SUB='ongoing';
+  if(area==='audit'&&window.__HD20_RESTORE_SUB==='inspect')window.__HD20_RESTORE_SUB='draw';if(area==='audit'&&window.__HD20_RESTORE_SUB==='retention')window.__HD20_RESTORE_SUB='ongoing';if(area==='audit'&&window.__HD20_RESTORE_SUB==='action')window.__HD20_RESTORE_SUB='draw';if(area==='activity'&&['manage','analysis'].includes(window.__HD20_RESTORE_SUB))window.__HD20_RESTORE_SUB='overview';
   if(window.__HD20_RESTORE_SUB&&MAP[area]?.some(([k])=>k===window.__HD20_RESTORE_SUB)){
     const restoreSub=window.__HD20_RESTORE_SUB;window.__HD20_RESTORE_SUB=null;
     state.sub=restoreSub;state.area=area;const bar=ensure(),items=MAP[area]||[];
