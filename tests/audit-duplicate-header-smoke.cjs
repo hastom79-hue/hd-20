@@ -903,6 +903,25 @@ fs.mkdirSync('artifacts',{recursive:true});
   await page.screenshot({path:'artifacts/audit-return.png',fullPage:false});
   await page.evaluate(()=>window.HD20_NAV?.go?.('dashboard'));
   await page.waitForFunction(()=>document.querySelector('.beginnerNav button[data-key="dashboard"]')?.classList.contains('active'),null,{timeout:15000});
+  // Maturity map must not inherit KPI, activity, request or legacy chart cards.
+  // Test both DOM orderings: older boards before the tab bar and after it.
+  await page.evaluate(()=>window.HD20_DASHBOARD_TABS?.apply?.('map',{scroll:false}));
+  await page.waitForFunction(()=>document.body.classList.contains('hd20MaturityDashboardMode')&&
+    document.querySelector('#hd20MaturityMapTab')?.classList.contains('on'),null,{timeout:15000});
+  const isolatedMap=await page.evaluate(()=>{
+    const selectors=['.cards','.mainGrid','.bottomGrid','#hd20DashboardPriority',
+      '#hd20OperationalBridge','#hd20ImproveBoard','#hd20RequestBoard',
+      '#hd20OpsTrend','#hd20SummaryExecutionMetrics','#hd20V3Execution',
+      '#hd20FieldShowcaseBootstrap'];
+    return {mapVisible:getComputedStyle(document.getElementById('hd20MaturityMapTab')).display!=='none',
+      intruders:selectors.filter(sel=>[...document.querySelectorAll('.app '+sel)].some(el=>
+        getComputedStyle(el).display!=='none'))};
+  });
+  assert.deepEqual(isolatedMap,{mapVisible:true,intruders:[]},
+    'maturity map should show no legacy dashboard sections regardless of DOM position');
+  await page.evaluate(()=>window.HD20_DASHBOARD_TABS?.apply?.('summary',{scroll:false}));
+  assert.equal(await page.locator('#hd20MaturityMapTab').isVisible(),false,
+    'maturity map must close when returning to summary');
   console.log('AUDIT DUPLICATE HEADER BROWSER PASS');
  }catch(error){if(page)await page.screenshot({path:'artifacts/audit-failure.png',fullPage:false}).catch(()=>{});throw error}finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exit(1)});
