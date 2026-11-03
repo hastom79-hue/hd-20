@@ -159,7 +159,7 @@ function dueDate(x){return field(x,'dueDate','due','deadline','targetDate','acti
 function evidence(x){const v=[x.before,x.beforePhoto,x.beforeImage,x.evidence,x.after,x.afterPhoto,x.afterEvidence,x.photo,x.photos,x.image,x.images];return v.some(a=>Array.isArray(a)?a.length>0:!!a&&String(a)!=='false')}
 function overdue(x){const due=dueDate(x);return !!due&&due<new Date().toISOString().slice(0,10)&&!/완료|종결|채택|확정|closed|done/i.test(rowStatus(x))}
 function matchesText(value,query){return !query||String(value??'').toLocaleLowerCase().includes(String(query).trim().toLocaleLowerCase())}
-function textMatch(x,q){const needle=String(q||'').trim().replace(/\s+/g,' ').toLocaleLowerCase();if(!needle)return true;return [x.title,x.subject,x.description,x.content,x.issue,x.problem,x.activityName,x.item,x.actionText,x.improvementRequest,x.before,x.after,x.evidence,x.afterEvidence].some(v=>typeof v==='string'&&v.replace(/\s+/g,' ').toLocaleLowerCase().includes(needle))}
+function textMatch(x,q){const words=String(q||'').trim().toLocaleLowerCase().split(/\s+/).filter(Boolean);if(!words.length)return true;const content=[x.title,x.subject,x.description,x.content,x.issue,x.problem,x.improvement,x.improve,x.activityName,x.item,x.actionText,x.improvementRequest,x.requestContent,x.correctiveAction,x.actionPlan,x.beforeText,x.afterText,x.note,x.memo].filter(v=>typeof v==='string').join(' ').toLocaleLowerCase();return words.every(word=>content.includes(word))}
 function renderOverview(mode='overview'){
  css();
  const separate=mode==='self'||mode==='request';
@@ -327,7 +327,7 @@ function open(){
   el.addEventListener('click',e=>{if(e.target===el)openOverview()});
   document.addEventListener('keydown',function esc(e){if(e.key!=='Escape')return;if(!document.getElementById('hd20Launcher')){document.removeEventListener('keydown',esc);return}document.removeEventListener('keydown',esc);openOverview()});
 }
-window.HD20_LAUNCHER={openOverview,hideOverview,openRegister:open,renderOverview,renderSubtab:renderOverview,refreshActive:()=>{const sub=document.getElementById('awActivity')?.dataset.subview;if(sub==='self'||sub==='request')renderOverview(sub);else if(document.body.classList.contains('hd20InquiryActive'))renderOverview()}};
+window.HD20_LAUNCHER={openOverview,hideOverview,openRegister:open,renderOverview,renderSubtab:renderOverview,refreshActive:()=>{if(window.HD20_NAV?.active?.()!=='activity')return;const sub=document.getElementById('awActivity')?.dataset.subview;if(sub==='self'||sub==='request')renderOverview(sub);else if(sub==='overview'&&document.body.classList.contains('hd20InquiryActive'))renderOverview()}};
 function boot(){
   // Navigation subtab owns overview visibility; never override self/request/TO-BE.
   const syncImprovementSubview=()=>{
