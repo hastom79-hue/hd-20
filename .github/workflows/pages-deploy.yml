@@ -1,0 +1,41 @@
+name: HD-20 GitHub Pages deploy
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: hd20-pages-deploy
+  cancel-in-progress: false
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout HD-20
+        uses: actions/checkout@v4
+      - name: Verify deployment source
+        run: |
+          test -f index.html
+          test -f hd20-subtabs.js
+          test -f audit-as-is-to-be-manager.js
+          test -f hd20-action-notification-routing.js
+          grep -q '20261103-as-is-leadtime-v3' index.html
+          node --check audit-as-is-to-be-manager.js
+          node --check hd20-subtabs.js
+          node --check hd20-action-notification-routing.js
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+      - name: Upload static site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
