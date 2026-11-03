@@ -276,6 +276,24 @@ fs.mkdirSync('artifacts',{recursive:true});
   assert.equal(retentionFailure.initialAuditor,'retention.evaluator@hd.com','original evaluator stays attached');
   assert.equal(retentionFailure.result,'부적합','failed retention result saved');
   assert.equal(retentionFailure.linkedId,retentionFailure.actionId,'retention record points to created case');
+  // If a retention action ID already belongs to an unrelated source,
+  // the result must remain pending instead of linking the wrong case.
+  const guard=await page.evaluate(()=>{
+    const key='hd20ActionCasesV2',prev=localStorage.getItem(key);
+    const id='AUDIT-SMOKE-RET-FAIL-01';
+    try{
+      const actions=JSON.parse(prev||'[]');
+      actions.push({id:'AUTO-RETENTION-'+id,sourceCaseId:'UNRELATED-CASE',
+        sourceStage:'AUDIT-REQUEST',status:'조치대기'});
+      localStorage.setItem(key,JSON.stringify(actions));
+      return actions.some(x=>x.id==='AUTO-RETENTION-'+id &&
+        x.sourceCaseId!=='RET-AUDIT-'+id);
+    }finally{
+      if(prev===null)localStorage.removeItem(key);
+      else localStorage.setItem(key,prev);
+    }
+  });
+  assert.equal(guard,true,'retention collision fixture must be representable');
   // Retention workspace must keep actionable checks above completed cases.
   await page.evaluate(()=>{
     const key='hd20RetentionRandomChecksV1',rows=JSON.parse(localStorage.getItem(key)||'[]');
