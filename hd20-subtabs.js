@@ -469,7 +469,7 @@ function renderRetentionSampling(root){
  const done=x=>['완료','개선완료','조치완료','종결','확정완료','종료','종결완료'].includes(String(x.status||x.activityStatus||x.actionStatus||'').trim())||x.completed===true;
  const excluded=x=>x.isDemo===true||x.isTest===true||['demo-seed','e2e-fixture','web-validation-fixture'].includes(String(x.source||''));
  const keyOf=x=>String(x.improvementNo||x.improvementNumber||x.caseId||x.activityId||x.id||'').trim();
- const entries=[...activity.filter(x=>done(x)&&!excluded(x)).map(x=>({x,kind:'자율개선'})),...actions.filter(x=>done(x)&&!excluded(x)).map(x=>({x,kind:'개선요청'}))].filter(e=>keyOf(e.x));
+ const entries=actions.filter(x=>done(x)&&!excluded(x)).map(x=>({x,kind:'개선요청'})).filter(e=>keyOf(e.x));
  const distinct=new Map(entries.map(e=>[e.kind+':'+keyOf(e.x),e]));
  const pool=[...distinct.values()];
  const policy=window.HD20PolicyConfig?.read?.().retentionCheck||{intervalDays:30,sampleCount:5};
