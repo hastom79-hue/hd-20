@@ -83,6 +83,12 @@ jobs:
           grep -Fq '통합조회 과거 3개 중복 탭 DOM 제거' DEVELOPMENT_LOG.md
           grep -Fq "document.querySelector('#awRegisterModal.on,#hd20ActionRegisterModal.on')" landing-launcher.js
           grep -Fq '등록 팝업 실행 중 조회목록 재렌더 방지' DEVELOPMENT_LOG.md
+          test -f dashboard-work-kpi-migration.js
+          grep -Fq 'dashboard-work-kpi-migration.js?v=20261104-per-bar-label-v11' index.html
+          grep -Fq 'hd20DwmBarValue' dashboard-work-kpi-migration.js
+          grep -Fq 'bottom:calc(100% + 4px)' dashboard-work-kpi-migration.js
+          grep -Fq '운영 종합진단·집중관리 추이 월별 막대 데이터레이블 위치 개선' DEVELOPMENT_LOG.md
+          node --check dashboard-work-kpi-migration.js
           node --check landing-launcher.js
           node --check beginner-navigation.js
           node --check hd20-action-notification-routing.js
