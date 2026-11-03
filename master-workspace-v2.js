@@ -65,7 +65,7 @@ function auditMaster(){
   const desc=document.createElement('small');desc.textContent=x.area+' · '+x.msg;
   info.append(name,desc);
   const btn=document.createElement('button');btn.type='button';btn.textContent='관리 항목 열기';
-  btn.addEventListener('click',()=>{const b=ws.querySelector('[data-hm-target="'+x.target+'"]');if(!b)return;const group=b.closest('.hmGroup');if(group?.hidden){ws.querySelector('[data-hm-reset]')?.click()}activateGroup(group,false);b.click()});
+  btn.addEventListener('click',()=>openMasterTarget(x.target));
   row.append(badge,info,btn);auditRows.append(row);
  }
  auditSummary.textContent=inspect.length+'개 점검 · '+issues+'개 확인 필요';
@@ -79,6 +79,42 @@ auditMaster();
 const grid=ws.querySelector('[data-hm-groups]');const all=[];
 for(const [group,...keys] of GROUPS){const section=document.createElement('div');section.className='hmGroup';section.dataset.hmGroup=group;const heading=document.createElement('h3');heading.textContent=group;heading.setAttribute('role','tab');heading.tabIndex=0;heading.setAttribute('aria-selected','false');section.appendChild(heading);const wrap=document.createElement('div');wrap.className='hmLinks';wrap.setAttribute('role','group');wrap.setAttribute('aria-label',group+' 항목');for(const key of keys){const original=tabs.querySelector('[data-master-tab="'+key+'"]');if(!original||original.hidden)continue;const btn=document.createElement('button');btn.type='button';btn.dataset.hmTarget=key;btn.title=NOTES[key]||group;btn.innerHTML='<strong></strong><small></small>';btn.querySelector('strong').textContent=original.textContent.trim();btn.querySelector('small').textContent=NOTES[key]||group;btn.addEventListener('click',()=>{original.click();select(key);requestAnimationFrame(()=>{const current=box.querySelector('#hd20IntegratedMasterFactors .imfPanel:not([style*="display: none"])');{const target=current||box.querySelector('#hd20IntegratedMasterFactors');if(!target)return;const viewport=box.getBoundingClientRect(),rect=target.getBoundingClientRect();/* 상단 고정 헤더(ws)가 가리지 않도록 그 높이만큼 더 올려서 맞춘다 */const sticky=ws.getBoundingClientRect().height+8;const next=Math.max(0,Math.min(box.scrollHeight-box.clientHeight,box.scrollTop+rect.top-viewport.top-sticky));box.scrollTo({top:next,behavior:'smooth'})}})});wrap.appendChild(btn);all.push(btn)}section.appendChild(wrap);if(wrap.children.length)grid.appendChild(section)}
 /* 대분류 탭: 눌렀을 때 해당 그룹의 칩만 보이게 하고, 그 그룹에서 지금 열려 있는 항목이 없으면 첫 항목을 연다(사용자가 빈 분류를 보지 않도록). */
+function openMasterTarget(key){
+ const b=all.find(x=>x.dataset.hmTarget===key);
+ const original=tabs.querySelector('[data-master-tab="'+key+'"]');
+ if(!b||!original){auditSummary.textContent='해당 설정 메뉴를 불러오지 못했습니다';return false}
+ // A previous search may hide the destination. Restore all menu entries first.
+ const searchBox=ws.querySelector('#hmSearch');
+ if(searchBox?.value){searchBox.value='';filter()}
+ const group=b.closest('.hmGroup');
+ if(group){group.hidden=false;activateGroup(group,false)}
+ original.click();
+ select(key);
+ // Bring the functional settings section into view, not the button which launched it.
+ requestAnimationFrame(()=>{
+   const candidates=[
+     '#hd20IntegratedMasterFactors .imfPanel:not([hidden]):not([style*="display: none"])',
+     '#hd20ThemeCatalogPanel:not([hidden])',
+     '#hd20OperatingPolicyPanel:not([hidden])',
+     '#hd20IntegratedMasterFactors:not([hidden])',
+     '#masterOrderPanel:not([hidden])',
+     '#masterTargetPanel:not([hidden])'
+   ];
+   let destination=null;
+   for(const selector of candidates){
+     for(const el of box.querySelectorAll(selector)){
+       if(el.getClientRects().length&&getComputedStyle(el).display!=='none'){destination=el;break}
+     }
+     if(destination)break;
+   }
+   // The active legacy tab is always available as a fallback.
+   destination=destination||b;
+   const viewport=box.getBoundingClientRect(),rect=destination.getBoundingClientRect();
+   const next=Math.max(0,box.scrollTop+rect.top-viewport.top-12);
+   box.scrollTo({top:next,behavior:'auto'});
+ });
+ return true
+}
 function activateGroup(section,open){for(const g of grid.children){const on=g===section;g.classList.toggle('hmActive',on);g.querySelector('h3')?.setAttribute('aria-selected',on?'true':'false')}if(open){const cur=section.querySelector('[data-hm-target].on:not([hidden])');if(!cur)section.querySelector('[data-hm-target]:not([hidden])')?.click()}}
 for(const g of grid.children){const h=g.querySelector('h3');h.addEventListener('click',()=>activateGroup(g,true));h.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();activateGroup(g,true)}else if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();const list=[...grid.children].filter(x=>!x.hidden);const i=list.indexOf(g),n=list[(i+(e.key==='ArrowRight'?1:-1)+list.length)%list.length];n?.querySelector('h3')?.focus()}})}
 function select(key){all.forEach(b=>{const yes=b.dataset.hmTarget===key;b.classList.toggle('on',yes);b.setAttribute('aria-pressed',yes?'true':'false')});const b=all.find(b=>b.dataset.hmTarget===key);ws.querySelector('[data-hm-current]').textContent=b?b.querySelector('strong').textContent:'기준정보';if(b)activateGroup(b.closest('.hmGroup'),false)}
