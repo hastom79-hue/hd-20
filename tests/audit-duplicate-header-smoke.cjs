@@ -437,6 +437,51 @@ fs.mkdirSync('artifacts',{recursive:true});
     }
     window.HD20_SUBNAV.select('audit','retention');
   });
+  // ④ Clicking a retention number opens its own source (not an Audit draw)
+  // and resolves the latest linked corrective action and full recheck history.
+  const exactRetentionDetail=await page.evaluate(()=>{
+    const keys=['hd20RetentionRandomChecksV1','hd20ActionCasesV2'];
+    const originals=Object.fromEntries(keys.map(k=>[k,localStorage.getItem(k)]));
+    const id='AUDIT-SMOKE-RET-DETAIL-EXACT';
+    try{
+      const checks=JSON.parse(originals[keys[0]]||'[]');
+      const actions=JSON.parse(originals[keys[1]]||'[]');
+      checks.push({id,kind:'개선요청',caseId:'AUDIT-SMOKE-ORIGIN-X',team:'검증팀',
+        workplace:'검증라인',drawDate:'2026-11-03',result:'부적합',
+        evaluator:'최초 평가자',actionId:'AUDIT-SMOKE-RET-FIRST',
+        recheckResult:'부적합',followupActionId:'AUDIT-SMOKE-RET-SECOND',
+        recheckHistory:[{at:'2026-11-03',result:'부적합',
+          comment:'재점검 부적합',actionId:'AUDIT-SMOKE-RET-FIRST'}]});
+      actions.push({id:'AUDIT-SMOKE-RET-FIRST',sourceStage:'RETENTION-RANDOM',
+        sourceCaseId:'RET-AUDIT-'+id,status:'완료',initialAuditor:'최초 평가자'});
+      actions.push({id:'AUDIT-SMOKE-RET-SECOND',sourceStage:'RETENTION-RECHECK',
+        sourceCaseId:id,previousActionId:'AUDIT-SMOKE-RET-FIRST',
+        status:'조치대기',initialAuditor:'최초 평가자'});
+      localStorage.setItem(keys[0],JSON.stringify(checks));
+      localStorage.setItem(keys[1],JSON.stringify(actions));
+      window.HD20_SUBNAV.select('audit','retention');
+      const link=document.querySelector('[data-had-open-retention="'+id+'"]');
+      if(!link)throw Error('Retention source link missing');
+      link.click();
+      const popup=document.querySelector('#hd20RetentionOriginalPopup');
+      const content=popup?.innerText||'';
+      const matched=!!popup&&content.includes('AUDIT-SMOKE-RET-DETAIL-EXACT')&&
+        content.includes('AUDIT-SMOKE-RET-SECOND')&&content.includes('최초 평가자')&&
+        content.includes('재점검 부적합')&&
+        !document.querySelector('#hd20AuditOriginalPopup');
+      popup?.querySelector('[data-had-close]')?.click();
+      return {matched,closed:!document.querySelector('#hd20RetentionOriginalPopup')};
+    }finally{
+      for(const key of keys){
+        if(originals[key]===null)localStorage.removeItem(key);
+        else localStorage.setItem(key,originals[key]);
+      }
+      document.querySelector('#hd20RetentionOriginalPopup')?.remove();
+      window.HD20_SUBNAV.select('audit','retention');
+    }
+  });
+  assert.deepEqual(exactRetentionDetail,{matched:true,closed:true},
+    '④ retention source popup preserves exact recheck linkage and closes');
   // The fourth tab must expose exact-source retention failures and linked corrective actions.
   await page.evaluate(()=>{
     const read=k=>{try{return JSON.parse(localStorage.getItem(k)||'[]')}catch{return[]}};
