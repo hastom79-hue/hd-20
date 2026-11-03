@@ -200,3 +200,21 @@ html body #masterModal #imfGovernance .imfGovStat small{display:none}
 #masterModal .hmAuditDetails .hmAuditRows{margin-top:5px}
 #masterModal .hmAuditTop p{max-width:780px}
 #masterModal .hmAuditActions [data-hm-audit-summary]{font-variant-numeric:tabular-nums}
+
+/* Master integrity workspace: compact, actionable two-column layout. */
+html body #masterModal .hmAudit{margin:12px 0 0!important;padding:12px 15px!important;border:1px solid #dce7ef!important;border-radius:10px!important;background:#fafcfe!important}
+html body #masterModal .hmAuditTop{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;align-items:center!important;gap:10px 16px!important}
+html body #masterModal .hmAuditTop strong{font-size:14px!important;line-height:1.4!important}
+html body #masterModal .hmAuditTop p{margin:3px 0 0!important;font-size:11px!important;line-height:1.4!important}
+html body #masterModal .hmAuditActions{display:flex!important;align-items:center!important;gap:8px!important}
+html body #masterModal .hmAuditDetails{margin-top:8px!important;padding-top:6px!important}
+html body #masterModal .hmAuditRows{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important;margin-top:8px!important}
+html body #masterModal .hmAuditRow{display:grid!important;grid-template-columns:auto minmax(0,1fr) auto!important;gap:10px!important;align-items:center!important;padding:9px 10px!important;min-height:55px!important}
+html body #masterModal .hmAuditInfo{overflow:hidden!important;min-width:0!important}
+html body #masterModal .hmAuditInfo strong{font-size:12px!important}
+html body #masterModal .hmAuditInfo small{font-size:11px!important;line-height:1.35!important}
+html body #masterModal .hmAuditRow button{display:inline-flex!important;align-items:center!important;justify-content:center!important;min-height:32px!important;padding:6px 10px!important;white-space:nowrap!important;border:1px solid #9abed8!important;border-radius:7px!important;background:#f1f8fd!important;color:#155e8f!important;font-weight:800!important;cursor:pointer!important}
+html body #masterModal .hmAuditRow button:hover{background:#dbedf9!important;border-color:#529bcb!important}
+html body #masterModal .hmAuditRow button:focus-visible{outline:3px solid #6daed5!important;outline-offset:2px!important}
+@media(max-width:1000px){html body #masterModal .hmAuditRows{grid-template-columns:1fr!important}}
+@media(max-width:650px){html body #masterModal .hmAuditTop{grid-template-columns:1fr!important}html body #masterModal .hmAuditRow{grid-template-columns:auto minmax(0,1fr)!important}html body #masterModal .hmAuditRow button{grid-column:2;justify-self:start}}
