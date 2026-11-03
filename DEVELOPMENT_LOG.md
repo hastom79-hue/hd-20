@@ -2002,3 +2002,12 @@ Canonical Store는 다음을 기준으로 한다.
 - 조치: `renderOverview()`의 과거 3개 탭 생성 마크업과 `[data-ln-tab]` 클릭 리스너를 삭제하고, 승인된 상단 `#hd20Subnav`의 4개 탭만 유지. ① 통합조회 내부의 등록 구분 필터, 조회조건, + 신규등록 버튼, 목록 상세조회는 그대로 보존.
 - 파일 연결: `landing-launcher.js` 코드 수정, `index.html` 캐시 버전 `20261103-remove-legacy-tabs-v21` 반영, Pages 배포 검증을 통해 과거 `data-ln-tab=` 재등장 방지.
 - 이력·데이터·대시보드: 기존 데이터, ②·③ 조회화면, ④ 조치관리, 확정 대시보드 변경 없음. 실제 게시 성공/클릭 동작은 별도 검증 필요.
+
+### 2026-11-03 후속 안정화 — 자율개선 등록 모달의 상위 화면 숨김 영향 제거
+- 확인된 구조 위험: 기존 자율개선 등록 팝업 `#awRegisterModal`은 `#awActivity` 내부에 삽입되어 상위 화면의 `display:none` 또는 탭 전환 상태에 종속됨. 화면 이동 후 팝업이 열려도 표시되지 않을 수 있음.
+- 수정: `activity-register-modal.js`에서 기존 `#awRegisterModal` 객체를 `document.body`에 배치하고 `show()`에서도 최상위 마운트를 보장. 내부 원본 작성 카드 `.awRegisterFormCard`, 입력/임시저장/등록/삭제/사진 데이터와 이벤트는 재생성하지 않고 보존함.
+- CSS 동기화: `hd20-subtabs.css`의 자율개선 팝업 가시성 선택자를 `html body>#awRegisterModal.on`으로 변경. 개선요청 팝업의 `body>#hd20ActionRegisterModal.on`과 동작 계층을 맞춤.
+- HTML 동기화: `index.html`에서 `activity-register-modal.js?v=20261103-self-modal-body-v5`, `hd20-subtabs.css?v=20261103-self-body-overlay-v9` 로드.
+- 배포 검증: `.github/workflows/pages-deploy.yml`에 HTML·CSS·JS 변경 및 개발일지 동기화 검사 추가.
+- 변경 금지 범위: 승인된 대시보드, 기존 사례 원본, Audit/유지점검/테마점검, 통합기준정보 데이터.
+- 한계: 코드 구문·정적 파일 검사와 실제 브라우저 팝업 열기/닫기, Pages 배포 성공 검증은 별개.
