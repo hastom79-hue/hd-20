@@ -467,6 +467,13 @@ fs.mkdirSync('artifacts',{recursive:true});
     assert.equal(await filters.locator('[data-close-filter-text]').inputValue(),'E2E-REWORK-PENDING',
       're-render keeps the free-text filter');
     await filters.locator('[data-close-filter-reset]').click();
+    // Closed-state search must expose results without requiring a second
+    // manual click on the collapsed history fold.
+    await filters.locator('[data-close-filter-state]').selectOption('closed');
+    await filters.locator('[data-close-filter-text]').fill('E2E-AUDIT-FINAL-DONE');
+    assert.equal(await page.locator('#hd20AuditCloseEvaluation .hd20CloseHistory').evaluate(el=>el.open),true,
+      'matching completed history expands automatically');
+    await filters.locator('[data-close-filter-reset]').click();
     assert.equal(await filters.locator('[data-close-filter-state]').inputValue(),'',
       'reset clears status');
     assert.equal(await filters.locator('[data-close-filter-team]').inputValue(),'',
