@@ -163,6 +163,22 @@ fs.mkdirSync('artifacts',{recursive:true});
     assert.equal(result.closure,sub==='retention','Closure and corrective action only in retention tab');
     if(sub==='retention')assert.ok(await page.locator('#hd20AuditCloseEvaluation, #hd20RetentionActionTrace').count(),'Closure content should be mounted');
   };
+  // Late-mounted panels must stay hidden outside their owner subtab.
+  // This covers asynchronous re-renders that happen after applyAudit() returns.
+  for(const [sub,foreignSelector] of [
+    ['action','.auditClosedLoop'],
+    ['ongoing','#hd20AuditActionMonitor'],
+    ['retention','#hd20RetentionSampling'],
+    ['checklist','#hd20AuditCloseEvaluation'],
+    ['draw','.acWrap']
+  ]){
+    await page.evaluate(v=>window.HD20_SUBNAV.select('audit',v),sub);
+    const blocked=await page.evaluate(selector=>{
+      const el=document.querySelector('#awAudit '+selector);
+      return !el||getComputedStyle(el).display==='none';
+    },foreignSelector);
+    assert.equal(blocked,true,sub+' must suppress foreign '+foreignSelector);
+  }
   // Returning to Audit from another area must keep the last operational subtab.
   await page.evaluate(()=>window.HD20_SUBNAV.select('audit','checklist'));
   await page.evaluate(()=>window.HD20_NAV.go('action'));
