@@ -285,23 +285,23 @@ function render(){
  <div class="themeSummaryFoot">라인을 선택하면 해당 라인의 현장점검 화면으로 이동합니다. 점검계획이 없는 라인은 먼저 계획을 저장해야 Audit 결과를 등록할 수 있습니다.</div> </section>
  <section class="themePanel" data-theme-panel="history" ${view==='history'?'':'hidden'}><div class="themeHistoryBox"><div class="themeSectionHead" style="margin-top:0"><h3>최근 점검 이력</h3><small>선택 월의 점검 회차·미흡 건수·연계 조치를 확인합니다</small></div>${historyTable(month)}</div></section>
  <section class="themePanel" data-theme-panel="audit" ${view==='audit'?'':'hidden'}><div class="themeAuditBox" id="themeAuditBox">
-   <div class="themeSectionHead" style="margin-top:0"><h3>현장점검 실시 <span class="themeAuditLineBadge" id="themeAuditLineLabel">${esc(line)}</span></h3></div>
+   <div class="themeSectionHead themeAuditTitle" style="margin-top:0"><h3>현장점검 실시 <span class="themeAuditLineBadge" id="themeAuditLineLabel">${esc(line)}</span></h3><span class="themeAuditOwnerName">${ownerTitle(owner)}</span></div>
    <div class="themeControls">
      <label>라인 <select id="themeLineSel">${LINES.map(l=>`<option${l===line?' selected':''}>${esc(l)}</option>`).join('')}</select></label>
      <label>담당 생산팀 <select id="themeTeamSel" ${owner==='team'?'disabled':''}>${teamOptions().map(t=>`<option${t===team?' selected':''}>${esc(t)}</option>`).join('')}</select></label>
    </div>
    <div class="themeAuditFlowLabel">01 · 취약테마 집중점검 <small>테마를 선택해 평가합니다. 다른 테마의 판정은 유지됩니다.</small></div>
    <div id="themeThemeTabs" class="themeThemeTabs" role="group" aria-label="점검 취약테마 선택"></div>
-   <div class="themeBulkRow"><span class="themeWorkflowNote">평가 보조 도구</span>
+   <details class="themeBulkTools"><summary>일괄 평가·직전 결과 참고 (선택)</summary><div class="themeBulkRow"><span class="themeWorkflowNote">평가 보조 도구</span>
      <button type="button" class="themeBulkBtn" id="themeBulkAllOk">전체 적합으로 일괄 설정</button>
      <button type="button" class="themeBulkBtn" id="themeLoadPrevious">직전 결과 참고</button>
      <button type="button" class="themeBulkBtn" id="themeBulkClear">전체 초기화</button>
      <span id="themePreviousNote" class="themePreviousNote" aria-live="polite"></span>
-   </div>
+   </div></details>
    <div id="themeChecklistWrap"></div>
    <div class="themeAuditFlowLabel">02 · 미흡사항·현장 증빙 <small>미흡 판정된 항목을 확인하고 현장 증빙을 입력합니다.</small></div>
    <div id="themeFindingList" class="themeFindingList" aria-live="polite"></div>
-   <div class="themeAuditMeta"><label class="themeAuditAuditorField">최초 점검자 <input id="themeAuditAuditor" type="text" maxlength="80" placeholder="점검자 성명 (필수)" required></label><label class="themeAuditPhotoField">현장사진 <input id="themeAuditPhoto" type="file" accept="image/jpeg,image/png,image/webp"><small>미흡 항목 발생 시 사진 필수 · 최대 1MB</small></label><label class="themeAuditMemoField">현장 관찰 메모 <textarea id="themeAuditMemo" rows="2" placeholder="현장 특이사항, 즉시조치, 재발 위험 등을 기록"></textarea></label><div id="themeProgress" aria-live="polite"></div></div><div class="themeAuditFlowLabel">03 · 평가결과 저장 <small>미판정 항목이 있으면 저장할 수 없습니다. 미흡항목은 기존 개선조치와 연결됩니다.</small></div>
+   <div class="themeAuditMeta"><label class="themeAuditAuditorField">최초 점검자 <input id="themeAuditAuditor" type="text" maxlength="80" placeholder="점검자 성명 (필수)" required></label><label class="themeAuditPhotoField">현장사진 <input id="themeAuditPhoto" type="file" accept="image/jpeg,image/png,image/webp"><small>미흡 항목 발생 시 사진 필수 · 최대 1MB</small></label><label class="themeAuditMemoField">현장 관찰 메모 <textarea id="themeAuditMemo" rows="2" placeholder="현장 특이사항, 즉시조치, 재발 위험 등을 기록"></textarea></label><div id="themeProgress" aria-live="polite"></div></div><div class="themeAuditFlowLabel">03 · 평가결과 저장 <small>전체 항목 판정을 완료한 뒤 저장합니다. 미흡은 개선조치와 연결됩니다.</small></div>
    <button type="button" class="themeSaveBtn" id="themeSaveBtn">점검 결과 저장 · 미흡 항목 자동 등록</button>
    <div class="themeSaveResult" id="themeSaveResult"></div>
  </div></section>
@@ -436,7 +436,7 @@ async function saveAudit(){
  const rows=$$('.themeCheckRow',host),states={};
  rows.forEach(row=>{const active=row.querySelector('button.active');if(active)states[row.dataset.key]=active.dataset.v});
  const applicable=CHECKLIST.filter(item=>plannedThemes(month,line).includes(item.cat));
- if(!applicable.length){alert('먼저 [점검계획·취약현황]에서 해당 월·라인의 점검 테마를 지정하고 저장해 주세요.');host.dataset.view='plan';render();return}
+ if(!applicable.length){alert('먼저 [점검계획·취약현황]에서 선택한 점검 주체·월·라인의 취약테마를 지정해 주세요.');host.dataset.view='plan';render();return}
   if(Object.keys(states).length<applicable.length){const missing=applicable.length-Object.keys(states).length;alert('미판정 항목 '+missing+'건이 있습니다. 모든 항목을 판정한 뒤 저장해 주세요.');return}
  const auditor=$('#themeAuditAuditor',host)?.value.trim()||'';if(!auditor){alert('최초 점검자 성명을 입력해 주세요.');$('#themeAuditAuditor',host)?.focus();return}const hasNg=rows.some(row=>states[row.dataset.key]==='미흡');const photoFile=$('#themeAuditPhoto',host)?.files?.[0];if(hasNg&&!photoFile){alert('미흡 항목의 현장사진을 첨부해 주세요.');return}if(photoFile&&(!['image/jpeg','image/png','image/webp'].includes(photoFile.type)||photoFile.size>1048576)){alert('현장사진은 JPG/PNG/WEBP 형식, 1MB 이하로 선택해 주세요.');return}let improvementPhoto='';if(photoFile){try{improvementPhoto=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result||''));reader.onerror=()=>reject(new Error('사진 읽기 실패'));reader.readAsDataURL(photoFile)})}catch(error){alert('사진을 읽지 못했습니다. 다시 선택해 주세요.');return}}const checks=loadChecks(),memo=$('#themeAuditMemo',host)?.value.trim()||'';const policyDays=window.HD20PolicyConfig?.deadlineDays?.()??null;const dueDays=Number.isFinite(Number(policyDays))&&Number(policyDays)>0?Number(policyDays):null;const dueDate=dueDays===null?'':addDaysStr(today(),dueDays);
  const rec={id:newId('THEME-AUDIT'),line,team,month,inspectionOwner:selectedOwner(),auditor,initialAuditor:auditor,improvementPhoto,states,memo,auditedAt:new Date().toISOString(),checklistVersion:4,linkedActionIds:[],createdActionIds:[],reusedActionIds:[],ngCount:rows.filter(row=>states[row.dataset.key]==='미흡').length};
