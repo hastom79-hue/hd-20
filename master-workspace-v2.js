@@ -8,7 +8,7 @@ if(root.querySelector('#hd20MasterWorkspace')){
  box.classList.toggle('hd20MasterWorkspaceReady',links>=10);
  return links>=10;
 }const required=['integrated-team','integrated-target','integrated-source','integrated-discovery','integrated-factor','integrated-workplace','integrated-theme','policy','integrated-admins','integrated-mail'];if(!required.every(k=>tabs.querySelector('[data-master-tab="'+k+'"]')))return false;
-const ws=document.createElement('section');ws.id='hd20MasterWorkspace';ws.innerHTML='<div class="hmTitle"><div><span class="hmEyebrow">HD-20 · 기준정보 관리</span><h2>통합기준정보</h2><p>관리 항목을 선택해 수정하세요. 기존 저장·권한·데이터 연계 기능을 그대로 사용합니다.</p></div><div class="hmCounters"><span data-hm-count>기준정보 불러오는 중</span><button type="button" data-hm-close aria-label="통합기준정보 닫기">닫기 ×</button></div></div><div class="hmToolbar"><label for="hmSearch">기준정보 검색</label><input id="hmSearch" type="search" placeholder="팀, 작업장, Audit, 권한, 메일 등 검색" autocomplete="off"><button type="button" data-hm-reset>전체 보기</button></div><div class="hmGroups" data-hm-groups></div><div class="hmCurrent" aria-live="polite"><strong data-hm-current>관리 항목을 선택하세요</strong><span>아래에서 기존 기준정보를 직접 편집·저장합니다.</span></div><section class="hmAudit" aria-label="기준정보·타 탭 연동점검"><div class="hmAuditTop"><div><strong>업무별 기준정보 연동점검</strong><p>Audit · 테마점검 · 개선요청 · TO-BE · 유지점검 · 알림의 참조설정을 확인합니다. 조회 전용이며 기준정보를 자동 변경하지 않습니다.</p></div><div class="hmAuditActions"><span data-hm-audit-summary>점검 준비</span><button type="button" data-hm-audit-refresh>다시 점검</button></div></div><div class="hmAuditRows" data-hm-audit-rows></div></section>';
+const ws=document.createElement('section');ws.id='hd20MasterWorkspace';ws.innerHTML='<div class="hmTitle"><div><span class="hmEyebrow">HD-20 · 기준정보 관리</span><h2>통합기준정보</h2><p>관리 항목을 선택해 수정하세요. 기존 저장·권한·데이터 연계 기능을 그대로 사용합니다.</p></div><div class="hmCounters"><span data-hm-count>기준정보 불러오는 중</span><button type="button" data-hm-close aria-label="통합기준정보 닫기">닫기 ×</button></div></div><div class="hmToolbar"><label for="hmSearch">기준정보 검색</label><input id="hmSearch" type="search" placeholder="팀, 작업장, Audit, 권한, 메일 등 검색" autocomplete="off"><button type="button" data-hm-reset>전체 보기</button></div><div class="hmGroups" data-hm-groups></div><div class="hmCurrent" aria-live="polite"><strong data-hm-current>관리 항목을 선택하세요</strong><span>아래에서 기존 기준정보를 직접 편집·저장합니다.</span></div><section class="hmAudit" aria-label="기준정보·타 탭 연동점검"><div class="hmAuditTop"><div><strong>업무별 기준정보 연동점검</strong><p>Audit · 테마점검 · 개선요청 · TO-BE · 유지점검 · 알림의 참조설정을 확인합니다. 조회 전용이며 기준정보를 자동 변경하지 않습니다.</p></div><div class="hmAuditActions"><span data-hm-audit-summary>점검 준비</span><button type="button" data-hm-audit-refresh>다시 점검</button></div></div><details class="hmAuditDetails"><summary>항목별 연동 상태 상세보기</summary><div class="hmAuditRows" data-hm-audit-rows></div></details></section>';
 box.insertBefore(ws,tabs);
 // Keep a working close control even when legacy .modalHead is hidden by layout CSS.
 ws.querySelector('[data-hm-close]').addEventListener('click',()=>{const close=root.querySelector('#closeMaster');if(close)close.click();else{root.classList.remove('on');root.setAttribute('aria-hidden','true')}});
@@ -20,7 +20,7 @@ const auditRows=ws.querySelector('[data-hm-audit-rows]');
 const auditSummary=ws.querySelector('[data-hm-audit-summary]');
 const readJson=(key,fallback)=>{try{const value=JSON.parse(localStorage.getItem(key)||'null');return value===null?fallback:value}catch{return fallback}};
 const distinct=arr=>[...new Set(arr.filter(Boolean))];
-const validEmail=v=>/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(v||'').trim());
+const validEmail=v=>/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(v||'').trim())&&!/hd-hyundai-demo|example\.(?:com|org|net)/i.test(String(v||''));
 const safeCount=n=>Number(n||0).toLocaleString('ko-KR');
 function auditMaster(){
  const teamNames=window.HD20ProductionTeamMaster?.teamNames?.()||[];
@@ -46,11 +46,13 @@ function auditMaster(){
   {name:'팀별 통보 이메일',area:'개선요청 등록 → 해당 팀 알림',ok:teamNames.length>0&&!teamMissing.length,msg:teamNames.length?(teamMissing.length?safeCount(teamMissing.length)+'개 팀 이메일 미설정':'전체 생산팀 이메일 형식 확인'):'팀 정보 확인 필요',target:'integrated-team'},
   {name:'작업장·업무분류',area:'자율개선 · 테마점검 · Audit',ok:!!window.HD20WorkplaceMaster||Object.keys(masterFactors||{}).length>0,msg:window.HD20WorkplaceMaster?'작업장 원천 연결됨':Object.keys(masterFactors||{}).length?'등록 분류 정보 존재 · 작업장 연동 확인 필요':'작업장 기준정보 미확인',target:'integrated-workplace'},
   {name:'5S 세부테마',area:'테마점검 · 점검항목',ok:themeSaved||!!document.querySelector('#hd20ThemeCatalogPanel'),msg:themeSaved?'테마 저장정보 연결됨':'테마 관리화면 확인 · 별도 저장 여부 확인',target:'integrated-theme'},
+  {name:'Audit 점검항목 별도 원천',area:'④ Audit 점검항목 · 테마점검 항목 연계',ok:false,msg:'Audit 원천 '+safeCount((readJson('hd20AuditChecklistV1',[])||[]).length)+'개 · 통합기준정보 편집 체계 별도 정비 필요',target:'integrated-theme'},
   {name:'Audit·유지점검 운영정책',area:'Audit 추출 · 재점검 주기 · 기한',ok:!!policy&&Number(policy.retentionCheck?.intervalDays)>0&&Number(policy.retentionCheck?.sampleCount)>0,msg:policy?'유지점검 '+(policy.retentionCheck?.intervalDays||'—')+'일 / 표본 '+(policy.retentionCheck?.sampleCount||'—')+'건':'운영정책 로드 실패',target:'policy'},
   {name:'유지점검 평가자·수신자',area:'③ 유지점검 담당자 통보',ok:retentionEmails.length>0,msg:retentionEmails.length?safeCount(retentionEmails.length)+'개 등록 이메일 확인':'5S 모듈 수신자 미등록',target:'policy'},
   {name:'TO-BE 최초 요청자 주소',area:'TO-BE 조치등록 → 최초 요청자 회신',ok:tobeDone.length===0||requesterMissing.length===0,msg:tobeDone.length?safeCount(tobeDone.length)+'건 중 '+safeCount(requesterMissing.length)+'건 요청자 이메일 누락':'현재 브라우저에 TO-BE 등록 이력 없음',target:'integrated-team'},
   {name:'메일 자동발송',area:'개선요청 · TO-BE 결과 통보',ok:emailOn,msg:emailOn?'EmailJS 모듈 및 설정 연결':'발송 모듈/설정 미확인 · 실발송 미검증',target:'integrated-mail'},
-  {name:'SMS 자동발송',area:'개선요청 · TO-BE 결과 통보',ok:smsOn,msg:smsOn?'발송 게이트웨이 연결 · 실제 성공 별도검증':'SMS 게이트웨이 미연결 · 자동발송 불가',target:'integrated-mail'}
+  {name:'SMS 자동발송',area:'개선요청 · TO-BE 결과 통보',ok:smsOn,msg:smsOn?'발송 게이트웨이 연결 · 실제 성공 별도검증':'SMS 게이트웨이 미연결 · 자동발송 불가',target:'integrated-mail'},
+  {name:'마스터 권한체계',area:'최종채택 · 기준정보 변경 · 유지점검',ok:!!document.querySelector('#masterModal [data-master-tab="integrated-admins"]'),msg:'관리자 지정·권한은 기존 권한마스터에서 관리 · 실제 접근권한 별도 검증',target:'integrated-admins'}
  ];
  let issues=0;
  auditRows.replaceChildren();
