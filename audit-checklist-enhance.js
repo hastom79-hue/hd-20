@@ -51,18 +51,25 @@ function currentAuditTarget(){
     if(!Array.isArray(draws))return null;
     const selectedId=document.querySelector('#hd20AuditBatchExecution [data-abe-select]')?.value||'';
     if(selectedId){const selected=draws.find(d=>String(d.id)===String(selectedId));if(selected)return selected}
-    const displayedTeam=String(document.querySelector('.auditClosedLoop [data-cl-team]')?.value||'').trim();
-    if(displayedTeam)return draws.find(d=>!d.auditDate&&String(d.team||'').trim()===displayedTeam)||{team:displayedTeam,id:''};
+    const form=document.querySelector('#awAudit .auditClosedLoop');
+    const selectedAuditId=String(form?.dataset.selectedAuditId||'').trim();
+    if(selectedAuditId){
+      const exact=draws.find(d=>String(d.id||'')===selectedAuditId);
+      return exact||null; // Never silently link a different Audit case.
+    }
+    const displayedTeam=String(form?.querySelector('[data-cl-team]')?.value||'').trim();
+    if(displayedTeam)return draws.find(d=>!d.auditDate&&String(d.team||'').trim()===displayedTeam)||null;
   }catch{}
   return null;
 }
 function sendToActionTab(r){
   const target=currentAuditTarget(),team=String(target?.team||'').trim();
   const payload={team,auditDrawId:String(target?.id||''),problem:`[5S Audit 미흡] ${r.item}${r.note?' — '+r.note:''}`,source:'audit-checklist',at:new Date().toISOString()};
+  // Avoid orphan corrective actions without an exact Audit source reference.
+  if(!target?.id||!team){alert('Audit 대상번호가 선택되지 않았습니다. 먼저 ① Audit 실시에서 대상팀을 선택한 후 개선요청을 등록해 주세요.');return}
   sessionStorage.setItem('hd20AuditToActionPending',JSON.stringify(payload));
   window.dispatchEvent(new CustomEvent('hd20-audit-to-action',{detail:payload}));
   document.querySelector('.beginnerNav button[data-key="action"]')?.click();
-  if(!team)setTimeout(()=>alert('현재 선택된 Audit 대상 팀이 없어 생산팀은 자동 선택되지 않았습니다. 등록 화면에서 생산팀을 직접 선택해 주세요.'),400);
 }
 function importFile(f){if(!f)return;const go=()=>{const fr=new FileReader();fr.onload=e=>{try{const wb=XLSX.read(e.target.result,{type:'array'}),ws=wb.Sheets[wb.SheetNames[0]],data=XLSX.utils.sheet_to_json(ws,{defval:''});const pick=(o,names)=>{const k=Object.keys(o).find(k=>names.some(n=>String(k).replace(/\s/g,'').includes(n)));return k?o[k]:''};const mapped=data.map(o=>{const score=Math.max(0,Math.min(5,+pick(o,['점수','평가점수','Score','평점'])||0));return{cat:normCat(pick(o,['5S구분','구분','분류'])||'정리'),item:pick(o,['점검항목','평가항목','항목','체크리스트']),weight:Math.max(1,Math.min(5,+pick(o,['배점','가중치','Max'])||5)),score,result:judgement(score),note:pick(o,['미흡사항','지적사항','Evidence','비고','개선요청'])||'',source:'excel'}}).filter(r=>r.item);if(!mapped.length)throw Error('점검항목 열을 찾지 못했습니다.');rows=mapped;save();render();alert(`${rows.length}개 점검항목을 반영했습니다.`)}catch(err){alert('점검표 업로드 오류: '+err.message)}};fr.readAsArrayBuffer(f)};if(window.XLSX)return go();const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';s.onload=go;s.onerror=()=>alert('Excel 모듈을 불러오지 못했습니다.');document.head.appendChild(s)}
 function boot(){css();load();let n=0;const run=()=>{if(render())return;if(++n<40)setTimeout(run,100)};run()}
