@@ -218,3 +218,20 @@ html body #masterModal .hmAuditRow button:hover{background:#dbedf9!important;bor
 html body #masterModal .hmAuditRow button:focus-visible{outline:3px solid #6daed5!important;outline-offset:2px!important}
 @media(max-width:1000px){html body #masterModal .hmAuditRows{grid-template-columns:1fr!important}}
 @media(max-width:650px){html body #masterModal .hmAuditTop{grid-template-columns:1fr!important}html body #masterModal .hmAuditRow{grid-template-columns:auto minmax(0,1fr)!important}html body #masterModal .hmAuditRow button{grid-column:2;justify-self:start}}
+
+/* 2026-11-04 shared search-layout alignment, master settings only. */
+#masterModal .hmToolbar{
+ display:grid!important;grid-template-columns:auto minmax(0,1fr) auto!important;
+ align-items:end!important;column-gap:11px!important;row-gap:7px!important;
+ padding:13px 15px!important;margin-top:15px!important;
+ background:#f8fbfd!important;border:1px solid #dce7ef!important;border-radius:9px!important;
+}
+#masterModal .hmToolbar label{align-self:center!important}
+#masterModal .hmToolbar input{width:100%!important;min-width:0!important;max-width:none!important;box-sizing:border-box!important}
+#masterModal .hmToolbar button{white-space:nowrap!important}
+@media(max-width:680px){
+ #masterModal .hmToolbar{grid-template-columns:minmax(0,1fr) auto!important}
+ #masterModal .hmToolbar label{grid-column:1/-1}
+ #masterModal .hmToolbar input{grid-column:1}
+ #masterModal .hmToolbar button{grid-column:2}
+}
