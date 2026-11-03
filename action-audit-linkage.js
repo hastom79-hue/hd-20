@@ -164,11 +164,17 @@ function openRetentionOriginal(id){
  (history.length?'<ol>'+history.map(h=>'<li>'+safe(String(h.at||'').slice(0,10))+' · '+safe(h.result||'')+' · '+safe(h.comment||'')+' · 개선조치 '+safe(h.actionId||'')+'</li>').join('')+'</ol>':'<p>등록된 재점검 이력이 없습니다.</p>')+
  '<b>연결 개선조치 ('+chain.length+'건)</b>'+
  (chain.length?'<ol>'+chain.map(a=>'<li>'+safe(a.id)+' · '+safe(a.status||'조치대기')+' · 최초 평가자 '+safe(a.initialAuditor||a.auditor||original.evaluator||'')+'</li>').join('')+'</ol>':'<p>연결된 개선조치가 없습니다.</p>')+
- '</div><footer><button type="button" data-had-close>닫기</button></footer></section>';
+ '</div><footer>'+(original.result==='부적합'&&!(original.recheckResult==='적합'&&original.recheckedAt)?'<button type="button" data-had-retention-work>③ 유지점검에서 재점검</button>':'')+'<button type="button" data-had-close>닫기</button></footer></section>';
  document.getElementById('hd20RetentionOriginalPopup')?.remove();
  document.body.appendChild(outer);
  const close=()=>outer.remove();
  outer.querySelectorAll('[data-had-close]').forEach(btn=>btn.addEventListener('click',close));
+ outer.querySelector('[data-had-retention-work]')?.addEventListener('click',()=>{
+  close();window.HD20_SUBNAV?.select?.('audit','ongoing');
+  const target=document.querySelector('#hd20RetentionSampling [data-rs-id]');
+  const match=[...document.querySelectorAll('#hd20RetentionSampling [data-rs-id]')].find(el=>el.dataset.rsId===key);
+  (match||target)?.scrollIntoView?.({block:'center',behavior:'auto'});
+ });
  outer.addEventListener('click',e=>{if(e.target===outer)close()});
  outer.querySelector('[data-had-close]')?.focus();
 }
