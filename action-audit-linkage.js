@@ -73,6 +73,8 @@ function renderAuditMonitor(){
    due:box.querySelector('[data-had-filter-due]')?.value||'',
    query:box.querySelector('[data-had-filter-text]')?.value||''
  };
+ const focusId=txt(root.dataset.hd20AuditActionFocusId);if(focusId)delete root.dataset.hd20AuditActionFocusId;
+ if(focusId&&auditActions().some(a=>txt(a.id)===focusId))last.query=focusId;
  const items=auditActions(),open=items.filter(a=>!actionDone(a)),pending=open.filter(a=>!a.receivedAt),overdue=open.filter(auditIsOverdue);
  const options=(field)=>[...new Set(items.map(a=>txt(a[field])).filter(Boolean))].sort().map(x=>'<option value="'+safe(x)+'">'+safe(x)+'</option>').join('');
  box.innerHTML='<div class="hadHeading"><div><b>Audit 개선조치 · 접수·완료관리</b><small>기한경과 → 미접수 → 진행 → 완료 순서 · Audit 원본번호 연결</small></div></div>'+
