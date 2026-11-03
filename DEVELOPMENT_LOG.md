@@ -2011,3 +2011,13 @@ Canonical Store는 다음을 기준으로 한다.
 - 배포 검증: `.github/workflows/pages-deploy.yml`에 HTML·CSS·JS 변경 및 개발일지 동기화 검사 추가.
 - 변경 금지 범위: 승인된 대시보드, 기존 사례 원본, Audit/유지점검/테마점검, 통합기준정보 데이터.
 - 한계: 코드 구문·정적 파일 검사와 실제 브라우저 팝업 열기/닫기, Pages 배포 성공 검증은 별개.
+
+### 2026-11-03 후속 긴급 수정 — 자율개선 등록 버튼 저장 불능 원인 제거
+- 실제 원인 추적: `activity-register-modal.js`가 원본 자율개선 등록 폼을 최상위 `document.body > #awRegisterModal`로 이동시키면서, `activity-workflow.js`의 기존 `#awActivity` 범위 이벤트 위임(`a.onclick`)과 저장 함수 `register(a)`가 폼 입력값을 더 이상 발견하지 못함. 팝업의 `등록` 버튼이 숨긴 구형 버튼을 `.click()`해도 이벤트가 `#awActivity`까지 버블링되지 않아 저장이 실행되지 않는 버그.
+- 수정 JS: `activity-workflow.js`에서 `register(root)`가 팝업의 실제 DOM을 우선 `formRoot`로 사용해 문제내용·팀·날짜·등록자·작업장·3대요건·전개·사진을 읽고 그대로 기존 `save(rows)`·성공 이벤트로 저장. `window.HD20_ACTIVITY_REGISTER` 진입점을 공개해 기존 폼/등록 흐름을 재사용.
+- 팝업 연결: `activity-register-modal.js`의 상단 등록 버튼에서 `window.HD20_ACTIVITY_REGISTER()`를 직접 호출. 저장 함수 미준비 시 명확한 안내를 표시하고 등록 성공으로 오인하지 않음.
+- 불필요한 문구 원천 제거: `activity-workflow.js`의 기존 `awRegisterNote` 설명(“현장팀에서 자체적으로 개선한 활동을 등록하는 창구입니다”) 자체를 HTML 템플릿에서 삭제. JS에서 동일 내용을 찾던 공백 정규식도 수정.
+- HTML: `activity-workflow.js?v=20261103-body-modal-save-v3`, `activity-register-modal.js?v=20261103-body-modal-save-handler-v6` 참조 동기화.
+- CSS: 기존 `hd20-subtabs.css`의 body 최상위 자율개선 팝업 표시 규칙을 유지. 불필요한 CSS 전역 변경 및 대시보드 수정 금지.
+- 배포: `.github/workflows/pages-deploy.yml`에 원본 저장 함수 연결·HTML 참조·문구 삭제 여부 및 JS 구문검사를 추가.
+- 검증 범위: 소스구조/구문 및 파일 참조 확인. 실제 등록 버튼 클릭, 로컬 저장 성공, 사진 첨부 유지, Pages 게시 성공은 별도의 브라우저 통합 검증 대상.
