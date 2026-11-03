@@ -523,6 +523,51 @@ fs.mkdirSync('artifacts',{recursive:true});
   });
   assert.deepEqual(wrongActionLink,{found:true,missing:true,unrelated:false},
     '④ must not resolve a rework action belonging to another retention source');
+  // An action-update event must refresh ④ without resetting combined filters.
+  const liveStatus=await page.evaluate(async()=>{
+    const ck='hd20RetentionRandomChecksV1',ak='hd20ActionCasesV2';
+    const originalChecks=localStorage.getItem(ck),originalActions=localStorage.getItem(ak);
+    const id='AUDIT-SMOKE-LIVE-UPDATE',aid='AUDIT-SMOKE-LIVE-ACTION';
+    try{
+      const checks=JSON.parse(originalChecks||'[]');
+      const actions=JSON.parse(originalActions||'[]');
+      checks.push({id,caseId:'AUDIT-SMOKE-LIVE-ORIGIN',kind:'개선요청',team:'검증팀',
+        result:'부적합',evaluator:'검증 평가자',actionId:aid});
+      actions.push({id:aid,sourceStage:'RETENTION-RANDOM',
+        sourceCaseId:'RET-AUDIT-'+id,team:'검증팀',status:'조치대기'});
+      localStorage.setItem(ck,JSON.stringify(checks));
+      localStorage.setItem(ak,JSON.stringify(actions));
+      window.HD20_SUBNAV.select('audit','retention');
+      const panel=document.getElementById('hd20AuditCloseEvaluation');
+      if(!panel?.querySelector('.hd20CloseFilters'))return {unsupported:true};
+      const team=panel.querySelector('[data-close-filter-team]');
+      const state=panel.querySelector('[data-close-filter-state]');
+      const query=panel.querySelector('[data-close-filter-text]');
+      team.value='검증팀';team.dispatchEvent(new Event('input',{bubbles:true}));
+      state.value='rework';state.dispatchEvent(new Event('input',{bubbles:true}));
+      query.value=id;query.dispatchEvent(new Event('input',{bubbles:true}));
+      const findRow=()=>[...panel.querySelectorAll('[data-close-rework] tbody tr')]
+        .find(x=>x.textContent.includes(id));
+      const initial=findRow()?.textContent||'';
+      const updated=JSON.parse(localStorage.getItem(ak)||'[]');
+      updated.find(x=>x.id===aid).status='완료';
+      localStorage.setItem(ak,JSON.stringify(updated));
+      window.dispatchEvent(new CustomEvent('hd20-action-updated',{detail:{id:aid}}));
+      await new Promise(resolve=>setTimeout(resolve,160));
+      const after=findRow()?.textContent||'';
+      return {initialPending:initial.includes('진행·대기'),
+        updatedDone:after.includes('개선조치 완료'),
+        filtersRetained:team.value==='검증팀'&&state.value==='rework'&&query.value===id,
+        exactAction:after.includes(aid)};
+    }finally{
+      if(originalChecks===null)localStorage.removeItem(ck);else localStorage.setItem(ck,originalChecks);
+      if(originalActions===null)localStorage.removeItem(ak);else localStorage.setItem(ak,originalActions);
+      window.HD20_SUBNAV.select('audit','retention');
+    }
+  });
+  if(!liveStatus.unsupported)assert.deepEqual(liveStatus,{
+    initialPending:true,updatedDone:true,filtersRetained:true,exactAction:true
+  },'④ live corrective-action refresh retains exact source and filters');
   // The fourth tab must expose exact-source retention failures and linked corrective actions.
   await page.evaluate(()=>{
     const read=k=>{try{return JSON.parse(localStorage.getItem(k)||'[]')}catch{return[]}};
