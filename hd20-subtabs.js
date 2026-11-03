@@ -375,6 +375,19 @@ function renderAuditCloseEvaluation(host,traceOnly=false){
    return '<tr><td>'+esc(r.id)+'</td><td>'+esc(r.team||'—')+'</td><td>'+esc(r.kind||'—')+' · '+esc(r.caseId||'—')+'</td><td>'+esc(r.evaluator||'미입력')+'</td><td>'+esc(action?.id||'미연결')+'</td><td>'+esc(r.recheckResult==='적합'?'종결':status)+'</td></tr>';
  }).join('')+'</tbody></table></div>';
  const existingOpen=host.querySelector('.hd20CloseHistory')?.open===true;
+ const previousFilters={
+   team:host.querySelector('[data-close-filter-team]')?.value||'',
+   state:host.querySelector('[data-close-filter-state]')?.value||'',
+   text:host.querySelector('[data-close-filter-text]')?.value||''
+ };
+ const teams=[...new Set([...conducted,...retentions].map(x=>txt(x.team)).filter(Boolean))].sort();
+ const filterBar='<div class="hd20CloseFilters" role="search" aria-label="Audit 결과 검색">'+
+  '<label>생산팀<select data-close-filter-team><option value="">전체 팀</option>'+teams.map(t=>'<option value="'+esc(t)+'">'+esc(t)+'</option>').join('')+'</select></label>'+
+  '<label>상태<select data-close-filter-state><option value="">전체 상태</option><option value="pending">최종판정 대기</option><option value="rework">재조치·재점검 필요</option><option value="closed">종결·완료</option></select></label>'+
+  '<label>관리번호·내용<input data-close-filter-text placeholder="Audit·유지점검 번호, 팀, 평가자 검색"></label>'+
+  '<button type="button" data-close-filter-reset>초기화</button>'+
+  '<span data-close-filter-count aria-live="polite"></span></div>';
+
  const firstBlock=traceOnly?'':'<div class="awHead"><div><b>Audit 최종판정 · 재조치 관리</b><small>판정 미입력과 재조치 필요 건 우선 · 기존 원본 기록 보존</small></div></div>'+
  '<section class="hd20CloseSection" data-close-final-pending><div class="hd20CloseSectionHead"><b>최종판정 대기</b><small>'+pendingFinal.length+'건 · 실시 완료, 최종판정 미입력</small></div>'+
  (pendingFinal.length?auditTable(pendingFinal.slice().reverse().slice(0,80)):'<p class="awHint">현재 최종판정 대기 Audit가 없습니다.</p>')+'</section>';
@@ -385,10 +398,46 @@ function renderAuditCloseEvaluation(host,traceOnly=false){
  (resolved.length?'<div class="hd20CloseSectionHead"><b>재점검 적합·종결</b><small>'+resolved.length+'건</small></div>'+actionTable(resolved.slice().reverse().slice(0,80)):'')+
  (closedChecks.length?'<div class="hd20CloseSectionHead"><b>유지점검 적합·종결</b><small>'+closedChecks.length+'건</small></div>'+actionTable(closedChecks.slice().reverse().slice(0,80)):'')+
  (!evaluated.length&&!resolved.length&&!closedChecks.length?'<p class="awHint">종결된 점검 이력이 없습니다.</p>':'')+'</details>';
- host.innerHTML=firstBlock+corrective+history;
+ host.innerHTML=(traceOnly?'':filterBar)+firstBlock+corrective+history;
+ if(!traceOnly){
+   const team=host.querySelector('[data-close-filter-team]');
+   const state=host.querySelector('[data-close-filter-state]');
+   const query=host.querySelector('[data-close-filter-text]');
+   if(team)team.value=previousFilters.team;
+   if(state)state.value=previousFilters.state;
+   if(query)query.value=previousFilters.text;
+   const applyFilters=()=>{
+     const selectedTeam=team?.value||'',selectedState=state?.value||'';
+     const needle=(query?.value||'').trim().toLocaleLowerCase();
+     let visible=0;
+     for(const section of host.querySelectorAll('[data-close-final-pending],[data-close-rework],.hd20CloseHistory')){
+       const kind=section.hasAttribute('data-close-final-pending')?'pending':section.hasAttribute('data-close-rework')?'rework':'closed';
+       const allowed=!selectedState||kind===selectedState;
+       section.hidden=!allowed;
+       if(!allowed)continue;
+       for(const row of section.querySelectorAll('tbody tr')){
+         const cols=row.querySelectorAll('td');
+         const rowTeam=kind==='pending'?cols[1]?.textContent?.split(' · ')[0]?.trim():kind==='rework'?cols[1]?.textContent?.trim():cols.length===5?cols[1]?.textContent?.split(' · ')[0]?.trim():cols[1]?.textContent?.trim();
+         const matchesTeam=!selectedTeam||rowTeam===selectedTeam;
+         const matchesText=!needle||row.textContent.toLocaleLowerCase().includes(needle);
+         row.hidden=!(matchesTeam&&matchesText);
+         if(!row.hidden)visible++;
+       }
+     }
+     const count=host.querySelector('[data-close-filter-count]');
+     if(count)count.textContent='조회 '+visible+'건';
+   };
+   [team,state,query].forEach(el=>el?.addEventListener('input',applyFilters));
+   host.querySelector('[data-close-filter-reset]')?.addEventListener('click',()=>{
+     if(team)team.value='';if(state)state.value='';if(query)query.value='';
+     applyFilters();
+   });
+   applyFilters();
+ }
+
  if(!document.getElementById('hd20AuditClosureLayoutStyle')){
    const style=document.createElement('style');style.id='hd20AuditClosureLayoutStyle';
-   style.textContent='#awAudit .hd20CloseSection{margin:12px 0 18px}#awAudit .hd20CloseSectionHead{display:flex;justify-content:space-between;align-items:center;gap:10px;border-bottom:1px solid #dce7ef;padding:10px 2px}#awAudit .hd20CloseSectionHead b{font-size:15px;color:#24475f}#awAudit .hd20CloseSectionHead small{font-size:12px;color:#627e91}#awAudit .hd20CloseTableWrap{width:100%;overflow:auto;margin-top:8px}#awAudit .hd20CloseTableWrap .awTable{width:100%;border-collapse:collapse}#awAudit .hd20CloseHistory{margin-top:17px;border:1px solid #dce7ef;border-radius:9px;background:#fbfdff}#awAudit .hd20CloseHistory>summary{cursor:pointer;padding:12px 14px;color:#24516f;font-weight:800}#awAudit .hd20CloseHistory>.hd20CloseTableWrap,#awAudit .hd20CloseHistory>.hd20CloseSectionHead,#awAudit .hd20CloseHistory>.awHint{margin:9px 12px 13px}';
+   style.textContent='#awAudit .hd20CloseFilters{display:flex;align-items:flex-end;flex-wrap:wrap;gap:10px;padding:12px 2px;border-bottom:1px solid #dce7ef}#awAudit .hd20CloseFilters label{display:flex;flex-direction:column;gap:5px;font-size:12px;color:#365a70}#awAudit .hd20CloseFilters select,#awAudit .hd20CloseFilters input{padding:8px;min-width:140px;max-width:260px;border:1px solid #cad9e4;border-radius:7px;background:#fff}#awAudit .hd20CloseFilters button{padding:8px 12px;border:1px solid #cad9e4;border-radius:7px;background:#fff;cursor:pointer}#awAudit .hd20CloseFilters [data-close-filter-count]{font-size:12px;color:#52728a}#awAudit .hd20CloseSection[hidden],#awAudit .hd20CloseHistory[hidden],#awAudit .hd20CloseTableWrap tr[hidden]{display:none!important}'+'#awAudit .hd20CloseSection{margin:12px 0 18px}#awAudit .hd20CloseSectionHead{display:flex;justify-content:space-between;align-items:center;gap:10px;border-bottom:1px solid #dce7ef;padding:10px 2px}#awAudit .hd20CloseSectionHead b{font-size:15px;color:#24475f}#awAudit .hd20CloseSectionHead small{font-size:12px;color:#627e91}#awAudit .hd20CloseTableWrap{width:100%;overflow:auto;margin-top:8px}#awAudit .hd20CloseTableWrap .awTable{width:100%;border-collapse:collapse}#awAudit .hd20CloseHistory{margin-top:17px;border:1px solid #dce7ef;border-radius:9px;background:#fbfdff}#awAudit .hd20CloseHistory>summary{cursor:pointer;padding:12px 14px;color:#24516f;font-weight:800}#awAudit .hd20CloseHistory>.hd20CloseTableWrap,#awAudit .hd20CloseHistory>.hd20CloseSectionHead,#awAudit .hd20CloseHistory>.awHint{margin:9px 12px 13px}';
    document.head.appendChild(style);
  }
 }
