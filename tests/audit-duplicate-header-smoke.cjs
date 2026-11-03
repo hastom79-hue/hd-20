@@ -131,6 +131,23 @@ fs.mkdirSync('artifacts',{recursive:true});
   });
   assert.ok(firstWorkspaceOrder.drawFirst&&firstWorkspaceOrder.batchInRegistration&&firstWorkspaceOrder.drawBeforeBatch,
     'Audit first workspace order must be target draw → Batch selector in registration → result form');
+  // If an asynchronous legacy render moves the Batch control, patch()
+  // must return it to the exact position immediately before the result form.
+  const batchAnchor=await page.evaluate(()=>{
+    const box=document.querySelector('#awAudit .auditClosedLoop');
+    const host=box?.querySelector('#hd20AuditBatchExecution');
+    const form=box?.querySelector('.auditCLForm');
+    if(!host||!form)return {available:false};
+    const oldParent=host.parentElement;
+    form.insertAdjacentElement('afterend',host);
+    const misplaced=host.previousElementSibling===form;
+    const repaired=window.HD20AuditBatchExecution?.patch?.()===true;
+    const correctlyPlaced=host.nextElementSibling===form&&host.parentElement===form.parentElement;
+    return {available:true,misplaced,repaired,correctlyPlaced};
+  });
+  if(batchAnchor.available)assert.deepEqual(batchAnchor,{
+    available:true,misplaced:true,repaired:true,correctlyPlaced:true
+  },'Batch selector must return directly above canonical Audit result form');
   // Batch selection must never replace the canonical result submission handler:
   // only the canonical handler verifies mandatory corrective photo evidence.
   const canonicalSubmit=await page.evaluate(()=>{
