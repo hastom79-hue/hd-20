@@ -94,6 +94,16 @@ function actionTable(month){
  }).join('');
  return '<div class="themeHistoryMeta">총 '+rows.length+'건 · 재발 '+recurrenceCount+'건 · 재발률 '+recurrenceRate+'% (조회 개선조치 건수 대비) · 최초 발생 월과 최근 재점검 월 모두에서 조회 · 동일 미흡사항의 미완료 조치는 중복 생성하지 않고 재점검 이력을 연결합니다.</div><div class="themeActionFilters"><label>빠른 검색 <input id="themeActionSearch" type="search" placeholder="라인·팀·테마·미흡내용·조치 ID"></label><label>조치 상태 <select id="themeActionStatus"><option value="">전체 상태</option>'+statuses.map(s=>'<option value="'+esc(s)+'">'+esc(s)+'</option>').join('')+'</select></label><label>재발 구분 <select id="themeActionRecurrence"><option value="">전체</option><option value="yes">재발</option><option value="no">최초</option></select></label><span id="themeActionCount" aria-live="polite">표시 '+rows.length+'/'+rows.length+'건</span></div><div class="themeHistoryWrap"><table class="themeHistoryTable"><thead><tr><th>라인/구역</th><th>담당팀</th><th>취약 테마</th><th>미흡사항</th><th>조치 상태</th><th>조치기한</th><th>재점검</th><th>재발 구분</th><th>이전 조치 ID</th><th>조치 ID</th></tr></thead><tbody id="themeActionTableBody">'+tableRows+'</tbody></table><div id="themeActionNoResults" class="themeEmptyNote" hidden>검색 조건에 맞는 조치가 없습니다.</div></div>';
 }
+function sessionTeam(){
+ try{
+  const session=JSON.parse(localStorage.getItem('hd20_company_session_v1')||'null');
+  const mail=String(session?.email||'').trim().toLowerCase();
+  if(!mail||!Number.isFinite(Number(session?.expiresAt))||Number(session.expiresAt)<=Date.now())return '';
+  const master=JSON.parse(localStorage.getItem(TEAM_KEY)||'[]');
+  const matching=Array.isArray(master)?master.filter(x=>String(x?.email||'').trim().toLowerCase()===mail):[];
+  return matching.length===1?String(matching[0].team||'').trim():'';
+ }catch{return ''}
+}
 function teamOptions(){try{const v=JSON.parse(localStorage.getItem(TEAM_KEY)||'[]');if(Array.isArray(v)&&v.length)return v.map(x=>x.team||x)}catch{}return FALLBACK_TEAMS}
 function seoulDate(date=new Date()){const p=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(date);const part=k=>(p.find(x=>x.type===k)||{}).value||'';return part('year')+'-'+part('month')+'-'+part('day')}
 function addDaysStr(d,n){const x=new Date(String(d).slice(0,10)+'T12:00:00Z');x.setUTCDate(x.getUTCDate()+n);return x.toISOString().slice(0,10)}
@@ -230,6 +240,8 @@ function render(){
  const monthOpts=monthOptions();
  const view=host.dataset.view||'plan';host.dataset.view=view;
  const owner=selectedOwner();host.dataset.inspectionOwner=owner;
+ const mappedTeam=owner==='team'?sessionTeam():'';
+ if(mappedTeam&&host.dataset.team!==mappedTeam){host.dataset.team=mappedTeam;return render();}
  const planThemes=plannedThemes(month,line,owner,team);
  const pageSize=10,totalPages=Math.max(1,Math.ceil(LINES.length/pageSize));
  const page=Math.min(Math.max(0,Number(host.dataset.planPage)||0),totalPages-1);host.dataset.planPage=String(page);
@@ -260,7 +272,7 @@ function render(){
    <button type="button" data-theme-view="history" data-step="04" class="${view==='history'?'active':''}">재점검·이력</button>
  </nav>
  <section class="themePanel" data-theme-panel="plan" ${view==='plan'?'':'hidden'}>
- <div class="themePlanBox">${owner==='team'?'<div class="themeSelfTeamSelector"><label>자율점검 생산팀 <select id="themeSelfPlanTeam">'+teamOptions().map(t=>'<option'+(t===team?' selected':'')+'>'+esc(t)+'</option>').join('')+'</select></label><small>생산팀장 자율점검 계획은 생산팀·라인별로 독립 저장됩니다.</small></div>':''}<div class="themeSectionHead"><h3>월별·라인별 취약 테마 계획</h3><small>${owner==='team'?'생산팀장이 담당 생산팀·라인의 취약테마를 직접 선정합니다.':'5S 모듈이 해당 월에 중점 점검할 테마를 지정합니다.'}</small></div>
+ <div class="themePlanBox">${owner==='team'?'<div class="themeSelfTeamSelector"><label>자율점검 생산팀 <select id="themeSelfPlanTeam" '+(mappedTeam?'disabled':'')+'>'+teamOptions().map(t=>'<option'+(t===team?' selected':'')+'>'+esc(t)+'</option>').join('')+'</select></label><small>'+(mappedTeam?'등록된 팀장 이메일 기준 담당 생산팀 자동 적용':'담당 생산팀이 자동 확인되지 않았습니다. 마스터의 이메일 정보를 확인해 주세요.')+'</small></div>':''}<div class="themeSectionHead"><h3>월별·라인별 취약 테마 계획</h3><small>${owner==='team'?'생산팀장이 담당 생산팀·라인의 취약테마를 직접 선정합니다.':'5S 모듈이 해당 월에 중점 점검할 테마를 지정합니다.'}</small></div>
  <div class="themeControls"><label>계획 라인/구역 <select id="themePlanLineSel">${LINES.map(l=>`<option${l===line?' selected':''}>${esc(l)}</option>`).join('')}</select></label><span class="themePlanHint">체크한 테마만 현장 점검표에 표시됩니다. 기존 점검 이력은 보존됩니다.</span></div>
  <div class="themePlanChoices">${THEMES.map(t=>`<label><input type="checkbox" name="themePlanTheme" value="${esc(t)}" ${planThemes.includes(t)?'checked':''}><span>${esc(t)}</span></label>`).join('')}</div>
  <div class="themePlanFooter"><span>선택 테마 <b id="themePlanCount">${planThemes.length}</b> / ${THEMES.length} · <b class="themePlanState">${planThemes.length?'계획 설정됨':'계획 미설정'}</b></span><button type="button" class="themePlanSave" id="themeSavePlanBtn">계획 저장</button></div>${planThemes.length?'':'<div class="themeEmptyNote themePlanEmpty">선택 월·라인의 취약테마가 지정되지 않았습니다. 점검 주체에 맞는 계획을 먼저 저장해 주세요.</div>'}</div>
@@ -411,6 +423,7 @@ function bulkSet(value){
 async function saveAudit(){
  const host=document.getElementById('awTheme');if(!host)return;
  const line=host.dataset.line,team=host.dataset.team,month=host.dataset.month;
+ if(selectedOwner()==='team'&&sessionTeam()&&sessionTeam()!==team){alert('등록된 담당 생산팀과 현재 선택팀이 일치하지 않습니다. 화면을 다시 확인해 주세요.');render();return}
  const rows=$$('.themeCheckRow',host),states={};
  rows.forEach(row=>{const active=row.querySelector('button.active');if(active)states[row.dataset.key]=active.dataset.v});
  const applicable=CHECKLIST.filter(item=>plannedThemes(month,line).includes(item.cat));
