@@ -507,7 +507,9 @@ function renderRetentionSampling(root){
    if(focused){
      focused.dataset.hd20RetentionFocused='true';
      focused.setAttribute('aria-label','선택한 유지점검 · '+focusId);
-   }else if(!records.some(x=>String(x.id)===focusId)){
+   }else{
+     // Once the case leaves the active ③ queue (for example after closure),
+     // remove its focus marker rather than carrying it to an unrelated case.
      delete root.dataset.hd20RetentionFocusId;
    }
  }
