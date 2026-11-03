@@ -2103,3 +2103,11 @@ Canonical Store는 다음을 기준으로 한다.
 - 기존의 공통 현장사진·관찰메모, 점검이력 저장, 개선조치 중복방지 및 재발 판정은 유지. **항목별 독립 사진 첨부는 이번 버전에 구현하지 않았으므로 공동 사진을 항목별 파일로 오인해서는 안 됨.**
 - 변경 파일: `theme-inspection.js`, `theme-inspection-v5.css`, `index.html`. 별도 대시보드 수정 없음.
 - 정적 JS 구문검사 및 DOM 셀렉터·버전 참조 확인. 실제 Pages 배포와 브라우저 상호작용 회귀검증은 미완료.
+
+
+### 2026-11-04 — 테마점검·통합기준정보 화면 정리 1차
+- **실제 기능 오류 수정:** `theme-inspection.js` 체크리스트 렌더의 `$('.themeCheckRow',wrap).forEach(...)` 는 `querySelector` 반환 요소에 `forEach`를 호출하므로 현장점검 항목 이벤트 연결이 실패할 수 있었음. `$$('.themeCheckRow',wrap)` 로 수정.
+- 테마점검: 현장점검 실시 헤더에 주체 표기, 라인·담당팀 선택영역 2열 정리. 전체 적합·직전참고·초기화 도구를 선택적으로 펼치는 `details`로 이동. 기존 판정·저장·개선조치 연결 로직 보존.
+- 통합기준정보: 상단에 늘어선 연동상태 점검 영역을 기본 접힌 `details` 하나로 정리하여 기준정보 분류 및 실제 편집기가 우선 보이도록 변경. 필요 시 점검상태 펼침·새로고침 가능. 기존 마스터 편집 패널·저장/권한 기능 유지.
+- 변경 파일: `theme-inspection.js`, `theme-inspection-v5.css`, `master-workspace-v2.js`, `master-workspace-v2.css`, `index.html`.
+- 정적 코드 구문 검증 예정 / 실제 브라우저 및 GitHub Pages 게시 성공 여부는 별도 확인 필요. 확정된 대시보드 변경 없음.
