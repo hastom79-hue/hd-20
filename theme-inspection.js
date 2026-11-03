@@ -325,7 +325,7 @@ function render(){
  $('#themePlanLineSel',host)?.addEventListener('change',e=>{host.dataset.line=e.target.value;host.dataset.team=owner==='team'?host.dataset.team:(LINE_DEFAULT_TEAM[e.target.value]||host.dataset.team);render()});
  Array.from(host.querySelectorAll('input[name="themePlanTheme"]')).forEach(box=>box.addEventListener('change',()=>{const n=host.querySelectorAll('input[name="themePlanTheme"]:checked').length;const count=$('#themePlanCount',host);if(count)count.textContent=n}));
  $('#themeSavePlanBtn',host)?.addEventListener('click',()=>{const selected=Array.from(host.querySelectorAll('input[name="themePlanTheme"]:checked')).map(x=>x.value);if(!selected.length){alert('최소 1개 이상의 취약 테마를 선택해 주세요.');return}const plans=loadPlans(),entry={month,line:host.dataset.line,team:owner==='team'?host.dataset.team:'',themes:selected,inspectionOwner:owner,updatedAt:new Date().toISOString()};const i=plans.findIndex(x=>x.month===month&&x.line===host.dataset.line&&ownerOf(x)===owner&&(owner!=='team'||x.team===host.dataset.team));if(i>=0)plans[i]=entry;else plans.push(entry);if(!savePlans(plans)){alert('점검계획 저장에 실패했습니다. 저장공간을 확인해 주세요.');return}render()});
- $('#themeLineSel',host)?.addEventListener('change',e=>{host.dataset.line=e.target.value;host.dataset.team=LINE_DEFAULT_TEAM[e.target.value]||host.dataset.team;render()});
+ $('#themeLineSel',host)?.addEventListener('change',e=>{host.dataset.line=e.target.value;host.dataset.focusTheme='';host.dataset.team=owner==='team'?host.dataset.team:(LINE_DEFAULT_TEAM[e.target.value]||host.dataset.team);render()});
  $('#themeTeamSel',host)?.addEventListener('change',e=>{host.dataset.team=e.target.value;render()});
  $('#themeSaveBtn',host)?.addEventListener('click',async e=>{
    const button=e.currentTarget;
@@ -397,6 +397,7 @@ function renderChecklist(){
  }).join('');
  wrap.innerHTML=groups;
  const tabs=$('#themeThemeTabs',host),categories=THEMES.filter(cat=>activeThemes.includes(cat));
+ if(!categories.length){wrap.innerHTML='<div class="themeEmptyNote">해당 점검 주체·생산팀·라인의 취약테마 계획이 없습니다. [점검계획·취약현황]에서 테마를 지정하고 저장해 주세요.</div>';}
  if(tabs){tabs.innerHTML=categories.map(cat=>'<button type="button" data-focus-theme="'+esc(cat)+'"><span>'+esc(cat)+'</span><small class="themeThemeTabCount"></small></button>').join('');const chosen=categories.includes(host.dataset.focusTheme)?host.dataset.focusTheme:categories[0]||'';host.dataset.focusTheme=chosen;const activate=cat=>{host.dataset.focusTheme=cat;tabs.querySelectorAll('button').forEach(btn=>{const active=btn.dataset.focusTheme===cat;btn.classList.toggle('active',active);btn.setAttribute('aria-pressed',String(active))});wrap.querySelectorAll('.themeChecklistGroup').forEach(group=>{group.hidden=group.dataset.themeCat!==cat})};tabs.querySelectorAll('button').forEach(btn=>btn.addEventListener('click',()=>activate(btn.dataset.focusTheme)));activate(chosen);}
  $('.themeCheckRow',wrap).forEach(row=>{
    $$('button',row).forEach(btn=>btn.addEventListener('click',()=>{
