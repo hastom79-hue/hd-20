@@ -8,10 +8,71 @@ if(root.querySelector('#hd20MasterWorkspace')){
  box.classList.toggle('hd20MasterWorkspaceReady',links>=10);
  return links>=10;
 }const required=['integrated-team','integrated-target','integrated-source','integrated-discovery','integrated-factor','integrated-workplace','integrated-theme','policy','integrated-admins','integrated-mail'];if(!required.every(k=>tabs.querySelector('[data-master-tab="'+k+'"]')))return false;
-const ws=document.createElement('section');ws.id='hd20MasterWorkspace';ws.innerHTML='<div class="hmTitle"><div><span class="hmEyebrow">HD-20 · 기준정보 관리</span><h2>통합기준정보</h2><p>관리 항목을 선택해 수정하세요. 기존 저장·권한·데이터 연계 기능을 그대로 사용합니다.</p></div><div class="hmCounters"><span data-hm-count>기준정보 불러오는 중</span><button type="button" data-hm-close aria-label="통합기준정보 닫기">닫기 ×</button></div></div><div class="hmToolbar"><label for="hmSearch">기준정보 검색</label><input id="hmSearch" type="search" placeholder="팀, 작업장, Audit, 권한, 메일 등 검색" autocomplete="off"><button type="button" data-hm-reset>전체 보기</button></div><div class="hmGroups" data-hm-groups></div><div class="hmCurrent" aria-live="polite"><strong data-hm-current>관리 항목을 선택하세요</strong><span>아래에서 기존 기준정보를 직접 편집·저장합니다.</span></div>';
+const ws=document.createElement('section');ws.id='hd20MasterWorkspace';ws.innerHTML='<div class="hmTitle"><div><span class="hmEyebrow">HD-20 · 기준정보 관리</span><h2>통합기준정보</h2><p>관리 항목을 선택해 수정하세요. 기존 저장·권한·데이터 연계 기능을 그대로 사용합니다.</p></div><div class="hmCounters"><span data-hm-count>기준정보 불러오는 중</span><button type="button" data-hm-close aria-label="통합기준정보 닫기">닫기 ×</button></div></div><div class="hmToolbar"><label for="hmSearch">기준정보 검색</label><input id="hmSearch" type="search" placeholder="팀, 작업장, Audit, 권한, 메일 등 검색" autocomplete="off"><button type="button" data-hm-reset>전체 보기</button></div><div class="hmGroups" data-hm-groups></div><div class="hmCurrent" aria-live="polite"><strong data-hm-current>관리 항목을 선택하세요</strong><span>아래에서 기존 기준정보를 직접 편집·저장합니다.</span></div><section class="hmAudit" aria-label="기준정보·타 탭 연동점검"><div class="hmAuditTop"><div><strong>업무별 기준정보 연동점검</strong><p>Audit · 테마점검 · 개선요청 · TO-BE · 유지점검 · 알림의 참조설정을 확인합니다. 조회 전용이며 기준정보를 자동 변경하지 않습니다.</p></div><div class="hmAuditActions"><span data-hm-audit-summary>점검 준비</span><button type="button" data-hm-audit-refresh>다시 점검</button></div></div><div class="hmAuditRows" data-hm-audit-rows></div></section>';
 box.insertBefore(ws,tabs);
 // Keep a working close control even when legacy .modalHead is hidden by layout CSS.
 ws.querySelector('[data-hm-close]').addEventListener('click',()=>{const close=root.querySelector('#closeMaster');if(close)close.click();else{root.classList.remove('on');root.setAttribute('aria-hidden','true')}});
+
+
+/* Integrity checks only read canonical sources. Missing contact/service is
+   reported, never silently replaced by demo data or a fake success status. */
+const auditRows=ws.querySelector('[data-hm-audit-rows]');
+const auditSummary=ws.querySelector('[data-hm-audit-summary]');
+const readJson=(key,fallback)=>{try{const value=JSON.parse(localStorage.getItem(key)||'null');return value===null?fallback:value}catch{return fallback}};
+const distinct=arr=>[...new Set(arr.filter(Boolean))];
+const validEmail=v=>/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(v||'').trim());
+const safeCount=n=>Number(n||0).toLocaleString('ko-KR');
+function auditMaster(){
+ const teamNames=window.HD20ProductionTeamMaster?.teamNames?.()||[];
+ const leaders=readJson('hd20TeamLeaderMasterV1',[]);
+ const leaderRecords=Array.isArray(leaders)?leaders:[];
+ const org=readJson('gmes5s_team_org_master_v1',{});
+ const orgRows=org&&typeof org==='object'&&!Array.isArray(org)?org:{};
+ const teamEmail=name=>String(orgRows[name]?.email||leaderRecords.find(x=>x?.team===name)?.email||'').trim();
+ const teamMissing=teamNames.filter(name=>!validEmail(teamEmail(name)));
+ const masterFactors=readJson('gmes5s_work_factor_master_v1',{});
+ const policy=window.HD20PolicyConfig?.read?.()||null;
+ const retained=readJson('hd20Retention5SModuleRecipientsV1',[]);
+ const retentionEmails=Array.isArray(retained)?retained.filter(validEmail):[];
+ const actions=readJson('hd20ActionCasesV2',[]);
+ const realActions=Array.isArray(actions)?actions.filter(x=>x&&x.id&&x.isDemo!==true&&x.isTest!==true&&!String(x.id).startsWith('DEMO-')):[];
+ const tobeDone=realActions.filter(x=>x.toBeRegisteredAt||x.toBePlan||x.actionText);
+ const requesterMissing=tobeDone.filter(x=>!validEmail(x.requesterEmail||x.requestEmail));
+ const smsOn=typeof window.HD20_SMS_GATEWAY?.send==='function';
+ const emailOn=!!(window.emailjs&&window.HD20_EMAILJS_CONFIG?.serviceId&&window.HD20_EMAILJS_CONFIG?.templateId);
+ const themeSaved=Array.isArray(readJson('hd20ThemeCatalogMasterV1',null));
+ const inspect=[
+  {name:'생산팀·조직 마스터',area:'자율개선 · Audit · 개선조치',ok:teamNames.length>0,msg:teamNames.length?safeCount(teamNames.length)+'개 팀 연결':'생산팀 마스터를 불러오지 못함',target:'integrated-team'},
+  {name:'팀별 통보 이메일',area:'개선요청 등록 → 해당 팀 알림',ok:teamNames.length>0&&!teamMissing.length,msg:teamNames.length?(teamMissing.length?safeCount(teamMissing.length)+'개 팀 이메일 미설정':'전체 생산팀 이메일 형식 확인'):'팀 정보 확인 필요',target:'integrated-team'},
+  {name:'작업장·업무분류',area:'자율개선 · 테마점검 · Audit',ok:!!window.HD20WorkplaceMaster||Object.keys(masterFactors||{}).length>0,msg:window.HD20WorkplaceMaster?'작업장 원천 연결됨':Object.keys(masterFactors||{}).length?'등록 분류 정보 존재 · 작업장 연동 확인 필요':'작업장 기준정보 미확인',target:'integrated-workplace'},
+  {name:'5S 세부테마',area:'테마점검 · 점검항목',ok:themeSaved||!!document.querySelector('#hd20ThemeCatalogPanel'),msg:themeSaved?'테마 저장정보 연결됨':'테마 관리화면 확인 · 별도 저장 여부 확인',target:'integrated-theme'},
+  {name:'Audit·유지점검 운영정책',area:'Audit 추출 · 재점검 주기 · 기한',ok:!!policy&&Number(policy.retentionCheck?.intervalDays)>0&&Number(policy.retentionCheck?.sampleCount)>0,msg:policy?'유지점검 '+(policy.retentionCheck?.intervalDays||'—')+'일 / 표본 '+(policy.retentionCheck?.sampleCount||'—')+'건':'운영정책 로드 실패',target:'policy'},
+  {name:'유지점검 평가자·수신자',area:'③ 유지점검 담당자 통보',ok:retentionEmails.length>0,msg:retentionEmails.length?safeCount(retentionEmails.length)+'개 등록 이메일 확인':'5S 모듈 수신자 미등록',target:'policy'},
+  {name:'TO-BE 최초 요청자 주소',area:'TO-BE 조치등록 → 최초 요청자 회신',ok:tobeDone.length===0||requesterMissing.length===0,msg:tobeDone.length?safeCount(tobeDone.length)+'건 중 '+safeCount(requesterMissing.length)+'건 요청자 이메일 누락':'현재 브라우저에 TO-BE 등록 이력 없음',target:'integrated-team'},
+  {name:'메일 자동발송',area:'개선요청 · TO-BE 결과 통보',ok:emailOn,msg:emailOn?'EmailJS 모듈 및 설정 연결':'발송 모듈/설정 미확인 · 실발송 미검증',target:'integrated-mail'},
+  {name:'SMS 자동발송',area:'개선요청 · TO-BE 결과 통보',ok:smsOn,msg:smsOn?'발송 게이트웨이 연결 · 실제 성공 별도검증':'SMS 게이트웨이 미연결 · 자동발송 불가',target:'integrated-mail'}
+ ];
+ let issues=0;
+ auditRows.replaceChildren();
+ for(const x of inspect){
+  if(!x.ok)issues++;
+  const row=document.createElement('div');row.className='hmAuditRow';
+  const badge=document.createElement('span');badge.className=x.ok?'hmAuditGood':'hmAuditWarn';badge.textContent=x.ok?'확인':'점검 필요';
+  const info=document.createElement('div');info.className='hmAuditInfo';
+  const name=document.createElement('strong');name.textContent=x.name;
+  const desc=document.createElement('small');desc.textContent=x.area+' · '+x.msg;
+  info.append(name,desc);
+  const btn=document.createElement('button');btn.type='button';btn.textContent='관리 항목 열기';
+  btn.addEventListener('click',()=>{const b=ws.querySelector('[data-hm-target="'+x.target+'"]');if(!b)return;const group=b.closest('.hmGroup');if(group?.hidden){ws.querySelector('[data-hm-reset]')?.click()}activateGroup(group,false);b.click()});
+  row.append(badge,info,btn);auditRows.append(row);
+ }
+ auditSummary.textContent=inspect.length+'개 점검 · '+issues+'개 확인 필요';
+ ws.dataset.hmAuditIssues=String(issues);
+}
+ws.querySelector('[data-hm-audit-refresh]').addEventListener('click',auditMaster);
+['hd20-policy-updated','hd20-theme-master-updated','hd20-master-factors-updated','hd20-action-updated','hd20-team-master-updated','hd20-mailing-updated'].forEach(name=>window.addEventListener(name,()=>{if(root.classList.contains('on'))auditMaster()}));
+root.addEventListener('click',e=>{if(e.target.closest('[data-hm-close],#openMaster'))return;requestAnimationFrame(auditMaster)});
+auditMaster();
 
 const grid=ws.querySelector('[data-hm-groups]');const all=[];
 for(const [group,...keys] of GROUPS){const section=document.createElement('div');section.className='hmGroup';section.dataset.hmGroup=group;const heading=document.createElement('h3');heading.textContent=group;heading.setAttribute('role','tab');heading.tabIndex=0;heading.setAttribute('aria-selected','false');section.appendChild(heading);const wrap=document.createElement('div');wrap.className='hmLinks';wrap.setAttribute('role','group');wrap.setAttribute('aria-label',group+' 항목');for(const key of keys){const original=tabs.querySelector('[data-master-tab="'+key+'"]');if(!original||original.hidden)continue;const btn=document.createElement('button');btn.type='button';btn.dataset.hmTarget=key;btn.title=NOTES[key]||group;btn.innerHTML='<strong></strong><small></small>';btn.querySelector('strong').textContent=original.textContent.trim();btn.querySelector('small').textContent=NOTES[key]||group;btn.addEventListener('click',()=>{original.click();select(key);requestAnimationFrame(()=>{const current=box.querySelector('#hd20IntegratedMasterFactors .imfPanel:not([style*="display: none"])');{const target=current||box.querySelector('#hd20IntegratedMasterFactors');if(!target)return;const viewport=box.getBoundingClientRect(),rect=target.getBoundingClientRect();/* 상단 고정 헤더(ws)가 가리지 않도록 그 높이만큼 더 올려서 맞춘다 */const sticky=ws.getBoundingClientRect().height+8;const next=Math.max(0,Math.min(box.scrollHeight-box.clientHeight,box.scrollTop+rect.top-viewport.top-sticky));box.scrollTo({top:next,behavior:'smooth'})}})});wrap.appendChild(btn);all.push(btn)}section.appendChild(wrap);if(wrap.children.length)grid.appendChild(section)}
