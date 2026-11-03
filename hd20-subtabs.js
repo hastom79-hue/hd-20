@@ -80,7 +80,7 @@ function processFlow(area,sub){
  if(area==='action')return '<div class="hd20ProcessFlow compact"><div><b>개선요청</b><span>문제·근거</span></div><i>→</i><div><b>담당·기한</b><span>실행 책임</span></div><i>→</i><div><b>조치 완료</b><span>AFTER 증빙</span></div><i>→</i><div><b>효과 검증</b><span>유효성 확인</span></div><i>→</i><div><b>재발 관리</b><span>폐쇄루프</span></div></div>';
  return '';
 }
-function renderPurpose(area=state.area,sub=state.sub){const p=contract(area,sub),el=ensurePurpose();el.dataset.contract=keyOf(area,sub);if(area==='dashboard'){el.style.setProperty('display','none','important');el.replaceChildren();return}el.style.removeProperty('display');if(area==='audit'||area==='action'){el.replaceChildren();el.style.setProperty('display','none','important');return;}const R=ROLES[keyOf(area,sub)]||{};const cta=R.cta,wf=WORKFLOW[keyOf(area,sub)]||[p.judge,p.judge,p.next];
+function renderPurpose(area=state.area,sub=state.sub){const p=contract(area,sub),el=ensurePurpose();el.dataset.contract=keyOf(area,sub);if(area==='dashboard'){el.style.setProperty('display','none','important');el.replaceChildren();return}el.style.removeProperty('display');if(area==='audit'||area==='action'||(area==='activity'&&['overview','self','request','tobe'].includes(sub))){el.replaceChildren();el.style.setProperty('display','none','important');return;}const R=ROLES[keyOf(area,sub)]||{};const cta=R.cta,wf=WORKFLOW[keyOf(area,sub)]||[p.judge,p.judge,p.next];
   el.innerHTML=`${area==='activity'?'':area==='audit'||area==='advancement'?'':processFlow(area,sub)}<div class="hd20PurposeMain"><small>화면 안내 · ${MAP[area]?.find(x=>x[0]===sub)?.[1]||p.title}</small><h2>${p.title}</h2><p>${p.purpose}</p><details class="hd20PurposeMore"><summary>📖 화면 사용법 보기 (할 일 · 진행 단계 · 판단 기준)</summary><div class="hd20RoleGrid"><div class="hd20Role user"><b>사용자 · 이 화면에서 할 일</b><span>${R.user||p.judge}</span></div><div class="hd20Role admin"><b>관리자 · 이 화면에서 관리할 것</b><span>${R.admin||p.next}</span></div></div><div class="hd20WorkPath"><div><b>1. 확인</b><span>${wf[0]}</span></div><div><b>2. 판단</b><span>${wf[1]}</span></div><div><b>3. 실행</b><span>${wf[2]}</span></div></div><div class="hd20PurposeLogic"><span><b>판단</b>${p.judge}</span><span><b>다음</b>${p.next}</span></div><div class="hd20FeatureChips">${p.features.map(x=>`<span>${x}</span>`).join('')}</div></details></div><div class="hd20PurposeSide"><div class="hd20PurposeActions">${cta?`<button type="button" class="hd20Cta" data-hd20-cta>${cta.label}</button>`:''}<button type="button" data-hd20-grid title="전체 원본 데이터를 검색하고 CSV로 저장합니다">📋 전체 목록·다운로드</button><button type="button" data-hd20-refresh title="화면을 최신 데이터로 다시 불러옵니다">🔄 새로고침</button></div></div>`;
   el.querySelector('[data-hd20-cta]')?.addEventListener('click',()=>runCta(cta));
   el.querySelector('[data-hd20-grid]')?.addEventListener('click',()=>openGrid(area,sub));el.querySelector('[data-hd20-refresh]')?.addEventListener('click',()=>{window.HD20KPIData?.signal?.();window.dispatchEvent(new CustomEvent('hd20-refresh-requested'));apply(state.area,state.sub);renderPurpose()})}
@@ -162,10 +162,30 @@ function applyDashboard(sub){const cards=$('.cards'),main=$('.mainGrid'),bottom=
 function applyActivity(sub){const root=$('#awActivity');if(!root)return;
 root.dataset.subview=sub;
 if(['overview','self','request','tobe'].includes(sub)){
+ // Single purposeful surface per subtab. Keep canonical forms mounted,
+ // but never let legacy cards, graphs or banners leak into these views.
+ if(!document.getElementById('hd20ImprovementTabIsolation')){
+  const style=document.createElement('style');style.id='hd20ImprovementTabIsolation';
+  style.textContent=`
+  #awActivity[data-subview="overview"]>*:not(#awRegisterModal){display:none!important}
+  #awActivity[data-subview="self"]>*:not(#hd20ImprovementTaskPortal):not(#awRegisterModal){display:none!important}
+  #awActivity[data-subview="request"]>*:not(#hd20ImprovementTaskPortal):not(#awRegisterModal){display:none!important}
+  #awActivity[data-subview="tobe"]>*:not(#hd20AsIsToBeManager):not(#awRegisterModal){display:none!important}
+  #awActivity #hd20ImprovementTaskPortal{box-sizing:border-box;width:100%;max-width:100%;margin:10px auto;padding:28px;background:#fff;border:1px solid #d8e4ed;border-radius:12px;text-align:center}
+  #awActivity .hd20ImTaskTitle{display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:20px}
+  #awActivity .hd20ImTaskTitle strong{font-size:20px;color:#163e58}
+  #awActivity .hd20ImTaskTitle span{font-size:13px;color:#687f90}
+  #awActivity .hd20ImTaskBtns{display:flex;justify-content:center;gap:10px}
+  #awActivity .hd20ImTaskBtns button{border:1px solid #176896;border-radius:9px;background:#176896;color:#fff;font-size:15px;font-weight:800;padding:14px 24px;cursor:pointer}
+  #awActivity .hd20ImTaskBtns button[hidden]{display:none!important}
+  #awActivity[data-subview="tobe"] #hd20AsIsToBeManager{display:block!important}
+  `;
+  document.head.appendChild(style);
+ }
  let portal=root.querySelector('#hd20ImprovementTaskPortal');
  if(!portal){portal=document.createElement('section');portal.id='hd20ImprovementTaskPortal';portal.innerHTML='<div class="hd20ImTaskTitle"><strong>개선활동 등록·관리</strong><span>등록할 업무를 선택하면 원본 작성 팝업이 열립니다.</span></div><div class="hd20ImTaskBtns"><button type="button" data-im-task="self">자율개선 등록 팝업 열기</button><button type="button" data-im-task="request">개선요청 등록 팝업 열기</button></div>';root.prepend(portal);
  portal.querySelector('[data-im-task="self"]').onclick=()=>{const btn=root.querySelector('[data-aw="new"]');if(btn)btn.click();else alert('자율개선 등록 기능을 불러오지 못했습니다.')};
- portal.querySelector('[data-im-task="request"]').onclick=()=>{const modal=document.getElementById('hd20ActionRegisterModal'),btn=document.getElementById('hd20ActionRegisterBtn');if(modal&&modal.parentElement!==document.body)document.body.appendChild(modal);if(btn)btn.click();else alert('개선요청 등록 기능을 불러오지 못했습니다.')};
+ portal.querySelector('[data-im-task="request"]').onclick=()=>{const modal=document.getElementById('hd20ActionRegisterModal'),btn=document.getElementById('hd20ActionRegisterBtn');if(!modal||!btn){alert('개선요청 등록 기능을 불러오지 못했습니다.');return}if(modal.parentElement!==document.body)document.body.appendChild(modal);btn.click()};
  }
  portal.hidden=!['self','request'].includes(sub);
  portal.querySelector('.hd20ImTaskBtns').style.display='flex';
