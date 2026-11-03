@@ -51,7 +51,7 @@ jobs:
           grep -Fq "const preferredActivity=area==='activity'" hd20-subtabs.js
           node --check hd20-subtabs.js
           grep -Fq 'hd20LnThreeTabs{display:none!important}' landing-launcher.js
-          grep -Fq 'landing-launcher.js?v=20261103-first-load-search-focus-v20' index.html
+          grep -Fq 'landing-launcher.js?v=20261103-remove-legacy-tabs-v21' index.html
           grep -Fq 'activity-register-modal.js?v=20261103-contextual-close-v4' index.html
           node --check action-register-modal.js
           node --check activity-register-modal.js
@@ -65,6 +65,8 @@ jobs:
           grep -Fq "['self','request','tobe'].includes(currentSub)" landing-launcher.js
           grep -Fq 'const refreshVisibleLookup=()=>' landing-launcher.js
           grep -Fq '2026-11-03 후속 안정화 — 최초 진입과 검색 입력 보호' DEVELOPMENT_LOG.md
+          ! grep -Fq 'data-ln-tab=' landing-launcher.js
+          grep -Fq '통합조회 과거 3개 중복 탭 DOM 제거' DEVELOPMENT_LOG.md
           node --check landing-launcher.js
           node --check beginner-navigation.js
           node --check hd20-action-notification-routing.js
