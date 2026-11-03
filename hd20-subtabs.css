@@ -250,7 +250,7 @@ html body #awActivity[data-subview="overview"]>#hd20ActivityLookupPanel,
 html body #awActivity[data-subview="tobe"]>#hd20ActivityLookupPanel{
  display:none!important;
 }
-html body #awActivity #awRegisterModal.on{
+html body>#awRegisterModal.on{
  position:fixed!important;inset:0!important;display:flex!important;
  visibility:visible!important;z-index:99990!important;
 }
