@@ -290,13 +290,18 @@ function render(){
      <label>라인 <select id="themeLineSel">${LINES.map(l=>`<option${l===line?' selected':''}>${esc(l)}</option>`).join('')}</select></label>
      <label>담당 생산팀 <select id="themeTeamSel" ${owner==='team'?'disabled':''}>${teamOptions().map(t=>`<option${t===team?' selected':''}>${esc(t)}</option>`).join('')}</select></label>
    </div>
-   <div class="themeBulkRow"><span class="themeWorkflowNote">평가 도구 · 선택한 라인의 점검항목에 적용</span>
+   <div class="themeAuditFlowLabel">01 · 취약테마 집중점검 <small>테마를 선택해 평가합니다. 다른 테마의 판정은 유지됩니다.</small></div>
+   <div id="themeThemeTabs" class="themeThemeTabs" role="group" aria-label="점검 취약테마 선택"></div>
+   <div class="themeBulkRow"><span class="themeWorkflowNote">평가 보조 도구</span>
      <button type="button" class="themeBulkBtn" id="themeBulkAllOk">전체 적합으로 일괄 설정</button>
      <button type="button" class="themeBulkBtn" id="themeLoadPrevious">직전 결과 참고</button>
      <button type="button" class="themeBulkBtn" id="themeBulkClear">전체 초기화</button>
      <span id="themePreviousNote" class="themePreviousNote" aria-live="polite"></span>
    </div>
-   <div class="themeAuditMeta"><label class="themeAuditAuditorField">최초 점검자 <input id="themeAuditAuditor" type="text" maxlength="80" placeholder="점검자 성명 (필수)" required></label><label class="themeAuditPhotoField">현장사진 <input id="themeAuditPhoto" type="file" accept="image/jpeg,image/png,image/webp"><small>미흡 항목 발생 시 사진 필수 · 최대 1MB</small></label><label class="themeAuditMemoField">현장 관찰 메모 <textarea id="themeAuditMemo" rows="2" placeholder="현장 특이사항, 즉시조치, 재발 위험 등을 기록"></textarea></label><div id="themeProgress" aria-live="polite"></div></div><div id="themeChecklistWrap"></div>
+   <div id="themeChecklistWrap"></div>
+   <div class="themeAuditFlowLabel">02 · 미흡사항·현장 증빙 <small>미흡 판정된 항목을 확인하고 현장 증빙을 입력합니다.</small></div>
+   <div id="themeFindingList" class="themeFindingList" aria-live="polite"></div>
+   <div class="themeAuditMeta"><label class="themeAuditAuditorField">최초 점검자 <input id="themeAuditAuditor" type="text" maxlength="80" placeholder="점검자 성명 (필수)" required></label><label class="themeAuditPhotoField">현장사진 <input id="themeAuditPhoto" type="file" accept="image/jpeg,image/png,image/webp"><small>미흡 항목 발생 시 사진 필수 · 최대 1MB</small></label><label class="themeAuditMemoField">현장 관찰 메모 <textarea id="themeAuditMemo" rows="2" placeholder="현장 특이사항, 즉시조치, 재발 위험 등을 기록"></textarea></label><div id="themeProgress" aria-live="polite"></div></div><div class="themeAuditFlowLabel">03 · 평가결과 저장 <small>미판정 항목이 있으면 저장할 수 없습니다. 미흡항목은 기존 개선조치와 연결됩니다.</small></div>
    <button type="button" class="themeSaveBtn" id="themeSaveBtn">점검 결과 저장 · 미흡 항목 자동 등록</button>
    <div class="themeSaveResult" id="themeSaveResult"></div>
  </div></section>
@@ -333,7 +338,7 @@ function render(){
   $('#themeBulkClear',host)?.addEventListener('click',()=>{bulkSet('');const note=$('#themePreviousNote',host);if(note)note.textContent='새 회차 입력 상태로 초기화했습니다.'});
  Array.from(host.querySelectorAll('[data-pick-line]')).forEach(el=>el.addEventListener('click',()=>{
    const ln=el.getAttribute('data-pick-line');
-   host.dataset.line=ln;host.dataset.team=owner==='team'?host.dataset.team:(LINE_DEFAULT_TEAM[ln]||host.dataset.team);host.dataset.view='audit';render();
+   host.dataset.line=ln;host.dataset.focusTheme='';host.dataset.team=owner==='team'?host.dataset.team:(LINE_DEFAULT_TEAM[ln]||host.dataset.team);host.dataset.view='audit';render();
    $('#themeAuditBox',host)?.scrollIntoView({behavior:'smooth',block:'start'});
  }));
  renderChecklist();
@@ -365,7 +370,9 @@ function loadPreviousJudgements(){
 function updateProgress(){
  const host=document.getElementById('awTheme');if(!host)return;
  const rows=$$('.themeCheckRow',host),done=rows.filter(row=>row.querySelector('button.active')).length,ng=rows.filter(row=>row.querySelector('button.active[data-v="미흡"]')).length;
- const el=$('#themeProgress',host);if(el)el.textContent='판정 '+done+'/'+rows.length+'개 · 미흡 '+ng+'건';
+ const el=$('#themeProgress',host);if(el)el.textContent='판정 '+done+'/'+rows.length+'개 · 미흡 '+ng+'건 · 미판정 '+(rows.length-done)+'건';
+ const findings=$('#themeFindingList',host);if(findings){const ngRows=rows.filter(row=>row.querySelector('button.active[data-v="미흡"]'));findings.innerHTML=ngRows.length?ngRows.map((r,i)=>'<div class="themeFindingItem"><b>'+(i+1)+'. '+esc(r.dataset.cat)+'</b><span>'+esc(r.dataset.item)+'</span></div>').join(''):'<div class="themeFindingEmpty">현재 미흡 판정된 항목이 없습니다.</div>';}
+ const tabs=$('#themeThemeTabs button[data-focus-theme]',host);tabs.forEach(btn=>{const related=rows.filter(r=>r.dataset.cat===btn.dataset.focusTheme);const passed=related.filter(r=>r.querySelector('button.active')).length;const failed=related.filter(r=>r.querySelector('button.active[data-v="미흡"]')).length;const count=btn.querySelector('.themeThemeTabCount');if(count)count.textContent=passed+'/'+related.length+(failed?' · 미흡 '+failed:'')});
 }
 function renderChecklist(){
  const host=document.getElementById('awTheme');if(!host)return;
@@ -386,10 +393,12 @@ function renderChecklist(){
        </span>
      </div>`;
    }).join('');
-   return `<div class="themeChecklistGroup"><div class="catHead"><span>${esc(cat)}</span><button type="button" data-cat-ok="${esc(cat)}">이 분류만 적합으로</button></div>${rows}</div>`;
+   return `<div class="themeChecklistGroup" data-theme-cat="${esc(cat)}"><div class="catHead"><span>${esc(cat)}</span><button type="button" data-cat-ok="${esc(cat)}">이 분류만 적합으로</button></div>${rows}</div>`;
  }).join('');
  wrap.innerHTML=groups;
- $$('.themeCheckRow',wrap).forEach(row=>{
+ const tabs=$('#themeThemeTabs',host),categories=THEMES.filter(cat=>activeThemes.includes(cat));
+ if(tabs){tabs.innerHTML=categories.map(cat=>'<button type="button" data-focus-theme="'+esc(cat)+'"><span>'+esc(cat)+'</span><small class="themeThemeTabCount"></small></button>').join('');const chosen=categories.includes(host.dataset.focusTheme)?host.dataset.focusTheme:categories[0]||'';host.dataset.focusTheme=chosen;const activate=cat=>{host.dataset.focusTheme=cat;tabs.querySelectorAll('button').forEach(btn=>{const active=btn.dataset.focusTheme===cat;btn.classList.toggle('active',active);btn.setAttribute('aria-pressed',String(active))});wrap.querySelectorAll('.themeChecklistGroup').forEach(group=>{group.hidden=group.dataset.themeCat!==cat})};tabs.querySelectorAll('button').forEach(btn=>btn.addEventListener('click',()=>activate(btn.dataset.focusTheme)));activate(chosen);}
+ $('.themeCheckRow',wrap).forEach(row=>{
    $$('button',row).forEach(btn=>btn.addEventListener('click',()=>{
      $$('button',row).forEach(b=>b.classList.remove('active','ok','ng'));
      btn.classList.add('active',btn.dataset.v==='적합'?'ok':'ng');
