@@ -362,6 +362,10 @@ function boot(){
   };
   const refreshVisibleLookup=()=>{
     if(window.HD20_NAV?.active?.()!=='activity')return;
+    // The registration success handlers close the dialogs and refresh their
+    // originating listing. Do not replace the background table while a
+    // modal is still collecting input or running a save.
+    if(document.querySelector('#awRegisterModal.on,#hd20ActionRegisterModal.on'))return;
     const sub=document.getElementById('awActivity')?.dataset.subview;
     if(sub==='overview'&&document.body.classList.contains('hd20InquiryActive'))refreshLookup('overview');
     else if(sub==='self'||sub==='request')refreshLookup(sub);
