@@ -2021,3 +2021,11 @@ Canonical Store는 다음을 기준으로 한다.
 - CSS: 기존 `hd20-subtabs.css`의 body 최상위 자율개선 팝업 표시 규칙을 유지. 불필요한 CSS 전역 변경 및 대시보드 수정 금지.
 - 배포: `.github/workflows/pages-deploy.yml`에 원본 저장 함수 연결·HTML 참조·문구 삭제 여부 및 JS 구문검사를 추가.
 - 검증 범위: 소스구조/구문 및 파일 참조 확인. 실제 등록 버튼 클릭, 로컬 저장 성공, 사진 첨부 유지, Pages 게시 성공은 별도의 브라우저 통합 검증 대상.
+
+### 2026-11-03 개선요청 등록·임시저장 — 최상위 팝업 위치 변경에 따른 저장 로직 복원
+- ③ 개선요청 조회에서 등록 팝업이 `document.body > #hd20ActionRegisterModal`로 이동한 이후 원본 `action-mail-workflow.js`의 `register(a,via)`는 옛 `#awAction` 내부만 탐색하므로, 등록 요청·증빙사진·고도화 항목·발굴 출처·기한 등을 조회하지 못하는 구조적 오류 확인.
+- `register(a,via)`에서 `formRoot=document.getElementById('hd20ActionRegisterModal')||a`를 사용해 원본 폼의 모든 입력·사진·판정값을 읽도록 변경하되, 저장 대상과 `saveCases()`, 감사 연계, 통보 이벤트, 원본 목록 갱신 `renderCases(a)`는 보존.
+- 원본 임시저장 `amDraft`의 필드 탐색도 숨겨진 관리 화면 대신 현재 팝업 DOM으로 변경. 사진의 임시저장 미지원 안내와 기존 임시저장 정책은 유지.
+- `index.html` 파일 참조를 `action-mail-workflow.js?v=20261103-body-modal-save-v4`로 동기화하고 GitHub Pages 검증 조건에 등록·임시저장 경로 검사 추가.
+- 자율개선 `activity-workflow.js`, `activity-register-modal.js`에 적용한 동일 위치 대응과 함께, ②/③ 등록 성공이 실제 저장과 연결되도록 보완. 원본 사례·권한·대시보드 변경 없음.
+- 배포 워크플로의 구문·문자열 검증 결과와 실제 GitHub Pages 배포 성공 및 팝업 E2E 테스트는 별개로 구분한다.
