@@ -95,6 +95,33 @@ jobs:
           node --check landing-launcher.js
           node --check beginner-navigation.js
           node --check hd20-action-notification-routing.js
+      - name: Exercise monthly bar-label rendering fixtures
+        run: |
+          node <<'NODE'
+          const fs=require('fs'),assert=require('node:assert/strict');
+          const source=fs.readFileSync('dashboard-work-kpi-migration.js','utf8');
+          const begin=source.indexOf('const bars=Array.from({length:12}');
+          const end=source.indexOf('  return \'<section class="hd20DwmGroup"',begin);
+          assert(begin>=0&&end>begin,'monthly chart bar builder not found');
+          const render=new Function('metrics','max','esc',source.slice(begin,end)+'return bars;');
+          const metric=(label,values)=>({label,series:{dated:true,values}});
+          const values=(first,second)=>[
+            metric('Audit 등록',[first,0,...Array(10).fill(0)]),
+            metric('Audit 완료',[second,9,...Array(10).fill(0)])
+          ];
+          const months=render(values(14,8),14,String).split('<div class="hd20DwmMonth">').slice(1);
+          assert.equal(months.length,12,'calendar must keep twelve months');
+          assert.match(months[0],/primary[^>]*height:104px[^>]*><span class="hd20DwmBarValue" aria-hidden="true">14<\/span>/);
+          assert.match(months[0],/secondary[^>]*height:59px[^>]*><span class="hd20DwmBarValue" aria-hidden="true">8<\/span>/);
+          assert(!months[1].includes('primary" style="height:0px" title="Audit 등록 2월: 0건"><span'),'zero value must not print a label');
+          assert(!months[2].includes('hd20DwmBarValue'),'month without activity must not print labels');
+          const equal=render(values(14,14),14,String).split('<div class="hd20DwmMonth">')[1];
+          assert.equal((equal.match(/class="hd20DwmBarValue"/g)||[]).length,2,'both equal-height bars must retain their own labels');
+          assert(source.includes('bottom:calc(100% + 4px)'),'label must remain anchored 4px above bar top');
+          assert(source.includes('right:calc(50% - 4px)')&&source.includes('left:calc(50% - 4px)'),'paired label separation must remain present');
+          assert(!source.includes('const valueLabel='),'legacy shared max-height label must stay removed');
+          console.log('PASS: 12 months, own-bar heights, empty months, matched heights, top offsets and label separation');
+          NODE
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
       - name: Upload static site
