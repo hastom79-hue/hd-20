@@ -262,9 +262,11 @@ function boot(){
     };
     setTimeout(reveal,150);
   }
-  window.addEventListener('hd20-nav-area-changed',e=>{
-    if(e.detail?.area!=='dashboard'&&document.getElementById('hd20Launcher'))close();
-  });
+  // Restoring the initial deep link emits hd20-nav-area-changed as well.
+  // Do not dismiss the first registration popup for programmatic navigation:
+  // it closes only through its explicit buttons, ESC or backdrop.
+  // Otherwise a reload into ?area=audit can remove it before the user sees it.
+
   window.addEventListener('hd20-auth-bypass',showInitialLauncher,{once:true});
   window.addEventListener('hd20-auth-success',showInitialLauncher,{once:true});
   // 인증 완료가 스크립트 초기화보다 먼저 발생한 경우에도 즉시 팝업을 요청한다.
