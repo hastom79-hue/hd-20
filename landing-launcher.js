@@ -254,7 +254,10 @@ function boot(){
       if(initialLauncherOpened)return;
       if(document.querySelector('.hd20AuthGate.on')||!window.HD20_AUTH_BYPASS){launchScheduled=false;return}
       if(!window.HD20_NAV?.ready?.()||!document.getElementById('awActivity')){
-        if(++attempts<50){setTimeout(reveal,100);return}
+        // Some pages finish authentication/master-data initialization after
+        // five seconds. Do not silently drop the initial registration choice.
+        // Retry for up to 30 seconds, then allow the next nav/auth event to retry.
+        if(++attempts<300){setTimeout(reveal,100);return}
         launchScheduled=false;return;
       }
       try{open();initialLauncherOpened=!!document.getElementById('hd20Launcher');if(!initialLauncherOpened)launchScheduled=false}
@@ -269,6 +272,7 @@ function boot(){
 
   window.addEventListener('hd20-auth-bypass',showInitialLauncher,{once:true});
   window.addEventListener('hd20-auth-success',showInitialLauncher,{once:true});
+  window.addEventListener('hd20-nav-area-changed',showInitialLauncher);
   // 인증 완료가 스크립트 초기화보다 먼저 발생한 경우에도 즉시 팝업을 요청한다.
   if(window.HD20_AUTH_BYPASS&&!document.documentElement.classList.contains('hd20-auth-pending'))showInitialLauncher();
   setTimeout(showInitialLauncher,250);
