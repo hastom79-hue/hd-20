@@ -57,6 +57,11 @@ jobs:
           grep -Fq 'document.body.appendChild(overlay)' activity-register-modal.js
           grep -Fq 'html body>#awRegisterModal.on' hd20-subtabs.css
           grep -Fq '자율개선 등록 모달의 상위 화면 숨김 영향 제거' DEVELOPMENT_LOG.md
+          test -f activity-workflow.js
+          grep -Fq 'activity-workflow.js?v=20261103-body-modal-save-v3' index.html
+          grep -Fq 'window.HD20_ACTIVITY_REGISTER=' activity-workflow.js
+          grep -Fq 'window.HD20_ACTIVITY_REGISTER()' activity-register-modal.js
+          grep -Fq '자율개선 등록 버튼 저장 불능 원인 제거' DEVELOPMENT_LOG.md
           node --check activity-workflow.js
           node --check activity-register-modal.js
           grep -Fq 'master-workspace-v2.js?v=20261103-master-open-fix-v10' index.html
