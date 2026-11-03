@@ -1,12 +1,12 @@
 (()=>{'use strict';
-const MAP={dashboard:[['summary','오늘의 운영판단'],['analysis','성과·건전성 추이'],['map','고도화 맵']],activity:[['overview','① 통합조회'],['self','② 자율개선등록'],['request','③ 개선요청등록'],['tobe','④ 개선조치등록·관리']],/* 사용자 지시: "고도화·표준화는 남이되, '① 3대요건 즉시판정' 만 간소화/삭제하고 '② 확정사례 관리'는
+const MAP={dashboard:[['summary','오늘의 운영판단'],['analysis','성과·건전성 추이'],['map','고도화 맵']],activity:[['overview','① 통합조회'],['self','② 자율개선조회'],['request','③ 개선요청조회'],['tobe','④ 개선조치등록·관리']],/* 사용자 지시: "고도화·표준화는 남이되, '① 3대요건 즉시판정' 만 간소화/삭제하고 '② 확정사례 관리'는
    남겨라" — 네비게이션에서 judge 서브탭 버튼을 제거(렌더링 함수 자체는 안전하게 코드에 남겨두되
    호출 경로를 모두 standard로 돌려 사실상 비활성화). */
 advancement:[['standard','확정사례 관리']],audit:[['draw','① Audit 실시'],['ongoing','② 유지점검'],['checklist','③ Audit 점검항목']],action:[['manage','① 개선조치 등록·실행'],['leadtime','② 미완료·지연관리'],['verify','③ 효과검증·최종종결']]};
 const CONTRACT={
  'activity.overview':{title:'통합조회',purpose:'자율개선과 개선요청·조치현황을 한곳에서 검색하고 원본 사례를 확인합니다.',judge:'생산팀·등록일·상태·요청내용을 교차 검색하여 대상 사례를 확인',next:'등록이나 조치가 필요하면 해당 하위탭으로 이동',features:['통합조회','원본 추적','검색']},
- 'activity.self':{title:'자율개선등록',purpose:'현장 자체개선 사례의 문제·개선내용 및 사진을 등록합니다.',judge:'활동내용과 BEFORE·AFTER 증빙을 작성',next:'자율개선 등록 팝업에서 저장',features:['자율개선 등록','현장사진']},
- 'activity.request':{title:'개선요청등록',purpose:'AS-IS 개선요청 원본과 BEFORE 증빙을 등록하고 생산팀에 조치를 요청합니다.',judge:'대상팀·개선요청·원본사진·기한을 확인',next:'개선요청 등록 팝업에서 저장',features:['AS-IS 요청','팀 통보']},
+ 'activity.self':{title:'자율개선조회',purpose:'등록된 자율개선 활동의 내용과 증빙을 검색·조회합니다.',judge:'생산팀·작업장·테마·등록일·상태·내용을 복합 검색',next:'우측 상단 등록 버튼에서 자율개선 등록 팝업 열기',features:['자율개선 조회','신규등록','현장사진']},
+ 'activity.request':{title:'개선요청조회',purpose:'등록된 AS-IS 개선요청을 조회하고 생산팀별 조치 진행 현황을 확인합니다.',judge:'생산팀·작업장·출처·등록일·상태·조치기한·내용을 복합 검색',next:'우측 상단 등록 버튼에서 개선요청 등록 팝업 열기',features:['개선요청 조회','신규등록','조치 연계']},
  'activity.tobe':{title:'개선조치등록·관리',purpose:'등록된 개선요청에 TO-BE 조치계획과 AFTER 증빙을 연결하고 완료를 관리합니다.',judge:'원본 요청ID·담당자·기한 및 조치 리드타임을 확인',next:'조치내역 등록 버튼에서 TO-BE 팝업 열기',features:['TO-BE 입력','리드타임','완료관리']},
  'dashboard.summary':{title:'종합현황',purpose:'울산캠퍼스 5S 운영상태를 한 화면에서 파악하고 오늘 우선 확인할 영역을 정합니다.',judge:'목표 대비 성과, 고도화 확보, Audit 대기, 미완료·기한경과·재발을 동시에 확인',next:'이상 KPI·Risk 카드를 상세근거로 Drill-down하여 담당 업무 탭으로 이동',features:['핵심 KPI','팀별 성과','Action Summary','우선순위']},
  'dashboard.analysis':{title:'성과·운영분석',purpose:'단순 실적 건수를 넘어 판정 Lead Time, 유지율, 재발률, 조치완료율 등 운영 건전성을 분석합니다.',judge:'성과 증가가 프로세스 건전성 개선과 함께 일어나는지 확인',next:'취약 지표의 원천 데이터를 확인하고 원인 업무영역에서 조치',features:['운영 KPI','월별 추이','유지율','재발·기한']},
@@ -162,39 +162,26 @@ function applyDashboard(sub){const cards=$('.cards'),main=$('.mainGrid'),bottom=
 function applyActivity(sub){const root=$('#awActivity');if(!root)return;
 root.dataset.subview=sub;
 if(['overview','self','request','tobe'].includes(sub)){
- // Single purposeful surface per subtab. Keep canonical forms mounted,
- // but never let legacy cards, graphs or banners leak into these views.
  if(!document.getElementById('hd20ImprovementTabIsolation')){
   const style=document.createElement('style');style.id='hd20ImprovementTabIsolation';
   style.textContent=`
   #awActivity[data-subview="overview"]>*:not(#awRegisterModal){display:none!important}
-  #awActivity[data-subview="self"]>*:not(#hd20ImprovementTaskPortal):not(#awRegisterModal){display:none!important}
-  #awActivity[data-subview="request"]>*:not(#hd20ImprovementTaskPortal):not(#awRegisterModal){display:none!important}
+  #awActivity[data-subview="self"]>*:not(#hd20ActivityLookupPanel):not(#awRegisterModal){display:none!important}
+  #awActivity[data-subview="request"]>*:not(#hd20ActivityLookupPanel):not(#awRegisterModal){display:none!important}
   #awActivity[data-subview="tobe"]>*:not(#hd20AsIsToBeManager):not(#awRegisterModal){display:none!important}
-  #awActivity #hd20ImprovementTaskPortal{box-sizing:border-box;width:100%;max-width:100%;margin:10px auto;padding:28px;background:#fff;border:1px solid #d8e4ed;border-radius:12px;text-align:center}
-  #awActivity .hd20ImTaskTitle{display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:20px}
-  #awActivity .hd20ImTaskTitle strong{font-size:20px;color:#163e58}
-  #awActivity .hd20ImTaskTitle span{font-size:13px;color:#687f90}
-  #awActivity .hd20ImTaskBtns{display:flex;justify-content:center;gap:10px}
-  #awActivity .hd20ImTaskBtns button{border:1px solid #176896;border-radius:9px;background:#176896;color:#fff;font-size:15px;font-weight:800;padding:14px 24px;cursor:pointer}
-  #awActivity .hd20ImTaskBtns button[hidden]{display:none!important}
+  #awActivity #hd20ActivityLookupPanel{display:block!important;box-sizing:border-box;width:100%;max-width:100%;margin:12px auto;background:#fff;border:1px solid #dce7ef;border-radius:10px;padding:18px}
   #awActivity[data-subview="tobe"] #hd20AsIsToBeManager{display:block!important}
   `;
   document.head.appendChild(style);
  }
- let portal=root.querySelector('#hd20ImprovementTaskPortal');
- if(!portal){portal=document.createElement('section');portal.id='hd20ImprovementTaskPortal';portal.innerHTML='<div class="hd20ImTaskTitle"><strong>개선활동 등록·관리</strong><span>등록할 업무를 선택하면 원본 작성 팝업이 열립니다.</span></div><div class="hd20ImTaskBtns"><button type="button" data-im-task="self">자율개선 등록 팝업 열기</button><button type="button" data-im-task="request">개선요청 등록 팝업 열기</button></div>';root.prepend(portal);
- portal.querySelector('[data-im-task="self"]').onclick=()=>{const btn=root.querySelector('[data-aw="new"]');if(btn)btn.click();else alert('자율개선 등록 기능을 불러오지 못했습니다.')};
- portal.querySelector('[data-im-task="request"]').onclick=()=>{const modal=document.getElementById('hd20ActionRegisterModal'),btn=document.getElementById('hd20ActionRegisterBtn');if(!modal||!btn){alert('개선요청 등록 기능을 불러오지 못했습니다.');return}if(modal.parentElement!==document.body)document.body.appendChild(modal);btn.click()};
- }
- portal.hidden=!['self','request'].includes(sub);
- portal.querySelector('.hd20ImTaskBtns').style.display='flex';
- portal.querySelector('[data-im-task="self"]').hidden=sub!=='self';
- portal.querySelector('[data-im-task="request"]').hidden=sub!=='request';
- const oldPanel=root.querySelector('#hd20ImprovementTaskPortal');
- if(oldPanel)oldPanel.hidden=!['self','request'].includes(sub);
+ const oldPortal=root.querySelector('#hd20ImprovementTaskPortal');if(oldPortal)oldPortal.remove();
+ let lookup=root.querySelector('#hd20ActivityLookupPanel');
+ if(['self','request'].includes(sub)&&!lookup){lookup=document.createElement('section');lookup.id='hd20ActivityLookupPanel';root.prepend(lookup)}
+ if(lookup)lookup.hidden=!['self','request'].includes(sub);
  show($('.awGrid',root),false);show($('.awFlow',root),false);show($('.awActions',root),false);show(document.getElementById('hd20ActivityExcelImport'),false);show(document.getElementById('hd20ImportAnalysis'),false);show($('.adcCard',root),false);
- const tobe=root.querySelector('#hd20AsIsToBeManager');if(tobe)tobe.hidden=sub!=='tobe';if(sub==='tobe')window.HD20ToBeManager?.render?.();
+ const tobe=root.querySelector('#hd20AsIsToBeManager');if(tobe)tobe.hidden=sub!=='tobe';
+ if(['self','request'].includes(sub))window.HD20_LAUNCHER?.renderSubtab?.(sub);
+ if(sub==='tobe')window.HD20ToBeManager?.render?.();
  return;
 }showAll(root);show($('.awGrid',root),true);const form=$('.awRegisterFormCard',root);if(form)show(form,sub==='manage');
   /* 실적분석: 등록/가져오기 도구를 숨기고 팀별 분석 콘텐츠 위주로 구성해
