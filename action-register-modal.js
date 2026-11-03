@@ -7,11 +7,11 @@ function ensureStyle(){if($('#hd20ActionRegisterModalStyle'))return;const st=doc
 /* Registration form is re-parented by register-popup-layout-v2 after boot.
    Scope to the actual "03 · 현장 증빙" group and override legacy expanded slots. */
 #hd20ActionRegisterModal .hd20RegGroup3{align-self:start!important}
-#hd20ActionRegisterModal .hd20RegGroup3 .hd20RegGroupGrid{padding-top:7px!important;padding-bottom:8px!important;min-height:0!important}
+#hd20ActionRegisterModal .hd20RegGroup3 .hd20RegGroupGrid{padding:5px 9px 8px!important;min-height:0!important;align-items:start!important}
 #hd20ActionRegisterModal .hd20RegGroup3 .amPhoto,
-#hd20ActionRegisterModal .hd20RegGroupGrid .amPhoto{gap:8px!important;align-items:start!important;min-height:0!important;margin:0!important}
+#hd20ActionRegisterModal .hd20RegGroupGrid .amPhoto{gap:6px!important;align-items:start!important;min-height:0!important;margin:0!important;padding:0!important}
 #hd20ActionRegisterModal .hd20RegGroup3 .amPhoto .amDrop,
-#hd20ActionRegisterModal .hd20RegGroupGrid .amPhoto .amDrop{height:66px!important;min-height:66px!important;max-height:66px!important;padding:4px 8px!important;box-sizing:border-box!important;border-radius:7px!important;overflow:hidden!important;display:flex!important;align-items:center!important;justify-content:center!important;flex-direction:column!important;gap:3px!important;line-height:1.25!important;font-size:12px!important}
+#hd20ActionRegisterModal .hd20RegGroupGrid .amPhoto .amDrop{height:114px!important;min-height:114px!important;max-height:114px!important;padding:6px 8px!important;box-sizing:border-box!important;border-radius:7px!important;overflow:hidden!important;display:flex!important;align-items:center!important;justify-content:center!important;flex-direction:column!important;gap:3px!important;line-height:1.25!important;font-size:12px!important}
 #hd20ActionRegisterModal .hd20RegGroup3 .amDrop input[type="file"],
 #hd20ActionRegisterModal .hd20RegGroupGrid .amPhoto .amDrop input[type="file"]{position:relative!important;inset:auto!important;opacity:1!important;cursor:pointer!important;width:100%!important;max-width:240px!important;height:26px!important;min-height:0!important;font-size:11px!important;padding:0!important;margin:0!important}
 #hd20ActionRegisterModal .hd20RegGroup3 .amDrop img:not([hidden]){position:absolute!important;inset:0!important;max-height:100%!important;object-fit:contain!important}
