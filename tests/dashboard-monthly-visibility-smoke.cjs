@@ -75,6 +75,39 @@ const {chromium}=require('playwright');
    assert.deepEqual(data.tooWide,[],'cards do not overflow at '+viewport.width);
    console.log('MONTHLY_CHART_LAYOUT',viewport.width,JSON.stringify(data));
   }
+  // The event-specific date wins over registration date; a blank event date
+  // must not silently fall back to another source column.
+  const monthlyDates=await page.evaluate(()=>{
+    const y=Number(window.HD20KPIData?.selectedYear?.()||2026);
+    const dt=m=>y+'-'+String(m).padStart(2,'0')+'-05';
+    const specs={
+      'audit:draw:0':['Audit 원천',['Audit ID','선정일','Audit일'],['A1',dt(1),dt(8)]],
+      'audit:draw:2':['Audit 완료',['Audit ID','선정일','Audit일'],['A1',dt(1),dt(2)]],
+      'action:manage:0':['전체 개선요청',['Action ID','등록일','완료일'],['X1',dt(3),dt(9)]],
+      'action:manage:2':['완료',['Action ID','등록일','완료일'],['X1',dt(3),dt(4)]],
+      'advancement:judge:0':['고도화 후보',['Activity ID','후보일','확정일'],['V1',dt(5),dt(9)]],
+      'advancement:standard:0':['공식확정',['Activity ID','후보일','확정일'],['V1',dt(5),dt(6)]]
+    };
+    window.HD20_KPI_EVIDENCE={...window.HD20_KPI_EVIDENCE,evidence:(a,b,i)=>{
+      const v=specs[a+':'+b+':'+i];return v?{title:v[0],headers:v[1],rows:[v[2]]}:null;
+    }};
+    window.HD20_DASHBOARD_WORK_METRICS.render();
+    return [...document.querySelectorAll('#hd20DashboardWorkMetrics .hd20DwmGroup')].map(card=>
+      [...card.querySelectorAll('.hd20DwmMonth')].map(month=>
+        [...month.querySelectorAll('.hd20DwmChartBar')].map(bar=>Number((bar.title.match(/: (\\d+)건/)||[])[1]||0))
+      )
+    );
+  });
+  const expectedMonthly=[[[0,1],[1,0]],[[0,0],[0,0]],[[0,0],[0,0]]];
+  assert.equal(monthlyDates.length,3,'all KPI categories remain present');
+  const expectedMonths=[[1,2],[3,4],[5,6]];
+  for(let k=0;k<3;k++){
+    for(let m=0;m<12;m++){
+      const expected=[m+1===expectedMonths[k][0]?1:0,m+1===expectedMonths[k][1]?1:0];
+      assert.deepEqual(monthlyDates[k][m],expected,
+        'KPI month '+(m+1)+' must use its own registration/completion/confirmation date in category '+k);
+    }
+  }
   console.log('DASHBOARD_MONTHLY_VISIBILITY_PASS');
  }finally{await browser.close()}
 })().catch(err=>{console.error(err);process.exit(1)});
