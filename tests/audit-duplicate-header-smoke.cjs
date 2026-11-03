@@ -919,6 +919,19 @@ fs.mkdirSync('artifacts',{recursive:true});
   });
   assert.deepEqual(isolatedMap,{mapVisible:true,intruders:[]},
     'maturity map should show no legacy dashboard sections regardless of DOM position');
+  // The GMES raw upload + official-judgment workflow must never be mounted
+  // inside the dashboard maturity map. It belongs to its own workflow.
+  await page.evaluate(()=>{
+    window.HD20_MATURITY_MAP_TAB?.render?.();
+    window.HD20_DASHBOARD_TABS?.apply?.('map',{scroll:false});
+  });
+  const mapGmesLeak=await page.evaluate(()=>({
+    rawHost:document.querySelectorAll('#hd20MaturityMapTab .maturityMapBody').length,
+    uploader:document.querySelectorAll('#hd20MaturityMapTab .gmesImport').length,
+    approval:document.querySelectorAll('#hd20MaturityMapTab .gmesJudge').length
+  }));
+  assert.deepEqual(mapGmesLeak,{rawHost:0,uploader:0,approval:0},
+    'dashboard maturity map must not instantiate GMES import or approval panels');
   await page.evaluate(()=>window.HD20_DASHBOARD_TABS?.apply?.('summary',{scroll:false}));
   assert.equal(await page.locator('#hd20MaturityMapTab').isVisible(),false,
     'maturity map must close when returning to summary');
