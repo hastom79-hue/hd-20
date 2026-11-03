@@ -521,7 +521,7 @@ function hideDuplicateWorkKpis(root){
    re-create or delete a form, its event handlers, records or histories. */
 function placeAuditWorkPanels(root,sub,panels){
  const anchor=root.querySelector(':scope > .awActions')||root.querySelector(':scope > .awHero');
- const sequence=sub==='draw'?[panels.draw,panels.closed]:
+ const sequence=sub==='draw'?[panels.draw,panels.batch,panels.closed]:
    sub==='action'?[panels.action]:
    sub==='ongoing'?[panels.sampling]:
    sub==='retention'?[panels.closeEval,panels.trace]:
@@ -564,7 +564,7 @@ function applyAudit(sub){
  // Order each live work panel before unrelated legacy cards, including on
  // re-entry after Audit updates. The first screen always follows work sequence.
  placeAuditWorkPanels(root,sub,{
-   draw,closed,action:root.querySelector('#hd20AuditActionMonitor'),
+   draw,batch,closed,action:root.querySelector('#hd20AuditActionMonitor'),
    sampling,closeEval,trace,checklist:root.querySelector('.acWrap')
  });
  show(draw,sub==='draw');show(batch,sub==='draw');show(closed,sub==='draw');
