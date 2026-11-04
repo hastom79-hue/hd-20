@@ -140,11 +140,11 @@ function refreshSourceRegistry(){
 }
 areaSelect.addEventListener('change',refreshSourceRegistry);
 registry.querySelector('[data-hm-source-query]').addEventListener('input',refreshSourceRegistry);
-registry.querySelector('[data-hm-source-refresh]').addEventListener('click',()=>{auditMaster();refreshSourceRegistry()});
+registry.querySelector('[data-hm-source-refresh]').addEventListener('click',()=>{refreshSourceRegistry();if(registry.querySelector('.hmAudit')?.open)auditMaster()});
 registry.addEventListener('toggle',()=>{if(registry.open)refreshSourceRegistry()});
 ['hd20-team-master-updated','hd20-team-targets-updated','hd20-theme-master-updated','hd20-theme-audit-updated','hd20-audit-checklist-master-updated','hd20-policy-updated','hd20-master-factors-updated','hd20-workplace-verified','hd20-action-updated','hd20-activity-updated','hd20-audit-updated','hd20-mailing-master-updated','hd20-master-access-updated','hd20-refresh-requested'].forEach(event=>window.addEventListener(event,()=>{if(registry.open)refreshSourceRegistry()}));
 window.addEventListener('storage',()=>{if(registry.open)refreshSourceRegistry()});
-refreshSourceRegistry();
+registry.querySelector('[data-hm-source-total]').textContent=SOURCE_MAP.length+'개 연결 항목';
 // Keep a working close control even when legacy .modalHead is hidden by layout CSS.
 ws.querySelector('[data-hm-close]').addEventListener('click',()=>{const close=root.querySelector('#closeMaster');if(close)close.click();else{root.classList.remove('on');root.setAttribute('aria-hidden','true')}});
 
@@ -208,9 +208,9 @@ function auditMaster(){
 }
 registry.querySelector('[data-hm-audit-refresh]').addEventListener('click',auditMaster);
 registry.querySelector('.hmAudit')?.addEventListener('toggle',e=>{if(e.target.open)auditMaster()});
-['hd20-policy-updated','hd20-theme-master-updated','hd20-master-factors-updated','hd20-action-updated','hd20-team-master-updated','hd20-mailing-updated'].forEach(name=>window.addEventListener(name,()=>{if(root.classList.contains('on'))auditMaster()}));
+['hd20-policy-updated','hd20-theme-master-updated','hd20-master-factors-updated','hd20-action-updated','hd20-team-master-updated','hd20-mailing-updated','hd20-audit-checklist-master-updated'].forEach(name=>window.addEventListener(name,()=>{if(root.classList.contains('on')&&registry.querySelector('.hmAudit')?.open)auditMaster()}));
 // Do not rerun all linkage diagnostics after every master-panel click; explicit refresh and source-update events remain available.
-auditMaster();
+/* Diagnostics run only on explicit expansion/refresh, never on each modal open. */
 
 const grid=ws.querySelector('[data-hm-groups]');const all=[];
 for(const [group,...keys] of GROUPS){const section=document.createElement('div');section.className='hmGroup';section.dataset.hmGroup=group;const heading=document.createElement('h3');heading.textContent=group;heading.setAttribute('role','tab');heading.tabIndex=0;heading.setAttribute('aria-selected','false');section.appendChild(heading);const wrap=document.createElement('div');wrap.className='hmLinks';wrap.setAttribute('role','group');wrap.setAttribute('aria-label',group+' 항목');for(const key of keys){const original=tabs.querySelector('[data-master-tab="'+key+'"]');if(!original||original.hidden)continue;const btn=document.createElement('button');btn.type='button';btn.dataset.hmTarget=key;btn.title=NOTES[key]||group;btn.innerHTML='<strong></strong><small></small>';btn.querySelector('strong').textContent=original.textContent.trim();btn.querySelector('small').textContent=NOTES[key]||group;btn.addEventListener('click',()=>openMasterTarget(key));wrap.appendChild(btn);all.push(btn)}section.appendChild(wrap);if(wrap.children.length)grid.appendChild(section)}
