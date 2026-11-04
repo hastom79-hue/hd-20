@@ -231,3 +231,24 @@ html body #masterModal .hmAuditWarn{background:#fff1dc!important;color:#986823!i
  html body #masterModal .hmSourceRow{grid-template-columns:minmax(0,1fr) auto!important}
  html body #masterModal .hmSourceRow button{grid-column:2!important}
 }
+
+/* 5S theme checklist row manager */
+#hd20ThemeCatalogPanel .tmItemsSection{margin-top:15px;padding:12px;background:#f8fbfd;border:1px solid #dce7ef;border-radius:9px}
+#hd20ThemeCatalogPanel .tmItemsHeader{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px}
+#hd20ThemeCatalogPanel .tmItemsHeader>div{display:flex;flex-direction:column;gap:4px}
+#hd20ThemeCatalogPanel .tmItemsHeader strong{font-size:14px;color:#214d69}
+#hd20ThemeCatalogPanel .tmItemsHeader small{color:#6a8092;font-size:11px;font-weight:400}
+#hd20ThemeCatalogPanel .tmItemsCount{font-size:11px;font-weight:800;color:#346686;white-space:nowrap}
+#hd20ThemeCatalogPanel .tmItemsTable{display:grid;gap:6px}
+#hd20ThemeCatalogPanel .tmItemRow{display:grid;grid-template-columns:28px minmax(0,1fr) auto;align-items:center;gap:8px;padding:7px;background:white;border:1px solid #e2ebf0;border-radius:7px}
+#hd20ThemeCatalogPanel .tmItemNo{color:#6c8496;text-align:center;font-size:12px;font-weight:800}
+#hd20ThemeCatalogPanel .tmItemText{min-width:0;width:100%;min-height:36px;font-size:12.5px}
+#hd20ThemeCatalogPanel .tmItemControls{display:flex;gap:5px}
+#hd20ThemeCatalogPanel .tmItemControls button{border:1px solid #d3e0e8;border-radius:6px;padding:6px 8px;background:#fff;color:#466b82;font-size:11px}
+#hd20ThemeCatalogPanel .tmItemControls button:disabled{opacity:.35}
+#hd20ThemeCatalogPanel .tmItemControls [data-tm-remove]{color:#ad504b}
+#hd20ThemeCatalogPanel .tmAddItem{display:flex;gap:8px;margin-top:12px}
+#hd20ThemeCatalogPanel .tmAddItem input{min-width:0;flex:1}
+#hd20ThemeCatalogPanel .tmAddItem button{padding:8px 12px;border:1px solid #b8d0df;border-radius:7px;background:#e8f3fa;color:#225c80;font-weight:750}
+#hd20ThemeCatalogPanel .tmItemsEmpty{text-align:center;padding:20px;color:#6d8395;font-size:12px;background:#fff}
+@media(max-width:820px){#hd20ThemeCatalogPanel .tmItemRow{grid-template-columns:24px 1fr}#hd20ThemeCatalogPanel .tmItemControls{grid-column:2;justify-content:end}#hd20ThemeCatalogPanel .tmAddItem{flex-wrap:wrap}}
