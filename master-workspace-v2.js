@@ -5,10 +5,10 @@ function init(){const root=document.getElementById('masterModal'),box=root?.quer
 if(root.querySelector('#hd20MasterWorkspace')){
  const existing=root.querySelector('#hd20MasterWorkspace');
  const links=existing?.querySelectorAll('[data-hm-target]')?.length||0;
- box.classList.toggle('hd20MasterWorkspaceReady',links>=10);
+ box.classList.toggle('hd20MasterWorkspaceReady',links>=10);box.classList.toggle('hd20MasterWorkspaceV4',links>=10);
  return links>=10;
 }const required=['integrated-team','integrated-target','integrated-source','integrated-discovery','integrated-factor','integrated-workplace','integrated-theme','policy','integrated-admins','integrated-mail'];if(!required.every(k=>tabs.querySelector('[data-master-tab="'+k+'"]')))return false;
-const ws=document.createElement('section');ws.id='hd20MasterWorkspace';ws.innerHTML='<div class="hmTitle"><div><span class="hmEyebrow">HD-20 · MASTER DATA</span><h2>통합기준정보</h2><p>공통 기준정보는 이곳에서 관리하고, 모든 업무탭은 동일 원천을 사용합니다.</p></div><div class="hmCounters"><button type="button" class="hmIntegrityButton" data-hm-open-registry>연동·누락 점검</button><button type="button" data-hm-close aria-label="통합기준정보 닫기">닫기 ×</button></div></div><div class="hmToolbar"><label for="hmSearch">기준정보 찾기</label><input id="hmSearch" type="search" placeholder="생산팀·목표·작업장·5S 테마·Audit·권한·메일" autocomplete="off"><button type="button" data-hm-reset>초기화</button></div><div class="hmGroups" data-hm-groups role="navigation" aria-label="기준정보 관리 분류"></div><div class="hmCurrent" aria-live="polite"><div><small>선택된 기준정보</small><strong data-hm-current>관리 항목을 선택하세요</strong><span data-hm-current-desc>관리 항목을 선택하면 원본 기준정보 편집 화면이 표시됩니다.</span></div><span data-hm-count></span></div><details class="hmAudit" aria-label="기준정보·타 탭 연동점검"><summary class="hmAuditSummary">연동진단 <span data-hm-audit-summary>점검 준비</span></summary><div class="hmAuditTop"><div><strong>업무별 기준정보 연동 점검</strong><p>정보 원천을 수정하지 않고 연결만 진단합니다.</p></div><div class="hmAuditActions"><button type="button" data-hm-audit-refresh>다시 점검</button></div></div><div class="hmAuditDetails"><div class="hmAuditRows" data-hm-audit-rows></div></div></details>';
+const ws=document.createElement('section');ws.id='hd20MasterWorkspace';ws.setAttribute('aria-label','기준정보 관리 내비게이션');ws.innerHTML='<div class="hmTitle"><div><span class="hmEyebrow">HD-20 / MASTER CONTROL</span><h2>통합기준정보 관리</h2><p>업무별 공통기준을 한곳에서 관리합니다. 좌측에서 항목을 선택하세요.</p></div><div class="hmCounters"><button type="button" class="hmIntegrityButton" data-hm-open-registry>연동·누락 점검</button><button type="button" data-hm-close aria-label="통합기준정보 닫기">닫기 ×</button></div></div><div class="hmToolbar"><label for="hmSearch">기준정보 찾기</label><input id="hmSearch" type="search" placeholder="생산팀·목표·작업장·5S 테마·Audit·권한·메일" autocomplete="off"><button type="button" data-hm-reset>초기화</button></div><div class="hmGroups" data-hm-groups role="navigation" aria-label="기준정보 관리 분류"></div><div class="hmCurrent" aria-live="polite"><div><small>선택된 기준정보</small><strong data-hm-current>관리 항목을 선택하세요</strong><span data-hm-current-desc>관리 항목을 선택하면 원본 기준정보 편집 화면이 표시됩니다.</span></div><span data-hm-count></span></div><details class="hmAudit" aria-label="기준정보·타 탭 연동점검"><summary class="hmAuditSummary">연동진단 <span data-hm-audit-summary>점검 준비</span></summary><div class="hmAuditTop"><div><strong>업무별 기준정보 연동 점검</strong><p>정보 원천을 수정하지 않고 연결만 진단합니다.</p></div><div class="hmAuditActions"><button type="button" data-hm-audit-refresh>다시 점검</button></div></div><div class="hmAuditDetails"><div class="hmAuditRows" data-hm-audit-rows></div></div></details>';
 box.insertBefore(ws,tabs);
 /* Unified ownership inventory: existing canonical editors are reused, never duplicated.
    Every operational tab's sources are discoverable from the master workspace. */
@@ -265,8 +265,10 @@ const selected=tabs.querySelector('[data-master-tab].on:not([hidden])');
 if(selected){select(selected.dataset.masterTab);const mine=all.find(b=>b.dataset.hmTarget===selected.dataset.masterTab);setTimeout(()=>{(mine?mine:all[0])?.click()},0)}
 else if(all.length)all[0].click();
 // The original menu must remain operable unless the entire replacement interface is ready.
-if(all.length<10){registry.remove();ws.remove();box.classList.remove('hd20MasterWorkspaceReady');return false}
-box.classList.add('hd20MasterWorkspaceReady');
+if(all.length<10){registry.remove();ws.remove();box.classList.remove('hd20MasterWorkspaceReady','hd20MasterWorkspaceV4');return false}
+box.classList.add('hd20MasterWorkspaceReady','hd20MasterWorkspaceV4');
+const heading=ws.querySelector('.hmTitle h2');
+if(heading)heading.title='HD-20 전체 업무탭 공통 기준정보';
 return true}
 function boot(){let n=0;const go=()=>{if(init())return;if(++n<80)setTimeout(go,180)};go()}
 document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot,{once:true}):boot();
