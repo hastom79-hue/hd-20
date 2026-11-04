@@ -24,7 +24,7 @@ const SOURCE_MAP=[
  {area:'개선요청조회',name:'작업장·세부위치',key:'hd20UlsanWorkplaceMasterV1',editor:'integrated-workplace',api:'HD20WorkplaceMaster'},
  {area:'개선조치·완료관리',name:'운영단계·상태·우선순위',key:'gmes5s_work_factor_master_v1',editor:'integrated-factor'},
  {area:'개선조치·완료관리',name:'조치기한·재점검 정책',key:'hd20OperatingPolicyV1',editor:'policy',api:'HD20PolicyConfig'},
- {area:'Audit점검',name:'Audit 점검항목 원천',key:'hd20AuditChecklistV1',api:'HD20_GLOBAL_AUDIT_MASTER',targetArea:'audit',note:'Audit 점검항목의 원본 편집 기능과 연결'},
+ {area:'Audit점검',name:'Audit 점검항목 원천',key:'hd20AuditChecklistV1',api:'HD20_GLOBAL_AUDIT_MASTER',targetArea:'audit',targetSub:'checklist',note:'Audit ③ 점검항목 편집기와 연결'},
  {area:'Audit점검',name:'점검·표본 운영기준',key:'hd20OperatingPolicyV1',editor:'policy',api:'HD20PolicyConfig'},
  {area:'테마점검',name:'5S 상위·세부테마·판정항목',key:'hd20ThemeCatalogMasterV1',editor:'integrated-theme',api:'HD20ThemeMaster'},
  {area:'테마점검',name:'5S모듈·생산팀장 점검계획',key:'hd20ThemeAuditPlansV1',targetArea:'theme',note:'점검 주체·팀·라인·월별 계획'},
@@ -106,7 +106,7 @@ function refreshSourceRegistry(){
  status.textContent=!state.valid?'저장 데이터 오류':state.saved?'저장 구조 확인'+(state.records!==null?' · '+state.records+'항목':''):state.api?'공통모듈 로드':'미설정·원천 확인';
  status.title='실제 업무탭 필드 동기화는 별도 검증 대상입니다.';
   const btn=document.createElement('button');btn.type='button';btn.textContent=item.editor?'기준정보 편집':'업무탭 열기';
-  btn.addEventListener('click',()=>{if(item.editor){openMasterTarget(item.editor)}else if(window.HD20_NAV?.go){document.querySelector('#masterModal [data-hm-close]')?.click();window.HD20_NAV.go(item.targetArea)}else alert('해당 업무탭을 직접 선택하여 확인해 주세요.')});
+  btn.addEventListener('click',()=>{if(item.editor){openMasterTarget(item.editor)}else if(window.HD20_NAV?.go){document.querySelector('#masterModal [data-hm-close]')?.click();window.HD20_NAV.go(item.targetArea);if(item.targetSub)setTimeout(()=>{if(window.HD20_NAV?.active?.()===item.targetArea)window.HD20_SUBNAV?.select?.(item.targetArea,item.targetSub)},160)}else alert('해당 업무탭을 직접 선택하여 확인해 주세요.')});
   row.append(info,status,btn);wrap.appendChild(row);
  }
  const warnings=sourceIntegrityWarnings();
@@ -124,7 +124,7 @@ areaSelect.addEventListener('change',refreshSourceRegistry);
 registry.querySelector('[data-hm-source-query]').addEventListener('input',refreshSourceRegistry);
 registry.querySelector('[data-hm-source-refresh]').addEventListener('click',()=>{auditMaster();refreshSourceRegistry()});
 registry.addEventListener('toggle',()=>{if(registry.open)refreshSourceRegistry()});
-['hd20-team-master-updated','hd20-team-targets-updated','hd20-theme-master-updated','hd20-theme-audit-updated','hd20-policy-updated','hd20-master-factors-updated','hd20-workplace-verified','hd20-action-updated','hd20-activity-updated','hd20-audit-updated','hd20-mailing-master-updated','hd20-master-access-updated','hd20-refresh-requested'].forEach(event=>window.addEventListener(event,()=>{if(registry.open)refreshSourceRegistry()}));
+['hd20-team-master-updated','hd20-team-targets-updated','hd20-theme-master-updated','hd20-theme-audit-updated','hd20-audit-checklist-master-updated','hd20-policy-updated','hd20-master-factors-updated','hd20-workplace-verified','hd20-action-updated','hd20-activity-updated','hd20-audit-updated','hd20-mailing-master-updated','hd20-master-access-updated','hd20-refresh-requested'].forEach(event=>window.addEventListener(event,()=>{if(registry.open)refreshSourceRegistry()}));
 window.addEventListener('storage',()=>{if(registry.open)refreshSourceRegistry()});
 refreshSourceRegistry();
 // Keep a working close control even when legacy .modalHead is hidden by layout CSS.
