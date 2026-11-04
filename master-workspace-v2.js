@@ -8,7 +8,7 @@ if(root.querySelector('#hd20MasterWorkspace')){
  box.classList.toggle('hd20MasterWorkspaceReady',links>=10);
  return links>=10;
 }const required=['integrated-team','integrated-target','integrated-source','integrated-discovery','integrated-factor','integrated-workplace','integrated-theme','policy','integrated-admins','integrated-mail'];if(!required.every(k=>tabs.querySelector('[data-master-tab="'+k+'"]')))return false;
-const ws=document.createElement('section');ws.id='hd20MasterWorkspace';ws.innerHTML='<div class="hmTitle"><div><span class="hmEyebrow">HD-20 · 기준정보 관리</span><h2>통합기준정보</h2><p>관리 항목을 선택해 수정하세요. 기존 저장·권한·데이터 연계 기능을 그대로 사용합니다.</p></div><div class="hmCounters"><span data-hm-count>기준정보 불러오는 중</span><button type="button" data-hm-close aria-label="통합기준정보 닫기">닫기 ×</button></div></div><div class="hmToolbar"><label for="hmSearch">기준정보 검색</label><input id="hmSearch" type="search" placeholder="팀, 작업장, Audit, 권한, 메일 등 검색" autocomplete="off"><button type="button" data-hm-reset>전체 보기</button></div><div class="hmGroups" data-hm-groups></div><div class="hmCurrent" aria-live="polite"><strong data-hm-current>관리 항목을 선택하세요</strong><span>아래에서 기존 기준정보를 직접 편집·저장합니다.</span></div><details class="hmAudit" aria-label="기준정보·타 탭 연동점검"><summary class="hmAuditSummary">연동상태 확인 <span data-hm-audit-summary>점검 준비</span><small>필요 시 펼쳐서 항목별 설정을 확인합니다.</small></summary><div class="hmAuditTop"><div><strong>기준정보 연동 점검</strong><p>Audit · 테마점검 · 개선요청 · TO-BE · 유지점검 · 알림을 읽기 전용으로 확인합니다.</p></div><div class="hmAuditActions"><button type="button" data-hm-audit-refresh>다시 점검</button></div></div><div class="hmAuditDetails"><div class="hmAuditRows" data-hm-audit-rows></div></div></details>';
+const ws=document.createElement('section');ws.id='hd20MasterWorkspace';ws.innerHTML='<div class="hmTitle"><div><span class="hmEyebrow">HD-20 · MASTER DATA</span><h2>통합기준정보</h2><p>공통 기준정보는 이곳에서 관리하고, 모든 업무탭은 동일 원천을 사용합니다.</p></div><div class="hmCounters"><button type="button" class="hmIntegrityButton" data-hm-open-registry>연동·누락 점검</button><button type="button" data-hm-close aria-label="통합기준정보 닫기">닫기 ×</button></div></div><div class="hmToolbar"><label for="hmSearch">기준정보 찾기</label><input id="hmSearch" type="search" placeholder="생산팀·목표·작업장·5S 테마·Audit·권한·메일" autocomplete="off"><button type="button" data-hm-reset>초기화</button></div><div class="hmGroups" data-hm-groups role="navigation" aria-label="기준정보 관리 분류"></div><div class="hmCurrent" aria-live="polite"><div><small>선택된 기준정보</small><strong data-hm-current>관리 항목을 선택하세요</strong><span data-hm-current-desc>관리 항목을 선택하면 원본 기준정보 편집 화면이 표시됩니다.</span></div><span data-hm-count></span></div><details class="hmAudit" aria-label="기준정보·타 탭 연동점검"><summary class="hmAuditSummary">연동진단 <span data-hm-audit-summary>점검 준비</span></summary><div class="hmAuditTop"><div><strong>업무별 기준정보 연동 점검</strong><p>정보 원천을 수정하지 않고 연결만 진단합니다.</p></div><div class="hmAuditActions"><button type="button" data-hm-audit-refresh>다시 점검</button></div></div><div class="hmAuditDetails"><div class="hmAuditRows" data-hm-audit-rows></div></div></details>';
 box.insertBefore(ws,tabs);
 /* Unified ownership inventory: existing canonical editors are reused, never duplicated.
    Every operational tab's sources are discoverable from the master workspace. */
@@ -38,7 +38,14 @@ const SOURCE_MAP=[
 ];
 const registry=document.createElement('details');registry.className='hmSourceRegistry';
 registry.innerHTML='<summary>전체 업무탭 기준정보 연결 맵 <span data-hm-source-total></span><small>원천 저장소·관리 위치·연동 여부 확인</small></summary><div class="hmSourceBody"><p>각 업무탭의 기준정보는 원본 저장소를 공통 참조합니다. 이 화면에서 관리 가능한 항목은 해당 편집기로 이동하며, 업무 중 생성되는 계획·점검·개선 이력은 원래 업무탭에서 관리합니다.</p><div class="hmSourceFilters"><label>업무영역 <select data-hm-source-area><option value="">전체 업무탭</option></select></label><label>기준정보 검색 <input type="search" data-hm-source-query placeholder="원천·업무명·기준정보"></label><button type="button" data-hm-source-refresh>연결 확인</button></div><div data-hm-source-rows class="hmSourceRows"></div><div data-hm-source-result aria-live="polite"></div><div data-hm-source-issues class="hmSourceIssues" aria-label="기준정보 참조 불일치 점검"></div></div>';
-ws.insertAdjacentElement('afterend',registry);
+box.appendChild(registry);
+ const diagnostics=ws.querySelector('.hmAudit');
+ if(diagnostics)registry.querySelector('.hmSourceBody').appendChild(diagnostics);
+ ws.querySelector('[data-hm-open-registry]').addEventListener('click',()=>{
+   registry.open=true;
+   refreshSourceRegistry();
+   requestAnimationFrame(()=>registry.scrollIntoView({block:'start',behavior:'smooth'}));
+ });
 const areaSelect=registry.querySelector('[data-hm-source-area]');
 [...new Set(SOURCE_MAP.map(x=>x.area))].forEach(area=>{const opt=document.createElement('option');opt.value=area;opt.textContent=area;areaSelect.appendChild(opt)});
 const SOURCE_KINDS=Object.freeze({
@@ -144,8 +151,8 @@ ws.querySelector('[data-hm-close]').addEventListener('click',()=>{const close=ro
 
 /* Integrity checks only read canonical sources. Missing contact/service is
    reported, never silently replaced by demo data or a fake success status. */
-const auditRows=ws.querySelector('[data-hm-audit-rows]');
-const auditSummary=ws.querySelector('[data-hm-audit-summary]');
+const auditRows=registry.querySelector('[data-hm-audit-rows]');
+const auditSummary=registry.querySelector('[data-hm-audit-summary]');
 const readJson=(key,fallback)=>{try{const value=JSON.parse(localStorage.getItem(key)||'null');return value===null?fallback:value}catch{return fallback}};
 const distinct=arr=>[...new Set(arr.filter(Boolean))];
 const validEmail=v=>/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(v||'').trim())&&!/hd-hyundai-demo|example\.(?:com|org|net)/i.test(String(v||''));
@@ -199,8 +206,8 @@ function auditMaster(){
  auditSummary.textContent=inspect.length+'개 점검 · '+issues+'개 확인 필요';
  ws.dataset.hmAuditIssues=String(issues);
 }
-ws.querySelector('[data-hm-audit-refresh]').addEventListener('click',auditMaster);
-ws.querySelector('.hmAudit')?.addEventListener('toggle',e=>{if(e.target.open)auditMaster()});
+registry.querySelector('[data-hm-audit-refresh]').addEventListener('click',auditMaster);
+registry.querySelector('.hmAudit')?.addEventListener('toggle',e=>{if(e.target.open)auditMaster()});
 ['hd20-policy-updated','hd20-theme-master-updated','hd20-master-factors-updated','hd20-action-updated','hd20-team-master-updated','hd20-mailing-updated'].forEach(name=>window.addEventListener(name,()=>{if(root.classList.contains('on'))auditMaster()}));
 // Do not rerun all linkage diagnostics after every master-panel click; explicit refresh and source-update events remain available.
 auditMaster();
@@ -240,10 +247,17 @@ function openMasterTarget(key){
  });
  return true
 }
-function activateGroup(section,open){for(const g of grid.children){const on=g===section;g.classList.toggle('hmActive',on);g.querySelector('h3')?.setAttribute('aria-selected',on?'true':'false')}if(open){const cur=section.querySelector('[data-hm-target].on:not([hidden])');if(!cur)section.querySelector('[data-hm-target]:not([hidden])')?.click()}}
+function activateGroup(section,open){
+ for(const g of grid.children){
+  const on=g===section;g.classList.toggle('hmActive',on);
+  g.querySelector('h3')?.setAttribute('aria-selected',on?'true':'false');
+  g.querySelector('h3')?.setAttribute('aria-expanded',on?'true':'false');
+ }
+ if(open){const cur=section.querySelector('[data-hm-target].on:not([hidden])');if(!cur)section.querySelector('[data-hm-target]:not([hidden])')?.click()}
+}
 for(const g of grid.children){const h=g.querySelector('h3');h.addEventListener('click',()=>activateGroup(g,true));h.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();activateGroup(g,true)}else if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();const list=[...grid.children].filter(x=>!x.hidden);const i=list.indexOf(g),n=list[(i+(e.key==='ArrowRight'?1:-1)+list.length)%list.length];n?.querySelector('h3')?.focus()}})}
-function select(key){all.forEach(b=>{const yes=b.dataset.hmTarget===key;b.classList.toggle('on',yes);b.setAttribute('aria-pressed',yes?'true':'false')});const b=all.find(b=>b.dataset.hmTarget===key);ws.querySelector('[data-hm-current]').textContent=b?b.querySelector('strong').textContent:'기준정보';if(b)activateGroup(b.closest('.hmGroup'),false)}
-const search=ws.querySelector('#hmSearch');const searchEmpty=document.createElement('p');searchEmpty.className='hmSearchEmpty';searchEmpty.hidden=true;searchEmpty.textContent='일치하는 관리 항목이 없습니다. 검색어를 변경하거나 [전체 보기]를 선택해 주세요.';grid.insertAdjacentElement('afterend',searchEmpty);function filter(){const q=search.value.trim().toLocaleLowerCase();let count=0;for(const btn of all){const show=!q||btn.textContent.toLocaleLowerCase().includes(q);btn.hidden=!show;if(show)count++}for(const group of grid.children)group.hidden=![...group.querySelectorAll('[data-hm-target]')].some(b=>!b.hidden);ws.querySelector('[data-hm-count]').textContent=count+'개 관리 항목'+(q?' 검색됨':'');ws.classList.toggle('hmSearching',!!q);searchEmpty.hidden=count!==0}search.addEventListener('input',filter);ws.querySelector('[data-hm-reset]').onclick=()=>{search.value='';filter();search.focus()};filter();
+function select(key){all.forEach(b=>{const yes=b.dataset.hmTarget===key;b.classList.toggle('on',yes);b.setAttribute('aria-pressed',yes?'true':'false')});const b=all.find(b=>b.dataset.hmTarget===key);ws.querySelector('[data-hm-current]').textContent=b?b.querySelector('strong').textContent:'기준정보';ws.querySelector('[data-hm-current-desc]').textContent=b?(NOTES[key]||'기준정보 원본 편집 및 저장'):'관리 항목을 선택해 주세요.';if(b)activateGroup(b.closest('.hmGroup'),false)}
+const search=ws.querySelector('#hmSearch');const searchEmpty=document.createElement('p');searchEmpty.className='hmSearchEmpty';searchEmpty.hidden=true;searchEmpty.textContent='일치하는 관리 항목이 없습니다. 검색어를 변경하거나 [전체 보기]를 선택해 주세요.';grid.insertAdjacentElement('afterend',searchEmpty);function filter(){const q=search.value.trim().toLocaleLowerCase();let count=0;for(const btn of all){const show=!q||btn.textContent.toLocaleLowerCase().includes(q);btn.hidden=!show;if(show)count++}for(const group of grid.children)group.hidden=![...group.querySelectorAll('[data-hm-target]')].some(b=>!b.hidden);ws.querySelector('[data-hm-count]').textContent=count+'개 관리 항목'+(q?' 검색됨':'');ws.classList.toggle('hmSearching',!!q);searchEmpty.hidden=count!==0;if(!q){const selected=all.find(b=>b.classList.contains('on'));activateGroup(selected?.closest('.hmGroup')||grid.firstElementChild,false)}else{const first=[...grid.children].find(g=>!g.hidden);if(first)activateGroup(first,false)}}search.addEventListener('input',filter);ws.querySelector('[data-hm-reset]').onclick=()=>{search.value='';filter();search.focus()};filter();
 tabs.addEventListener('click',e=>{const b=e.target.closest('[data-master-tab]');if(b)select(b.dataset.masterTab)});
 const selected=tabs.querySelector('[data-master-tab].on:not([hidden])');
 /* 실제 버그: 원본 탭에 이미 .on 이 붙어 있으면 하이라이트(select)만 하고 패널 렌더를 호출하지 않아, 통합기준정보에 처음 들어오면 조직·팀 표가 0행·'0 / 0' 빈 화면으로 남았다(다른 메뉴를 눌렀다 돌아와야 19행이 표시됨).
@@ -251,7 +265,7 @@ const selected=tabs.querySelector('[data-master-tab].on:not([hidden])');
 if(selected){select(selected.dataset.masterTab);const mine=all.find(b=>b.dataset.hmTarget===selected.dataset.masterTab);setTimeout(()=>{(mine?mine:all[0])?.click()},0)}
 else if(all.length)all[0].click();
 // The original menu must remain operable unless the entire replacement interface is ready.
-if(all.length<10){ws.remove();box.classList.remove('hd20MasterWorkspaceReady');return false}
+if(all.length<10){registry.remove();ws.remove();box.classList.remove('hd20MasterWorkspaceReady');return false}
 box.classList.add('hd20MasterWorkspaceReady');
 return true}
 function boot(){let n=0;const go=()=>{if(init())return;if(++n<80)setTimeout(go,180)};go()}
