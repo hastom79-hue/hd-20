@@ -7,7 +7,7 @@ const CATS=['정리','정돈','청소','시각화','위험구역관리','설비 
 const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 function normCat(v){v=String(v||'').trim();if(v==='자주보전'||v==='설비보전')return'설비 자주보전';if(v==='습관화')return'위험구역관리';if(v==='고도화')return'5S 고도화';if(v==='시각화관리')return'시각화';return CATS.includes(v)?v:'정리'}
 function judgement(score){score=+score||0;return score===5?'적합':score===4?'조건부':score>=1?'부적합':'N/A'}
-function load(){loadedSnapshot=localStorage.getItem(KEY);externalRevision=false;try{const v=JSON.parse(loadedSnapshot||'[]');rows=Array.isArray(v)?v:[]}catch{rows=[]}rows.forEach(r=>{r.cat=normCat(r.cat);r.weight=Math.min(5,Math.max(1,+r.weight||5));r.score=Math.min(5,Math.max(0,+r.score||0));r.result=judgement(r.score);r.note=String(r.note||'')})}
+function load(){loadedSnapshot=localStorage.getItem(KEY);externalRevision=false;try{const v=JSON.parse(loadedSnapshot||'[]');rows=Array.isArray(v)?v:[]}catch{rows=[]}rows.forEach(r=>{r.cat=normCat(r.cat);r.weight=Math.min(5,Math.max(1,+r.weight||5));r.score=Math.min(5,Math.max(0,+r.score||0));r.result=judgement(r.score);r.note=String(r.note||'')});window.HD20_GLOBAL_AUDIT_MASTER=rows.map(x=>({...x}));window.HD20_GLOBAL_AUDIT_ITEMS=rows.map(x=>[x.cat,x.item])}
 const save=()=>{
  const current=localStorage.getItem(KEY);
  if(externalRevision||current!==loadedSnapshot){
@@ -17,6 +17,7 @@ const save=()=>{
  try{
   const next=JSON.stringify(rows);localStorage.setItem(KEY,next);loadedSnapshot=next;
   window.HD20_GLOBAL_AUDIT_MASTER=rows.map(x=>({...x}));
+  window.HD20_GLOBAL_AUDIT_ITEMS=rows.map(x=>[x.cat,x.item]);
   window.dispatchEvent(new CustomEvent('hd20-audit-checklist-master-updated',{detail:{count:rows.length}}));
   return true;
  }catch(error){console.error('[HD20 Audit checklist master] save failed',error);alert('점검항목 저장에 실패했습니다. 저장공간을 확인해 주세요.');return false}
