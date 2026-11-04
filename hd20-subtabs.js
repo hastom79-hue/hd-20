@@ -493,13 +493,11 @@ function renderRetentionSampling(root){
 
  const load=key=>{try{const v=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(v)?v:[]}catch{return[]}};
  const save=(key,val)=>{const raw=JSON.stringify(val);localStorage.setItem(key,raw);if(localStorage.getItem(key)!==raw)throw new Error('유지점검 저장 검증 실패: '+key)};
- const activity=load('hd20GMES5SAutoImproveRawV1'),actions=load('hd20ActionCasesV2'),stored=load('hd20RetentionRandomChecksV1');
+ const stored=load('hd20RetentionRandomChecksV1');
  const done=x=>['완료','개선완료','조치완료','종결','확정완료','종료','종결완료'].includes(String(x.status||x.activityStatus||x.actionStatus||'').trim())||x.completed===true;
  const excluded=x=>x.isDemo===true||x.isTest===true||['demo-seed','e2e-fixture','web-validation-fixture'].includes(String(x.source||''));
  const keyOf=x=>String(x.improvementNo||x.improvementNumber||x.caseId||x.activityId||x.id||'').trim();
- const entries=actions.filter(x=>done(x)&&!excluded(x)).map(x=>({x,kind:'개선요청'})).filter(e=>keyOf(e.x));
- const distinct=new Map(entries.map(e=>[e.kind+':'+keyOf(e.x),e]));
- const pool=[...distinct.values()];
+ const pool=()=>[...new Map(load('hd20ActionCasesV2').filter(x=>done(x)&&!excluded(x)).map(x=>({x,kind:'개선요청'})).filter(e=>keyOf(e.x)).map(e=>[e.kind+':'+keyOf(e.x),e])).values()];
  const policy=window.HD20PolicyConfig?.read?.().retentionCheck||{intervalDays:30,sampleCount:5};
  const intervalDays=Math.max(1,Number(policy.intervalDays)||30),sampleCount=Math.max(1,Number(policy.sampleCount)||5);
  const canEvaluate=()=>window.HD20MasterAuth?.canEvaluateRetention?.()===true;
@@ -516,7 +514,7 @@ function renderRetentionSampling(root){
  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const current=stored.filter(x=>x.result==='점검대기'||x.result==='적합'||x.result==='부적합').slice().reverse();
  const cell=x=>'<td>'+esc(x)+'</td>';
- const sourceOf=r=>distinct.get(r.kind+':'+r.caseId)?.x||[...activity,...actions].find(x=>keyOf(x)===r.caseId)||null;
+ const sourceOf=r=>{const id=String(r.caseId||'');return pool().find(e=>e.kind===r.kind&&keyOf(e.x)===id)?.x||[...load('hd20GMES5SAutoImproveRawV1'),...load('hd20ActionCasesV2')].find(x=>keyOf(x)===id)||null};
  const evidence=(x,which)=>{if(!x)return '';const keys=which==='before'?['before','beforeImage','beforePhoto','beforeImageUrl','asIsPhoto']:['after','afterImage','afterPhoto','afterImageUrl','afterEvidence','toBePhoto'];for(const k of keys){const v=x[k];if(typeof v==='string'&&/^(https?:\/\/|data:image\/|blob:)/.test(v.trim()))return v.trim()}return ''};
  const sourcePreview=r=>{const x=sourceOf(r);if(!x)return '<div class="hd20RsSourceEmpty">원본 사례가 없습니다. 원본 삭제·변경 여부를 확인하세요.</div>';const problem=x.problem||x.beforeText||x.issue||x.description||'',improvement=x.improvement||x.afterText||x.actionText||x.solution||'';const beforePhoto=evidence(x,'before'),afterPhoto=evidence(x,'after');return '<details class="hd20RsSource"><summary>원본 개선사례 · AS-IS / TO-BE 확인</summary><div class="hd20RsEvidence"><section><b>AS-IS · 개선 전</b><p>'+esc(problem||'개선 전 내용 미입력')+'</p>'+(beforePhoto?'<img alt="개선 전 증빙" src="'+esc(beforePhoto)+'">':'<small>사진 없음</small>')+'</section><section><b>TO-BE · 개선 후</b><p>'+esc(improvement||'개선 후 내용 미입력')+'</p>'+(afterPhoto?'<img alt="개선 후 증빙" src="'+esc(afterPhoto)+'">':'<small>사진 없음</small>')+'</section></div></details>'};
  const linkedAction=r=>{const all=load('hd20ActionCasesV2'),key=String(r.id||''),base='RET-AUDIT-'+key;const belongs=a=>!!a&&((a.sourceStage==='RETENTION-RANDOM'&&String(a.sourceCaseId||'')===base)||(a.sourceStage==='RETENTION-RECHECK'&&String(a.sourceCaseId||'')===key));const byId=id=>id?all.find(a=>String(a.id)===String(id)&&belongs(a))||null:null;if(r.followupActionId)return byId(r.followupActionId);if(r.actionId)return byId(r.actionId);return all.find(a=>a.sourceStage==='RETENTION-RANDOM'&&String(a.sourceCaseId||'')===base)||null};
@@ -530,7 +528,7 @@ function renderRetentionSampling(root){
  const item=r=>'<section class="hd20RsRow" data-rs-id="'+esc(r.id)+'"><div class="hd20RsInfo"><b>'+esc(r.kind)+' · '+esc(r.caseId)+'</b><span>'+esc(r.team||'팀 미지정')+' · '+esc(r.workplace||'작업장 미입력')+'</span><small>추출 '+esc(r.drawDate)+' · '+esc(r.result)+'</small></div>'+sourcePreview(r)+actionTrace(r)+recheckHistory(r)+'<div class="hd20RsInput">'+(r.result==='점검대기'?'<label class="hd20RsCheck"><input type="checkbox" data-rs-check="적합">현재 유지</label><label class="hd20RsCheck"><input type="checkbox" data-rs-check="부적합">미유지</label><input type="hidden" data-rs-result value=""><input type="hidden" data-rs-evaluator value=""><label>비고 (선택)<input data-rs-comment placeholder="미유지 사유 또는 현장 특이사항" value="'+esc(r.comment||'')+'"></label><button type="button" data-rs-save>점검 저장</button><button type="button" data-rs-notify>5S모듈 알림메일</button>':'<strong class="hd20RsResult">'+esc(r.result==='적합'?'✓ 유지':'✕ 미유지')+'</strong><small>점검 '+esc(String(r.evaluatedAt||'').slice(0,10))+' · '+esc(r.evaluator||'')+'</small>')+'</div></section>';
  // Completed histories are reviewed in ④ 결과·재조치, not duplicated in ③.
  host.innerHTML='<div class="awHead"><div><b>5S 개선사례 유지점검</b><small>기존 완료사례 랜덤 추출 → 5S모듈 알림 → 유지/미유지 체크 → 미유지 자동 개선조치</small></div></div>'+
- '<div class="hd20RsToolbar"><span>점검주기 '+intervalDays+'일 · 표본 '+sampleCount+'건 · 완료사례 '+pool.length+'건</span><button type="button" data-rs-draw>랜덤 추출</button><span>점검대기 '+pending.length+'건</span></div>'+
+ '<div class="hd20RsToolbar"><span>점검주기 '+intervalDays+'일 · 표본 '+sampleCount+'건 · 완료사례 '+pool().length+'건</span><button type="button" data-rs-draw>랜덤 추출</button><span>점검대기 '+pending.length+'건</span></div>'+
  (canEvaluate()?'<details class="hd20RsModuleConfigFold"><summary>5S모듈 담당자 알림 설정</summary><div class="hd20RsModuleConfig"><label>5S모듈 알림 수신자 (@hd.com, 쉼표 구분)<input type="text" data-rs-module-emails value="'+esc(moduleEmails().join(', '))+'" placeholder="담당자 이메일 입력"></label><button type="button" data-rs-module-save>수신자 저장</button></div></details>':'')+
  '<div class="hd20RsActive"><div class="hd20RsSectionTitle"><b>점검대기·재점검 필요</b><small>점검대기 '+pending.length+'건 · 재조치/재점검 '+unresolved.length+'건</small></div><div class="hd20RsList">'+(active.length?active.map(item).join(''):'<p class="awHint">'+(records.length?'현재 점검대기 또는 재점검이 필요한 사례가 없습니다.':'아직 추출된 유지점검 대상이 없습니다.')+'</p>')+'</div></div>'+
  '<div class="hd20RsArchiveHint">완료·종결된 점검 이력 '+history.length+'건은 ④ 결과·재조치에서 조회합니다.</div>';
@@ -594,7 +592,7 @@ function renderRetentionSampling(root){
  host.querySelector('[data-rs-draw]').onclick=()=>{
  if(!canEvaluate()){window.alert('유지점검 추출은 마스터 권한자 인증이 필요합니다.');return}const previous=load('hd20RetentionRandomChecksV1').map(x=>x.drawDate).filter(Boolean).sort().at(-1);if(previous&&calendarDays(previous,seoulDay())<intervalDays){window.alert('기준정보에 설정된 유지점검 주기가 도래하지 않았습니다.');return}const requested=sampleCount;
  const rows=load('hd20RetentionRandomChecksV1'),existing=new Set(rows.filter(x=>x.result==='점검대기'||(x.result==='부적합'&&!(x.recheckResult==='적합'&&x.recheckedAt))).map(x=>x.kind+':'+x.caseId));
- const available=pool.filter(e=>!existing.has(e.kind+':'+keyOf(e.x)));
+ const available=pool().filter(e=>!existing.has(e.kind+':'+keyOf(e.x)));
  for(let i=available.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[available[i],available[j]]=[available[j],available[i]]}
  const chosen=available.slice(0,requested);
  if(!chosen.length){window.alert('추출 가능한 완료 사례가 없습니다.');return}
