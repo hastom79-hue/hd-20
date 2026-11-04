@@ -246,7 +246,7 @@ function historyTable(month){
  return '<div class="themeHistoryMeta">총 '+all.length+'회 · 최신 '+Math.min(all.length,8)+'회 표시 · 재점검 기록은 이전 회차를 덮어쓰지 않습니다.</div><div class="themeHistoryWrap"><table class="themeHistoryTable"><thead><tr><th>점검 일시</th><th>라인</th><th>담당 생산팀</th><th>미흡</th><th>적합률</th><th>연계 조치</th><th>현장 관찰 메모</th></tr></thead><tbody>'+body+'</tbody></table></div>';
 }
 function hasUnsavedThemeAudit(host){
- return !!host?.querySelector('.themePanel[data-theme-panel="audit"] .themeCheckRow button.active')||
+ return host?.dataset.themeAuditDirty==='1'||
  !!host?.querySelector('#themeAuditAuditor')?.value.trim()||
  !!host?.querySelector('#themeAuditMemo')?.value.trim()||
  !!host?.querySelector('#themeAuditPhoto')?.files?.length;
@@ -392,6 +392,7 @@ function loadPreviousJudgements(){
   $$('button',row).forEach(btn=>{btn.classList.remove('active','ok','ng');if(btn.dataset.v===value)btn.classList.add('active',value==='적합'?'ok':'ng')});
  });
  const memo=$('#themeAuditMemo',host);if(memo)memo.value='';
+ host.dataset.themeAuditDirty='1';
  updateProgress();
  const note=$('#themePreviousNote',host);
  if(note)note.textContent='직전 회차 결과를 참고용으로 불러왔습니다. 현장 확인 후 수정하고 새 회차로 저장하세요.';
@@ -448,6 +449,7 @@ function renderChecklist(){
    $$('button',row).forEach(btn=>btn.addEventListener('click',()=>{
      $$('button',row).forEach(b=>b.classList.remove('active','ok','ng'));
      btn.classList.add('active',btn.dataset.v==='적합'?'ok':'ng');
+     host.dataset.themeAuditDirty='1';
      updateProgress();
    }));
  });
@@ -459,6 +461,7 @@ function renderChecklist(){
      const okBtn=[...row.querySelectorAll('button')].find(b=>b.dataset.v==='적합');
      okBtn?.classList.add('active','ok');
    });
+   host.dataset.themeAuditDirty='1';
    updateProgress();
  }));
  updateProgress();
@@ -467,6 +470,7 @@ function renderChecklist(){
    일괄 적합 처리 후에도 실제 미흡 항목만 개별로 "미흡" 버튼을 눌러 바꾸면 되는 흐름. */
 function bulkSet(value){
  const host=document.getElementById('awTheme');
+ if(host)host.dataset.themeAuditDirty='1';
  $$('.themeCheckRow',host).forEach(row=>{
    $$('button',row).forEach(b=>b.classList.remove('active','ok','ng'));
    if(!value)return;
@@ -534,11 +538,17 @@ async function saveAudit(){
  window.dispatchEvent(new CustomEvent('hd20-action-updated',{detail:{added:createdActionIds.length,reused:reusedActionIds.length,source:'theme-audit',auditRecordId:rec.id}}));
  window.dispatchEvent(new CustomEvent('hd20-activity-updated',{detail:{source:'테마Audit',auditRecordId:rec.id}}));
  window.dispatchEvent(new CustomEvent('hd20-theme-audit-updated',{detail:{auditRecordId:rec.id,line,month,inspectionOwner:rec.inspectionOwner}}));
- delete host.dataset.pendingThemeMasterRefresh;
  const msg=ownerTitle(selectedOwner())+' · 점검 이력 저장 완료 · 미흡 '+ngItems.length+'건 · 신규 개선조치 '+createdActionIds.length+'건 · 기존 미완료 조치 재연계 '+reusedActionIds.length+'건';
  host._themeFindingDrafts={};
+ host.dataset.themeAuditDirty='0';
  host.dataset.themeSaveResult=msg;
  host.dataset.themeSaveContext=month+'|'+line+'|'+selectedOwner()+'|'+team;
+ if(host.dataset.pendingThemeMasterRefresh==='1'){
+  const fresh=window.HD20ThemeMaster?.checklist?.()||[];
+  CHECKLIST=[...fresh,...LEGACY_CHECKLIST.filter(x=>loadChecks().some(r=>r.states&&Object.prototype.hasOwnProperty.call(r.states,x.cat+'::'+x.item)))];
+  THEMES=activeThemeNames(fresh);
+  delete host.dataset.pendingThemeMasterRefresh;
+ }
  render();
 }
 
