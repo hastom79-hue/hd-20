@@ -752,11 +752,20 @@ function renderActionVerify(root){const host=ensureActionVerify(root);if(!host)r
 const listRows=[...pendingVerify,...recurrence.length?recurrence:[],...verified.filter(x=>!recurrence.includes(x))].filter((x,i,a)=>a.indexOf(x)===i).slice(0,30);
 const verifyTable=done.length?`<div class="awFilterBar" style="margin-top:14px"><b>검증 상세 목록</b><span style="color:#8098a8;font-size:12.5px">검증대기·재발 확인 건을 우선 표시 · 최대 30건</span></div><div style="overflow:auto"><table class="awTable"><thead><tr><th>요청번호</th><th>생산팀</th><th>작업장</th><th>완료일</th><th>효과검증</th><th>재발여부</th></tr></thead><tbody>${listRows.map(x=>{const id=x.id||x.caseId||'—',team=txt(x.team||x.생산팀)||'—',wp=txt(x.workplace)||'—',doneDate=txt(x.doneDate||x.completedDate||x.finishDate)||'—',isVerified=effectVerified(x),isRecur=recurrenceConfirmed(x);return `<tr><td>${esc(id)}</td><td>${esc(team)}</td><td>${esc(wp)}</td><td>${esc(doneDate)}</td><td>${isVerified?'<span style="color:#1a8754">검증완료</span>':'<span style="color:#b8860b">검증대기</span>'}</td><td>${isRecur?'<span style="color:#c0392b">재발</span>':'<span style="color:#60788b">미발생</span>'}</td></tr>`}).join('')}</tbody></table></div>`:'';
 host.innerHTML=`<div class="awHead"><div><b>효과·재발 검증현황</b><small>실제 개선조치 데이터 기준 · 미입력 결과는 임의 생성하지 않습니다.</small></div></div><div class="awKpis"><div><small>전체 개선요청</small><b>${rows.length}건</b></div><div><small>조치 진행·대기</small><b>${rows.length-done.length}건</b></div><div><small>효과검증 완료</small><b>${verified.length}건</b></div><div><small>재발 확인</small><b>${recurrence.length}건</b></div></div><div class="awHint" style="margin-top:10px">${pendingVerify.length?`완료 ${done.length}건 중 효과검증 미입력 ${pendingVerify.length}건은 <b>검증 대기</b> 상태입니다.`:done.length?'완료된 개선조치는 모두 효과검증 결과가 입력되어 있습니다.':'완료된 개선조치가 없어 효과검증 대상이 없습니다.'}</div>${verifyTable}`}
-function applyAction(sub){const root=$('#awAction');if(!root)return;root.dataset.subview=sub;showAll(root);hideDuplicateWorkKpis(root);show($('.awFlow',root),false);show($('.awKpis',root),false);const form=$('.amRegisterFormCard',root),verify=ensureActionVerify(root);show(form,sub==='manage');if(sub==='verify'){renderActionVerify(root);show(verify,true)}else{show(verify,false)}
+function applyAction(sub){
+ const root=$('#awAction');if(!root)return;
+ // Avoid expensive hide/show and verification-table rebuild on duplicate navigation.
+ if(root.dataset.subview===sub&&root.dataset.actionUiReady==='1')return;
+ root.dataset.subview=sub;root.dataset.actionUiReady='0';
+ showAll(root);hideDuplicateWorkKpis(root);show($('.awFlow',root),false);show($('.awKpis',root),false);
+ const form=$('.amRegisterFormCard',root),verify=ensureActionVerify(root);
+ show(form,sub==='manage');
+ if(sub==='verify'){renderActionVerify(root);show(verify,true)}else{show(verify,false)}
   /* '+ 개선요청 등록' 등 신규 등록 액션은 '조치 목록'(manage)에서만
      의미가 있어, 다른 3개 서브탭(처리기간분석/팀장기준정보/효과재발
      관리)에서는 숨김. 내용 삭제가 아니라 서브탭별 표시 범위 재구성. */
   show($('.awActions',root),sub==='manage');
+ root.dataset.actionUiReady='1';
 }
 function renderSimpleWorkboard(area,sub){
  const root=area==='audit'?$('#awAudit'):area==='action'?$('#awAction'):null;
