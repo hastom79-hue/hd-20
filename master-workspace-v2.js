@@ -37,7 +37,7 @@ const SOURCE_MAP=[
  {area:'공통·시스템',name:'메일링 운영정보',key:'gmes5s_mailing_master_v1',editor:'integrated-mail'}
 ];
 const registry=document.createElement('details');registry.className='hmSourceRegistry';
-registry.innerHTML='<summary>전체 업무탭 기준정보 연결 맵 <span data-hm-source-total></span><small>원천 저장소·관리 위치·연동 여부 확인</small></summary><div class="hmSourceBody"><p>각 업무탭의 기준정보는 원본 저장소를 공통 참조합니다. 이 화면에서 관리 가능한 항목은 해당 편집기로 이동하며, 업무 중 생성되는 계획·점검·개선 이력은 원래 업무탭에서 관리합니다.</p><div class="hmSourceFilters"><label>업무영역 <select data-hm-source-area><option value="">전체 업무탭</option></select></label><label>기준정보 검색 <input type="search" data-hm-source-query placeholder="원천·업무명·기준정보"></label><button type="button" data-hm-source-refresh>연결 확인</button></div><div data-hm-source-rows class="hmSourceRows"></div><div data-hm-source-result aria-live="polite"></div></div>';
+registry.innerHTML='<summary>전체 업무탭 기준정보 연결 맵 <span data-hm-source-total></span><small>원천 저장소·관리 위치·연동 여부 확인</small></summary><div class="hmSourceBody"><p>각 업무탭의 기준정보는 원본 저장소를 공통 참조합니다. 이 화면에서 관리 가능한 항목은 해당 편집기로 이동하며, 업무 중 생성되는 계획·점검·개선 이력은 원래 업무탭에서 관리합니다.</p><div class="hmSourceFilters"><label>업무영역 <select data-hm-source-area><option value="">전체 업무탭</option></select></label><label>기준정보 검색 <input type="search" data-hm-source-query placeholder="원천·업무명·기준정보"></label><button type="button" data-hm-source-refresh>연결 확인</button></div><div data-hm-source-rows class="hmSourceRows"></div><div data-hm-source-result aria-live="polite"></div><div data-hm-source-issues class="hmSourceIssues" aria-label="기준정보 참조 불일치 점검"></div></div>';
 ws.insertAdjacentElement('afterend',registry);
 const areaSelect=registry.querySelector('[data-hm-source-area]');
 [...new Set(SOURCE_MAP.map(x=>x.area))].forEach(area=>{const opt=document.createElement('option');opt.value=area;opt.textContent=area;areaSelect.appendChild(opt)});
@@ -56,6 +56,36 @@ function sourceReady(item){
  const api=!!(item.api&&window[item.api]!=null);
  // Loaded JS module does not prove successful field synchronization.
  return {saved,valid,records,api};
+}
+function sourceReadJson(key,fallback){
+ try{const raw=localStorage.getItem(key);return raw===null?fallback:JSON.parse(raw)}
+ catch{return fallback}
+}
+function sourceIntegrityWarnings(){
+ const problems=[];
+ const catalog=window.HD20ThemeMaster?.checklist?.()||[];
+ const validThemeNames=new Set(catalog.map(x=>String(x.cat||'')));
+ const plans=sourceReadJson('hd20ThemeAuditPlansV1',[]);
+ if(Array.isArray(plans)){
+  const missing=plans.filter(p=>Array.isArray(p?.themes)&&p.themes.some(name=>!validThemeNames.has(String(name))));
+  if(catalog.length&&missing.length)problems.push({area:'테마점검',text:'저장된 계획 '+missing.length+'건에서 현재 사용 중인 세부테마와 이름이 일치하지 않습니다.',target:'integrated-theme'});
+ }else problems.push({area:'테마점검',text:'점검계획 저장 형식이 배열이 아닙니다.',target:'integrated-theme'});
+ const leaders=sourceReadJson('hd20TeamLeaderMasterV1',[]);
+ if(Array.isArray(leaders)){
+  const known=new Set(window.HD20ProductionTeamMaster?.teamNames?.()||[]);
+  const unknown=leaders.filter(x=>x?.team&&known.size&&!known.has(String(x.team)));
+  if(unknown.length)problems.push({area:'조직·목표',text:'팀장 마스터 '+unknown.length+'건이 생산팀 기준정보와 일치하지 않습니다.',target:'integrated-team'});
+  const emails=leaders.map(x=>String(x?.email||'').trim().toLowerCase()).filter(Boolean);
+  const duplicates=[...new Set(emails.filter((mail,i)=>emails.indexOf(mail)!==i))];
+  if(duplicates.length)problems.push({area:'조직·목표',text:'동일 팀장 이메일이 '+duplicates.length+'개 중복되어 자율점검 담당팀 자동 지정이 불명확합니다.',target:'integrated-team'});
+ }else problems.push({area:'조직·목표',text:'팀장 마스터 저장 형식이 배열이 아닙니다.',target:'integrated-team'});
+ const org=sourceReadJson('gmes5s_team_org_master_v1',{});
+ if(org&&typeof org==='object'&&!Array.isArray(org)){
+  const known=new Set(window.HD20ProductionTeamMaster?.teamNames?.()||[]);
+  const extra=Object.keys(org).filter(x=>known.size&&!known.has(x));
+  if(extra.length)problems.push({area:'조직·목표',text:'팀 조직정보 '+extra.length+'개 팀명이 생산팀 기준정보와 일치하지 않습니다.',target:'integrated-team'});
+ }
+ return problems;
 }
 function refreshSourceRegistry(){
  const query=(registry.querySelector('[data-hm-source-query]').value||'').trim().toLocaleLowerCase(),area=areaSelect.value;
@@ -79,8 +109,16 @@ function refreshSourceRegistry(){
   btn.addEventListener('click',()=>{if(item.editor){openMasterTarget(item.editor)}else if(window.HD20_NAV?.go){document.querySelector('#masterModal [data-hm-close]')?.click();window.HD20_NAV.go(item.targetArea)}else alert('해당 업무탭을 직접 선택하여 확인해 주세요.')});
   row.append(info,status,btn);wrap.appendChild(row);
  }
- registry.querySelector('[data-hm-source-total]').textContent=SOURCE_MAP.length+'개 원천';
- registry.querySelector('[data-hm-source-result]').textContent='표시 '+list.length+'개 · 저장정보/모듈 확인 '+ready+'개 · 확인 필요 '+(list.length-ready)+'개'+(errors?' · 손상 가능 데이터 '+errors+'개':'')+'. 저장소 유무만으로 모든 탭의 필드 동기화가 검증되지는 않습니다.';
+ const warnings=sourceIntegrityWarnings();
+ const result=registry.querySelector('[data-hm-source-result]');
+ const issueList=registry.querySelector('[data-hm-source-issues]');
+ if(issueList){issueList.replaceChildren();for(const warning of warnings){
+  const item=document.createElement('div');item.className='hmSourceIssue';
+  const txt=document.createElement('span');txt.textContent=warning.area+' · '+warning.text;
+  const btn=document.createElement('button');btn.type='button';btn.textContent='기준정보 확인';btn.addEventListener('click',()=>openMasterTarget(warning.target));item.append(txt,btn);issueList.appendChild(item);
+ }}
+ registry.querySelector('[data-hm-source-total]').textContent=SOURCE_MAP.length+'개 연결 항목';
+ result.textContent='표시 '+list.length+'개 · 저장정보/모듈 확인 '+ready+'개 · 확인 필요 '+(list.length-ready)+'개'+(errors?' · 손상 가능 데이터 '+errors+'개':'')+' · 참조 불일치 의심 '+warnings.length+'개. 저장소 유무만으로 모든 탭의 필드 동기화가 검증되지는 않습니다.';
 }
 areaSelect.addEventListener('change',refreshSourceRegistry);
 registry.querySelector('[data-hm-source-query]').addEventListener('input',refreshSourceRegistry);
