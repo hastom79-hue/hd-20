@@ -13,6 +13,10 @@ box.insertBefore(ws,tabs);
 /* Unified ownership inventory: existing canonical editors are reused, never duplicated.
    Every operational tab's sources are discoverable from the master workspace. */
 const SOURCE_MAP=[
+ {area:'종합 대시보드',name:'자율개선·생산팀 실적 원천',key:'hd20GMES5SAutoImproveRawV1',targetArea:'dashboard',note:'확정 대시보드는 원천 데이터를 읽기 전용으로 집계'},
+ {area:'종합 대시보드',name:'개선조치·완료 실적 원천',key:'hd20ActionCasesV2',targetArea:'dashboard',note:'개선조치 원본과 동일 데이터를 참조; 기준정보로 재저장 금지'},
+ {area:'고도화·표준화',name:'생산팀별 고도화 대상 실적',key:'hd20GMES5SAutoImproveRawV1',targetArea:'advancement',note:'고도화 3대요건 적용 및 판정 결과는 원본에서 관리'},
+ {area:'고도화·표준화',name:'3대요건 공통 판정 규칙',api:'HD20DirectCriteria',targetArea:'advancement',note:'고도화 판정에 필요한 단일 규칙 모듈'},
  {area:'자율개선조회',name:'생산팀·인원·팀장',key:'gmes5s_team_org_master_v1',editor:'integrated-team',api:'HD20ProductionTeamMaster'},
  {area:'자율개선조회',name:'팀별 개선목표',key:'gmes5s_team_targets_v1',editor:'integrated-target'},
  {area:'자율개선조회',name:'발굴유형·업무분류',key:'gmes5s_work_factor_master_v1',editor:'integrated-factor'},
