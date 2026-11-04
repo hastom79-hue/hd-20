@@ -48,12 +48,12 @@ function draw(){
  let draft=clean(read()),activeGroup=draft.find(g=>g.active)?.id||draft[0]?.id,activeChild=null;
  let loadedSnapshot=localStorage.getItem(KEY),externalRevision=false;
  host.dataset.tmDirty='0';
- host.innerHTML='<section class="imfSec"><h4>5S 테마 기준정보</h4><div class="imfNote">상위 테마 5개를 기준으로 하위 세부 테마와 현장 점검항목을 관리합니다. 여기서 저장한 사용 중 항목만 테마점검의 계획·Audit 선택항목으로 연동됩니다. 기존 점검 이력은 당시 저장된 판정 데이터로 보존됩니다.</div><div class="tmLayout"><aside class="tmGroups" id="tmGroups"></aside><main class="tmMain"><div class="tmToolbar"><select id="tmChild"></select><button type="button" id="tmAddChild">+ 세부 테마 추가</button></div><div id="tmEditor"></div></main></div><div class="imfFoot"><span id="tmStatus" role="status" aria-live="polite"></span><button type="button" class="imfBtn" id="tmSave">기준정보 저장 및 테마점검 연동</button></div></section>';
+ host.innerHTML='<section class="imfSec"><h4>5S 테마 기준정보</h4><div class="imfNote">상위 테마 5개를 기준으로 하위 세부 테마와 현장 점검항목을 관리합니다. 여기서 저장한 사용 중 항목만 테마점검의 계획·Audit 선택항목으로 연동됩니다. 기존 점검 이력은 당시 저장된 판정 데이터로 보존됩니다.</div><div class="tmLayout"><aside class="tmGroups" id="tmGroups"></aside><main class="tmMain"><div class="tmToolbar"><select id="tmChild"></select><button type="button" id="tmAddChild">+ 세부 테마 추가</button></div><div id="tmEditor"></div></main></div><div class="imfFoot"><span id="tmStatus" role="status" aria-live="polite"></span><div class="tmFooterActions"><button type="button" id="tmReload">최신 기준정보 다시 읽기</button><button type="button" class="imfBtn" id="tmSave">기준정보 저장 및 테마점검 연동</button></div></div></section>';
  const groups=host.querySelector('#tmGroups'),childSel=host.querySelector('#tmChild'),editor=host.querySelector('#tmEditor');
  const activeG=()=>draft.find(g=>g.id===activeGroup),activeC=()=>activeG()?.children.find(c=>c.id===activeChild);
  const markDirty=()=>{host.dataset.tmDirty='1';const status=host.querySelector('#tmStatus');if(status)status.textContent='저장되지 않은 변경사항이 있습니다.'};
- host.addEventListener('input',e=>{if(e.target.closest('#tmEditor'))markDirty()});
- host.addEventListener('change',e=>{if(e.target.closest('#tmEditor'))markDirty()});
+ host.oninput=e=>{if(e.target.closest('#tmEditor'))markDirty()};
+ host.onchange=e=>{if(e.target.closest('#tmEditor'))markDirty()};
  function render(){
   groups.innerHTML=draft.map(g=>'<button type="button" data-group="'+esc(g.id)+'" class="'+(g.id===activeGroup?'on':'')+'"><span>'+esc(g.name)+'</span><small>'+g.children.filter(c=>c.active).length+'개 세부 테마</small></button>').join('');
   const g=activeG();if(!g)return;
@@ -88,11 +88,19 @@ function draw(){
   render();host.querySelector('#tmStatus').textContent='저장 완료 · 세부 점검항목 기준정보가 반영되었습니다.';
  }catch(e){host.querySelector('#tmStatus').textContent=e.message}
 };
-window.addEventListener('storage',e=>{
+if(host._themeStorageListener)window.removeEventListener('storage',host._themeStorageListener);
+ host._themeStorageListener=e=>{
  if(e.key!==KEY||!host.isConnected)return;
  externalRevision=true;
  const status=host.querySelector('#tmStatus');if(status)status.textContent='다른 창에서 5S 테마 기준정보가 변경되었습니다. 현재 편집 내용은 유지되며, 저장 충돌을 방지하기 위해 재확인이 필요합니다.';
-});
+ };
+ window.addEventListener('storage',host._themeStorageListener);
+ host.querySelector('#tmReload').onclick=()=>{
+  if((host.dataset.tmDirty==='1'||externalRevision)&&!window.confirm('현재 미저장 변경사항을 버리고 최신 5S 기준정보를 다시 읽으시겠습니까?'))return;
+  if(host._themeStorageListener)window.removeEventListener('storage',host._themeStorageListener);
+  draw();
+  host.querySelector('#tmStatus').textContent='최신 기준정보를 다시 불러왔습니다.';
+ };
  render();
 }
 const style=document.createElement('style');style.textContent='#hd20ThemeCatalogPanel .tmLayout{display:grid;grid-template-columns:240px minmax(0,1fr);gap:14px;padding:14px 18px}#hd20ThemeCatalogPanel .tmGroups{display:flex;flex-direction:column;gap:6px}#hd20ThemeCatalogPanel .tmGroups button{display:flex;justify-content:space-between;align-items:center;gap:8px;text-align:left;padding:11px;border:1px solid #dce6ed;border-radius:8px;background:#fff;color:#254a62;cursor:pointer}#hd20ThemeCatalogPanel .tmGroups button.on{border-color:#4385b2;background:#f0f7fb}#hd20ThemeCatalogPanel .tmGroups small{color:#718797;white-space:nowrap}#hd20ThemeCatalogPanel .tmMain{min-width:0;border:1px solid #e0e8ee;border-radius:9px;padding:14px}#hd20ThemeCatalogPanel .tmToolbar{display:flex;gap:8px;margin-bottom:14px}#hd20ThemeCatalogPanel select,#hd20ThemeCatalogPanel input:not([type=checkbox]),#hd20ThemeCatalogPanel textarea{box-sizing:border-box;border:1px solid #cbd9e2;border-radius:7px;padding:9px;font:inherit;min-width:0}#hd20ThemeCatalogPanel .tmToolbar select{flex:1}#hd20ThemeCatalogPanel .tmEditHead{display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end}#hd20ThemeCatalogPanel .tmEditHead label,#hd20ThemeCatalogPanel .tmItemsLabel{display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:700;color:#4a6679}#hd20ThemeCatalogPanel .tmEditHead input{width:100%}#hd20ThemeCatalogPanel .tmItemsLabel{margin-top:16px}#hd20ThemeCatalogPanel .tmItemsLabel small{font-weight:400;color:#718797}#hd20ThemeCatalogPanel textarea{width:100%;margin-top:8px;resize:vertical}#hd20ThemeCatalogPanel .tmActions{display:flex;gap:8px;margin-top:10px}#hd20ThemeCatalogPanel button{cursor:pointer}#hd20ThemeCatalogPanel .tmActions button,#hd20ThemeCatalogPanel .tmToolbar button{border:1px solid #cbd9e2;border-radius:7px;padding:8px 12px;background:#fff;color:#35576d}#hd20ThemeCatalogPanel .tmActive{display:flex;align-items:center;gap:6px;font-size:12px;color:#4a6679}#hd20ThemeCatalogPanel .tmActive input{width:16px;height:16px}#hd20ThemeCatalogPanel .imfFoot{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 18px}@media(max-width:760px){#hd20ThemeCatalogPanel .tmLayout{grid-template-columns:1fr}#hd20ThemeCatalogPanel .tmGroups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}#hd20ThemeCatalogPanel .tmEditHead{grid-template-columns:1fr}}';document.head.appendChild(style);
