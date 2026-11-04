@@ -596,7 +596,7 @@ function renderRetentionSampling(root){
   window.alert('마지막 개선조치 원본번호가 일치하지 않습니다. 종결할 수 없습니다.');return;
  }
  const at=new Date().toISOString(),actionDay=seoulDay(),record={at,result,comment,actionId:action.id,evaluator:currentEmail()||rows[n].evaluator||''};
- const priorActionSnapshot=localStorage.getItem('hd20ActionCasesV2');
+ const priorActionSnapshot=localStorage.getItem('hd20ActionCasesV2'),priorRetentionSnapshot=localStorage.getItem('hd20RetentionRandomChecksV1');
  let followupActionId='',createdFollowupId='';
  if(result==='부적합'){
   const actions=load('hd20ActionCasesV2'),idNext='AUTO-RETENTION-RECHECK-'+rows[n].id+'-'+((rows[n].recheckHistory||[]).length+1);
@@ -613,14 +613,14 @@ function renderRetentionSampling(root){
  rows[n]={...rows[n],recheckHistory:history,recheckResult:result,recheckComment:comment,recheckedAt:at,followupActionId:followupActionId||rows[n].followupActionId||'',closedAt:result==='적합'?at:''};
  try{save('hd20RetentionRandomChecksV1',rows)}catch(e){
   let rolledBack=true;
-  if(createdFollowupId){
+  for(const [key,raw] of [['hd20RetentionRandomChecksV1',priorRetentionSnapshot],...(createdFollowupId?[['hd20ActionCasesV2',priorActionSnapshot]]:[])]){
    try{
-    if(priorActionSnapshot===null)localStorage.removeItem('hd20ActionCasesV2');else localStorage.setItem('hd20ActionCasesV2',priorActionSnapshot);
-    if(localStorage.getItem('hd20ActionCasesV2')!==priorActionSnapshot)throw Error('재조치 원본 복원 검증 실패');
-   }catch(rollbackError){rolledBack=false;console.error('[HD20 재점검 재조치 복구 실패]',rollbackError)}
+    if(raw===null)localStorage.removeItem(key);else localStorage.setItem(key,raw);
+    if(localStorage.getItem(key)!==raw)throw Error('복원 검증 실패: '+key);
+   }catch(rollbackError){rolledBack=false;console.error('[HD20 재점검 저장 원복 실패]',key,rollbackError)}
   }
   box.dataset.rsSaving='';box.querySelectorAll('[data-rs-recheck]').forEach(b=>b.disabled=false);
-  window.alert(rolledBack?'재점검 저장 실패: 직전 개선조치 저장 상태를 복원했습니다. 다시 시도해 주세요.':'재점검 저장과 개선조치 원복에 실패했습니다. 중복 등록하지 말고 관리자에게 확인해 주세요.');
+  window.alert(rolledBack?'재점검 저장 실패: 점검·개선조치 데이터를 직전 상태로 복원했습니다. 다시 시도해 주세요.':'재점검 저장과 데이터 복원에 실패했습니다. 중복 등록하지 말고 관리자에게 확인해 주세요.');
   return;
  }
  if(createdFollowupId)window.dispatchEvent(new CustomEvent('hd20-action-updated',{detail:{added:1,source:'retention-recheck'}}));
