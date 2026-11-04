@@ -52,7 +52,20 @@ let CHECKLIST=[...(window.HD20ThemeMaster?.checklist?.()||[]),...LEGACY_CHECKLIS
 const ACTIVE_5S_GROUPS=new Set(['정리','정돈','시각화관리','시각화','청소','설비자주보전','설비 자주보전']);
 const activeThemeNames=items=>[...new Set(items.filter(c=>ACTIVE_5S_GROUPS.has(c.group||c.cat)).map(c=>c.cat))];
 let THEMES=activeThemeNames(window.HD20ThemeMaster?.checklist?.()||CHECKLIST);
-window.addEventListener('hd20-theme-master-updated',()=>{const current=window.HD20ThemeMaster?.checklist?.()||[];CHECKLIST=[...current,...LEGACY_CHECKLIST.filter(x=>loadChecks().some(r=>r.states&&Object.prototype.hasOwnProperty.call(r.states,x.cat+'::'+x.item)))];THEMES=activeThemeNames(current);render()});
+window.addEventListener('hd20-theme-master-updated',()=>{
+ const current=window.HD20ThemeMaster?.checklist?.()||[];
+ const host=document.getElementById('awTheme');
+ // A live inspection must not lose unsaved checks, observations or selected image files.
+ if(host&&hasUnsavedThemeAudit(host)){
+  host.dataset.pendingThemeMasterRefresh='1';
+  const note=document.getElementById('themePreviousNote');
+  if(note)note.textContent='5S 테마 기준정보가 변경되었습니다. 현재 판정 내용을 저장하거나 화면을 이동한 뒤 최신 기준을 적용해 주세요.';
+  return;
+ }
+ CHECKLIST=[...current,...LEGACY_CHECKLIST.filter(x=>loadChecks().some(r=>r.states&&Object.prototype.hasOwnProperty.call(r.states,x.cat+'::'+x.item)))];
+ THEMES=activeThemeNames(current);
+ if(host){delete host.dataset.pendingThemeMasterRefresh;render()}
+});
 function load(){try{const v=JSON.parse(localStorage.getItem(ACT_KEY)||'[]');return Array.isArray(v)?v:[]}catch{return[]}}
 function save(rows){try{localStorage.setItem(ACT_KEY,JSON.stringify(rows));return true}catch(e){console.error('[HD20 Theme] action save failed',e);return false}}
 function loadChecks(){try{const v=JSON.parse(localStorage.getItem(CHECK_KEY)||'[]');return Array.isArray(v)?v:[]}catch{return[]}}
@@ -243,6 +256,12 @@ function confirmThemeNavigation(host){
 }
 function render(){
  const host=document.getElementById('awTheme');if(!host)return;
+ if(host.dataset.pendingThemeMasterRefresh==='1'&&!hasUnsavedThemeAudit(host)){
+  const fresh=window.HD20ThemeMaster?.checklist?.()||[];
+  CHECKLIST=[...fresh,...LEGACY_CHECKLIST.filter(x=>loadChecks().some(r=>r.states&&Object.prototype.hasOwnProperty.call(r.states,x.cat+'::'+x.item)))];
+  THEMES=activeThemeNames(fresh);
+  delete host.dataset.pendingThemeMasterRefresh;
+ }
  const month=host.dataset.month||thisMonth();host.dataset.month=month;
  const line=host.dataset.line||LINES[0];host.dataset.line=line;
  const team=host.dataset.team||LINE_DEFAULT_TEAM[line]||teamOptions()[0]||'';host.dataset.team=team;
@@ -515,6 +534,7 @@ async function saveAudit(){
  window.dispatchEvent(new CustomEvent('hd20-action-updated',{detail:{added:createdActionIds.length,reused:reusedActionIds.length,source:'theme-audit',auditRecordId:rec.id}}));
  window.dispatchEvent(new CustomEvent('hd20-activity-updated',{detail:{source:'테마Audit',auditRecordId:rec.id}}));
  window.dispatchEvent(new CustomEvent('hd20-theme-audit-updated',{detail:{auditRecordId:rec.id,line,month,inspectionOwner:rec.inspectionOwner}}));
+ delete host.dataset.pendingThemeMasterRefresh;
  const msg=ownerTitle(selectedOwner())+' · 점검 이력 저장 완료 · 미흡 '+ngItems.length+'건 · 신규 개선조치 '+createdActionIds.length+'건 · 기존 미완료 조치 재연계 '+reusedActionIds.length+'건';
  host._themeFindingDrafts={};
  host.dataset.themeSaveResult=msg;
