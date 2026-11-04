@@ -577,7 +577,16 @@ function renderRetentionSampling(root){
  const box=btn.closest('[data-rs-id]'),id=box?.dataset.rsId,rows=load('hd20RetentionRandomChecksV1'),n=rows.findIndex(x=>x.id===id);
  if(n<0||rows[n].result!=='부적합'||rows[n].closedAt||(rows[n].recheckResult==='적합'&&rows[n].recheckedAt))return;
  if(btn.disabled||box.dataset.rsSaving==='1')return;box.dataset.rsSaving='1';box.querySelectorAll('[data-rs-recheck]').forEach(b=>b.disabled=true);
- const action=linkedAction(rows[n]);if(!action||!doneStatus(action)){box.dataset.rsSaving='';box.querySelectorAll('[data-rs-recheck]').forEach(b=>b.disabled=false);window.alert('개선조치 완료 후 재점검할 수 있습니다.');return}
+ const action=linkedAction(rows[n]);
+ const allActions=load('hd20ActionCasesV2');
+ const historyActions=allActions.filter(a=>a.sourceStage==='RETENTION-RECHECK'&&String(a.sourceCaseId||'')===String(rows[n].id));
+ const sequence=a=>Number(String(a.id||'').match(/(\\d+)$/)?.[1]||0);
+ const latestHistory=historyActions.slice().sort((a,b)=>sequence(b)-sequence(a))[0]||null;
+ if(latestHistory&&String(action?.id||'')!==String(latestHistory.id)){
+  box.dataset.rsSaving='';box.querySelectorAll('[data-rs-recheck]').forEach(b=>b.disabled=false);
+  window.alert('최신 재조치가 아닌 이전 조치가 연결되어 있습니다. 재점검·종결을 중단하고 연결 상태를 확인하세요.');return;
+ }
+ if(!action||!doneStatus(action)){box.dataset.rsSaving='';box.querySelectorAll('[data-rs-recheck]').forEach(b=>b.disabled=false);window.alert('최신 개선조치 완료 후 재점검할 수 있습니다.');return}
  const comment=box.querySelector('[data-rs-recheck-comment]')?.value.trim()||'',result=btn.dataset.rsRecheck;
  if(!comment){box.dataset.rsSaving='';box.querySelectorAll('[data-rs-recheck]').forEach(b=>b.disabled=false);window.alert('재점검 현장 확인 의견을 입력하세요.');return}
  // The final recheck must close the latest completed corrective action only.
