@@ -399,10 +399,13 @@ function renderAuditCloseEvaluation(host,traceOnly=false){
      (a.sourceStage==='RETENTION-RECHECK'&&String(a.sourceCaseId||'')===checkId)
    );
    const byId=id=>id?actions.find(a=>String(a.id||'')===String(id)&&belongs(a)):null;
-   const direct=byId(r.followupActionId)||byId(r.actionId);if(direct)return direct;
+   const direct=byId(r.followupActionId);
+   if(direct)return direct;
    const followups=actions.filter(a=>a.sourceStage==='RETENTION-RECHECK'&&String(a.sourceCaseId||'')===checkId);
-   if(followups.length)return followups.at(-1);
-   return actions.find(a=>a.sourceStage==='RETENTION-RANDOM'&&String(a.sourceCaseId||'')===baseId)||null;
+   // Follow-up actions are unshifted on creation, so at(-1) selected the oldest.
+   // Keep the most recent recheck sequence when the stored pointer is missing.
+   if(followups.length)return followups.slice().sort((a,b)=>Number(String(b.id||'').match(/(\d+)$/)?.[1]||0)-Number(String(a.id||'').match(/(\d+)$/)?.[1]||0))[0];
+   return byId(r.actionId)||actions.find(a=>a.sourceStage==='RETENTION-RANDOM'&&String(a.sourceCaseId||'')===baseId)||null;
  };
  const done=a=>['완료','조치완료','개선완료','종료','종결','종결완료'].includes(String(a?.status||'').trim());
  const auditTable=rows=>'<div class="hd20CloseTableWrap"><table class="awTable"><thead><tr><th>Audit 번호</th><th>생산팀 · 작업장</th><th>점검일</th><th>점검자</th><th>최종판정</th></tr></thead><tbody>'+rows.map(a=>'<tr data-close-team="'+esc(a.team||'')+'"><td><button type="button" class="hadAuditLink" data-had-open-audit="'+esc(auditId(a))+'">'+esc(auditId(a)||'—')+'</button></td><td>'+esc(a.team||'—')+' · '+esc(a.workplace||'—')+'</td><td>'+esc(a.auditDate||'—')+'</td><td>'+esc(a.initialAuditor||a.auditor||'—')+'</td><td>'+esc(a.finalEvaluation||'미입력')+'</td></tr>').join('')+'</tbody></table></div>';
