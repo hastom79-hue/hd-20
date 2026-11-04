@@ -94,7 +94,13 @@ window.addEventListener('storage',e=>{
   externalRevision=true;
   let notice=panel.querySelector('[data-ac-external-notice]');
   if(!notice){notice=document.createElement('div');notice.dataset.acExternalNotice='1';notice.style.cssText='padding:9px 12px;margin:8px 0;border-radius:7px;background:#fff6e8;border:1px solid #eccb9c;color:#805825;font-size:12px';panel.prepend(notice)}
-  notice.textContent='다른 브라우저 탭에서 Audit 점검항목 기준정보가 변경되었습니다. 작성 중인 내용을 저장하거나 화면을 다시 열어 최신 기준을 확인해 주세요.';
+  notice.textContent='다른 브라우저 탭에서 Audit 점검항목 기준정보가 변경되었습니다. 현재 입력은 유지됩니다. 최신 원천을 불러오면 작성 중인 입력이 사라집니다.';
+  const reload=document.createElement('button');reload.type='button';reload.textContent='최신 기준정보 다시 읽기';reload.style.cssText='margin-left:12px;border:1px solid #cda979;border-radius:6px;background:#fff;color:#75501f;padding:5px 9px;cursor:pointer;font-weight:750';
+  reload.addEventListener('click',()=>{
+   if(!window.confirm('현재 저장되지 않은 Audit 점검항목 수정내용을 버리고 최신 기준정보를 불러오시겠습니까?'))return;
+   load();render();
+  });
+  notice.append(reload);
   return;
  }
  load();
