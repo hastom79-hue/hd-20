@@ -1,161 +1,233 @@
-/* HD-20 통합기준정보 V3 — canonical editors untouched; single, compact workspace.
-   2026-11-04. This replaces accumulated master workspace layout overrides. */
-#masterModal .masterInfoBox.hd20MasterWorkspaceReady{
- display:flex!important;flex-direction:column!important;grid-template:none!important;align-items:stretch!important;
- width:min(1390px,calc(100vw - 28px))!important;max-width:1390px!important;min-width:0!important;
- height:auto!important;max-height:calc(100dvh - 28px)!important;overflow-x:hidden!important;overflow-y:auto!important;
- margin:12px auto!important;padding:0!important;box-sizing:border-box!important;
- background:#f7f9fc!important;overscroll-behavior:contain;
+/* HD-20 Integrated Master V4 — 2026-11-04
+   Sidebar navigation + one canonical editor. No persistence, role or dashboard changes.
+   The original tab buttons remain functional but visually hidden only after V4 mounts. */
+html body #masterModal .masterInfoBox.hd20MasterWorkspaceV4{
+ display:grid!important;grid-template-columns:260px minmax(0,1fr)!important;
+ grid-auto-rows:min-content!important;align-items:start!important;
+ gap:0!important;width:min(1460px,calc(100vw - 28px))!important;
+ min-width:0!important;max-width:1460px!important;max-height:calc(100dvh - 28px)!important;
+ height:auto!important;margin:12px auto!important;padding:0!important;
+ overflow-x:hidden!important;overflow-y:auto!important;background:#f5f8fb!important;
+ box-sizing:border-box!important;overscroll-behavior:contain!important;
 }
-#masterModal .masterInfoBox.hd20MasterWorkspaceReady>*{flex-shrink:0!important;min-width:0!important}
-#masterModal .masterInfoBox.hd20MasterWorkspaceReady>.modalHead,
-#masterModal .masterInfoBox.hd20MasterWorkspaceReady>.masterTabs{display:none!important}
-#masterModal .masterInfoBox:not(.hd20MasterWorkspaceReady)>.masterTabs{
- display:grid!important;visibility:visible!important;position:relative!important;
- grid-template-columns:repeat(auto-fit,minmax(135px,1fr))!important;
- margin:12px 18px!important;
+html body #masterModal .masterInfoBox.hd20MasterWorkspaceV4>*{
+ min-width:0!important;box-sizing:border-box!important;
 }
-#masterModal .masterInfoBox.hd20MasterWorkspaceReady>#hd20MasterWorkspace{
- position:relative!important;top:auto!important;z-index:2!important;
- display:flex!important;flex-direction:column!important;gap:10px!important;
- width:100%!important;margin:0!important;padding:19px 24px 13px!important;box-sizing:border-box!important;
- background:#fff!important;border-bottom:1px solid #dce6ed!important;box-shadow:none!important;
- overflow:visible!important;grid-template:none!important;grid-template-areas:none!important;
+html body #masterModal .masterInfoBox.hd20MasterWorkspaceV4>.modalHead,
+html body #masterModal .masterInfoBox.hd20MasterWorkspaceV4>.masterTabs{
+ display:none!important;
 }
-#masterModal #hd20MasterWorkspace .hmTitle{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:15px!important}
-#masterModal #hd20MasterWorkspace .hmTitle>div:first-child{min-width:0!important}
-#masterModal #hd20MasterWorkspace .hmEyebrow{display:block!important;font-size:10px!important;font-weight:850!important;letter-spacing:.7px!important;color:#4480a4!important}
-#masterModal #hd20MasterWorkspace .hmTitle h2{font-size:22px!important;font-weight:850!important;letter-spacing:-.6px!important;color:#193d58!important;line-height:1.2!important;margin:3px 0 5px!important}
-#masterModal #hd20MasterWorkspace .hmTitle p{display:block!important;font-size:12px!important;color:#688195!important;margin:0!important;line-height:1.45!important}
-#masterModal #hd20MasterWorkspace .hmCounters{display:flex!important;gap:8px!important;align-items:center!important;flex-shrink:0!important}
-#masterModal #hd20MasterWorkspace .hmCounters button{
- display:inline-flex!important;align-items:center!important;justify-content:center!important;
- background:#fff!important;color:#31536c!important;border:1px solid #cbdce8!important;border-radius:8px!important;
- font-size:12px!important;font-weight:750!important;padding:8px 13px!important;min-height:36px!important;
- white-space:nowrap!important;cursor:pointer!important;
+html body #masterModal .masterInfoBox:not(.hd20MasterWorkspaceV4)>.masterTabs{
+ display:grid!important;grid-template-columns:repeat(auto-fit,minmax(120px,1fr))!important;
+ visibility:visible!important;margin:10px 18px!important;
 }
-#masterModal #hd20MasterWorkspace .hmCounters [data-hm-open-registry]{background:#eaf3f9!important;color:#1b638c!important}
-#masterModal #hd20MasterWorkspace .hmToolbar{
- display:grid!important;grid-template-columns:auto minmax(0,1fr) auto!important;
- gap:10px!important;align-items:center!important;padding:10px 12px!important;margin:3px 0 0!important;
- background:#f9fbfd!important;border:1px solid #e0e9ef!important;border-radius:9px!important;
+html body #masterModal .masterInfoBox.hd20MasterWorkspaceV4>#hd20MasterWorkspace{
+ display:flex!important;position:sticky!important;top:0!important;z-index:8!important;
+ grid-column:1!important;grid-row:1/span 40!important;align-self:start!important;
+ flex-direction:column!important;align-items:stretch!important;gap:12px!important;
+ width:100%!important;height:auto!important;max-height:calc(100dvh - 29px)!important;
+ overflow-x:hidden!important;overflow-y:auto!important;padding:21px 14px 20px!important;
+ margin:0!important;background:#fff!important;
+ border:0!important;border-right:1px solid #dfe8ef!important;
+ box-shadow:none!important;grid-template:none!important;grid-template-areas:none!important;
 }
-#masterModal #hd20MasterWorkspace .hmToolbar label{display:block!important;width:auto!important;color:#47677e!important;font-size:12px!important;font-weight:750!important}
-#masterModal #hd20MasterWorkspace #hmSearch{width:100%!important;max-width:none!important;min-width:0!important;height:36px!important;box-sizing:border-box!important;padding:0 12px!important;border:1px solid #c6d7e4!important;border-radius:7px!important;background:#fff!important;font-size:12.5px!important}
-#masterModal #hd20MasterWorkspace [data-hm-reset]{background:#fff!important;border:1px solid #c7d8e4!important;color:#315e7b!important;border-radius:7px!important;padding:0 12px!important;height:36px!important;font-size:12px!important;font-weight:700!important;cursor:pointer!important}
-#masterModal #hd20MasterWorkspace #hmSearch:focus-visible,
-#masterModal #hd20MasterWorkspace button:focus-visible,
-#masterModal #hd20MasterWorkspace .hmGroup>h3:focus-visible{outline:2px solid #4594c4!important;outline-offset:2px!important}
-#masterModal #hd20MasterWorkspace .hmGroups{
- display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;grid-template-rows:auto auto!important;
- gap:0 6px!important;width:100%!important;margin:4px 0 0!important;border-bottom:1px solid #e7edf2!important;
+html body #masterModal #hd20MasterWorkspace .hmTitle{
+ display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:12px!important;margin:0!important;
 }
-#masterModal #hd20MasterWorkspace .hmGroup{display:contents!important}
-#masterModal #hd20MasterWorkspace .hmGroup[hidden]{display:none!important}
-#masterModal #hd20MasterWorkspace .hmGroup>h3{
- grid-row:1!important;min-width:0!important;margin:0!important;padding:12px 7px!important;
- background:transparent!important;color:#617b8b!important;border:0!important;border-bottom:3px solid transparent!important;
- text-align:center!important;line-height:1.3!important;font-size:13px!important;font-weight:750!important;
- cursor:pointer!important;user-select:none!important;border-radius:7px 7px 0 0!important;
+html body #masterModal #hd20MasterWorkspace .hmTitle>div:first-child{min-width:0!important}
+html body #masterModal #hd20MasterWorkspace .hmEyebrow{
+ display:block!important;font-size:10px!important;font-weight:850!important;color:#4c82a0!important;letter-spacing:.8px!important;
 }
-#masterModal #hd20MasterWorkspace .hmGroup>h3:hover{background:#f2f7fa!important}
-#masterModal #hd20MasterWorkspace .hmGroup.hmActive>h3{background:#ebf5fc!important;color:#175d8b!important;border-bottom-color:#1c74af!important}
-#masterModal #hd20MasterWorkspace .hmGroup>.hmLinks{display:none!important;grid-row:2!important;grid-column:1/-1!important;min-height:0!important;gap:7px!important;padding:12px 0!important;flex-wrap:wrap!important;align-items:center!important;background:none!important}
-#masterModal #hd20MasterWorkspace .hmGroup.hmActive>.hmLinks{display:flex!important}
-#masterModal #hd20MasterWorkspace .hmLinks button{
- display:inline-flex!important;align-items:center!important;width:auto!important;border-radius:8px!important;
- padding:8px 13px!important;border:1px solid #cfdee9!important;background:white!important;color:#2d526f!important;
- font-size:12.5px!important;font-weight:750!important;cursor:pointer!important;box-shadow:none!important;white-space:nowrap!important;
+html body #masterModal #hd20MasterWorkspace .hmTitle h2{
+ font-size:20px!important;color:#153b57!important;line-height:1.2!important;letter-spacing:-.5px!important;
+ margin:4px 0 5px!important;white-space:normal!important;
 }
-#masterModal #hd20MasterWorkspace .hmLinks button strong{font-size:inherit!important;color:inherit!important}
-#masterModal #hd20MasterWorkspace .hmLinks button small{display:none!important}
-#masterModal #hd20MasterWorkspace .hmLinks button[hidden]{display:none!important}
-#masterModal #hd20MasterWorkspace .hmLinks button:hover{background:#f3f9fd!important;border-color:#8db8d3!important}
-#masterModal #hd20MasterWorkspace .hmLinks button.on{color:white!important;background:#1c689e!important;border-color:#1c689e!important}
-#masterModal #hd20MasterWorkspace .hmCurrent{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;padding:5px 0 0!important;margin:0!important;border:none!important}
-#masterModal #hd20MasterWorkspace .hmCurrent>div{display:flex!important;flex-direction:column!important;gap:3px!important}
-#masterModal #hd20MasterWorkspace .hmCurrent small{font-size:10px!important;font-weight:750!important;color:#8095a3!important}
-#masterModal #hd20MasterWorkspace .hmCurrent strong{font-size:16px!important;color:#204864!important}
-#masterModal #hd20MasterWorkspace .hmCurrent [data-hm-current-desc]{font-size:11px!important;color:#688294!important}
-#masterModal #hd20MasterWorkspace .hmCurrent [data-hm-count]{font-size:11px!important;white-space:nowrap!important;color:#8195a3!important}
-#masterModal .hmSearchEmpty{display:block;margin:9px 0 0;padding:11px 12px;border:1px solid #dce6ed;border-radius:8px;background:#fafcfe;color:#577287;font-size:12px}
-#masterModal .hmSearchEmpty[hidden]{display:none!important}
-/* Original editor containers remain the one source of truth; full width, not duplicated. */
-#masterModal .masterInfoBox.hd20MasterWorkspaceReady>#hd20IntegratedMasterFactors,
-#masterModal .masterInfoBox.hd20MasterWorkspaceReady>.imfPanel,
-#masterModal .masterInfoBox.hd20MasterWorkspaceReady>#hd20ThemeCatalogPanel,
-#masterModal .masterInfoBox.hd20MasterWorkspaceReady>#hd20OperatingPolicyPanel{
- width:100%!important;max-width:100%!important;min-width:0!important;
- padding:15px 24px 27px!important;box-sizing:border-box!important;
+html body #masterModal #hd20MasterWorkspace .hmTitle p{
+ display:block!important;font-size:11.5px!important;line-height:1.55!important;color:#6c8697!important;margin:0!important;
 }
-#masterModal .masterInfoBox.hd20MasterWorkspaceReady>#masterOrderPanel,
-#masterModal .masterInfoBox.hd20MasterWorkspaceReady>#masterTargetPanel{width:100%!important;padding:0 24px!important;box-sizing:border-box!important}
-#masterModal .masterInfoBox.hd20MasterWorkspaceReady>.modalFoot{padding:9px 24px 19px!important}
-#masterModal .masterInfoBox.hd20MasterWorkspaceReady #imfGovernance{margin:0 0 14px!important;box-shadow:none!important}
-#masterModal .masterInfoBox.hd20MasterWorkspaceReady #imfGovernance .imfGovTop,
-#masterModal .masterInfoBox.hd20MasterWorkspaceReady #imfGovernance .imfGovContext{display:none!important}
-/* Optional diagnostic drawer, outside primary editor workflow. */
-#masterModal .masterInfoBox.hd20MasterWorkspaceReady>.hmSourceRegistry{
- display:block!important;order:99!important;flex:0 0 auto!important;
- width:calc(100% - 48px)!important;min-width:0!important;margin:8px 24px 22px!important;
- border:1px solid #dae6ee!important;border-radius:10px!important;background:#f9fbfe!important;
- overflow:visible!important;
+html body #masterModal #hd20MasterWorkspace .hmCounters{
+ display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:7px!important;width:100%!important;
 }
-#masterModal .hmSourceRegistry>summary{display:list-item!important;cursor:pointer!important;padding:13px 15px!important;font-size:13px!important;font-weight:800!important;color:#27536f!important}
-#masterModal .hmSourceRegistry>summary [data-hm-source-total]{font-size:11px!important;margin-left:8px!important;color:#527e97!important}
-#masterModal .hmSourceRegistry>summary small{font-size:11px!important;font-weight:400!important;margin-left:10px!important;color:#6c8796!important}
-#masterModal .hmSourceBody{padding:0 14px 14px!important}
-#masterModal .hmSourceBody>p{font-size:11.5px!important;line-height:1.55!important;color:#677f90!important;margin:3px 0 11px!important}
-#masterModal .hmSourceFilters{display:flex!important;align-items:end!important;gap:9px!important;flex-wrap:wrap!important;margin-bottom:11px!important}
-#masterModal .hmSourceFilters label{display:flex!important;flex-direction:column!important;gap:4px!important;flex:1 1 180px!important;font-size:11px!important;font-weight:750!important;color:#526d80!important}
-#masterModal .hmSourceFilters select,#masterModal .hmSourceFilters input{height:35px!important;width:100%!important;max-width:100%!important;box-sizing:border-box!important;background:white!important;border:1px solid #c7d9e6!important;border-radius:7px!important;padding:6px 9px!important}
-#masterModal .hmSourceFilters button,#masterModal .hmSourceRow button,#masterModal .hmAuditRow button{background:white!important;border:1px solid #b8cfde!important;color:#245e84!important;border-radius:7px!important;font-size:11px!important;font-weight:750!important;padding:7px 10px!important;cursor:pointer!important;white-space:nowrap!important}
-#masterModal .hmSourceRows{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
-#masterModal .hmSourceRow{display:grid!important;grid-template-columns:minmax(0,1fr) auto auto!important;gap:9px!important;align-items:center!important;min-width:0!important;border:1px solid #e1e9f0!important;border-radius:8px!important;background:white!important;padding:10px!important}
-#masterModal .hmSourceInfo{display:flex!important;flex-direction:column!important;gap:4px!important;min-width:0!important}
-#masterModal .hmSourceInfo strong{font-size:12px!important;color:#254b62!important}
-#masterModal .hmSourceInfo small{font-size:10.5px!important;color:#6c8696!important;line-height:1.35!important;overflow-wrap:anywhere!important}
-#masterModal .hmSourceReady,#masterModal .hmSourceVerify{font-size:10px!important;white-space:nowrap!important;border-radius:6px!important;padding:5px 7px!important}
-#masterModal .hmSourceReady{background:#e9f4ef!important;color:#276c50!important}
-#masterModal .hmSourceVerify{background:#fff4e0!important;color:#916222!important}
-#masterModal [data-hm-source-result]{padding:10px 2px!important;color:#648094!important;font-size:11px!important}
-#masterModal .hmSourceIssues{display:grid!important;gap:7px!important}
-#masterModal .hmSourceIssues:empty{display:none!important}
-#masterModal .hmSourceIssue{display:flex!important;justify-content:space-between!important;gap:10px!important;align-items:center!important;padding:10px!important;background:#fff8ee!important;border:1px solid #eddbba!important;border-radius:8px!important;font-size:11px!important;color:#765626!important}
-#masterModal .hmSourceIssue span{flex:1!important;overflow-wrap:anywhere!important}
-#masterModal .hmSourceIssue button{border:1px solid #d7bc8d!important;border-radius:6px!important;background:white!important;color:#775626!important;padding:6px 9px!important;cursor:pointer!important}
-#masterModal .hmAudit{display:block!important;margin:12px 0 0!important;padding:4px 10px!important;background:#fff!important;border:1px solid #e2eaf0!important;border-radius:9px!important}
-#masterModal .hmAudit>summary{display:list-item!important;padding:10px 8px!important;cursor:pointer!important;color:#355b76!important;font-size:12px!important;font-weight:750!important}
-#masterModal .hmAuditTop{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;padding:9px!important}
-#masterModal .hmAuditTop strong{font-size:12px!important;color:#294e68!important}
-#masterModal .hmAuditTop p{font-size:11px!important;color:#678092!important;margin:4px 0 0!important}
-#masterModal .hmAuditDetails{padding:7px!important}
-#masterModal .hmAuditRows{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important}
-#masterModal .hmAuditRow{display:grid!important;grid-template-columns:auto minmax(0,1fr) auto!important;align-items:center!important;gap:8px!important;background:#fff!important;border:1px solid #e0e9ef!important;border-radius:8px!important;padding:9px!important}
-#masterModal .hmAuditInfo{min-width:0!important;overflow-wrap:anywhere!important}
-#masterModal .hmAuditInfo strong{font-size:11.5px!important;color:#31546a!important}
-#masterModal .hmAuditInfo small{display:block!important;font-size:10.5px!important;color:#79909e!important;margin-top:3px!important}
-#masterModal .hmAuditGood,#masterModal .hmAuditWarn{font-size:10px!important;white-space:nowrap!important;padding:4px 6px!important;border-radius:6px!important}
-#masterModal .hmAuditGood{background:#e9f4ef!important;color:#216e4d!important}
-#masterModal .hmAuditWarn{background:#fff0dc!important;color:#8f6224!important}
-#masterModal .hmAudit:not([open])>.hmAuditTop,#masterModal .hmAudit:not([open])>.hmAuditDetails{display:none!important}
-@media(max-width:1070px){#masterModal .hmSourceRows,#masterModal .hmAuditRows{grid-template-columns:1fr!important}}
-@media(max-width:740px){
- #masterModal .masterInfoBox.hd20MasterWorkspaceReady{width:calc(100vw - 12px)!important;margin:6px auto!important;max-height:calc(100dvh - 12px)!important}
- #masterModal .masterInfoBox.hd20MasterWorkspaceReady>#hd20MasterWorkspace{padding:14px 13px 11px!important;gap:8px!important}
- #masterModal #hd20MasterWorkspace .hmTitle h2{font-size:18px!important}
- #masterModal #hd20MasterWorkspace .hmTitle p{display:none!important}
- #masterModal #hd20MasterWorkspace .hmCounters{gap:5px!important}
- #masterModal #hd20MasterWorkspace .hmCounters button{padding:6px 8px!important;font-size:11px!important;min-height:32px!important}
- #masterModal #hd20MasterWorkspace .hmToolbar{grid-template-columns:minmax(0,1fr) auto!important;gap:7px!important}
- #masterModal #hd20MasterWorkspace .hmToolbar label{display:none!important}
- #masterModal #hd20MasterWorkspace .hmGroup>h3{font-size:11.5px!important;padding:10px 4px!important}
- #masterModal #hd20MasterWorkspace .hmGroup>.hmLinks{flex-wrap:nowrap!important;overflow-x:auto!important}
- #masterModal #hd20MasterWorkspace .hmCurrent [data-hm-count]{display:none!important}
- #masterModal .masterInfoBox.hd20MasterWorkspaceReady>.hmSourceRegistry{width:calc(100% - 26px)!important;margin:8px 13px 16px!important}
- #masterModal .masterInfoBox.hd20MasterWorkspaceReady>#hd20IntegratedMasterFactors,#masterModal .masterInfoBox.hd20MasterWorkspaceReady>.imfPanel{padding:12px 13px!important}
- #masterModal .hmSourceRow{grid-template-columns:minmax(0,1fr) auto!important}
- #masterModal .hmSourceRow button{grid-column:2!important}
- #masterModal .hmAuditRow{grid-template-columns:auto minmax(0,1fr)!important}
- #masterModal .hmAuditRow button{grid-column:2!important;justify-self:start!important}
+html body #masterModal #hd20MasterWorkspace .hmCounters button{
+ display:inline-flex!important;justify-content:center!important;align-items:center!important;
+ min-height:34px!important;padding:7px 9px!important;border:1px solid #cbdce6!important;border-radius:8px!important;
+ background:#fff!important;color:#2b526c!important;font-size:11.5px!important;font-weight:800!important;
+ cursor:pointer!important;white-space:nowrap!important;
+}
+html body #masterModal #hd20MasterWorkspace [data-hm-open-registry]{
+ flex:1!important;background:#e8f3fa!important;color:#145c87!important;border-color:#bcd5e7!important;
+}
+html body #masterModal #hd20MasterWorkspace .hmToolbar{
+ display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:6px!important;
+ padding:12px!important;margin:1px 0 0!important;background:#f8fbfd!important;
+ border:1px solid #e1eaf1!important;border-radius:9px!important;
+}
+html body #masterModal #hd20MasterWorkspace .hmToolbar label{
+ display:block!important;font-size:11.5px!important;color:#4e7087!important;font-weight:800!important;
+}
+html body #masterModal #hd20MasterWorkspace #hmSearch{
+ display:block!important;width:100%!important;min-width:0!important;max-width:none!important;height:36px!important;
+ border:1px solid #cbdce7!important;border-radius:7px!important;background:white!important;
+ padding:0 10px!important;font-size:12px!important;box-sizing:border-box!important;grid-area:auto!important;
+}
+html body #masterModal #hd20MasterWorkspace [data-hm-reset]{
+ align-self:flex-end!important;background:none!important;border:0!important;border-radius:4px!important;
+ font-size:11px!important;color:#3a78a0!important;font-weight:800!important;cursor:pointer!important;padding:3px!important;
+ height:auto!important;
+}
+html body #masterModal #hd20MasterWorkspace .hmGroups{
+ display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:11px!important;
+ width:100%!important;margin:0!important;padding:0!important;border:0!important;
+ grid-template:none!important;grid-area:auto!important;
+}
+html body #masterModal #hd20MasterWorkspace .hmGroup{
+ display:block!important;min-width:0!important;padding:0!important;margin:0!important;
+ border:1px solid #e2e9ef!important;border-radius:10px!important;background:#fff!important;
+ overflow:hidden!important;
+}
+html body #masterModal #hd20MasterWorkspace .hmGroup[hidden]{display:none!important}
+html body #masterModal #hd20MasterWorkspace .hmGroup>h3{
+ display:block!important;width:100%!important;box-sizing:border-box!important;
+ margin:0!important;padding:11px 12px!important;background:#f4f8fb!important;
+ color:#355c74!important;border:0!important;border-radius:0!important;
+ font-size:12.5px!important;line-height:1.35!important;font-weight:850!important;
+ text-align:left!important;cursor:pointer!important;grid-row:auto!important;
+}
+html body #masterModal #hd20MasterWorkspace .hmGroup.hmActive>h3{
+ background:#e4f1f9!important;color:#165f90!important;border-left:3px solid #1778b2!important;padding-left:9px!important;
+}
+html body #masterModal #hd20MasterWorkspace .hmGroup>.hmLinks{
+ display:none!important;flex-direction:column!important;align-items:stretch!important;
+ width:100%!important;gap:2px!important;padding:7px!important;min-height:0!important;
+ margin:0!important;grid-row:auto!important;grid-column:auto!important;
+ overflow:visible!important;box-sizing:border-box!important;
+}
+html body #masterModal #hd20MasterWorkspace .hmGroup.hmActive>.hmLinks{display:flex!important}
+html body #masterModal #hd20MasterWorkspace .hmLinks button{
+ display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:center!important;
+ gap:3px!important;width:100%!important;min-height:42px!important;padding:8px 10px!important;
+ border:1px solid transparent!important;border-radius:7px!important;
+ background:#fff!important;color:#385f78!important;font-size:12px!important;text-align:left!important;
+ box-shadow:none!important;white-space:normal!important;cursor:pointer!important;
+}
+html body #masterModal #hd20MasterWorkspace .hmLinks button:hover{background:#f1f8fc!important}
+html body #masterModal #hd20MasterWorkspace .hmLinks button.on{
+ background:#e5f3fd!important;border-color:#b3d5eb!important;color:#115e90!important;
+ box-shadow:inset 3px 0 #217fb9!important;
+}
+html body #masterModal #hd20MasterWorkspace .hmLinks button strong{color:inherit!important;font-size:12.5px!important;font-weight:850!important}
+html body #masterModal #hd20MasterWorkspace .hmLinks button small{
+ display:block!important;color:#71899a!important;line-height:1.3!important;font-size:10.5px!important;font-weight:400!important;
+}
+html body #masterModal #hd20MasterWorkspace .hmLinks button[hidden]{display:none!important}
+html body #masterModal #hd20MasterWorkspace .hmCurrent{
+ display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:5px!important;
+ background:#f4f8fb!important;border:1px solid #e2eaf1!important;border-radius:9px!important;
+ margin:0!important;padding:11px 12px!important;min-width:0!important;
+}
+html body #masterModal #hd20MasterWorkspace .hmCurrent>div{display:flex!important;flex-direction:column!important;gap:3px!important}
+html body #masterModal #hd20MasterWorkspace .hmCurrent small{font-size:10px!important;color:#69869a!important}
+html body #masterModal #hd20MasterWorkspace .hmCurrent strong{font-size:13px!important;color:#184e75!important}
+html body #masterModal #hd20MasterWorkspace .hmCurrent [data-hm-current-desc]{
+ display:block!important;line-height:1.4!important;font-size:11px!important;color:#6d8596!important;
+}
+html body #masterModal #hd20MasterWorkspace .hmCurrent [data-hm-count]{
+ display:block!important;font-size:11px!important;color:#7891a2!important;grid-area:auto!important;
+}
+html body #masterModal .hmSearchEmpty{padding:10px!important;font-size:11.5px!important;color:#607b8d!important}
+html body #masterModal .hmSearchEmpty[hidden]{display:none!important}
+/* Right editing area uses the ORIGINAL editor, not a copy. */
+html body #masterModal .masterInfoBox.hd20MasterWorkspaceV4>#hd20IntegratedMasterFactors,
+html body #masterModal .masterInfoBox.hd20MasterWorkspaceV4>#hd20ThemeCatalogPanel,
+html body #masterModal .masterInfoBox.hd20MasterWorkspaceV4>#hd20OperatingPolicyPanel,
+html body #masterModal .masterInfoBox.hd20MasterWorkspaceV4>.imfPanel,
+html body #masterModal .masterInfoBox.hd20MasterWorkspaceV4>#masterOrderPanel,
+html body #masterModal .masterInfoBox.hd20MasterWorkspaceV4>#masterTargetPanel,
+html body #masterModal .masterInfoBox.hd20MasterWorkspaceV4>.modalFoot{
+ grid-column:2!important;grid-row:auto!important;min-width:0!important;
+ width:100%!important;max-width:100%!important;box-sizing:border-box!important;
+ margin:0!important;padding:19px 22px 28px!important;
+}
+html body #masterModal .masterInfoBox.hd20MasterWorkspaceV4>#hd20IntegratedMasterFactors{
+ background:#fff!important;min-height:360px!important;
+}
+html body #masterModal .masterInfoBox.hd20MasterWorkspaceV4 .imfPanel{max-width:100%!important;min-width:0!important}
+html body #masterModal .masterInfoBox.hd20MasterWorkspaceV4 #imfGovernance{
+ display:none!important;
+}
+html body #masterModal .masterInfoBox.hd20MasterWorkspaceV4>.hmSourceRegistry{
+ grid-column:1/-1!important;grid-row:auto!important;order:99!important;
+ width:calc(100% - 36px)!important;margin:12px 18px 20px!important;padding:0!important;
+ border:1px solid #d9e6ef!important;border-radius:10px!important;background:#f9fbfe!important;
+ min-width:0!important;overflow:hidden!important;
+}
+html body #masterModal .hmSourceRegistry>summary{
+ display:list-item!important;cursor:pointer!important;padding:13px 16px!important;
+ color:#255b7c!important;font-size:12.5px!important;font-weight:850!important;
+}
+html body #masterModal .hmSourceRegistry>summary small{font-size:11px!important;font-weight:400!important;color:#7790a0!important;margin-left:10px!important}
+html body #masterModal .hmSourceBody{padding:0 15px 15px!important}
+html body #masterModal .hmSourceBody>p{color:#718697!important;font-size:11.5px!important}
+html body #masterModal .hmSourceFilters{display:flex!important;align-items:end!important;flex-wrap:wrap!important;gap:10px!important;margin-bottom:11px!important}
+html body #masterModal .hmSourceFilters label{display:flex!important;flex:1 1 180px!important;flex-direction:column!important;gap:5px!important;font-size:11px!important}
+html body #masterModal .hmSourceFilters input,html body #masterModal .hmSourceFilters select{width:100%!important;min-height:34px!important;box-sizing:border-box!important}
+html body #masterModal .hmSourceFilters button,html body #masterModal .hmSourceRow button,html body #masterModal .hmAuditRow button{
+ border:1px solid #b9d1e1!important;border-radius:7px!important;padding:7px 11px!important;
+ background:#fff!important;color:#205e85!important;font-size:11px!important;font-weight:750!important;cursor:pointer!important;
+}
+html body #masterModal .hmSourceRows{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+html body #masterModal .hmSourceRow{
+ display:grid!important;grid-template-columns:minmax(0,1fr) auto auto!important;gap:10px!important;
+ align-items:center!important;padding:10px!important;border:1px solid #e1e9ef!important;border-radius:8px!important;background:#fff!important;
+}
+html body #masterModal .hmSourceInfo{display:flex!important;flex-direction:column!important;gap:4px!important;min-width:0!important}
+html body #masterModal .hmSourceInfo strong{color:#28516c!important;font-size:12px!important}
+html body #masterModal .hmSourceInfo small{color:#728c9d!important;font-size:10.5px!important;overflow-wrap:anywhere!important}
+html body #masterModal .hmSourceReady,html body #masterModal .hmSourceVerify{font-size:10px!important;white-space:nowrap!important;padding:5px 8px!important;border-radius:6px!important}
+html body #masterModal .hmSourceReady{color:#1c7252!important;background:#e9f6ef!important}
+html body #masterModal .hmSourceVerify{color:#946521!important;background:#fff5e3!important}
+html body #masterModal [data-hm-source-result]{font-size:11px!important;color:#688195!important;padding:9px 0!important}
+html body #masterModal .hmSourceIssues{display:grid!important;gap:6px!important}
+html body #masterModal .hmSourceIssues:empty{display:none!important}
+html body #masterModal .hmSourceIssue{display:flex!important;justify-content:space-between!important;align-items:center!important;gap:10px!important;padding:10px!important;background:#fff8ee!important;border:1px solid #eddbbd!important;border-radius:8px!important}
+html body #masterModal .hmSourceIssue span{font-size:11px!important;flex:1!important;overflow-wrap:anywhere!important}
+html body #masterModal .hmSourceIssue button{border:1px solid #d9bb8c!important;border-radius:7px!important;padding:6px 9px!important;background:white!important}
+html body #masterModal .hmAudit{display:block!important;margin:12px 0 0!important;padding:0!important;border:1px solid #e1e9ef!important;border-radius:9px!important;background:white!important}
+html body #masterModal .hmAudit>summary{display:list-item!important;padding:11px!important;cursor:pointer!important;font-size:12px!important}
+html body #masterModal .hmAudit:not([open])>.hmAuditTop,html body #masterModal .hmAudit:not([open])>.hmAuditDetails{display:none!important}
+html body #masterModal .hmAuditTop{display:flex!important;justify-content:space-between!important;gap:10px!important;padding:9px!important}
+html body #masterModal .hmAuditTop p{font-size:11px!important;margin:4px 0 0!important}
+html body #masterModal .hmAuditRows{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;padding:8px!important}
+html body #masterModal .hmAuditRow{display:grid!important;grid-template-columns:auto minmax(0,1fr) auto!important;gap:9px!important;align-items:center!important;padding:9px!important;border:1px solid #e0e9ef!important;border-radius:8px!important}
+html body #masterModal .hmAuditInfo{min-width:0!important;overflow-wrap:anywhere!important}
+html body #masterModal .hmAuditInfo strong{font-size:11.5px!important}
+html body #masterModal .hmAuditInfo small{display:block!important;color:#8297a5!important;font-size:10px!important}
+html body #masterModal .hmAuditGood,html body #masterModal .hmAuditWarn{font-size:10px!important;border-radius:6px!important;padding:5px 8px!important;white-space:nowrap!important}
+html body #masterModal .hmAuditGood{background:#e9f4ee!important;color:#247750!important}
+html body #masterModal .hmAuditWarn{background:#fff1dc!important;color:#986823!important}
+@media(max-width:1080px){
+ html body #masterModal .masterInfoBox.hd20MasterWorkspaceV4{grid-template-columns:220px minmax(0,1fr)!important}
+ html body #masterModal .hmSourceRows,html body #masterModal .hmAuditRows{grid-template-columns:1fr!important}
+}
+@media(max-width:750px){
+ html body #masterModal .masterInfoBox.hd20MasterWorkspaceV4{
+  display:flex!important;flex-direction:column!important;
+  width:calc(100vw - 12px)!important;max-height:calc(100dvh - 12px)!important;margin:6px auto!important;
+ }
+ html body #masterModal .masterInfoBox.hd20MasterWorkspaceV4>#hd20MasterWorkspace{
+  position:relative!important;top:auto!important;width:100%!important;max-height:none!important;
+  padding:14px!important;border-right:0!important;border-bottom:1px solid #dce7ef!important;
+ }
+ html body #masterModal #hd20MasterWorkspace .hmGroups{gap:5px!important}
+ html body #masterModal #hd20MasterWorkspace .hmTitle p{display:none!important}
+ html body #masterModal #hd20MasterWorkspace .hmGroup>.hmLinks{max-height:210px!important;overflow-y:auto!important}
+ html body #masterModal .masterInfoBox.hd20MasterWorkspaceV4>#hd20IntegratedMasterFactors,
+ html body #masterModal .masterInfoBox.hd20MasterWorkspaceV4>#hd20ThemeCatalogPanel,
+ html body #masterModal .masterInfoBox.hd20MasterWorkspaceV4>#hd20OperatingPolicyPanel,
+ html body #masterModal .masterInfoBox.hd20MasterWorkspaceV4>.imfPanel{
+  width:100%!important;padding:14px!important;
+ }
+ html body #masterModal .masterInfoBox.hd20MasterWorkspaceV4>.hmSourceRegistry{width:calc(100% - 28px)!important;margin:10px 14px!important}
+ html body #masterModal .hmSourceRow{grid-template-columns:minmax(0,1fr) auto!important}
+ html body #masterModal .hmSourceRow button{grid-column:2!important}
 }
