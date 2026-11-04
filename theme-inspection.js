@@ -424,8 +424,8 @@ function updateProgress(){
   }).join(''):'<div class="themeFindingEmpty">현재 미흡 판정된 항목이 없습니다.</div>';
   findings.querySelectorAll('[data-finding-key]').forEach(box=>{
    const key=box.dataset.findingKey;
-   box.querySelector('[data-finding-note]')?.addEventListener('input',e=>{(drafts[key]||(drafts[key]={})).note=e.target.value});
-   box.querySelector('[data-finding-photo]')?.addEventListener('change',e=>{(drafts[key]||(drafts[key]={})).photoFile=e.target.files?.[0]||null;const el=box.querySelector('small');if(el)el.textContent=drafts[key].photoFile?'선택됨: '+drafts[key].photoFile.name:'항목별 사진 미선택 시 공통 현장사진 적용'});
+   box.querySelector('[data-finding-note]')?.addEventListener('input',e=>{(drafts[key]||(drafts[key]={})).note=e.target.value;host.dataset.themeAuditDirty='1'});
+   box.querySelector('[data-finding-photo]')?.addEventListener('change',e=>{(drafts[key]||(drafts[key]={})).photoFile=e.target.files?.[0]||null;host.dataset.themeAuditDirty='1';const el=box.querySelector('small');if(el)el.textContent=drafts[key].photoFile?'선택됨: '+drafts[key].photoFile.name:'항목별 사진 미선택 시 공통 현장사진 적용'});
   });
  }
  const tabs=$$('#themeThemeTabs button[data-focus-theme]',host);
