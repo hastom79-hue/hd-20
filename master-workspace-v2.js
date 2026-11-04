@@ -10,6 +10,65 @@ if(root.querySelector('#hd20MasterWorkspace')){
 }const required=['integrated-team','integrated-target','integrated-source','integrated-discovery','integrated-factor','integrated-workplace','integrated-theme','policy','integrated-admins','integrated-mail'];if(!required.every(k=>tabs.querySelector('[data-master-tab="'+k+'"]')))return false;
 const ws=document.createElement('section');ws.id='hd20MasterWorkspace';ws.innerHTML='<div class="hmTitle"><div><span class="hmEyebrow">HD-20 · 기준정보 관리</span><h2>통합기준정보</h2><p>관리 항목을 선택해 수정하세요. 기존 저장·권한·데이터 연계 기능을 그대로 사용합니다.</p></div><div class="hmCounters"><span data-hm-count>기준정보 불러오는 중</span><button type="button" data-hm-close aria-label="통합기준정보 닫기">닫기 ×</button></div></div><div class="hmToolbar"><label for="hmSearch">기준정보 검색</label><input id="hmSearch" type="search" placeholder="팀, 작업장, Audit, 권한, 메일 등 검색" autocomplete="off"><button type="button" data-hm-reset>전체 보기</button></div><div class="hmGroups" data-hm-groups></div><div class="hmCurrent" aria-live="polite"><strong data-hm-current>관리 항목을 선택하세요</strong><span>아래에서 기존 기준정보를 직접 편집·저장합니다.</span></div><details class="hmAudit" aria-label="기준정보·타 탭 연동점검"><summary class="hmAuditSummary">연동상태 확인 <span data-hm-audit-summary>점검 준비</span><small>필요 시 펼쳐서 항목별 설정을 확인합니다.</small></summary><div class="hmAuditTop"><div><strong>기준정보 연동 점검</strong><p>Audit · 테마점검 · 개선요청 · TO-BE · 유지점검 · 알림을 읽기 전용으로 확인합니다.</p></div><div class="hmAuditActions"><button type="button" data-hm-audit-refresh>다시 점검</button></div></div><div class="hmAuditDetails"><div class="hmAuditRows" data-hm-audit-rows></div></div></details>';
 box.insertBefore(ws,tabs);
+/* Unified ownership inventory: existing canonical editors are reused, never duplicated.
+   Every operational tab's sources are discoverable from the master workspace. */
+const SOURCE_MAP=[
+ {area:'자율개선조회',name:'생산팀·인원·팀장',key:'gmes5s_team_org_master_v1',editor:'integrated-team',api:'HD20ProductionTeamMaster'},
+ {area:'자율개선조회',name:'팀별 개선목표',key:'gmes5s_team_targets_v1',editor:'integrated-target'},
+ {area:'자율개선조회',name:'발굴유형·업무분류',key:'gmes5s_work_factor_master_v1',editor:'integrated-factor'},
+ {area:'개선요청조회',name:'요청출처·발굴유형',key:'gmes5s_request_source_order',editor:'integrated-discovery'},
+ {area:'개선요청조회',name:'작업장·세부위치',key:'hd20UlsanWorkplaceMasterV1',editor:'integrated-workplace',api:'HD20WorkplaceMaster'},
+ {area:'개선조치·완료관리',name:'운영단계·상태·우선순위',key:'gmes5s_work_factor_master_v1',editor:'integrated-factor'},
+ {area:'개선조치·완료관리',name:'조치기한·재점검 정책',key:'hd20OperatingPolicyV1',editor:'policy',api:'HD20PolicyConfig'},
+ {area:'Audit점검',name:'Audit 점검항목 원천',key:'hd20AuditChecklistV1',api:'HD20_GLOBAL_AUDIT_MASTER',targetArea:'audit',note:'Audit 점검항목의 원본 편집 기능과 연결'},
+ {area:'Audit점검',name:'점검·표본 운영기준',key:'hd20OperatingPolicyV1',editor:'policy',api:'HD20PolicyConfig'},
+ {area:'테마점검',name:'5S 상위·세부테마·판정항목',key:'hd20ThemeCatalogMasterV1',editor:'integrated-theme',api:'HD20ThemeMaster'},
+ {area:'테마점검',name:'5S모듈·생산팀장 점검계획',key:'hd20ThemeAuditPlansV1',targetArea:'theme',note:'점검 주체·팀·라인·월별 계획'},
+ {area:'테마점검',name:'점검 주체·생산팀장 이메일',key:'hd20TeamLeaderMasterV1',editor:'integrated-team'},
+ {area:'유지점검',name:'유지점검 주기·표본·기한',key:'hd20OperatingPolicyV1',editor:'policy',api:'HD20PolicyConfig'},
+ {area:'유지점검',name:'5S모듈 점검 수신자',key:'hd20Retention5SModuleRecipientsV1',targetArea:'audit',note:'유지점검 관리화면에서 운영'},
+ {area:'고도화',name:'고도화 3대요건 판정기준',api:'HD20DirectCriteria',targetArea:'advancement',note:'공통 판정 모듈을 사용; 별도 중복 마스터 생성 금지'},
+ {area:'고도화',name:'생산팀 기준정보·인당 실적',key:'gmes5s_team_org_master_v1',editor:'integrated-team'},
+ {area:'공통·시스템',name:'마스터 관리자',key:'hd20MasterAdminEmailsV1',editor:'integrated-admins',api:'HD20MasterAccess'},
+ {area:'공통·시스템',name:'메일링 운영정보',key:'gmes5s_mailing_master_v1',editor:'integrated-mail'}
+];
+const registry=document.createElement('details');registry.className='hmSourceRegistry';
+registry.innerHTML='<summary>전체 업무탭 기준정보 연결 맵 <span data-hm-source-total></span><small>원천 저장소·관리 위치·연동 여부 확인</small></summary><div class="hmSourceBody"><p>각 업무탭의 기준정보는 원본 저장소를 공통 참조합니다. 이 화면에서 관리 가능한 항목은 해당 편집기로 이동하며, 업무 중 생성되는 계획·점검·개선 이력은 원래 업무탭에서 관리합니다.</p><div class="hmSourceFilters"><label>업무영역 <select data-hm-source-area><option value="">전체 업무탭</option></select></label><label>기준정보 검색 <input type="search" data-hm-source-query placeholder="원천·업무명·기준정보"></label><button type="button" data-hm-source-refresh>연결 확인</button></div><div data-hm-source-rows class="hmSourceRows"></div><div data-hm-source-result aria-live="polite"></div></div>';
+ws.appendChild(registry);
+const areaSelect=registry.querySelector('[data-hm-source-area]');
+[...new Set(SOURCE_MAP.map(x=>x.area))].forEach(area=>{const opt=document.createElement('option');opt.value=area;opt.textContent=area;areaSelect.appendChild(opt)});
+function sourceReady(item){
+ let saved=false;try{saved=localStorage.getItem(item.key)!==null}catch{}
+ const api=item.api&&window[item.api]!=null;
+ return {saved,api:!!api};
+}
+function refreshSourceRegistry(){
+ const query=(registry.querySelector('[data-hm-source-query]').value||'').trim().toLocaleLowerCase(),area=areaSelect.value;
+ const list=SOURCE_MAP.filter(x=>(!area||x.area===area)&&(!query||[x.area,x.name,x.key,x.note].join(' ').toLocaleLowerCase().includes(query)));
+ const wrap=registry.querySelector('[data-hm-source-rows]');wrap.replaceChildren();
+ let ready=0;
+ for(const item of list){
+  const state=sourceReady(item);const present=state.saved||state.api;if(present)ready++;
+  const row=document.createElement('div');row.className='hmSourceRow';
+  const info=document.createElement('div');info.className='hmSourceInfo';
+  const title=document.createElement('strong');title.textContent=item.name;
+  const desc=document.createElement('small');desc.textContent=item.area+' · '+(item.key||item.api)+' · '+(item.note||'공통 기준정보 원천');
+  info.append(title,desc);
+  const status=document.createElement('span');status.className=present?'hmSourceReady':'hmSourceVerify';status.textContent=state.saved?'저장정보 확인':state.api?'공통모듈 연결':'설정·연동 확인 필요';
+  const btn=document.createElement('button');btn.type='button';btn.textContent=item.editor?'기준정보 편집':'업무탭 열기';
+  btn.addEventListener('click',()=>{if(item.editor){openMasterTarget(item.editor)}else if(window.HD20_NAV?.go){document.querySelector('#masterModal [data-hm-close]')?.click();window.HD20_NAV.go(item.targetArea)}else alert('해당 업무탭을 직접 선택하여 확인해 주세요.')});
+  row.append(info,status,btn);wrap.appendChild(row);
+ }
+ registry.querySelector('[data-hm-source-total]').textContent=SOURCE_MAP.length+'개 원천';
+ registry.querySelector('[data-hm-source-result]').textContent='표시 '+list.length+'개 · 저장/모듈 연결 확인 '+ready+'개 · 확인 필요 '+(list.length-ready)+'개. 미저장 원천은 데이터 부재일 수 있으므로 누락으로 단정하지 않습니다.';
+}
+areaSelect.addEventListener('change',refreshSourceRegistry);
+registry.querySelector('[data-hm-source-query]').addEventListener('input',refreshSourceRegistry);
+registry.querySelector('[data-hm-source-refresh]').addEventListener('click',()=>{auditMaster();refreshSourceRegistry()});
+registry.addEventListener('toggle',()=>{if(registry.open)refreshSourceRegistry()});
+['hd20-team-master-updated','hd20-theme-master-updated','hd20-policy-updated','hd20-master-factors-updated','hd20-action-updated','hd20-audit-updated','hd20-theme-audit-updated'].forEach(event=>window.addEventListener(event,()=>{if(registry.open)refreshSourceRegistry()}));
+window.addEventListener('storage',()=>{if(registry.open)refreshSourceRegistry()});
+refreshSourceRegistry();
 // Keep a working close control even when legacy .modalHead is hidden by layout CSS.
 ws.querySelector('[data-hm-close]').addEventListener('click',()=>{const close=root.querySelector('#closeMaster');if(close)close.click();else{root.classList.remove('on');root.setAttribute('aria-hidden','true')}});
 
