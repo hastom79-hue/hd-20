@@ -252,7 +252,17 @@ function hasUnsavedThemeAudit(host){
  !!host?.querySelector('#themeAuditPhoto')?.files?.length;
 }
 function confirmThemeNavigation(host){
- return !hasUnsavedThemeAudit(host)||window.confirm('저장하지 않은 현장점검 판정·메모·사진이 있습니다. 이동하면 입력내용이 사라집니다. 계속하시겠습니까?');
+ if(!hasUnsavedThemeAudit(host))return true;
+ if(!window.confirm('저장하지 않은 현장점검 판정·메모·사진이 있습니다. 이동하면 입력내용이 사라집니다. 계속하시겠습니까?'))return false;
+ // Abandoning the draft must release the pending master refresh; otherwise old
+ // checklist data stays loaded even after the user explicitly leaves the editor.
+ host.dataset.themeAuditDirty='0';
+ host._themeFindingDrafts={};
+ const auditor=host.querySelector('#themeAuditAuditor'),memo=host.querySelector('#themeAuditMemo'),photo=host.querySelector('#themeAuditPhoto');
+ if(auditor)auditor.value='';
+ if(memo)memo.value='';
+ if(photo)photo.value='';
+ return true;
 }
 function render(){
  const host=document.getElementById('awTheme');if(!host)return;
