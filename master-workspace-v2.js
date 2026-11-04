@@ -181,7 +181,7 @@ function auditMaster(){
   {name:'팀별 통보 이메일',area:'개선요청 등록 → 해당 팀 알림',ok:teamNames.length>0&&!teamMissing.length,msg:teamNames.length?(teamMissing.length?safeCount(teamMissing.length)+'개 팀 이메일 미설정':'전체 생산팀 이메일 형식 확인'):'팀 정보 확인 필요',target:'integrated-team'},
   {name:'작업장·업무분류',area:'자율개선 · 테마점검 · Audit',ok:!!window.HD20WorkplaceMaster||Object.keys(masterFactors||{}).length>0,msg:window.HD20WorkplaceMaster?'작업장 원천 연결됨':Object.keys(masterFactors||{}).length?'등록 분류 정보 존재 · 작업장 연동 확인 필요':'작업장 기준정보 미확인',target:'integrated-workplace'},
   {name:'5S 세부테마',area:'테마점검 · 점검항목',ok:themeSaved||!!document.querySelector('#hd20ThemeCatalogPanel'),msg:themeSaved?'테마 저장정보 연결됨':'테마 관리화면 확인 · 별도 저장 여부 확인',target:'integrated-theme'},
-  {name:'Audit 점검항목 별도 원천',area:'④ Audit 점검항목 · 테마점검 항목 연계',ok:false,msg:'Audit 원천 '+safeCount((readJson('hd20AuditChecklistV1',[])||[]).length)+'개 · 통합기준정보 편집 체계 별도 정비 필요',target:'integrated-theme'},
+  {name:'Audit 점검항목 별도 원천',area:'Audit ③ 점검항목 원본',ok:Array.isArray(readJson('hd20AuditChecklistV1',null))&&readJson('hd20AuditChecklistV1',[]).length>0,msg:'Audit 점검항목 '+safeCount(Array.isArray(readJson('hd20AuditChecklistV1',null))?readJson('hd20AuditChecklistV1',[]).length:0)+'개 · Audit ③ 점검항목에서 관리',target:null,targetArea:'audit',targetSub:'checklist'},
   {name:'Audit·유지점검 운영정책',area:'Audit 추출 · 재점검 주기 · 기한',ok:!!policy&&Number(policy.retentionCheck?.intervalDays)>0&&Number(policy.retentionCheck?.sampleCount)>0,msg:policy?'유지점검 '+(policy.retentionCheck?.intervalDays||'—')+'일 / 표본 '+(policy.retentionCheck?.sampleCount||'—')+'건':'운영정책 로드 실패',target:'policy'},
   {name:'유지점검 평가자·수신자',area:'③ 유지점검 담당자 통보',ok:retentionEmails.length>0,msg:retentionEmails.length?safeCount(retentionEmails.length)+'개 등록 이메일 확인':'5S 모듈 수신자 미등록',target:'policy'},
   {name:'TO-BE 최초 요청자 주소',area:'TO-BE 조치등록 → 최초 요청자 회신',ok:tobeDone.length===0||requesterMissing.length===0,msg:tobeDone.length?safeCount(tobeDone.length)+'건 중 '+safeCount(requesterMissing.length)+'건 요청자 이메일 누락':'현재 브라우저에 TO-BE 등록 이력 없음',target:'integrated-team'},
@@ -200,7 +200,7 @@ function auditMaster(){
   const desc=document.createElement('small');desc.textContent=x.area+' · '+x.msg;
   info.append(name,desc);
   const btn=document.createElement('button');btn.type='button';btn.textContent='관리 항목 열기';
-  btn.addEventListener('click',()=>openMasterTarget(x.target));
+  btn.addEventListener('click',()=>{if(x.target)openMasterTarget(x.target);else if(x.targetArea&&window.HD20_NAV?.go){ws.querySelector('[data-hm-close]').click();window.HD20_NAV.go(x.targetArea);if(x.targetSub)setTimeout(()=>window.HD20_SUBNAV?.select?.(x.targetArea,x.targetSub),160)}});
   row.append(badge,info,btn);auditRows.append(row);
  }
  auditSummary.textContent=inspect.length+'개 점검 · '+issues+'개 확인 필요';
