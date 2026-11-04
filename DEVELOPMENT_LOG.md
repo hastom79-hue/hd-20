@@ -2147,3 +2147,12 @@ Canonical Store는 다음을 기준으로 한다.
 - `hd20-cross-tab-sync.js`: 테마 마스터·점검완료·운영/권한/작업장 등 누락돼 있던 기준정보 변경 이벤트를 새로고침 브리지에 추가. 열린 입력양식을 무조건 다시 렌더하지 않고 기존의 이벤트 기반 갱신 방식 유지.
 - `index.html` JS/CSS 버전 갱신, `master-workspace-v2.css` 참조 불일치 안내 화면 스타일 보완.
 - **미완료:** 전체 업무탭에 대한 저장→조회→수정→다른 탭 반영의 브라우저 왕복 검증. 실제 GitHub Pages 게시도 확인 필요.
+
+
+### 2026-11-04 — 통합기준정보 3차: Audit 점검항목 실연동 보완
+- `audit-checklist-enhance.js`: Audit 점검항목 저장 시 공통 `window.HD20_GLOBAL_AUDIT_MASTER`를 최신 데이터로 교체하고 `hd20-audit-checklist-master-updated` 이벤트 발행.
+- Audit 세부 구분의 기존 '자주보전'/'설비보전' 값은 '설비 자주보전' 카테고리로 정규화. 기존 Audit 7개 구분과 일치시키며 데이터를 신규 저장소로 복제하지 않음.
+- `master-workspace-v2.js`: 'Audit 점검항목 원천'에서 Audit 탭 → '③ Audit 점검항목' 서브탭으로 이동하고 저장 이벤트를 연결 맵 실시간 검사에 포함.
+- `hd20-cross-tab-sync.js`: Audit 점검항목 마스터 변경 시 다른 활성 업무화면이 필요에 따라 새 데이터를 반영하도록 갱신 이벤트 추가. 저장 중인 현장 입력양식을 임의 초기화하지 않음.
+- `index.html`: 3개 JS 참조 버전 갱신.
+- 검증: JS 세 파일 구문검사 통과, 이벤트/하위탭 경로/참조 버전 확인. 실제 브라우저 왕복 저장 검증, Pages 배포 성공 확인은 아직 별도 필요.
