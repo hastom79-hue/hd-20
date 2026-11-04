@@ -93,7 +93,7 @@ function refreshSourceRegistry(){
  const wrap=registry.querySelector('[data-hm-source-rows]');wrap.replaceChildren();
  let ready=0,errors=0;
  for(const item of list){
-  const state=sourceReady(item);const present=(state.saved&&state.valid)||state.api;
+  const state=sourceReady(item);const present=state.valid&&((state.saved&&state.valid)||state.api);
   if(present)ready++;
   if(!state.valid)errors++;
   const row=document.createElement('div');row.className='hmSourceRow';
@@ -110,6 +110,8 @@ function refreshSourceRegistry(){
   row.append(info,status,btn);wrap.appendChild(row);
  }
  const warnings=sourceIntegrityWarnings();
+ const badKeys=[...new Set(list.filter(item=>item.key&&!sourceReady(item).valid).map(item=>item.key))];
+ for(const key of badKeys)warnings.push({area:'저장정보 검증',text:'저장 원천 '+key+'의 JSON 형식을 확인할 수 없습니다. 기존 데이터를 덮어쓰지 마세요.',target:'integrated-factor'});
  const result=registry.querySelector('[data-hm-source-result]');
  const issueList=registry.querySelector('[data-hm-source-issues]');
  if(issueList){issueList.replaceChildren();for(const warning of warnings){
