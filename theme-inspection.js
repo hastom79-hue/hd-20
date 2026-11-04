@@ -377,12 +377,28 @@ function loadPreviousJudgements(){
  const note=$('#themePreviousNote',host);
  if(note)note.textContent='직전 회차 결과를 참고용으로 불러왔습니다. 현장 확인 후 수정하고 새 회차로 저장하세요.';
 }
+function themeFindingDraft(host,key){return host._themeFindingDrafts?.[key]||{}}
+function themeFileToData(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result||''));reader.onerror=()=>reject(new Error('사진 읽기 실패'));reader.readAsDataURL(file)})}
 function updateProgress(){
  const host=document.getElementById('awTheme');if(!host)return;
  const rows=$$('.themeCheckRow',host),done=rows.filter(row=>row.querySelector('button.active')).length,ng=rows.filter(row=>row.querySelector('button.active[data-v="미흡"]')).length;
  const el=$('#themeProgress',host);if(el)el.textContent='판정 '+done+'/'+rows.length+'개 · 미흡 '+ng+'건 · 미판정 '+(rows.length-done)+'건';
- const findings=$('#themeFindingList',host);if(findings){const ngRows=rows.filter(row=>row.querySelector('button.active[data-v="미흡"]'));findings.innerHTML=ngRows.length?ngRows.map((r,i)=>'<div class="themeFindingItem"><b>'+(i+1)+'. '+esc(r.dataset.cat)+'</b><span>'+esc(r.dataset.item)+'</span></div>').join(''):'<div class="themeFindingEmpty">현재 미흡 판정된 항목이 없습니다.</div>';}
- const tabs=$('#themeThemeTabs button[data-focus-theme]',host);tabs.forEach(btn=>{const related=rows.filter(r=>r.dataset.cat===btn.dataset.focusTheme);const passed=related.filter(r=>r.querySelector('button.active')).length;const failed=related.filter(r=>r.querySelector('button.active[data-v="미흡"]')).length;const count=btn.querySelector('.themeThemeTabCount');if(count)count.textContent=passed+'/'+related.length+(failed?' · 미흡 '+failed:'')});
+ const findings=$('#themeFindingList',host);
+ if(findings){
+  const ngRows=rows.filter(row=>row.querySelector('button.active[data-v="미흡"]'));
+  const drafts=host._themeFindingDrafts||(host._themeFindingDrafts={});
+  findings.innerHTML=ngRows.length?ngRows.map((r,i)=>{
+   const key=r.dataset.key,d=drafts[key]||{};
+   return '<div class="themeFindingItem" data-finding-key="'+esc(key)+'"><div class="themeFindingHeader"><b>'+(i+1)+'. '+esc(r.dataset.cat)+'</b><span>'+esc(r.dataset.item)+'</span></div><label>발견내용·개선요청사항 <textarea data-finding-note rows="2" placeholder="현장 미흡 상태 및 필요한 개선내용을 입력">'+esc(d.note||'')+'</textarea></label><label>해당 항목 현장사진 <input data-finding-photo type="file" accept="image/jpeg,image/png,image/webp"><small>'+(d.photoFile?'선택됨: '+esc(d.photoFile.name):'항목별 사진 미선택 시 아래 공통 현장사진을 적용')+'</small></label></div>';
+  }).join(''):'<div class="themeFindingEmpty">현재 미흡 판정된 항목이 없습니다.</div>';
+  findings.querySelectorAll('[data-finding-key]').forEach(box=>{
+   const key=box.dataset.findingKey;
+   box.querySelector('[data-finding-note]')?.addEventListener('input',e=>{(drafts[key]||(drafts[key]={})).note=e.target.value});
+   box.querySelector('[data-finding-photo]')?.addEventListener('change',e=>{(drafts[key]||(drafts[key]={})).photoFile=e.target.files?.[0]||null;const el=box.querySelector('small');if(el)el.textContent=drafts[key].photoFile?'선택됨: '+drafts[key].photoFile.name:'항목별 사진 미선택 시 공통 현장사진 적용'});
+  });
+ }
+ const tabs=$$('#themeThemeTabs button[data-focus-theme]',host);
+ tabs.forEach(btn=>{const related=rows.filter(r=>r.dataset.cat===btn.dataset.focusTheme);const passed=related.filter(r=>r.querySelector('button.active')).length;const failed=related.filter(r=>r.querySelector('button.active[data-v="미흡"]')).length;const count=btn.querySelector('.themeThemeTabCount');if(count)count.textContent=passed+'/'+related.length+(failed?' · 미흡 '+failed:'')});
 }
 function renderChecklist(){
  const host=document.getElementById('awTheme');if(!host)return;
@@ -449,14 +465,15 @@ async function saveAudit(){
  const applicable=CHECKLIST.filter(item=>plannedThemes(month,line).includes(item.cat));
  if(!applicable.length){alert('먼저 [점검계획·취약현황]에서 선택한 점검 주체·월·라인의 취약테마를 지정해 주세요.');host.dataset.view='plan';render();return}
   if(Object.keys(states).length<applicable.length){const missing=applicable.length-Object.keys(states).length;alert('미판정 항목 '+missing+'건이 있습니다. 모든 항목을 판정한 뒤 저장해 주세요.');return}
- const auditor=$('#themeAuditAuditor',host)?.value.trim()||'';if(!auditor){alert('최초 점검자 성명을 입력해 주세요.');$('#themeAuditAuditor',host)?.focus();return}const hasNg=rows.some(row=>states[row.dataset.key]==='미흡');const photoFile=$('#themeAuditPhoto',host)?.files?.[0];if(hasNg&&!photoFile){alert('미흡 항목의 현장사진을 첨부해 주세요.');return}if(photoFile&&(!['image/jpeg','image/png','image/webp'].includes(photoFile.type)||photoFile.size>1048576)){alert('현장사진은 JPG/PNG/WEBP 형식, 1MB 이하로 선택해 주세요.');return}let improvementPhoto='';if(photoFile){try{improvementPhoto=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result||''));reader.onerror=()=>reject(new Error('사진 읽기 실패'));reader.readAsDataURL(photoFile)})}catch(error){alert('사진을 읽지 못했습니다. 다시 선택해 주세요.');return}}const checks=loadChecks(),memo=$('#themeAuditMemo',host)?.value.trim()||'';const policyDays=window.HD20PolicyConfig?.deadlineDays?.()??null;const dueDays=Number.isFinite(Number(policyDays))&&Number(policyDays)>0?Number(policyDays):null;const dueDate=dueDays===null?'':addDaysStr(today(),dueDays);
- const rec={id:newId('THEME-AUDIT'),line,team,month,inspectionOwner:selectedOwner(),auditor,initialAuditor:auditor,improvementPhoto,states,memo,auditedAt:new Date().toISOString(),checklistVersion:4,linkedActionIds:[],createdActionIds:[],reusedActionIds:[],ngCount:rows.filter(row=>states[row.dataset.key]==='미흡').length};
+ const auditor=$('#themeAuditAuditor',host)?.value.trim()||'';if(!auditor){alert('최초 점검자 성명을 입력해 주세요.');$('#themeAuditAuditor',host)?.focus();return}const hasNg=rows.some(row=>states[row.dataset.key]==='미흡');const photoFile=$('#themeAuditPhoto',host)?.files?.[0];if(hasNg&&!photoFile&&rows.some(row=>states[row.dataset.key]==='미흡'&&!themeFindingDraft(host,row.dataset.key).photoFile)){alert('미흡 항목별 현장사진을 선택하거나 공통 현장사진을 첨부해 주세요.');return}if(photoFile&&(!['image/jpeg','image/png','image/webp'].includes(photoFile.type)||photoFile.size>1048576)){alert('현장사진은 JPG/PNG/WEBP 형식, 1MB 이하로 선택해 주세요.');return}let improvementPhoto='';if(photoFile){try{improvementPhoto=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result||''));reader.onerror=()=>reject(new Error('사진 읽기 실패'));reader.readAsDataURL(photoFile)})}catch(error){alert('사진을 읽지 못했습니다. 다시 선택해 주세요.');return}}const checks=loadChecks(),memo=$('#themeAuditMemo',host)?.value.trim()||'';const policyDays=window.HD20PolicyConfig?.deadlineDays?.()??null;const dueDays=Number.isFinite(Number(policyDays))&&Number(policyDays)>0?Number(policyDays):null;const dueDate=dueDays===null?'':addDaysStr(today(),dueDays);
+ const findingEvidence={};for(const row of rows.filter(row=>states[row.dataset.key]==='미흡')){const draft=themeFindingDraft(host,row.dataset.key);const file=draft.photoFile;if(file&&(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>1048576)){alert('항목별 현장사진은 JPG/PNG/WEBP, 1MB 이하로 선택해 주세요.');return}try{findingEvidence[row.dataset.key]={note:String(draft.note||'').trim(),photo:file?await themeFileToData(file):improvementPhoto}}catch(error){alert('미흡 항목의 사진을 읽지 못했습니다. 다시 선택해 주세요.');return}}
+ const rec={id:newId('THEME-AUDIT'),line,team,month,inspectionOwner:selectedOwner(),auditor,initialAuditor:auditor,improvementPhoto,states,findingEvidence,memo,auditedAt:new Date().toISOString(),checklistVersion:4,linkedActionIds:[],createdActionIds:[],reusedActionIds:[],ngCount:rows.filter(row=>states[row.dataset.key]==='미흡').length};
  checks.push(rec);
  if(!saveChecks(checks)){alert('점검 결과를 저장하지 못했습니다. 브라우저 저장공간을 확인한 뒤 다시 시도해 주세요.');return}
  const ngItems=rows.filter(row=>states[row.dataset.key]==='미흡'),actions=load(),originalActions=JSON.stringify(actions);
  const linkedActionIds=[],createdActionIds=[],reusedActionIds=[];
  ngItems.forEach(row=>{
-   const cat=row.dataset.cat,item=row.dataset.item,problem='[테마 점검] '+line+' · '+item;
+   const cat=row.dataset.cat,item=row.dataset.item,problem='[테마 점검] '+line+' · '+item,evidence=findingEvidence[row.dataset.key]||{},findingMemo=evidence.note||memo,findingPhoto=evidence.photo||rec.improvementPhoto||'';
    const dup=themeFindActive(actions,line,team,cat,problem);
    if(dup){
      const related=Array.isArray(dup.relatedAuditRecordIds)?dup.relatedAuditRecordIds.slice():[dup.auditRecordId].filter(Boolean);
@@ -465,12 +482,12 @@ async function saveAudit(){
      dup.lastAuditRecordId=rec.id;
      dup.lastAuditMonth=month;
      dup.lastAuditedAt=rec.auditedAt;
-     dup.lastAuditMemo=memo;
+     dup.lastAuditMemo=findingMemo;
      dup.lastAuditAuditor=rec.initialAuditor;
-     dup.lastAuditPhoto=rec.improvementPhoto||'';
+     dup.lastAuditPhoto=findingPhoto;
      if(!dup.initialAuditor)dup.initialAuditor=String(dup.auditor||dup.registeredBy||rec.initialAuditor||'');
-     if(!dup.before&&rec.improvementPhoto)dup.before=rec.improvementPhoto;
-     if(!dup.evidence&&rec.improvementPhoto)dup.evidence=rec.improvementPhoto;
+     if(!dup.before&&findingPhoto)dup.before=findingPhoto;
+     if(!dup.evidence&&findingPhoto)dup.evidence=findingPhoto;
      dup.recheckCount=(Number(dup.recheckCount)||0)+1;
      linkedActionIds.push(dup.id);reusedActionIds.push(dup.id);
      return;
@@ -480,7 +497,7 @@ async function saveAudit(){
    actions.unshift({
      id:actionId,source:'테마Audit',team,auditMonth:month,workplace:line,themeCategory:cat,type:cat,problem,recurrence:!!previousCompleted,recurrenceOfActionId:previousCompleted?.id||'',recurrenceDetectedAt:previousCompleted?rec.auditedAt:'',
      createdAt:today(),date:today(),dueDate,targetDate:dueDate,autoDueDays:dueDays,autoDueAssigned:dueDays!==null,autoDuePolicyState:dueDays===null?'정책미설정':'자동지정',status:'조치대기',
-     requestSource:'테마 Audit('+ownerTitle(selectedOwner())+')',inspectionOwner:selectedOwner(),sourceStage:'THEME-AUDIT',sourceCaseId:rec.id,registeredBy:rec.initialAuditor,registrant:rec.initialAuditor,auditor:rec.initialAuditor,initialAuditor:rec.initialAuditor,lastAuditAuditor:rec.initialAuditor,lastAuditPhoto:rec.improvementPhoto||'',before:rec.improvementPhoto||'',evidence:rec.improvementPhoto||'',after:'',auditRecordId:rec.id,relatedAuditRecordIds:[rec.id],lastAuditRecordId:rec.id,lastAuditedAt:rec.auditedAt,auditMemo:memo
+     requestSource:'테마 Audit('+ownerTitle(selectedOwner())+')',inspectionOwner:selectedOwner(),sourceStage:'THEME-AUDIT',sourceCaseId:rec.id,registeredBy:rec.initialAuditor,registrant:rec.initialAuditor,auditor:rec.initialAuditor,initialAuditor:rec.initialAuditor,lastAuditAuditor:rec.initialAuditor,lastAuditPhoto:findingPhoto,before:findingPhoto,evidence:findingPhoto,after:'',auditRecordId:rec.id,relatedAuditRecordIds:[rec.id],lastAuditRecordId:rec.id,lastAuditedAt:rec.auditedAt,auditMemo:findingMemo
    });
    linkedActionIds.push(actionId);createdActionIds.push(actionId);
  });
@@ -499,6 +516,7 @@ async function saveAudit(){
  window.dispatchEvent(new CustomEvent('hd20-activity-updated',{detail:{source:'테마Audit',auditRecordId:rec.id}}));
  window.dispatchEvent(new CustomEvent('hd20-theme-audit-updated',{detail:{auditRecordId:rec.id,line,month,inspectionOwner:rec.inspectionOwner}}));
  const msg=ownerTitle(selectedOwner())+' · 점검 이력 저장 완료 · 미흡 '+ngItems.length+'건 · 신규 개선조치 '+createdActionIds.length+'건 · 기존 미완료 조치 재연계 '+reusedActionIds.length+'건';
+ host._themeFindingDrafts={};
  host.dataset.themeSaveResult=msg;
  host.dataset.themeSaveContext=month+'|'+line+'|'+selectedOwner()+'|'+team;
  render();
