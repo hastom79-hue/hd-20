@@ -73,6 +73,10 @@ function loadChecks(){try{const v=JSON.parse(localStorage.getItem(CHECK_KEY)||'[
 function saveChecks(rows){try{localStorage.setItem(CHECK_KEY,JSON.stringify(rows));return true}catch(e){console.error('[HD20 Theme] audit history save failed',e);return false}}
 function loadPlans(){try{const v=JSON.parse(localStorage.getItem(PLAN_KEY)||'[]');return Array.isArray(v)?v:[]}catch{return[]}}
 function savePlans(rows){try{localStorage.setItem(PLAN_KEY,JSON.stringify(rows));return true}catch(e){console.error('[HD20 Theme] plan save failed',e);return false}}
+function obsoletePlanThemes(month,line,owner=selectedOwner(),team=document.getElementById('awTheme')?.dataset.team||''){
+ const row=loadPlans().find(x=>x.month===month&&x.line===line&&ownerOf(x)===owner&&(owner!=='team'||x.team===team));
+ return Array.isArray(row?.themes)?[...new Set(row.themes.map(String).filter(t=>!THEMES.includes(t)))]:[];
+}
 function plannedThemes(month,line,owner=selectedOwner(),team=document.getElementById('awTheme')?.dataset.team||''){
  const p=loadPlans().find(x=>x.month===month&&x.line===line&&ownerOf(x)===owner&&(owner!=='team'||x.team===team));
  if(p&&Array.isArray(p.themes))return THEMES.filter(t=>p.themes.includes(t));
@@ -282,6 +286,10 @@ function render(){
  const mappedTeam=owner==='team'?sessionTeam():'';
  if(mappedTeam&&host.dataset.team!==mappedTeam){host.dataset.team=mappedTeam;return render();}
  const planThemes=plannedThemes(month,line,owner,team);
+ const obsoleteThemes=obsoletePlanThemes(month,line,owner,team);
+ const obsoleteNotice=obsoleteThemes.length
+  ?'<div class="themePlanStale" role="alert"><strong>기준정보 변경으로 적용할 수 없는 계획 테마 '+obsoleteThemes.length+'개</strong><span>'+obsoleteThemes.map(esc).join(' · ')+'</span><small>과거 계획·점검 이력은 보존됩니다. 최신 기준의 취약테마를 선택해 [계획 저장]으로 다시 지정하세요.</small></div>':'';
+
  const pageSize=10,totalPages=Math.max(1,Math.ceil(LINES.length/pageSize));
  const page=Math.min(Math.max(0,Number(host.dataset.planPage)||0),totalPages-1);host.dataset.planPage=String(page);
  const auditRows=loadChecks().filter(x=>ownerOf(x)===owner&&(owner!=='team'||x.team===team)&&monthKey(x.month||x.auditedAt)===month);
@@ -314,7 +322,7 @@ function render(){
  <div class="themePlanBox">${owner==='team'?'<div class="themeSelfTeamSelector"><label>자율점검 생산팀 <select id="themeSelfPlanTeam" '+(mappedTeam?'disabled':'')+'>'+teamOptions().map(t=>'<option'+(t===team?' selected':'')+'>'+esc(t)+'</option>').join('')+'</select></label><small>'+(mappedTeam?'등록된 팀장 이메일 기준 담당 생산팀 자동 적용':'담당 생산팀이 자동 확인되지 않았습니다. 마스터의 이메일 정보를 확인해 주세요.')+'</small></div>':''}<div class="themeSectionHead"><h3>월별·라인별 취약 테마 계획</h3><small>${owner==='team'?'생산팀장이 담당 생산팀·라인의 취약테마를 직접 선정합니다.':'5S 모듈이 해당 월에 중점 점검할 테마를 지정합니다.'}</small></div>
  <div class="themeControls"><label>계획 라인/구역 <select id="themePlanLineSel">${LINES.map(l=>`<option${l===line?' selected':''}>${esc(l)}</option>`).join('')}</select></label><span class="themePlanHint">체크한 테마만 현장 점검표에 표시됩니다. 기존 점검 이력은 보존됩니다.</span></div>
  <div class="themePlanChoices">${THEMES.map(t=>`<label><input type="checkbox" name="themePlanTheme" value="${esc(t)}" ${planThemes.includes(t)?'checked':''}><span>${esc(t)}</span></label>`).join('')}</div>
- <div class="themePlanFooter"><span>선택 테마 <b id="themePlanCount">${planThemes.length}</b> / ${THEMES.length} · <b class="themePlanState">${planThemes.length?'계획 설정됨':'계획 미설정'}</b></span><button type="button" class="themePlanSave" id="themeSavePlanBtn">계획 저장</button></div>${planThemes.length?'':'<div class="themeEmptyNote themePlanEmpty">선택 월·라인의 취약테마가 지정되지 않았습니다. 점검 주체에 맞는 계획을 먼저 저장해 주세요.</div>'}</div>
+ <div class="themePlanFooter"><span>선택 테마 <b id="themePlanCount">${planThemes.length}</b> / ${THEMES.length} · <b class="themePlanState">${planThemes.length?'계획 설정됨':'계획 미설정'}</b></span><button type="button" class="themePlanSave" id="themeSavePlanBtn">계획 저장</button></div>${obsoleteNotice}${planThemes.length?'':'<div class="themeEmptyNote themePlanEmpty">선택 월·라인의 취약테마가 지정되지 않았습니다. 점검 주체에 맞는 계획을 먼저 저장해 주세요.</div>'}</div>
  <div class="themeSectionHead"><h3>라인별 점검 준비·실행 현황</h3><small>계획 테마 · 최근 Audit · 미흡 건 · 연결 조치를 한 행에서 확인</small></div>
  <div class="themeLineSummary">
    <div class="themeLineSummaryHead"><span>라인 / 구역</span><span>계획된 취약 테마</span><span>최근 점검</span><span>미흡</span><span>연계 조치</span><span></span></div>
@@ -363,7 +371,9 @@ function render(){
  $('#themeSelfPlanTeam',host)?.addEventListener('change',e=>{host.dataset.team=e.target.value;host.dataset.planPage='0';render()});
  $('#themePlanLineSel',host)?.addEventListener('change',e=>{host.dataset.line=e.target.value;host.dataset.team=owner==='team'?host.dataset.team:(LINE_DEFAULT_TEAM[e.target.value]||host.dataset.team);render()});
  Array.from(host.querySelectorAll('input[name="themePlanTheme"]')).forEach(box=>box.addEventListener('change',()=>{const n=host.querySelectorAll('input[name="themePlanTheme"]:checked').length;const count=$('#themePlanCount',host);if(count)count.textContent=n}));
- $('#themeSavePlanBtn',host)?.addEventListener('click',()=>{const selected=Array.from(host.querySelectorAll('input[name="themePlanTheme"]:checked')).map(x=>x.value);if(!selected.length){alert('최소 1개 이상의 취약 테마를 선택해 주세요.');return}const plans=loadPlans(),entry={month,line:host.dataset.line,team:owner==='team'?host.dataset.team:'',themes:selected,inspectionOwner:owner,updatedAt:new Date().toISOString()};const i=plans.findIndex(x=>x.month===month&&x.line===host.dataset.line&&ownerOf(x)===owner&&(owner!=='team'||x.team===host.dataset.team));if(i>=0)plans[i]=entry;else plans.push(entry);if(!savePlans(plans)){alert('점검계획 저장에 실패했습니다. 저장공간을 확인해 주세요.');return}render()});
+ $('#themeSavePlanBtn',host)?.addEventListener('click',()=>{const selected=Array.from(host.querySelectorAll('input[name="themePlanTheme"]:checked')).map(x=>x.value);if(!selected.length){alert('최소 1개 이상의 취약 테마를 선택해 주세요.');return}const missing=obsoletePlanThemes(month,host.dataset.line,owner,host.dataset.team);
+ if(missing.length&&!window.confirm('기존 점검계획에 현재 사용하지 않는 테마 '+missing.length+'개가 있습니다.\n'+missing.join(' · ')+'\n이 항목들은 새 계획에서 제외하되 기존 이력은 보존합니다. 계속하시겠습니까?'))return;
+ const plans=loadPlans(),entry={month,line:host.dataset.line,team:owner==='team'?host.dataset.team:'',themes:selected,inspectionOwner:owner,updatedAt:new Date().toISOString()};const i=plans.findIndex(x=>x.month===month&&x.line===host.dataset.line&&ownerOf(x)===owner&&(owner!=='team'||x.team===host.dataset.team));if(i>=0)plans[i]=entry;else plans.push(entry);if(!savePlans(plans)){alert('점검계획 저장에 실패했습니다. 저장공간을 확인해 주세요.');return}render()});
  $('#themeLineSel',host)?.addEventListener('change',e=>{if(!confirmThemeNavigation(host)){e.target.value=host.dataset.line;return}host.dataset.line=e.target.value;host.dataset.focusTheme='';host.dataset.team=owner==='team'?host.dataset.team:(LINE_DEFAULT_TEAM[e.target.value]||host.dataset.team);render()});
  $('#themeTeamSel',host)?.addEventListener('change',e=>{if(!confirmThemeNavigation(host)){e.target.value=host.dataset.team;return}host.dataset.team=e.target.value;render()});
  $('#themeSaveBtn',host)?.addEventListener('click',async e=>{
