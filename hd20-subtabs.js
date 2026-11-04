@@ -595,18 +595,34 @@ function renderRetentionSampling(root){
   box.dataset.rsSaving='';box.querySelectorAll('[data-rs-recheck]').forEach(b=>b.disabled=false);
   window.alert('마지막 개선조치 원본번호가 일치하지 않습니다. 종결할 수 없습니다.');return;
  }
- const at=new Date().toISOString(),actionDay=seoulDay(),record={at,result,comment,actionId:action.id};
+ const at=new Date().toISOString(),actionDay=seoulDay(),record={at,result,comment,actionId:action.id,evaluator:currentEmail()||rows[n].evaluator||''};
+ const priorActionSnapshot=localStorage.getItem('hd20ActionCasesV2');
  let followupActionId='',createdFollowupId='';
  if(result==='부적합'){
   const actions=load('hd20ActionCasesV2'),idNext='AUTO-RETENTION-RECHECK-'+rows[n].id+'-'+((rows[n].recheckHistory||[]).length+1);
   let next=actions.find(a=>String(a.id)===idNext);
   if(next&&(String(next.sourceCaseId)!==String(rows[n].id)||next.sourceStage!=='RETENTION-RECHECK'||String(next.previousActionId||'')!==String(action.id))){box.dataset.rsSaving='';box.querySelectorAll('[data-rs-recheck]').forEach(b=>b.disabled=false);window.alert('재조치 ID의 원천 또는 직전 개선조치 연결이 일치하지 않습니다. 관리자에게 확인해 주세요.');return}
-  if(!next){next={id:idNext,date:actionDay,registeredAt:actionDay,team:rows[n].team,workplace:rows[n].workplace,owner:rows[n].evaluator,registeredBy:rows[n].evaluator,registrant:rows[n].evaluator,auditor:rows[n].evaluator,initialAuditor:rows[n].evaluator,problem:'[유지점검 재점검 부적합] '+rows[n].kind+' '+rows[n].caseId+' · '+comment,source:'5S 유지점검 재점검',sourceCaseId:rows[n].id,sourceStage:'RETENTION-RECHECK',originCaseId:rows[n].caseId,previousActionId:action.id,status:'조치대기',effectVerified:false,autoCreated:true};actions.unshift(next);try{save('hd20ActionCasesV2',actions);createdFollowupId=next.id}catch(e){box.dataset.rsSaving='';box.querySelectorAll('[data-rs-recheck]').forEach(b=>b.disabled=false);window.alert('재조치 등록 실패: 재점검 판정은 저장하지 않았습니다.');return}}
+  if(next){
+   box.dataset.rsSaving='';box.querySelectorAll('[data-rs-recheck]').forEach(b=>b.disabled=false);
+   window.alert('같은 재점검 순번의 개선조치가 이미 존재합니다. 이력 불일치 여부를 확인한 뒤 처리하세요. 중복 재등록하지 않습니다.');return;
+  }
+  if(!next){next={id:idNext,date:actionDay,registeredAt:actionDay,team:rows[n].team,workplace:rows[n].workplace,owner:rows[n].evaluator,registeredBy:currentEmail()||rows[n].evaluator,registrant:currentEmail()||rows[n].evaluator,auditor:rows[n].evaluator,initialAuditor:rows[n].evaluator,problem:'[유지점검 재점검 부적합] '+rows[n].kind+' '+rows[n].caseId+' · '+comment,source:'5S 유지점검 재점검',sourceCaseId:rows[n].id,sourceStage:'RETENTION-RECHECK',originCaseId:rows[n].caseId,previousActionId:action.id,status:'조치대기',effectVerified:false,autoCreated:true};actions.unshift(next);try{save('hd20ActionCasesV2',actions);createdFollowupId=next.id}catch(e){box.dataset.rsSaving='';box.querySelectorAll('[data-rs-recheck]').forEach(b=>b.disabled=false);window.alert('재조치 등록 실패: 재점검 판정은 저장하지 않았습니다.');return}}
   followupActionId=next.id;
  }
  const history=Array.isArray(rows[n].recheckHistory)?rows[n].recheckHistory.slice():[];history.push(record);
  rows[n]={...rows[n],recheckHistory:history,recheckResult:result,recheckComment:comment,recheckedAt:at,followupActionId:followupActionId||rows[n].followupActionId||'',closedAt:result==='적합'?at:''};
- try{save('hd20RetentionRandomChecksV1',rows)}catch(e){let rolledBack=!createdFollowupId;if(createdFollowupId){try{const all=load('hd20ActionCasesV2');save('hd20ActionCasesV2',all.filter(a=>String(a.id)!==createdFollowupId));rolledBack=true}catch(rollbackError){console.error('[HD20 재점검 재조치 복구 실패]',rollbackError)}}box.dataset.rsSaving='';box.querySelectorAll('[data-rs-recheck]').forEach(b=>b.disabled=false);window.alert(rolledBack?'재점검 결과 저장에 실패해 신규 재조치를 취소했습니다. 다시 시도해 주세요.':'재점검 이력 저장과 자동 재조치 취소에 실패했습니다. 추가 등록하지 말고 관리자에게 확인해 주세요.');return}
+ try{save('hd20RetentionRandomChecksV1',rows)}catch(e){
+  let rolledBack=true;
+  if(createdFollowupId){
+   try{
+    if(priorActionSnapshot===null)localStorage.removeItem('hd20ActionCasesV2');else localStorage.setItem('hd20ActionCasesV2',priorActionSnapshot);
+    if(localStorage.getItem('hd20ActionCasesV2')!==priorActionSnapshot)throw Error('재조치 원본 복원 검증 실패');
+   }catch(rollbackError){rolledBack=false;console.error('[HD20 재점검 재조치 복구 실패]',rollbackError)}
+  }
+  box.dataset.rsSaving='';box.querySelectorAll('[data-rs-recheck]').forEach(b=>b.disabled=false);
+  window.alert(rolledBack?'재점검 저장 실패: 직전 개선조치 저장 상태를 복원했습니다. 다시 시도해 주세요.':'재점검 저장과 개선조치 원복에 실패했습니다. 중복 등록하지 말고 관리자에게 확인해 주세요.');
+  return;
+ }
  if(createdFollowupId)window.dispatchEvent(new CustomEvent('hd20-action-updated',{detail:{added:1,source:'retention-recheck'}}));
  window.dispatchEvent(new CustomEvent('hd20-audit-updated',{detail:{retention:rows[n],recheck:true}}));render();
  });
