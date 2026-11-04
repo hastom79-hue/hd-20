@@ -580,7 +580,7 @@ function renderRetentionSampling(root){
  const action=linkedAction(rows[n]);
  const allActions=load('hd20ActionCasesV2');
  const historyActions=allActions.filter(a=>a.sourceStage==='RETENTION-RECHECK'&&String(a.sourceCaseId||'')===String(rows[n].id));
- const sequence=a=>Number(String(a.id||'').match(/(\\d+)$/)?.[1]||0);
+ const sequence=a=>Number(String(a.id||'').match(/(\d+)$/)?.[1]||0);
  const latestHistory=historyActions.slice().sort((a,b)=>sequence(b)-sequence(a))[0]||null;
  if(latestHistory&&String(action?.id||'')!==String(latestHistory.id)){
   box.dataset.rsSaving='';box.querySelectorAll('[data-rs-recheck]').forEach(b=>b.disabled=false);
