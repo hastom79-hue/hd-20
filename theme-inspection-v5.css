@@ -372,3 +372,15 @@ html body #awTheme #themeAuditBox>.themeSaveResult{
 #awTheme .themeAuditBox>.themeControls select{flex:1;min-width:0;width:100%;max-width:100%}
 #awTheme .themeAuditBox .themeAuditFlowLabel{margin-top:15px!important}
 @media(max-width:740px){#awTheme .themeAuditBox>.themeControls{grid-template-columns:1fr}#awTheme .themeAuditTitle{align-items:flex-start}}
+
+/* 2026-11-04 per finding evidence: concise individual improvement cards */
+#awTheme .themeFindingList{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:10px}
+#awTheme .themeFindingItem{display:flex;flex-direction:column;gap:9px;align-items:stretch;min-width:0;padding:12px;border:1px solid #eacdbf;border-radius:9px;background:#fffaf7}
+#awTheme .themeFindingHeader{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px;font-size:12px}
+#awTheme .themeFindingHeader b{color:#95513b;white-space:nowrap}
+#awTheme .themeFindingHeader span{font-weight:650;color:#4e4c4c}
+#awTheme .themeFindingItem label{display:flex;flex-direction:column;gap:5px;width:100%;font-size:11.5px;color:#6d5b51;font-weight:650}
+#awTheme .themeFindingItem textarea{box-sizing:border-box;width:100%;min-height:65px;padding:9px;border:1px solid #d9c6bc;border-radius:7px;background:#fff;color:#31485b;font:inherit;resize:vertical}
+#awTheme .themeFindingItem input[type=file]{box-sizing:border-box;width:100%;max-width:100%;font-size:11px}
+#awTheme .themeFindingItem small{font-size:10.5px;font-weight:400;color:#7e6c63}
+@media(max-width:680px){#awTheme .themeFindingList{grid-template-columns:1fr}}
