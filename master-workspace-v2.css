@@ -280,3 +280,11 @@ html body #masterModal .hmSourceVerify{color:#8b5b24;background:#fff3df}
 html body #masterModal [data-hm-source-result]{font-size:11px;color:#59738a;padding:9px 3px 0}
 @media(max-width:1060px){html body #masterModal .hmSourceRows{grid-template-columns:1fr}}
 @media(max-width:680px){html body #masterModal .masterInfoBox.hd20MasterWorkspaceReady>.hmSourceRegistry{width:calc(100% - 22px)!important;margin:8px 11px 12px!important}html body #masterModal .hmSourceRow{grid-template-columns:minmax(0,1fr) auto}html body #masterModal .hmSourceRow button{grid-column:2}html body #masterModal .hmSourceRegistry>summary small{display:block;margin:3px 0 0}}
+
+/* Source-reference mismatches: visible only when full-tab registry is expanded. */
+html body #masterModal .hmSourceIssues{display:grid;gap:6px;margin-top:8px}
+html body #masterModal .hmSourceIssues:empty{display:none}
+html body #masterModal .hmSourceIssue{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0;padding:9px 11px;background:#fff8ee;border:1px solid #eed9b9;border-radius:7px;color:#825820;font-size:11.5px}
+html body #masterModal .hmSourceIssue span{flex:1;overflow-wrap:anywhere}
+html body #masterModal .hmSourceIssue button{border:1px solid #d6b883;color:#805825;background:#fff;border-radius:6px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap}
+@media(max-width:600px){html body #masterModal .hmSourceIssue{align-items:flex-start;flex-direction:column}}
