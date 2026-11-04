@@ -34,7 +34,7 @@ const SOURCE_MAP=[
 ];
 const registry=document.createElement('details');registry.className='hmSourceRegistry';
 registry.innerHTML='<summary>전체 업무탭 기준정보 연결 맵 <span data-hm-source-total></span><small>원천 저장소·관리 위치·연동 여부 확인</small></summary><div class="hmSourceBody"><p>각 업무탭의 기준정보는 원본 저장소를 공통 참조합니다. 이 화면에서 관리 가능한 항목은 해당 편집기로 이동하며, 업무 중 생성되는 계획·점검·개선 이력은 원래 업무탭에서 관리합니다.</p><div class="hmSourceFilters"><label>업무영역 <select data-hm-source-area><option value="">전체 업무탭</option></select></label><label>기준정보 검색 <input type="search" data-hm-source-query placeholder="원천·업무명·기준정보"></label><button type="button" data-hm-source-refresh>연결 확인</button></div><div data-hm-source-rows class="hmSourceRows"></div><div data-hm-source-result aria-live="polite"></div></div>';
-ws.appendChild(registry);
+ws.insertAdjacentElement('afterend',registry);
 const areaSelect=registry.querySelector('[data-hm-source-area]');
 [...new Set(SOURCE_MAP.map(x=>x.area))].forEach(area=>{const opt=document.createElement('option');opt.value=area;opt.textContent=area;areaSelect.appendChild(opt)});
 function sourceReady(item){
