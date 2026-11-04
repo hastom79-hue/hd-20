@@ -42,35 +42,51 @@ ws.insertAdjacentElement('afterend',registry);
 const areaSelect=registry.querySelector('[data-hm-source-area]');
 [...new Set(SOURCE_MAP.map(x=>x.area))].forEach(area=>{const opt=document.createElement('option');opt.value=area;opt.textContent=area;areaSelect.appendChild(opt)});
 function sourceReady(item){
- let saved=false;try{saved=localStorage.getItem(item.key)!==null}catch{}
- const api=item.api&&window[item.api]!=null;
- return {saved,api:!!api};
+ let saved=false,valid=true,records=null;
+ try{
+  const raw=item.key?localStorage.getItem(item.key):null;
+  saved=raw!==null;
+  if(saved){
+   const value=JSON.parse(raw);
+   if(Array.isArray(value))records=value.length;
+   else if(value&&typeof value==='object')records=Object.keys(value).length;
+   else if(value===null)valid=false;
+  }
+ }catch(error){valid=false}
+ const api=!!(item.api&&window[item.api]!=null);
+ // Loaded JS module does not prove successful field synchronization.
+ return {saved,valid,records,api};
 }
 function refreshSourceRegistry(){
  const query=(registry.querySelector('[data-hm-source-query]').value||'').trim().toLocaleLowerCase(),area=areaSelect.value;
  const list=SOURCE_MAP.filter(x=>(!area||x.area===area)&&(!query||[x.area,x.name,x.key,x.note].join(' ').toLocaleLowerCase().includes(query)));
  const wrap=registry.querySelector('[data-hm-source-rows]');wrap.replaceChildren();
- let ready=0;
+ let ready=0,errors=0;
  for(const item of list){
-  const state=sourceReady(item);const present=state.saved||state.api;if(present)ready++;
+  const state=sourceReady(item);const present=(state.saved&&state.valid)||state.api;
+  if(present)ready++;
+  if(!state.valid)errors++;
   const row=document.createElement('div');row.className='hmSourceRow';
   const info=document.createElement('div');info.className='hmSourceInfo';
   const title=document.createElement('strong');title.textContent=item.name;
   const desc=document.createElement('small');desc.textContent=item.area+' · '+(item.key||item.api)+' · '+(item.note||'공통 기준정보 원천');
   info.append(title,desc);
-  const status=document.createElement('span');status.className=present?'hmSourceReady':'hmSourceVerify';status.textContent=state.saved?'저장정보 확인':state.api?'공통모듈 연결':'설정·연동 확인 필요';
+  const status=document.createElement('span');
+ status.className=state.valid?(present?'hmSourceReady':'hmSourceVerify'):'hmSourceVerify';
+ status.textContent=!state.valid?'저장 데이터 오류':state.saved?'저장 구조 확인'+(state.records!==null?' · '+state.records+'항목':''):state.api?'공통모듈 로드':'미설정·원천 확인';
+ status.title='실제 업무탭 필드 동기화는 별도 검증 대상입니다.';
   const btn=document.createElement('button');btn.type='button';btn.textContent=item.editor?'기준정보 편집':'업무탭 열기';
   btn.addEventListener('click',()=>{if(item.editor){openMasterTarget(item.editor)}else if(window.HD20_NAV?.go){document.querySelector('#masterModal [data-hm-close]')?.click();window.HD20_NAV.go(item.targetArea)}else alert('해당 업무탭을 직접 선택하여 확인해 주세요.')});
   row.append(info,status,btn);wrap.appendChild(row);
  }
  registry.querySelector('[data-hm-source-total]').textContent=SOURCE_MAP.length+'개 원천';
- registry.querySelector('[data-hm-source-result]').textContent='표시 '+list.length+'개 · 저장/모듈 연결 확인 '+ready+'개 · 확인 필요 '+(list.length-ready)+'개. 미저장 원천은 데이터 부재일 수 있으므로 누락으로 단정하지 않습니다.';
+ registry.querySelector('[data-hm-source-result]').textContent='표시 '+list.length+'개 · 저장정보/모듈 확인 '+ready+'개 · 확인 필요 '+(list.length-ready)+'개'+(errors?' · 손상 가능 데이터 '+errors+'개':'')+'. 저장소 유무만으로 모든 탭의 필드 동기화가 검증되지는 않습니다.';
 }
 areaSelect.addEventListener('change',refreshSourceRegistry);
 registry.querySelector('[data-hm-source-query]').addEventListener('input',refreshSourceRegistry);
 registry.querySelector('[data-hm-source-refresh]').addEventListener('click',()=>{auditMaster();refreshSourceRegistry()});
 registry.addEventListener('toggle',()=>{if(registry.open)refreshSourceRegistry()});
-['hd20-team-master-updated','hd20-theme-master-updated','hd20-policy-updated','hd20-master-factors-updated','hd20-action-updated','hd20-audit-updated','hd20-theme-audit-updated'].forEach(event=>window.addEventListener(event,()=>{if(registry.open)refreshSourceRegistry()}));
+['hd20-team-master-updated','hd20-team-targets-updated','hd20-theme-master-updated','hd20-theme-audit-updated','hd20-policy-updated','hd20-master-factors-updated','hd20-workplace-verified','hd20-action-updated','hd20-activity-updated','hd20-audit-updated','hd20-mailing-master-updated','hd20-master-access-updated','hd20-refresh-requested'].forEach(event=>window.addEventListener(event,()=>{if(registry.open)refreshSourceRegistry()}));
 window.addEventListener('storage',()=>{if(registry.open)refreshSourceRegistry()});
 refreshSourceRegistry();
 // Keep a working close control even when legacy .modalHead is hidden by layout CSS.
