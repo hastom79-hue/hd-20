@@ -111,13 +111,13 @@ function refreshSourceRegistry(){
  }
  const warnings=sourceIntegrityWarnings();
  const badKeys=[...new Set(list.filter(item=>item.key&&!sourceReady(item).valid).map(item=>item.key))];
- for(const key of badKeys)warnings.push({area:'저장정보 검증',text:'저장 원천 '+key+'의 JSON 형식을 확인할 수 없습니다. 기존 데이터를 덮어쓰지 마세요.',target:'integrated-factor'});
+ for(const key of badKeys){const source=SOURCE_MAP.find(item=>item.key===key&&item.editor);warnings.push({area:'저장정보 검증',text:'저장 원천 '+key+'의 JSON 형식을 확인할 수 없습니다. 기존 데이터를 덮어쓰지 마세요.',target:source?.editor||'',key});}
  const result=registry.querySelector('[data-hm-source-result]');
  const issueList=registry.querySelector('[data-hm-source-issues]');
  if(issueList){issueList.replaceChildren();for(const warning of warnings){
   const item=document.createElement('div');item.className='hmSourceIssue';
   const txt=document.createElement('span');txt.textContent=warning.area+' · '+warning.text;
-  const btn=document.createElement('button');btn.type='button';btn.textContent='기준정보 확인';btn.addEventListener('click',()=>openMasterTarget(warning.target));item.append(txt,btn);issueList.appendChild(item);
+  const btn=document.createElement('button');btn.type='button';btn.textContent='기준정보 확인';if(warning.target){btn.addEventListener('click',()=>openMasterTarget(warning.target));item.append(txt,btn)}else item.append(txt);issueList.appendChild(item);
  }}
  registry.querySelector('[data-hm-source-total]').textContent=SOURCE_MAP.length+'개 연결 항목';
  result.textContent='표시 '+list.length+'개 · 저장정보/모듈 확인 '+ready+'개 · 확인 필요 '+(list.length-ready)+'개'+(errors?' · 손상 가능 데이터 '+errors+'개':'')+' · 참조 불일치 의심 '+warnings.length+'개. 저장소 유무만으로 모든 탭의 필드 동기화가 검증되지는 않습니다.';
