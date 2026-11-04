@@ -146,6 +146,12 @@ function renderActionEvaluation(overlay,caseData){
   const vals=Object.fromEntries([...region.querySelectorAll('[data-eval-key]')].map(x=>[x.dataset.evalKey,!!x.checked]));
   const count=['criteriaVisual','criteriaGreen','criteriaSpace'].filter(k=>vals[k]).length;
   const isMaster=!!window.HD20MasterAccess?.isMaster();
+  // A non-master may log execution results, but must not undo a master's adopted evidence.
+  if(!isMaster&&(
+    (record.finalAdopted&&['criteriaVisual','criteriaGreen','criteriaSpace'].some(k=>!!record[k]!==!!vals[k]))||
+    (record.horizontalAdopted&&!vals.horizontalDeployed)||
+    (record.foolproofAdopted&&!vals.foolproofApplied)
+  )){alert('이미 최종 채택된 항목의 판정 변경은 마스터관리자에게 요청해 주세요.');return}
   record.horizontalDeployed=vals.horizontalDeployed;record.expandApplied=vals.expandApplied;record.foolproofApplied=vals.foolproofApplied;
   record.criteriaVisual=vals.criteriaVisual;record.criteriaGreen=vals.criteriaGreen;record.criteriaSpace=vals.criteriaSpace;
   record.visualization=vals.criteriaVisual;record.greenZone=vals.criteriaGreen;record.spaceUtilization=vals.criteriaSpace;
