@@ -384,3 +384,10 @@ html body #awTheme #themeAuditBox>.themeSaveResult{
 #awTheme .themeFindingItem input[type=file]{box-sizing:border-box;width:100%;max-width:100%;font-size:11px}
 #awTheme .themeFindingItem small{font-size:10.5px;font-weight:400;color:#7e6c63}
 @media(max-width:680px){#awTheme .themeFindingList{grid-template-columns:1fr}}
+
+
+/* 2026-11-04 obsolete planned theme visibility / non-destructive plan migration */
+#awTheme .themePlanStale{display:flex;flex-direction:column;gap:5px;margin:10px 0 0;padding:10px 13px;border:1px solid #e5cba7;border-radius:8px;background:#fff9ef;color:#805a2c;font-size:12px;line-height:1.5}
+#awTheme .themePlanStale strong{font-weight:800}
+#awTheme .themePlanStale span{overflow-wrap:anywhere}
+#awTheme .themePlanStale small{font-size:11px;color:#8d7451}
