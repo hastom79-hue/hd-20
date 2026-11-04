@@ -232,6 +232,15 @@ function historyTable(month){
  }).join('');
  return '<div class="themeHistoryMeta">총 '+all.length+'회 · 최신 '+Math.min(all.length,8)+'회 표시 · 재점검 기록은 이전 회차를 덮어쓰지 않습니다.</div><div class="themeHistoryWrap"><table class="themeHistoryTable"><thead><tr><th>점검 일시</th><th>라인</th><th>담당 생산팀</th><th>미흡</th><th>적합률</th><th>연계 조치</th><th>현장 관찰 메모</th></tr></thead><tbody>'+body+'</tbody></table></div>';
 }
+function hasUnsavedThemeAudit(host){
+ return !!host?.querySelector('.themePanel[data-theme-panel="audit"] .themeCheckRow button.active')||
+ !!host?.querySelector('#themeAuditAuditor')?.value.trim()||
+ !!host?.querySelector('#themeAuditMemo')?.value.trim()||
+ !!host?.querySelector('#themeAuditPhoto')?.files?.length;
+}
+function confirmThemeNavigation(host){
+ return !hasUnsavedThemeAudit(host)||window.confirm('저장하지 않은 현장점검 판정·메모·사진이 있습니다. 이동하면 입력내용이 사라집니다. 계속하시겠습니까?');
+}
 function render(){
  const host=document.getElementById('awTheme');if(!host)return;
  const month=host.dataset.month||thisMonth();host.dataset.month=month;
@@ -314,19 +323,19 @@ function render(){
  }
  // Mount only the selected workspace. Hidden panels must never retain tall layout boxes.
  host.querySelectorAll('.themePanel[hidden]').forEach(panel=>panel.remove());
- $('#themeMonthSel',host).addEventListener('change',e=>{host.dataset.month=e.target.value;render()});
+ $('#themeMonthSel',host).addEventListener('change',e=>{if(!confirmThemeNavigation(host)){e.target.value=host.dataset.month;return}host.dataset.month=e.target.value;host.dataset.focusTheme='';render()});
   const actionSearch=$('#themeActionSearch',host),actionStatus=$('#themeActionStatus',host),actionRecurrence=$('#themeActionRecurrence',host);
   const filterActions=()=>{const query=(actionSearch?.value||'').trim().toLocaleLowerCase(),status=actionStatus?.value||'',rows=Array.from(host.querySelectorAll('#themeActionTableBody tr'));let shown=0;rows.forEach(row=>{const visible=(!query||(row.dataset.search||'').includes(query))&&(!status||row.dataset.status===status)&&(!actionRecurrence?.value||row.dataset.recurrence===actionRecurrence.value);row.hidden=!visible;if(visible)shown++});const count=$('#themeActionCount',host);if(count)count.textContent='표시 '+shown+'/'+rows.length+'건';const empty=$('#themeActionNoResults',host);if(empty)empty.hidden=shown>0};
   actionSearch?.addEventListener('input',filterActions);actionStatus?.addEventListener('change',filterActions);actionRecurrence?.addEventListener('change',filterActions);
  Array.from(host.querySelectorAll('[data-theme-page]')).forEach(btn=>btn.addEventListener('click',()=>{host.dataset.planPage=String(Math.min(totalPages-1,Math.max(0,page+Number(btn.dataset.themePage))));render()}));
- Array.from(host.querySelectorAll('[data-theme-owner]')).forEach(btn=>btn.addEventListener('click',()=>{if(host.dataset.inspectionOwner===btn.dataset.themeOwner)return;host.dataset.inspectionOwner=btn.dataset.themeOwner;host.dataset.view='plan';host.dataset.planPage='0';render()}));
- Array.from(host.querySelectorAll('[data-theme-view]')).forEach(btn=>btn.addEventListener('click',()=>{host.dataset.view=btn.dataset.themeView;render()}));
+ Array.from(host.querySelectorAll('[data-theme-owner]')).forEach(btn=>btn.addEventListener('click',()=>{if(host.dataset.inspectionOwner===btn.dataset.themeOwner||!confirmThemeNavigation(host))return;host.dataset.inspectionOwner=btn.dataset.themeOwner;host.dataset.view='plan';host.dataset.focusTheme='';host.dataset.planPage='0';render()}));
+ Array.from(host.querySelectorAll('[data-theme-view]')).forEach(btn=>btn.addEventListener('click',()=>{if(host.dataset.view===btn.dataset.themeView||!confirmThemeNavigation(host))return;host.dataset.view=btn.dataset.themeView;render()}));
  $('#themeSelfPlanTeam',host)?.addEventListener('change',e=>{host.dataset.team=e.target.value;host.dataset.planPage='0';render()});
  $('#themePlanLineSel',host)?.addEventListener('change',e=>{host.dataset.line=e.target.value;host.dataset.team=owner==='team'?host.dataset.team:(LINE_DEFAULT_TEAM[e.target.value]||host.dataset.team);render()});
  Array.from(host.querySelectorAll('input[name="themePlanTheme"]')).forEach(box=>box.addEventListener('change',()=>{const n=host.querySelectorAll('input[name="themePlanTheme"]:checked').length;const count=$('#themePlanCount',host);if(count)count.textContent=n}));
  $('#themeSavePlanBtn',host)?.addEventListener('click',()=>{const selected=Array.from(host.querySelectorAll('input[name="themePlanTheme"]:checked')).map(x=>x.value);if(!selected.length){alert('최소 1개 이상의 취약 테마를 선택해 주세요.');return}const plans=loadPlans(),entry={month,line:host.dataset.line,team:owner==='team'?host.dataset.team:'',themes:selected,inspectionOwner:owner,updatedAt:new Date().toISOString()};const i=plans.findIndex(x=>x.month===month&&x.line===host.dataset.line&&ownerOf(x)===owner&&(owner!=='team'||x.team===host.dataset.team));if(i>=0)plans[i]=entry;else plans.push(entry);if(!savePlans(plans)){alert('점검계획 저장에 실패했습니다. 저장공간을 확인해 주세요.');return}render()});
- $('#themeLineSel',host)?.addEventListener('change',e=>{host.dataset.line=e.target.value;host.dataset.focusTheme='';host.dataset.team=owner==='team'?host.dataset.team:(LINE_DEFAULT_TEAM[e.target.value]||host.dataset.team);render()});
- $('#themeTeamSel',host)?.addEventListener('change',e=>{host.dataset.team=e.target.value;render()});
+ $('#themeLineSel',host)?.addEventListener('change',e=>{if(!confirmThemeNavigation(host)){e.target.value=host.dataset.line;return}host.dataset.line=e.target.value;host.dataset.focusTheme='';host.dataset.team=owner==='team'?host.dataset.team:(LINE_DEFAULT_TEAM[e.target.value]||host.dataset.team);render()});
+ $('#themeTeamSel',host)?.addEventListener('change',e=>{if(!confirmThemeNavigation(host)){e.target.value=host.dataset.team;return}host.dataset.team=e.target.value;render()});
  $('#themeSaveBtn',host)?.addEventListener('click',async e=>{
    const button=e.currentTarget;
    if(button.dataset.saving==='true')return;
@@ -337,6 +346,7 @@ function render(){
  $('#themeLoadPrevious',host)?.addEventListener('click',loadPreviousJudgements);
   $('#themeBulkClear',host)?.addEventListener('click',()=>{bulkSet('');const note=$('#themePreviousNote',host);if(note)note.textContent='새 회차 입력 상태로 초기화했습니다.'});
  Array.from(host.querySelectorAll('[data-pick-line]')).forEach(el=>el.addEventListener('click',()=>{
+   if(!confirmThemeNavigation(host))return;
    const ln=el.getAttribute('data-pick-line');
    host.dataset.line=ln;host.dataset.focusTheme='';host.dataset.team=owner==='team'?host.dataset.team:(LINE_DEFAULT_TEAM[ln]||host.dataset.team);host.dataset.view='audit';render();
    $('#themeAuditBox',host)?.scrollIntoView({behavior:'smooth',block:'start'});
