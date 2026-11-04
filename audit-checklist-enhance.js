@@ -73,6 +73,20 @@ function sendToActionTab(r){
 }
 function importFile(f){if(!f)return;const go=()=>{const fr=new FileReader();fr.onload=e=>{try{const wb=XLSX.read(e.target.result,{type:'array'}),ws=wb.Sheets[wb.SheetNames[0]],data=XLSX.utils.sheet_to_json(ws,{defval:''});const pick=(o,names)=>{const k=Object.keys(o).find(k=>names.some(n=>String(k).replace(/\s/g,'').includes(n)));return k?o[k]:''};const mapped=data.map(o=>{const score=Math.max(0,Math.min(5,+pick(o,['점수','평가점수','Score','평점'])||0));return{cat:normCat(pick(o,['5S구분','구분','분류'])||'정리'),item:pick(o,['점검항목','평가항목','항목','체크리스트']),weight:Math.max(1,Math.min(5,+pick(o,['배점','가중치','Max'])||5)),score,result:judgement(score),note:pick(o,['미흡사항','지적사항','Evidence','비고','개선요청'])||'',source:'excel'}}).filter(r=>r.item);if(!mapped.length)throw Error('점검항목 열을 찾지 못했습니다.');rows=mapped;save();render();alert(`${rows.length}개 점검항목을 반영했습니다.`)}catch(err){alert('점검표 업로드 오류: '+err.message)}};fr.readAsArrayBuffer(f)};if(window.XLSX)return go();const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';s.onload=go;s.onerror=()=>alert('Excel 모듈을 불러오지 못했습니다.');document.head.appendChild(s)}
 function boot(){css();load();let n=0;const run=()=>{if(render())return;if(++n<40)setTimeout(run,100)};run()}
+// Cross-window master changes: do not discard an on-screen checklist editor's unsaved fields.
+window.addEventListener('storage',e=>{
+ if(e.key!==KEY)return;
+ const panel=document.querySelector('#awAudit .acWrap');
+ const active=panel&&panel.getClientRects().length>0&&!panel.classList.contains('hd20SubHidden')&&window.HD20_SUBNAV?.state?.()?.sub==='checklist';
+ if(active){
+  let notice=panel.querySelector('[data-ac-external-notice]');
+  if(!notice){notice=document.createElement('div');notice.dataset.acExternalNotice='1';notice.style.cssText='padding:9px 12px;margin:8px 0;border-radius:7px;background:#fff6e8;border:1px solid #eccb9c;color:#805825;font-size:12px';panel.prepend(notice)}
+  notice.textContent='다른 브라우저 탭에서 Audit 점검항목 기준정보가 변경되었습니다. 작성 중인 내용을 저장하거나 화면을 다시 열어 최신 기준을 확인해 주세요.';
+  return;
+ }
+ load();
+ if(panel)render();
+});
 window.HD20AuditChecklistEnhance={currentAuditTarget,sendToActionTab};
 document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot,{once:true}):boot();
 })();
