@@ -48,24 +48,25 @@ const LEGACY_CHECKLIST=[
  {cat:'5S 고도화',item:'수평전개 대상 라인 누락'},
  {cat:'5S 고도화',item:'FoolProof 장치 미설치·고장 방치'},
 ];
-let CHECKLIST=[...(window.HD20ThemeMaster?.checklist?.()||[]),...LEGACY_CHECKLIST.filter(x=>loadChecks().some(r=>r.states&&Object.prototype.hasOwnProperty.call(r.states,x.cat+'::'+x.item)))];
+let CHECKLIST=[...(window.HD20ThemeMaster?.checklist?.()||[])];
 const ACTIVE_5S_GROUPS=new Set(['정리','정돈','시각화관리','시각화','청소','설비자주보전','설비 자주보전']);
 const activeThemeNames=items=>[...new Set(items.filter(c=>ACTIVE_5S_GROUPS.has(c.group||c.cat)).map(c=>c.cat))];
 let THEMES=activeThemeNames(window.HD20ThemeMaster?.checklist?.()||CHECKLIST);
-window.addEventListener('hd20-theme-master-updated',()=>{
- const current=window.HD20ThemeMaster?.checklist?.()||[];
+function applyLatestThemeMaster(){
+ const latest=window.HD20ThemeMaster?.checklist?.()||[];
  const host=document.getElementById('awTheme');
- // A live inspection must not lose unsaved checks, observations or selected image files.
  if(host&&hasUnsavedThemeAudit(host)){
   host.dataset.pendingThemeMasterRefresh='1';
   const note=document.getElementById('themePreviousNote');
-  if(note)note.textContent='5S 테마 기준정보가 변경되었습니다. 현재 판정 내용을 저장하거나 화면을 이동한 뒤 최신 기준을 적용해 주세요.';
+  if(note)note.textContent='5S 테마 기준정보가 변경되었습니다. 현재 점검내용을 저장하거나 명시적으로 폐기한 뒤 최신 점검항목이 표시됩니다.';
   return;
  }
- CHECKLIST=[...current,...LEGACY_CHECKLIST.filter(x=>loadChecks().some(r=>r.states&&Object.prototype.hasOwnProperty.call(r.states,x.cat+'::'+x.item)))];
- THEMES=activeThemeNames(current);
+ CHECKLIST=[...latest];
+ THEMES=activeThemeNames(latest);
  if(host){delete host.dataset.pendingThemeMasterRefresh;render()}
-});
+}
+window.addEventListener('hd20-theme-master-updated',applyLatestThemeMaster);
+window.addEventListener('storage',e=>{if(e.key===window.HD20ThemeMaster?.key)applyLatestThemeMaster()});
 function load(){try{const v=JSON.parse(localStorage.getItem(ACT_KEY)||'[]');return Array.isArray(v)?v:[]}catch{return[]}}
 function save(rows){try{localStorage.setItem(ACT_KEY,JSON.stringify(rows));return true}catch(e){console.error('[HD20 Theme] action save failed',e);return false}}
 function loadChecks(){try{const v=JSON.parse(localStorage.getItem(CHECK_KEY)||'[]');return Array.isArray(v)?v:[]}catch{return[]}}
@@ -268,7 +269,7 @@ function render(){
  const host=document.getElementById('awTheme');if(!host)return;
  if(host.dataset.pendingThemeMasterRefresh==='1'&&!hasUnsavedThemeAudit(host)){
   const fresh=window.HD20ThemeMaster?.checklist?.()||[];
-  CHECKLIST=[...fresh,...LEGACY_CHECKLIST.filter(x=>loadChecks().some(r=>r.states&&Object.prototype.hasOwnProperty.call(r.states,x.cat+'::'+x.item)))];
+  CHECKLIST=[...fresh];
   THEMES=activeThemeNames(fresh);
   delete host.dataset.pendingThemeMasterRefresh;
  }
@@ -555,7 +556,7 @@ async function saveAudit(){
  host.dataset.themeSaveContext=month+'|'+line+'|'+selectedOwner()+'|'+team;
  if(host.dataset.pendingThemeMasterRefresh==='1'){
   const fresh=window.HD20ThemeMaster?.checklist?.()||[];
-  CHECKLIST=[...fresh,...LEGACY_CHECKLIST.filter(x=>loadChecks().some(r=>r.states&&Object.prototype.hasOwnProperty.call(r.states,x.cat+'::'+x.item)))];
+  CHECKLIST=[...fresh];
   THEMES=activeThemeNames(fresh);
   delete host.dataset.pendingThemeMasterRefresh;
  }
