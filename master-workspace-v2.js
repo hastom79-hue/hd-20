@@ -41,6 +41,12 @@ registry.innerHTML='<summary>전체 업무탭 기준정보 연결 맵 <span data
 ws.insertAdjacentElement('afterend',registry);
 const areaSelect=registry.querySelector('[data-hm-source-area]');
 [...new Set(SOURCE_MAP.map(x=>x.area))].forEach(area=>{const opt=document.createElement('option');opt.value=area;opt.textContent=area;areaSelect.appendChild(opt)});
+const SOURCE_KINDS=Object.freeze({
+ hd20AuditChecklistV1:'array',hd20ThemeCatalogMasterV1:'array',hd20ThemeAuditPlansV1:'array',
+ hd20TeamLeaderMasterV1:'array',hd20ActionCasesV2:'array',
+ gmes5s_team_org_master_v1:'object',gmes5s_team_targets_v1:'object',
+ gmes5s_work_factor_master_v1:'object',gmes5s_mailing_master_v1:'array'
+});
 function sourceReady(item){
  let saved=false,valid=true,records=null;
  try{
@@ -48,6 +54,9 @@ function sourceReady(item){
   saved=raw!==null;
   if(saved){
    const value=JSON.parse(raw);
+   const kind=SOURCE_KINDS[item.key];
+   if(kind==='array'&&!Array.isArray(value))valid=false;
+   if(kind==='object'&&(!value||Array.isArray(value)||typeof value!=='object'))valid=false;
    if(Array.isArray(value))records=value.length;
    else if(value&&typeof value==='object')records=Object.keys(value).length;
    else if(value===null)valid=false;
@@ -111,7 +120,7 @@ function refreshSourceRegistry(){
  }
  const warnings=sourceIntegrityWarnings();
  const badKeys=[...new Set(list.filter(item=>item.key&&!sourceReady(item).valid).map(item=>item.key))];
- for(const key of badKeys){const source=SOURCE_MAP.find(item=>item.key===key&&item.editor);warnings.push({area:'저장정보 검증',text:'저장 원천 '+key+'의 JSON 형식을 확인할 수 없습니다. 기존 데이터를 덮어쓰지 마세요.',target:source?.editor||'',key});}
+ for(const key of badKeys){const source=SOURCE_MAP.find(item=>item.key===key&&item.editor);warnings.push({area:'저장정보 검증',text:'저장 원천 '+key+'의 JSON 형식·데이터 구조를 확인할 수 없습니다. 기존 데이터를 덮어쓰지 마세요.',target:source?.editor||'',key});}
  const result=registry.querySelector('[data-hm-source-result]');
  const issueList=registry.querySelector('[data-hm-source-issues]');
  if(issueList){issueList.replaceChildren();for(const warning of warnings){
