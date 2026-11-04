@@ -2178,3 +2178,5 @@ Canonical Store는 다음을 기준으로 한다.
 - 저장·선택 삭제·Excel 업로드 모두 같은 충돌/저장 실패 검사를 거치고 저장 성공한 경우에만 화면 재표시 및 성공 안내. 저장 성공 시 공통 Audit 점검항목 캐시 갱신 및 기준정보 변경 이벤트 발행은 유지.
 - 수정 파일: `audit-checklist-enhance.js`, `index.html`. 통합기준정보와 연결된 Audit 원본 키는 변경하지 않음.
 - JS 정적 구문검사 완료. 실제 두 브라우저 창에서의 저장 경쟁, Pages 게시 성공 여부는 별도 확인 필요.
+
+- 후속 보완: Audit 점검항목 원본을 로드하거나 저장한 경우, `HD20_GLOBAL_AUDIT_MASTER`뿐 아니라 기존 2열 배열 계약의 `HD20_GLOBAL_AUDIT_ITEMS`도 함께 최신 값으로 갱신하여 소비 화면에 초기 기본항목이 잔존하는 문제를 방지. (`audit-checklist-enhance.js`, `index.html` 버전 갱신)
