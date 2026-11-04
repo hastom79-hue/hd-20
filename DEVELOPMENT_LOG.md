@@ -2180,3 +2180,14 @@ Canonical Store는 다음을 기준으로 한다.
 - JS 정적 구문검사 완료. 실제 두 브라우저 창에서의 저장 경쟁, Pages 게시 성공 여부는 별도 확인 필요.
 
 - 후속 보완: Audit 점검항목 원본을 로드하거나 저장한 경우, `HD20_GLOBAL_AUDIT_MASTER`뿐 아니라 기존 2열 배열 계약의 `HD20_GLOBAL_AUDIT_ITEMS`도 함께 최신 값으로 갱신하여 소비 화면에 초기 기본항목이 잔존하는 문제를 방지. (`audit-checklist-enhance.js`, `index.html` 버전 갱신)
+
+
+### 2026-11-04 — 개선요청 등록과 개선조치 후 실행평가 단계 분리
+- 사용자 승인 방향: **개선요청을 등록하는 시점에 고도화·수평전개·Fool Proof를 판정하지 않고, 개선조치 내용까지 등록된 후 해당 사례의 건별 상세 팝업에서 평가 체크한다.**
+- `action-mail-workflow.js`: 신규 개선요청 등록 폼에서 5S 고도화 3대요건 및 개선 실행평가 표시 제거. 신규 요청의 판정값을 미평가·미채택 기본값으로 저장해 성과 집계가 요청 단계에서 허위 증가하지 않게 함.
+- 개선조치 상세 팝업 `openActionCaseDetail`: 조치내용(`actionText`/`action`)이 있는 건에 한해 수평전개 실행·확대적용·Fool Proof 적용·고도화 3대요건 체크 및 저장 허용. 조치내용 미등록 시 안내만 표시.
+- 기존 개선조치 단일 원천 `hd20ActionCasesV2`의 `horizontalDeployed`, `horizontalAdopted`, `expandApplied`, `foolproofApplied`, `foolproofAdopted`, `criteriaVisual/Green/Space`, `criteriaMatched`, `finalAdopted` 등 필드와 기존 `hd20-action-updated` 이벤트를 그대로 사용. 별도 중복 저장소 없음.
+- 최종 채택 및 수평전개/Fool Proof 채택 체크는 기존 마스터 권한 경유. 이미 채택된 기준을 비관리자가 임의 해제하는 판정변경 차단.
+- `action-register-modal.js`: 개선요청 등록 팝업 헤더의 조기 3대요건 표기 및 불필요한 04 고도화 판정 타이틀 제거.
+- `index.html`: 변경된 JS 2개 파일 캐시 버전 갱신. 기존 확정 대시보드 변경 없음.
+- 검증 한계: JS 구문 및 파일 참조 확인과 실제 사용자 브라우저에서 개선조치 저장→상세 팝업→평가 저장→집계 연계 통합시험은 다름. GitHub Pages 실제 게시 성공 확인은 별도 필요.
