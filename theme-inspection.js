@@ -502,6 +502,18 @@ function bulkSet(value){
 }
 async function saveAudit(){
  const host=document.getElementById('awTheme');if(!host)return;
+ if(host.dataset.themeAuditSaving==='1')return;
+ host.dataset.themeAuditSaving='1';
+ const saveButton=host.querySelector('#themeSaveBtn');
+ if(saveButton){saveButton.disabled=true;saveButton.setAttribute('aria-busy','true')}
+ try{await saveAuditInternal(host)}
+ catch(error){console.error('[HD20 Theme] unexpected audit registration error',error);alert('점검 저장 중 오류가 발생했습니다. 데이터 저장 여부를 확인하고 다시 시도해 주세요.')}
+ finally{
+  host.dataset.themeAuditSaving='0';
+  if(saveButton?.isConnected){saveButton.disabled=false;saveButton.removeAttribute('aria-busy')}
+ }
+}
+async function saveAuditInternal(host){
  const line=host.dataset.line,team=host.dataset.team,month=host.dataset.month;
  if(selectedOwner()==='team'&&sessionTeam()&&sessionTeam()!==team){alert('등록된 담당 생산팀과 현재 선택팀이 일치하지 않습니다. 화면을 다시 확인해 주세요.');render();return}
  const rows=$$('.themeCheckRow',host),states={};
@@ -510,7 +522,11 @@ async function saveAudit(){
  if(!applicable.length){alert('먼저 [점검계획·취약현황]에서 선택한 점검 주체·월·라인의 취약테마를 지정해 주세요.');host.dataset.view='plan';render();return}
   if(Object.keys(states).length<applicable.length){const missing=applicable.length-Object.keys(states).length;alert('미판정 항목 '+missing+'건이 있습니다. 모든 항목을 판정한 뒤 저장해 주세요.');return}
  const auditor=$('#themeAuditAuditor',host)?.value.trim()||'';if(!auditor){alert('최초 점검자 성명을 입력해 주세요.');$('#themeAuditAuditor',host)?.focus();return}const hasNg=rows.some(row=>states[row.dataset.key]==='미흡');const photoFile=$('#themeAuditPhoto',host)?.files?.[0];if(hasNg&&!photoFile&&rows.some(row=>states[row.dataset.key]==='미흡'&&!themeFindingDraft(host,row.dataset.key).photoFile)){alert('미흡 항목별 현장사진을 선택하거나 공통 현장사진을 첨부해 주세요.');return}if(photoFile&&(!['image/jpeg','image/png','image/webp'].includes(photoFile.type)||photoFile.size>1048576)){alert('현장사진은 JPG/PNG/WEBP 형식, 1MB 이하로 선택해 주세요.');return}let improvementPhoto='';if(photoFile){try{improvementPhoto=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result||''));reader.onerror=()=>reject(new Error('사진 읽기 실패'));reader.readAsDataURL(photoFile)})}catch(error){alert('사진을 읽지 못했습니다. 다시 선택해 주세요.');return}}const checks=loadChecks(),memo=$('#themeAuditMemo',host)?.value.trim()||'';const policyDays=window.HD20PolicyConfig?.deadlineDays?.()??null;const dueDays=Number.isFinite(Number(policyDays))&&Number(policyDays)>0?Number(policyDays):null;const dueDate=dueDays===null?'':addDaysStr(today(),dueDays);
- const findingEvidence={};for(const row of rows.filter(row=>states[row.dataset.key]==='미흡')){const draft=themeFindingDraft(host,row.dataset.key);const file=draft.photoFile;if(file&&(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>1048576)){alert('항목별 현장사진은 JPG/PNG/WEBP, 1MB 이하로 선택해 주세요.');return}try{findingEvidence[row.dataset.key]={note:String(draft.note||'').trim(),photo:file?await themeFileToData(file):improvementPhoto}}catch(error){alert('미흡 항목의 사진을 읽지 못했습니다. 다시 선택해 주세요.');return}}
+ const findingEvidence={};for(const row of rows.filter(row=>states[row.dataset.key]==='미흡')){
+ const draft=themeFindingDraft(host,row.dataset.key),file=draft.photoFile;
+ if(!String(draft.note||memo||'').trim()){alert('미흡 점검항목마다 발견내용 또는 공통 현장 관찰 메모를 입력해 주세요.');return}
+ if(!file&&!improvementPhoto){alert('미흡 점검항목 '+row.dataset.item+'의 현장사진을 첨부해 주세요.');return}
+if(file&&(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>1048576)){alert('항목별 현장사진은 JPG/PNG/WEBP, 1MB 이하로 선택해 주세요.');return}try{findingEvidence[row.dataset.key]={note:String(draft.note||'').trim(),photo:file?await themeFileToData(file):improvementPhoto}}catch(error){alert('미흡 항목의 사진을 읽지 못했습니다. 다시 선택해 주세요.');return}}
  const rec={id:newId('THEME-AUDIT'),line,team,month,inspectionOwner:selectedOwner(),auditor,initialAuditor:auditor,improvementPhoto,states,findingEvidence,memo,auditedAt:new Date().toISOString(),checklistVersion:4,linkedActionIds:[],createdActionIds:[],reusedActionIds:[],ngCount:rows.filter(row=>states[row.dataset.key]==='미흡').length};
  checks.push(rec);
  if(!saveChecks(checks)){alert('점검 결과를 저장하지 못했습니다. 브라우저 저장공간을 확인한 뒤 다시 시도해 주세요.');return}
