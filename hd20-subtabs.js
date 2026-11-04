@@ -497,7 +497,10 @@ function renderRetentionSampling(root){
  const done=x=>['완료','개선완료','조치완료','종결','확정완료','종료','종결완료'].includes(String(x.status||x.activityStatus||x.actionStatus||'').trim())||x.completed===true;
  const excluded=x=>x.isDemo===true||x.isTest===true||['demo-seed','e2e-fixture','web-validation-fixture'].includes(String(x.source||''));
  const keyOf=x=>String(x.improvementNo||x.improvementNumber||x.caseId||x.activityId||x.id||'').trim();
- const pool=()=>[...new Map(load('hd20ActionCasesV2').filter(x=>done(x)&&!excluded(x)).map(x=>({x,kind:'개선요청'})).filter(e=>keyOf(e.x)).map(e=>[e.kind+':'+keyOf(e.x),e])).values()];
+ const pool=()=>{const candidates=[
+  ...load('hd20GMES5SAutoImproveRawV1').filter(x=>done(x)&&!excluded(x)).map(x=>({x,kind:'자율개선'})),
+  ...load('hd20ActionCasesV2').filter(x=>done(x)&&!excluded(x)).map(x=>({x,kind:'개선요청'}))
+ ];return [...new Map(candidates.filter(e=>keyOf(e.x)).map(e=>[e.kind+':'+keyOf(e.x),e])).values()]};
  const policy=window.HD20PolicyConfig?.read?.().retentionCheck||{intervalDays:30,sampleCount:5};
  const intervalDays=Math.max(1,Number(policy.intervalDays)||30),sampleCount=Math.max(1,Number(policy.sampleCount)||5);
  const canEvaluate=()=>window.HD20MasterAuth?.canEvaluateRetention?.()===true;
