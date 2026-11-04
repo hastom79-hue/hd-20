@@ -613,23 +613,25 @@ function renderRetentionSampling(root){
  save('hd20RetentionRandomChecksV1',rows);render();
  };
  host.querySelectorAll('[data-rs-save]').forEach(btn=>btn.onclick=()=>{
- const box=btn.closest('[data-rs-id]'),id=box.dataset.rsId,evaluator=currentEmail(),result=box.querySelector('[data-rs-result]').value,comment=box.querySelector('[data-rs-comment]').value.trim();
+ const box=btn.closest('[data-rs-id]');if(!box||btn.disabled||box.dataset.rsSaving==='1')return;const id=box.dataset.rsId,evaluator=currentEmail(),result=box.querySelector('[data-rs-result]').value,comment=box.querySelector('[data-rs-comment]').value.trim();
  if(!canInspect()){window.alert('등록된 5S모듈 담당자 또는 마스터 관리자만 유지점검할 수 있습니다.');return} if(!result){window.alert('현재 유지 또는 미유지 체크박스를 선택하세요.');return}
  const rows=load('hd20RetentionRandomChecksV1'),n=rows.findIndex(x=>x.id===id);if(n<0||rows[n].result!=='점검대기')return;
+ box.dataset.rsSaving='1';btn.disabled=true;
+ const unlock=()=>{if(box.isConnected){delete box.dataset.rsSaving;btn.disabled=false}};
  const savedAuditBefore=localStorage.getItem('hd20AuditRandomDrawsV1'),savedActionBefore=localStorage.getItem('hd20ActionCasesV2');
  const r={...rows[n],evaluator,comment,result,evaluatedAt:new Date().toISOString()};
  if(result==='부적합'){
   const audits=load('hd20AuditRandomDrawsV1'),drawId='RET-AUDIT-'+r.id;
   let draw=audits.find(x=>x.id===drawId);
   if(!draw){draw={id:drawId,team:r.team,workplace:r.workplace,sourceCaseId:r.caseId,sourceStage:'RETENTION-RANDOM',auditActor:'마스터 권한자',auditDate:seoulDay(),auditResult:'부적합',auditor:evaluator,initialAuditor:evaluator,improvementRequest:'[유지점검 부적합] '+r.kind+' '+r.caseId+(comment?' · '+comment:'')};audits.unshift(draw)}
-  try{if(!load('hd20AuditRandomDrawsV1').some(x=>String(x.id)===drawId))save('hd20AuditRandomDrawsV1',audits);const actions=load('hd20ActionCasesV2'),actionId='AUTO-RETENTION-'+r.id;let action=actions.find(a=>a.id===actionId||(a.sourceCaseId===draw.id&&['RETENTION-RANDOM','AUDIT-REQUEST'].includes(a.sourceStage)));if(action&&(String(action.sourceCaseId||'')!==draw.id||!['RETENTION-RANDOM','AUDIT-REQUEST'].includes(action.sourceStage))){throw new Error('유지점검 개선조치 ID 중복 또는 원본 연결 불일치: '+action.id)}if(!action){action={id:actionId,date:seoulDay(),registeredAt:seoulDay(),team:r.team,workplace:r.workplace,owner:evaluator,registeredBy:evaluator,registrant:evaluator,auditor:evaluator,initialAuditor:evaluator,problem:draw.improvementRequest,source:'5S 유지점검',sourceCaseId:draw.id,sourceStage:'RETENTION-RANDOM',originCaseId:r.caseId,status:'조치대기',effectVerified:false,recurrence:false,autoCreated:true};actions.unshift(action);save('hd20ActionCasesV2',actions)}r.actionId=action.id}catch(err){console.error('[HD20 유지점검 이관]',err);let restored=true;for(const [key,raw] of [['hd20AuditRandomDrawsV1',savedAuditBefore],['hd20ActionCasesV2',savedActionBefore]]){try{if(raw===null)localStorage.removeItem(key);else localStorage.setItem(key,raw)}catch(e){restored=false;console.error('[유지점검 이관 복구 실패]',key,e)}}window.alert(restored?'부적합 이관에 실패해 연계 기록을 복원했습니다. 판정은 확정하지 않았습니다.':'부적합 이관 및 복구에 실패했습니다. 관리자 확인 전 재등록하지 마세요.');return}
-  if(!r.actionId||!load('hd20ActionCasesV2').some(a=>String(a.id)===String(r.actionId))){window.alert('개선조치 등록 확인에 실패했습니다. 유지점검 판정은 확정하지 않았습니다.');return}
+  try{if(!load('hd20AuditRandomDrawsV1').some(x=>String(x.id)===drawId))save('hd20AuditRandomDrawsV1',audits);const actions=load('hd20ActionCasesV2'),actionId='AUTO-RETENTION-'+r.id;let action=actions.find(a=>a.id===actionId||(a.sourceCaseId===draw.id&&['RETENTION-RANDOM','AUDIT-REQUEST'].includes(a.sourceStage)));if(action&&(String(action.sourceCaseId||'')!==draw.id||!['RETENTION-RANDOM','AUDIT-REQUEST'].includes(action.sourceStage))){throw new Error('유지점검 개선조치 ID 중복 또는 원본 연결 불일치: '+action.id)}if(!action){action={id:actionId,date:seoulDay(),registeredAt:seoulDay(),team:r.team,workplace:r.workplace,owner:evaluator,registeredBy:evaluator,registrant:evaluator,auditor:evaluator,initialAuditor:evaluator,problem:draw.improvementRequest,source:'5S 유지점검',sourceCaseId:draw.id,sourceStage:'RETENTION-RANDOM',originCaseId:r.caseId,status:'조치대기',effectVerified:false,recurrence:false,autoCreated:true};actions.unshift(action);save('hd20ActionCasesV2',actions)}r.actionId=action.id}catch(err){console.error('[HD20 유지점검 이관]',err);let restored=true;for(const [key,raw] of [['hd20AuditRandomDrawsV1',savedAuditBefore],['hd20ActionCasesV2',savedActionBefore]]){try{if(raw===null)localStorage.removeItem(key);else localStorage.setItem(key,raw)}catch(e){restored=false;console.error('[유지점검 이관 복구 실패]',key,e)}}unlock();window.alert(restored?'부적합 이관에 실패해 연계 기록을 복원했습니다. 판정은 확정하지 않았습니다.':'부적합 이관 및 복구에 실패했습니다. 관리자 확인 전 재등록하지 마세요.');return}
+  if(!r.actionId||!load('hd20ActionCasesV2').some(a=>String(a.id)===String(r.actionId))){unlock();window.alert('개선조치 등록 확인에 실패했습니다. 유지점검 판정은 확정하지 않았습니다.');return}
  }
  rows[n]=r;
  try{save('hd20RetentionRandomChecksV1',rows)}catch(err){
   const restore=(key,raw)=>{try{if(raw===null)localStorage.removeItem(key);else localStorage.setItem(key,raw);if(localStorage.getItem(key)!==raw)throw new Error('복원 확인 실패');return true}catch(e){console.error('[유지점검 롤백 실패]',key,e);return false}};
   const auditRestored=restore('hd20AuditRandomDrawsV1',savedAuditBefore),actionRestored=restore('hd20ActionCasesV2',savedActionBefore);
-  window.alert(auditRestored&&actionRestored?'유지점검 판정 저장 실패: 연계 Audit·개선조치를 이전 상태로 복원했습니다.':'유지점검 저장 및 일부 복구에 실패했습니다. 관리자 확인 전 재등록하지 마세요.');
+  unlock();window.alert(auditRestored&&actionRestored?'유지점검 판정 저장 실패: 연계 Audit·개선조치를 이전 상태로 복원했습니다.':'유지점검 저장 및 일부 복구에 실패했습니다. 관리자 확인 전 재등록하지 마세요.');
   return
  }
  if(result==='부적합')window.dispatchEvent(new CustomEvent('hd20-action-updated',{detail:{source:'retention',actionId:r.actionId}}));
