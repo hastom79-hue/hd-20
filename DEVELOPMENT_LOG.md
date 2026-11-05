@@ -2531,3 +2531,5 @@ Canonical Store는 다음을 기준으로 한다.
 - 등록 후 예약된 renderCases(a)는 현재 상단 영역이 activity(자율개선·개선요청 조회)여도 구형 #awAction 목록을 불필요하게 재렌더하므로, 현재 활성 영역이 action일 때에만 구형 표를 갱신하도록 제한. 정상 이벤트 hd20-action-updated는 그대로 유지해 activity 조회 갱신 경로는 보존.
 - index.html action-mail-workflow.js 캐시 키 갱신 및 GitHub Pages CI 정적 검사 추가. 데이터/등록 ID/기존 확정 대시보드·CSS 변경 없음.
 - 실제 브라우저 등록→조회/개선조치 연계 E2E와 GitHub Pages 최신 배포 성공은 미확인.
+
+- 추가 실행검증(등록 후 목록 연계): action-mail-workflow.js의 실제 예약 갱신 함수를 분리해 area='action'일 때 구형 목록 1회 렌더링, area='activity'일 때 0회 렌더링 확인. GitHub Actions에 같은 실행형 회귀 테스트 추가(커밋 2f6d213). Pages 워크플로 실제 실행 및 웹 브라우저 E2E는 미확인.
