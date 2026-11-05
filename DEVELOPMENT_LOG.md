@@ -2516,3 +2516,11 @@ Canonical Store는 다음을 기준으로 한다.
 - index.html 두 모달 JS 캐시 버전 갱신. 기존 사용자 등록자료·업무 저장 로직·확정 대시보드/CSS 변경 없음.
 - 두 팝업의 실제 닫기 함수를 독립적으로 실행한 4개 시나리오(상대 팝업 열림/닫힘 × 자율개선/개선요청)에서 스크롤 잠금 결과와 종료 상태 모두 확인.
 - GitHub Pages 워크플로에 모달 닫기 스크롤 잠금 실행형 회귀 테스트 추가. 실제 브라우저 E2E 및 최신 GitHub Pages 배포 성공은 미확인.
+
+## 2026-11-05 — 개선요청 임시저장·정식 등록 완료 이벤트 분리
+
+- action-mail-workflow.js 등록 경로에서 via=false 임시저장과 via!=false 정식 등록 모두 hd20-action-register-success 이벤트를 발생시키지만, action-register-modal.js가 둘을 구분하지 않고 localStorage의 hd20ActionPopupDraftV1을 삭제하고 팝업을 닫는 결함 확인.
+- action-register-modal.js 완료 이벤트 리스너에 via===false 조건을 추가하여 임시저장 시 임시작성 데이터와 팝업 상태를 보존하고, 정식 등록 성공 시에만 기존 초안 정리·팝업 닫기 경로 실행.
+- 실제 이벤트 리스너 코드를 추출해 두 상황을 독립 실행: 임시저장 시 초안 삭제 0회·팝업 닫기 0회, 정식 등록 시 삭제 1회·닫기 1회 통과.
+- index.html 개선요청 팝업 JS 캐시 키 v13 갱신. GitHub Pages CI에 실행형 회귀 테스트 및 방어 코드 검사 추가. 기존 등록 저장소·저장 로직·승인 대시보드·CSS 변경 없음.
+- 실제 웹 브라우저 임시저장/등록 E2E와 GitHub Pages 최신 배포 성공은 별도 확인 필요.
