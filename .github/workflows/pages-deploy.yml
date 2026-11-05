@@ -84,6 +84,7 @@ jobs:
           grep -Fq '개선요청 등록·임시저장 — 최상위 팝업 위치 변경에 따른 저장 로직 복원' DEVELOPMENT_LOG.md
           node --check action-mail-workflow.js
           node --check action-register-modal.js
+          grep -Fq "if(e.detail?.via===false)return;localStorage.removeItem('hd20ActionPopupDraftV1')" action-register-modal.js
           grep -Fq "if(!m||m.classList.contains('on'))return" action-register-modal.js
           grep -Fq "if(m.isConnected&&m.classList.contains('on'))" action-register-modal.js
           grep -Fq "if(!m||!m.classList.contains('on'))return;clearTimeout(modalFocusTimer)" action-register-modal.js
@@ -1036,6 +1037,25 @@ jobs:
             }
           }
           console.log('PASS: popup close preserves lock while other registration modal remains open');
+          NODE
+      - name: Exercise action draft versus final-registration events
+        run: |
+          node <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const src=fs.readFileSync('action-register-modal.js','utf8');
+          const begin=src.indexOf("window.addEventListener('hd20-action-register-success'");
+          const end=src.indexOf(";window.addEventListener('hd20-audit-to-action'",begin);
+          assert(begin>=0&&end>begin,'registration success listener not found');
+          for(const via of [false,true]){
+            let cb,removed=0,closed=0;
+            new Function('window','localStorage','modal','close',src.slice(begin,end+1))(
+              {addEventListener:(event,handler)=>{assert.equal(event,'hd20-action-register-success');cb=handler}},
+              {removeItem:()=>removed++},{classList:{contains:()=>true}},()=>closed++);
+            cb({detail:{via}});
+            assert.equal(removed,via===false?0:1,'draft storage must only clear after final registration');
+            assert.equal(closed,via===false?0:1,'draft event must not close registration popup');
+          }
+          console.log('PASS: temporary action saves retain draft and popup; final registration clears and closes');
           NODE
       - name: Test registration popup repeat-open guards
         run: |
