@@ -47,6 +47,7 @@ jobs:
           grep -Fq 'search.oninput=e=>' audit-as-is-to-be-manager.js
           grep -Fq 'clearTimeout(searchDebounce)' audit-as-is-to-be-manager.js
           grep -Fq 'restored.focus({preventScroll:true})' audit-as-is-to-be-manager.js
+          grep -Fq "window.HD20_NAV?.active?.()!=='activity'||document.getElementById('awActivity')?.dataset.subview!=='tobe'" audit-as-is-to-be-manager.js
           grep -Fq 'if(saving||!overlay.isConnected)return' audit-as-is-to-be-manager.js
           grep -Fq "button.setAttribute('aria-busy','true')" audit-as-is-to-be-manager.js
           grep -Fq 'function installImprovementSubnavGuard()' hd20-subtabs.js
