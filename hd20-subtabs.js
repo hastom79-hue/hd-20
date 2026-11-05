@@ -582,7 +582,9 @@ function renderRetentionSampling(root){
  });
  host.querySelectorAll('[data-rs-recheck]').forEach(btn=>btn.onclick=()=>{
  if(!canEvaluate()){window.alert('유지 재점검은 마스터 권한자 인증이 필요합니다.');return}
- const box=btn.closest('[data-rs-id]'),id=box?.dataset.rsId,rows=load('hd20RetentionRandomChecksV1'),n=rows.findIndex(x=>x.id===id);
+ const box=btn.closest('[data-rs-id]'),id=box?.dataset.rsId,rows=load('hd20RetentionRandomChecksV1'),matching=rows.filter(x=>String(x.id||'')===String(id||''));
+ if(!id||matching.length!==1){window.alert('유지점검 번호가 누락되었거나 중복되어 있습니다. 재점검·종결을 중단하고 관리자에게 확인해 주세요.');return}
+ const n=rows.findIndex(x=>String(x.id||'')===String(id));
  if(n<0||rows[n].result!=='부적합'||rows[n].closedAt||(rows[n].recheckResult==='적합'&&rows[n].recheckedAt))return;
  if(btn.disabled||box.dataset.rsSaving==='1')return;box.dataset.rsSaving='1';box.querySelectorAll('[data-rs-recheck]').forEach(b=>b.disabled=true);
  const action=linkedAction(rows[n]);
