@@ -52,6 +52,7 @@ s.textContent=' #awActivity[data-subview]:not([data-subview="tobe"]) #'+ID+'{dis
 #hd20AsIsToBeManager .tgPagination{display:flex;justify-content:flex-end;align-items:center;flex-wrap:wrap;gap:12px;padding:12px 4px 2px;font-size:12px;color:#506b7d}
 #hd20AsIsToBeManager .tgPagination button:disabled{opacity:.42;cursor:not-allowed}
 `;document.head.appendChild(s)}
+let searchDebounce=null;
 function render(){let root=document.getElementById('awActivity');if(!root)return;bootStyle();let host=document.getElementById(ID);if(!host){host=document.createElement('section');host.id=ID;host.className='awCard';root.prepend(host)}if(host.parentElement!==root)root.prepend(host);
 let all=rows().filter(x=>key(x)),view=all.filter(x=>(!filt.team||x.team===filt.team)&&(!filt.status||phase(x)===filt.status)&&(!filt.text||[key(x),x.team,x.workplace,x.problem,x.improvementRequest,plan(x)].some(z=>String(z||'').toLowerCase().includes(filt.text.toLowerCase()))));
 const pageCount=Math.max(1,Math.ceil(view.length/PAGE_SIZE));
@@ -65,7 +66,18 @@ host.innerHTML='<div class="tgTop"><div><div class="tgtitle">조치내역 등록
 host.querySelector('[data-tobe-team]').value=filt.team;host.querySelector('[data-tobe-status]').value=filt.status;host.querySelector('[data-tobe-search]').value=filt.text;
 host.querySelector('[data-tobe-team]').onchange=e=>{filt.team=e.target.value;page=1;render()};
 host.querySelector('[data-tobe-status]').onchange=e=>{filt.status=e.target.value;page=1;render()};
-host.querySelector('[data-tobe-search]').onchange=e=>{filt.text=e.target.value;page=1;render()};
+const search=host.querySelector('[data-tobe-search]');
+search.oninput=e=>{
+ const next=e.target.value;
+ clearTimeout(searchDebounce);
+ searchDebounce=setTimeout(()=>{
+  searchDebounce=null;
+  if(!host.isConnected||document.getElementById(ID)!==host)return;
+  filt.text=next;page=1;render();
+  const restored=host.querySelector('[data-tobe-search]');
+  if(restored){restored.focus({preventScroll:true});restored.setSelectionRange(next.length,next.length)}
+ },180);
+};
 host.querySelector('[data-tobe-reset]').onclick=()=>{filt={team:'',status:'',text:''};page=1;render()};
 host.querySelector('[data-tobe-prev]').onclick=()=>{if(page>1){page--;render()}};
 host.querySelector('[data-tobe-next]').onclick=()=>{if(page<pageCount){page++;render()}};
