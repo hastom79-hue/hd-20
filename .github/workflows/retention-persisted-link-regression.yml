@@ -1,0 +1,25 @@
+name: HD-20 Retention Persisted Link Regression
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'hd20-subtabs.js'
+      - 'tests/retention-persisted-link-smoke.cjs'
+      - '.github/workflows/retention-persisted-link-regression.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  retention-link:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check syntax
+        run: |
+          node --check hd20-subtabs.js
+          node --check tests/retention-persisted-link-smoke.cjs
+      - name: Execute stored-link regression
+        run: node tests/retention-persisted-link-smoke.cjs
