@@ -3,7 +3,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const src=fs.readFileSync('hd20-subtabs.js','utf8');
 const begin=src.indexOf("const existingFollowups=actions.filter(a=>String(a.id||'')===idNext");
-const end=src.indexOf(";if(existingFollowups.length>1)",begin);
+const end=src.indexOf(");",begin)+1;
 assert(begin>=0&&end>begin,'recheck followup deduplication guard exists');
 const detect=new Function('actions','idNext','rows','n','action',src.slice(begin,end+1)+'return existingFollowups;');
 const original={id:'R1',recheckHistory:[]};
