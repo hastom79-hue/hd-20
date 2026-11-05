@@ -147,6 +147,34 @@ jobs:
           node --check theme-inspection.js
           node --check master-workspace-v2.js
           node --check final-layout-polish.js
+      - name: Test retention candidate eligibility and draw ID uniqueness
+        run: |
+          node <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const src=fs.readFileSync('hd20-subtabs.js','utf8');
+          const begin=src.indexOf("const done=x=>",src.indexOf("const stored=load('hd20RetentionRandomChecksV1')"));
+          const end=src.indexOf(' const policy=window.HD20PolicyConfig',begin);
+          assert(begin>=0&&end>begin,'retention candidate builder not found');
+          const stores={
+            hd20GMES5SAutoImproveRawV1:[{id:'S-1',status:'완료'},{id:'S-1',status:'완료'},{id:'S-2',status:'진행중'},{id:'S-3',status:'완료',isDemo:true},{id:'S-4',completed:true}],
+            hd20ActionCasesV2:[{id:'A-1',status:'완료'},{id:'A-2',status:'조치대기'},{id:'A-3',status:'종결'},{id:'A-4',status:'완료',source:'e2e-fixture'}]
+          };
+          const pool=new Function('load',src.slice(begin,end)+'return pool;')(key=>stores[key]||[]);
+          assert.deepEqual(pool().map(x=>x.kind+':'+x.x.id),['자율개선:S-1','자율개선:S-4','개선요청:A-1','개선요청:A-3']);
+          const idBegin=src.indexOf("const now=new Date().toISOString(),drawDay=seoulDay(),idPrefix=");
+          const idEnd=src.indexOf("\n try{save('hd20RetentionRandomChecksV1',rows)}",idBegin);
+          assert(idBegin>=0&&idEnd>idBegin,'retention draw ID generator not found');
+          class FixedDate {toISOString(){return '2026-11-05T14:00:00.000Z'}}
+          const prefix='RET-20261105140000000-';
+          const existing=[{id:prefix+'3'},{id:prefix+'4'},{id:'HISTORICAL'}];
+          const next=new Function('rows','chosen','seoulDay','keyOf','Date',src.slice(idBegin,idEnd)+'return rows;')(
+            existing,[{x:{id:'C-1'}},{x:{id:'C-2'}},{x:{id:'C-3'}}],()=> '2026-11-05',x=>x.id,FixedDate
+          );
+          assert.equal(next.length,6);
+          assert.equal(new Set(next.map(x=>x.id)).size,6,'draw IDs must be unique across existing and new cases');
+          assert.deepEqual(next.slice(3).map(x=>x.id),[prefix+'5',prefix+'6',prefix+'7']);
+          console.log('PASS: completed-only source candidates, demo/pending exclusion, dedupe, and collision-safe draw IDs');
+          NODE
       - name: Exercise monthly bar-label rendering fixtures
         run: |
           node <<'NODE'
