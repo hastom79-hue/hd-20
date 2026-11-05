@@ -1,0 +1,31 @@
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const src=fs.readFileSync('hd20-subtabs.js','utf8');
+const begin=src.indexOf("const existingFollowups=actions.filter(a=>String(a.id||'')===idNext");
+const end=src.indexOf(";if(existingFollowups.length>1)",begin);
+assert(begin>=0&&end>begin,'recheck followup deduplication guard exists');
+const detect=new Function('actions','idNext','rows','n','action',src.slice(begin,end+1)+'return existingFollowups;');
+const original={id:'R1',recheckHistory:[]};
+const previous={id:'A1'};
+const next='AUTO-RETENTION-RECHECK-R1-1';
+const valid={id:next,sourceStage:'RETENTION-RECHECK',sourceCaseId:'R1',previousActionId:'A1'};
+function scenario(name,actions,expected){
+ const matches=detect(actions,next,[original],0,previous);
+ assert.equal(matches.length,expected,name);
+ console.log('PASS '+name);
+}
+scenario('none available',[],0);
+scenario('existing matching ID',[valid],1);
+scenario('duplicate matching ID',[valid,valid],2);
+scenario('same prior link different ID',[{...valid,id:'RECHECK-OTHER'}],1);
+scenario('two entries sharing same prior link',[valid,{...valid,id:'RECHECK-OTHER'}],2);
+scenario('unrelated recheck ignored',[{...valid,sourceCaseId:'R2',id:'OTHER',previousActionId:'A2'}],0);
+const write=src.slice(src.indexOf("if(!next){next={id:idNext"),src.indexOf("if(createdFollowupId)window.dispatchEvent",begin));
+assert(write.includes("if(existingFollowups.length>1)"),'duplicate results must abort');
+assert(write.includes("if(next){"),'already existing followup must not be recreated');
+assert(write.includes("priorActionSnapshot"),'pre-write action snapshot preserved');
+assert(write.includes("priorRetentionSnapshot"),'pre-write retention snapshot preserved');
+assert(write.includes("['hd20ActionCasesV2',priorActionSnapshot]"),'action rollback on retention save failure');
+assert(write.includes("['hd20RetentionRandomChecksV1',priorRetentionSnapshot]"),'retention rollback on save failure');
+console.log('PASS duplicate prevention and dual rollback branches verified');
