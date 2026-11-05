@@ -2634,3 +2634,11 @@ Canonical Store는 다음을 기준으로 한다.
 - 최신 `audit-as-is-to-be-manager.js`의 실제 `open(id)` 유일성 검증 구문을 추출하여 정상 1건, 중복 2건, 누락, 빈 ID 4개 시나리오를 독립 실행. 각 시나리오의 허용/차단 및 안내 발생 기대 결과 4/4 일치.
 - 구형 `action-mail-workflow.js`의 `openResponse()`/`saveResponse()`/저장 후 검증 단계에도 각각 고유 관리번호 방어조건이 존재하는지 최신 소스를 다시 확인.
 - 위 4/4는 팝업 진입 가드의 실제 실행검증이지 GitHub Actions, 브라우저 조치등록 E2E 또는 Pages 배포 성공을 뜻하지 않음. 운영 데이터 변경 없음.
+
+## 2026-11-06 — Audit 유지점검 최초 판정 ID 중복 차단 및 실행검증
+
+- `hd20-subtabs.js`의 유지점검 최초 유지/부적합 판정 저장 핸들러가 `findIndex()`로 첫 ID만 선택하여 중복 ID 데이터에서 다른 원본 기록을 수정할 위험 확인. 최초 판정 시 대상 ID 유효성 및 동일 ID 정확히 1건인지 확인하도록 보강. 누락·중복 시 판정 및 Audit/개선조치 자동이관 진입 전에 관리자 확인 안내 후 중단. 이미 판정한 기록은 재판정 차단 유지.
+- `index.html`의 `hd20-subtabs.js` 캐시 키를 `20261106-retention-initial-unique-v80`으로 변경. 업무 데이터, 대시보드, CSS 무변경.
+- `tests/retention-initial-verdict-unique-id-smoke.cjs`와 `.github/workflows/retention-initial-verdict-regression.yml` 신규 추가.
+- 실제 최신 JS 원본의 판정 진입 가드 구문 추출 실행: 정상 1건, 중복 2건, 원본 부재, 빈 ID, 판정 완료 5/5 기대 결과 통과. 이는 단위 가드 실행검증이며 실제 브라우저 저장→자동이관 E2E 또는 Actions 성공을 뜻하지 않음.
+- GitHub main 반영: 코드 `5d661dcc`, 캐시 `3fbba419`, 테스트 `1e8b9c88`, CI `cea6a7a6`. 최신 Pages 배포 성공은 미확인.
