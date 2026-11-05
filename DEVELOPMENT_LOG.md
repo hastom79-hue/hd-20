@@ -2329,3 +2329,11 @@ Canonical Store는 다음을 기준으로 한다.
 - GitHub Pages 워크플로의 index.html 고정 문자열 검사 15건과 현재 실제 파일 참조를 재대조하여 모두 일치함을 확인.
 - 구문 검사는 핵심 업무 파일 통과하였으나, 저장 버튼 클릭·팝업 중복·실제 페이지 렌더링에 대한 브라우저 E2E 성공은 아직 확인되지 않음.
 - 주의: hd20-subtabs.js 내 renderSimpleWorkboard()에 구형 Audit '결과·재조치' 문구가 남아 있으나 실제 호출 참조가 확인되지 않아 운영 화면 결함이라고 단정하지 않고 삭제/수정하지 않음.
+
+## 2026-11-05 — 개선요청 등록 팝업 중복 초기화 방지
+
+- action-register-modal.js setup()는 이전에 #awAction 내부에서만 #hd20ActionRegisterModal을 검색했으나, 팝업이 열릴 때 모달을 document.body로 이동하는 구조라 이후 같은 초기화 루틴이 재실행되면 기존 모달을 발견하지 못하는 결함이 있었음.
+- setup() 시작에서 document.getElementById('hd20ActionRegisterModal') 전체 DOM 검사와 root.dataset.hd20ActionModalReady 플래그를 함께 확인하도록 수정. 기존 모달 존재 시 setup 완료로 간주하고 중복 버튼/팝업 생성 방지.
+- 기존 등록/저장/권한/업무데이터 로직은 수정하지 않음. index.html 캐시 키 action-register-modal.js?v=20261105-idempotent-modal-init-v46로 갱신.
+- GitHub Pages CI에 전역 단일 모달 가드 코드 점검 추가. JS 구문 검사 및 최신 캐시 참조 확인 통과.
+- 브라우저 실제 다중 초기화 E2E, 저장/조회 동기화 및 Pages 배포 성공 여부는 별도 확인 필요.
