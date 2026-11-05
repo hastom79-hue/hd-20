@@ -1039,6 +1039,24 @@ jobs:
           }
           console.log('PASS: popup close preserves lock while other registration modal remains open');
           NODE
+      - name: Test action-registration legacy list only renders when visible
+        run: |
+          node <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const src=fs.readFileSync('action-mail-workflow.js','utf8');
+          const begin=src.indexOf("setTimeout(()=>{if(window.HD20_NAV?.active?.()!=='action')return;try{renderCases(a)}");
+          const end=src.indexOf(";window.dispatchEvent(new CustomEvent('hd20-action-updated'",begin);
+          assert(begin>=0&&end>begin,'post-registration list refresh not found');
+          const statement=src.slice(begin,end);
+          for(const area of ['action','activity']){
+            let pending,draws=0;
+            new Function('setTimeout','window','renderCases','a','console',statement)(
+              cb=>{pending=cb},{HD20_NAV:{active:()=>area}},()=>draws++,{}, {error:()=>{}});
+            pending();
+            assert.equal(draws,area==='action'?1:0,'legacy action table only draws on active action area');
+          }
+          console.log('PASS: hidden legacy action table is not rerendered on activity registrations');
+          NODE
       - name: Exercise action draft versus final-registration events
         run: |
           node <<'NODE'
