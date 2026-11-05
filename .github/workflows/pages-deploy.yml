@@ -52,6 +52,8 @@ jobs:
           grep -Fq 'function renderOverview(mode=' landing-launcher.js
           grep -Fq "const preferredActivity=area==='activity'" hd20-subtabs.js
           node --check hd20-subtabs.js
+          grep -Fq "draw.sourceStage!=='RETENTION-RANDOM'" hd20-subtabs.js
+          grep -Fq "String(draw.initialAuditor||draw.auditor||'')!==String(evaluator)" hd20-subtabs.js
           grep -Fq 'hd20LnThreeTabs{display:none!important}' landing-launcher.js
           grep -Fq 'landing-launcher.js?v=' index.html
           grep -Fq 'activity-register-modal.js?v=' index.html
