@@ -545,7 +545,7 @@ function renderRetentionSampling(root){
  const pending=records.filter(r=>r.result==='점검대기');
  const unresolved=records.filter(r=>r.result==='부적합'&&!(r.recheckResult==='적합'&&r.recheckedAt&&r.closedAt));
  const active=[...pending,...unresolved],history=records.filter(r=>!active.includes(r));
- const item=r=>'<section class="hd20RsRow" data-rs-id="'+esc(r.id)+'"><div class="hd20RsInfo"><b>'+esc(r.kind)+' · '+esc(r.caseId)+'</b><span>'+esc(r.team||'팀 미지정')+' · '+esc(r.workplace||'작업장 미입력')+'</span><small>추출 '+esc(r.drawDate)+' · '+esc(r.result)+'</small></div>'+sourcePreview(r)+actionTrace(r)+recheckHistory(r)+'<div class="hd20RsInput">'+(r.result==='점검대기'?'<label class="hd20RsCheck"><input type="checkbox" data-rs-check="적합">현재 유지</label><label class="hd20RsCheck"><input type="checkbox" data-rs-check="부적합">미유지</label><input type="hidden" data-rs-result value=""><input type="hidden" data-rs-evaluator value=""><label>비고 (선택)<input data-rs-comment placeholder="미유지 사유 또는 현장 특이사항" value="'+esc(r.comment||'')+'"></label><button type="button" data-rs-save>점검 저장</button><button type="button" data-rs-notify>5S모듈 알림메일</button>':'<strong class="hd20RsResult">'+esc(r.result==='적합'?'✓ 유지':'✕ 미유지')+'</strong><small>점검 '+esc(String(r.evaluatedAt||'').slice(0,10))+' · '+esc(r.evaluator||'')+'</small>')+'</div></section>';
+ const item=r=>'<section class="hd20RsRow" data-rs-id="'+esc(r.id)+'"><div class="hd20RsInfo"><b>'+esc(r.kind)+' · '+esc(r.caseId)+'</b><span>'+esc(r.team||'팀 미지정')+' · '+esc(r.workplace||'작업장 미입력')+'</span><small>추출 '+esc(r.drawDate)+' · '+esc(r.result)+'</small></div>'+sourcePreview(r)+actionTrace(r)+recheckHistory(r)+'<div class="hd20RsInput">'+(r.result==='점검대기'?'<label class="hd20RsCheck"><input type="checkbox" data-rs-check="적합">현재 유지</label><label class="hd20RsCheck"><input type="checkbox" data-rs-check="부적합">미유지</label><input type="hidden" data-rs-result value=""><input type="hidden" data-rs-evaluator value=""><label>비고 (선택)<input data-rs-comment placeholder="미유지 사유 또는 현장 특이사항" value="'+esc(r.comment||'')+'"></label><button type="button" data-rs-save>점검 저장</button><button type="button" data-rs-notify>5S모듈 메일 초안 열기</button>':'<strong class="hd20RsResult">'+esc(r.result==='적합'?'✓ 유지':'✕ 미유지')+'</strong><small>점검 '+esc(String(r.evaluatedAt||'').slice(0,10))+' · '+esc(r.evaluator||'')+'</small>')+'</div></section>';
  // Completed histories are reviewed in ④ 결과·재조치, not duplicated in ③.
  host.innerHTML='<div class="awHead"><div><b>5S 개선사례 유지점검</b><small>기존 완료사례 랜덤 추출 → 5S모듈 알림 → 유지/미유지 체크 → 미유지 자동 개선조치</small></div></div>'+
  '<div class="hd20RsToolbar"><span>점검주기 '+intervalDays+'일 · 표본 '+sampleCount+'건 · 완료사례 '+completedPool.length+'건</span><button type="button" data-rs-draw>랜덤 추출</button><span>점검대기 '+pending.length+'건</span></div>'+
@@ -653,9 +653,10 @@ function renderRetentionSampling(root){
   let id;
   do{id=idPrefix+(nextId++)}while(usedIds.has(id));
   usedIds.add(id);
-  rows.push({id,caseId:keyOf(e.x),kind:e.kind,team:e.x.team||e.x.teamName||e.x.ownerTeam||'',workplace:e.x.workplace||'',drawDate:drawDay,result:'점검대기',evaluator:'',comment:'',notificationStatus:'대기'});
+  rows.push({id,caseId:keyOf(e.x),kind:e.kind,team:e.x.team||e.x.teamName||e.x.ownerTeam||'',workplace:e.x.workplace||'',drawDate:drawDay,result:'점검대기',evaluator:'',comment:'',notificationStatus:'미발송'});
  });
  try{save('hd20RetentionRandomChecksV1',rows)}catch(error){console.error('[HD20 유지점검 추출 저장 실패]',error);window.alert('유지점검 대상 추출을 저장하지 못했습니다. 저장공간을 확인하고 다시 시도해 주세요.');return}
+ window.dispatchEvent(new CustomEvent('hd20-audit-updated',{detail:{source:'retention-draw',drawn:chosen.length}}));
  render();
  };
  host.querySelectorAll('[data-rs-save]').forEach(btn=>btn.onclick=()=>{
