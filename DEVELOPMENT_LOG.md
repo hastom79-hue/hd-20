@@ -2320,3 +2320,12 @@ Canonical Store는 다음을 기준으로 한다.
 - index.html 정적 스크립트·CSS 및 final-layout-polish.js 동적 fallback 참조 파일 존재 여부를 검사하는 CI 단계 추가 (commit 0a7fd5d).
 - 알려진 조사 후보: maturity-condition-analysis.js가 호출되는 전역 분석 API와 로더 연결 점검 필요; 런처의 버튼 재시도/마스터 초기화 타이밍 및 사용자가 지적한 화면 멈춤 현상의 브라우저 재현 필요.
 - GitHub Actions 실행 결과 및 실제 Pages 브라우저 E2E 성공은 연결된 확인 수단에서 검증되지 않음. 완료로 표현 금지. 승인된 대시보드와 기존 canonical localStorage 데이터는 수정하지 않음.
+
+## 2026-11-05 — 등록 런처 반복 클릭 방지 검증
+
+- 소스 분석: landing-launcher.js의 clickWhenReady()는 75ms 재확인 중 5회(약 375ms)마다 등록 버튼을 재클릭할 수 있었음. 초기 모달 지연 시 불필요한 반복 클릭 위험.
+- 재클릭 임계값을 16회(약 1,200ms)로 완화하고, 기존 팝업 표시 확인·40회 재시도 상한은 유지. 등록 데이터/권한/대시보드 변경 없음.
+- index.html의 landing-launcher.js 캐시 키를 20261105-modal-retry-throttle-v24로 갱신.
+- GitHub Pages 워크플로의 index.html 고정 문자열 검사 15건과 현재 실제 파일 참조를 재대조하여 모두 일치함을 확인.
+- 구문 검사는 핵심 업무 파일 통과하였으나, 저장 버튼 클릭·팝업 중복·실제 페이지 렌더링에 대한 브라우저 E2E 성공은 아직 확인되지 않음.
+- 주의: hd20-subtabs.js 내 renderSimpleWorkboard()에 구형 Audit '결과·재조치' 문구가 남아 있으나 실제 호출 참조가 확인되지 않아 운영 화면 결함이라고 단정하지 않고 삭제/수정하지 않음.
