@@ -3,7 +3,7 @@
 (()=>{'use strict';
 const KEY='hd20ActionCasesV2';
 function records(){try{const x=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(x)?x:[]}catch{return[]}}
-function setNotice(id,stage,channel,patch){const r=records(),i=r.findIndex(x=>String(x.id)===String(id));if(i<0)return;const n={...(r[i].notificationAudit||{})};n[stage]={...(n[stage]||{}),[channel]:{...(n[stage]?.[channel]||{}),...patch}};r[i]={...r[i],notificationAudit:n};try{localStorage.setItem(KEY,JSON.stringify(r))}catch(e){console.error('[HD20 알림 이력 기록 실패]',e)}}
+function setNotice(id,stage,channel,patch){const r=records(),matches=r.map((x,i)=>String(x.id||'')===String(id||'')?i:-1).filter(i=>i>=0);if(matches.length!==1){console.error('[HD20 알림 이력 저장 차단] 개선조치 ID 누락·중복',{id,matched:matches.length});return;}const i=matches[0];const n={...(r[i].notificationAudit||{})};n[stage]={...(n[stage]||{}),[channel]:{...(n[stage]?.[channel]||{}),...patch}};r[i]={...r[i],notificationAudit:n};try{localStorage.setItem(KEY,JSON.stringify(r))}catch(e){console.error('[HD20 알림 이력 기록 실패]',e)}}
 const emailOkay=x=>/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(x||''));
 function recipient(record,stage){
  if(stage==='REQUEST'){const email=String(record.email||'').trim();return {email,phone:String(record.teamPhone||'').trim()}}
