@@ -2659,3 +2659,12 @@ Canonical Store는 다음을 기준으로 한다.
 - 기존 `hd20-subtabs.js`의 재조치 생성에서 `existingFollowups` 실제 필터식을 추출해 없음/1건/동일 ID 중복/동일 직전 조치 다른 ID/복수 직전조치 중복 5개 시나리오 실행, 각 후보 건수 기대 일치. 중복 중단 및 유지점검·개선조치 사전 스냅샷 복원 경로의 존재는 정적으로 확인. **실제 브라우저 저장 실패 시 복원되는 E2E는 미실시**.
 - 신규 `tests/retention-followup-dedup-rollback-smoke.cjs`, `.github/workflows/retention-followup-regression.yml` 추가. 검증 스크립트 오류를 코드 리뷰에서 2회 수정한 후 동일 검색식 실행 5건을 재확인.
 - 코드 `0a23310a`, 시나리오 `e54e6d50`, 캐시 `d46728b8`, 재조치 회귀테스트 최종 `793f9170`, CI `1b608a19` main 반영. 승인 대시보드/CSS/업무 데이터 변경 없음. GitHub Actions 결과 및 Pages 배포 성공 여부 미확인.
+
+## 2026-11-06 — 재점검 후속 개선조치 연결순서 무결성 검증 강화
+
+- `retention-recheck-integrity-guard.js`의 기존 재점검 가드는 최신 재조치 `previousActionId`가 비어 있는지만 확인하므로 타 개선조치 또는 다른 순번으로 연결된 이력을 재점검 대상으로 허용할 위험이 있었음.
+- 동일 유지점검의 후속 재조치를 숫자 순번 오름차순으로 정렬하여 순번 1~N 연속 여부, 각 재조치 originCaseId 원본 일치 여부, 첫 재조치의 직전 ID=최초 actionId 및 후속 재조치 직전 ID=직전 순번 재조치 ID 일치 여부를 추가 검증. 기존 고유 ID, 팀, 작업장, 최초 점검자, 종결 차단 검증 유지.
+- `tests/retention-recheck-integrity-smoke.cjs`에 원본 외 직전 조치, 순번 누락, 2차 재조치의 잘못된 직전 ID, 정상 2차 재조치 4건 추가(총 17건).
+- 최신 GitHub 소스와 테스트 파일을 실제 실행한 결과 17/17 시나리오 및 추가 검사 모두 통과. GitHub Actions 런 결과나 브라우저 E2E 성공을 의미하지 않음.
+- `index.html` 캐시를 `retention-recheck-integrity-guard.js?v=20261106-guard-v3`으로 갱신.
+- GitHub main 코드 `1ab66876`, 테스트 `130b3e2e`, HTML `04d2c589` 반영. 승인된 대시보드, CSS, 기존 업무 데이터 변경 없음. 실서비스 Pages 반영·Actions 성공·저장 실패 복원 E2E는 아직 미확인.
