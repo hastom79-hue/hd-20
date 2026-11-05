@@ -646,8 +646,15 @@ function renderRetentionSampling(root){
  for(let i=available.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[available[i],available[j]]=[available[j],available[i]]}
  const chosen=available.slice(0,requested);
  if(!chosen.length){window.alert('추출 가능한 완료 사례가 없습니다.');return}
- const now=new Date().toISOString(),drawDay=seoulDay();
- chosen.forEach(e=>rows.push({id:'RET-'+now.replace(/[^0-9]/g,'')+'-'+rows.length,caseId:keyOf(e.x),kind:e.kind,team:e.x.team||e.x.teamName||e.x.ownerTeam||'',workplace:e.x.workplace||'',drawDate:drawDay,result:'점검대기',evaluator:'',comment:'',notificationStatus:'대기'}));
+ const now=new Date().toISOString(),drawDay=seoulDay(),idPrefix='RET-'+now.replace(/[^0-9]/g,'')+'-';
+ const usedIds=new Set(rows.map(x=>String(x.id||'')));
+ let nextId=rows.length;
+ chosen.forEach(e=>{
+  let id;
+  do{id=idPrefix+(nextId++)}while(usedIds.has(id));
+  usedIds.add(id);
+  rows.push({id,caseId:keyOf(e.x),kind:e.kind,team:e.x.team||e.x.teamName||e.x.ownerTeam||'',workplace:e.x.workplace||'',drawDate:drawDay,result:'점검대기',evaluator:'',comment:'',notificationStatus:'대기'});
+ });
  try{save('hd20RetentionRandomChecksV1',rows)}catch(error){console.error('[HD20 유지점검 추출 저장 실패]',error);window.alert('유지점검 대상 추출을 저장하지 못했습니다. 저장공간을 확인하고 다시 시도해 주세요.');return}
  render();
  };
