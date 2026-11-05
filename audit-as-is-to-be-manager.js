@@ -49,6 +49,8 @@ s.textContent=' #awActivity[data-subview]:not([data-subview="tobe"]) #'+ID+'{dis
 #hd20AsIsToBeManager .tgRegister{white-space:nowrap;min-width:108px}
 #hd20AsIsToBeManager .tgpanel{margin-bottom:0}
 #hd20AsIsToBeManager td{line-height:1.5}
+#hd20AsIsToBeManager .tgPagination{display:flex;justify-content:flex-end;align-items:center;flex-wrap:wrap;gap:12px;padding:12px 4px 2px;font-size:12px;color:#506b7d}
+#hd20AsIsToBeManager .tgPagination button:disabled{opacity:.42;cursor:not-allowed}
 `;document.head.appendChild(s)}
 function render(){let root=document.getElementById('awActivity');if(!root)return;bootStyle();let host=document.getElementById(ID);if(!host){host=document.createElement('section');host.id=ID;host.className='awCard';root.prepend(host)}if(host.parentElement!==root)root.prepend(host);
 let all=rows().filter(x=>key(x)),view=all.filter(x=>(!filt.team||x.team===filt.team)&&(!filt.status||phase(x)===filt.status)&&(!filt.text||[key(x),x.team,x.workplace,x.problem,x.improvementRequest,plan(x)].some(z=>String(z||'').toLowerCase().includes(filt.text.toLowerCase()))));
