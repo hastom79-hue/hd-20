@@ -2,7 +2,7 @@
 const KEY='hd20ActionCasesV2',ID='hd20AsIsToBeManager',MID='hd20ToBeModal';
 const E=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const rows=()=>{try{let x=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(x)?x:[]}catch{return[]}};
-const done=x=>x.completed===true||['완료','개선완료','조치완료','종결','종료','종결완료'].includes(String(x.status||''));
+const done=x=>x.completed===true||['완료','개선완료','조치완료','종결','확정완료','종료','종결완료'].includes(String(x.status||''));
 const key=x=>String(x.id||x.caseId||x.improvementNo||'');
 const plan=x=>String(x.toBePlan||x.actionText||x.action||x.improvement||'');
 const due=x=>String(x.due||x.targetDate||x.dueDate||'').slice(0,10);
