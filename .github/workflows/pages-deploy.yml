@@ -33,6 +33,9 @@ jobs:
           test -f DEVELOPMENT_LOG.md
           test -f hd20-subtabs.css
           test -f activity-register-modal.js
+          node --check activity-register-modal.js
+          grep -Fq "if(overlay.classList.contains('on'))return" activity-register-modal.js
+          grep -Fq "if(overlay.isConnected&&overlay.classList.contains('on'))" activity-register-modal.js
           test -f action-register-modal.js
           test -f landing-launcher.js
           grep -Fq 'hd20-subtabs.css?v=' index.html
@@ -79,6 +82,8 @@ jobs:
           grep -Fq '개선요청 등록·임시저장 — 최상위 팝업 위치 변경에 따른 저장 로직 복원' DEVELOPMENT_LOG.md
           node --check action-mail-workflow.js
           node --check action-register-modal.js
+          grep -Fq "if(!m||m.classList.contains('on'))return" action-register-modal.js
+          grep -Fq "if(m.isConnected&&m.classList.contains('on'))" action-register-modal.js
           grep -Fq "root.dataset.hd20ActionModalReady==='1'" action-register-modal.js
           grep -Fq "document.getElementById('hd20ActionRegisterModal')" action-register-modal.js
           grep -Fq 'document.body.appendChild(overlay)' activity-register-modal.js
