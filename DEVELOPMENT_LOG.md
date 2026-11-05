@@ -2353,3 +2353,12 @@ Canonical Store는 다음을 기준으로 한다.
 - 팀·상태·검색어 변경 또는 초기화 시 첫 페이지로 이동. 현재 데이터량이 줄면 최대 페이지 범위로 자동 보정. 전체 건수 집계는 여전히 전체 필터 결과를 기준으로 표시.
 - 기존 조치 등록/완료/사진/리드타임 및 대시보드 코드 변경 없음. 캐시 키 audit-as-is-to-be-manager.js?v=20261105-tobe-paged-grid-v8.
 - 파일 구문 검사 통과, CI index.html 문자열 조건 15개 모두 현재 파일에 일치. 실제 브라우저 화면/성능 E2E, 최신 Pages 배포 성공은 미검증.
+
+## 2026-11-05 — TO-BE 조치 저장 동시 실행 방지
+
+- audit-as-is-to-be-manager.js의 async save(complete)에는 저장/완료 버튼 중복 클릭을 방지하는 in-flight 보호가 없었음. 사진 FileReader 처리 중 연속 클릭하면 동일 원본을 대상으로 중복 조치 저장이 실행될 수 있는 위험 확인.
+- guardedSave()로 단일 실행 보장, 저장 중 두 버튼 disabled 및 aria-busy 부여, 완료/실패 후 복원, 비동기 사진 처리 예외 화면 안내 추가.
+- 기존 입력 검증, 저장 레코드, 완료 판정, AFTER 사진, 리드타임, 원본 업무 데이터 및 대시보드는 변경하지 않음.
+- index.html 캐시 키 audit-as-is-to-be-manager.js?v=20261105-tobe-save-lock-v9 갱신. GitHub Pages CI에 잠금 존재 검사 추가.
+- action-mail-workflow.js 신규 개선요청 등록에는 actionRegisterBusy 가드 존재 확인. 단, 브라우저에서 빠른 연속 클릭 및 저장/완료 E2E 미검증.
+- 문법검사와 소스 검사는 완료. GitHub Pages 배포 성공 및 실제 UI 통합검증은 아직 확인되지 않음.
