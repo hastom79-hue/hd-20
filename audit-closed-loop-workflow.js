@@ -24,7 +24,7 @@ if(existing){
  return existing.id;
 }if(acts.some(a=>String(a.id||'')===id))throw new Error('Audit 자동 개선조치 ID 충돌: 다른 원천 기록과 동일한 ID입니다.');const reg=draw.improvementRegisteredAt||draw.auditDate||today(),days=deadlineDays(),owner=leaderFor(draw.team);acts.unshift({id,date:reg,registeredAt:reg,team:draw.team||'미지정',workplace:String(draw.workplace||'').trim(),leader:owner.leader,email:owner.email,owner:owner.leader,assignedTeam:String(draw.team||'').trim(),notificationRecipient:owner.email,notificationState:'미발송',auditResult:draw.auditResult,initialAuditor:String(draw.initialAuditor||draw.auditor||'').trim(),registeredBy:String(draw.initialAuditor||draw.auditor||'').trim(),registrant:String(draw.initialAuditor||draw.auditor||'').trim(),auditor:String(draw.initialAuditor||draw.auditor||'').trim(),auditActor:String(draw.auditActor||'').trim(),problem:`[Audit 개선요청] ${String(draw.improvementRequest||draw.auditResult||'').trim()}`,due:days===null?'':addDays(reg,days),autoDueDays:days,autoDueAssigned:days!==null,autoDuePolicyState:days===null?'정책미설정':'자동지정',before:draw.improvementPhoto||'',after:'',evidence:draw.improvementPhoto||'',status:'조치대기',effectVerified:false,recurrence:null,created:new Date().toISOString(),source:'5S Audit 실시결과',sourceCaseId:String(draw.id),auditDrawId:String(draw.id),sourceStage:'AUDIT-REQUEST',auditDate:draw.auditDate,autoCreated:true});save(ACTION_KEY,acts);window.dispatchEvent(new CustomEvent('hd20-action-updated',{detail:{added:1,source:'audit'}}));return id}
 function registerAudit(drawId,data){
- const draws=load(DRAW_KEY),previous=JSON.stringify(draws),i=draws.findIndex(d=>d.id===drawId);
+ const draws=load(DRAW_KEY),previousAudit=localStorage.getItem(DRAW_KEY),previousAction=localStorage.getItem(ACTION_KEY),i=draws.findIndex(d=>d.id===drawId);
  if(i<0)throw new Error('Audit 추출 이력을 찾을 수 없습니다.');
  if(draws[i].auditDate)throw new Error('이미 실시결과가 등록된 Audit입니다. 원본을 중복 등록할 수 없습니다.');
  const actor=String(data.auditActor||''),result=String(data.auditResult||''),auditor=String(data.auditor||'').trim(),request=String(data.improvementRequest||'').trim(),date=String(data.auditDate||today()).slice(0,10);
@@ -39,9 +39,21 @@ function registerAudit(drawId,data){
  const d={...draws[i],auditActor:actor,auditDate:date,auditResult:result,workplace:String(data.workplace||'').trim(),auditor,initialAuditor,improvementRequest:request,improvementPhoto:data.improvementPhoto||draws[i].improvementPhoto||'',auditUpdatedAt:new Date().toISOString()};
  if(request||result!=='적합')d.improvementRegisteredAt=data.improvementRegisteredAt||date;
  draws[i]=d;
- save(DRAW_KEY,draws);
  let actionId;
- try{actionId=syncAction(d)}catch(error){try{localStorage.setItem(DRAW_KEY,previous)}catch(rollbackError){console.error('[Audit] 저장 실패 후 원본 복원 실패',rollbackError)}throw error}
+ try{
+  save(DRAW_KEY,draws);
+  actionId=syncAction(d);
+ }catch(error){
+  let restored=true;
+  for(const [key,raw] of [[DRAW_KEY,previousAudit],[ACTION_KEY,previousAction]]){
+   try{
+    if(raw===null)localStorage.removeItem(key);else localStorage.setItem(key,raw);
+    if(localStorage.getItem(key)!==raw)throw new Error('원본 복원 확인 실패: '+key);
+   }catch(rollbackError){restored=false;console.error('[Audit] 원본 복원 실패',key,rollbackError)}
+  }
+  if(!restored)throw new Error('Audit 또는 개선조치 저장·복원 실패. 중복 등록하지 말고 관리자에게 확인하세요.',{cause:error});
+  throw error;
+ }
  window.dispatchEvent(new CustomEvent('hd20-audit-updated',{detail:{draw:d,actionId}}));return d;
 }
 function showLinkedActionPopup(draw){const action=load(ACTION_KEY).find(a=>String(a.auditDrawId||a.sourceCaseId||'')===String(draw.id)&&a.sourceStage==='AUDIT-REQUEST');if(!action)return;document.getElementById('hd20AuditActionPopup')?.remove();const overlay=document.createElement('div');overlay.id='hd20AuditActionPopup';overlay.style.cssText='position:fixed;inset:0;z-index:999999;background:rgba(15,32,50,.55);display:flex;align-items:center;justify-content:center;padding:18px';overlay.innerHTML='<section role="dialog" aria-modal="true" aria-label="개선조치 등록" style="width:min(680px,96vw);max-height:90vh;overflow:auto;background:#fff;border-radius:14px;padding:22px;box-shadow:0 20px 55px #102c4450"><h3 style="margin:0 0 14px">개선조치 등록 · Audit 자동 연계</h3><p style="color:#246b4b;font-weight:800">Audit 등록과 동시에 개선조치 Case가 생성되었습니다. 중복 등록할 필요가 없습니다.</p><dl style="display:grid;grid-template-columns:110px 1fr;gap:10px"><dt>원본 Audit 번호</dt><dd>'+esc(draw.id)+'</dd><dt>개선조치 ID</dt><dd>'+esc(action.id)+'</dd><dt>대상팀</dt><dd>'+esc(action.team)+'</dd><dt>최초 점검자</dt><dd>'+esc(action.initialAuditor||action.auditor)+'</dd><dt>조치기한</dt><dd>'+esc(action.due||'기준정보 미설정')+'</dd><dt>개선요청</dt><dd style="white-space:pre-wrap">'+esc(draw.improvementRequest)+'</dd><dt>현장사진</dt><dd>'+(draw.improvementPhoto?'<img alt="개선요청 현장사진" style="max-width:100%;max-height:240px;object-fit:contain" src="'+esc(draw.improvementPhoto)+'">':'첨부 없음')+'</dd></dl><div style="display:flex;justify-content:flex-end;margin-top:16px"><button type="button" data-audit-popup-actions style="padding:10px 16px;margin-right:8px;background:#1268a8;color:#fff;border:0;border-radius:8px;font-weight:800;cursor:pointer">② 개선조치 확인</button><button type="button" data-audit-popup-close style="padding:10px 20px;background:#1268a8;color:#fff;border:0;border-radius:8px;cursor:pointer">확인</button></div></section>';overlay.querySelector('[data-audit-popup-actions]').onclick=()=>{const root=document.getElementById('awAudit');if(root)root.dataset.hd20AuditActionFocusId=String(action.id);overlay.remove();window.HD20_SUBNAV?.select?.('audit','action');window.dispatchEvent(new CustomEvent('hd20-action-updated',{detail:{id:action.id,source:'audit-popup-navigation'}}))};overlay.querySelector('[data-audit-popup-close]').onclick=()=>overlay.remove();overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove()});document.body.appendChild(overlay);overlay.querySelector('[data-audit-popup-close]').focus()}
