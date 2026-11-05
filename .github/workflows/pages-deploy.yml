@@ -52,6 +52,8 @@ jobs:
           grep -Fq 'function renderOverview(mode=' landing-launcher.js
           grep -Fq "const preferredActivity=area==='activity'" hd20-subtabs.js
           node --check hd20-subtabs.js
+          ! grep -Fq "if(sub==='tobe')window.HD20ToBeManager?.render?.()" hd20-subtabs.js
+          grep -Fq "e.detail?.area==='activity'&&e.detail?.sub==='tobe'" audit-as-is-to-be-manager.js
           grep -Fq "draw.sourceStage!=='RETENTION-RANDOM'" hd20-subtabs.js
           grep -Fq "String(draw.initialAuditor||draw.auditor||'')!==String(evaluator)" hd20-subtabs.js
           grep -Fq 'registeredBy:rows[n].evaluator,registrant:rows[n].evaluator' hd20-subtabs.js
