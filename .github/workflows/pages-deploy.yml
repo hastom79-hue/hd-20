@@ -274,6 +274,31 @@ jobs:
           }
           console.log('PASS: inactive Audit retention panel skips action redraw');
           NODE
+      - name: Test retention action linkage integrity
+        run: |
+          node <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const src=fs.readFileSync('hd20-subtabs.js','utf8');
+          const start=src.indexOf("const linkedActions=actions.filter(a=>String(a.id||'')===actionId");
+          const end=src.indexOf("if(!action){action=",start);
+          assert(start>=0&&end>start,'retention linkage integrity guard not found');
+          const check=new Function('actions','actionId','draw','evaluator','r',src.slice(start,end)+'return action');
+          const base={id:'AUTO-RETENTION-RET-001',sourceCaseId:'RET-AUDIT-RET-001',sourceStage:'RETENTION-RANDOM',initialAuditor:'inspector@hd.com',originCaseId:'IMP-001',team:'조립팀'};
+          const cases=[
+            ['fresh',[],false],
+            ['existing',[base],false],
+            ['duplicate',[base,{...base,id:'SECOND'}],true],
+            ['foreign auditor',[{...base,initialAuditor:'other@hd.com'}],true],
+            ['foreign original',[{...base,originCaseId:'IMP-OTHER'}],true],
+            ['foreign team',[{...base,team:'다른팀'}],true],
+            ['id collision',[{...base,sourceCaseId:'RET-AUDIT-FOREIGN'}],true]
+          ];
+          for(const [name,actions,shouldReject] of cases){
+            if(shouldReject)assert.throws(()=>check(actions,base.id,{id:base.sourceCaseId},'inspector@hd.com',{caseId:'IMP-001',team:'조립팀'}),Error,name);
+            else assert.doesNotThrow(()=>check(actions,base.id,{id:base.sourceCaseId},'inspector@hd.com',{caseId:'IMP-001',team:'조립팀'}),name);
+          }
+          console.log('PASS: seven retention linkage integrity scenarios');
+          NODE
       - name: Test retention candidate eligibility and draw ID uniqueness
         run: |
           node <<'NODE'
