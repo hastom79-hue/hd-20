@@ -1,0 +1,25 @@
+name: HD-20 Legacy Response ID Regression
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'action-mail-workflow.js'
+      - 'tests/action-legacy-response-unique-id-smoke.cjs'
+      - '.github/workflows/action-legacy-response-regression.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  legacy-response:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: JavaScript syntax check
+        run: |
+          node --check action-mail-workflow.js
+          node --check tests/action-legacy-response-unique-id-smoke.cjs
+      - name: Legacy response regression
+        run: node tests/action-legacy-response-unique-id-smoke.cjs
