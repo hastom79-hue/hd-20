@@ -57,6 +57,8 @@ jobs:
           grep -Fq 'registeredBy:rows[n].evaluator,registrant:rows[n].evaluator' hd20-subtabs.js
           grep -Fq 'recheckEvaluator:currentEmail()||rows[n].evaluator' hd20-subtabs.js
           grep -Fq "String(rows[n].followupActionId||'')!==String(latestHistory.id)" hd20-subtabs.js
+          grep -Fq 'const usedIds=new Set(rows.map(x=>String(x.id||' hd20-subtabs.js
+          grep -Fq 'while(usedIds.has(id))' hd20-subtabs.js
           grep -Fq 'hd20LnThreeTabs{display:none!important}' landing-launcher.js
           grep -Fq 'landing-launcher.js?v=' index.html
           grep -Fq 'activity-register-modal.js?v=' index.html
