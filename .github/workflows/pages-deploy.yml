@@ -163,6 +163,31 @@ jobs:
           node --check theme-inspection.js
           node --check master-workspace-v2.js
           node --check final-layout-polish.js
+      - name: Exercise delayed TO-BE search after tab switches
+        run: |
+          node <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const src=fs.readFileSync('audit-as-is-to-be-manager.js','utf8');
+          const begin=src.indexOf("const search=host.querySelector('[data-tobe-search]');");
+          const end=src.indexOf("\nhost.querySelector('[data-tobe-reset]')",begin);
+          assert(begin>=0&&end>begin,'TO-BE input handler not found');
+          const handlerSource=src.slice(begin,end);
+          for(const active of [true,false]){
+            let scheduled,renderCount=0,focused=0;
+            const input={value:'test',focus:()=>focused++,setSelectionRange:()=>{}};
+            const host={isConnected:true,querySelector:()=>input};
+            const doc={getElementById:id=>id==='hd20AsIsToBeManager'?host:{dataset:{subview:active?'tobe':'self'}}};
+            const nav={HD20_NAV:{active:()=>active?'activity':'master'}};
+            const make=new Function('host','document','window','ID','setTimeout','clearTimeout','render','filt',
+              'let searchDebounce=null;\n'+handlerSource+'\nreturn search.oninput;');
+            const oninput=make(host,doc,nav,'hd20AsIsToBeManager',fn=>{scheduled=fn;return 1},()=>{},()=>renderCount++,{text:''});
+            oninput({target:input});
+            scheduled();
+            assert.equal(renderCount,active?1:0,'inactive tab must not render');
+            assert.equal(focused,active?1:0,'inactive tab must not steal focus');
+          }
+          console.log('PASS: active/inactive TO-BE delayed search behavior');
+          NODE
       - name: Test retention candidate eligibility and draw ID uniqueness
         run: |
           node <<'NODE'
