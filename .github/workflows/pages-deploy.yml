@@ -83,6 +83,7 @@ jobs:
           grep -Fq "document.getElementById('hd20ActionRegisterModal')||a" action-mail-workflow.js
           grep -Fq '개선요청 등록·임시저장 — 최상위 팝업 위치 변경에 따른 저장 로직 복원' DEVELOPMENT_LOG.md
           node --check action-mail-workflow.js
+          grep -Fq "if(window.HD20_NAV?.active?.()!=='action')return;try{renderCases(a)}" action-mail-workflow.js
           node --check action-register-modal.js
           grep -Fq "if(e.detail?.via===false)return;localStorage.removeItem('hd20ActionPopupDraftV1')" action-register-modal.js
           grep -Fq "if(!m||m.classList.contains('on'))return" action-register-modal.js
