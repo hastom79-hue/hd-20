@@ -168,6 +168,574 @@ jobs:
           node --check theme-inspection.js
           node --check master-workspace-v2.js
           node --check final-layout-polish.js
+      - name: Test registration popup repeat-open guards
+        run: |
+          node <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const cases=[
+            {path:'activity-register-modal.js',begin:'function show(){',end:'/* 사용자 지적:',type:'activity'},
+            {path:'action-register-modal.js',begin:'function open(){',end:'/* 사용자 지적:',type:'action'}
+          ];
+          for(const item of cases){
+            const src=fs.readFileSync(item.path,'utf8');
+            const begin=src.indexOf(item.begin),end=src.indexOf(item.end,begin);
+            assert(begin>=0&&end>begin,item.path+' popup function missing');
+            const body=src.slice(begin,end);
+            let sideEffects=0,storageReads=0;
+            const opened={classList:{contains:()=>true}};
+            const fn=item.type==='activity'
+              ?new Function('overlay','document','removeRedundantGuide','restore','formCard','        run: |
+          node <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const src=fs.readFileSync('audit-as-is-to-be-manager.js','utf8');
+          const begin=src.indexOf("const search=host.querySelector('[data-tobe-search]');");
+          const end=src.indexOf("\nhost.querySelector('[data-tobe-reset]')",begin);
+          assert(begin>=0&&end>begin,'TO-BE input handler not found');
+          const handlerSource=src.slice(begin,end);
+          for(const active of [true,false]){
+            let scheduled,renderCount=0,focused=0;
+            const input={value:'test',focus:()=>focused++,setSelectionRange:()=>{}};
+            const host={isConnected:true,querySelector:()=>input};
+            const doc={getElementById:id=>id==='hd20AsIsToBeManager'?host:{dataset:{subview:active?'tobe':'self'}}};
+            const nav={HD20_NAV:{active:()=>active?'activity':'master'}};
+            const make=new Function('host','document','window','ID','setTimeout','clearTimeout','render','filt',
+              'let searchDebounce=null;\n'+handlerSource+'\nreturn search.oninput;');
+            const oninput=make(host,doc,nav,'hd20AsIsToBeManager',fn=>{scheduled=fn;return 1},()=>{},()=>renderCount++,{text:''});
+            oninput({target:input});
+            scheduled();
+            assert.equal(renderCount,active?1:0,'inactive tab must not render');
+            assert.equal(focused,active?1:0,'inactive tab must not steal focus');
+          }
+          console.log('PASS: active/inactive TO-BE delayed search behavior');
+          NODE
+      - name: Test retention candidate eligibility and draw ID uniqueness
+        run: |
+          node <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const src=fs.readFileSync('hd20-subtabs.js','utf8');
+          const begin=src.indexOf("const done=x=>",src.indexOf("const stored=load('hd20RetentionRandomChecksV1')"));
+          const end=src.indexOf(' const policy=window.HD20PolicyConfig',begin);
+          assert(begin>=0&&end>begin,'retention candidate builder not found');
+          const stores={
+            hd20GMES5SAutoImproveRawV1:[{id:'S-1',status:'완료'},{id:'S-1',status:'완료'},{id:'S-2',status:'진행중'},{id:'S-3',status:'완료',isDemo:true},{id:'S-4',completed:true}],
+            hd20ActionCasesV2:[{id:'A-1',status:'완료'},{id:'A-2',status:'조치대기'},{id:'A-3',status:'종결'},{id:'A-4',status:'완료',source:'e2e-fixture'}]
+          };
+          const pool=new Function('load',src.slice(begin,end)+'return pool;')(key=>stores[key]||[]);
+          assert.deepEqual(pool().map(x=>x.kind+':'+x.x.id),['자율개선:S-1','자율개선:S-4','개선요청:A-1','개선요청:A-3']);
+          const idBegin=src.indexOf("const now=new Date().toISOString(),drawDay=seoulDay(),idPrefix=");
+          const idEnd=src.indexOf("\n try{save('hd20RetentionRandomChecksV1',rows)}",idBegin);
+          assert(idBegin>=0&&idEnd>idBegin,'retention draw ID generator not found');
+          class FixedDate {toISOString(){return '2026-11-05T14:00:00.000Z'}}
+          const prefix='RET-20261105140000000-';
+          const existing=[{id:prefix+'3'},{id:prefix+'4'},{id:'HISTORICAL'}];
+          const next=new Function('rows','chosen','seoulDay','keyOf','Date',src.slice(idBegin,idEnd)+'return rows;')(
+            existing,[{x:{id:'C-1'}},{x:{id:'C-2'}},{x:{id:'C-3'}}],()=> '2026-11-05',x=>x.id,FixedDate
+          );
+          assert.equal(next.length,6);
+          assert.equal(new Set(next.map(x=>x.id)).size,6,'draw IDs must be unique across existing and new cases');
+          assert.deepEqual(next.slice(3).map(x=>x.id),[prefix+'5',prefix+'6',prefix+'7']);
+          console.log('PASS: completed-only source candidates, demo/pending exclusion, dedupe, and collision-safe draw IDs');
+          NODE
+      - name: Exercise monthly bar-label rendering fixtures
+        run: |
+          node <<'NODE'
+          const fs=require('fs'),assert=require('node:assert/strict');
+          const source=fs.readFileSync('dashboard-work-kpi-migration.js','utf8');
+          const begin=source.indexOf('const bars=Array.from({length:12}');
+          const end=source.indexOf('  return \'<section class="hd20DwmGroup"',begin);
+          assert(begin>=0&&end>begin,'monthly chart bar builder not found');
+          const render=new Function('metrics','max','esc',source.slice(begin,end)+'return bars;');
+          const metric=(label,values)=>({label,series:{dated:true,values}});
+          const values=(first,second)=>[
+            metric('Audit 등록',[first,0,...Array(10).fill(0)]),
+            metric('Audit 완료',[second,9,...Array(10).fill(0)])
+          ];
+          const months=render(values(14,8),14,String).split('<div class="hd20DwmMonth">').slice(1);
+          assert.equal(months.length,12,'calendar must keep twelve months');
+          assert.match(months[0],/primary[^>]*height:104px[^>]*><span class="hd20DwmBarValue" aria-hidden="true">14<\/span>/);
+          assert.match(months[0],/secondary[^>]*height:59px[^>]*><span class="hd20DwmBarValue" aria-hidden="true">8<\/span>/);
+          assert(!months[1].includes('primary" style="height:0px" title="Audit 등록 2월: 0건"><span'),'zero value must not print a label');
+          assert(!months[2].includes('hd20DwmBarValue'),'month without activity must not print labels');
+          const equal=render(values(14,14),14,String).split('<div class="hd20DwmMonth">')[1];
+          assert.equal((equal.match(/class="hd20DwmBarValue"/g)||[]).length,2,'both equal-height bars must retain their own labels');
+          assert(source.includes('bottom:calc(100% + 4px)'),'label must remain anchored 4px above bar top');
+          assert(source.includes('right:calc(50% - 4px)')&&source.includes('left:calc(50% - 4px)'),'paired label separation must remain present');
+          assert(!source.includes('const valueLabel='),'legacy shared max-height label must stay removed');
+          console.log('PASS: 12 months, own-bar heights, empty months, matched heights, top offsets and label separation');
+          NODE
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+      - name: Upload static site
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: .
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+      - name: Verify published Pages revision and critical scripts
+        env:
+          SITE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          set -eu
+          test -n "$SITE_URL"
+          expected_subtabs=$(grep -o 'hd20-subtabs.js?v=[^"]*' index.html | head -n 1)
+          expected_audit=$(grep -o 'audit-closed-loop-workflow.js?v=[^"]*' index.html | head -n 1)
+          test -n "$expected_subtabs"
+          test -n "$expected_audit"
+          base="${SITE_URL%/}"
+          for attempt in 1 2 3 4 5 6 7 8 9 10 11 12; do
+            if curl --fail --silent --show-error --location --max-time 20 "$base/index.html" -o /tmp/hd20-published-index.html \
+              && grep -Fq "$expected_subtabs" /tmp/hd20-published-index.html \
+              && grep -Fq "$expected_audit" /tmp/hd20-published-index.html \
+              && curl --fail --silent --show-error --location --max-time 20 "$base/hd20-subtabs.js" -o /tmp/hd20-published-subtabs.js \
+              && grep -Fq 'savedRetentionBefore=localStorage.getItem' /tmp/hd20-published-subtabs.js \
+              && curl --fail --silent --show-error --location --max-time 20 "$base/audit-closed-loop-workflow.js" -o /tmp/hd20-published-audit.js \
+              && grep -Fq 'previousAudit=localStorage.getItem' /tmp/hd20-published-audit.js; then
+              echo "PASS: GitHub Pages serves current index and both critical scripts"
+              exit 0
+            fi
+            echo "Pages content not yet at current revision, attempt $attempt/12"
+            sleep 10
+          done
+          echo "::error::Pages deployment returned but current source assets were not confirmed"
+          exit 1
+ original.click();\n select(key);' master-workspace-v2.js
+          grep -Fq 'function clickWhenReady(findFn,modalId,area,tries=0,lastClickAt=-1)' landing-launcher.js
+          grep -Fq "clickWhenReady(()=>document.getElementById('hd20ActionRegisterBtn')" landing-launcher.js
+          grep -Fq "snapshotActivities.forEach((x,i)=>" landing-launcher.js
+          grep -Fq "localActions.forEach((x,i)=>" landing-launcher.js
+          grep -Fq "['self','request','tobe'].includes(currentSub)" landing-launcher.js
+          grep -Fq 'const refreshVisibleLookup=()=>' landing-launcher.js
+          grep -Fq '2026-11-03 후속 안정화 — 최초 진입과 검색 입력 보호' DEVELOPMENT_LOG.md
+          ! grep -Fq 'data-ln-tab=' landing-launcher.js
+          grep -Fq '통합조회 과거 3개 중복 탭 DOM 제거' DEVELOPMENT_LOG.md
+          grep -Fq "document.querySelector('#awRegisterModal.on,#hd20ActionRegisterModal.on')" landing-launcher.js
+          grep -Fq '등록 팝업 실행 중 조회목록 재렌더 방지' DEVELOPMENT_LOG.md
+          test -f dashboard-work-kpi-migration.js
+          grep -Fq 'dashboard-work-kpi-migration.js?v=' index.html
+          grep -Fq 'hd20DwmBarValue' dashboard-work-kpi-migration.js
+          grep -Fq 'bottom:calc(100% + 4px)' dashboard-work-kpi-migration.js
+          grep -Fq '운영 종합진단·집중관리 추이 월별 막대 데이터레이블 위치 개선' DEVELOPMENT_LOG.md
+          grep -Fq 'right:calc(50% - 4px)' dashboard-work-kpi-migration.js
+          grep -Fq 'left:calc(50% - 4px)' dashboard-work-kpi-migration.js
+          grep -Fq '차트 막대 끝 레이블 간 겹침 방지 보완' DEVELOPMENT_LOG.md
+          node --check dashboard-work-kpi-migration.js
+          grep -Fq '2026-11-04 shared non-dashboard search layout' hd20-subtabs.css
+          grep -Fq '#masterModal #hd20MasterWorkspace .hmTitle' master-workspace-v2.css
+          grep -Fq 'landing-launcher.js?v=' index.html
+          grep -Fq 'hd20-subtabs.css?v=' index.html
+          grep -Fq 'master-workspace-v2.css?v=' index.html
+          grep -Fq '운영탭 공통 검색조건 레이아웃 정리' DEVELOPMENT_LOG.md
+          node --check landing-launcher.js
+          node --check beginner-navigation.js
+          node --check hd20-action-notification-routing.js
+      - name: Verify static and fallback script assets exist
+        run: |
+          node <<'NODE'
+          const fs=require('node:fs');
+          const html=fs.readFileSync('index.html','utf8');
+          const loader=fs.readFileSync('final-layout-polish.js','utf8');
+          const assets=new Set();
+          for(const match of html.matchAll(/<(?:script|link)\b[^>]*?(?:src|href)=["']([^"']+)/g)){
+            const path=match[1].split('?')[0];
+            if(/^[\w./-]+\.(?:js|css)$/.test(path))assets.add(path);
+          }
+          for(const match of loader.matchAll(/['"]([\w./-]+\.js)\?v=/g))assets.add(match[1]);
+          const missing=[...assets].filter(path=>!fs.existsSync(path));
+          if(missing.length){console.error('Missing referenced assets:',missing);process.exit(1)}
+          console.log('PASS: '+assets.size+' static and fallback assets exist');
+          NODE
+      - name: Check cross-tab and master workflow JavaScript syntax
+        run: |
+          set -eu
+          node --check hd20-cross-tab-sync.js
+          node --check audit-retention-workflow-visual.js
+          node --check audit-random-draw.js
+          node --check audit-closed-loop-workflow.js
+          grep -Fq "if(linked.length>1)throw new Error" audit-closed-loop-workflow.js
+          grep -Fq "source&&source!==String(draw.id)" audit-closed-loop-workflow.js
+          grep -Fq 'previousAudit=localStorage.getItem(DRAW_KEY),previousAction=localStorage.getItem(ACTION_KEY)' audit-closed-loop-workflow.js
+          grep -Fq 'for(const [key,raw] of [[DRAW_KEY,previousAudit],[ACTION_KEY,previousAction]])' audit-closed-loop-workflow.js
+          node --check operating-policy-master.js
+          node --check integrated-master-factors.js
+          node --check hd20-ulsan-workplace-master.js
+          node --check workflow-crud.js
+          node --check table-enhance-suite.js
+          node --check theme-inspection.js
+          node --check master-workspace-v2.js
+          node --check final-layout-polish.js
+      - name: Test retention candidate eligibility and draw ID uniqueness
+        run: |
+          node <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const src=fs.readFileSync('hd20-subtabs.js','utf8');
+          const begin=src.indexOf("const done=x=>",src.indexOf("const stored=load('hd20RetentionRandomChecksV1')"));
+          const end=src.indexOf(' const policy=window.HD20PolicyConfig',begin);
+          assert(begin>=0&&end>begin,'retention candidate builder not found');
+          const stores={
+            hd20GMES5SAutoImproveRawV1:[{id:'S-1',status:'완료'},{id:'S-1',status:'완료'},{id:'S-2',status:'진행중'},{id:'S-3',status:'완료',isDemo:true},{id:'S-4',completed:true}],
+            hd20ActionCasesV2:[{id:'A-1',status:'완료'},{id:'A-2',status:'조치대기'},{id:'A-3',status:'종결'},{id:'A-4',status:'완료',source:'e2e-fixture'}]
+          };
+          const pool=new Function('load',src.slice(begin,end)+'return pool;')(key=>stores[key]||[]);
+          assert.deepEqual(pool().map(x=>x.kind+':'+x.x.id),['자율개선:S-1','자율개선:S-4','개선요청:A-1','개선요청:A-3']);
+          const idBegin=src.indexOf("const now=new Date().toISOString(),drawDay=seoulDay(),idPrefix=");
+          const idEnd=src.indexOf("\n try{save('hd20RetentionRandomChecksV1',rows)}",idBegin);
+          assert(idBegin>=0&&idEnd>idBegin,'retention draw ID generator not found');
+          class FixedDate {toISOString(){return '2026-11-05T14:00:00.000Z'}}
+          const prefix='RET-20261105140000000-';
+          const existing=[{id:prefix+'3'},{id:prefix+'4'},{id:'HISTORICAL'}];
+          const next=new Function('rows','chosen','seoulDay','keyOf','Date',src.slice(idBegin,idEnd)+'return rows;')(
+            existing,[{x:{id:'C-1'}},{x:{id:'C-2'}},{x:{id:'C-3'}}],()=> '2026-11-05',x=>x.id,FixedDate
+          );
+          assert.equal(next.length,6);
+          assert.equal(new Set(next.map(x=>x.id)).size,6,'draw IDs must be unique across existing and new cases');
+          assert.deepEqual(next.slice(3).map(x=>x.id),[prefix+'5',prefix+'6',prefix+'7']);
+          console.log('PASS: completed-only source candidates, demo/pending exclusion, dedupe, and collision-safe draw IDs');
+          NODE
+      - name: Exercise monthly bar-label rendering fixtures
+        run: |
+          node <<'NODE'
+          const fs=require('fs'),assert=require('node:assert/strict');
+          const source=fs.readFileSync('dashboard-work-kpi-migration.js','utf8');
+          const begin=source.indexOf('const bars=Array.from({length:12}');
+          const end=source.indexOf('  return \'<section class="hd20DwmGroup"',begin);
+          assert(begin>=0&&end>begin,'monthly chart bar builder not found');
+          const render=new Function('metrics','max','esc',source.slice(begin,end)+'return bars;');
+          const metric=(label,values)=>({label,series:{dated:true,values}});
+          const values=(first,second)=>[
+            metric('Audit 등록',[first,0,...Array(10).fill(0)]),
+            metric('Audit 완료',[second,9,...Array(10).fill(0)])
+          ];
+          const months=render(values(14,8),14,String).split('<div class="hd20DwmMonth">').slice(1);
+          assert.equal(months.length,12,'calendar must keep twelve months');
+          assert.match(months[0],/primary[^>]*height:104px[^>]*><span class="hd20DwmBarValue" aria-hidden="true">14<\/span>/);
+          assert.match(months[0],/secondary[^>]*height:59px[^>]*><span class="hd20DwmBarValue" aria-hidden="true">8<\/span>/);
+          assert(!months[1].includes('primary" style="height:0px" title="Audit 등록 2월: 0건"><span'),'zero value must not print a label');
+          assert(!months[2].includes('hd20DwmBarValue'),'month without activity must not print labels');
+          const equal=render(values(14,14),14,String).split('<div class="hd20DwmMonth">')[1];
+          assert.equal((equal.match(/class="hd20DwmBarValue"/g)||[]).length,2,'both equal-height bars must retain their own labels');
+          assert(source.includes('bottom:calc(100% + 4px)'),'label must remain anchored 4px above bar top');
+          assert(source.includes('right:calc(50% - 4px)')&&source.includes('left:calc(50% - 4px)'),'paired label separation must remain present');
+          assert(!source.includes('const valueLabel='),'legacy shared max-height label must stay removed');
+          console.log('PASS: 12 months, own-bar heights, empty months, matched heights, top offsets and label separation');
+          NODE
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+      - name: Upload static site
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: .
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+      - name: Verify published Pages revision and critical scripts
+        env:
+          SITE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          set -eu
+          test -n "$SITE_URL"
+          expected_subtabs=$(grep -o 'hd20-subtabs.js?v=[^"]*' index.html | head -n 1)
+          expected_audit=$(grep -o 'audit-closed-loop-workflow.js?v=[^"]*' index.html | head -n 1)
+          test -n "$expected_subtabs"
+          test -n "$expected_audit"
+          base="${SITE_URL%/}"
+          for attempt in 1 2 3 4 5 6 7 8 9 10 11 12; do
+            if curl --fail --silent --show-error --location --max-time 20 "$base/index.html" -o /tmp/hd20-published-index.html \
+              && grep -Fq "$expected_subtabs" /tmp/hd20-published-index.html \
+              && grep -Fq "$expected_audit" /tmp/hd20-published-index.html \
+              && curl --fail --silent --show-error --location --max-time 20 "$base/hd20-subtabs.js" -o /tmp/hd20-published-subtabs.js \
+              && grep -Fq 'savedRetentionBefore=localStorage.getItem' /tmp/hd20-published-subtabs.js \
+              && curl --fail --silent --show-error --location --max-time 20 "$base/audit-closed-loop-workflow.js" -o /tmp/hd20-published-audit.js \
+              && grep -Fq 'previousAudit=localStorage.getItem' /tmp/hd20-published-audit.js; then
+              echo "PASS: GitHub Pages serves current index and both critical scripts"
+              exit 0
+            fi
+            echo "Pages content not yet at current revision, attempt $attempt/12"
+            sleep 10
+          done
+          echo "::error::Pages deployment returned but current source assets were not confirmed"
+          exit 1
+,'setTimeout',body+';return show;')(
+                opened,{},()=>sideEffects++,()=>sideEffects++,{},()=>sideEffects++,()=>sideEffects++)
+              :new Function('        run: |
+          node <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const src=fs.readFileSync('audit-as-is-to-be-manager.js','utf8');
+          const begin=src.indexOf("const search=host.querySelector('[data-tobe-search]');");
+          const end=src.indexOf("\nhost.querySelector('[data-tobe-reset]')",begin);
+          assert(begin>=0&&end>begin,'TO-BE input handler not found');
+          const handlerSource=src.slice(begin,end);
+          for(const active of [true,false]){
+            let scheduled,renderCount=0,focused=0;
+            const input={value:'test',focus:()=>focused++,setSelectionRange:()=>{}};
+            const host={isConnected:true,querySelector:()=>input};
+            const doc={getElementById:id=>id==='hd20AsIsToBeManager'?host:{dataset:{subview:active?'tobe':'self'}}};
+            const nav={HD20_NAV:{active:()=>active?'activity':'master'}};
+            const make=new Function('host','document','window','ID','setTimeout','clearTimeout','render','filt',
+              'let searchDebounce=null;\n'+handlerSource+'\nreturn search.oninput;');
+            const oninput=make(host,doc,nav,'hd20AsIsToBeManager',fn=>{scheduled=fn;return 1},()=>{},()=>renderCount++,{text:''});
+            oninput({target:input});
+            scheduled();
+            assert.equal(renderCount,active?1:0,'inactive tab must not render');
+            assert.equal(focused,active?1:0,'inactive tab must not steal focus');
+          }
+          console.log('PASS: active/inactive TO-BE delayed search behavior');
+          NODE
+      - name: Test retention candidate eligibility and draw ID uniqueness
+        run: |
+          node <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const src=fs.readFileSync('hd20-subtabs.js','utf8');
+          const begin=src.indexOf("const done=x=>",src.indexOf("const stored=load('hd20RetentionRandomChecksV1')"));
+          const end=src.indexOf(' const policy=window.HD20PolicyConfig',begin);
+          assert(begin>=0&&end>begin,'retention candidate builder not found');
+          const stores={
+            hd20GMES5SAutoImproveRawV1:[{id:'S-1',status:'완료'},{id:'S-1',status:'완료'},{id:'S-2',status:'진행중'},{id:'S-3',status:'완료',isDemo:true},{id:'S-4',completed:true}],
+            hd20ActionCasesV2:[{id:'A-1',status:'완료'},{id:'A-2',status:'조치대기'},{id:'A-3',status:'종결'},{id:'A-4',status:'완료',source:'e2e-fixture'}]
+          };
+          const pool=new Function('load',src.slice(begin,end)+'return pool;')(key=>stores[key]||[]);
+          assert.deepEqual(pool().map(x=>x.kind+':'+x.x.id),['자율개선:S-1','자율개선:S-4','개선요청:A-1','개선요청:A-3']);
+          const idBegin=src.indexOf("const now=new Date().toISOString(),drawDay=seoulDay(),idPrefix=");
+          const idEnd=src.indexOf("\n try{save('hd20RetentionRandomChecksV1',rows)}",idBegin);
+          assert(idBegin>=0&&idEnd>idBegin,'retention draw ID generator not found');
+          class FixedDate {toISOString(){return '2026-11-05T14:00:00.000Z'}}
+          const prefix='RET-20261105140000000-';
+          const existing=[{id:prefix+'3'},{id:prefix+'4'},{id:'HISTORICAL'}];
+          const next=new Function('rows','chosen','seoulDay','keyOf','Date',src.slice(idBegin,idEnd)+'return rows;')(
+            existing,[{x:{id:'C-1'}},{x:{id:'C-2'}},{x:{id:'C-3'}}],()=> '2026-11-05',x=>x.id,FixedDate
+          );
+          assert.equal(next.length,6);
+          assert.equal(new Set(next.map(x=>x.id)).size,6,'draw IDs must be unique across existing and new cases');
+          assert.deepEqual(next.slice(3).map(x=>x.id),[prefix+'5',prefix+'6',prefix+'7']);
+          console.log('PASS: completed-only source candidates, demo/pending exclusion, dedupe, and collision-safe draw IDs');
+          NODE
+      - name: Exercise monthly bar-label rendering fixtures
+        run: |
+          node <<'NODE'
+          const fs=require('fs'),assert=require('node:assert/strict');
+          const source=fs.readFileSync('dashboard-work-kpi-migration.js','utf8');
+          const begin=source.indexOf('const bars=Array.from({length:12}');
+          const end=source.indexOf('  return \'<section class="hd20DwmGroup"',begin);
+          assert(begin>=0&&end>begin,'monthly chart bar builder not found');
+          const render=new Function('metrics','max','esc',source.slice(begin,end)+'return bars;');
+          const metric=(label,values)=>({label,series:{dated:true,values}});
+          const values=(first,second)=>[
+            metric('Audit 등록',[first,0,...Array(10).fill(0)]),
+            metric('Audit 완료',[second,9,...Array(10).fill(0)])
+          ];
+          const months=render(values(14,8),14,String).split('<div class="hd20DwmMonth">').slice(1);
+          assert.equal(months.length,12,'calendar must keep twelve months');
+          assert.match(months[0],/primary[^>]*height:104px[^>]*><span class="hd20DwmBarValue" aria-hidden="true">14<\/span>/);
+          assert.match(months[0],/secondary[^>]*height:59px[^>]*><span class="hd20DwmBarValue" aria-hidden="true">8<\/span>/);
+          assert(!months[1].includes('primary" style="height:0px" title="Audit 등록 2월: 0건"><span'),'zero value must not print a label');
+          assert(!months[2].includes('hd20DwmBarValue'),'month without activity must not print labels');
+          const equal=render(values(14,14),14,String).split('<div class="hd20DwmMonth">')[1];
+          assert.equal((equal.match(/class="hd20DwmBarValue"/g)||[]).length,2,'both equal-height bars must retain their own labels');
+          assert(source.includes('bottom:calc(100% + 4px)'),'label must remain anchored 4px above bar top');
+          assert(source.includes('right:calc(50% - 4px)')&&source.includes('left:calc(50% - 4px)'),'paired label separation must remain present');
+          assert(!source.includes('const valueLabel='),'legacy shared max-height label must stay removed');
+          console.log('PASS: 12 months, own-bar heights, empty months, matched heights, top offsets and label separation');
+          NODE
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+      - name: Upload static site
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: .
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+      - name: Verify published Pages revision and critical scripts
+        env:
+          SITE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          set -eu
+          test -n "$SITE_URL"
+          expected_subtabs=$(grep -o 'hd20-subtabs.js?v=[^"]*' index.html | head -n 1)
+          expected_audit=$(grep -o 'audit-closed-loop-workflow.js?v=[^"]*' index.html | head -n 1)
+          test -n "$expected_subtabs"
+          test -n "$expected_audit"
+          base="${SITE_URL%/}"
+          for attempt in 1 2 3 4 5 6 7 8 9 10 11 12; do
+            if curl --fail --silent --show-error --location --max-time 20 "$base/index.html" -o /tmp/hd20-published-index.html \
+              && grep -Fq "$expected_subtabs" /tmp/hd20-published-index.html \
+              && grep -Fq "$expected_audit" /tmp/hd20-published-index.html \
+              && curl --fail --silent --show-error --location --max-time 20 "$base/hd20-subtabs.js" -o /tmp/hd20-published-subtabs.js \
+              && grep -Fq 'savedRetentionBefore=localStorage.getItem' /tmp/hd20-published-subtabs.js \
+              && curl --fail --silent --show-error --location --max-time 20 "$base/audit-closed-loop-workflow.js" -o /tmp/hd20-published-audit.js \
+              && grep -Fq 'previousAudit=localStorage.getItem' /tmp/hd20-published-audit.js; then
+              echo "PASS: GitHub Pages serves current index and both critical scripts"
+              exit 0
+            fi
+            echo "Pages content not yet at current revision, attempt $attempt/12"
+            sleep 10
+          done
+          echo "::error::Pages deployment returned but current source assets were not confirmed"
+          exit 1
+ original.click();\n select(key);' master-workspace-v2.js
+          grep -Fq 'function clickWhenReady(findFn,modalId,area,tries=0,lastClickAt=-1)' landing-launcher.js
+          grep -Fq "clickWhenReady(()=>document.getElementById('hd20ActionRegisterBtn')" landing-launcher.js
+          grep -Fq "snapshotActivities.forEach((x,i)=>" landing-launcher.js
+          grep -Fq "localActions.forEach((x,i)=>" landing-launcher.js
+          grep -Fq "['self','request','tobe'].includes(currentSub)" landing-launcher.js
+          grep -Fq 'const refreshVisibleLookup=()=>' landing-launcher.js
+          grep -Fq '2026-11-03 후속 안정화 — 최초 진입과 검색 입력 보호' DEVELOPMENT_LOG.md
+          ! grep -Fq 'data-ln-tab=' landing-launcher.js
+          grep -Fq '통합조회 과거 3개 중복 탭 DOM 제거' DEVELOPMENT_LOG.md
+          grep -Fq "document.querySelector('#awRegisterModal.on,#hd20ActionRegisterModal.on')" landing-launcher.js
+          grep -Fq '등록 팝업 실행 중 조회목록 재렌더 방지' DEVELOPMENT_LOG.md
+          test -f dashboard-work-kpi-migration.js
+          grep -Fq 'dashboard-work-kpi-migration.js?v=' index.html
+          grep -Fq 'hd20DwmBarValue' dashboard-work-kpi-migration.js
+          grep -Fq 'bottom:calc(100% + 4px)' dashboard-work-kpi-migration.js
+          grep -Fq '운영 종합진단·집중관리 추이 월별 막대 데이터레이블 위치 개선' DEVELOPMENT_LOG.md
+          grep -Fq 'right:calc(50% - 4px)' dashboard-work-kpi-migration.js
+          grep -Fq 'left:calc(50% - 4px)' dashboard-work-kpi-migration.js
+          grep -Fq '차트 막대 끝 레이블 간 겹침 방지 보완' DEVELOPMENT_LOG.md
+          node --check dashboard-work-kpi-migration.js
+          grep -Fq '2026-11-04 shared non-dashboard search layout' hd20-subtabs.css
+          grep -Fq '#masterModal #hd20MasterWorkspace .hmTitle' master-workspace-v2.css
+          grep -Fq 'landing-launcher.js?v=' index.html
+          grep -Fq 'hd20-subtabs.css?v=' index.html
+          grep -Fq 'master-workspace-v2.css?v=' index.html
+          grep -Fq '운영탭 공통 검색조건 레이아웃 정리' DEVELOPMENT_LOG.md
+          node --check landing-launcher.js
+          node --check beginner-navigation.js
+          node --check hd20-action-notification-routing.js
+      - name: Verify static and fallback script assets exist
+        run: |
+          node <<'NODE'
+          const fs=require('node:fs');
+          const html=fs.readFileSync('index.html','utf8');
+          const loader=fs.readFileSync('final-layout-polish.js','utf8');
+          const assets=new Set();
+          for(const match of html.matchAll(/<(?:script|link)\b[^>]*?(?:src|href)=["']([^"']+)/g)){
+            const path=match[1].split('?')[0];
+            if(/^[\w./-]+\.(?:js|css)$/.test(path))assets.add(path);
+          }
+          for(const match of loader.matchAll(/['"]([\w./-]+\.js)\?v=/g))assets.add(match[1]);
+          const missing=[...assets].filter(path=>!fs.existsSync(path));
+          if(missing.length){console.error('Missing referenced assets:',missing);process.exit(1)}
+          console.log('PASS: '+assets.size+' static and fallback assets exist');
+          NODE
+      - name: Check cross-tab and master workflow JavaScript syntax
+        run: |
+          set -eu
+          node --check hd20-cross-tab-sync.js
+          node --check audit-retention-workflow-visual.js
+          node --check audit-random-draw.js
+          node --check audit-closed-loop-workflow.js
+          grep -Fq "if(linked.length>1)throw new Error" audit-closed-loop-workflow.js
+          grep -Fq "source&&source!==String(draw.id)" audit-closed-loop-workflow.js
+          grep -Fq 'previousAudit=localStorage.getItem(DRAW_KEY),previousAction=localStorage.getItem(ACTION_KEY)' audit-closed-loop-workflow.js
+          grep -Fq 'for(const [key,raw] of [[DRAW_KEY,previousAudit],[ACTION_KEY,previousAction]])' audit-closed-loop-workflow.js
+          node --check operating-policy-master.js
+          node --check integrated-master-factors.js
+          node --check hd20-ulsan-workplace-master.js
+          node --check workflow-crud.js
+          node --check table-enhance-suite.js
+          node --check theme-inspection.js
+          node --check master-workspace-v2.js
+          node --check final-layout-polish.js
+      - name: Test retention candidate eligibility and draw ID uniqueness
+        run: |
+          node <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const src=fs.readFileSync('hd20-subtabs.js','utf8');
+          const begin=src.indexOf("const done=x=>",src.indexOf("const stored=load('hd20RetentionRandomChecksV1')"));
+          const end=src.indexOf(' const policy=window.HD20PolicyConfig',begin);
+          assert(begin>=0&&end>begin,'retention candidate builder not found');
+          const stores={
+            hd20GMES5SAutoImproveRawV1:[{id:'S-1',status:'완료'},{id:'S-1',status:'완료'},{id:'S-2',status:'진행중'},{id:'S-3',status:'완료',isDemo:true},{id:'S-4',completed:true}],
+            hd20ActionCasesV2:[{id:'A-1',status:'완료'},{id:'A-2',status:'조치대기'},{id:'A-3',status:'종결'},{id:'A-4',status:'완료',source:'e2e-fixture'}]
+          };
+          const pool=new Function('load',src.slice(begin,end)+'return pool;')(key=>stores[key]||[]);
+          assert.deepEqual(pool().map(x=>x.kind+':'+x.x.id),['자율개선:S-1','자율개선:S-4','개선요청:A-1','개선요청:A-3']);
+          const idBegin=src.indexOf("const now=new Date().toISOString(),drawDay=seoulDay(),idPrefix=");
+          const idEnd=src.indexOf("\n try{save('hd20RetentionRandomChecksV1',rows)}",idBegin);
+          assert(idBegin>=0&&idEnd>idBegin,'retention draw ID generator not found');
+          class FixedDate {toISOString(){return '2026-11-05T14:00:00.000Z'}}
+          const prefix='RET-20261105140000000-';
+          const existing=[{id:prefix+'3'},{id:prefix+'4'},{id:'HISTORICAL'}];
+          const next=new Function('rows','chosen','seoulDay','keyOf','Date',src.slice(idBegin,idEnd)+'return rows;')(
+            existing,[{x:{id:'C-1'}},{x:{id:'C-2'}},{x:{id:'C-3'}}],()=> '2026-11-05',x=>x.id,FixedDate
+          );
+          assert.equal(next.length,6);
+          assert.equal(new Set(next.map(x=>x.id)).size,6,'draw IDs must be unique across existing and new cases');
+          assert.deepEqual(next.slice(3).map(x=>x.id),[prefix+'5',prefix+'6',prefix+'7']);
+          console.log('PASS: completed-only source candidates, demo/pending exclusion, dedupe, and collision-safe draw IDs');
+          NODE
+      - name: Exercise monthly bar-label rendering fixtures
+        run: |
+          node <<'NODE'
+          const fs=require('fs'),assert=require('node:assert/strict');
+          const source=fs.readFileSync('dashboard-work-kpi-migration.js','utf8');
+          const begin=source.indexOf('const bars=Array.from({length:12}');
+          const end=source.indexOf('  return \'<section class="hd20DwmGroup"',begin);
+          assert(begin>=0&&end>begin,'monthly chart bar builder not found');
+          const render=new Function('metrics','max','esc',source.slice(begin,end)+'return bars;');
+          const metric=(label,values)=>({label,series:{dated:true,values}});
+          const values=(first,second)=>[
+            metric('Audit 등록',[first,0,...Array(10).fill(0)]),
+            metric('Audit 완료',[second,9,...Array(10).fill(0)])
+          ];
+          const months=render(values(14,8),14,String).split('<div class="hd20DwmMonth">').slice(1);
+          assert.equal(months.length,12,'calendar must keep twelve months');
+          assert.match(months[0],/primary[^>]*height:104px[^>]*><span class="hd20DwmBarValue" aria-hidden="true">14<\/span>/);
+          assert.match(months[0],/secondary[^>]*height:59px[^>]*><span class="hd20DwmBarValue" aria-hidden="true">8<\/span>/);
+          assert(!months[1].includes('primary" style="height:0px" title="Audit 등록 2월: 0건"><span'),'zero value must not print a label');
+          assert(!months[2].includes('hd20DwmBarValue'),'month without activity must not print labels');
+          const equal=render(values(14,14),14,String).split('<div class="hd20DwmMonth">')[1];
+          assert.equal((equal.match(/class="hd20DwmBarValue"/g)||[]).length,2,'both equal-height bars must retain their own labels');
+          assert(source.includes('bottom:calc(100% + 4px)'),'label must remain anchored 4px above bar top');
+          assert(source.includes('right:calc(50% - 4px)')&&source.includes('left:calc(50% - 4px)'),'paired label separation must remain present');
+          assert(!source.includes('const valueLabel='),'legacy shared max-height label must stay removed');
+          console.log('PASS: 12 months, own-bar heights, empty months, matched heights, top offsets and label separation');
+          NODE
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+      - name: Upload static site
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: .
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+      - name: Verify published Pages revision and critical scripts
+        env:
+          SITE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          set -eu
+          test -n "$SITE_URL"
+          expected_subtabs=$(grep -o 'hd20-subtabs.js?v=[^"]*' index.html | head -n 1)
+          expected_audit=$(grep -o 'audit-closed-loop-workflow.js?v=[^"]*' index.html | head -n 1)
+          test -n "$expected_subtabs"
+          test -n "$expected_audit"
+          base="${SITE_URL%/}"
+          for attempt in 1 2 3 4 5 6 7 8 9 10 11 12; do
+            if curl --fail --silent --show-error --location --max-time 20 "$base/index.html" -o /tmp/hd20-published-index.html \
+              && grep -Fq "$expected_subtabs" /tmp/hd20-published-index.html \
+              && grep -Fq "$expected_audit" /tmp/hd20-published-index.html \
+              && curl --fail --silent --show-error --location --max-time 20 "$base/hd20-subtabs.js" -o /tmp/hd20-published-subtabs.js \
+              && grep -Fq 'savedRetentionBefore=localStorage.getItem' /tmp/hd20-published-subtabs.js \
+              && curl --fail --silent --show-error --location --max-time 20 "$base/audit-closed-loop-workflow.js" -o /tmp/hd20-published-audit.js \
+              && grep -Fq 'previousAudit=localStorage.getItem' /tmp/hd20-published-audit.js; then
+              echo "PASS: GitHub Pages serves current index and both critical scripts"
+              exit 0
+            fi
+            echo "Pages content not yet at current revision, attempt $attempt/12"
+            sleep 10
+          done
+          echo "::error::Pages deployment returned but current source assets were not confirmed"
+          exit 1
+,'document','localStorage','setTimeout',body+';return open;')(
+                ()=>opened,{}, {getItem:()=>storageReads++},()=>sideEffects++);
+            fn();
+            assert.equal(sideEffects,0,item.path+' must not reopen an open modal');
+            assert.equal(storageReads,0,item.path+' must not restore stale drafts');
+          }
+          console.log('PASS: both registration popups ignore repeated open requests');
+          NODE
       - name: Exercise delayed TO-BE search after tab switches
         run: |
           node <<'NODE'
