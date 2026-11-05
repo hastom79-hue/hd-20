@@ -613,8 +613,10 @@ function renderRetentionSampling(root){
  let followupActionId='',createdFollowupId='';
  if(result==='부적합'){
   const actions=load('hd20ActionCasesV2'),idNext='AUTO-RETENTION-RECHECK-'+rows[n].id+'-'+((rows[n].recheckHistory||[]).length+1);
-  let next=actions.find(a=>String(a.id)===idNext);
-  if(next&&(String(next.sourceCaseId)!==String(rows[n].id)||next.sourceStage!=='RETENTION-RECHECK'||String(next.previousActionId||'')!==String(action.id))){box.dataset.rsSaving='';box.querySelectorAll('[data-rs-recheck]').forEach(b=>b.disabled=false);window.alert('재조치 ID의 원천 또는 직전 개선조치 연결이 일치하지 않습니다. 관리자에게 확인해 주세요.');return}
+  const existingFollowups=actions.filter(a=>String(a.id||'')===idNext||(a.sourceStage==='RETENTION-RECHECK'&&String(a.sourceCaseId||'')===String(rows[n].id)&&String(a.previousActionId||'')===String(action.id)));
+  if(existingFollowups.length>1){box.dataset.rsSaving='';box.querySelectorAll('[data-rs-recheck]').forEach(b=>b.disabled=false);window.alert('동일 유지점검·직전 개선조치에 후속조치가 중복 연결되어 있습니다. 관리자 확인 전 재등록하지 마세요.');return}
+  let next=existingFollowups[0]||null;
+  if(next&&(String(next.id||'')!==idNext||String(next.sourceCaseId||'')!==String(rows[n].id)||next.sourceStage!=='RETENTION-RECHECK'||String(next.previousActionId||'')!==String(action.id)||String(next.initialAuditor||next.auditor||'')!==String(rows[n].evaluator||'')||String(next.originCaseId||'')!==String(rows[n].caseId||''))){box.dataset.rsSaving='';box.querySelectorAll('[data-rs-recheck]').forEach(b=>b.disabled=false);window.alert('재조치 ID의 원천 또는 직전 개선조치 연결이 일치하지 않습니다. 관리자에게 확인해 주세요.');return}
   if(next){
    box.dataset.rsSaving='';box.querySelectorAll('[data-rs-recheck]').forEach(b=>b.disabled=false);
    window.alert('같은 재점검 순번의 개선조치가 이미 존재합니다. 이력 불일치 여부를 확인한 뒤 처리하세요. 중복 재등록하지 않습니다.');return;
