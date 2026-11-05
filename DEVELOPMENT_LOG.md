@@ -2651,3 +2651,11 @@ Canonical Store는 다음을 기준으로 한다.
 - 실제 소스 조건을 독립 실행한 결과 8/8 기대 결과 일치. 이는 전체 브라우저 저장·복원 E2E를 뜻하지 않음.
 - `.github/workflows/retention-persisted-link-regression.yml` 신규, `index.html` hd20-subtabs.js 캐시 v81 갱신.
 - main 커밋: 소스 `7d0e627d`, 테스트 `04e5b926`·`ab72328d`, 워크플로 `1fc92e98`, 캐시 `64754194`. 승인 대시보드/CSS/업무 데이터 무변경. GitHub Actions 및 Pages 최신 배포 성공 미확인.
+
+## 2026-11-06 — 유지점검 재조치 중복·원본 연결·복원 조건 추가 검증
+
+- 재점검 보호 모듈 `retention-recheck-integrity-guard.js`에 후속 재조치 ID 유일성, 최신 재조치 originCaseId 및 previousActionId 기본 정합성 검사를 추가. 기존 클릭 capture 차단, 팀·작업장·최초 점검자 검증 유지. JS 캐시는 `20261106-guard-v2`로 갱신.
+- `tests/retention-recheck-integrity-smoke.cjs`에 중복 후속 재조치, 잘못된 원본, 직전 조치 정보 누락, 정상 후속 재조치 사례 추가(총 13개). 별도 실제 소스 함수 추출 실행에서도 정상·중복·불일치 8개 사례 기대 결과 확인.
+- 기존 `hd20-subtabs.js`의 재조치 생성에서 `existingFollowups` 실제 필터식을 추출해 없음/1건/동일 ID 중복/동일 직전 조치 다른 ID/복수 직전조치 중복 5개 시나리오 실행, 각 후보 건수 기대 일치. 중복 중단 및 유지점검·개선조치 사전 스냅샷 복원 경로의 존재는 정적으로 확인. **실제 브라우저 저장 실패 시 복원되는 E2E는 미실시**.
+- 신규 `tests/retention-followup-dedup-rollback-smoke.cjs`, `.github/workflows/retention-followup-regression.yml` 추가. 검증 스크립트 오류를 코드 리뷰에서 2회 수정한 후 동일 검색식 실행 5건을 재확인.
+- 코드 `0a23310a`, 시나리오 `e54e6d50`, 캐시 `d46728b8`, 재조치 회귀테스트 최종 `793f9170`, CI `1b608a19` main 반영. 승인 대시보드/CSS/업무 데이터 변경 없음. GitHub Actions 결과 및 Pages 배포 성공 여부 미확인.
