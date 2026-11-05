@@ -1,0 +1,25 @@
+name: HD-20 TO-BE Unique ID Regression
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'audit-as-is-to-be-manager.js'
+      - 'tests/tobe-unique-action-id-smoke.cjs'
+      - '.github/workflows/tobe-unique-id-regression.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  tobe-unique-id:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check JavaScript syntax
+        run: |
+          node --check audit-as-is-to-be-manager.js
+          node --check tests/tobe-unique-action-id-smoke.cjs
+      - name: Verify TO-BE unique-ID guards
+        run: node tests/tobe-unique-action-id-smoke.cjs
