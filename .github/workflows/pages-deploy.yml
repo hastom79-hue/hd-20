@@ -303,6 +303,27 @@ jobs:
           }
           console.log('PASS: seven Audit bridge duplicate/origin checks');
           NODE
+      - name: Test retention recheck requires unique unclosed case
+        run: |
+          node <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const s=fs.readFileSync('hd20-subtabs.js','utf8');
+          const start=s.indexOf("const box=btn.closest('[data-rs-id]'),id=box?.dataset.rsId,rows=load('hd20RetentionRandomChecksV1'),matching=");
+          const end=s.indexOf(" if(btn.disabled||box.dataset.rsSaving==='1')return;",start);
+          assert(start>=0&&end>start,'recheck unique-ID guard missing');
+          const block=s.slice(start,end);
+          for(const [name,rows,id,allow] of [
+            ['unique',[{id:'RET-1',result:'부적합'}],'RET-1',true],
+            ['duplicate',[{id:'RET-1',result:'부적합'},{id:'RET-1',result:'부적합'}],'RET-1',false],
+            ['missing',[{id:'RET-2',result:'부적합'}],'RET-1',false],
+            ['closed',[{id:'RET-1',result:'부적합',closedAt:'2026-11-01'}],'RET-1',false]
+          ]){
+            const check=new Function('btn','load','window',block+'\nreturn true;');
+            const result=check({closest:()=>({dataset:{rsId:id}})},()=>rows,{alert:()=>{}});
+            assert.equal(result===true,allow,'recheck validation failed: '+name);
+          }
+          console.log('PASS: unique, duplicate, missing and closed retention records');
+          NODE
       - name: Test retention recheck follow-up linkage safeguards
         run: |
           node <<'NODE'
