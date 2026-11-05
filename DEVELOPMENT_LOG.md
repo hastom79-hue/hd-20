@@ -2457,3 +2457,11 @@ Canonical Store는 다음을 기준으로 한다.
 - applyActivity()의 직접 render()를 제거해 탭 변경 후 이벤트 리스너를 단일 렌더 진입점으로 유지. 조치관리 초기화 시 이미 TO-BE가 활성화된 경우 자체 렌더하는 기존 진입 로직은 유지.
 - 대량 레코드 목록을 50건 페이지 단위로 표시하는 기존 수정과 함께, 불필요한 DOM 전체 교체를 줄이는 목적. 원본 데이터/저장/완료 판정/승인된 대시보드 변경 없음.
 - index.html hd20-subtabs.js 캐시 키 v73 갱신, CI에 직접 렌더 중복 재발 방지 검사 추가. 실제 브라우저 탭 반복 전환 및 GitHub Pages 최신 배포 성공 검증은 미완료.
+
+## 2026-11-05 — 통합기준정보 편집 이동 중복 선택·닫힘 후 스크롤 방지
+
+- master-workspace-v2.js의 openMasterTarget()가 original.click() 이벤트를 통해 이미 선택 상태를 갱신하면서 select(key)를 다시 직접 호출하는 중복 경로 확인.
+- 원본 탭 클릭 이벤트를 단일 선택 갱신 경로로 유지하고 중복 select(key) 직접 호출을 제거.
+- requestAnimationFrame으로 예약된 편집기 자동 스크롤이 모달 닫힘 또는 DOM 분리 후 실행되지 않도록 box.isConnected와 root.on 상태 확인 추가.
+- 통합기준정보 데이터·편집 원본·승인 대시보드 변경 없음. index.html 마스터 JS 캐시 v6 갱신, 배포 CI 소스 검증 보강.
+- 실제 웹에서 팝업 열기/닫기 반복 및 재진입 E2E, GitHub Pages 배포 성공은 별도 확인 필요.
