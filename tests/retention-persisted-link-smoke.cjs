@@ -6,7 +6,7 @@ const start=src.indexOf("const persistedActions=load('hd20ActionCasesV2').filter
 const ifPos=src.indexOf("if(!r.actionId||persistedActions.length!==1",start);
 const end=src.indexOf("){",ifPos);
 assert(start>=0&&ifPos>start&&end>ifPos,'persisted retention linkage guard located');
-const code=src.slice(start,end+1)+'return false;';
+const code=src.slice(start,ifPos)+'return ('+src.slice(ifPos+3,end)+');';
 const run=new Function('load','r','draw',code);
 const baseA={id:'A1',sourceCaseId:'RET-AUDIT-R1',sourceStage:'RETENTION-RANDOM',originCaseId:'CASE-1',team:'조립팀'};
 const baseD={id:'RET-AUDIT-R1',sourceCaseId:'CASE-1',sourceStage:'RETENTION-RANDOM'};
