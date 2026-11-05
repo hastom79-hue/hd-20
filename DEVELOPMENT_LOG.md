@@ -2524,3 +2524,10 @@ Canonical Store는 다음을 기준으로 한다.
 - 실제 이벤트 리스너 코드를 추출해 두 상황을 독립 실행: 임시저장 시 초안 삭제 0회·팝업 닫기 0회, 정식 등록 시 삭제 1회·닫기 1회 통과.
 - index.html 개선요청 팝업 JS 캐시 키 v13 갱신. GitHub Pages CI에 실행형 회귀 테스트 및 방어 코드 검사 추가. 기존 등록 저장소·저장 로직·승인 대시보드·CSS 변경 없음.
 - 실제 웹 브라우저 임시저장/등록 E2E와 GitHub Pages 최신 배포 성공은 별도 확인 필요.
+
+## 2026-11-05 — 개선요청 등록 후 숨겨진 구형 목록 중복 렌더 차단
+
+- 개선요청 정식 등록 시 action-mail-workflow.js가 hd20ActionCasesV2에 저장하고 hd20-action-register-success 및 hd20-action-updated 이벤트를 발생시키는 연계 흐름 확인. landing-launcher.js와 audit-as-is-to-be-manager.js는 동일 원본 저장소를 조회함.
+- 등록 후 예약된 renderCases(a)는 현재 상단 영역이 activity(자율개선·개선요청 조회)여도 구형 #awAction 목록을 불필요하게 재렌더하므로, 현재 활성 영역이 action일 때에만 구형 표를 갱신하도록 제한. 정상 이벤트 hd20-action-updated는 그대로 유지해 activity 조회 갱신 경로는 보존.
+- index.html action-mail-workflow.js 캐시 키 갱신 및 GitHub Pages CI 정적 검사 추가. 데이터/등록 ID/기존 확정 대시보드·CSS 변경 없음.
+- 실제 브라우저 등록→조회/개선조치 연계 E2E와 GitHub Pages 최신 배포 성공은 미확인.
