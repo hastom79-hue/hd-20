@@ -2620,3 +2620,11 @@ Canonical Store는 다음을 기준으로 한다.
 - `.github/workflows/lookup-refresh-regression.yml` 신규: main 관련 변경 시 Node 구문검사·실행형 회귀테스트 자동화.
 - GitHub main 커밋: 코드 `ecaa2e58`, 테스트 `5a3f7697`, CI `2ee81176`. 대시보드·CSS·원본 업무 데이터 변경 없음.
 - 테스트 등록과 실제 통과는 다름. GitHub Actions 실행 결과, 실제 브라우저 등록→조회 E2E 및 Pages 배포 성공 여부는 미확인.
+
+## 2026-11-06 — 구형 개선조치 회신 원본 ID 유일성 검증
+
+- `action-mail-workflow.js`의 기존 `openResponse()` fallback 및 `saveResponse()`가 관리번호를 `find()`로 첫 한 건만 조회하여, 동일 ID 복수 저장 시 잘못된 최초 행을 열거나 수정할 위험 확인.
+- 최신 `HD20ToBeManager.open()` 미사용 시의 기존 회신 팝업도 동일 번호가 정확히 1건일 때만 열리도록 변경. 회신 저장 직전과 저장 후 검증 단계에서도 전체 일치 건수 1건만 허용. 중복·누락 시 안내 후 중단하며 기존 데이터를 자동 수정·병합하지 않음.
+- `tests/action-legacy-response-unique-id-smoke.cjs` 추가: 소스 가드 정적 확인 및 ID 중복·부재 모델 검증. 전체 DOM 통합 실행형 E2E를 대체하지 않음.
+- `.github/workflows/action-legacy-response-regression.yml` 추가: 코드 변경 시 Node 구문 검사 및 회귀 테스트 자동 실행하도록 구성.
+- GitHub main 반영: 소스 `a276da9e`, 테스트 `5cab3168`, 워크플로 `6b041b07`. 대시보드/CSS/업무 데이터 변경 없음. GitHub Actions 통과, 브라우저 E2E, GitHub Pages 최신 배포 성공은 미확인.
