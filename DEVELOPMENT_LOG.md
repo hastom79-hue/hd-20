@@ -2603,3 +2603,11 @@ Canonical Store는 다음을 기준으로 한다.
 - `.github/workflows/notification-routing-regression.yml` 신규: main push 시 관련 코드/테스트/워크플로 변경을 감지하고 Node 22 구문 검사 및 5개 시나리오 회귀 테스트를 자동 실행. `workflow_dispatch` 수동 재검증 지원.
 - GitHub main 반영 커밋: 테스트 `e621319`, 워크플로 `2a9222b`. 기존 대시보드·CSS·운영 데이터 무변경.
 - 자동 테스트 파일 등록은 완료했으나 실제 GitHub Actions 결과·Pages 반영·브라우저 E2E 및 실제 이메일/SMS 발송은 확인되지 않음. 모의 발송 테스트는 실발송 검증을 대체하지 않음.
+
+## 2026-11-06 — TO-BE 개선조치 원본 관리번호 중복 차단
+
+- `audit-as-is-to-be-manager.js`: TO-BE 팝업 열기에서 최초 `rows().find()`로 같은 관리번호 중 첫 행을 무조건 선택하던 문제를 수정. 일치 건이 정확히 1건일 때만 팝업 열기를 허용하며, 중복·누락 시 관리자 원본 확인 안내.
+- 저장에서도 `findIndex()`로 첫 행을 변경하던 경로를 정확히 1건인 경우로 제한. 저장 후 확인에서도 `find()` 대신 전체 일치 건수 1건 및 조치내용을 검증. 기존 중복 클릭 저장방지 유지.
+- `tests/tobe-unique-action-id-smoke.cjs` 신규: 정상/중복/누락/빈 ID 팝업 진입 4건을 실제 소스의 가드 코드를 추출해 실행하도록 구성. 저장·저장 후 고유성 검사와 중복저장 방지 존재를 정적 검증.
+- `.github/workflows/tobe-unique-id-regression.yml` 신규: main 변경 또는 수동 실행 시 JS 구문 검사와 테스트 실행. 코드 `767d2235`, 테스트 `fd39d097`, CI `f9fdf292` main 반영.
+- 승인된 대시보드, CSS, 원본 업무 데이터 변경 없음. GitHub Actions 테스트 성공·브라우저 실제 조치등록 E2E·Pages 최신 배포 성공은 별도 확인 필요.
