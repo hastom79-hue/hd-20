@@ -63,6 +63,7 @@ jobs:
           grep -Fq "const preferredActivity=area==='activity'" hd20-subtabs.js
           node --check hd20-subtabs.js
           grep -Fq "host.isConnected&&window.HD20_NAV?.active?.()==='audit'&&root.dataset.subview==='ongoing'" hd20-subtabs.js
+          grep -Fq "['retention','retention-recheck'].includes(e.detail?.source)" hd20-subtabs.js
           ! grep -Fq "if(sub==='tobe')window.HD20ToBeManager?.render?.()" hd20-subtabs.js
           grep -Fq "e.detail?.area==='activity'&&e.detail?.sub==='tobe'" audit-as-is-to-be-manager.js
           grep -Fq "draw.sourceStage!=='RETENTION-RANDOM'" hd20-subtabs.js
@@ -301,6 +302,31 @@ jobs:
             assert.equal(wasBlocked,blocked,'bridge safeguard: '+name);
           }
           console.log('PASS: seven Audit bridge duplicate/origin checks');
+          NODE
+      - name: Test retention self-events do not redraw twice
+        run: |
+          node <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const src=fs.readFileSync('hd20-subtabs.js','utf8');
+          const begin=src.indexOf("if(!host.dataset.rsActionSync){host.dataset.rsActionSync='1';window.addEventListener('hd20-action-updated'");
+          const end=src.indexOf("\n if(!document.getElementById('hd20RetentionSamplingStyle'))",begin);
+          assert(begin>=0&&end>begin,'retention refresh listener missing');
+          const handler=src.slice(begin,end);
+          for(const [area,sub,source,expected] of [
+            ['audit','ongoing','action-mail-register',1],
+            ['audit','ongoing','retention',0],
+            ['audit','ongoing','retention-recheck',0],
+            ['audit','draw','action-mail-register',0],
+            ['activity','ongoing','action-mail-register',0]
+          ]){
+            let callback,draws=0;
+            const host={dataset:{},isConnected:true},root={dataset:{subview:sub}};
+            const nav={HD20_NAV:{active:()=>area},addEventListener:(event,fn)=>{callback=fn}};
+            new Function('host','root','window','render',handler)(host,root,nav,()=>draws++);
+            callback({detail:{source}});
+            assert.equal(draws,expected,'unexpected refresh for '+area+'/'+sub+'/'+source);
+          }
+          console.log('PASS: five retention refresh event scenarios');
           NODE
       - name: Test retention action linkage integrity
         run: |
