@@ -87,7 +87,7 @@ function clickWhenReady(findFn,modalId,area,tries=0,lastClickAt=-1){
  const el=findFn();
  // Registration modules may mount after navigation. Retry a missing button,
  // and allow another click when the first click did not open its modal.
- if(el?.isConnected&&!el.disabled&&(lastClickAt<0||tries-lastClickAt>=5)){
+ if(el?.isConnected&&!el.disabled&&(lastClickAt<0||tries-lastClickAt>=16)){
    el.click();lastClickAt=tries;
    const after=document.getElementById(modalId);
    if(after?.classList.contains('on')||after?.getAttribute('aria-hidden')==='false'){
