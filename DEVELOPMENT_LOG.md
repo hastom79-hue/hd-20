@@ -2395,3 +2395,11 @@ Canonical Store는 다음을 기준으로 한다.
 - 독립 함수 테스트 4건(정상 단일 연결, 원본번호 충돌, 최초 점검자 불일치, 중복 연결)을 실행하여 기대 결과와 모두 일치함을 확인.
 - audit-closed-loop-workflow.js 정적 구문 확인, index.html 캐시 키 v20261105-audit-link-consistency-v2 갱신, CI에 중복 및 원본 무결성 소스 검사 추가.
 - 대시보드·실제 저장 데이터 변경 없음. 배포 성공 여부 및 실제 브라우저 Audit 등록/이관 E2E는 확인되지 않음.
+
+## 2026-11-05 — Audit 등록·개선조치 이관 2개 저장소 실패복구 보완
+
+- audit-closed-loop-workflow.js registerAudit()는 Audit 저장 후 자동 개선조치 이관을 수행하지만, 실패시 DRAW_KEY만 기존 JSON으로 복원하고 ACTION_KEY는 복원하지 않아 부분 기록이 남을 수 있는 결함이 있었음. 또한 최초 DRAW_KEY save 실패시 원복 try/catch 범위 밖이었음.
+- 등록 전 DRAW_KEY와 ACTION_KEY의 실제 localStorage 값을 스냅샷으로 보존. Audit 저장 또는 개선조치 동기화 실패시 두 저장소 모두 이전값으로 복구·재검증하고 실패시 중복 재등록 금지 경고.
+- 분리 함수 테스트 3건: 정상 저장/연계 성공, 개선조치 저장 후 후속 단계 실패 시 두 저장소 복구, Audit 저장 직후 오류 시 두 저장소 복구 — 기대 결과 전체 통과.
+- 기존 레코드 구조/개선조치 중복 확인 및 최초 점검자 보존 로직 유지. 캐시 키 audit-closed-loop-workflow.js?v=20261105-two-store-rollback-v3 갱신. CI에 2개 저장소 스냅샷·복구 조건 추가.
+- 브라우저 실제 Audit 화면 E2E 및 GitHub Pages 배포 확인은 별도로 필요. 대시보드와 원본 저장 데이터 변경 없음.
