@@ -2628,3 +2628,9 @@ Canonical Store는 다음을 기준으로 한다.
 - `tests/action-legacy-response-unique-id-smoke.cjs` 추가: 소스 가드 정적 확인 및 ID 중복·부재 모델 검증. 전체 DOM 통합 실행형 E2E를 대체하지 않음.
 - `.github/workflows/action-legacy-response-regression.yml` 추가: 코드 변경 시 Node 구문 검사 및 회귀 테스트 자동 실행하도록 구성.
 - GitHub main 반영: 소스 `a276da9e`, 테스트 `5cab3168`, 워크플로 `6b041b07`. 대시보드/CSS/업무 데이터 변경 없음. GitHub Actions 통과, 브라우저 E2E, GitHub Pages 최신 배포 성공은 미확인.
+
+## 2026-11-06 — TO-BE 팝업 원본 ID 단위실행 재검증
+
+- 최신 `audit-as-is-to-be-manager.js`의 실제 `open(id)` 유일성 검증 구문을 추출하여 정상 1건, 중복 2건, 누락, 빈 ID 4개 시나리오를 독립 실행. 각 시나리오의 허용/차단 및 안내 발생 기대 결과 4/4 일치.
+- 구형 `action-mail-workflow.js`의 `openResponse()`/`saveResponse()`/저장 후 검증 단계에도 각각 고유 관리번호 방어조건이 존재하는지 최신 소스를 다시 확인.
+- 위 4/4는 팝업 진입 가드의 실제 실행검증이지 GitHub Actions, 브라우저 조치등록 E2E 또는 Pages 배포 성공을 뜻하지 않음. 운영 데이터 변경 없음.
