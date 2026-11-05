@@ -2642,3 +2642,12 @@ Canonical Store는 다음을 기준으로 한다.
 - `tests/retention-initial-verdict-unique-id-smoke.cjs`와 `.github/workflows/retention-initial-verdict-regression.yml` 신규 추가.
 - 실제 최신 JS 원본의 판정 진입 가드 구문 추출 실행: 정상 1건, 중복 2건, 원본 부재, 빈 ID, 판정 완료 5/5 기대 결과 통과. 이는 단위 가드 실행검증이며 실제 브라우저 저장→자동이관 E2E 또는 Actions 성공을 뜻하지 않음.
 - GitHub main 반영: 코드 `5d661dcc`, 캐시 `3fbba419`, 테스트 `1e8b9c88`, CI `cea6a7a6`. 최신 Pages 배포 성공은 미확인.
+
+## 2026-11-06 — 유지점검 부적합 이관 저장 후 원본 연결 검증 강화
+
+- `hd20-subtabs.js` 유지점검 최초 부적합 판정 후 개선조치 연결 재검증이 단순 `some()` 존재 검사여서, 저장소에 중복 ID 또는 원본 불일치 기록이 있어도 성공으로 오판할 수 있는 경로 확인.
+- 저장 후 Audit 이관 ID와 개선조치 ID 각각 유일성(정확히 1건), 개선조치 sourceCaseId/sourceStage/originCaseId/생산팀 및 Audit sourceCaseId/sourceStage 정합성까지 확인하도록 강화. 하나라도 실패하면 기존 Audit·개선조치 복원 경로를 실행하고 유지점검 판정 확정을 중단.
+- `tests/retention-persisted-link-smoke.cjs` 신규: 실제 소스의 저장 후 검증 조건을 추출하여 정상, 개선조치 누락/중복, Audit 누락/중복, 원본 사례 불일치, 생산팀 불일치, Audit 원본 불일치의 8개 시나리오 검증.
+- 실제 소스 조건을 독립 실행한 결과 8/8 기대 결과 일치. 이는 전체 브라우저 저장·복원 E2E를 뜻하지 않음.
+- `.github/workflows/retention-persisted-link-regression.yml` 신규, `index.html` hd20-subtabs.js 캐시 v81 갱신.
+- main 커밋: 소스 `7d0e627d`, 테스트 `04e5b926`·`ab72328d`, 워크플로 `1fc92e98`, 캐시 `64754194`. 승인 대시보드/CSS/업무 데이터 무변경. GitHub Actions 및 Pages 최신 배포 성공 미확인.
