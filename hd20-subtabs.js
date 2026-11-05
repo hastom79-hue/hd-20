@@ -182,7 +182,7 @@ if(['overview','self','request','tobe'].includes(sub)){
  show($('.awGrid',root),false);show($('.awFlow',root),false);show($('.awActions',root),false);show(document.getElementById('hd20ActivityExcelImport'),false);show(document.getElementById('hd20ImportAnalysis'),false);show($('.adcCard',root),false);
  const tobe=root.querySelector('#hd20AsIsToBeManager');if(tobe)tobe.hidden=sub!=='tobe';
  if(['self','request'].includes(sub))window.HD20_LAUNCHER?.renderSubtab?.(sub);
- if(sub==='tobe')window.HD20ToBeManager?.render?.();
+ // TO-BE manager renders once via hd20-subtab-changed after apply() completes.
  return;
 }showAll(root);show($('.awGrid',root),true);const form=$('.awRegisterFormCard',root);if(form)show(form,sub==='manage');
   /* 실적분석: 등록/가져오기 도구를 숨기고 팀별 분석 콘텐츠 위주로 구성해
