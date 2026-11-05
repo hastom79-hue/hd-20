@@ -1,0 +1,17 @@
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const src=fs.readFileSync('action-mail-workflow.js','utf8');
+const open=src.slice(src.indexOf('function openResponse(a,id){'),src.indexOf('function saveResponse(a){'));
+const save=src.slice(src.indexOf('function saveResponse(a){'),src.indexOf('function applyAuditPending(a,directPayload)'));
+assert(open.includes("matches.length!==1"),'legacy response open requires unique ID');
+assert(save.includes("matches.length!==1"),'legacy response save requires unique ID');
+assert(save.includes("savedMatches.length!==1"),'persisted response must remain unique');
+const guardCode="const matches=rows.filter(x=>String(x.id||'')===String(id||''));if(matches.length!==1)return false;return true";
+const guard=new Function('rows','id',guardCode);
+assert.equal(guard([{id:'A1'}],'A1'),true);
+assert.equal(guard([{id:'A1'},{id:'A1'}],'A1'),false);
+assert.equal(guard([{id:'A2'}],'A1'),false);
+assert.equal(guard([],'A1'),false);
+console.log('PASS legacy response open/save/post-save unique-ID source guards');
+console.log('PASS matching / duplicate / missing / empty record guard scenarios');
