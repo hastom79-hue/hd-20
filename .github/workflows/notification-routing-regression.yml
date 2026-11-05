@@ -1,0 +1,25 @@
+name: HD-20 Notification Routing Regression
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'hd20-action-notification-routing.js'
+      - 'tests/notification-routing-smoke.cjs'
+      - '.github/workflows/notification-routing-regression.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  notification-routing:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check JavaScript syntax
+        run: |
+          node --check hd20-action-notification-routing.js
+          node --check tests/notification-routing-smoke.cjs
+      - name: Execute notification routing regression
+        run: node tests/notification-routing-smoke.cjs
