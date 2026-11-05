@@ -210,9 +210,36 @@ jobs:
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
       - name: Upload static site
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
           path: .
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+      - name: Verify published Pages revision and critical scripts
+        env:
+          SITE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          set -eu
+          test -n "$SITE_URL"
+          expected_subtabs=$(grep -o 'hd20-subtabs.js?v=[^"]*' index.html | head -n 1)
+          expected_audit=$(grep -o 'audit-closed-loop-workflow.js?v=[^"]*' index.html | head -n 1)
+          test -n "$expected_subtabs"
+          test -n "$expected_audit"
+          base="${SITE_URL%/}"
+          for attempt in 1 2 3 4 5 6 7 8 9 10 11 12; do
+            if curl --fail --silent --show-error --location --max-time 20 "$base/index.html" -o /tmp/hd20-published-index.html \
+              && grep -Fq "$expected_subtabs" /tmp/hd20-published-index.html \
+              && grep -Fq "$expected_audit" /tmp/hd20-published-index.html \
+              && curl --fail --silent --show-error --location --max-time 20 "$base/hd20-subtabs.js" -o /tmp/hd20-published-subtabs.js \
+              && grep -Fq 'savedRetentionBefore=localStorage.getItem' /tmp/hd20-published-subtabs.js \
+              && curl --fail --silent --show-error --location --max-time 20 "$base/audit-closed-loop-workflow.js" -o /tmp/hd20-published-audit.js \
+              && grep -Fq 'previousAudit=localStorage.getItem' /tmp/hd20-published-audit.js; then
+              echo "PASS: GitHub Pages serves current index and both critical scripts"
+              exit 0
+            fi
+            echo "Pages content not yet at current revision, attempt $attempt/12"
+            sleep 10
+          done
+          echo "::error::Pages deployment returned but current source assets were not confirmed"
+          exit 1
