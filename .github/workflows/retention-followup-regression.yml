@@ -1,0 +1,31 @@
+name: HD-20 Retention Followup Dedup and Rollback
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'hd20-subtabs.js'
+      - 'retention-recheck-integrity-guard.js'
+      - 'tests/retention-followup-dedup-rollback-smoke.cjs'
+      - 'tests/retention-recheck-integrity-smoke.cjs'
+      - '.github/workflows/retention-followup-regression.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  followup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax
+        run: |
+          node --check hd20-subtabs.js
+          node --check retention-recheck-integrity-guard.js
+          node --check tests/retention-recheck-integrity-smoke.cjs
+          node --check tests/retention-followup-dedup-rollback-smoke.cjs
+      - name: Guard and followup regressions
+        run: |
+          node tests/retention-recheck-integrity-smoke.cjs
+          node tests/retention-followup-dedup-rollback-smoke.cjs
