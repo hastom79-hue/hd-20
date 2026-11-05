@@ -590,6 +590,11 @@ function renderRetentionSampling(root){
  const historyActions=allActions.filter(a=>a.sourceStage==='RETENTION-RECHECK'&&String(a.sourceCaseId||'')===String(rows[n].id));
  const sequence=a=>Number(String(a.id||'').match(/(\d+)$/)?.[1]||0);
  const latestHistory=historyActions.slice().sort((a,b)=>sequence(b)-sequence(a))[0]||null;
+ // A retention case must point to its latest recheck action. Never silently relink to a foreign or orphaned follow-up.
+ if(latestHistory&&String(rows[n].followupActionId||'')!==String(latestHistory.id)){
+  box.dataset.rsSaving='';box.querySelectorAll('[data-rs-recheck]').forEach(b=>b.disabled=false);
+  window.alert('유지점검 기록의 최신 재조치 번호와 실제 개선조치 이력이 일치하지 않습니다. 자동 재연결 없이 관리자에게 확인해 주세요.');return;
+ }
  if(latestHistory&&String(action?.id||'')!==String(latestHistory.id)){
   box.dataset.rsSaving='';box.querySelectorAll('[data-rs-recheck]').forEach(b=>b.disabled=false);
   window.alert('최신 재조치가 아닌 이전 조치가 연결되어 있습니다. 재점검·종결을 중단하고 연결 상태를 확인하세요.');return;
