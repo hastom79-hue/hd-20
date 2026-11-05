@@ -101,6 +101,22 @@ jobs:
           node --check landing-launcher.js
           node --check beginner-navigation.js
           node --check hd20-action-notification-routing.js
+      - name: Verify static and fallback script assets exist
+        run: |
+          node <<'NODE'
+          const fs=require('node:fs');
+          const html=fs.readFileSync('index.html','utf8');
+          const loader=fs.readFileSync('final-layout-polish.js','utf8');
+          const assets=new Set();
+          for(const match of html.matchAll(/<(?:script|link)\b[^>]*?(?:src|href)=["']([^"']+)/g)){
+            const path=match[1].split('?')[0];
+            if(/^[\w./-]+\.(?:js|css)$/.test(path))assets.add(path);
+          }
+          for(const match of loader.matchAll(/['"]([\w./-]+\.js)\?v=/g))assets.add(match[1]);
+          const missing=[...assets].filter(path=>!fs.existsSync(path));
+          if(missing.length){console.error('Missing referenced assets:',missing);process.exit(1)}
+          console.log('PASS: '+assets.size+' static and fallback assets exist');
+          NODE
       - name: Check cross-tab and master workflow JavaScript syntax
         run: |
           set -eu
