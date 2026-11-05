@@ -56,6 +56,7 @@ jobs:
           grep -Fq "String(draw.initialAuditor||draw.auditor||'')!==String(evaluator)" hd20-subtabs.js
           grep -Fq 'registeredBy:rows[n].evaluator,registrant:rows[n].evaluator' hd20-subtabs.js
           grep -Fq 'recheckEvaluator:currentEmail()||rows[n].evaluator' hd20-subtabs.js
+          grep -Fq "String(rows[n].followupActionId||'')!==String(latestHistory.id)" hd20-subtabs.js
           grep -Fq 'hd20LnThreeTabs{display:none!important}' landing-launcher.js
           grep -Fq 'landing-launcher.js?v=' index.html
           grep -Fq 'activity-register-modal.js?v=' index.html
