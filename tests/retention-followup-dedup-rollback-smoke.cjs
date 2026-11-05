@@ -21,7 +21,7 @@ scenario('duplicate matching ID',[valid,valid],2);
 scenario('same prior link different ID',[{...valid,id:'RECHECK-OTHER'}],1);
 scenario('two entries sharing same prior link',[valid,{...valid,id:'RECHECK-OTHER'}],2);
 scenario('unrelated recheck ignored',[{...valid,sourceCaseId:'R2',id:'OTHER',previousActionId:'A2'}],0);
-const write=src.slice(src.indexOf("if(!next){next={id:idNext"),src.indexOf("if(createdFollowupId)window.dispatchEvent",begin));
+const write=src.slice(begin,src.indexOf("if(createdFollowupId)window.dispatchEvent",begin));
 assert(write.includes("if(existingFollowups.length>1)"),'duplicate results must abort');
 assert(write.includes("if(next){"),'already existing followup must not be recreated');
 assert(write.includes("priorActionSnapshot"),'pre-write action snapshot preserved');
