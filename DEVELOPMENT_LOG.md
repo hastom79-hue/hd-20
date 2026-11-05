@@ -2412,3 +2412,10 @@ Canonical Store는 다음을 기준으로 한다.
 - 추출 ID 생성 구문을 독립 실행한 2가지 사례에서 출력 ID가 중복되지 않는 것 확인. JavaScript 구문 검사 완료.
 - index.html hd20-subtabs.js 캐시 키 v70 갱신, 배포 CI에 고유 ID 검사 로직 존재 확인 단계 반영.
 - 실제 운영 데이터 무결성 검사, GitHub Actions·Pages 배포 성공, 브라우저 유지점검 E2E는 미확인.
+
+## 2026-11-05 — 유지점검 추출 후보 및 고유 ID 자동 실행검증
+
+- 실제 hd20-subtabs.js 후보 생성 코드를 함수로 추출하여 독립 실행 검증. 완료·종결 건만 대상, 미완료/진행 중 제외, 가상 검증자료 제외, 동일 종류·ID 중복 제거 확인.
+- 기존 이력에 추출 ID 충돌이 있는 고정시각 시나리오에서 신규 ID가 기존 ID와 겹치지 않고 순번을 건너뛰는지 검증.
+- .github/workflows/pages-deploy.yml에 node 기반 실행형 회귀 테스트 단계 추가. 정적 grep뿐 아니라 저장소의 실제 JavaScript 생성 코드를 테스트하도록 보강(커밋 e6b3e99).
+- 운영 데이터 변경 없음. 브라우저 E2E와 GitHub Pages 배포/실제 Actions 실행 결과는 아직 별도 확인 필요.
