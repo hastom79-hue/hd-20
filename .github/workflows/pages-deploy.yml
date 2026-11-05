@@ -62,6 +62,7 @@ jobs:
           grep -Fq 'function renderOverview(mode=' landing-launcher.js
           grep -Fq "const preferredActivity=area==='activity'" hd20-subtabs.js
           node --check hd20-subtabs.js
+          grep -Fq "host.isConnected&&window.HD20_NAV?.active?.()==='audit'&&root.dataset.subview==='ongoing'" hd20-subtabs.js
           ! grep -Fq "if(sub==='tobe')window.HD20ToBeManager?.render?.()" hd20-subtabs.js
           grep -Fq "e.detail?.area==='activity'&&e.detail?.sub==='tobe'" audit-as-is-to-be-manager.js
           grep -Fq "draw.sourceStage!=='RETENTION-RANDOM'" hd20-subtabs.js
@@ -251,6 +252,27 @@ jobs:
             assert.equal(managerDone(sample),retentionDone(sample),'completion mismatch: '+status);
           }
           console.log('PASS: TO-BE management and retention sample completion statuses agree');
+          NODE
+      - name: Test retention redraw only on active Audit maintenance tab
+        run: |
+          node <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const src=fs.readFileSync('hd20-subtabs.js','utf8');
+          const begin=src.indexOf("if(!host.dataset.rsActionSync){host.dataset.rsActionSync='1';window.addEventListener('hd20-action-updated'");
+          const end=src.indexOf("\n if(!document.getElementById('hd20RetentionSamplingStyle'))",begin);
+          assert(begin>=0&&end>begin,'retention action refresh hook missing');
+          for(const area of ['audit','activity']){
+            for(const sub of ['ongoing','draw']){
+              let onAction,draws=0;
+              const host={dataset:{},isConnected:true};
+              const root={dataset:{subview:sub}};
+              const nav={HD20_NAV:{active:()=>area},addEventListener:(event,handler)=>{assert.equal(event,'hd20-action-updated');onAction=handler}};
+              new Function('host','root','window','render',src.slice(begin,end))(host,root,nav,()=>draws++);
+              onAction();
+              assert.equal(draws,area==='audit'&&sub==='ongoing'?1:0,'unexpected retention redraw: '+area+'/'+sub);
+            }
+          }
+          console.log('PASS: inactive Audit retention panel skips action redraw');
           NODE
       - name: Test retention candidate eligibility and draw ID uniqueness
         run: |
