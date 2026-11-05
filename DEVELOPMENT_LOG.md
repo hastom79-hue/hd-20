@@ -2362,3 +2362,12 @@ Canonical Store는 다음을 기준으로 한다.
 - index.html 캐시 키 audit-as-is-to-be-manager.js?v=20261105-tobe-save-lock-v9 갱신. GitHub Pages CI에 잠금 존재 검사 추가.
 - action-mail-workflow.js 신규 개선요청 등록에는 actionRegisterBusy 가드 존재 확인. 단, 브라우저에서 빠른 연속 클릭 및 저장/완료 E2E 미검증.
 - 문법검사와 소스 검사는 완료. GitHub Pages 배포 성공 및 실제 UI 통합검증은 아직 확인되지 않음.
+
+## 2026-11-05 — 유지점검 부적합 Audit 이관 원본·점검자 식별 보강
+
+- hd20-subtabs.js의 5S 유지점검 첫 부적합 이관 시 RET-AUDIT-[유지점검ID]의 기존 Audit 레코드를 찾으면 원본과 최초 점검자가 일치하는지 검증하지 않고 재사용하던 위험을 확인.
+- 같은 ID가 이미 존재할 때 sourceCaseId, sourceStage(RETENTION-RANDOM), initialAuditor/auditor가 현재 판정 건과 정확히 일치하지 않으면 이관을 중단하도록 차단.
+- 신규 Audit 레코드의 auditActor를 고정 '마스터 권한자' 대신 실제 판정자 이메일로 기록. 5S모듈 담당자가 수행했을 때 마스터로 잘못 표기되는 문제 방지.
+- 재점검 결과에 따른 추가 개선조치 ID 중복 방지, 원본 등록·점검자 보존, 저장 실패 복원 처리가 기존 코드에 존재함을 확인. 해당 로직은 변경하지 않음.
+- index.html hd20-subtabs.js 캐시 키 v67 갱신. GitHub Pages CI에 연결 식별 조건 확인 단계 추가.
+- JavaScript 정적 구문 검사 완료. 브라우저 Audit 판정·이관·복구 실사용 시나리오와 Pages 배포 성공 여부는 아직 미검증.
