@@ -303,6 +303,33 @@ jobs:
           }
           console.log('PASS: seven Audit bridge duplicate/origin checks');
           NODE
+      - name: Test retention recheck follow-up linkage safeguards
+        run: |
+          node <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const src=fs.readFileSync('hd20-subtabs.js','utf8');
+          const start=src.indexOf('const existingFollowups=actions.filter(');
+          const end=src.indexOf('  if(!next){next=',start);
+          assert(start>=0&&end>start,'recheck follow-up guard missing');
+          const snippet=src.slice(start,end);
+          const base={id:'AUTO-RETENTION-RECHECK-R1-2',sourceCaseId:'R1',sourceStage:'RETENTION-RECHECK',previousActionId:'A1',initialAuditor:'inspect@hd.com',originCaseId:'IMP-1'};
+          const scenarios=[
+            ['fresh',[],false],
+            ['same ID',[base],true],
+            ['same link with other ID',[{...base,id:'OTHER'}],true],
+            ['duplicate',[base,{...base,id:'OTHER'}],true],
+            ['foreign auditor',[{...base,initialAuditor:'foreign@hd.com'}],true],
+            ['foreign original',[{...base,originCaseId:'OTHER'}],true],
+            ['foreign ID collision',[{...base,sourceCaseId:'R2'}],true]
+          ];
+          for(const [name,actions,blocked] of scenarios){
+            const btn={disabled:true},box={dataset:{rsSaving:'1'},querySelectorAll:()=>[btn]};
+            new Function('actions','idNext','rows','n','action','box','window',snippet+';return next;')(
+              actions,base.id,[{id:'R1',evaluator:'inspect@hd.com',caseId:'IMP-1'}],0,{id:'A1'},box,{alert:()=>{}});
+            assert.equal(box.dataset.rsSaving==='',blocked,name);
+          }
+          console.log('PASS: seven recheck follow-up duplication and provenance scenarios');
+          NODE
       - name: Test retention self-events do not redraw twice
         run: |
           node <<'NODE'
