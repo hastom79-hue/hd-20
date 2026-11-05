@@ -2443,3 +2443,10 @@ Canonical Store는 다음을 기준으로 한다.
 - actions/deploy-pages@v4 실행 직후 page_url에 HTTP 요청하여 실제 공개 index.html에 현재 저장소의 hd20-subtabs.js, audit-closed-loop-workflow.js 캐시 키가 반영되었는지 검증. 두 JS 본문도 각각 주요 복구 로직 포함 여부를 대조.
 - 캐시 및 Pages 전파 지연을 고려해 지정 횟수 재시도하며 끝까지 일치하지 않으면 CI 실패 기록을 남기도록 처리. 단순 저장소 커밋만으로 배포 성공으로 판정하지 않도록 개선.
 - 이 환경에서는 공개 GitHub Pages URL 직접 접근 및 Actions 배포 실행 기록 확인이 되지 않아 실제 배포 성공은 아직 미검증. 변경 후 워크플로가 실제 실행되어야 배포 후 검증 결과가 생성됨.
+
+## 2026-11-05 — 통합기준정보 부분 초기화 복구
+
+- master-workspace-v2.js 초기화 중 일부 UI만 생성되어 #hd20MasterWorkspace가 남아 있으면 기존 구현은 링크 10개 미만인 상태를 감지해도 화면의 불완전한 UI를 제거하지 않아 부트 재시도마다 같은 요소만 확인하는 결함을 확인.
+- 재진입 시 관리 링크 10개 이상과 hmSourceRegistry 존재를 함께 확인. 둘 중 하나라도 만족하지 않는 불완전한 마운트는 생성된 workspace·registry UI만 제거하고 원본 편집기를 기준으로 재생성하도록 변경.
+- 통합기준정보 데이터 원본, 기존 저장내용, 승인 대시보드 및 타 업무 탭 변경 없음.
+- index.html master-workspace-v2.js 캐시 버전 갱신, CI에 부분 초기화 복구 로직 점검 추가. 정적 JS 구문 검사 확인. 실제 브라우저 팝업 실행·전환 E2E와 Pages 배포 성공은 미확인.
