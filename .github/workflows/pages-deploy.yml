@@ -59,6 +59,9 @@ jobs:
           grep -Fq "String(rows[n].followupActionId||'')!==String(latestHistory.id)" hd20-subtabs.js
           grep -Fq 'const usedIds=new Set(rows.map(x=>String(x.id||' hd20-subtabs.js
           grep -Fq 'while(usedIds.has(id))' hd20-subtabs.js
+          grep -Fq '5S모듈 메일 초안 열기' hd20-subtabs.js
+          grep -Fq "notificationStatus:'미발송'" hd20-subtabs.js
+          grep -Fq "source:'retention-draw',drawn:chosen.length" hd20-subtabs.js
           grep -Fq 'hd20LnThreeTabs{display:none!important}' landing-launcher.js
           grep -Fq 'landing-launcher.js?v=' index.html
           grep -Fq 'activity-register-modal.js?v=' index.html
