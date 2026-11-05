@@ -49,6 +49,7 @@ jobs:
           grep -Fq "['tobe','④ 개선조치등록·관리']" hd20-subtabs.js
           grep -Fq "['checklist','③ Audit 점검항목']" hd20-subtabs.js
           node --check audit-as-is-to-be-manager.js
+          grep -Fq "'확정완료'" audit-as-is-to-be-manager.js
           grep -Fq 'search.oninput=e=>' audit-as-is-to-be-manager.js
           grep -Fq 'clearTimeout(searchDebounce)' audit-as-is-to-be-manager.js
           grep -Fq 'restored.focus({preventScroll:true})' audit-as-is-to-be-manager.js
@@ -228,6 +229,26 @@ jobs:
             assert.equal(focused,active?1:0,'inactive tab must not steal focus');
           }
           console.log('PASS: active/inactive TO-BE delayed search behavior');
+          NODE
+      - name: Test TO-BE and retention completed-state agreement
+        run: |
+          node <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const manager=fs.readFileSync('audit-as-is-to-be-manager.js','utf8');
+          const retention=fs.readFileSync('hd20-subtabs.js','utf8');
+          const extract=(source,marker)=>{
+            const begin=source.indexOf(marker);
+            assert(begin>=0,'completion predicate not found: '+marker);
+            const end=source.indexOf(';',begin);
+            return new Function('return '+source.slice(begin+marker.length,end))();
+          };
+          const managerDone=extract(manager,'const done=');
+          const retentionDone=extract(retention,' const done=');
+          for(const status of ['완료','개선완료','조치완료','종결','확정완료','종료','종결완료','조치대기','진행중']){
+            const sample={status,id:'IMP-VALID-1',completed:false};
+            assert.equal(managerDone(sample),retentionDone(sample),'completion mismatch: '+status);
+          }
+          console.log('PASS: TO-BE management and retention sample completion statuses agree');
           NODE
       - name: Test retention candidate eligibility and draw ID uniqueness
         run: |
