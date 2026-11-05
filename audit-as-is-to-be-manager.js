@@ -72,7 +72,7 @@ search.oninput=e=>{
  clearTimeout(searchDebounce);
  searchDebounce=setTimeout(()=>{
   searchDebounce=null;
-  if(!host.isConnected||document.getElementById(ID)!==host)return;
+  if(!host.isConnected||document.getElementById(ID)!==host||window.HD20_NAV?.active?.()!=='activity'||document.getElementById('awActivity')?.dataset.subview!=='tobe')return;
   filt.text=next;page=1;render();
   const restored=host.querySelector('[data-tobe-search]');
   if(restored){restored.focus({preventScroll:true});restored.setSelectionRange(next.length,next.length)}
