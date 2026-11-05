@@ -15,7 +15,10 @@ if(existing){
  box.querySelector(':scope > .hmSourceRegistry')?.remove();
  existing.remove();
  box.classList.remove('hd20MasterWorkspaceReady','hd20MasterWorkspaceV4');
-}const required=['integrated-team','integrated-target','integrated-source','integrated-discovery','integrated-factor','integrated-workplace','integrated-theme','policy','integrated-admins','integrated-mail'];if(!required.every(k=>tabs.querySelector('[data-master-tab="'+k+'"]')))return false;
+}
+// Remove an orphaned generated registry left by interrupted initialization.
+if(!root.querySelector('#hd20MasterWorkspace'))box.querySelectorAll(':scope > .hmSourceRegistry').forEach(node=>node.remove());
+const required=['integrated-team','integrated-target','integrated-source','integrated-discovery','integrated-factor','integrated-workplace','integrated-theme','policy','integrated-admins','integrated-mail'];if(!required.every(k=>tabs.querySelector('[data-master-tab="'+k+'"]')))return false;
 const ws=document.createElement('section');ws.id='hd20MasterWorkspace';ws.setAttribute('aria-label','기준정보 관리 내비게이션');ws.innerHTML='<div class="hmTitle"><div><span class="hmEyebrow">HD-20 / MASTER CONTROL</span><h2>통합기준정보 관리</h2><p>업무별 공통기준을 한곳에서 관리합니다. 좌측에서 항목을 선택하세요.</p></div><div class="hmCounters"><button type="button" class="hmIntegrityButton" data-hm-open-registry>연동·누락 점검</button><button type="button" data-hm-close aria-label="통합기준정보 닫기">닫기 ×</button></div></div><div class="hmToolbar"><label for="hmSearch">기준정보 찾기</label><input id="hmSearch" type="search" placeholder="생산팀·목표·작업장·5S 테마·Audit·권한·메일" autocomplete="off"><button type="button" data-hm-reset>초기화</button></div><div class="hmGroups" data-hm-groups role="navigation" aria-label="기준정보 관리 분류"></div><div class="hmCurrent" aria-live="polite"><div><small>선택된 기준정보</small><strong data-hm-current>관리 항목을 선택하세요</strong><span data-hm-current-desc>관리 항목을 선택하면 원본 기준정보 편집 화면이 표시됩니다.</span></div><span data-hm-count></span></div><details class="hmAudit" aria-label="기준정보·타 탭 연동점검"><summary class="hmAuditSummary">연동진단 <span data-hm-audit-summary>점검 준비</span></summary><div class="hmAuditTop"><div><strong>업무별 기준정보 연동 점검</strong><p>정보 원천을 수정하지 않고 연결만 진단합니다.</p></div><div class="hmAuditActions"><button type="button" data-hm-audit-refresh>다시 점검</button></div></div><div class="hmAuditDetails"><div class="hmAuditRows" data-hm-audit-rows></div></div></details>';
 box.insertBefore(ws,tabs);
 /* Unified ownership inventory: existing canonical editors are reused, never duplicated.
@@ -154,7 +157,7 @@ registry.addEventListener('toggle',()=>{if(registry.open)refreshSourceRegistry()
 window.addEventListener('storage',()=>{if(registry.open)refreshSourceRegistry()});
 registry.querySelector('[data-hm-source-total]').textContent=SOURCE_MAP.length+'개 연결 항목';
 // Keep a working close control even when legacy .modalHead is hidden by layout CSS.
-ws.querySelector('[data-hm-close]').addEventListener('click',()=>{const close=root.querySelector('#closeMaster');if(close)close.click();else{root.classList.remove('on');root.setAttribute('aria-hidden','true')}});
+ws.querySelector('[data-hm-close]').addEventListener('click',()=>{const close=root.querySelector('#closeMaster');if(close){close.click();return}if(window.HD20_NAV?.go){window.HD20_NAV.go('dashboard');return}root.classList.remove('on');root.setAttribute('aria-hidden','true');document.querySelector('.app')?.classList.remove('awFocused')});
 
 
 /* Integrity checks only read canonical sources. Missing contact/service is
