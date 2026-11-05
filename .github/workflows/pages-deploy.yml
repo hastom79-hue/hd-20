@@ -36,7 +36,8 @@ jobs:
           node --check activity-register-modal.js
           grep -Fq "if(overlay.classList.contains('on'))return" activity-register-modal.js
           grep -Fq "if(overlay.isConnected&&overlay.classList.contains('on'))" activity-register-modal.js
-          grep -Fq "function hide(){clearTimeout(modalFocusTimer);modalFocusTimer=null" activity-register-modal.js
+          grep -Fq "function hide(){if(!overlay.classList.contains('on'))return;clearTimeout(modalFocusTimer)" activity-register-modal.js
+          grep -Fq "other?.classList.contains('on')?'hidden':''" activity-register-modal.js
           test -f action-register-modal.js
           test -f landing-launcher.js
           grep -Fq 'hd20-subtabs.css?v=' index.html
@@ -85,7 +86,8 @@ jobs:
           node --check action-register-modal.js
           grep -Fq "if(!m||m.classList.contains('on'))return" action-register-modal.js
           grep -Fq "if(m.isConnected&&m.classList.contains('on'))" action-register-modal.js
-          grep -Fq "if(!m)return;clearTimeout(modalFocusTimer);modalFocusTimer=null" action-register-modal.js
+          grep -Fq "if(!m||!m.classList.contains('on'))return;clearTimeout(modalFocusTimer)" action-register-modal.js
+          grep -Fq "other?.classList.contains('on')?'hidden':''" action-register-modal.js
           grep -Fq "root.dataset.hd20ActionModalReady==='1'" action-register-modal.js
           grep -Fq "document.getElementById('hd20ActionRegisterModal')" action-register-modal.js
           grep -Fq 'document.body.appendChild(overlay)' activity-register-modal.js
