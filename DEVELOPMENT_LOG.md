@@ -2379,3 +2379,11 @@ Canonical Store는 다음을 기준으로 한다.
 - 기존 재점검 이력 record.evaluator와 재조치 ID 중복 방지, 직전 완료조치 연결 검증, 저장 실패 원복 로직은 유지. 기존 저장 데이터에 대한 강제 마이그레이션 없음.
 - index.html script 캐시 키 hd20-subtabs.js?v=20261105-retention-original-actor-v68로 갱신. CI에 등록자·재점검자 분리 보존 조건 2건 추가.
 - JavaScript 구문 검사 및 정적 소스 검사는 통과. UI 실사용 재점검 E2E, GitHub Pages 배포 성공은 확인되지 않음.
+
+## 2026-11-05 — 유지점검 재조치 최신 링크 불일치 종결 방지
+
+- hd20-subtabs.js linkedAction()은 같은 유지점검 ID에 매핑된 최신 RETENTION-RECHECK 개선조치를 반환하지만, 별도 보존된 유지점검 기록의 followupActionId와 동일한지 재판정 전에 확인하지 않았음. 원본 연결 드리프트/부분 저장 실패 이력에서 다른 재조치를 선택할 위험.
+- 기존 최신 이력 검증 직전에 followupActionId 및 최신 재조치 ID 불일치 시 판정을 중단하고 관리자 확인을 요구하도록 변경. 자동 재연결·데이터 덮어쓰기 금지.
+- 기존 재발 이력 recheckHistory, 최초 점검자 및 현재 재점검자 분리, 중복 재조치 ID 검사, 저장 실패 복구 로직은 변경하지 않음.
+- index.html hd20-subtabs.js 캐시 키 v69 갱신 및 Pages CI의 명시적 이력 링크 일치 검사 추가.
+- JS 구문/소스 확인은 수행. 실제 브라우저에서 종결·재발·이관·데이터 저장 E2E 및 Pages 배포 성공은 확인되지 않음.
