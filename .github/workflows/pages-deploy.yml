@@ -135,6 +135,8 @@ jobs:
           node --check audit-closed-loop-workflow.js
           grep -Fq "if(linked.length>1)throw new Error" audit-closed-loop-workflow.js
           grep -Fq "source&&source!==String(draw.id)" audit-closed-loop-workflow.js
+          grep -Fq 'previousAudit=localStorage.getItem(DRAW_KEY),previousAction=localStorage.getItem(ACTION_KEY)' audit-closed-loop-workflow.js
+          grep -Fq 'for(const [key,raw] of [[DRAW_KEY,previousAudit],[ACTION_KEY,previousAction]])' audit-closed-loop-workflow.js
           node --check operating-policy-master.js
           node --check integrated-master-factors.js
           node --check hd20-ulsan-workplace-master.js
