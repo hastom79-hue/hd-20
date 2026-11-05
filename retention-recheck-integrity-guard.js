@@ -7,7 +7,10 @@ function verify(id,rs,as){
  const r=records[0];if(r.result!=='부적합'||r.closedAt||(r.recheckResult==='적합'&&r.recheckedAt))return false;
  const followups=as.filter(a=>a?.sourceStage==='RETENTION-RECHECK'&&norm(a.sourceCaseId)===norm(r.id));
  const seq=a=>Number(norm(a.id).match(/(\d+)$/)?.[1]||0);
+ const followupIds=followups.map(a=>norm(a.id));
+ if(followupIds.some(id=>!id)||new Set(followupIds).size!==followupIds.length)return false;
  const latest=followups.slice().sort((a,b)=>seq(b)-seq(a))[0];
+ if(latest&&(norm(latest.originCaseId)!==norm(r.caseId)||!norm(latest.previousActionId)))return false;
  const aid=norm(latest?.id||r.followupActionId||r.actionId);
  const matches=as.filter(a=>norm(a?.id)===aid);if(!aid||matches.length!==1)return false;
  const a=matches[0],sourceOk=a.sourceStage==='RETENTION-RECHECK'?norm(a.sourceCaseId)===norm(r.id):a.sourceStage==='RETENTION-RANDOM'&&norm(a.sourceCaseId)==='RET-AUDIT-'+norm(r.id);
