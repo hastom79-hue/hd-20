@@ -62,6 +62,8 @@ jobs:
           grep -Fq '5S모듈 메일 초안 열기' hd20-subtabs.js
           grep -Fq "notificationStatus:'미발송'" hd20-subtabs.js
           grep -Fq "source:'retention-draw',drawn:chosen.length" hd20-subtabs.js
+          grep -Fq "savedRetentionBefore=localStorage.getItem('hd20RetentionRandomChecksV1')" hd20-subtabs.js
+          grep -Fq "retentionRestored=restore('hd20RetentionRandomChecksV1',savedRetentionBefore)" hd20-subtabs.js
           grep -Fq 'hd20LnThreeTabs{display:none!important}' landing-launcher.js
           grep -Fq 'landing-launcher.js?v=' index.html
           grep -Fq 'activity-register-modal.js?v=' index.html
