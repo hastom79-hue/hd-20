@@ -232,10 +232,10 @@ function openMasterTarget(key){
  if(searchBox?.value){searchBox.value='';filter()}
  const group=b.closest('.hmGroup');
  if(group){group.hidden=false;activateGroup(group,false)}
- original.click();
- select(key);
- // Bring the functional settings section into view, not the button which launched it.
+ original.click(); // The original tab click listener also updates workspace selection.
+ // Do not scroll a stale editor after the master modal is closed or switched.
  requestAnimationFrame(()=>{
+   if(!box.isConnected||!root.classList.contains('on'))return;
    const candidates=key==='integrated-theme'?['#hd20ThemeCatalogPanel']:
     key==='policy'?['#hd20OperatingPolicyPanel']:
     key==='integrated-admins'||key.startsWith('integrated-')?['#hd20IntegratedMasterFactors']:
