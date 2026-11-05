@@ -2465,3 +2465,11 @@ Canonical Store는 다음을 기준으로 한다.
 - requestAnimationFrame으로 예약된 편집기 자동 스크롤이 모달 닫힘 또는 DOM 분리 후 실행되지 않도록 box.isConnected와 root.on 상태 확인 추가.
 - 통합기준정보 데이터·편집 원본·승인 대시보드 변경 없음. index.html 마스터 JS 캐시 v6 갱신, 배포 CI 소스 검증 보강.
 - 실제 웹에서 팝업 열기/닫기 반복 및 재진입 E2E, GitHub Pages 배포 성공은 별도 확인 필요.
+
+## 2026-11-05 — 통합기준정보 닫기·재진입 상태 동기화
+
+- master-workspace-v2.js에서 통합기준정보 닫기 버튼의 기존 #closeMaster 버튼이 없을 때 화면(.on)만 숨기는 fallback 경로를 확인. 상단 내비게이션은 master 활성 상태로 남아 닫힘과 메뉴 상태가 불일치할 수 있었음.
+- 기존 닫기 버튼이 없으면 HD20_NAV.go('dashboard')로 정상 상단 메뉴 전환 경로를 사용하도록 수정. NAV도 준비되지 않은 경우 기존 표시 숨김과 함께 .app.awFocused 클래스 제거.
+- 초기화 중 생성 UI만 남은 경우 #hd20MasterWorkspace가 없더라도 hmSourceRegistry가 중복 생성될 수 있어, 새 작업영역 생성 전 고아 registry 요소를 정리하도록 추가.
+- 마스터 기준정보 저장 데이터·편집기·확정 대시보드 변경 없음. index.html master-workspace-v2.js 캐시 키 v7 갱신, CI 검증 조건 추가.
+- 실제 브라우저 반복 진입·닫기 및 GitHub Pages 최신 배포 성공은 별도 확인 필요.
