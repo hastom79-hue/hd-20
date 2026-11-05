@@ -96,7 +96,19 @@ let registrationDateTime=new Date().toISOString();let leadAtSave=calendarGap(bas
 if(photo)next.after=photo;if(complete){next.doneDate=dt;next.completedAt=dt;next.doneStatus='완료'}data[ix]=next;
 try{localStorage.setItem(KEY,JSON.stringify(data));let confirm=rows().find(x=>key(x)===id);if(!confirm||confirm.toBePlan!==p)throw Error('검증 실패')}catch(e){if(old!==null)localStorage.setItem(KEY,old);err.textContent='저장 실패';return}
 window.dispatchEvent(new CustomEvent('hd20-action-updated',{detail:{source:'audit-tobe',id}}));close()}
-overlay.querySelector('[data-save]')?.addEventListener('click',()=>save(false));overlay.querySelector('[data-complete]')?.addEventListener('click',()=>save(true));overlay.querySelector('[data-plan]').focus()}
+let saving=false;
+async function guardedSave(complete){
+ if(saving||!overlay.isConnected)return;
+ saving=true;
+ const controls=[overlay.querySelector('[data-save]'),overlay.querySelector('[data-complete]')].filter(Boolean);
+ controls.forEach(button=>{button.disabled=true;button.setAttribute('aria-busy','true')});
+ try{await save(complete)}
+ catch(error){const err=overlay.querySelector('[data-error]');if(err)err.textContent='저장 준비 중 오류가 발생했습니다. 사진 파일과 입력내용을 확인하고 다시 시도해 주세요.';console.error('[HD20 TO-BE save]',error)}
+ finally{saving=false;if(overlay.isConnected)controls.forEach(button=>{button.disabled=false;button.removeAttribute('aria-busy')})}
+}
+overlay.querySelector('[data-save]')?.addEventListener('click',()=>guardedSave(false));
+overlay.querySelector('[data-complete]')?.addEventListener('click',()=>guardedSave(true));
+overlay.querySelector('[data-plan]').focus()}
 window.HD20ToBeManager={open,render};
 function init(){bootStyle();if(document.getElementById('awActivity')?.dataset.subview==='tobe')render();window.addEventListener('hd20-subtab-changed',e=>{if(e.detail?.area==='activity'&&e.detail?.sub==='tobe')render()});window.addEventListener('hd20-action-updated',()=>{if(window.HD20_NAV?.active?.()==='activity'&&document.getElementById('awActivity')?.dataset.subview==='tobe')render()})}
 document.readyState==='loading'?document.addEventListener('DOMContentLoaded',init,{once:true}):init()
