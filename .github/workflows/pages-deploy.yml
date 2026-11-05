@@ -133,6 +133,8 @@ jobs:
           node --check audit-retention-workflow-visual.js
           node --check audit-random-draw.js
           node --check audit-closed-loop-workflow.js
+          grep -Fq "if(linked.length>1)throw new Error" audit-closed-loop-workflow.js
+          grep -Fq "source&&source!==String(draw.id)" audit-closed-loop-workflow.js
           node --check operating-policy-master.js
           node --check integrated-master-factors.js
           node --check hd20-ulsan-workplace-master.js
