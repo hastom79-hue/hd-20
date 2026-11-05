@@ -2508,3 +2508,11 @@ Canonical Store는 다음을 기준으로 한다.
 - activity-register-modal.js 및 action-register-modal.js에 modalFocusTimer를 유지하고 show/open 시 이전 타이머 취소 후 새 예약, hide/close 시 기존 예약 취소 및 참조 초기화. 기존 DOM 연결·표시 상태 검사는 유지.
 - index.html 두 모달 JS 캐시 키 변경, GitHub Pages CI에 닫기 타이머 정리 코드 재발 방지 검사 추가. CSS·업무 데이터·확정 대시보드 변경 없음.
 - 정적 소스 및 함수 단위 테스트와 달리 실제 브라우저 연속 조작 E2E와 Pages 배포 성공은 아직 미확인.
+
+## 2026-11-05 — 등록 팝업 간 스크롤 잠금 충돌 방지
+
+- 자율개선·개선요청 등록 팝업의 닫기 함수가 일괄적으로 body.style.overflow를 해제해 다른 등록 팝업이 여전히 열린 경우에도 스크롤 잠금이 풀릴 수 있는 충돌 가능성 확인.
+- activity-register-modal.js와 action-register-modal.js에 중복 닫기 호출 차단, 종료 시 다른 등록 팝업의 열린 상태 확인 후 body overflow 잠금 유지 또는 해제 로직 반영.
+- index.html 두 모달 JS 캐시 버전 갱신. 기존 사용자 등록자료·업무 저장 로직·확정 대시보드/CSS 변경 없음.
+- 두 팝업의 실제 닫기 함수를 독립적으로 실행한 4개 시나리오(상대 팝업 열림/닫힘 × 자율개선/개선요청)에서 스크롤 잠금 결과와 종료 상태 모두 확인.
+- GitHub Pages 워크플로에 모달 닫기 스크롤 잠금 실행형 회귀 테스트 추가. 실제 브라우저 E2E 및 최신 GitHub Pages 배포 성공은 미확인.
