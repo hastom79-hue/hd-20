@@ -11,7 +11,13 @@ function recipient(record,stage){
  return {email:String(record.requesterEmail||record.requestEmail||'').trim(),phone:String(record.requesterPhone||'').trim()};
 }
 async function notify(id,stage){
- const record=records().find(x=>String(x.id)===String(id));if(!record)return;
+ const matches=records().filter(x=>String(x.id||'')===String(id||''));
+ if(!String(id||'').trim()||matches.length!==1){
+  console.error('[HD20 알림 차단] 개선조치 ID 누락·중복 또는 원본 없음', {id,matched:matches.length});
+  window.dispatchEvent(new CustomEvent('hd20-notification-blocked',{detail:{id,stage,reason:'non-unique-action-id',matched:matches.length}}));
+  return;
+ }
+ const record=matches[0];
  const dest=recipient(record,stage);
  const title=stage==='REQUEST'?'개선조치 요청 등록':'TO-BE 조치등록 결과';
  const subject='[5S 활동관리] '+title+' / '+id;
