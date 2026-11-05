@@ -1,0 +1,25 @@
+name: HD-20 Lookup Refresh Regression
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'landing-launcher.js'
+      - 'tests/lookup-refresh-coalescing-smoke.cjs'
+      - '.github/workflows/lookup-refresh-regression.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  lookup-refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify JavaScript syntax
+        run: |
+          node --check landing-launcher.js
+          node --check tests/lookup-refresh-coalescing-smoke.cjs
+      - name: Execute lookup refresh regression
+        run: node tests/lookup-refresh-coalescing-smoke.cjs
