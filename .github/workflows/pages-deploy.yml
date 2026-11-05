@@ -274,6 +274,34 @@ jobs:
           }
           console.log('PASS: inactive Audit retention panel skips action redraw');
           NODE
+      - name: Test retention Audit bridge duplicate and identity safeguards
+        run: |
+          node <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const source=fs.readFileSync('hd20-subtabs.js','utf8');
+          const start=source.indexOf('const existingDraws=audits.filter(');
+          const end=source.indexOf('  if(!draw){draw=',start);
+          assert(start>=0&&end>start,'Audit bridge verification missing');
+          const sourceCode=source.slice(start,end);
+          const base={id:'RET-AUDIT-RET-1',sourceCaseId:'IMP-1',sourceStage:'RETENTION-RANDOM',initialAuditor:'auditor@hd.com',team:'조립팀',workplace:'1라인'};
+          const cases=[
+            ['new',[],false],
+            ['existing',[base],false],
+            ['duplicate',[base,{...base}],true],
+            ['wrong original',[{...base,sourceCaseId:'IMP-2'}],true],
+            ['wrong auditor',[{...base,initialAuditor:'foreign@hd.com'}],true],
+            ['wrong team',[{...base,team:'타팀'}],true],
+            ['wrong workplace',[{...base,workplace:'2라인'}],true]
+          ];
+          for(const [name,audits,blocked] of cases){
+            let wasBlocked=false;
+            const fn=new Function('audits','drawId','r','evaluator','unlock','window',sourceCode+'return draw');
+            fn(audits,base.id,{caseId:'IMP-1',team:'조립팀',workplace:'1라인'},'auditor@hd.com',
+              ()=>{wasBlocked=true},{alert:()=>{}});
+            assert.equal(wasBlocked,blocked,'bridge safeguard: '+name);
+          }
+          console.log('PASS: seven Audit bridge duplicate/origin checks');
+          NODE
       - name: Test retention action linkage integrity
         run: |
           node <<'NODE'
