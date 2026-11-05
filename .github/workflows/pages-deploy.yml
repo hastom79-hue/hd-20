@@ -59,6 +59,8 @@ jobs:
           grep -Fq '개선요청 등록·임시저장 — 최상위 팝업 위치 변경에 따른 저장 로직 복원' DEVELOPMENT_LOG.md
           node --check action-mail-workflow.js
           node --check action-register-modal.js
+          grep -Fq "root.dataset.hd20ActionModalReady==='1'" action-register-modal.js
+          grep -Fq "document.getElementById('hd20ActionRegisterModal')" action-register-modal.js
           grep -Fq 'document.body.appendChild(overlay)' activity-register-modal.js
           grep -Fq 'html body>#awRegisterModal.on' hd20-subtabs.css
           grep -Fq '자율개선 등록 모달의 상위 화면 숨김 영향 제거' DEVELOPMENT_LOG.md
