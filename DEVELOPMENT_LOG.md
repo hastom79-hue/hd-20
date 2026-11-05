@@ -2371,3 +2371,11 @@ Canonical Store는 다음을 기준으로 한다.
 - 재점검 결과에 따른 추가 개선조치 ID 중복 방지, 원본 등록·점검자 보존, 저장 실패 복원 처리가 기존 코드에 존재함을 확인. 해당 로직은 변경하지 않음.
 - index.html hd20-subtabs.js 캐시 키 v67 갱신. GitHub Pages CI에 연결 식별 조건 확인 단계 추가.
 - JavaScript 정적 구문 검사 완료. 브라우저 Audit 판정·이관·복구 실사용 시나리오와 Pages 배포 성공 여부는 아직 미검증.
+
+## 2026-11-05 — 유지점검 재점검 자동이관 최초 점검자 보존
+
+- hd20-subtabs.js의 재점검 부적합 시 AUTO-RETENTION-RECHECK 자동 생성 건에서 auditor/initialAuditor/owner는 최초 유지점검 담당자(rows[n].evaluator)를 사용했지만, registeredBy/registrant는 당시 currentEmail()로 덮어써 원본 점검자 추적이 불일치할 수 있음을 확인.
+- registeredBy/registrant를 최초 유지점검자 정보로 통일하고 별도 recheckEvaluator 필드에 현재 재점검 수행자를 보존하여 원본 정보와 신규 판정자를 함께 추적하도록 수정.
+- 기존 재점검 이력 record.evaluator와 재조치 ID 중복 방지, 직전 완료조치 연결 검증, 저장 실패 원복 로직은 유지. 기존 저장 데이터에 대한 강제 마이그레이션 없음.
+- index.html script 캐시 키 hd20-subtabs.js?v=20261105-retention-original-actor-v68로 갱신. CI에 등록자·재점검자 분리 보존 조건 2건 추가.
+- JavaScript 구문 검사 및 정적 소스 검사는 통과. UI 실사용 재점검 E2E, GitHub Pages 배포 성공은 확인되지 않음.
