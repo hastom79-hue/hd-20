@@ -666,7 +666,7 @@ function renderRetentionSampling(root){
  host.querySelectorAll('[data-rs-save]').forEach(btn=>btn.onclick=()=>{
  const box=btn.closest('[data-rs-id]');if(!box||btn.disabled||box.dataset.rsSaving==='1')return;const id=box.dataset.rsId,evaluator=currentEmail(),result=box.querySelector('[data-rs-result]').value,comment=box.querySelector('[data-rs-comment]').value.trim();
  if(!canInspect()){window.alert('등록된 5S모듈 담당자 또는 마스터 관리자만 유지점검할 수 있습니다.');return} if(!result){window.alert('현재 유지 또는 미유지 체크박스를 선택하세요.');return}
- const rows=load('hd20RetentionRandomChecksV1'),n=rows.findIndex(x=>x.id===id);if(n<0||rows[n].result!=='점검대기')return;
+ const rows=load('hd20RetentionRandomChecksV1'),matching=rows.map((x,i)=>String(x.id||'')===String(id||'')?i:-1).filter(i=>i>=0);if(!String(id||'').trim()||matching.length!==1){window.alert('유지점검 원본 관리번호가 누락되었거나 중복되었습니다. 판정을 저장하지 않고 관리자 확인을 요청합니다.');return}const n=matching[0];if(rows[n].result!=='점검대기')return;
  box.dataset.rsSaving='1';btn.disabled=true;
  const unlock=()=>{if(box.isConnected){delete box.dataset.rsSaving;btn.disabled=false}};
  const savedRetentionBefore=localStorage.getItem('hd20RetentionRandomChecksV1'),savedAuditBefore=localStorage.getItem('hd20AuditRandomDrawsV1'),savedActionBefore=localStorage.getItem('hd20ActionCasesV2');
