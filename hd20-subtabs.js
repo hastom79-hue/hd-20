@@ -399,13 +399,10 @@ function renderAuditCloseEvaluation(host,traceOnly=false){
      (a.sourceStage==='RETENTION-RECHECK'&&String(a.sourceCaseId||'')===checkId)
    );
    const byId=id=>id?actions.find(a=>String(a.id||'')===String(id)&&belongs(a)):null;
-   const direct=byId(r.followupActionId);
-   if(direct)return direct;
    const followups=actions.filter(a=>a.sourceStage==='RETENTION-RECHECK'&&String(a.sourceCaseId||'')===checkId);
-   // Follow-up actions are unshifted on creation, so at(-1) selected the oldest.
-   // Keep the most recent recheck sequence when the stored pointer is missing.
+   // Always prefer the latest recheck, even if an older stored pointer still exists.
    if(followups.length)return followups.slice().sort((a,b)=>Number(String(b.id||'').match(/(\d+)$/)?.[1]||0)-Number(String(a.id||'').match(/(\d+)$/)?.[1]||0))[0];
-   return byId(r.actionId)||actions.find(a=>a.sourceStage==='RETENTION-RANDOM'&&String(a.sourceCaseId||'')===baseId)||null;
+   return byId(r.followupActionId)||byId(r.actionId)||actions.find(a=>a.sourceStage==='RETENTION-RANDOM'&&String(a.sourceCaseId||'')===baseId)||null;
  };
  const done=a=>['완료','조치완료','개선완료','종료','종결','종결완료'].includes(String(a?.status||'').trim());
  const auditTable=rows=>'<div class="hd20CloseTableWrap"><table class="awTable"><thead><tr><th>Audit 번호</th><th>생산팀 · 작업장</th><th>점검일</th><th>점검자</th><th>최종판정</th></tr></thead><tbody>'+rows.map(a=>'<tr data-close-team="'+esc(a.team||'')+'"><td><button type="button" class="hadAuditLink" data-had-open-audit="'+esc(auditId(a))+'">'+esc(auditId(a)||'—')+'</button></td><td>'+esc(a.team||'—')+' · '+esc(a.workplace||'—')+'</td><td>'+esc(a.auditDate||'—')+'</td><td>'+esc(a.initialAuditor||a.auditor||'—')+'</td><td>'+esc(a.finalEvaluation||'미입력')+'</td></tr>').join('')+'</tbody></table></div>';
@@ -639,14 +636,15 @@ function renderRetentionSampling(root){
  });
  host.querySelector('[data-rs-draw]').onclick=()=>{
  if(!canEvaluate()){window.alert('유지점검 추출은 마스터 권한자 인증이 필요합니다.');return}const previous=load('hd20RetentionRandomChecksV1').map(x=>x.drawDate).filter(Boolean).sort().at(-1);if(previous&&calendarDays(previous,seoulDay())<intervalDays){window.alert('기준정보에 설정된 유지점검 주기가 도래하지 않았습니다.');return}const requested=sampleCount;
- const rows=load('hd20RetentionRandomChecksV1'),existing=new Set(rows.filter(x=>x.result==='점검대기'||(x.result==='부적합'&&!(x.recheckResult==='적합'&&x.recheckedAt))).map(x=>x.kind+':'+x.caseId));
+ const rows=load('hd20RetentionRandomChecksV1'),existing=new Set(rows.filter(x=>x.result==='점검대기'||(x.result==='부적합'&&!(x.recheckResult==='적합'&&x.recheckedAt&&x.closedAt))).map(x=>x.kind+':'+x.caseId));
  const available=pool().filter(e=>!existing.has(e.kind+':'+keyOf(e.x)));
  for(let i=available.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[available[i],available[j]]=[available[j],available[i]]}
  const chosen=available.slice(0,requested);
  if(!chosen.length){window.alert('추출 가능한 완료 사례가 없습니다.');return}
  const now=new Date().toISOString(),drawDay=seoulDay();
  chosen.forEach(e=>rows.push({id:'RET-'+now.replace(/[^0-9]/g,'')+'-'+rows.length,caseId:keyOf(e.x),kind:e.kind,team:e.x.team||e.x.teamName||e.x.ownerTeam||'',workplace:e.x.workplace||'',drawDate:drawDay,result:'점검대기',evaluator:'',comment:'',notificationStatus:'대기'}));
- save('hd20RetentionRandomChecksV1',rows);render();
+ try{save('hd20RetentionRandomChecksV1',rows)}catch(error){console.error('[HD20 유지점검 추출 저장 실패]',error);window.alert('유지점검 대상 추출을 저장하지 못했습니다. 저장공간을 확인하고 다시 시도해 주세요.');return}
+ render();
  };
  host.querySelectorAll('[data-rs-save]').forEach(btn=>btn.onclick=()=>{
  const box=btn.closest('[data-rs-id]');if(!box||btn.disabled||box.dataset.rsSaving==='1')return;const id=box.dataset.rsId,evaluator=currentEmail(),result=box.querySelector('[data-rs-result]').value,comment=box.querySelector('[data-rs-comment]').value.trim();
