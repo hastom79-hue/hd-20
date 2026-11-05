@@ -2596,3 +2596,10 @@ Canonical Store는 다음을 기준으로 한다.
 - 비동기 알림 발송 과정에서 원본이 변경될 가능성에 대비하여 `setNotice()`의 발송 이력 저장도 정확히 1건인 경우로 제한. 중복 데이터 자체는 수정·삭제하지 않음.
 - GitHub main 반영 커밋: `9ca2bf88`, `3fa71553`. 대시보드, CSS, 원본 업무 데이터는 변경하지 않음.
 - 정적 소스 반영 확인 외에 JavaScript 실행형 단위검증, 이메일/SMS 실발송, 브라우저 E2E 및 GitHub Pages 배포 성공은 **미검증**. 실제 발송 테스트는 테스트용 수신자 및 승인된 발송 설정에서만 수행 필요.
+
+## 2026-11-06 — 개선요청·TO-BE 알림 중복 ID 실행형 회귀검증 자동화
+
+- `tests/notification-routing-smoke.cjs` 신규: Node VM 모의 localStorage / EmailJS / SMS Gateway를 이용해 고유 ID 정상 REQUEST, 중복 ID 차단, 원본 ID 부재, 저장소 공백, 고유 ID 정상 TOBE의 5개 시나리오를 실제 알림 모듈 코드로 실행하도록 구성.
+- `.github/workflows/notification-routing-regression.yml` 신규: main push 시 관련 코드/테스트/워크플로 변경을 감지하고 Node 22 구문 검사 및 5개 시나리오 회귀 테스트를 자동 실행. `workflow_dispatch` 수동 재검증 지원.
+- GitHub main 반영 커밋: 테스트 `e621319`, 워크플로 `2a9222b`. 기존 대시보드·CSS·운영 데이터 무변경.
+- 자동 테스트 파일 등록은 완료했으나 실제 GitHub Actions 결과·Pages 반영·브라우저 E2E 및 실제 이메일/SMS 발송은 확인되지 않음. 모의 발송 테스트는 실발송 검증을 대체하지 않음.
