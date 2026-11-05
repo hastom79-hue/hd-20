@@ -85,7 +85,7 @@ jobs:
           node --check action-register-modal.js
           grep -Fq "if(!m||m.classList.contains('on'))return" action-register-modal.js
           grep -Fq "if(m.isConnected&&m.classList.contains('on'))" action-register-modal.js
-          grep -Fq 'clearTimeout(modalFocusTimer);modalFocusTimer=null;clearAuditPending()' action-register-modal.js
+          grep -Fq "if(!m)return;clearTimeout(modalFocusTimer);modalFocusTimer=null" action-register-modal.js
           grep -Fq "root.dataset.hd20ActionModalReady==='1'" action-register-modal.js
           grep -Fq "document.getElementById('hd20ActionRegisterModal')" action-register-modal.js
           grep -Fq 'document.body.appendChild(overlay)' activity-register-modal.js
