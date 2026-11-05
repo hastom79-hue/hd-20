@@ -2387,3 +2387,11 @@ Canonical Store는 다음을 기준으로 한다.
 - 기존 재발 이력 recheckHistory, 최초 점검자 및 현재 재점검자 분리, 중복 재조치 ID 검사, 저장 실패 복구 로직은 변경하지 않음.
 - index.html hd20-subtabs.js 캐시 키 v69 갱신 및 Pages CI의 명시적 이력 링크 일치 검사 추가.
 - JS 구문/소스 확인은 수행. 실제 브라우저에서 종결·재발·이관·데이터 저장 E2E 및 Pages 배포 성공은 확인되지 않음.
+
+## 2026-11-05 — Audit 자동 개선조치 연결 중복·원본 무결성 강화
+
+- audit-closed-loop-workflow.js의 syncAction()은 AUDIT-REQUEST 원천번호 또는 auditDrawId가 일치하는 첫 번째 개선조치를 찾아, 다른 연결 필드의 불일치 또는 동일 원천에 대한 중복 개선조치 존재 여부를 확인하지 않은 채 기존 번호를 반환했음.
+- 동일 Audit 원천에 연결된 개선조치가 2개 이상이면 자동 재사용을 차단하고 관리자 확인을 요구. 단일 연결 건에서도 sourceCaseId, auditDrawId의 원천 ID 일치 및 최초 점검자 정보 일치 확인. 기존 기록은 자동 수정하지 않음.
+- 독립 함수 테스트 4건(정상 단일 연결, 원본번호 충돌, 최초 점검자 불일치, 중복 연결)을 실행하여 기대 결과와 모두 일치함을 확인.
+- audit-closed-loop-workflow.js 정적 구문 확인, index.html 캐시 키 v20261105-audit-link-consistency-v2 갱신, CI에 중복 및 원본 무결성 소스 검사 추가.
+- 대시보드·실제 저장 데이터 변경 없음. 배포 성공 여부 및 실제 브라우저 Audit 등록/이관 E2E는 확인되지 않음.
