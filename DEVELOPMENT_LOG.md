@@ -2611,3 +2611,12 @@ Canonical Store는 다음을 기준으로 한다.
 - `tests/tobe-unique-action-id-smoke.cjs` 신규: 정상/중복/누락/빈 ID 팝업 진입 4건을 실제 소스의 가드 코드를 추출해 실행하도록 구성. 저장·저장 후 고유성 검사와 중복저장 방지 존재를 정적 검증.
 - `.github/workflows/tobe-unique-id-regression.yml` 신규: main 변경 또는 수동 실행 시 JS 구문 검사와 테스트 실행. 코드 `767d2235`, 테스트 `fd39d097`, CI `f9fdf292` main 반영.
 - 승인된 대시보드, CSS, 원본 업무 데이터 변경 없음. GitHub Actions 테스트 성공·브라우저 실제 조치등록 E2E·Pages 최신 배포 성공은 별도 확인 필요.
+
+## 2026-11-06 — 개선활동 통합조회·개별조회 중복 갱신 방어
+
+- `landing-launcher.js`의 개선활동 조회 이벤트 리스너는 `hd20-kpi-source-updated`, `hd20-action-updated`, `hd20-activity-updated` 등이 짧은 시간에 이어질 때 같은 대형 조회 테이블을 이벤트마다 재생성하는 구조였음.
+- 동일 실행 구간에서 발생한 이벤트를 0ms 예약 1건으로 통합하고, 예약 실행 시 실제 활성 탭을 다시 확인하여 통합조회/자율개선조회/개선요청조회 중 현재 화면만 갱신하도록 수정. 열려 있는 등록 모달과 편집 중인 검색필터 보호는 유지.
+- `tests/lookup-refresh-coalescing-smoke.cjs` 신규: 연속 3회 이벤트 1회 갱신, 등록 모달 보호, 비활성 Audit 영역 보호, 통합조회 정상 갱신의 4개 시나리오를 실제 소스 코드 추출 방식으로 검증하도록 작성.
+- `.github/workflows/lookup-refresh-regression.yml` 신규: main 관련 변경 시 Node 구문검사·실행형 회귀테스트 자동화.
+- GitHub main 커밋: 코드 `ecaa2e58`, 테스트 `5a3f7697`, CI `2ee81176`. 대시보드·CSS·원본 업무 데이터 변경 없음.
+- 테스트 등록과 실제 통과는 다름. GitHub Actions 실행 결과, 실제 브라우저 등록→조회 E2E 및 Pages 배포 성공 여부는 미확인.
