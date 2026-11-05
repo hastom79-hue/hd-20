@@ -2310,3 +2310,13 @@ Canonical Store는 다음을 기준으로 한다.
 - Audit 결과·재조치 상세의 후속 개선조치 연결 시 과거 저장된 `followupActionId`보다 재점검 순번이 가장 높은 최신 `RETENTION-RECHECK` 조치를 우선 표시.
 - 랜덤 추출의 `hd20RetentionRandomChecksV1` 기록 저장 실패를 처리하여 화면이 성공한 것처럼 재렌더링하지 않도록 경고·중단.
 - `index.html`의 JS 참조 `20261105-retention-consistency-v66` 반영. 저장소와 기존 이력, 확정 대시보드 변경 없음. JS 구문검사 후 운영 브라우저/Pages 게시 별도 검증 필요.
+
+## 2026-11-05 — 종합 점검 및 GitHub Pages 배포 사전검증 강화
+
+- GitHub Pages 워크플로의 고정 캐시버전 grep 조건이 최신 index.html 버전과 11곳 불일치하여 배포를 차단할 수 있음을 확인. 구체 파일명과 ?v= 존재를 확인하도록 변경 (commit 34f88ea).
+- 핵심 업무 모듈 JavaScript 22개 소스를 읽고 구문 검사 통과(정적 구문 한정, 실제 DOM/업무 E2E 아님).
+- 월별 차트 발생/완료 12개월 렌더링, 0값 레이블 비표시, 동일 높이 막대와 막대 끝 레이블 등 9개 검증 통과.
+- 배포 워크플로에 Audit/테마/통합기준정보/공용 모듈 12개에 대한 node --check 검사 추가 (commit 0b693fa).
+- index.html 정적 스크립트·CSS 및 final-layout-polish.js 동적 fallback 참조 파일 존재 여부를 검사하는 CI 단계 추가 (commit 0a7fd5d).
+- 알려진 조사 후보: maturity-condition-analysis.js가 호출되는 전역 분석 API와 로더 연결 점검 필요; 런처의 버튼 재시도/마스터 초기화 타이밍 및 사용자가 지적한 화면 멈춤 현상의 브라우저 재현 필요.
+- GitHub Actions 실행 결과 및 실제 Pages 브라우저 E2E 성공은 연결된 확인 수단에서 검증되지 않음. 완료로 표현 금지. 승인된 대시보드와 기존 canonical localStorage 데이터는 수정하지 않음.
