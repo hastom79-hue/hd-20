@@ -9,8 +9,11 @@ function verify(id,rs,as){
  const seq=a=>Number(norm(a.id).match(/(\d+)$/)?.[1]||0);
  const followupIds=followups.map(a=>norm(a.id));
  if(followupIds.some(id=>!id)||new Set(followupIds).size!==followupIds.length)return false;
- const latest=followups.slice().sort((a,b)=>seq(b)-seq(a))[0];
- if(latest&&(norm(latest.originCaseId)!==norm(r.caseId)||!norm(latest.previousActionId)))return false;
+ const ordered=followups.slice().sort((a,b)=>seq(a)-seq(b));
+ if(ordered.some((a,i)=>!Number.isSafeInteger(seq(a))||seq(a)!==i+1||norm(a.originCaseId)!==norm(r.caseId)))return false;
+ // Every recheck must follow the previous action in the same retention chain.
+ if(ordered.some((a,i)=>norm(a.previousActionId)!==norm(i?ordered[i-1].id:r.actionId)))return false;
+ const latest=ordered.at(-1);
  const aid=norm(latest?.id||r.followupActionId||r.actionId);
  const matches=as.filter(a=>norm(a?.id)===aid);if(!aid||matches.length!==1)return false;
  const a=matches[0],sourceOk=a.sourceStage==='RETENTION-RECHECK'?norm(a.sourceCaseId)===norm(r.id):a.sourceStage==='RETENTION-RANDOM'&&norm(a.sourceCaseId)==='RET-AUDIT-'+norm(r.id);
