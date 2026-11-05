@@ -243,7 +243,9 @@ jobs:
             return new Function('return '+source.slice(begin+marker.length,end))();
           };
           const managerDone=extract(manager,'const done=');
-          const retentionDone=extract(retention,' const done=');
+          const retentionPredicateStart=retention.indexOf("const done=x=>['완료','개선완료','조치완료','종결','확정완료'");
+          assert(retentionPredicateStart>=0,'retention candidate completion predicate not found');
+          const retentionDone=extract(retention.slice(retentionPredicateStart),'const done=');
           for(const status of ['완료','개선완료','조치완료','종결','확정완료','종료','종결완료','조치대기','진행중']){
             const sample={status,id:'IMP-VALID-1',completed:false};
             assert.equal(managerDone(sample),retentionDone(sample),'completion mismatch: '+status);
