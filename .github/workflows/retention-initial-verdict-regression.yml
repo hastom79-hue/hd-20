@@ -1,0 +1,25 @@
+name: HD-20 Retention Initial Verdict ID Regression
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'hd20-subtabs.js'
+      - 'tests/retention-initial-verdict-unique-id-smoke.cjs'
+      - '.github/workflows/retention-initial-verdict-regression.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  retention-initial-verdict:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: JavaScript syntax checks
+        run: |
+          node --check hd20-subtabs.js
+          node --check tests/retention-initial-verdict-unique-id-smoke.cjs
+      - name: Execute initial retention verdict guards
+        run: node tests/retention-initial-verdict-unique-id-smoke.cjs
