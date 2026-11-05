@@ -2337,3 +2337,11 @@ Canonical Store는 다음을 기준으로 한다.
 - 기존 등록/저장/권한/업무데이터 로직은 수정하지 않음. index.html 캐시 키 action-register-modal.js?v=20261105-idempotent-modal-init-v46로 갱신.
 - GitHub Pages CI에 전역 단일 모달 가드 코드 점검 추가. JS 구문 검사 및 최신 캐시 참조 확인 통과.
 - 브라우저 실제 다중 초기화 E2E, 저장/조회 동기화 및 Pages 배포 성공 여부는 별도 확인 필요.
+
+## 2026-11-05 — 개선조치 TO-BE 화면 불필요한 재렌더링 제거
+
+- audit-as-is-to-be-manager.js에서 hd20-subtab-changed 이벤트가 개선활동관리 영역의 모든 서브탭 이동마다 TO-BE 관리 전체 리스트를 강제 재렌더하는 문제 확인.
+- 개선활동관리의 ④ TO-BE 하위탭에 진입했을 때만 렌더하도록 제한. 초기화 시에도 TO-BE 화면이 선택된 경우에만 초기 렌더. hd20-action-updated는 개선활동관리의 실제 TO-BE 화면에서만 목록 갱신.
+- TO-BE 조치 저장 후 hd20-action-updated 이벤트로 이미 갱신되는 목록을 추가 render()로 중복 갱신하던 코드를 제거.
+- index.html 버전을 20261105-tobe-render-on-demand-v7으로 갱신했고, Pages 워크플로의 해당 파일 참조 조건은 고정 구버전이 아닌 ?v= 접두어 검사 사용 확인.
+- 등록·수정·권한·데이터 원본·대시보드 변경 없음. JavaScript 구문 확인. 실제 브라우저 렌더링·저장 E2E 및 배포 성공은 미확인.
