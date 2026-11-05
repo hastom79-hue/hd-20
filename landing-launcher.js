@@ -359,15 +359,19 @@ function boot(){
     if(target?.contains(focused)&&focused?.matches?.('input,select,textarea'))return;
     renderOverview(mode);
   };
+  // Multiple status events from one save must not rebuild the same lookup
+  // repeatedly. Defer until synchronous registration close handlers finish.
+  let lookupRefreshTimer=null;
   const refreshVisibleLookup=()=>{
-    if(window.HD20_NAV?.active?.()!=='activity')return;
-    // The registration success handlers close the dialogs and refresh their
-    // originating listing. Do not replace the background table while a
-    // modal is still collecting input or running a save.
-    if(document.querySelector('#awRegisterModal.on,#hd20ActionRegisterModal.on'))return;
-    const sub=document.getElementById('awActivity')?.dataset.subview;
-    if(sub==='overview'&&document.body.classList.contains('hd20InquiryActive'))refreshLookup('overview');
-    else if(sub==='self'||sub==='request')refreshLookup(sub);
+    if(lookupRefreshTimer!==null)return;
+    lookupRefreshTimer=setTimeout(()=>{
+      lookupRefreshTimer=null;
+      if(window.HD20_NAV?.active?.()!=='activity')return;
+      if(document.querySelector('#awRegisterModal.on,#hd20ActionRegisterModal.on'))return;
+      const sub=document.getElementById('awActivity')?.dataset.subview;
+      if(sub==='overview'&&document.body.classList.contains('hd20InquiryActive'))refreshLookup('overview');
+      else if(sub==='self'||sub==='request')refreshLookup(sub);
+    },0);
   };
   ['hd20-kpi-source-updated','hd20-action-updated','hd20-activity-updated'].forEach(e=>window.addEventListener(e,refreshVisibleLookup));
   window.addEventListener('storage',refreshVisibleLookup);
