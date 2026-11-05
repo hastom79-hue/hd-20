@@ -2541,3 +2541,11 @@ Canonical Store는 다음을 기준으로 한다.
 - 실행 검증: 실제 두 판정 함수 추출 비교 결과 완료 7개 상태 및 미완료 2개 상태 모두 일치(9/9). 처음 회귀 테스트가 별도의 Audit 완료 함수(' const done=')를 참조해 잘못 실패한 문제를 발견하여, 유지점검 후보 추출에 사용하는 완료 함수를 정확히 지정하도록 CI 테스트 수정.
 - GitHub Pages CI에 두 완료 판정 함수 비교 실행형 회귀 테스트 및 정적 검사 추가. 기존 저장 데이터·대시보드·CSS 변경 없음.
 - 실제 웹에서 완료 저장→유지점검 자동 추출 E2E 및 최신 GitHub Pages 배포 성공은 미확인.
+
+## 2026-11-05 — Audit 유지점검 비활성 탭 중복 렌더 방지
+
+- hd20-subtabs.js 유지점검 패널의 hd20-action-updated 이벤트 리스너가 host.isConnected만 확인하므로, Audit 유지점검 탭 이외의 화면이 활성 상태여도 전체 목록을 불필요하게 재렌더하는 경로 발견.
+- 현재 상단 영역이 audit이며 awAudit.dataset.subview='ongoing'일 때만 유지점검 목록을 렌더하도록 보강. 기존 완료사례 랜덤 추출, 부적합 자동 이관, 재점검 이력/저장 및 승인 대시보드에는 영향 없음.
+- 실제 함수 추출 실행검증 네 가지 시나리오: audit/ongoing 1회, audit/draw 0회, activity/ongoing 0회, activity/draw 0회 모두 통과.
+- index.html hd20-subtabs.js 캐시 키 v74 갱신, GitHub Pages 워크플로 실행형 회귀 테스트 및 정적 점검 추가. CSS 변경 없음.
+- 전체 브라우저 E2E 및 GitHub Pages 최신 배포 성공은 아직 확인되지 않음.
