@@ -101,6 +101,21 @@ jobs:
           node --check landing-launcher.js
           node --check beginner-navigation.js
           node --check hd20-action-notification-routing.js
+      - name: Check cross-tab and master workflow JavaScript syntax
+        run: |
+          set -eu
+          node --check hd20-cross-tab-sync.js
+          node --check audit-retention-workflow-visual.js
+          node --check audit-random-draw.js
+          node --check audit-closed-loop-workflow.js
+          node --check operating-policy-master.js
+          node --check integrated-master-factors.js
+          node --check hd20-ulsan-workplace-master.js
+          node --check workflow-crud.js
+          node --check table-enhance-suite.js
+          node --check theme-inspection.js
+          node --check master-workspace-v2.js
+          node --check final-layout-polish.js
       - name: Exercise monthly bar-label rendering fixtures
         run: |
           node <<'NODE'
