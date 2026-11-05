@@ -2450,3 +2450,10 @@ Canonical Store는 다음을 기준으로 한다.
 - 재진입 시 관리 링크 10개 이상과 hmSourceRegistry 존재를 함께 확인. 둘 중 하나라도 만족하지 않는 불완전한 마운트는 생성된 workspace·registry UI만 제거하고 원본 편집기를 기준으로 재생성하도록 변경.
 - 통합기준정보 데이터 원본, 기존 저장내용, 승인 대시보드 및 타 업무 탭 변경 없음.
 - index.html master-workspace-v2.js 캐시 버전 갱신, CI에 부분 초기화 복구 로직 점검 추가. 정적 JS 구문 검사 확인. 실제 브라우저 팝업 실행·전환 E2E와 Pages 배포 성공은 미확인.
+
+## 2026-11-05 — 개선조치관리 탭 중복 렌더링 경로 제거
+
+- hd20-subtabs.js applyActivity('tobe')에서 HD20ToBeManager.render()를 직접 실행한 뒤 apply()가 hd20-subtab-changed 이벤트를 발생시키고, audit-as-is-to-be-manager.js가 해당 이벤트에서 다시 render()하는 중복 경로 확인.
+- applyActivity()의 직접 render()를 제거해 탭 변경 후 이벤트 리스너를 단일 렌더 진입점으로 유지. 조치관리 초기화 시 이미 TO-BE가 활성화된 경우 자체 렌더하는 기존 진입 로직은 유지.
+- 대량 레코드 목록을 50건 페이지 단위로 표시하는 기존 수정과 함께, 불필요한 DOM 전체 교체를 줄이는 목적. 원본 데이터/저장/완료 판정/승인된 대시보드 변경 없음.
+- index.html hd20-subtabs.js 캐시 키 v73 갱신, CI에 직접 렌더 중복 재발 방지 검사 추가. 실제 브라우저 탭 반복 전환 및 GitHub Pages 최신 배포 성공 검증은 미완료.
