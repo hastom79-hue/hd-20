@@ -1,0 +1,25 @@
+name: HD-20 Retention Recheck Integrity Regression
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'retention-recheck-integrity-guard.js'
+      - 'tests/retention-recheck-integrity-smoke.cjs'
+      - '.github/workflows/retention-recheck-integrity.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax
+        run: |
+          node --check retention-recheck-integrity-guard.js
+          node --check tests/retention-recheck-integrity-smoke.cjs
+      - name: Validate retention recheck identity
+        run: node tests/retention-recheck-integrity-smoke.cjs
