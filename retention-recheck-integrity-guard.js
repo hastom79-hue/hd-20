@@ -15,6 +15,13 @@ function verify(id,rs,as){
  if(ordered.some((a,i)=>!Number.isSafeInteger(seq(a))||seq(a)!==i+1||norm(a.originCaseId)!==norm(r.caseId)))return false;
  // Every recheck must follow the previous action in the same retention chain.
  if(ordered.some((a,i)=>norm(a.previousActionId)!==norm(i?ordered[i-1].id:r.actionId)))return false;
+ const baseId=norm(r.actionId);
+ const baseMatches=as.filter(a=>norm(a?.id)===baseId);
+ if(!baseId||baseMatches.length!==1)return false;
+ const base=baseMatches[0];
+ if(base.sourceStage!=='RETENTION-RANDOM'||norm(base.sourceCaseId)!=='RET-AUDIT-'+norm(r.id)||
+    norm(base.team)!==norm(r.team)||norm(base.workplace)!==norm(r.workplace)||
+    norm(base.initialAuditor||base.auditor)!==norm(r.evaluator))return false;
  const latest=ordered.at(-1);
  const aid=norm(latest?.id||r.followupActionId||r.actionId);
  const matches=as.filter(a=>norm(a?.id)===aid);if(!aid||matches.length!==1)return false;
