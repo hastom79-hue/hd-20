@@ -2734,3 +2734,11 @@ Canonical Store는 다음을 기준으로 한다.
 - `.github/workflows/core-workflow-regression.yml` 추가(main `5ccb450f`): Node 22 구문검사 및 9개 테스트를 하나의 core-workflow CI로 실행하도록 등록, 개별 CI는 보존.
 - 공개 GitHub Pages·GitHub Actions 페이지가 현재 웹 조회 환경에서 접근되지 않음. GitHub connector의 마지막 커밋 combined status/PR 워크플로 조회는 빈 목록이며 push 트리거의 성공/실패 판정 근거가 아님. **Pages 배포 확인과 실제 브라우저 전체 E2E 미완료**.
 - 승인 대시보드, UI 레이아웃, CSS, 사용자 운영 데이터는 변경하지 않음.
+
+## 2026-11-06 — Pages 실제 배포 파일 무결성 검증 자동화
+
+- 실제 Pages URL `https://hastom79-hue.github.io/hd-20/` 및 GitHub Actions 화면이 현재 도구 환경에서는 접근 실패. GitHub connector의 combined commit status 빈 배열/PR 워크플로 조회 결과만으로 push 배포 성공을 추정하지 않음.
+- `tests/pages-deployment-verify.py` 신설: 정적 HTML과 4개 핵심 JS(`audit-as-is-to-be-manager.js`, `hd20-subtabs.js`, `retention-recheck-integrity-guard.js`, `retention-draw-integrity-guard.js`)가 GitHub Pages에서 반환된 응답과 checkout된 해당 커밋의 파일 바이트가 정확히 일치하는지 검사. HTML에 필수 script tag가 각각 정확히 하나만 있는지도 검증.
+- `.github/workflows/pages-deployment-integrity.yml` 신설: main에 관련 파일 푸시 또는 수동 실행 시 Python 3.12 검증 실행. Pages 배포 지연을 고려해 15초 간격 최대 16회 재시도하고, 웹 접근 실패/내용 불일치 시 실패 보고. 기존 core workflow·대시보드 UI는 변경하지 않음.
+- main 커밋: 검증기 `049fcd70`, 워크플로 `3e0efb84`.
+- **주의: 검증 자동화의 등록은 서버 검증 성공을 뜻하지 않음. 현재 시점 Pages 배포 상태 및 Actions 결과 미확인.** 이 워크플로는 브라우저 DOM 동작 E2E의 대체가 아니며 배포 파일 일치만 판정함.
