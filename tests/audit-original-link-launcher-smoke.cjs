@@ -11,14 +11,14 @@ const {chromium}=require('playwright');
    if(sessionStorage.getItem('hd20AuditOriginalLinkSeeded'))return;
    localStorage.setItem('hd20AuditRandomDrawsV1',JSON.stringify([{
      id:'AUDIT-LINK-E2E-01',team:'테스트팀',workplace:'테스트라인',
-     date:'2026-11-02',auditDate:'2026-11-02',initialAuditor:'검증점검자',
+     date:'2025-01-02',auditDate:'2025-01-02',initialAuditor:'검증점검자',
      auditResult:'부적합',improvementRequest:'원본 연결 검증',improvementPhoto:'data:image/png;base64,iVBORw0KGgo='
    }]));
    localStorage.setItem('hd20ActionCasesV2',JSON.stringify([{
      id:'ACTION-LINK-E2E-01',sourceStage:'AUDIT-REQUEST',
      auditDrawId:'AUDIT-LINK-E2E-01',sourceCaseId:'AUDIT-LINK-E2E-01',
      team:'테스트팀',workplace:'테스트라인',problem:'원본 연결 검증',
-     auditDate:'2026-11-02',status:'진행중',registeredAt:'2026-11-02'
+     auditDate:'2025-01-02',status:'진행중',registeredAt:'2025-01-02'
    }]));
    sessionStorage.setItem('hd20AuditOriginalLinkSeeded','1');
   });
@@ -51,7 +51,7 @@ const {chromium}=require('playwright');
   await page.waitForFunction(()=>window.HD20_NAV?.active?.()==='audit'&&!!window.HD20_SUBNAV?.select,null,{timeout:15000});
   await page.evaluate(()=>window.HD20_SUBNAV.select('audit','ongoing'));
   await page.waitForFunction(()=>window.HD20_SUBNAV?.state?.().sub==='ongoing',null,{timeout:10000});
-  const link=page.locator('#awAudit [data-close-final-pending] [data-had-open-audit="AUDIT-LINK-E2E-01"]');
+  const link=page.locator('#awAudit #hd20AuditCloseEvaluation [data-had-open-audit="AUDIT-LINK-E2E-01"]');
   await link.waitFor({state:'visible',timeout:15000});
   await link.click();
   const modal=page.locator('#hd20AuditOriginalPopup [role="dialog"]');
