@@ -2879,3 +2879,9 @@ Canonical Store는 다음을 기준으로 한다.
 
 - `retention-draw-integrity-guard.js` 완료 사례(`자율개선`·`개선요청`)에 원본 ID만 있어도 추출이 허용되던 결함 보완. 실제 랜덤 추출 엔진 `hd20-subtabs.js`가 사용하는 `team||teamName||ownerTeam`, `workplace` 기준으로 생산팀·작업장 필수값을 검사하여 누락된 완료 사례가 있으면 추출 실행 전 차단하고 원본 확인 메시지 표시(main `96356fa`). 추출 저장 엔진 및 기존 데이터는 변경하지 않음.
 - `tests/retention-draw-integrity-smoke.cjs` 정상 완료사례 픽스처에 작업장 정보 반영, 팀 공란·요청 작업장 공란·자율개선 작업장 공란을 거부하는 시나리오 3건 추가(main `00908fc`); 코드상 13개 테스트 시나리오 구성. Node/CI 실행 및 Pages 실제 반영은 확인되지 않았으므로 통과로 보고하지 않음.
+
+## 2026-11-06 — 유지점검 재점검 최초 조치 연결 정합성 보강
+- `retention-recheck-integrity-guard.js`: 후속 재조치 존재 시에도 최초 RETENTION-RANDOM 개선조치 ID가 유일하고, 원본 유지점검 ID·팀·작업장·최초 평가자와 일치하는지 필수 확인. 최초 조치 누락·중복·평가자 불일치 시 재점검 클릭 차단.
+- `tests/retention-recheck-integrity-smoke.cjs`: 후속 재조치가 존재하지만 최초 조치가 누락·중복·불일치인 3개 회귀 시나리오 추가(총 24개).
+- `index.html`: 보호 스크립트 캐시 버전 v4 적용. 대시보드 및 기존 업무 데이터 변경 없음.
+- GitHub Actions 및 실 브라우저 검증은 별도 확인 필요.
