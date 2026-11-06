@@ -650,7 +650,17 @@ function renderRetentionSampling(root){
  }
  const history=Array.isArray(rows[n].recheckHistory)?rows[n].recheckHistory.slice():[];history.push(record);
  rows[n]={...rows[n],recheckHistory:history,recheckResult:result,recheckComment:comment,recheckedAt:at,followupActionId:followupActionId||rows[n].followupActionId||'',closedAt:result==='적합'?at:''};
- try{save('hd20RetentionRandomChecksV1',rows)}catch(e){
+ try{
+  save('hd20RetentionRandomChecksV1',rows);
+  const persisted=load('hd20RetentionRandomChecksV1').filter(x=>String(x.id||'')===String(rows[n].id||''));
+  const latest=persisted[0],last=Array.isArray(latest?.recheckHistory)?latest.recheckHistory.at(-1):null;
+  if(persisted.length!==1||!last||last.result!==result||String(last.actionId||'')!==String(action.id)||
+   String(last.evaluator||'')!==String(record.evaluator||'')||String(last.at||'')!==at||
+   latest.recheckResult!==result||latest.recheckedAt!==at||
+   (result==='적합'?!latest.closedAt||latest.closedAt!==at:!!latest.closedAt)||
+   (result==='부적합'&&String(latest.followupActionId||'')!==String(followupActionId||'')))
+   throw new Error('재점검 결과·최종조치 연결 영속 검증 실패');
+ }catch(e){
   let rolledBack=true;
   for(const [key,raw] of [['hd20RetentionRandomChecksV1',priorRetentionSnapshot],...(createdFollowupId?[['hd20ActionCasesV2',priorActionSnapshot]]:[])]){
    try{
