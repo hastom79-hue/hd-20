@@ -28,6 +28,7 @@ on:
       - 'tests/theme-row-click-regression.cjs'
       - 'tests/theme-persisted-audit-record-smoke.cjs'
       - 'tests/theme-duplicate-active-action-smoke.cjs'
+      - 'tests/theme-reused-action-provenance-smoke.cjs'
       - 'tests/activity-navigation-late-overview-smoke.cjs'
       - 'tests/launcher-registration-subtab-retry-smoke.cjs'
       - 'tests/audit-subtab-click-guard-smoke.cjs'
@@ -72,13 +73,14 @@ jobs:
             tests/theme-row-click-regression.cjs \
             tests/theme-persisted-audit-record-smoke.cjs \
             tests/theme-duplicate-active-action-smoke.cjs \
+            tests/theme-reused-action-provenance-smoke.cjs \
             tests/activity-navigation-late-overview-smoke.cjs \
             tests/launcher-registration-subtab-retry-smoke.cjs \
             tests/audit-subtab-click-guard-smoke.cjs
           do
             node --check "$file"
           done
-      - name: Execute twenty-one core workflow regressions
+      - name: Execute twenty-two core workflow regressions
         run: |
           set -e
           node tests/tobe-unique-action-id-smoke.cjs
@@ -99,6 +101,7 @@ jobs:
           node tests/theme-row-click-regression.cjs
           node tests/theme-persisted-audit-record-smoke.cjs
           node tests/theme-duplicate-active-action-smoke.cjs
+          node tests/theme-reused-action-provenance-smoke.cjs
           node tests/activity-navigation-late-overview-smoke.cjs
           node tests/launcher-registration-subtab-retry-smoke.cjs
           node tests/audit-subtab-click-guard-smoke.cjs
