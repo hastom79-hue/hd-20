@@ -51,7 +51,7 @@ jobs:
             tests/retention-followup-dedup-rollback-smoke.cjs \
             tests/retention-recheck-transaction-smoke.cjs \
             tests/retention-draw-integrity-smoke.cjs \
-            tests/retention-draw-schedule-smoke.cjs
+            tests/retention-draw-schedule-smoke.cjs \
             tests/theme-row-click-regression.cjs
           do
             node --check "$file"
