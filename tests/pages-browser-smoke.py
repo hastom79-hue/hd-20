@@ -121,6 +121,25 @@ def main():
                 timeout=12000,
             )
             print("PASS activity subtab reload restoration and next-button click", flush=True)
+            # Simulate another UI renderer replacing a same-looking button without its onclick.
+            page.evaluate("""() => {
+              const button = document.querySelector("#hd20Subnav button[data-sub='request']");
+              if (!button) throw new Error("request button missing");
+              button.replaceWith(button.cloneNode(true));
+            }""")
+            page.wait_for_function(
+                """() => {
+                  const button = document.querySelector("#hd20Subnav button[data-sub='request']");
+                  return !!button && typeof button.onclick === 'function';
+                }""",
+                timeout=12000,
+            )
+            page.locator("#hd20Subnav button[data-sub='request']").click(timeout=12000)
+            page.wait_for_function(
+                "() => window.HD20_SUBNAV?.state?.()?.sub === 'request'",
+                timeout=12000,
+            )
+            print("PASS rebuilt activity button click handler recovered", flush=True)
             if page_errors:
                 raise AssertionError("Uncaught JS errors (first 5): " + " | ".join(page_errors[:5]))
             print(f"PASS authenticated browser navigation: {len(AREAS)}/{len(AREAS)}; no uncaught page errors", flush=True)
