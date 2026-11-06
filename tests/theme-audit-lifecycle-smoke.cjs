@@ -37,6 +37,7 @@ const {chromium}=require('playwright');
    await setAllOk();
    await page.locator('#awTheme .themeCheckRow').first().locator('[data-v="미흡"]').click();
    await page.locator('#themeAuditAuditor').fill('E2E 점검자');
+   await page.locator('#themeAuditMemo').fill('미흡사항 발견 및 조치요청 검증');
    await page.locator('#themeAuditPhoto').setInputFiles(photo);
    await page.locator('#themeSaveBtn').click();
    // Verify persisted counts directly; waitForFunction RAF polling can time out under frequent live dashboard rerenders.
