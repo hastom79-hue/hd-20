@@ -2902,3 +2902,9 @@ Canonical Store는 다음을 기준으로 한다.
 - `core-workflow-regression.yml`: `beginner-navigation.js` 변경 시에도 검증 실행, 지연 조회 팝업 3개 시나리오와 Audit 상위 메뉴 선행 DOM 갱신 금지 검사를 핵심 CI에 포함. 기존 12종에서 14종으로 확장.
 - `tests/audit-subtab-click-guard-smoke.cjs`: 실제 `hd20-subtabs.js` 소스에서 Audit 클릭 시 `draw` 버튼 목록을 선행 재생성하지 않는지 확인하는 회귀검사 신설.
 - 운영 데이터·승인 대시보드·기존 CSS는 변경하지 않음. Actions 실행 결과와 Pages 실제 배포는 별도 확인 필요.
+
+## 2026-11-07 — 통합기준정보 편집기 빠른 전환 시 이전 스크롤 예약 차단
+- `master-workspace-v2.js`: 편집기 선택마다 증가하는 세대 번호를 도입. `requestAnimationFrame`의 내부 스크롤 실행 전에 최신 선택 번호·원본 편집 탭 활성 상태·DOM 연결 상태를 확인하여 과거 선택의 지연 스크롤이 현재 화면을 덮지 않도록 보호.
+- `tests/master-workspace-v2-smoke.cjs`: 조직·목표에서 현장·점검 편집기로 빠르게 전환할 때 최종 활성 원본 탭/워크스페이스 선택/테마 편집기 표시를 검사하는 브라우저 회귀 경로 추가.
+- `index.html`: 마스터 UI JS 캐시 v8 갱신. 대시보드·운영 데이터 및 CSS 변경 없음.
+- 자동 브라우저 테스트 CI 실행 결과와 운영 GitHub Pages 반영은 아직 확인되지 않음.
