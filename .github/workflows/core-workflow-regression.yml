@@ -19,6 +19,7 @@ on:
       - 'tests/tobe-source-conflict-smoke.cjs'
       - 'tests/retention-recheck-integrity-smoke.cjs'
       - 'tests/retention-persisted-link-smoke.cjs'
+      - 'tests/retention-history-consistency-smoke.cjs'
       - 'tests/retention-recheck-click-smoke.cjs'
       - 'tests/retention-followup-dedup-rollback-smoke.cjs'
       - 'tests/retention-recheck-transaction-smoke.cjs'
@@ -60,6 +61,7 @@ jobs:
             tests/tobe-source-conflict-smoke.cjs \
             tests/retention-recheck-integrity-smoke.cjs \
             tests/retention-persisted-link-smoke.cjs \
+            tests/retention-history-consistency-smoke.cjs \
             tests/retention-recheck-click-smoke.cjs \
             tests/retention-followup-dedup-rollback-smoke.cjs \
             tests/retention-recheck-transaction-smoke.cjs \
@@ -72,7 +74,7 @@ jobs:
           do
             node --check "$file"
           done
-      - name: Execute eighteen core workflow regressions
+      - name: Execute nineteen core workflow regressions
         run: |
           set -e
           node tests/tobe-unique-action-id-smoke.cjs
@@ -84,6 +86,7 @@ jobs:
           node tests/tobe-source-conflict-smoke.cjs
           node tests/retention-recheck-integrity-smoke.cjs
           node tests/retention-persisted-link-smoke.cjs
+          node tests/retention-history-consistency-smoke.cjs
           node tests/retention-recheck-click-smoke.cjs
           node tests/retention-followup-dedup-rollback-smoke.cjs
           node tests/retention-recheck-transaction-smoke.cjs
