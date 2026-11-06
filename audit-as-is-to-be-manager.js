@@ -83,7 +83,7 @@ host.querySelector('[data-tobe-reset]').onclick=()=>{if(searchDebounce!==null){c
 host.querySelector('[data-tobe-prev]').onclick=()=>{if(page>1){page--;render()}};
 host.querySelector('[data-tobe-next]').onclick=()=>{if(page<pageCount){page++;render()}};
 host.querySelectorAll('[data-tobe-open]').forEach(b=>b.onclick=()=>open(b.dataset.tobeOpen));host.hidden=root.dataset.subview!=='tobe'}
-function open(id){const matches=rows().filter(x=>key(x)===String(id||''));if(!String(id||'').trim()||matches.length!==1)return alert(matches.length>1?'동일 관리번호의 개선요청이 중복되어 조치등록을 중단했습니다. 관리자에게 원본 확인을 요청하세요.':'원본 개선조치 없음');const c=matches[0];document.getElementById(MID)?.remove();
+function open(id){const matches=rows().filter(x=>key(x)===String(id||''));if(!String(id||'').trim()||matches.length!==1)return alert(matches.length>1?'동일 관리번호의 개선요청이 중복되어 조치등록을 중단했습니다. 관리자에게 원본 확인을 요청하세요.':'원본 개선조치 없음');const c=matches[0];const currentOverlay=document.getElementById(MID);if(currentOverlay?.querySelector('[aria-busy="true"]')){window.alert('다른 개선조치로 이동하기 전에 현재 조치내역 저장이 완료되어야 합니다.');return}currentOverlay?.remove();
 let overlay=document.createElement('div');overlay.className='tobeoverlay';overlay.id=MID;let locked=done(c);
 const imageSrc=v=>typeof v==='string'&&(v.trim().startsWith('data:image/')||v.trim().startsWith('https://'))?v.trim():'';
 const beforePhoto=[c.before,c.beforeImage,c.beforePhoto,c.beforeImageUrl,c.asIsPhoto,c.evidence].map(imageSrc).find(Boolean)||'';
