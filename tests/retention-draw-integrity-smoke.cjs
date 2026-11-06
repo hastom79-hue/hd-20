@@ -41,4 +41,9 @@ scenario('TO-BE completion without AFTER evidence blocked',[],[{...done,toBeRegi
 scenario('TO-BE completion blank AFTER evidence blocked',[],[{...done,toBeRegisteredAt:'2026-11-07T01:00:00Z',after:'   '}],false);
 scenario('TO-BE draft with missing evidence not subject to draw',[],[{...pending,toBeRegisteredAt:'2026-11-07T01:00:00Z'}],true);
 scenario('legacy completed request unaffected by TO-BE evidence rule',[],[done],true);
-console.log('Retention random-draw integrity 18/18 scenarios covered');
+scenario('TO-BE text is not photographic evidence',[],[{...done,toBeRegisteredAt:'2026-11-07T01:00:00Z',after:'작업완료'}],false);
+scenario('TO-BE invalid data URL blocked',[],[{...done,toBeRegisteredAt:'2026-11-07T01:00:00Z',after:'data:text/plain;base64,QUJD'}],false);
+scenario('TO-BE secure image URL accepted',[],[{...done,toBeRegisteredAt:'2026-11-07T01:00:00Z',after:'https://example.com/evidence.png'}],true);
+scenario('TO-BE insecure photo URL blocked',[],[{...done,toBeRegisteredAt:'2026-11-07T01:00:00Z',after:'http://example.com/photo.png'}],false);
+scenario('TO-BE blob image URL accepted',[],[{...done,toBeRegisteredAt:'2026-11-07T01:00:00Z',after:'blob:https://example.com/1234'}],true);
+console.log('Retention random-draw integrity 23/23 scenarios covered');
