@@ -2831,3 +2831,9 @@ Canonical Store는 다음을 기준으로 한다.
 - `beginner-navigation.js` 실코드 확인 결과 최상단 메뉴는 5개(대시보드/개선활동관리/Audit 점검/테마점검/통합기준정보)만 표시되며 `action`, `advancement` 버튼은 `display:none!important`로 레거시 호환용 DOM만 유지됨. 이전 7개 메뉴 클릭 테스트는 숨김 버튼 클릭으로 실패할 수 있었으므로 테스트 기준을 실제 UI 사양에 맞춰 바로잡음.
 - `tests/pages-browser-smoke.py`에서 5개 표시 메뉴 클릭 검증, 숨김 레거시 2개 메뉴의 DOM 유지 및 비노출 검증, 통합기준정보 `#masterModal` 표시 및 `on` 상태 확인 추가. main `96a017a`.
 - 이전 기록의 7개 메뉴 확장은 실제 사용자 메뉴 구성과 불일치하므로 철회·정정하며, 이는 앱의 7개 논리적 영역 전체 E2E 완료 의미가 아님. 테스트 코드 변경에 한정하고 사용자 대시보드/운영 데이터는 변경하지 않음. CI 실행/실서비스 배포 반영은 별도 확인 필요.
+
+## 2026-11-06 — 개선활동관리 URL 하위탭 복원 TypeError 수정
+
+- `hd20-subtabs.js`의 `syncArea()` 딥링크 복원 분기에서 `$('button',bar).forEach(...)` 호출 확인. `$`는 `querySelector` 기반으로 단일 DOM 요소를 반환하므로 유효한 `?area=activity&sub=request` 등 복원 조건에서 `forEach is not a function` 예외 가능. `$$('button',bar).forEach(...)`로 수정, main `8dcaa32`.
+- `tests/pages-browser-smoke.py`에 인증 후 `activity.request` 선택→페이지 새로고침→활성 하위 탭 복원→`activity.self` 클릭 검증 추가, main `0feead4`. 페이지 새로고침 시 오류 및 버튼 이벤트 연결 누락을 포착하는 회귀 경로.
+- 검증 코드는 구현했으나 실제 Actions 실행 및 브라우저 통과는 아직 미확인. 승인 대시보드 디자인, CSS, 운영 데이터 변경 없음.
