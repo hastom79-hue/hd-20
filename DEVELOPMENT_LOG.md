@@ -2812,3 +2812,10 @@ Canonical Store는 다음을 기준으로 한다.
 - 새 구현에서는 `const currentOverlay=document.getElementById(MID);`을 사용하므로 테스트의 실제 원본번호 검사 구간 종료 위치를 이 식으로 변경. 기존 중복/누락 관리번호 동작 검사와 저장 후 ID·상태 검증은 모두 유지(main `9e54b2e5`).
 - 최신 TO-BE/유지점검 11개 JS 회귀 스크립트를 전체 재실행한 결과 **11/11 통과, 238개 검증식 통과**. 코드 단위 이벤트·모의 저장소와 일부 정적 검증을 포함하며 실제 브라우저/배포 E2E는 아직 미확인.
 - 승인 대시보드·CSS·업무 운영 데이터 변경 없음.
+
+## 2026-11-06 — 최종 CI 실행조건과 운영 보안 위험 재확인
+
+- `local-browser-smoke.yml`에서 loopback `python -m http.server` 실행 직후 Playwright를 호출해 시작 경합(서버 미준비 시 ECONNREFUSED)이 발생할 수 있는 것을 확인. `curl`로 index.html 200 응답을 최대 30초 확인하고 준비 실패 시 서버 로그를 출력하도록 수정. main `744324c2`.
+- `core-workflow-regression.yml`의 실행 단계 문구가 'nine'으로 남아 있었으나 실제 11개 테스트를 실행하므로 'eleven'으로 정정. main `62b9e1c8`.
+- GitHub connector `get_repo`로 `hastom79-hue/hd-20`의 `visibility=public` 확인. `supabase-auth.js` 코드는 `@hd.com` 형식 검사 후 브라우저 세션을 만드는 방식이며 회사 계정 소유 증명(서버 측 메일 OTP/SSO)이 없음. 따라서 대외비/생산 데이터 보호 목적의 실사용 인증으로는 불충분할 수 있음. 사전 협의 없이 저장소 공개 설정/인증 운영을 변경하지 않음. 저장소에 실제 대외비 데이터가 포함됐는지 별도 확인 필요.
+- `main` 최신 파일은 connector로 확인되나 Pages 및 GitHub Actions 서버 실행 결과는 도구 접근 제한으로 여전히 미확인. CI 변경 등록 자체를 성공된 실행으로 간주하지 않음.
