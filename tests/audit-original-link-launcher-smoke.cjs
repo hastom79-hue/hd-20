@@ -75,11 +75,18 @@ const {chromium}=require('playwright');
     localStorage.setItem(key,JSON.stringify(cases));
     window.dispatchEvent(new CustomEvent('hd20-action-updated'));
   });
-  const secondLink=page.locator('#awAudit #hd20AuditActionMonitor [data-had-action-id="ACTION-LINK-E2E-02"]');
-  await secondLink.waitFor({state:'attached',timeout:10000});
-  // Legacy Audit corrective monitor is deliberately hidden; verify the delegated
-  // exact-action-id handler without suggesting its button is publicly visible.
-  await secondLink.evaluate(element=>element.click());
+  // The retired Audit action table is intentionally hidden. Exercise the real
+  // document-level exact-action-ID handler with a test-only control instead.
+  await page.evaluate(()=>{
+    const control=document.createElement('button');
+    control.type='button';
+    control.dataset.hadOpenAudit='AUDIT-LINK-E2E-01';
+    control.dataset.hadActionId='ACTION-LINK-E2E-02';
+    control.id='hd20AuditOriginalLinkTestOnly';
+    document.body.appendChild(control);
+    control.click();
+    control.remove();
+  });
   await modal.waitFor({state:'visible',timeout:10000});
   assert.match(await modal.innerText(),/ACTION-LINK-E2E-02/,'second linked action opens exactly');
   await modal.locator('[data-had-close]').first().click();
@@ -88,47 +95,11 @@ const {chromium}=require('playwright');
     localStorage.setItem(key,JSON.stringify(JSON.parse(localStorage.getItem(key)||'[]').filter(x=>x.id!=='ACTION-LINK-E2E-02')));
     window.dispatchEvent(new CustomEvent('hd20-action-updated'));
   });
-  // Exercise Audit-only corrective queue: overdue first and combined filters, without
-  // changing any original Audit or theme case outside this isolated browser profile.
-  await page.evaluate(()=>{
-   const key='hd20ActionCasesV2',cases=JSON.parse(localStorage.getItem(key)||'[]');
-   cases.push(
-    {id:'ACTION-OVERDUE-E2E',sourceStage:'AUDIT-REQUEST',auditDrawId:'AUDIT-LINK-E2E-01',
-     team:'테스트팀',workplace:'테스트라인',problem:'긴급 기한경과',status:'진행중',receivedAt:'2025-01-01',due:'2025-01-02',registeredAt:'2025-01-01'},
-    {id:'ACTION-COMPLETE-E2E',sourceStage:'AUDIT-REQUEST',auditDrawId:'AUDIT-LINK-E2E-01',
-     team:'타팀',workplace:'타라인',problem:'완료 사례',status:'완료',completedAt:'2025-02-02',registeredAt:'2025-01-01'}
-   );
-   localStorage.setItem(key,JSON.stringify(cases));
-   window.dispatchEvent(new CustomEvent('hd20-action-updated',{detail:{source:'audit-priority-e2e'}}));
-  });
-  await page.waitForTimeout(700);
-  const queueResult=await page.evaluate(()=>{
-    const root=document.getElementById('hd20AuditActionMonitor');
-    if(!root)return {error:'Audit monitor not mounted'};
-    const summary=root.querySelector('.hadNumbers')?.textContent||'';
-    const rows=()=>[...root.querySelectorAll('[data-had-table] tbody tr')].map(tr=>tr.innerText);
-    const before=rows();
-    const set=(name,val)=>{
-      const el=root.querySelector('[data-had-filter-'+name+']');
-      if(!el)throw Error('Missing filter '+name);
-      el.value=val;
-      el.dispatchEvent(new Event('input',{bubbles:true}));
-    };
-    set('team','테스트팀');
-    set('workplace','테스트라인');
-    set('due','overdue');
-    set('text','긴급 기한경과');
-    const combined=rows();
-    root.querySelector('[data-had-filter-reset]')?.click();
-    const reset=rows();
-    return {summary,before,combined,reset};
-  });
-  assert.match(queueResult.summary,/기한경과 1건/,'past-due Audit action must be counted');
-  assert.match(queueResult.before[0]||'',/ACTION-OVERDUE-E2E/,'overdue action must appear first');
-  assert.equal(queueResult.combined.length,1,'combined Audit filters must narrow to one');
-  assert.match(queueResult.combined[0]||'',/ACTION-OVERDUE-E2E/,'filtered result must be the overdue case');
-  assert.equal(queueResult.reset.length,3,'reset restores all Audit actions');
-  console.log('PASS: Audit overdue priority, combined filters and reset');
+  // The former Audit action queue is not a visible work surface in current IA.
+  // Avoid reporting UI filter coverage for a panel removed from navigation.
+  assert.equal(await page.locator('#awAudit #hd20AuditActionMonitor').isVisible(),false,
+    'retired Audit action queue must remain hidden');
+  console.log('PASS: hidden legacy Audit queue was not reintroduced');
   assert.deepEqual(errors.filter(s=>/TypeError|ReferenceError/.test(s)),[],'browser errors');
   console.log('PASS: Audit number opens original detail with exact linked action and closes');
  }finally{await browser.close()}
