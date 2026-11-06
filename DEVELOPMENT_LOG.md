@@ -2935,3 +2935,9 @@ Canonical Store는 다음을 기준으로 한다.
 - `tests/tobe-source-conflict-smoke.cjs`: 정상 원본 및 문제내용·팀·작업장·완료상태·타 탭 조치 변경 6개 정합성 시나리오 추가.
 - `core-workflow-regression.yml`: 16종 핵심 테스트에 신규 검사 연결.
 - `index.html`: TO-BE 캐시 v25 갱신. 대시보드·CSS·운영 데이터 무변경. 외부 다른 브라우저 동시 쓰기 전체를 원자적으로 막는 것은 아니며 CI 및 Pages 실제 실행은 추가 확인 필요.
+
+## 2026-11-07 — 개선활동관리 등록팝업 지연 재시도 하위탭 경합 차단
+- `landing-launcher.js`: 자율개선·개선요청 등록팝업 버튼을 재시도하여 찾는 동안 현재 메인 영역과 하위탭(`self`/`request`)이 모두 요청된 화면과 일치하는지 검증. 다른 하위탭 전환 후 과거 등록팝업이 늦게 열리는 현상 차단.
+- `tests/launcher-registration-subtab-retry-smoke.cjs`: 활성 하위탭 일치·불일치 및 재시도 예약 5개 회귀 조건 추가.
+- `core-workflow-regression.yml`: 17종 스크립트로 확장하고 런처 변경 시 실행 트리거 적용. `index.html` 런처 캐시 v25 반영.
+- 원본 데이터, 대시보드, CSS 수정 없음. CI 및 운영 브라우저·Pages 실제 실행 결과는 별도 확인 필요.
