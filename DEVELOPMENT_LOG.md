@@ -2856,3 +2856,9 @@ Canonical Store는 다음을 기준으로 한다.
 - `audit-as-is-to-be-manager.js`에서 `close(afterSave=false)`는 저장 중 `afterSave=true`일 때만 닫기 허용. 그러나 `b.onclick=close`는 브라우저 MouseEvent 객체를 첫 인자로 전달하여 truthy `afterSave`로 판정되므로 저장 중 사용자 닫기가 보호 로직을 우회하는 결함 발견.
 - 닫기 버튼을 `b.onclick=()=>close()`로 변경하여 사용자 클릭 이벤트를 인자로 전달하지 않도록 수정(main `baa9bee`). 저장 성공 경로의 `close(true)`는 유지.
 - `tests/tobe-modal-lifecycle-smoke.cjs`에 실제 클릭 이벤트 인자로 닫기 버튼을 호출하는 시나리오와 저장 중 overlay 제거 금지 assertion 추가(main `6b97190`). 7→8 시나리오로 테스트 확장. GitHub Actions/실브라우저 실행 결과 미확인. 대시보드·운영 데이터 변경 없음.
+
+## 2026-11-06 — 개선조치 TO-BE 조회 교차 탭 동기화
+
+- `audit-as-is-to-be-manager.js`: 동일 화면의 `hd20-action-updated` 갱신 경로는 이미 존재했지만, 다른 브라우저 탭에서 `hd20ActionCasesV2` localStorage가 변경될 때 활성 TO-BE 조치관리 조회 목록이 갱신되지 않는 경로를 확인. `storage` 이벤트에서 해당 KEY이며 현재 `activity.tobe`가 활성인 경우에만 `render()` 하도록 보완(main `2316c0a`). 다른 키·비활성 화면은 불필요한 재렌더링을 하지 않음.
+- `tests/tobe-modal-lifecycle-smoke.cjs`에 교차 탭 storage 리스너의 대상 KEY 및 활성화 조건 정적 회귀 검증 추가(main `c14aa3b`). 9개 검사 시나리오 코드 구성; 실제 Node/CI 실행 통과 여부는 별도로 확인 필요.
+- 브라우저간 동기화는 동일 출처 localStorage 기반의 범위에 한정하며 서버/다중 사용자 실시간 동기화를 의미하지 않음. 대시보드 및 운영 데이터 변경 없음.
