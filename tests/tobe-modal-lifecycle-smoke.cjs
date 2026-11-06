@@ -67,4 +67,7 @@ let idle=attemptSwitch(false);
 assert.equal(idle.removed,1,'switch after save must remove previous modal');
 assert.equal(idle.notices.length,0,'idle case switch has no warning');
 console.log('PASS switching TO-BE case after save');
-console.log('TO-BE modal lifecycle 8/8 scenarios passed');
+const crossTabHook="window.addEventListener('storage',e=>{if(e.key!==KEY)return;if(window.HD20_NAV?.active?.()==='activity'&&document.getElementById('awActivity')?.dataset.subview==='tobe')render()})";
+assert(src.includes(crossTabHook),'cross-tab action updates must refresh only the active TO-BE view');
+console.log('PASS active TO-BE view cross-tab storage refresh is scoped to action records');
+console.log('TO-BE modal lifecycle 9/9 scenarios covered');
