@@ -2742,3 +2742,11 @@ Canonical Store는 다음을 기준으로 한다.
 - `.github/workflows/pages-deployment-integrity.yml` 신설: main에 관련 파일 푸시 또는 수동 실행 시 Python 3.12 검증 실행. Pages 배포 지연을 고려해 15초 간격 최대 16회 재시도하고, 웹 접근 실패/내용 불일치 시 실패 보고. 기존 core workflow·대시보드 UI는 변경하지 않음.
 - main 커밋: 검증기 `049fcd70`, 워크플로 `3e0efb84`.
 - **주의: 검증 자동화의 등록은 서버 검증 성공을 뜻하지 않음. 현재 시점 Pages 배포 상태 및 Actions 결과 미확인.** 이 워크플로는 브라우저 DOM 동작 E2E의 대체가 아니며 배포 파일 일치만 판정함.
+
+## 2026-11-06 — GitHub Pages 실제 브라우저 읽기 전용 E2E 검증 구성
+
+- 기존 `pages-deployment-integrity.yml`은 GitHub Pages 응답과 main HTML/JS 파일 바이트 동일성만 검증. 실제 탭 메뉴 클릭/JavaScript 예외 검증이 누락됨.
+- `tests/pages-browser-smoke.py` 추가: Playwright Chromium으로 Pages `index.html` HTTP 200 응답/메인 메뉴 DOM 초기화 확인 후 dashboard → activity → audit → theme 탭을 읽기 전용으로 클릭해 각 `active` 상태 검증. 브라우저의 uncaught `pageerror` 수집, 오류 발견 시 테스트 실패. 실제 등록/조치 저장/데이터 수정은 하지 않음.
+- `html.hd20-auth-pending` 인증 보호가 남아 있으면 인증 우회 없이 **E2E 실패**로 판정하여 검증 계정/세션이 없음을 명시. 따라서 코드 등록은 실제 로그인 후 E2E 통과를 증명하지 않으며, 비인증 환경에서는 CI 실패 가능.
+- `.github/workflows/pages-browser-e2e.yml` 추가: Python 3.12/Playwright 1.55.0 Chromium 설치 후 실서비스 탐색 실행. 수동 실행 및 관련 파일 push 트리거. 사용자 운용 데이터를 쓰는 테스트는 포함하지 않음.
+- main 반영: 브라우저 테스트 `ff3888f9`, Actions 워크플로 `7baf9ecd`. 승인 대시보드·UI·CSS·업무 데이터는 변경하지 않음. 실 브라우저 실행/Actions 결과 및 Pages 최신 배포 반영 여부는 아직 미확인.
