@@ -6,6 +6,7 @@ on:
       - 'audit-as-is-to-be-manager.js'
       - 'hd20-subtabs.js'
       - 'beginner-navigation.js'
+      - 'landing-launcher.js'
       - 'retention-recheck-integrity-guard.js'
       - 'retention-draw-integrity-guard.js'
       - 'theme-inspection.js'
@@ -24,6 +25,7 @@ on:
       - 'tests/retention-draw-schedule-smoke.cjs'
       - 'tests/theme-row-click-regression.cjs'
       - 'tests/activity-navigation-late-overview-smoke.cjs'
+      - 'tests/launcher-registration-subtab-retry-smoke.cjs'
       - 'tests/audit-subtab-click-guard-smoke.cjs'
       - '.github/workflows/core-workflow-regression.yml'
   workflow_dispatch:
@@ -43,6 +45,7 @@ jobs:
           node --check audit-as-is-to-be-manager.js
           node --check hd20-subtabs.js
           node --check beginner-navigation.js
+          node --check landing-launcher.js
           node --check retention-recheck-integrity-guard.js
           node --check retention-draw-integrity-guard.js
           node --check theme-inspection.js
@@ -62,11 +65,12 @@ jobs:
             tests/retention-draw-schedule-smoke.cjs \
             tests/theme-row-click-regression.cjs \
             tests/activity-navigation-late-overview-smoke.cjs \
+            tests/launcher-registration-subtab-retry-smoke.cjs \
             tests/audit-subtab-click-guard-smoke.cjs
           do
             node --check "$file"
           done
-      - name: Execute sixteen core workflow regressions
+      - name: Execute seventeen core workflow regressions
         run: |
           set -e
           node tests/tobe-unique-action-id-smoke.cjs
@@ -84,4 +88,5 @@ jobs:
           node tests/retention-draw-schedule-smoke.cjs
           node tests/theme-row-click-regression.cjs
           node tests/activity-navigation-late-overview-smoke.cjs
+          node tests/launcher-registration-subtab-retry-smoke.cjs
           node tests/audit-subtab-click-guard-smoke.cjs
