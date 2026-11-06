@@ -982,7 +982,7 @@ function installAuditSubnavGuard(){
  const schedule=()=>{if(pending)return;pending=true;queueMicrotask(()=>{pending=false;reconcileAuditSubnav()})};
  window.addEventListener('hd20-nav-area-changed',schedule);
  window.addEventListener('hd20-subtab-changed',e=>{if(e.detail?.area==='audit')schedule()});
- document.addEventListener('click',e=>{if(e.target.closest?.('.beginnerNav button[data-key="audit"]')){const bar=document.getElementById('hd20Subnav');if(bar)syncAuditButtons(bar,'draw');queueMicrotask(schedule)}},true);
+ document.addEventListener('click',e=>{if(e.target.closest?.('.beginnerNav button[data-key="audit"]'))queueMicrotask(schedule)},true);
  const observer=new MutationObserver(records=>{
    if(window.HD20_NAV?.active?.()!=='audit')return;
    if(records.some(r=>r.type==='childList'||r.type==='characterData'||r.type==='attributes'))schedule();
