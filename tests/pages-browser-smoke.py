@@ -51,6 +51,18 @@ def main():
             page.locator("#hd20MailGateEmail").fill(EMAIL)
             page.locator("#hd20MailGateForm button[type='submit']").click()
             page.locator("#hd20MailGateForm").wait_for(state="hidden", timeout=12000)
+            # A hidden form alone does not prove that the intended company session exists.
+            page.wait_for_function(
+                """email => {
+                  try {
+                    const session = JSON.parse(localStorage.getItem('hd20_company_session_v1') || 'null');
+                    return !!session && String(session.email || '').toLowerCase() === email.toLowerCase()
+                      && Number(session.expiresAt) > Date.now();
+                  } catch { return false; }
+                }""",
+                arg=EMAIL,
+                timeout=12000,
+            )
             page.locator(".beginnerNav button[data-key='dashboard']").wait_for(state="visible", timeout=15000)
 
             for area, title in AREAS:
@@ -61,6 +73,9 @@ def main():
                 active = page.locator(f".beginnerNav button[data-key='{area}'].active")
                 if active.count() != 1:
                     raise AssertionError(f"{title}: navigation did not become active")
+                selected = page.evaluate("() => window.HD20_NAV?.active?.() || ''")
+                if selected != area:
+                    raise AssertionError(f"{title}: button is active but navigation controller reports {selected!r}")
                 region_ids = {"activity": "#awActivity", "audit": "#awAudit", "theme": "#awTheme"}
                 if area in region_ids:
                     region = page.locator(region_ids[area])
