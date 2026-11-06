@@ -1,0 +1,25 @@
+name: HD-20 Retention Draw Integrity Regression
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'retention-draw-integrity-guard.js'
+      - 'tests/retention-draw-integrity-smoke.cjs'
+      - '.github/workflows/retention-draw-integrity.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  draw-integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check source and test syntax
+        run: |
+          node --check retention-draw-integrity-guard.js
+          node --check tests/retention-draw-integrity-smoke.cjs
+      - name: Execute draw eligibility and duplicate cases
+        run: node tests/retention-draw-integrity-smoke.cjs
