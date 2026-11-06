@@ -590,6 +590,11 @@ function renderRetentionSampling(root){
  const action=linkedAction(rows[n]);
  const allActions=load('hd20ActionCasesV2');
  const historyActions=allActions.filter(a=>a.sourceStage==='RETENTION-RECHECK'&&String(a.sourceCaseId||'')===String(rows[n].id));
+ const recheckHistory=rows[n].recheckHistory;
+ if((recheckHistory!=null&&!Array.isArray(recheckHistory))||historyActions.length!==(Array.isArray(recheckHistory)?recheckHistory.length:0)){
+  box.dataset.rsSaving='';box.querySelectorAll('[data-rs-recheck]').forEach(b=>b.disabled=false);
+  window.alert('재점검 이력과 후속 개선조치 건수가 일치하지 않습니다. 자동 재조치·종결을 중단하고 관리자에게 확인해 주세요.');return;
+ }
  const sequence=a=>Number(String(a.id||'').match(/(\d+)$/)?.[1]||0);
  const latestHistory=historyActions.slice().sort((a,b)=>sequence(b)-sequence(a))[0]||null;
  // A retention case must point to its latest recheck action. Never silently relink to a foreign or orphaned follow-up.
