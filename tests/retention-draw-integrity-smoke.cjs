@@ -35,4 +35,10 @@ scenario('duplicate completed self ID blocked',[done,{...done}],[],false);
 scenario('demo fixture ignored',[],[done,{...done,source:'e2e-fixture'}],true);
 scenario('pending duplicate case not part of completed pool',[],[done,{id:'B2',status:'진행중'},{id:'B2',status:'진행중'}],true);
 scenario('completed flag without status accepted',[],[{id:'X1',completed:true,team:'조립',workplace:'조립라인A'}],true);
-console.log('Retention random-draw integrity 13/13 scenarios covered');
+
+scenario('TO-BE completion with AFTER evidence allowed',[],[{...done,toBeRegisteredAt:'2026-11-07T01:00:00Z',after:'data:image/png;base64,AAAA'}],true);
+scenario('TO-BE completion without AFTER evidence blocked',[],[{...done,toBeRegisteredAt:'2026-11-07T01:00:00Z'}],false);
+scenario('TO-BE completion blank AFTER evidence blocked',[],[{...done,toBeRegisteredAt:'2026-11-07T01:00:00Z',after:'   '}],false);
+scenario('TO-BE draft with missing evidence not subject to draw',[],[{...pending,toBeRegisteredAt:'2026-11-07T01:00:00Z'}],true);
+scenario('legacy completed request unaffected by TO-BE evidence rule',[],[done],true);
+console.log('Retention random-draw integrity 18/18 scenarios covered');
