@@ -211,7 +211,7 @@ function auditMaster(){
   const desc=document.createElement('small');desc.textContent=x.area+' · '+x.msg;
   info.append(name,desc);
   const btn=document.createElement('button');btn.type='button';btn.textContent='관리 항목 열기';
-  btn.addEventListener('click',()=>{if(x.target)openMasterTarget(x.target);else if(x.targetArea&&window.HD20_NAV?.go){ws.querySelector('[data-hm-close]').click();window.HD20_NAV.go(x.targetArea);if(x.targetSub)setTimeout(()=>window.HD20_SUBNAV?.select?.(x.targetArea,x.targetSub),160)}});
+  btn.addEventListener('click',()=>{if(x.target)openMasterTarget(x.target);else if(x.targetArea&&window.HD20_NAV?.go){ws.querySelector('[data-hm-close]').click();window.HD20_NAV.go(x.targetArea);if(x.targetSub)setTimeout(()=>{if(window.HD20_NAV?.active?.()===x.targetArea)window.HD20_SUBNAV?.select?.(x.targetArea,x.targetSub)},160)}});
   row.append(badge,info,btn);auditRows.append(row);
  }
  auditSummary.textContent=inspect.length+'개 점검 · '+issues+'개 확인 필요';
