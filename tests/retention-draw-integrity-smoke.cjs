@@ -20,16 +20,19 @@ function scenario(label,self,actions,expected){
  assert.equal(alerts.length,expected?0:1,label+' warning count');
  console.log('PASS '+label);
 }
-const done={id:'A1',status:'완료',team:'조립'};
+const done={id:'A1',status:'완료',team:'조립',workplace:'조립라인A'};
 const pending={id:'B1',status:'진행중',team:'조립'};
 scenario('single finished request and pending excluded',[],[done,pending],true);
 scenario('duplicate completed request ID blocked',[],[done,{...done}],false);
 scenario('completed flag conflicts with pending status',[],[{...pending,completed:true}],false);
 scenario('finished status conflicts with completed=false',[],[{...done,completed:false}],false);
-scenario('missing completed request ID',[],[{status:'완료'}],false);
+scenario('missing completed request ID',[],[{status:'완료',team:'조립',workplace:'조립라인A'}],false);
+scenario('completed request missing team',[],[{...done,team:''}],false);
+scenario('completed request missing workplace',[],[{...done,workplace:''}],false);
+scenario('completed self missing workplace',[{...done,workplace:''}],[],false);
 scenario('completed self and request with same ID allowed',[done],[done],true);
 scenario('duplicate completed self ID blocked',[done,{...done}],[],false);
 scenario('demo fixture ignored',[],[done,{...done,source:'e2e-fixture'}],true);
 scenario('pending duplicate case not part of completed pool',[],[done,{id:'B2',status:'진행중'},{id:'B2',status:'진행중'}],true);
-scenario('completed flag without status accepted',[],[{id:'X1',completed:true}],true);
-console.log('Retention random-draw integrity 10/10 passed');
+scenario('completed flag without status accepted',[],[{id:'X1',completed:true,team:'조립',workplace:'조립라인A'}],true);
+console.log('Retention random-draw integrity 13/13 scenarios covered');
