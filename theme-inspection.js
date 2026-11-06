@@ -549,7 +549,7 @@ if(file&&(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.siz
    original.length!==1||String(original[0].initialAuditor||original[0].auditor||'')!==String(existing.initialAuditor||'')||
    String(original[0].line||'')!==line||String(original[0].team||'')!==team;
  });
- if(invalidReuse.length||invalidReuse===true){alert('기존 개선조치의 최초 점검자·원본 점검번호 또는 생산팀·라인 연결이 불일치합니다. 자동 재연계하지 않고 관리자에게 확인해 주세요.');return}
+ if(invalidReuse){alert('기존 개선조치의 최초 점검자·원본 점검번호 또는 생산팀·라인 연결이 불일치합니다. 자동 재연계하지 않고 관리자에게 확인해 주세요.');return}
 
  const rec={id:newId('THEME-AUDIT'),line,team,month,inspectionOwner:selectedOwner(),auditor,initialAuditor:auditor,improvementPhoto,states,findingEvidence,memo,auditedAt:new Date().toISOString(),checklistVersion:4,linkedActionIds:[],createdActionIds:[],reusedActionIds:[],ngCount:rows.filter(row=>states[row.dataset.key]==='미흡').length};
  checks.push(rec);
@@ -569,7 +569,6 @@ if(file&&(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.siz
      dup.lastAuditMemo=findingMemo;
      dup.lastAuditAuditor=rec.initialAuditor;
      dup.lastAuditPhoto=findingPhoto;
-     if(!dup.initialAuditor)dup.initialAuditor=String(dup.auditor||dup.registeredBy||rec.initialAuditor||'');
      if(!dup.before&&findingPhoto)dup.before=findingPhoto;
      if(!dup.evidence&&findingPhoto)dup.evidence=findingPhoto;
      dup.recheckCount=(Number(dup.recheckCount)||0)+1;
@@ -601,6 +600,30 @@ if(file&&(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.siz
   alert('테마 점검 이력의 저장 결과가 누락되었거나 중복되었습니다. 개선조치 연결을 복구했으니 관리자에게 확인해 주세요.');return;
  }
  if(savedRec){Object.assign(savedRec,{linkedActionIds:rec.linkedActionIds,createdActionIds:createdActionIds,reusedActionIds:reusedActionIds,linkedAt:rec.linkedAt,ngCount:rec.ngCount});if(!saveChecks(savedChecks)){try{localStorage.setItem(ACT_KEY,originalActions)}catch(error){console.error('[HD20 Theme] action rollback failed',error)}if(!saveChecks(checks.filter(x=>x.id!==rec.id)))console.error('[HD20 Theme] audit rollback failed',rec.id);alert('점검-개선조치 연결정보 저장에 실패하여 이번 등록을 취소했습니다. 다시 시도해 주세요.');return}}
+ // Verify persisted bi-directional references before declaring audit success.
+ const finalChecks=loadChecks(),finalActions=load();
+ const auditMatches=finalChecks.filter(ch=>String(ch.id||'')===String(rec.id));
+ const consistent=rec.linkedActionIds.every(actionId=>{
+  const matching=finalActions.filter(a=>String(a.id||'')===String(actionId));
+  if(matching.length!==1)return false;
+  const a=matching[0],source=finalChecks.filter(ch=>String(ch.id||'')===String(a.sourceCaseId||''));
+  return a.sourceStage==='THEME-AUDIT'&&source.length===1&&
+   String(a.auditRecordId||'')===String(a.sourceCaseId||'')&&
+   String(a.initialAuditor||'')===String(source[0].initialAuditor||source[0].auditor||'')&&
+   String(a.lastAuditRecordId||'')===String(rec.id)&&
+   String(a.lastAuditAuditor||'')===String(rec.initialAuditor||'')&&
+   Array.isArray(a.relatedAuditRecordIds)&&a.relatedAuditRecordIds.includes(rec.id);
+ });
+ const savedAudit=auditMatches[0];
+ if(auditMatches.length!==1||!consistent||
+  !Array.isArray(savedAudit.linkedActionIds)||
+  savedAudit.linkedActionIds.length!==rec.linkedActionIds.length||
+  rec.linkedActionIds.some(id=>!savedAudit.linkedActionIds.includes(id))||
+  String(savedAudit.initialAuditor||'')!==String(rec.initialAuditor||'')){
+  try{localStorage.setItem(ACT_KEY,originalActions)}catch(error){console.error('[HD20 Theme] relink rollback actions',error)}
+  if(!saveChecks(checks.filter(x=>x.id!==rec.id)))console.error('[HD20 Theme] relink rollback checks',rec.id);
+  alert('테마점검-개선조치 저장 후 원본번호·최초 점검자 연결이 일치하지 않습니다. 확인 전 완료하지 않습니다.');return;
+ }
  window.dispatchEvent(new CustomEvent('hd20-action-updated',{detail:{added:createdActionIds.length,reused:reusedActionIds.length,source:'theme-audit',auditRecordId:rec.id}}));
  window.dispatchEvent(new CustomEvent('hd20-activity-updated',{detail:{source:'테마Audit',auditRecordId:rec.id}}));
  window.dispatchEvent(new CustomEvent('hd20-theme-audit-updated',{detail:{auditRecordId:rec.id,line,month,inspectionOwner:rec.inspectionOwner}}));
