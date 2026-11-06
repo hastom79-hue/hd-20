@@ -2946,3 +2946,9 @@ Canonical Store는 다음을 기준으로 한다.
 - `landing-launcher.js`: 자율개선/개선요청 등록 루트의 최초 `setTimeout(0)` 콜백 진입 시 현재 메인탭이 `activity`인지 확인. 이미 Audit/기준정보 등 타 탭으로 이동했다면 하위탭 선택을 중단하고 등록 내비게이션 잠금 해제.
 - `tests/launcher-registration-subtab-retry-smoke.cjs`: 타 탭 이탈 2개·정상 진행 2개 조건 추가(기존 5개 포함 총 9개).
 - `index.html` 런처 캐시 v26 갱신. 핵심 CI에 포함된 기존 테스트 파일 확장. 데이터·대시보드·CSS 무변경. CI·운영 웹 실제 브라우저 검증은 미확인.
+
+## 2026-11-07 — 유지점검 부적합 이관 후 원본 정합성 검증 강화
+- `hd20-subtabs.js`: 부적합 Audit 및 개선조치 저장 재조회 시 관리번호·출처·원본 ID·팀에 더해 작업장과 최초 점검자(평가자)를 양쪽 이관 기록에서 재검증. 불일치하면 기존 복원 흐름 사용.
+- `tests/retention-persisted-link-smoke.cjs`: 작업장과 점검자, Audit 팀/작업장 오류 7건 추가(해당 파트 15개 시나리오).
+- `core-workflow-regression.yml`: 이전 CI 실행 목록에서 빠져 있던 persisted-link 검사를 연결(핵심 18종).
+- `index.html`: 캐시 v83. 대시보드와 운영 데이터, CSS 불변. 실제 CI 실행·Pages 배포는 미확인.
