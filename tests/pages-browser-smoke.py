@@ -17,6 +17,9 @@ AREAS = (
     ("activity", "개선활동관리"),
     ("audit", "Audit 점검"),
     ("theme", "테마점검"),
+    ("action", "개선조치관리"),
+    ("advancement", "고도화·표준화"),
+    ("master", "통합기준정보"),
 )
 
 
@@ -87,7 +90,7 @@ def main():
                 print(f"PASS read-only nav {area}: {title} (active + visible screen)", flush=True)
             if page_errors:
                 raise AssertionError("Uncaught JS errors (first 5): " + " | ".join(page_errors[:5]))
-            print("PASS authenticated browser navigation: 4/4; no uncaught page errors", flush=True)
+            print(f"PASS authenticated browser navigation: {len(AREAS)}/{len(AREAS)}; no uncaught page errors", flush=True)
         finally:
             browser.close()
 
