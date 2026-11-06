@@ -30,7 +30,7 @@ const dateNow=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'n
 function verifySchedule(retentions,today,intervalDays){
  if(!Array.isArray(retentions))return {ok:false,reason:'기존 유지점검 이력을 읽지 못했습니다.'};
  const days=Math.max(1,Number(intervalDays)||30);
- const isDate=s=>{if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(s))return false;const d=new Date(s+'T00:00:00Z');return !Number.isNaN(d.getTime())&&d.toISOString().slice(0,10)===s};
+ const isDate=s=>{if(!/^\d{4}-\d{2}-\d{2}$/.test(s))return false;const d=new Date(s+'T00:00:00Z');return !Number.isNaN(d.getTime())&&d.toISOString().slice(0,10)===s};
  if(!isDate(today))return {ok:false,reason:'현재 날짜를 확인할 수 없습니다.'};
  const active=new Set();let latest='';
  for(const r of retentions){
