@@ -9,7 +9,7 @@ const excluded=x=>x?.isDemo===true||x?.isTest===true||['demo-seed','e2e-fixture'
 const read=name=>{try{const list=JSON.parse(localStorage.getItem(name)||'[]');return Array.isArray(list)?list:null}catch{return null}};
 function verify(self,actions){
  if(!Array.isArray(self)||!Array.isArray(actions))return {ok:false,reason:'개선사례 저장 형식이 올바르지 않습니다.'};
- const cases=[...self.filter(x=>!excluded(x)).map(x=>({x,kind:'자율개선'})),...actions.filter(x=>!excluded(x)).map(x=>({x,kind:'개선요청'}))];
+ const cases=[...self.filter(x=>!excluded(x)).map(x=>({x,kind:'자율개선'})),...actions.filter(x=>!excluded(x)&&!['RETENTION-RANDOM','RETENTION-RECHECK'].includes(norm(x?.sourceStage))).map(x=>({x,kind:'개선요청'}))];
  const ids=new Set();
  for(const {x,kind} of cases){
   const status=norm(x?.status||x?.activityStatus||x?.actionStatus);
