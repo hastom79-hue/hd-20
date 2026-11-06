@@ -102,15 +102,11 @@ const {chromium}=require('playwright');
     localStorage.setItem(actionsKey,JSON.stringify(actions));
     window.dispatchEvent(new CustomEvent('hd20-action-updated'));
   });
-  // The old Audit action queue is hidden. Reuse the verified visible Audit
-  // original-number link, setting its case IDs only inside this isolated test.
-  const bridge=page.locator('#awAudit #hd20AuditCloseEvaluation [data-had-open-audit="AUDIT-LINK-E2E-01"]');
-  await bridge.waitFor({state:'visible',timeout:10000});
-  await bridge.evaluate(el=>{
-    el.dataset.hadOpenAudit='AUDIT-LINK-E2E-02';
-    el.dataset.hadActionId='ACTION-LINK-E2E-02';
-  });
-  await page.locator('#awAudit #hd20AuditCloseEvaluation [data-had-open-audit="AUDIT-LINK-E2E-02"]').click({timeout:10000});
+  // Audit close-evaluation rows are live-rendered after action updates.
+  // Click the second original's *own* real link instead of reusing a stale row.
+  const secondLink=page.locator('#awAudit #hd20AuditCloseEvaluation [data-had-open-audit="AUDIT-LINK-E2E-02"]');
+  await secondLink.waitFor({state:'visible',timeout:10000});
+  await secondLink.click({timeout:10000});
   await modal.waitFor({state:'visible',timeout:10000});
   const secondBody=await modal.innerText();
   assert.match(secondBody,/AUDIT-LINK-E2E-02/,'second Audit source resolved');
