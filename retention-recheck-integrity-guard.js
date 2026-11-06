@@ -5,6 +5,8 @@ function verify(id,rs,as){
  if(!norm(id)||!Array.isArray(rs)||!Array.isArray(as))return false;
  const records=rs.filter(r=>norm(r?.id)===norm(id));if(records.length!==1)return false;
  const r=records[0];if(r.result!=='부적합'||r.closedAt||(r.recheckResult==='적합'&&r.recheckedAt))return false;
+ // Blank-on-both-sides equality cannot establish provenance of the original inspection.
+ if(!norm(r.caseId)||!norm(r.team)||!norm(r.workplace)||!norm(r.evaluator))return false;
  const followups=as.filter(a=>a?.sourceStage==='RETENTION-RECHECK'&&norm(a.sourceCaseId)===norm(r.id));
  const seq=a=>Number(norm(a.id).match(/(\d+)$/)?.[1]||0);
  const followupIds=followups.map(a=>norm(a.id));
