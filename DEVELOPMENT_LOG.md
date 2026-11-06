@@ -2783,3 +2783,11 @@ Canonical Store는 다음을 기준으로 한다.
 - `tests/local-browser-smoke.py`: 메인 메뉴 초기화, `HD20_NAV.ready()`/활성 영역, 대시보드 및 개선활동관리·Audit·테마점검·통합기준정보 화면 영역의 실제 가시성, 예상 `.on` 상태, 미처리 JavaScript 오류 확인. 실패한 화면을 개별 수집하여 테스트 종료 때 전체 실패 처리. 운영 사이트 접속/업무 데이터 등록·변경 없음.
 - `.github/workflows/local-browser-smoke.yml` 신설: Python 3.12·Playwright Chromium·loopback 웹서버로 5개 주요 탭을 검사하도록 구성. 기존 실서비스 로그인 E2E는 별도 유지. 로컬에서는 원래 애플리케이션이 구현한 `localhost` 인증 경로를 사용하며 실서비스 인증을 우회하거나 운영 데이터에 연결하지 않음.
 - GitHub main 커밋: 로컬 테스트 `b823efc4`, CI `75eb019d`. **Actions 실행 성공/실패는 아직 확인되지 않았으며, 로컬 소스 E2E 성공도 실제 GitHub Pages 배포나 운영 인증 통과를 뜻하지 않음.**
+
+## 2026-11-06 — TO-BE 팝업 저장 중 교체·닫기 경합 방지
+
+- 로컬 실행환경에서 GitHub 저장소 clone을 직접 시도했으나 github.com DNS 연결 실패로 전체 저장소를 내려받아 실제 웹서버를 구동하지 못함. Github Pages/Actions 실서비스 성공 상태도 현재 미확인. 검증 성공으로 간주하지 않음.
+- 실제 `audit-as-is-to-be-manager.js` 검토 중 비동기 AFTER 사진 FileReader를 기다리는 동안 팝업이 닫히거나 다른 사례 팝업으로 교체될 경우 오래된 저장 콜백이 이후 영속저장으로 이어질 가능성 확인.
+- 저장 진행 중 닫기 차단, 사진 읽기 직후 팝업 DOM 연결 및 현재 TO-BE 팝업 동일성 검증 후에만 저장을 계속하도록 보완. 소스 main 커밋 `902fe472`.
+- `tests/tobe-modal-lifecycle-smoke.cjs` 신설: 저장 전 정상 닫기, 저장 중 닫기 차단, aria-busy 제어, 사진 읽기→저장 사이 팝업 교체 차단의 4개 시나리오/6개 검증식 통과. 기존 TO-BE 회귀 테스트 4개도 통과.
+- `index.html` cache `20261106-modal-save-v21`로 갱신 (`5bdb381a`), 핵심 통합 Actions 워크플로에 신규 회귀 테스트 추가 (`4cd07cc6`). 승인 대시보드·CSS·운영 데이터 변경 없음. CI 서버와 실제 브라우저 E2E 통과 여부는 별도 확인 대상.
