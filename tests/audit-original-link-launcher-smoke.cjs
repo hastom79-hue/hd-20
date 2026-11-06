@@ -47,11 +47,11 @@ const {chromium}=require('playwright');
   assert.equal(await page.locator('#hd20Launcher').isVisible(),true,
     'Audit deep link still opens registration launcher first');
   console.log('PASS: registration launcher reopens after refresh');
-  await page.evaluate(()=>{document.querySelector('[data-ln="skip"]')?.click();document.getElementById('hd20Launcher')?.remove();window.HD20_NAV.go('audit')});
+  await page.evaluate(()=>{document.querySelector('#hd20Launcher [data-ln-close]')?.click();window.HD20_NAV.go('audit')});
   await page.waitForFunction(()=>window.HD20_NAV?.active?.()==='audit'&&!!window.HD20_SUBNAV?.select,null,{timeout:15000});
-  await page.evaluate(()=>window.HD20_SUBNAV.select('audit','action'));
-  await page.waitForFunction(()=>window.HD20_SUBNAV?.state?.().sub==='action',null,{timeout:10000});
-  const link=page.locator('#awAudit #hd20AuditActionMonitor [data-had-open-audit="AUDIT-LINK-E2E-01"]');
+  await page.evaluate(()=>window.HD20_SUBNAV.select('audit','ongoing'));
+  await page.waitForFunction(()=>window.HD20_SUBNAV?.state?.().sub==='ongoing',null,{timeout:10000});
+  const link=page.locator('#awAudit [data-close-final-pending] [data-had-open-audit="AUDIT-LINK-E2E-01"]');
   await link.waitFor({state:'visible',timeout:15000});
   await link.click();
   const modal=page.locator('#hd20AuditOriginalPopup [role="dialog"]');
@@ -76,8 +76,10 @@ const {chromium}=require('playwright');
     window.dispatchEvent(new CustomEvent('hd20-action-updated'));
   });
   const secondLink=page.locator('#awAudit #hd20AuditActionMonitor [data-had-action-id="ACTION-LINK-E2E-02"]');
-  await secondLink.waitFor({state:'visible',timeout:10000});
-  await secondLink.click();
+  await secondLink.waitFor({state:'attached',timeout:10000});
+  // Legacy Audit corrective monitor is deliberately hidden; verify the delegated
+  // exact-action-id handler without suggesting its button is publicly visible.
+  await secondLink.evaluate(element=>element.click());
   await modal.waitFor({state:'visible',timeout:10000});
   assert.match(await modal.innerText(),/ACTION-LINK-E2E-02/,'second linked action opens exactly');
   await modal.locator('[data-had-close]').first().click();
