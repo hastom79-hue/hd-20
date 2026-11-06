@@ -35,4 +35,17 @@ jobs:
           python -m http.server 8765 --bind 127.0.0.1 > /tmp/hd20-loopback.log 2>&1 &
           server_pid=$!
           trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          ready=0
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent --show-error --max-time 2 http://127.0.0.1:8765/index.html > /dev/null 2>&1; then
+              ready=1
+              break
+            fi
+            sleep 1
+          done
+          if [ "$ready" -ne 1 ]; then
+            echo "FAIL loopback server did not become ready" >&2
+            cat /tmp/hd20-loopback.log >&2
+            exit 1
+          fi
           python tests/local-browser-smoke.py
