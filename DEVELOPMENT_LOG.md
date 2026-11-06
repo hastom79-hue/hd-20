@@ -2952,3 +2952,8 @@ Canonical Store는 다음을 기준으로 한다.
 - `tests/retention-persisted-link-smoke.cjs`: 작업장과 점검자, Audit 팀/작업장 오류 7건 추가(해당 파트 15개 시나리오).
 - `core-workflow-regression.yml`: 이전 CI 실행 목록에서 빠져 있던 persisted-link 검사를 연결(핵심 18종).
 - `index.html`: 캐시 v83. 대시보드와 운영 데이터, CSS 불변. 실제 CI 실행·Pages 배포는 미확인.
+
+## 2026-11-07 — 유지점검 재점검 이력·후속조치 건수 불일치 차단
+- `hd20-subtabs.js`: 재점검 시작 시 저장된 `recheckHistory`가 배열인지, 이력 건수와 해당 유지점검 원본에 연결된 `RETENTION-RECHECK` 개선조치 건수가 일치하는지 확인. 불일치 시 자동 재조치 번호 생성·종결을 중단하고 관리자 확인 안내. 재점검 버튼 잠금 상태 복원.
+- `tests/retention-history-consistency-smoke.cjs`: 최초 재점검/1~2회 정상 이력, 조치 누락·고아 조치·손상된 이력 형식 등 8개 사례 작성.
+- `core-workflow-regression.yml`: 신규 검사를 추가해 핵심 19종 구성. `index.html` 캐시 v84 갱신. 기존 운영 데이터·승인 대시보드·CSS 변경 없음. CI/실브라우저/Pages 배포 성공은 별도 확인.
