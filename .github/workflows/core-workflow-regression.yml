@@ -11,6 +11,7 @@ on:
       - 'tests/tobe-persistence-rollback-smoke.cjs'
       - 'tests/tobe-latest-evidence-smoke.cjs'
       - 'tests/tobe-search-debounce-smoke.cjs'
+      - 'tests/tobe-modal-lifecycle-smoke.cjs'
       - 'tests/retention-recheck-integrity-smoke.cjs'
       - 'tests/retention-recheck-click-smoke.cjs'
       - 'tests/retention-followup-dedup-rollback-smoke.cjs'
@@ -41,6 +42,7 @@ jobs:
             tests/tobe-persistence-rollback-smoke.cjs \
             tests/tobe-latest-evidence-smoke.cjs \
             tests/tobe-search-debounce-smoke.cjs \
+            tests/tobe-modal-lifecycle-smoke.cjs \
             tests/retention-recheck-integrity-smoke.cjs \
             tests/retention-recheck-click-smoke.cjs \
             tests/retention-followup-dedup-rollback-smoke.cjs \
@@ -57,6 +59,7 @@ jobs:
           node tests/tobe-persistence-rollback-smoke.cjs
           node tests/tobe-latest-evidence-smoke.cjs
           node tests/tobe-search-debounce-smoke.cjs
+          node tests/tobe-modal-lifecycle-smoke.cjs
           node tests/retention-recheck-integrity-smoke.cjs
           node tests/retention-recheck-click-smoke.cjs
           node tests/retention-followup-dedup-rollback-smoke.cjs
