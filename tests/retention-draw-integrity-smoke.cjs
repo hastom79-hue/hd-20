@@ -52,4 +52,8 @@ scenario('TO-BE dates conflict',[],[{...done,...tobeDates,completedAt:'2026-11-0
 scenario('TO-BE completed before original request',[],[{...done,...tobeDates,registeredAt:'2026-11-07',toBeRegisteredAt:'2026-11-07T01:00:00Z',after:'data:image/png;base64,AAAA'}],false);
 scenario('TO-BE completed on impossible date',[],[{...done,...tobeDates,doneDate:'2026-02-30',completedAt:'2026-02-30',toBeRegisteredAt:'2026-11-07T01:00:00Z',after:'data:image/png;base64,AAAA'}],false);
 scenario('TO-BE future completion',[],[{...done,...tobeDates,doneDate:'2099-01-01',completedAt:'2099-01-01',toBeRegisteredAt:'2026-11-07T01:00:00Z',after:'data:image/png;base64,AAAA'}],false);
-console.log('Retention random-draw integrity 28/28 scenarios covered');
+scenario('completed retention automatic action excluded',[],[done,{...done,id:'RET-1',sourceStage:'RETENTION-RANDOM',sourceCaseId:'RET-AUDIT-1'}],true);
+scenario('completed retention recheck action excluded',[],[done,{...done,id:'RET-2',sourceStage:'RETENTION-RECHECK',sourceCaseId:'RET-CASE-1'}],true);
+scenario('completed retention followup lacks team but is excluded',[],[done,{id:'RET-3',status:'완료',sourceStage:'RETENTION-RECHECK'}],true);
+scenario('ordinary completed Audit action still eligible',[],[{...done,id:'AUDIT-1',sourceStage:'AUDIT-REQUEST'}],true);
+console.log('Retention random-draw integrity 32/32 scenarios covered');
