@@ -2693,3 +2693,11 @@ Canonical Store는 다음을 기준으로 한다.
 - `tests/tobe-persistence-rollback-smoke.cjs` 신규. 실제 소스 저장·복원 구문 추출 실행하여 정상 완료, 저장 API 오류, 이전 키 없음+후검증 실패, 중복 ID, 완료상태 불일치 등 **5/5 시나리오·15개 검증식 통과**.
 - `.github/workflows/tobe-unique-id-regression.yml`에 신규 테스트 구문검사·실행 연결. `index.html`의 TO-BE 관리자 캐시 버전 `20261106-persistence-rollback-v18`로 갱신.
 - main 반영: 소스 `85662531`, 테스트 `ca9d04ea`, CI `fe6a4a6d`, HTML `8c75e7bc`. 승인 대시보드·CSS·운영 데이터 무변경. 실제 브라우저 E2E 및 Pages 배포 미확인.
+
+## 2026-11-06 — TO-BE 완료 AFTER 증빙의 최신 원본 기준 확인
+
+- 원인: `audit-as-is-to-be-manager.js`의 완료 등록은 팝업 열기 당시 `c`에 포함된 AFTER 사진을 기준으로 필수 증빙 충족 여부를 검사하고 있었음. 팝업이 열린 사이 다른 경로에서 사진을 삭제·변경했다면 저장 시점 원본과 달라져도 완료 처리를 허용할 수 있는 경쟁상태 위험.
+- 수정: 완료 증빙 검사 `after(c)`를 제거하고, 고유 ID 원본을 최신 저장소에서 다시 읽고 기존 상태를 확인한 뒤 `after(data[ix])` 또는 새 업로드 사진이 있어야 완료를 허용하도록 이동. 진행중 저장은 기존처럼 AFTER 필수 아님. 원본 이미 완료된 경우 저장 차단 유지.
+- `tests/tobe-latest-evidence-smoke.cjs` 신규: 최신 원본 증빙 삭제, 최신 원본 증빙 존재, 신규 업로드 사진, 진행중 임시 조치, 동시 완료 변경 5가지 구문 추출 실행. **5/5 시나리오·11개 검증식 통과**.
+- TO-BE 워크플로 `.github/workflows/tobe-unique-id-regression.yml`에 신규 테스트 구문검사·실행 연결, `index.html` JS 캐시 v19로 갱신.
+- 커밋: 소스 `019a5e36`, 테스트 `63f4d70d`, CI `27b5330e`, HTML `15bc1312`. 대시보드, CSS, 업무 데이터 변경 없음. 실제 브라우저와 GitHub Actions 성공·Pages 배포 반영은 별도 확인 필요.
