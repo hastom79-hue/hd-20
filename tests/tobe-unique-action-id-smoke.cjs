@@ -3,7 +3,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const src=fs.readFileSync('audit-as-is-to-be-manager.js','utf8');
 const a=src.indexOf('function open(id){');
-const b=src.indexOf('document.getElementById(MID)?.remove();',a);
+const b=src.indexOf('const currentOverlay=document.getElementById(MID);',a);
 assert(a>=0&&b>a,'TO-BE popup unique-ID gate exists');
 const section=src.slice(a+'function open(id){'.length,b);
 const openGuard=new Function('id','rows','key','alert',section+';return c');
