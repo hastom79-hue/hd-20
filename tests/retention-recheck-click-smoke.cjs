@@ -29,5 +29,7 @@ verifyClick('valid recheck leaves click to original handler',[baseRetention],[ba
 verifyClick('duplicate action blocks click',[baseRetention],[baseAction,{...baseAction}],true);
 verifyClick('missing action blocks click',[baseRetention],[],true);
 verifyClick('foreign team blocks click',[baseRetention],[{...baseAction,team:'other'}],true);
+verifyClick('blank original auditor blocks click',[{...baseRetention,evaluator:''}],[{...baseAction,initialAuditor:''}],true);
+verifyClick('blank original case ID blocks click',[{...baseRetention,caseId:''}],[baseAction],true);
 verifyClick('already closed case blocks click',[{...baseRetention,closedAt:'2026-11-06'}],[baseAction],true);
-console.log('Capture-phase click integrity regression: 5/5 passed');
+console.log('Capture-phase click integrity regression: 7/7 scenarios covered');
