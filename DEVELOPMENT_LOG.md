@@ -2874,3 +2874,8 @@ Canonical Store는 다음을 기준으로 한다.
 - `hd20-subtabs.js`의 유지점검 부적합 시 기존 개선조치(`RETENTION-RANDOM`/`AUDIT-REQUEST`) 재사용 검증에서 `initialAuditor||auditor||evaluator`, `originCaseId||r.caseId`, `team||r.team` 등 원본값 fallback으로 누락된 필드가 일치한 것으로 간주될 수 있었고 작업장 대조가 빠져 있었음.
 - 기존 개선조치를 재사용하기 전에 최초 점검자, 원본 사례 ID, 생산팀, 작업장 모두 실제 저장된 값과 유지점검 원본이 일치하는지 확인. 점검자·팀·작업장 원본 필수값도 비어 있으면 거부하도록 변경(main `70f0325`). 데이터 자동 보정/병합은 하지 않고 기존 중단·복구 절차로 처리.
 - `tests/retention-persisted-link-smoke.cjs`에 해당 실제 조건식을 추출해 정상 일치·점검자 공란/불일치·원본ID 공란·팀 공란·작업장 공란/불일치·평가자 공란을 검사하는 회귀 테스트 추가(main `2c4b6af`). 자동 테스트 실행·Pages 반영 성공은 별도 검증 필요. 대시보드 및 운영 데이터 미변경.
+
+## 2026-11-06 — 유지점검 랜덤 추출 전 완료사례 원본정보 검증 강화
+
+- `retention-draw-integrity-guard.js` 완료 사례(`자율개선`·`개선요청`)에 원본 ID만 있어도 추출이 허용되던 결함 보완. 실제 랜덤 추출 엔진 `hd20-subtabs.js`가 사용하는 `team||teamName||ownerTeam`, `workplace` 기준으로 생산팀·작업장 필수값을 검사하여 누락된 완료 사례가 있으면 추출 실행 전 차단하고 원본 확인 메시지 표시(main `96356fa`). 추출 저장 엔진 및 기존 데이터는 변경하지 않음.
+- `tests/retention-draw-integrity-smoke.cjs` 정상 완료사례 픽스처에 작업장 정보 반영, 팀 공란·요청 작업장 공란·자율개선 작업장 공란을 거부하는 시나리오 3건 추가(main `00908fc`); 코드상 13개 테스트 시나리오 구성. Node/CI 실행 및 Pages 실제 반영은 확인되지 않았으므로 통과로 보고하지 않음.
