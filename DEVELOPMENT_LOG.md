@@ -3003,3 +3003,8 @@ Canonical Store는 다음을 기준으로 한다.
 - `retention-draw-integrity-guard.js`: 유지점검 랜덤 추출 전에 TO-BE 등록·완료 이력이 있는 개선요청의 AFTER 증빙을 단순 비공백 문자열에서 이미지 data URL(JPEG/PNG/WEBP), HTTPS URL 또는 blob URL 형식 검사로 강화. 일반 텍스트나 text/plain data URL·HTTP URL은 차단.
 - `tests/retention-draw-integrity-smoke.cjs`: 문자 증빙·비이미지 data URL·HTTPS/HTTP/blob 사례 5개 추가(23개), 기존 완료 상태·원본/팀/작업장 검증 유지.
 - `index.html` 캐시 v5. 기존 운영 데이터·승인 대시보드·CSS 변경 없음. CI 및 운영 브라우저·Pages 성공은 별도 확인 필요.
+
+## 2026-11-07 — TO-BE 완료일 정합성 유지점검 추출 단계 재검증
+- `retention-draw-integrity-guard.js`: TO-BE 완료 이력이 있는 개선요청의 doneDate·completedAt 일치, 실재하는 날짜, 서울 기준 미래일 여부와 최초 요청일 이후인지 확인하여 날짜 누락·상충·역전 사례 추출 차단.
+- `tests/retention-draw-integrity-smoke.cjs`: 기존 정상 TO-BE 픽스처의 완료일을 보강하고 완료일 누락·불일치·최초 요청 이전·달력상 불가능한 날짜·미래일 5개 검사 추가(총 28개).
+- `index.html`: 캐시 v6. 대시보드·데이터·CSS 무변경. GitHub Actions 및 Pages 실제 실행은 별도 확인 필요.
