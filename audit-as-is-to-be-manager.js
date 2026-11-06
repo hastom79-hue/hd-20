@@ -64,8 +64,9 @@ let to=visible.map(x=>'<tr><td><strong>'+E(key(x))+'</strong>'+(demo(x)?'<small 
 const pending=view.filter(x=>!done(x)&&!plan(x)).length;
 host.innerHTML='<div class="tgTop"><div><div class="tgtitle">조치내역 등록·관리</div><p class="tgIntro">개선요청이 등록된 사례를 선택해 TO-BE 조치내역을 입력합니다. AS-IS 사진과 원본 요청내용은 조치등록 팝업에서 확인할 수 있습니다.</p></div><div class="tgPending"><strong>'+pending+'</strong><span>조치내역 미등록</span></div></div><div class="tgfilter"><select data-tobe-team><option value="">전체 생산팀</option>'+teams.map(x=>'<option>'+E(x)+'</option>').join('')+'</select><select data-tobe-status><option value="">전체 상태</option>'+['조치계획 대기','조치중','기한경과','완료'].map(x=>'<option>'+x+'</option>').join('')+'</select><input data-tobe-search placeholder="관리번호·팀·요청내용 검색"><button data-tobe-reset>초기화</button><span>조회 '+view.length+' / '+all.length+'건</span></div><section class="tgpanel"><div class="tghead"><b>개선요청별 TO-BE 조치내역</b><small>우측 [조치내역 등록]을 선택하여 내용을 입력하세요</small></div>'+table(['관리번호·요청일','생산팀·작업장','원본 개선요청','TO-BE 조치내역','조치담당자','조치기한','상태','조치등록·확인'],to||'<tr><td colspan="8" style="padding:26px;text-align:center;color:#718595">조회 가능한 개선요청이 없습니다.</td></tr>')+'</section><div class="tgPagination"><button type="button" data-tobe-prev '+(page<=1?'disabled':'')+'>이전</button><span>'+page+' / '+pageCount+' 페이지 · 페이지당 '+PAGE_SIZE+'건</span><button type="button" data-tobe-next '+(page>=pageCount?'disabled':'')+'>다음</button></div>';
 host.querySelector('[data-tobe-team]').value=filt.team;host.querySelector('[data-tobe-status]').value=filt.status;host.querySelector('[data-tobe-search]').value=filt.text;
-host.querySelector('[data-tobe-team]').onchange=e=>{filt.team=e.target.value;page=1;render()};
-host.querySelector('[data-tobe-status]').onchange=e=>{filt.status=e.target.value;page=1;render()};
+const flushSearch=()=>{if(searchDebounce!==null){clearTimeout(searchDebounce);searchDebounce=null;filt.text=host.querySelector('[data-tobe-search]')?.value||''}};
+host.querySelector('[data-tobe-team]').onchange=e=>{flushSearch();filt.team=e.target.value;page=1;render()};
+host.querySelector('[data-tobe-status]').onchange=e=>{flushSearch();filt.status=e.target.value;page=1;render()};
 const search=host.querySelector('[data-tobe-search]');
 search.oninput=e=>{
  const next=e.target.value;
@@ -78,7 +79,7 @@ search.oninput=e=>{
   if(restored){restored.focus({preventScroll:true});restored.setSelectionRange(next.length,next.length)}
  },180);
 };
-host.querySelector('[data-tobe-reset]').onclick=()=>{filt={team:'',status:'',text:''};page=1;render()};
+host.querySelector('[data-tobe-reset]').onclick=()=>{if(searchDebounce!==null){clearTimeout(searchDebounce);searchDebounce=null}filt={team:'',status:'',text:''};page=1;render()};
 host.querySelector('[data-tobe-prev]').onclick=()=>{if(page>1){page--;render()}};
 host.querySelector('[data-tobe-next]').onclick=()=>{if(page<pageCount){page++;render()}};
 host.querySelectorAll('[data-tobe-open]').forEach(b=>b.onclick=()=>open(b.dataset.tobeOpen));host.hidden=root.dataset.subview!=='tobe'}
