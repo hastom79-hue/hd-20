@@ -2967,3 +2967,9 @@ Canonical Store는 다음을 기준으로 한다.
 - `hd20-subtabs.js`: 재점검 저장 직후 관리번호 유일성, 마지막 재점검 이력의 판정·검사대상 조치 ID·평가자·일시, 요약 판정·재점검일·종결일 상태, 부적합 시 신규 후속조치 링크를 다시 읽어서 검사. 일치하지 않으면 기존 양쪽 저장소 롤백 경로로 처리.
 - `tests/retention-recheck-transaction-smoke.cjs`: 정상 적합 종결·부적합 재조치 저장 후 판정·원본조치·평가자·일시·후속조치 연결에 관한 단언 추가.
 - `index.html`: 하위탭 JS 캐시 v86. 운영 데이터·승인 대시보드·CSS 불변. 소스/검증 코드 반영이며 GitHub Actions·실브라우저·Pages 배포 성공은 별도 확인 필요.
+
+## 2026-11-07 — 테마점검 이관 원본 누락·중복의 성공 오판 차단
+- `theme-inspection.js`: 점검 이력 및 개선조치 저장 후 원본 Audit ID의 유일성을 재조회하여 0건/중복 시 오류 안내, 개선조치 이전 값 복원 및 이번 점검 이력 제거. 원본이 누락되어도 성공 처리하던 분기를 차단.
+- `tests/theme-persisted-audit-record-smoke.cjs`: 정상 단건·누락·중복·타 원본 ID 4개 사례 신규 추가.
+- `core-workflow-regression.yml`: 신규 검사를 포함해 핵심 회귀스크립트 총 20종. `index.html` 테마 JS 캐시 v48 반영.
+- 대시보드·기존 운영 데이터·CSS 불변. GitHub Actions와 Pages 실배포 및 브라우저 확인은 별도 필요.
