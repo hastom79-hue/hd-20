@@ -98,6 +98,29 @@ def main():
                 elif page.locator(".app").count() != 1:
                     raise AssertionError("Dashboard app root missing")
                 print(f"PASS read-only nav {area}: {title} (active + visible screen)", flush=True)
+            # Reproduce the URL subtab restoration path, including a full page reload.
+            page.locator(".beginnerNav button[data-key='activity']").click(timeout=12000)
+            page.locator("#hd20Subnav button[data-sub='request']").wait_for(state="visible", timeout=12000)
+            page.locator("#hd20Subnav button[data-sub='request']").click(timeout=12000)
+            page.wait_for_function(
+                "() => window.HD20_SUBNAV?.state?.()?.area === 'activity' && window.HD20_SUBNAV?.state?.()?.sub === 'request'",
+                timeout=12000,
+            )
+            page.reload(wait_until="domcontentloaded", timeout=30000)
+            page.wait_for_function(
+                "() => window.HD20_NAV?.active?.() === 'activity' && window.HD20_SUBNAV?.state?.()?.sub === 'request'",
+                timeout=15000,
+            )
+            request_button = page.locator("#hd20Subnav button[data-sub='request']")
+            request_button.wait_for(state="visible", timeout=12000)
+            if not request_button.evaluate("(el) => el.classList.contains('on')"):
+                raise AssertionError("Direct URL reload failed to restore the selected request subtab")
+            page.locator("#hd20Subnav button[data-sub='self']").click(timeout=12000)
+            page.wait_for_function(
+                "() => window.HD20_SUBNAV?.state?.()?.sub === 'self'",
+                timeout=12000,
+            )
+            print("PASS activity subtab reload restoration and next-button click", flush=True)
             if page_errors:
                 raise AssertionError("Uncaught JS errors (first 5): " + " | ".join(page_errors[:5]))
             print(f"PASS authenticated browser navigation: {len(AREAS)}/{len(AREAS)}; no uncaught page errors", flush=True)
