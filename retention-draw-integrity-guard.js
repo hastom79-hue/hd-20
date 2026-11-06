@@ -20,8 +20,10 @@ function verify(self,actions){
   // TO-BE completion requires verified AFTER evidence before random maintenance sampling.
   if(kind==='개선요청'&&norm(x?.toBeRegisteredAt)){
    const evidence=x?.after||x?.afterEvidence||x?.afterImage||'';
-   if(typeof evidence!=='string'||!evidence.trim())
-    return {ok:false,reason:'개선요청 '+(key(x)||'(번호 없음)')+'의 TO-BE 완료 증빙(AFTER 사진)이 없어 유지점검 추출을 중단합니다.'};
+   const photo=typeof evidence==='string'?evidence.trim():'';
+   const imageEvidence=/^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/]+=*$/i.test(photo)||/^https:\/\/[^\s]+$/i.test(photo)||/^blob:https?:\/\/[^\s]+$/i.test(photo);
+   if(!imageEvidence)
+    return {ok:false,reason:'개선요청 '+(key(x)||'(번호 없음)')+'의 TO-BE 완료 AFTER 사진이 없거나 이미지 증빙 형식이 아닙니다. 유지점검 추출을 중단합니다.'};
   }
   const id=key(x);
   if(!id)return {ok:false,reason:kind+' 완료 사례에 원본 관리번호가 없습니다.'};
