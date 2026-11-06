@@ -32,4 +32,24 @@ const guardPos=src.indexOf(guard);
 const writePos=src.indexOf('localStorage.setItem(KEY,JSON.stringify(data))',guardPos);
 assert(photoRead>=0&&photoRead<guardPos&&guardPos<writePos,'modal lifecycle verified between async file read and storage write');
 console.log('PASS modal replacement cannot continue after file read');
-console.log('TO-BE modal lifecycle 5/5 scenarios passed');
+const switchStart=src.indexOf('const c=matches[0];const currentOverlay=');
+const switchEnd=src.indexOf('currentOverlay?.remove();',switchStart);
+assert(switchStart>=0&&switchEnd>switchStart,'case-switch save guard source exists');
+const switchFragment=src.slice(switchStart,switchEnd+'currentOverlay?.remove();'.length);
+function attemptSwitch(isBusy){
+ let removed=0,notices=[];
+ const oldOverlay={querySelector:()=>isBusy?{disabled:true}:null,remove:()=>removed++};
+ const document={getElementById:()=>oldOverlay};
+ const window={alert:message=>notices.push(message)};
+ new Function('matches','document','MID','window',switchFragment+';return true;')([{id:'A1'}],document,'tobeDialog',window);
+ return {removed,notices};
+}
+let waiting=attemptSwitch(true);
+assert.equal(waiting.removed,0,'switch while saving must not remove old modal');
+assert.equal(waiting.notices.length,1,'switch while saving explains blocking');
+console.log('PASS switching TO-BE case while save is active');
+let idle=attemptSwitch(false);
+assert.equal(idle.removed,1,'switch after save must remove previous modal');
+assert.equal(idle.notices.length,0,'idle case switch has no warning');
+console.log('PASS switching TO-BE case after save');
+console.log('TO-BE modal lifecycle 7/7 scenarios passed');
