@@ -2929,3 +2929,9 @@ Canonical Store는 다음을 기준으로 한다.
 - `tests/tobe-completion-chronology-smoke.cjs`: 완료일 역전/동일일/이후/미래/임시저장/최초일 미확인 6개 검증 케이스 추가.
 - `core-workflow-regression.yml`: 신규 검증을 핵심 CI에 추가, 총 15개 회귀 스크립트 구성.
 - `index.html`: TO-BE JS 캐시 v24. 승인 대시보드·데이터·CSS 무변경. 실제 Actions·Pages·실브라우저 검증은 별도 확인.
+
+## 2026-11-07 — TO-BE 저장 시 원본 사례 변경 충돌 방지
+- `audit-as-is-to-be-manager.js`: TO-BE 팝업을 연 시점 원본 레코드와 저장 직전 localStorage 최신 레코드를 전체 필드 기준 비교. 다를 경우 외부 변경을 덮어쓰지 않고 재조회 안내 후 중단. 기존 관리번호 유일성·완료상태·사진 증빙 검증 유지.
+- `tests/tobe-source-conflict-smoke.cjs`: 정상 원본 및 문제내용·팀·작업장·완료상태·타 탭 조치 변경 6개 정합성 시나리오 추가.
+- `core-workflow-regression.yml`: 16종 핵심 테스트에 신규 검사 연결.
+- `index.html`: TO-BE 캐시 v25 갱신. 대시보드·CSS·운영 데이터 무변경. 외부 다른 브라우저 동시 쓰기 전체를 원자적으로 막는 것은 아니며 CI 및 Pages 실제 실행은 추가 확인 필요.
