@@ -2850,3 +2850,9 @@ Canonical Store는 다음을 기준으로 한다.
 - 정상 구조로 판단된 경우에도 매 reconcile에서 현재 버튼에 `select('activity',btn.dataset.sub)` 클릭 이벤트를 멱등 재연결하도록 보완. `main` 커밋 `8762661`. 버튼/레이아웃·업무 데이터 변경 없음.
 - `tests/pages-browser-smoke.py`에 인증 후 활성 화면에서 `request` 버튼을 `cloneNode(true)`로 교체하여 클릭 핸들러 복구 확인→클릭 후 request 탭 진입 확인 경로 추가. `main` 커밋 `55afabe`.
 - 이는 소스상 취약경로 보완 및 테스트 구현 완료 상태이며, Playwright/Actions 실제 실행과 Pages 반영은 아직 확인되지 않음.
+
+## 2026-11-06 — TO-BE 저장 중 닫기 버튼 클릭 이벤트 경합 긴급 수정
+
+- `audit-as-is-to-be-manager.js`에서 `close(afterSave=false)`는 저장 중 `afterSave=true`일 때만 닫기 허용. 그러나 `b.onclick=close`는 브라우저 MouseEvent 객체를 첫 인자로 전달하여 truthy `afterSave`로 판정되므로 저장 중 사용자 닫기가 보호 로직을 우회하는 결함 발견.
+- 닫기 버튼을 `b.onclick=()=>close()`로 변경하여 사용자 클릭 이벤트를 인자로 전달하지 않도록 수정(main `baa9bee`). 저장 성공 경로의 `close(true)`는 유지.
+- `tests/tobe-modal-lifecycle-smoke.cjs`에 실제 클릭 이벤트 인자로 닫기 버튼을 호출하는 시나리오와 저장 중 overlay 제거 금지 assertion 추가(main `6b97190`). 7→8 시나리오로 테스트 확장. GitHub Actions/실브라우저 실행 결과 미확인. 대시보드·운영 데이터 변경 없음.
