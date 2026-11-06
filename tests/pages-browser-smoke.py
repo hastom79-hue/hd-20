@@ -61,7 +61,15 @@ def main():
                 active = page.locator(f".beginnerNav button[data-key='{area}'].active")
                 if active.count() != 1:
                     raise AssertionError(f"{title}: navigation did not become active")
-                print(f"PASS read-only nav {area}: {title}", flush=True)
+                region_ids = {"activity": "#awActivity", "audit": "#awAudit", "theme": "#awTheme"}
+                if area in region_ids:
+                    region = page.locator(region_ids[area])
+                    region.wait_for(state="visible", timeout=12000)
+                    if area in ("audit", "theme") and not region.evaluate("(el) => el.classList.contains('on')"):
+                        raise AssertionError(f"{title}: inspection screen not activated")
+                elif page.locator(".app").count() != 1:
+                    raise AssertionError("Dashboard app root missing")
+                print(f"PASS read-only nav {area}: {title} (active + visible screen)", flush=True)
             if page_errors:
                 raise AssertionError("Uncaught JS errors (first 5): " + " | ".join(page_errors[:5]))
             print("PASS authenticated browser navigation: 4/4; no uncaught page errors", flush=True)
