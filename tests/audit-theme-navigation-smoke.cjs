@@ -22,7 +22,7 @@ const {chromium}=require('playwright');
   await page.evaluate(()=>window.HD20_NAV.go('audit'));
   await page.waitForTimeout(700);
   v=await state();
-  if(v.area!=='audit'||!v.audit||v.theme||v.merged||v.subnav.length!==5||!v.subnav.some(s=>s.includes('유지점검')))throw Error('Standalone Audit '+JSON.stringify(v));
+  if(v.area!=='audit'||!v.audit||v.theme||v.merged||v.subnav.length!==3||!v.subnav.some(s=>s.includes('유지점검')))throw Error('Standalone Audit '+JSON.stringify(v));
   // Regression: Audit menu may not flash a lone "① Audit 실시" button or
   // alternate between grid/flex during repeated subtab update events.
   const stableMenu=await page.evaluate(async()=>{
@@ -31,7 +31,7 @@ const {chromium}=require('playwright');
     let mutations=0,oneButtonFrames=0,nonGridFrames=0;
     const obs=new MutationObserver(records=>{
       mutations+=records.filter(r=>r.type==='childList').length;
-      if(bar.querySelectorAll(':scope > button[data-sub]').length!==5)oneButtonFrames++;
+      if(bar.querySelectorAll(':scope > button[data-sub]').length!==3)oneButtonFrames++;
     });
     obs.observe(bar,{childList:true});
     for(let i=0;i<8;i++){
@@ -47,9 +47,9 @@ const {chromium}=require('playwright');
       stable:before.every((button,i)=>bar.querySelectorAll(':scope > button[data-sub]')[i]===button),
       labels:[...bar.querySelectorAll(':scope > button[data-sub]')].map(x=>x.textContent.trim())};
   });
-  if(stableMenu.mutations||stableMenu.oneButtonFrames||stableMenu.nonGridFrames||!stableMenu.stable||stableMenu.labels.length!==5)
+  if(stableMenu.mutations||stableMenu.oneButtonFrames||stableMenu.nonGridFrames||!stableMenu.stable||stableMenu.labels.length!==3)
     throw Error('Audit tab label flicker or nav rebuild '+JSON.stringify(stableMenu));
-  const expectedAudit=['draw','action','ongoing','retention','checklist'];
+  const expectedAudit=['draw','ongoing','checklist'];
   for(const sub of expectedAudit){
     await page.evaluate(key=>window.HD20_SUBNAV.select('audit',key),sub);
     await page.waitForTimeout(120);
@@ -60,8 +60,8 @@ const {chromium}=require('playwright');
       top:document.querySelector('.beginnerNav')?.getBoundingClientRect().bottom||0,
       subTop:document.querySelector('#hd20Subnav')?.getBoundingClientRect().top||0
     }));
-    if(state.active!==sub||state.count!==5||state.visible.some(x=>!x.ok)||state.subTop<state.top-2)
-      throw Error('Audit five-subtab layout '+sub+' '+JSON.stringify(state));
+    if(state.active!==sub||state.count!==3||state.visible.some(x=>!x.ok)||state.subTop<state.top-2)
+      throw Error('Audit three-subtab layout '+sub+' '+JSON.stringify(state));
   }
   await page.evaluate(()=>window.HD20_SUBNAV.select('audit','ongoing'));
   await page.waitForTimeout(400);
@@ -69,9 +69,17 @@ const {chromium}=require('playwright');
   await page.evaluate(()=>window.HD20_NAV.go('theme'));
   await page.waitForTimeout(700);
   v=await state();if(v.area!=='theme'||!v.theme||v.audit)throw Error('Return Theme '+JSON.stringify(v));
-  await page.evaluate(()=>window.HD20_NAV.go('action'));
+  // The old standalone Action top button is intentionally hidden.
+  // Its operational TO-BE editor now belongs to improvement activity.
+  await page.evaluate(()=>window.HD20_NAV.go('activity'));
+  await page.evaluate(()=>window.HD20_SUBNAV.select('activity','tobe'));
   await page.waitForTimeout(500);
-  v=await state();if(v.area!=='action'||!v.action||v.audit||v.theme)throw Error('Standalone Action '+JSON.stringify(v));
+  const activity=await page.evaluate(()=>({
+    area:window.HD20_NAV?.active?.(),
+    sub:window.HD20_SUBNAV?.state?.()?.sub,
+    visible:!!document.getElementById('awActivity')&&getComputedStyle(document.getElementById('awActivity')).display!=='none'
+  }));
+  if(activity.area!=='activity'||activity.sub!=='tobe'||!activity.visible)throw Error('Integrated TO-BE editor '+JSON.stringify(activity));
   console.log('AUDIT THEME SEPARATE NAVIGATION PASS');
  }finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exit(1)});
