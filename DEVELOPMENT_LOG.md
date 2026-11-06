@@ -2750,3 +2750,10 @@ Canonical Store는 다음을 기준으로 한다.
 - `html.hd20-auth-pending` 인증 보호가 남아 있으면 인증 우회 없이 **E2E 실패**로 판정하여 검증 계정/세션이 없음을 명시. 따라서 코드 등록은 실제 로그인 후 E2E 통과를 증명하지 않으며, 비인증 환경에서는 CI 실패 가능.
 - `.github/workflows/pages-browser-e2e.yml` 추가: Python 3.12/Playwright 1.55.0 Chromium 설치 후 실서비스 탐색 실행. 수동 실행 및 관련 파일 push 트리거. 사용자 운용 데이터를 쓰는 테스트는 포함하지 않음.
 - main 반영: 브라우저 테스트 `ff3888f9`, Actions 워크플로 `7baf9ecd`. 승인 대시보드·UI·CSS·업무 데이터는 변경하지 않음. 실 브라우저 실행/Actions 결과 및 Pages 최신 배포 반영 여부는 아직 미확인.
+
+## 2026-11-06 — 실서비스 브라우저 E2E의 인증 상태 오판정 수정
+
+- `supabase-auth.js` 검토 결과, 부팅 시 `hd20-auth-pending` 클래스는 회사 이메일 인증 팝업을 열기 **전에** 제거되므로 HTML 클래스만 검사하는 이전 E2E는 미인증 상태를 실제 로그인 상태로 오판정할 수 있었음.
+- `tests/pages-browser-smoke.py`에서 실제 `#hd20MailGateForm #hd20MailGateEmail` 표시 및 오류 안내요소를 확인하는 공개 인증 게이트 검증을 분리. `HD20_E2E_EMAIL`이 없으면 인증 후 탭 이동 검증은 명시적으로 `SKIP` 및 `NOT RUN` 처리하고 4/4 통과로 기록하지 않음. 이메일이 설정된 경우에는 승인된 @hd.com 테스트 계정을 명시적으로 입력한 뒤 대시보드→개선활동관리→Audit→테마점검 읽기 전용 검증 실행. 자동 인증 우회·업무 데이터 변경 없음.
+- `.github/workflows/pages-browser-e2e.yml`에 `secrets.HD20_E2E_EMAIL` 입력 연계 및 GitHub Step Summary의 인증 후 탐색검증 미실행 표시 추가. 코드 검증 7가지 조건 확인(인증 게이트 단계, 이메일 조건, 미실행 표시, 무우회/무쓰기 등).
+- GitHub main: 테스트 수정 `710fa18c`, 워크플로 수정 `e0538d12`. 실제 Chromium 실행·GitHub Actions 완료·Pages 현재 배포 결과는 아직 미확인. 인증 게이트 테스트가 통과하더라도 인증 후 네비게이션 E2E 성공을 의미하지 않음.
