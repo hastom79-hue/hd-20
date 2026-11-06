@@ -2776,3 +2776,10 @@ Canonical Store는 다음을 기준으로 한다.
 - 실제 실행환경의 Chromium 실행은 가능하나 `https://hastom79-hue.github.io/hd-20/` 접속 시 `net::ERR_BLOCKED_BY_ADMINISTRATOR` 발생. 이는 테스트 환경 네트워크 차단으로 보이며 실서비스 배포 성공/실패의 근거로 사용할 수 없음. GitHub Actions 워크플로 실행 상태 역시 현재 조회 환경에서 확정 불가.
 - `tests/pages-browser-smoke.py`의 인증 후 검증 보완: 단순히 사내메일 팝업이 감춰졌다는 사실을 넘어서 `hd20_company_session_v1`에 입력한 테스트 계정과 일치하는 유효 세션이 저장되었는지 확인. 탭의 `.active` 버튼 외에 `HD20_NAV.active()`가 동일한 영역을 가리키는지도 확인하여 화면·네비게이션 불일치 검출 강화.
 - main 코드 `1cbc9191` 반영. 실제 브라우저 테스트 실행/통과 판정은 **아직 미확인**. 승인 대시보드/CSS/업무 데이터 변경 없음.
+
+## 2026-11-06 — Pages 외부 접근 의존 없는 로컬 Chromium E2E 추가
+
+- Pages 및 Actions 외부 URL이 현재 조회 환경에서 열리지 않아, 배포 검증과 별개로 checkout된 GitHub 저장소를 `127.0.0.1:8765`에 Python HTTP 서버로 띄운 뒤 실제 Chromium으로 진입하는 읽기 전용 E2E 구성.
+- `tests/local-browser-smoke.py`: 메인 메뉴 초기화, `HD20_NAV.ready()`/활성 영역, 대시보드 및 개선활동관리·Audit·테마점검·통합기준정보 화면 영역의 실제 가시성, 예상 `.on` 상태, 미처리 JavaScript 오류 확인. 실패한 화면을 개별 수집하여 테스트 종료 때 전체 실패 처리. 운영 사이트 접속/업무 데이터 등록·변경 없음.
+- `.github/workflows/local-browser-smoke.yml` 신설: Python 3.12·Playwright Chromium·loopback 웹서버로 5개 주요 탭을 검사하도록 구성. 기존 실서비스 로그인 E2E는 별도 유지. 로컬에서는 원래 애플리케이션이 구현한 `localhost` 인증 경로를 사용하며 실서비스 인증을 우회하거나 운영 데이터에 연결하지 않음.
+- GitHub main 커밋: 로컬 테스트 `b823efc4`, CI `75eb019d`. **Actions 실행 성공/실패는 아직 확인되지 않았으며, 로컬 소스 E2E 성공도 실제 GitHub Pages 배포나 운영 인증 통과를 뜻하지 않음.**
