@@ -2923,3 +2923,9 @@ Canonical Store는 다음을 기준으로 한다.
 - `master-workspace-v2.js`: 연동진단의 타 업무탭 이동 후 160ms 지연 하위탭 선택 전에 현재 활성 업무탭을 재확인. 다른 탭으로 다시 이동한 경우 이전 연동진단의 하위탭 선택을 실행하지 않음.
 - `tests/master-workspace-v2-smoke.cjs`: 지연 선택의 활성 탭 검증 조건 정적 회귀검사 추가. 기존 브라우저 회귀검증 흐름 보존.
 - `index.html`: JS 캐시 v11 갱신. 데이터·대시보드·CSS 변경 없음. CI 실행 및 운영 Pages 실제 반영 별도 검증 필요.
+
+## 2026-11-07 — TO-BE 완료일과 최초 개선요청일 역전 차단
+- `audit-as-is-to-be-manager.js`: 완료처리 시 최초 요청일이 유효한 ISO 날짜라면 완료일이 그 이전인 경우 저장 전 오류 안내 및 차단. 기존 미래 날짜 제한·저장 중 보호·중복 ID 검증은 유지.
+- `tests/tobe-completion-chronology-smoke.cjs`: 완료일 역전/동일일/이후/미래/임시저장/최초일 미확인 6개 검증 케이스 추가.
+- `core-workflow-regression.yml`: 신규 검증을 핵심 CI에 추가, 총 15개 회귀 스크립트 구성.
+- `index.html`: TO-BE JS 캐시 v24. 승인 대시보드·데이터·CSS 무변경. 실제 Actions·Pages·실브라우저 검증은 별도 확인.
