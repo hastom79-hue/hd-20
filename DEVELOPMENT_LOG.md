@@ -2978,3 +2978,8 @@ Canonical Store는 다음을 기준으로 한다.
 - `theme-inspection.js`: 테마점검 결과 저장·자동 이관 전, 동일 생산팀·라인·상위테마·미흡 항목에서 아직 완료되지 않은 테마 개선조치 건수가 2건 이상이면 첫 건에 임의 연결하지 않고 점검 저장을 중단해 관리자 확인 안내. 0건은 신규 생성, 1건은 기존 재연계 유지.
 - `tests/theme-duplicate-active-action-smoke.cjs`: 정상 단건/완료건 혼합/중복/타팀 구분/미확정 상태 등 7개 시나리오 추가.
 - `core-workflow-regression.yml`: 21종 핵심 회귀검증에 추가. `index.html` 테마 JS 캐시 v49 갱신. 대시보드 및 기존 기록 수정 없음. 실제 CI·Pages·브라우저 검증은 미확인.
+
+## 2026-11-07 — 테마점검 기존 개선조치 재연계 원본·최초 점검자 불변성
+- `theme-inspection.js`: 미완료 조치 재사용 전 sourceStage, sourceCaseId, auditRecordId, relatedAuditRecordIds, 최초 점검자 및 원본 Audit 이력의 팀·라인·점검자 일치 여부 확인. 결손/불일치 시 저장 전 중단. 누락된 최초 점검자를 현재 점검자로 임의 채우던 코드 삭제.
+- `tests/theme-reused-action-provenance-smoke.cjs`: 정상·원본 누락·외부 링크·최초 점검자 차이 등 10개 사례 추가. `core-workflow-regression.yml` 테스트 목록 총 22종.
+- `index.html` 캐시 v50 반영. 기존 운영 데이터 및 대시보드·CSS 변경 없음. GitHub Actions/Pages·실브라우저 검증은 미확인.
