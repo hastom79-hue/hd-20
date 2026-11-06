@@ -102,10 +102,26 @@ const {chromium}=require('playwright');
     localStorage.setItem(actionsKey,JSON.stringify(actions));
     window.dispatchEvent(new CustomEvent('hd20-action-updated'));
   });
-  // Audit close-evaluation rows are live-rendered after action updates.
-  // Click the second original's *own* real link instead of reusing a stale row.
+  // Re-select the active Audit subview and explicitly redraw this source-backed
+  // table after the isolated fixture changes; do not reuse an old detached row.
+  const secondState=await page.evaluate(()=>{
+    window.HD20_NAV?.go?.('audit');
+    window.HD20_SUBNAV?.select?.('audit','ongoing');
+    window.HD20AuditCloseEvaluation?.render?.();
+    const reads=k=>JSON.parse(localStorage.getItem(k)||'[]');
+    return {
+      sourceIds:reads('hd20AuditRandomDrawsV1').map(x=>x.id),
+      actionIds:reads('hd20ActionCasesV2').map(x=>x.id),
+      eligibleIds:window.HD20AuditCloseEvaluation?.eligible?.().map(x=>x.id),
+      active:window.HD20_NAV?.active?.(),sub:window.HD20_SUBNAV?.state?.().sub
+    };
+  });
+  assert.ok(secondState.sourceIds.includes('AUDIT-LINK-E2E-02'),'second Audit source was not preserved '+JSON.stringify(secondState));
+  assert.ok(secondState.actionIds.includes('ACTION-LINK-E2E-02'),'second action was not preserved '+JSON.stringify(secondState));
+  assert.ok(secondState.eligibleIds?.includes('AUDIT-LINK-E2E-02'),'second Audit is not eligible for close evaluation '+JSON.stringify(secondState));
   const secondLink=page.locator('#awAudit #hd20AuditCloseEvaluation [data-had-open-audit="AUDIT-LINK-E2E-02"]');
-  await secondLink.waitFor({state:'visible',timeout:10000});
+  try{await secondLink.waitFor({state:'visible',timeout:10000});}
+  catch(e){console.error('SECOND_AUDIT_LINK_STATE',JSON.stringify(secondState));throw e}
   await secondLink.click({timeout:10000});
   await modal.waitFor({state:'visible',timeout:10000});
   const secondBody=await modal.innerText();
