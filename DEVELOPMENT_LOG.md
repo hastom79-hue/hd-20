@@ -2983,3 +2983,8 @@ Canonical Store는 다음을 기준으로 한다.
 - `theme-inspection.js`: 미완료 조치 재사용 전 sourceStage, sourceCaseId, auditRecordId, relatedAuditRecordIds, 최초 점검자 및 원본 Audit 이력의 팀·라인·점검자 일치 여부 확인. 결손/불일치 시 저장 전 중단. 누락된 최초 점검자를 현재 점검자로 임의 채우던 코드 삭제.
 - `tests/theme-reused-action-provenance-smoke.cjs`: 정상·원본 누락·외부 링크·최초 점검자 차이 등 10개 사례 추가. `core-workflow-regression.yml` 테스트 목록 총 22종.
 - `index.html` 캐시 v50 반영. 기존 운영 데이터 및 대시보드·CSS 변경 없음. GitHub Actions/Pages·실브라우저 검증은 미확인.
+
+## 2026-11-07 — 테마점검 재연계 저장 후 원본·최초 점검자 검증 보강
+- `theme-inspection.js`: 앞선 변경에 남아 있던 최초 점검자 자동 대체 구문 실제 삭제. 저장 완료 전 점검/조치 원본 ID, 최초 및 최종 점검자, 관련 Audit 목록, 점검서의 연결된 개선조치 목록을 영속 저장소 재조회로 검증; 불일치 시 자동 완료/이벤트 발송을 차단하고 기존 원본 복원 동작 수행.
+- `tests/theme-persisted-relink-smoke.cjs`: 정상/원본 점검자 변경/관련목록 누락/ID 오류 등 7건 추가. CI 핵심 23종. 테마 스크립트 캐시 v51.
+- 승인된 대시보드/업무 데이터/CSS 무변경. GitHub Actions·Pages 실배포 및 브라우저 검증 미확인.
