@@ -24,6 +24,9 @@ const cases=[
  ['duplicate followup ID',[{...r,followupActionId:'F1'}],[a,{id:'F1',sourceStage:'RETENTION-RECHECK',sourceCaseId:'R1',originCaseId:'CASE-1',previousActionId:'A1',team:'조립',workplace:'라인A',initialAuditor:'inspector@hd.com'},{id:'F1',sourceStage:'RETENTION-RECHECK',sourceCaseId:'R1',originCaseId:'CASE-1',previousActionId:'A1',team:'조립',workplace:'라인A',initialAuditor:'inspector@hd.com'}],false],
  ['invalid followup origin',[{...r,followupActionId:'F1'}],[a,{id:'F1',sourceStage:'RETENTION-RECHECK',sourceCaseId:'R1',originCaseId:'OTHER',previousActionId:'A1',team:'조립',workplace:'라인A',initialAuditor:'inspector@hd.com'}],false],
  ['missing preceding action',[{...r,followupActionId:'F1'}],[a,{id:'F1',sourceStage:'RETENTION-RECHECK',sourceCaseId:'R1',originCaseId:'CASE-1',previousActionId:'',team:'조립',workplace:'라인A',initialAuditor:'inspector@hd.com'}],false],
+ ['followup without base action',[{...r,followupActionId:'F1'}],[{id:'F1',sourceStage:'RETENTION-RECHECK',sourceCaseId:'R1',originCaseId:'CASE-1',previousActionId:'A1',team:'조립',workplace:'라인A',initialAuditor:'inspector@hd.com'}],false],
+ ['followup with duplicated base action',[{...r,followupActionId:'F1'}],[a,a,{id:'F1',sourceStage:'RETENTION-RECHECK',sourceCaseId:'R1',originCaseId:'CASE-1',previousActionId:'A1',team:'조립',workplace:'라인A',initialAuditor:'inspector@hd.com'}],false],
+ ['followup with foreign base auditor',[{...r,followupActionId:'F1'}],[{...a,initialAuditor:'other@hd.com'},{id:'F1',sourceStage:'RETENTION-RECHECK',sourceCaseId:'R1',originCaseId:'CASE-1',previousActionId:'A1',team:'조립',workplace:'라인A',initialAuditor:'inspector@hd.com'}],false],
  ['valid followup',[{...r,caseId:'CASE-1',followupActionId:'F1'}],[a,{id:'F1',sourceStage:'RETENTION-RECHECK',sourceCaseId:'R1',originCaseId:'CASE-1',previousActionId:'A1',team:'조립',workplace:'라인A',initialAuditor:'inspector@hd.com'}],true],
  ['wrong previous case',[{...r,caseId:'CASE-1',followupActionId:'F1'}],[a,{id:'F1',sourceStage:'RETENTION-RECHECK',sourceCaseId:'R1',originCaseId:'CASE-1',previousActionId:'FOREIGN',team:'조립',workplace:'라인A',initialAuditor:'inspector@hd.com'}],false],
  ['missing sequence one',[{...r,caseId:'CASE-1',followupActionId:'F2'}],[a,{id:'F2',sourceStage:'RETENTION-RECHECK',sourceCaseId:'R1',originCaseId:'CASE-1',previousActionId:'A1',team:'조립',workplace:'라인A',initialAuditor:'inspector@hd.com'}],false],
@@ -32,4 +35,4 @@ const cases=[
 ];
 for(const [name,rs,as,expected] of cases){assert.equal(verify('R1',rs,as),expected,name);console.log('PASS '+name)}
 assert(src.includes("e.stopImmediatePropagation()"),'invalid click stops underlying handler');
-console.log('Retention recheck integrity: 21/21 scenarios covered');
+console.log('Retention recheck integrity: 24/24 scenarios covered');
