@@ -535,6 +535,22 @@ if(file&&(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.siz
    !THEME_COMPLETED_STATUSES.has(normalizeThemeStatus(a.status))).length>1;
  });
  if(duplicateActiveIssues.length){alert('같은 미흡 항목에 미완료 개선조치가 중복 등록되어 있습니다. 자동 재연계하지 않고 원본 개선조치를 확인해 주세요.');return}
+ const invalidReuse=rows.filter(row=>states[row.dataset.key]==='미흡').some(row=>{
+  const problem='[테마 점검] '+line+' · '+row.dataset.item;
+  const existing=themeFindActive(candidateActions,line,team,row.dataset.cat,problem);
+  if(!existing)return false;
+  const originId=String(existing.sourceCaseId||'').trim();
+  const original=checks.filter(ch=>String(ch.id||'')===originId);
+  return existing.sourceStage!=='THEME-AUDIT'||!originId||
+   String(existing.auditRecordId||'')!==originId||
+   !String(existing.initialAuditor||'').trim()||
+   !Array.isArray(existing.relatedAuditRecordIds)||
+   !existing.relatedAuditRecordIds.includes(originId)||
+   original.length!==1||String(original[0].initialAuditor||original[0].auditor||'')!==String(existing.initialAuditor||'')||
+   String(original[0].line||'')!==line||String(original[0].team||'')!==team;
+ });
+ if(invalidReuse.length||invalidReuse===true){alert('기존 개선조치의 최초 점검자·원본 점검번호 또는 생산팀·라인 연결이 불일치합니다. 자동 재연계하지 않고 관리자에게 확인해 주세요.');return}
+
  const rec={id:newId('THEME-AUDIT'),line,team,month,inspectionOwner:selectedOwner(),auditor,initialAuditor:auditor,improvementPhoto,states,findingEvidence,memo,auditedAt:new Date().toISOString(),checklistVersion:4,linkedActionIds:[],createdActionIds:[],reusedActionIds:[],ngCount:rows.filter(row=>states[row.dataset.key]==='미흡').length};
  checks.push(rec);
  if(!saveChecks(checks)){alert('점검 결과를 저장하지 못했습니다. 브라우저 저장공간을 확인한 뒤 다시 시도해 주세요.');return}
