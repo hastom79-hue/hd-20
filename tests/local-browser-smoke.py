@@ -53,12 +53,17 @@ def main():
                     )
                     page.locator(f".beginnerNav button[data-key='{area}'].active").wait_for(state="attached", timeout=12000)
                     if region:
-                        screen = page.locator(region)
-                        screen.wait_for(state="visible", timeout=12000)
-                        if area in ("audit", "theme", "master") and not screen.evaluate(
-                            "el => el.classList.contains('on')"
-                        ):
-                            raise AssertionError(f"{area}: screen visible but not active")
+                        if area == "activity" and page.locator("body.hd20InquiryActive").count():
+                            # The overview intentionally lives outside the hidden #awActivity screen.
+                            overview = page.locator("#hd20LauncherOverview.hd20LnVisible")
+                            overview.wait_for(state="visible", timeout=12000)
+                        else:
+                            screen = page.locator(region)
+                            screen.wait_for(state="visible", timeout=12000)
+                            if area in ("audit", "theme", "master") and not screen.evaluate(
+                                "el => el.classList.contains('on')"
+                            ):
+                                raise AssertionError(f"{area}: screen visible but not active")
                     elif page.locator(".app").count() != 1:
                         raise AssertionError("Dashboard app root missing")
                     print(f"PASS local navigation {area} (controller + visible screen)", flush=True)
