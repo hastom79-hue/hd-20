@@ -1,0 +1,13 @@
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const src=fs.readFileSync('hd20-subtabs.js','utf8');
+const start=src.indexOf('function installAuditSubnavGuard(){');
+const end=src.indexOf('/* Four-tab improvement navigation',start);
+assert(start>=0&&end>start,'audit navigation guard exists');
+const guard=src.slice(start,end);
+assert(guard.includes("e.target.closest?.('.beginnerNav button[data-key=\"audit\"]')"),'audit top navigation click is observed');
+assert(guard.includes('queueMicrotask(schedule)'), 'audit synchronization is scheduled');
+assert(!/if\s*\(bar\)\s*syncAuditButtons\(bar,\s*['"]draw['"]\)/.test(guard),'no premature audit subtab DOM reset');
+assert(guard.includes('reconcileAuditSubnav()'),'canonical reconciliation remains installed');
+console.log('PASS audit top-level click has no premature subtab reset');
