@@ -24,6 +24,21 @@ caseOf('aria-busy control',false,true,0);
  assert.equal(removed,1,'successful save must close busy modal');
  console.log('PASS successful save closes modal');
 }
+// A browser onclick callback receives an event as its first argument; never pass
+// that event into close(afterSave), where truthiness would bypass the busy guard.
+const closeButtonBinding="overlay.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>close());";
+assert(src.includes(closeButtonBinding),'close buttons must discard click event rather than forwarding it as afterSave');
+{
+ let removed=0;
+ const overlay={querySelector:()=>null,remove:()=>removed++};
+ const close=getClose(overlay,true);
+ const buttons=[{},{}];
+ const bind=new Function('overlay','close',closeButtonBinding);
+ bind({querySelectorAll:()=>buttons},close);
+ for(const button of buttons)button.onclick({type:'click'});
+ assert.equal(removed,0,'click events must not bypass the pending-save close guard');
+ console.log('PASS close button click events preserve saving guard');
+}
 assert(src.includes("window.dispatchEvent(new CustomEvent('hd20-action-updated',{detail:{source:'audit-tobe',id}}));close(true)"),'successful save explicitly uses forced close');
 const guard='if(!overlay.isConnected||document.getElementById(MID)!==overlay)return;let registrationDateTime=';
 assert(src.includes(guard),'pending file-read continuation must stop if modal is replaced or detached');
@@ -52,4 +67,4 @@ let idle=attemptSwitch(false);
 assert.equal(idle.removed,1,'switch after save must remove previous modal');
 assert.equal(idle.notices.length,0,'idle case switch has no warning');
 console.log('PASS switching TO-BE case after save');
-console.log('TO-BE modal lifecycle 7/7 scenarios passed');
+console.log('TO-BE modal lifecycle 8/8 scenarios passed');
