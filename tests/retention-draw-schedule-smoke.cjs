@@ -29,6 +29,8 @@ scenario('closed and new pending same source allowed',[r('A1','2026-09-01','부�
 scenario('different kinds same case ID allowed',[r('A1','2026-09-01'),{...r('A1','2026-09-02'),kind:'자율개선'}],30,true);
 scenario('shorter configured interval respected',[r('A1','2026-10-31','적합')],5,true);
 scenario('unreadable retention store blocked',null,30,false);
+scenario('duplicate retention record IDs blocked',[r('A1','2026-09-01','적합'),{...r('A2','2026-09-02','적합'),id:'RET-A1'}],30,false);
+scenario('missing retention record ID blocked',[{...r('A1','2026-09-01','적합'),id:''}],30,false);
 assert.equal(listeners.length,1,'capture listener exists');
 assert.equal(listeners[0].capture,true,'capture handler registered');
 store.set('hd20GMES5SAutoImproveRawV1','[]');
@@ -39,4 +41,4 @@ listeners[0].handler({target:{closest:selector=>selector==='[data-rs-draw]'?{}:n
 assert.equal(prevented,1,'cooldown click prevented');
 assert.equal(stopped,1,'cooldown click stops underlying draw');
 assert.equal(alerts.length,1,'warning emitted');
-console.log('Retention draw schedule: 12 scenarios + click interception passed');
+console.log('Retention draw schedule: 14 scenarios + click interception passed');
