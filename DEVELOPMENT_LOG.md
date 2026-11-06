@@ -2684,3 +2684,12 @@ Canonical Store는 다음을 기준으로 한다.
 - 실제 소스 이벤트 핸들러를 독립 실행하여 5/5 기대 결과 일치. GitHub Actions `.github/workflows/retention-recheck-integrity.yml`에 파일 감지, node --check, 테스트 실행 추가.
 - main 커밋: 테스트 `2b43b728`, CI `e2d07b45`. 대시보드·HTML·CSS·운영 데이터 무변경.
 - GitHub Pages 및 GitHub Actions REST 웹 응답 조회가 접근 오류로 실패하여 배포 성공·CI 서버 실행 완료 여부 미확인. 브라우저 E2E 완료 판정 금지.
+
+## 2026-11-06 — TO-BE 완료 저장 상태·복원 로직 실실행 검증 및 CI 등록
+
+- 실 배포·Actions 확인 시도: GitHub combined commit statuses 빈 목록, commit workflow runs 검색 빈 목록. 공개 GitHub Pages 및 Actions REST URL 접속은 현재 조회 환경에서 실패하여 배포·CI 성공 판정 불가.
+- `audit-as-is-to-be-manager.js` TO-BE 저장 검증의 결함 확인: 저장 후 `toBePlan`만 비교하므로 `status`/`doneStatus` 완료 반영 불일치를 탐지하지 못하며, 저장 오류 이전 원본 localStorage 키가 `null`이면 새로 기록한 값이 남을 수 있음.
+- 저장 후 동일 관리번호 정확히 1건, `toBePlan`, 최종 `status`, 완료 시 `doneStatus`를 확인하도록 수정. 실패 시 이전 원본이 없으면 키 삭제, 있으면 원본값 복원하고 복원 결과를 재조회 검증. 복원에도 실패하면 관리자 확인 경고 표시.
+- `tests/tobe-persistence-rollback-smoke.cjs` 신규. 실제 소스 저장·복원 구문 추출 실행하여 정상 완료, 저장 API 오류, 이전 키 없음+후검증 실패, 중복 ID, 완료상태 불일치 등 **5/5 시나리오·15개 검증식 통과**.
+- `.github/workflows/tobe-unique-id-regression.yml`에 신규 테스트 구문검사·실행 연결. `index.html`의 TO-BE 관리자 캐시 버전 `20261106-persistence-rollback-v18`로 갱신.
+- main 반영: 소스 `85662531`, 테스트 `ca9d04ea`, CI `fe6a4a6d`, HTML `8c75e7bc`. 승인 대시보드·CSS·운영 데이터 무변경. 실제 브라우저 E2E 및 Pages 배포 미확인.
