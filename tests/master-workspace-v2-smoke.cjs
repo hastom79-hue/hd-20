@@ -42,6 +42,17 @@ try{
  }));
  if(rapid.active!=='integrated-theme'||rapid.pressed!=='integrated-theme'||!rapid.themeVisible)
    throw Error('Master quick switching lost latest editor '+JSON.stringify(rapid));
+ // A user selection before the initial deferred default must take precedence.
+ const initSelection=await page.evaluate(async()=>{
+   const team=document.querySelector('#hd20MasterWorkspace [data-hm-target="integrated-team"]');
+   const theme=document.querySelector('#hd20MasterWorkspace [data-hm-target="integrated-theme"]');
+   theme?.click();
+   await new Promise(resolve=>setTimeout(resolve,10));
+   return {pressed:document.querySelector('#hd20MasterWorkspace [data-hm-target][aria-pressed="true"]')?.dataset.hmTarget,
+           active:document.querySelector('#masterModal .masterTabs [data-master-tab].on')?.dataset.masterTab};
+ });
+ if(initSelection.pressed!=='integrated-theme'||initSelection.active!=='integrated-theme')
+   throw Error('Master deferred initializer replaced user selection '+JSON.stringify(initSelection));
  await page.locator('#hmSearch').fill('Audit');
  if(await page.locator('#hd20MasterWorkspace [data-hm-target]:visible').count()!==1)throw Error('Master search filter failed');
  await page.locator('[data-hm-reset]').click();
