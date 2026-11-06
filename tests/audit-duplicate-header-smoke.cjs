@@ -73,7 +73,17 @@ fs.mkdirSync('artifacts',{recursive:true});
     window.dispatchEvent(new CustomEvent('hd20-audit-target-selected',{detail:{id:first.id,team:first.team}}));
     return {first:first.id,latest:latest.id};
   });
-  await page.waitForFunction(id=>document.querySelector('#awAudit .auditClosedLoop')?.dataset.selectedAuditId===id,selection.first);
+  await page.waitForTimeout(300);
+  const auditSelectProbe=await page.evaluate(()=>({
+    selectedId:document.querySelector('#awAudit .auditClosedLoop')?.dataset.selectedAuditId||'',
+    team:document.querySelector('#awAudit .auditClosedLoop [data-cl-team]')?.value||'',
+    notice:document.querySelector('#awAudit .auditClosedLoop [data-cl-notice]')?.textContent||'',
+    selectedSource:JSON.parse(localStorage.getItem('hd20AuditRandomDrawsV1')||'[]')
+      .filter(x=>String(x.id||'').startsWith('E2E-AUDIT-SELECT-'))
+      .map(x=>({id:x.id,date:x.date,auditDate:x.auditDate||''}))
+  }));
+  console.log('AUDIT_EXACT_SELECTION_PROBE',JSON.stringify(auditSelectProbe));
+  await page.waitForFunction(id=>document.querySelector('#awAudit .auditClosedLoop')?.dataset.selectedAuditId===id,selection.first,{timeout:12000});
   const linkedSelection=await page.evaluate(()=>({
     id:document.querySelector('#awAudit .auditClosedLoop')?.dataset.selectedAuditId,
     team:document.querySelector('#awAudit .auditClosedLoop [data-cl-team]')?.value
