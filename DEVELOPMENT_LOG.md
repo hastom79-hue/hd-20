@@ -2988,3 +2988,8 @@ Canonical Store는 다음을 기준으로 한다.
 - `theme-inspection.js`: 앞선 변경에 남아 있던 최초 점검자 자동 대체 구문 실제 삭제. 저장 완료 전 점검/조치 원본 ID, 최초 및 최종 점검자, 관련 Audit 목록, 점검서의 연결된 개선조치 목록을 영속 저장소 재조회로 검증; 불일치 시 자동 완료/이벤트 발송을 차단하고 기존 원본 복원 동작 수행.
 - `tests/theme-persisted-relink-smoke.cjs`: 정상/원본 점검자 변경/관련목록 누락/ID 오류 등 7건 추가. CI 핵심 23종. 테마 스크립트 캐시 v51.
 - 승인된 대시보드/업무 데이터/CSS 무변경. GitHub Actions·Pages 실배포 및 브라우저 검증 미확인.
+
+## 2026-11-07 — TO-BE 완료사례 유지점검 추출 시 AFTER 증빙 무결성
+- `retention-draw-integrity-guard.js`: TO-BE 조치등록 이력(`toBeRegisteredAt`)이 있는 완료 개선요청은 AFTER 증빙이 비어 있으면 유지점검 랜덤 추출을 차단. 정상 완료·원본 관리번호·생산팀·작업장 검사 유지. 구형 개선요청 기록에는 새 증빙 조건을 소급 강제하지 않음.
+- `tests/retention-draw-integrity-smoke.cjs`: TO-BE 완료 증빙 유무·빈 문자열·미완료 초안·구형 완료 사례 총 5개 시나리오 추가(18건).
+- `index.html`: draw 검증 JS 캐시 v4 갱신. 승인 대시보드·업무 데이터·CSS 변경 없음. CI/Pages/브라우저 실행은 추후 실제 상태 확인 필요.
