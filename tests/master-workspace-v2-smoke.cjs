@@ -27,6 +27,21 @@ try{
    if(!state.ready||!state.navVisible||!state.tabActive||!state.editorVisible||state.editorText<8)throw Error('Master editor malfunction '+key+': '+JSON.stringify(state));
  }
 
+ // Rapid master-editor changes must keep only the newest selection active.
+ await openMaster(page,'integrated-team');
+ await page.evaluate(()=>{
+   const team=document.querySelector('#hd20MasterWorkspace [data-hm-target="integrated-team"]');
+   const theme=document.querySelector('#hd20MasterWorkspace [data-hm-target="integrated-theme"]');
+   team?.click();theme?.click();
+ });
+ await page.waitForTimeout(100);
+ const rapid=await page.evaluate(()=>({
+   active:document.querySelector('#masterModal .masterTabs [data-master-tab].on')?.dataset.masterTab,
+   pressed:document.querySelector('#hd20MasterWorkspace [data-hm-target][aria-pressed="true"]')?.dataset.hmTarget,
+   themeVisible:!!document.querySelector('#hd20ThemeCatalogPanel')?.getClientRects().length
+ }));
+ if(rapid.active!=='integrated-theme'||rapid.pressed!=='integrated-theme'||!rapid.themeVisible)
+   throw Error('Master quick switching lost latest editor '+JSON.stringify(rapid));
  await page.locator('#hmSearch').fill('Audit');
  if(await page.locator('#hd20MasterWorkspace [data-hm-target]:visible').count()!==1)throw Error('Master search filter failed');
  await page.locator('[data-hm-reset]').click();
