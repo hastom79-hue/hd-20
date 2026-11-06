@@ -27,6 +27,7 @@ on:
       - 'tests/retention-draw-schedule-smoke.cjs'
       - 'tests/theme-row-click-regression.cjs'
       - 'tests/theme-persisted-audit-record-smoke.cjs'
+      - 'tests/theme-duplicate-active-action-smoke.cjs'
       - 'tests/activity-navigation-late-overview-smoke.cjs'
       - 'tests/launcher-registration-subtab-retry-smoke.cjs'
       - 'tests/audit-subtab-click-guard-smoke.cjs'
@@ -70,13 +71,14 @@ jobs:
             tests/retention-draw-schedule-smoke.cjs \
             tests/theme-row-click-regression.cjs \
             tests/theme-persisted-audit-record-smoke.cjs \
+            tests/theme-duplicate-active-action-smoke.cjs \
             tests/activity-navigation-late-overview-smoke.cjs \
             tests/launcher-registration-subtab-retry-smoke.cjs \
             tests/audit-subtab-click-guard-smoke.cjs
           do
             node --check "$file"
           done
-      - name: Execute twenty core workflow regressions
+      - name: Execute twenty-one core workflow regressions
         run: |
           set -e
           node tests/tobe-unique-action-id-smoke.cjs
@@ -96,6 +98,7 @@ jobs:
           node tests/retention-draw-schedule-smoke.cjs
           node tests/theme-row-click-regression.cjs
           node tests/theme-persisted-audit-record-smoke.cjs
+          node tests/theme-duplicate-active-action-smoke.cjs
           node tests/activity-navigation-late-overview-smoke.cjs
           node tests/launcher-registration-subtab-retry-smoke.cjs
           node tests/audit-subtab-click-guard-smoke.cjs
