@@ -12,13 +12,12 @@ from playwright.sync_api import sync_playwright
 
 BASE = os.environ.get("HD20_PAGES_URL", "https://hastom79-hue.github.io/hd-20/")
 EMAIL = os.environ.get("HD20_E2E_EMAIL", "").strip()
+HIDDEN_LEGACY_AREAS = ("action", "advancement")
 AREAS = (
     ("dashboard", "대시보드"),
     ("activity", "개선활동관리"),
     ("audit", "Audit 점검"),
     ("theme", "테마점검"),
-    ("action", "개선조치관리"),
-    ("advancement", "고도화·표준화"),
     ("master", "통합기준정보"),
 )
 
@@ -68,6 +67,12 @@ def main():
             )
             page.locator(".beginnerNav button[data-key='dashboard']").wait_for(state="visible", timeout=15000)
 
+            for legacy in HIDDEN_LEGACY_AREAS:
+                legacy_button = page.locator(f".beginnerNav button[data-key='{legacy}']")
+                if legacy_button.count() != 1 or legacy_button.is_visible():
+                    raise AssertionError(f"Hidden legacy navigation {legacy!r} is missing or exposed")
+                print(f"PASS hidden legacy navigation: {legacy}", flush=True)
+
             for area, title in AREAS:
                 button = page.locator(f".beginnerNav button[data-key='{area}']")
                 button.wait_for(state="visible", timeout=12000)
@@ -85,6 +90,11 @@ def main():
                     region.wait_for(state="visible", timeout=12000)
                     if area in ("audit", "theme") and not region.evaluate("(el) => el.classList.contains('on')"):
                         raise AssertionError(f"{title}: inspection screen not activated")
+                elif area == "master":
+                    master = page.locator("#masterModal")
+                    master.wait_for(state="visible", timeout=12000)
+                    if not master.evaluate("(el) => el.classList.contains('on')"):
+                        raise AssertionError("Master tab: visible modal does not have active class")
                 elif page.locator(".app").count() != 1:
                     raise AssertionError("Dashboard app root missing")
                 print(f"PASS read-only nav {area}: {title} (active + visible screen)", flush=True)
