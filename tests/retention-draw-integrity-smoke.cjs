@@ -1,0 +1,35 @@
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const vm=require('node:vm');
+const source=fs.readFileSync('retention-draw-integrity-guard.js','utf8');
+function scenario(label,self,actions,expected){
+ const calls=[],alerts=[];const store=new Map([['hd20GMES5SAutoImproveRawV1',JSON.stringify(self)],['hd20ActionCasesV2',JSON.stringify(actions)]]);
+ const document={addEventListener:(type,fn,capture)=>{if(type==='click')calls.push({fn,capture})}};
+ const window={alert:text=>alerts.push(text)};
+ const localStorage={getItem:key=>store.get(key)??null};
+ vm.runInNewContext(source,{document,window,localStorage,Set,JSON});
+ assert.equal(calls.length,1,label+' listener');
+ assert.equal(calls[0].capture,true,label+' capture');
+ const check=window.HD20RetentionDrawGuard.verify(self,actions);
+ assert.equal(check.ok,expected,label+' verification');
+ let prevented=0,stopped=0;
+ calls[0].fn({target:{closest:selector=>selector==='[data-rs-draw]'?{}:null},preventDefault:()=>prevented++,stopImmediatePropagation:()=>stopped++});
+ assert.equal(prevented,expected?0:1,label+' prevented');
+ assert.equal(stopped,expected?0:1,label+' stopped');
+ assert.equal(alerts.length,expected?0:1,label+' warning count');
+ console.log('PASS '+label);
+}
+const done={id:'A1',status:'완료',team:'조립'};
+const pending={id:'B1',status:'진행중',team:'조립'};
+scenario('single finished request and pending excluded',[],[done,pending],true);
+scenario('duplicate completed request ID blocked',[],[done,{...done}],false);
+scenario('completed flag conflicts with pending status',[],[{...pending,completed:true}],false);
+scenario('finished status conflicts with completed=false',[],[{...done,completed:false}],false);
+scenario('missing completed request ID',[],[{status:'완료'}],false);
+scenario('completed self and request with same ID allowed',[done],[done],true);
+scenario('duplicate completed self ID blocked',[done,{...done}],[],false);
+scenario('demo fixture ignored',[],[done,{...done,source:'e2e-fixture'}],true);
+scenario('pending duplicate case not part of completed pool',[],[done,{id:'B2',status:'진행중'},{id:'B2',status:'진행중'}],true);
+scenario('completed flag without status accepted',[],[{id:'X1',completed:true}],true);
+console.log('Retention random-draw integrity 10/10 passed');
