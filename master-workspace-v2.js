@@ -273,6 +273,16 @@ for(const g of grid.children){const h=g.querySelector('h3');h.addEventListener('
 function select(key){all.forEach(b=>{const yes=b.dataset.hmTarget===key;b.classList.toggle('on',yes);b.setAttribute('aria-pressed',yes?'true':'false')});const b=all.find(b=>b.dataset.hmTarget===key);ws.querySelector('[data-hm-current]').textContent=b?b.querySelector('strong').textContent:'기준정보';ws.querySelector('[data-hm-current-desc]').textContent=b?(NOTES[key]||'기준정보 원본 편집 및 저장'):'관리 항목을 선택해 주세요.';if(b)activateGroup(b.closest('.hmGroup'),false)}
 const search=ws.querySelector('#hmSearch');const searchEmpty=document.createElement('p');searchEmpty.className='hmSearchEmpty';searchEmpty.hidden=true;searchEmpty.textContent='일치하는 관리 항목이 없습니다. 검색어를 변경하거나 [전체 보기]를 선택해 주세요.';grid.insertAdjacentElement('afterend',searchEmpty);function filter(){const q=search.value.trim().toLocaleLowerCase();let count=0;for(const btn of all){const show=!q||btn.textContent.toLocaleLowerCase().includes(q);btn.hidden=!show;if(show)count++}for(const group of grid.children)group.hidden=![...group.querySelectorAll('[data-hm-target]')].some(b=>!b.hidden);ws.querySelector('[data-hm-count]').textContent=count+'개 관리 항목'+(q?' 검색됨':'');ws.classList.toggle('hmSearching',!!q);searchEmpty.hidden=count!==0;if(!q){const selected=all.find(b=>b.classList.contains('on'));activateGroup(selected?.closest('.hmGroup')||grid.firstElementChild,false)}else{const first=[...grid.children].find(g=>!g.hidden);if(first)activateGroup(first,false)}}search.addEventListener('input',filter);ws.querySelector('[data-hm-reset]').onclick=()=>{search.value='';filter();search.focus()};filter();
 tabs.addEventListener('click',e=>{const b=e.target.closest('[data-master-tab]');if(b)select(b.dataset.masterTab)});
+// Re-open refresh: initialization may finish while the master screen is hidden.
+// The deferred initial click is intentionally skipped while hidden; refresh the
+// currently selected editor only when the canonical navigation opens this screen.
+window.addEventListener('hd20-open-master',()=>{
+ if(!root.isConnected||!root.classList.contains('on')||!box.classList.contains('hd20MasterWorkspaceReady'))return;
+ const active=tabs.querySelector('[data-master-tab].on:not([hidden])')?.dataset.masterTab;
+ const target=all.find(b=>b.dataset.hmTarget===active)||all[0];
+ target?.click();
+});
+
 const selected=tabs.querySelector('[data-master-tab].on:not([hidden])');
 /* 실제 버그: 원본 탭에 이미 .on 이 붙어 있으면 하이라이트(select)만 하고 패널 렌더를 호출하지 않아, 통합기준정보에 처음 들어오면 조직·팀 표가 0행·'0 / 0' 빈 화면으로 남았다(다른 메뉴를 눌렀다 돌아와야 19행이 표시됨).
    .on 은 마스터 모듈이 선택 상태만 먼저 세팅한 것일 수 있으므로, 이미 선택된 탭도 한 번 눌러 해당 화면을 확실히 렌더한다. */
