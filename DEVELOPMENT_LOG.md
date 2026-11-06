@@ -3008,3 +3008,9 @@ Canonical Store는 다음을 기준으로 한다.
 - `retention-draw-integrity-guard.js`: TO-BE 완료 이력이 있는 개선요청의 doneDate·completedAt 일치, 실재하는 날짜, 서울 기준 미래일 여부와 최초 요청일 이후인지 확인하여 날짜 누락·상충·역전 사례 추출 차단.
 - `tests/retention-draw-integrity-smoke.cjs`: 기존 정상 TO-BE 픽스처의 완료일을 보강하고 완료일 누락·불일치·최초 요청 이전·달력상 불가능한 날짜·미래일 5개 검사 추가(총 28개).
 - `index.html`: 캐시 v6. 대시보드·데이터·CSS 무변경. GitHub Actions 및 Pages 실제 실행은 별도 확인 필요.
+
+## 2026-11-07 — 유지점검 후속 자동개선조치의 재추출 방지
+- `hd20-subtabs.js`: 랜덤 유지점검 후보에서 `RETENTION-RANDOM` 및 `RETENTION-RECHECK` 출처의 개선조치를 제외하여 기존 유지점검→재조치→재점검 체인이 새로운 유지점검 사례로 재귀 생성되지 않도록 보완.
+- `retention-draw-integrity-guard.js`: 후보 생성과 사전 무결성 검사에서 동일 출처를 제외하도록 동기화. 원본 자율개선·개선요청 및 일반 Audit 개선요청은 유지.
+- `tests/retention-draw-integrity-smoke.cjs`: 자동 이관/재조치 제외·필드 누락·일반 Audit 건 유지 4개 사례 추가(32개). `index.html` 서브탭 v87/가드 v7 캐시 갱신.
+- 승인 대시보드·운영 데이터·CSS 변경 없음. CI·실브라우저·Pages 배포 성공은 아직 검증되지 않음.
