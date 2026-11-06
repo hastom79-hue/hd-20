@@ -1019,7 +1019,12 @@ function reconcileImprovementSubnav(){
      return btn;
    }));
  }
- for(const btn of bar.querySelectorAll(':scope > button[data-sub]'))btn.classList.toggle('on',btn.dataset.sub===selected);
+ for(const btn of bar.querySelectorAll(':scope > button[data-sub]')){
+   // A legacy renderer may replace nav buttons with identical markup but no handlers.
+   // Rebind idempotently even when labels/positions already pass the visual check.
+   btn.onclick=()=>select('activity',btn.dataset.sub);
+   btn.classList.toggle('on',btn.dataset.sub===selected);
+ }
  if(state.area!=='activity'||state.sub!==selected){state.area='activity';state.sub=selected}
  bar.removeAttribute('hidden');bar.removeAttribute('aria-hidden');
  bar.style.setProperty('display','grid','important');
