@@ -2885,3 +2885,9 @@ Canonical Store는 다음을 기준으로 한다.
 - `tests/retention-recheck-integrity-smoke.cjs`: 후속 재조치가 존재하지만 최초 조치가 누락·중복·불일치인 3개 회귀 시나리오 추가(총 24개).
 - `index.html`: 보호 스크립트 캐시 버전 v4 적용. 대시보드 및 기존 업무 데이터 변경 없음.
 - GitHub Actions 및 실 브라우저 검증은 별도 확인 필요.
+
+## 2026-11-06 — 개선활동관리 탭 지연 팝업 경합 차단
+- `beginner-navigation.js`: 개선활동관리 탭 클릭 후 launcher 지연 로딩(150ms) 콜백은 현재 활성 탭이 `activity`일 때만 통합조회 팝업을 연다. 다른 탭으로 빠르게 이동한 뒤 뒤늦게 팝업이 열려 화면을 숨기는 경합을 방지.
+- `tests/activity-navigation-late-overview-smoke.cjs`: 탭 이탈·탭 유지·즉시 launcher 사용 3개 시나리오 회귀검증 추가.
+- `index.html`: 네비게이션 캐시 버전 v23 갱신. 승인된 대시보드 및 데이터 로직은 미수정.
+- GitHub Actions 및 실제 브라우저 배포 후 검증은 별도 확인 필요.
