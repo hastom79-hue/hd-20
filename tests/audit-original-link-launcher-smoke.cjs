@@ -55,7 +55,27 @@ const {chromium}=require('playwright');
   await link.waitFor({state:'visible',timeout:15000});
   await link.click();
   const modal=page.locator('#hd20AuditOriginalPopup [role="dialog"]');
-  await modal.waitFor({state:'visible',timeout:10000});
+  try{
+   await modal.waitFor({state:'visible',timeout:10000});
+  }catch(err){
+   const diagnosis=await page.evaluate(()=>{
+    const audits=JSON.parse(localStorage.getItem('hd20AuditRandomDrawsV1')||'[]');
+    const actions=JSON.parse(localStorage.getItem('hd20ActionCasesV2')||'[]');
+    const popup=document.getElementById('hd20AuditOriginalPopup');
+    return {
+     url:location.href,activeArea:window.HD20_NAV?.active?.(),
+     auditCount:audits.length,actionCount:actions.length,
+     original:audits.filter(x=>String(x.id)==='AUDIT-LINK-E2E-01').map(x=>({id:x.id,team:x.team,auditor:x.initialAuditor})),
+     linked:actions.filter(x=>String(x.auditDrawId||x.sourceCaseId)==='AUDIT-LINK-E2E-01').map(x=>({id:x.id,stage:x.sourceStage})),
+     popupExists:!!popup,popupVisible:!!popup&&getComputedStyle(popup).display!=='none',
+     linkCount:document.querySelectorAll('[data-had-open-audit="AUDIT-LINK-E2E-01"]').length,
+     launcherVisible:!!document.getElementById('hd20Launcher'),
+     scriptsReady:!!window.HD20ActionAuditLinkage
+    };
+   });
+   console.error('AUDIT_ORIGINAL_LINK_DIAGNOSIS',JSON.stringify({diagnosis,pageErrors:errors.slice(-8)}));
+   throw err;
+  }
   const body=await modal.innerText();
   for(const expected of ['AUDIT-LINK-E2E-01','검증점검자','테스트라인','ACTION-LINK-E2E-01'])assert.ok(body.includes(expected),'missing linked original field: '+expected);
   assert.ok(body.includes('부적합'),'original Audit judgment is present');
