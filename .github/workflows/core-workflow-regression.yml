@@ -7,6 +7,7 @@ on:
       - 'hd20-subtabs.js'
       - 'retention-recheck-integrity-guard.js'
       - 'retention-draw-integrity-guard.js'
+      - 'theme-inspection.js'
       - 'tests/tobe-unique-action-id-smoke.cjs'
       - 'tests/tobe-persistence-rollback-smoke.cjs'
       - 'tests/tobe-latest-evidence-smoke.cjs'
@@ -18,6 +19,7 @@ on:
       - 'tests/retention-recheck-transaction-smoke.cjs'
       - 'tests/retention-draw-integrity-smoke.cjs'
       - 'tests/retention-draw-schedule-smoke.cjs'
+      - 'tests/theme-row-click-regression.cjs'
       - '.github/workflows/core-workflow-regression.yml'
   workflow_dispatch:
 permissions:
@@ -37,6 +39,7 @@ jobs:
           node --check hd20-subtabs.js
           node --check retention-recheck-integrity-guard.js
           node --check retention-draw-integrity-guard.js
+          node --check theme-inspection.js
           for file in \
             tests/tobe-unique-action-id-smoke.cjs \
             tests/tobe-persistence-rollback-smoke.cjs \
@@ -49,10 +52,11 @@ jobs:
             tests/retention-recheck-transaction-smoke.cjs \
             tests/retention-draw-integrity-smoke.cjs \
             tests/retention-draw-schedule-smoke.cjs
+            tests/theme-row-click-regression.cjs
           do
             node --check "$file"
           done
-      - name: Execute eleven core workflow regressions
+      - name: Execute twelve core workflow regressions
         run: |
           set -e
           node tests/tobe-unique-action-id-smoke.cjs
@@ -66,3 +70,4 @@ jobs:
           node tests/retention-recheck-transaction-smoke.cjs
           node tests/retention-draw-integrity-smoke.cjs
           node tests/retention-draw-schedule-smoke.cjs
+          node tests/theme-row-click-regression.cjs
