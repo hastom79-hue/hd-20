@@ -7,6 +7,7 @@ on:
       - 'tests/tobe-unique-action-id-smoke.cjs'
       - 'tests/tobe-persistence-rollback-smoke.cjs'
       - 'tests/tobe-latest-evidence-smoke.cjs'
+      - 'tests/tobe-search-debounce-smoke.cjs'
       - '.github/workflows/tobe-unique-id-regression.yml'
   workflow_dispatch:
 permissions:
@@ -25,8 +26,10 @@ jobs:
           node --check tests/tobe-unique-action-id-smoke.cjs
           node --check tests/tobe-persistence-rollback-smoke.cjs
           node --check tests/tobe-latest-evidence-smoke.cjs
+          node --check tests/tobe-search-debounce-smoke.cjs
       - name: Verify TO-BE unique-ID guards
         run: |
           node tests/tobe-unique-action-id-smoke.cjs
           node tests/tobe-persistence-rollback-smoke.cjs
           node tests/tobe-latest-evidence-smoke.cjs
+          node tests/tobe-search-debounce-smoke.cjs
