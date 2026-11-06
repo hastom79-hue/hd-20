@@ -24,6 +24,10 @@ function verify(self,actions){
    const imageEvidence=/^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/]+=*$/i.test(photo)||/^https:\/\/[^\s]+$/i.test(photo)||/^blob:https?:\/\/[^\s]+$/i.test(photo);
    if(!imageEvidence)
     return {ok:false,reason:'개선요청 '+(key(x)||'(번호 없음)')+'의 TO-BE 완료 AFTER 사진이 없거나 이미지 증빙 형식이 아닙니다. 유지점검 추출을 중단합니다.'};
+   const validDay=value=>{if(!/^\d{4}-\d{2}-\d{2}$/.test(value))return false;const d=new Date(value+'T00:00:00Z');return !Number.isNaN(d.getTime())&&d.toISOString().slice(0,10)===value};
+   const doneDay=norm(x?.doneDate),completedDay=norm(x?.completedAt).slice(0,10),requestDay=norm(x?.registeredAt||x?.date||x?.startDate||x?.created).slice(0,10);
+   if(!validDay(doneDay)||!validDay(completedDay)||doneDay!==completedDay||doneDay>dateNow()||(requestDay&&(!validDay(requestDay)||doneDay<requestDay)))
+    return {ok:false,reason:'개선요청 '+(key(x)||'(번호 없음)')+'의 TO-BE 완료일·최초 요청일이 누락되었거나 순서가 올바르지 않습니다. 유지점검 추출을 중단합니다.'};
   }
   const id=key(x);
   if(!id)return {ok:false,reason:kind+' 완료 사례에 원본 관리번호가 없습니다.'};
