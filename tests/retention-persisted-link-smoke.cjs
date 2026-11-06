@@ -25,3 +25,27 @@ scenario('wrong origin',[{...baseA,originCaseId:'OTHER'}],[baseD],true);
 scenario('wrong team',[{...baseA,team:'OTHER'}],[baseD],true);
 scenario('wrong audit provenance',[baseA],[{...baseD,sourceCaseId:'OTHER'}],true);
 console.log('Persisted retention linkage 8/8 scenarios passed');
+
+// Existing corrective actions must carry their own immutable provenance;
+// blank fields must not match via fallback to the inspection record.
+const guardStart=src.indexOf("if(action&&(String(action.sourceCaseId||'')!==draw.id");
+const guardEnd=src.indexOf(")){throw new Error('유지점검 개선조치",guardStart);
+assert(guardStart>=0&&guardEnd>guardStart,'existing correction provenance guard located');
+const actionConflict=new Function('action','draw','evaluator','r','return '+src.slice(guardStart+3,guardEnd+2)+';');
+const sourceR={caseId:'CASE-1',team:'조립팀',workplace:'라인A'};
+const sourceAction={id:'A1',sourceStage:'RETENTION-RANDOM',sourceCaseId:'RET-AUDIT-R1',originCaseId:'CASE-1',team:'조립팀',workplace:'라인A',initialAuditor:'auditor@hd.com'};
+const actionDraw={id:'RET-AUDIT-R1'};
+assert.equal(actionConflict(sourceAction,actionDraw,'auditor@hd.com',sourceR),false,'matching provenance accepted');
+for(const [label,change] of [
+ ['missing auditor',{initialAuditor:''}],
+ ['foreign auditor',{initialAuditor:'other@hd.com'}],
+ ['missing origin',{originCaseId:''}],
+ ['missing team',{team:''}],
+ ['missing workplace',{workplace:''}],
+ ['foreign workplace',{workplace:'라인B'}],
+]){
+ assert.equal(actionConflict({...sourceAction,...change},actionDraw,'auditor@hd.com',sourceR),true,label+' blocked');
+ console.log('PASS corrective provenance '+label);
+}
+assert.equal(actionConflict(sourceAction,actionDraw,'',{...sourceR}),true,'missing evaluator blocked');
+
