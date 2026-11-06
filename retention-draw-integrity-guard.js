@@ -19,6 +19,8 @@ function verify(self,actions){
   if(!positive&&x?.completed!==true)continue;
   const id=key(x);
   if(!id)return {ok:false,reason:kind+' 완료 사례에 원본 관리번호가 없습니다.'};
+  const team=norm(x?.team||x?.teamName||x?.ownerTeam),workplace=norm(x?.workplace);
+  if(!team||!workplace)return {ok:false,reason:kind+' '+id+'의 생산팀 또는 작업장 정보가 누락되어 유지점검 대상 추출을 중단합니다.'};
   const unique=kind+':'+id;
   if(ids.has(unique))return {ok:false,reason:'동일 구분의 완료 개선사례 관리번호가 중복됩니다: '+unique};
   ids.add(unique);
