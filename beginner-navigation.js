@@ -158,7 +158,7 @@ html body:has(.beginnerNav button:not([data-key="theme"]).active) #awTheme{displ
 }
 function ensureNav(){let nav=document.querySelector('.beginnerNav');if(!nav){nav=document.createElement('nav');nav.className='beginnerNav';nav.setAttribute('aria-label','5S 통합관리 메뉴');document.querySelector('.top')?.insertAdjacentElement('afterend',nav)}nav.innerHTML=NAV_HTML;nav.dataset.controller='canonical-five-area-v10-early-boot';return nav}
 function ensureHint(nav){document.querySelector('.beginnerHint')?.remove()}
-function bind(nav){nav.querySelectorAll('button[data-key]').forEach(btn=>btn.onclick=()=>{if(btn.dataset.key==='activity'){go('activity',nav);if(window.HD20_LAUNCHER?.openOverview)window.HD20_LAUNCHER.openOverview();else setTimeout(()=>window.HD20_LAUNCHER?.openOverview?.(),150)}else go(btn.dataset.key,nav)})}
+function bind(nav){nav.querySelectorAll('button[data-key]').forEach(btn=>btn.onclick=()=>{if(btn.dataset.key==='activity'){go('activity',nav);if(window.HD20_LAUNCHER?.openOverview)window.HD20_LAUNCHER.openOverview();else setTimeout(()=>{if(activeKey==='activity')window.HD20_LAUNCHER?.openOverview?.()},150)}else go(btn.dataset.key,nav)})}
 function normalizeDeepLink(k){return ({conversion:'advancement',workplace:'advancement'})[k]||k}
 function init(){if(initialized)return;const nav=document.querySelector('.beginnerNav');if(!nav)return;initialized=true;ensureNav();ensureHint(nav);bind(nav);installMasterViewGuard();
   const q=new URLSearchParams(location.search),raw=q.get('tab'),area=q.get('area'),section=q.get('section'),sub=q.get('sub');
