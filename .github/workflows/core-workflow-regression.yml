@@ -25,6 +25,7 @@ on:
       - 'tests/retention-followup-dedup-rollback-smoke.cjs'
       - 'tests/retention-recheck-transaction-smoke.cjs'
       - 'tests/retention-draw-integrity-smoke.cjs'
+      - 'tests/retention-verdict-origin-smoke.cjs'
       - 'tests/retention-draw-schedule-smoke.cjs'
       - 'tests/theme-row-click-regression.cjs'
       - 'tests/theme-persisted-audit-record-smoke.cjs'
@@ -72,6 +73,7 @@ jobs:
             tests/retention-followup-dedup-rollback-smoke.cjs \
             tests/retention-recheck-transaction-smoke.cjs \
             tests/retention-draw-integrity-smoke.cjs \
+            tests/retention-verdict-origin-smoke.cjs \
             tests/retention-draw-schedule-smoke.cjs \
             tests/theme-row-click-regression.cjs \
             tests/theme-persisted-audit-record-smoke.cjs \
@@ -102,6 +104,7 @@ jobs:
           node tests/retention-followup-dedup-rollback-smoke.cjs
           node tests/retention-recheck-transaction-smoke.cjs
           node tests/retention-draw-integrity-smoke.cjs
+          node tests/retention-verdict-origin-smoke.cjs
           node tests/retention-draw-schedule-smoke.cjs
           node tests/theme-row-click-regression.cjs
           node tests/theme-persisted-audit-record-smoke.cjs
