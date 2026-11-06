@@ -25,8 +25,8 @@ scenario('invalid February date blocked',[r('A1','2026-02-30','적합')],30,fals
 scenario('missing draw date blocked',[r('A1','','적합')],30,false);
 scenario('duplicate pending same source blocked',[r('A1','2026-09-01'),r('A1','2026-09-02')],30,false);
 scenario('duplicate unresolved nonconforming blocked',[r('A1','2026-09-01','부적합'),r('A1','2026-09-02','부적합')],30,false);
-scenario('closed and new pending same source allowed',[r('A1','2026-09-01','부적합',{recheckResult:'적합',recheckedAt:'2026-09-08',closedAt:'2026-09-08'}),r('A1','2026-10-01')],30,true);
-scenario('different kinds same case ID allowed',[r('A1','2026-09-01'),{...r('A1','2026-09-02'),kind:'자율개선'}],30,true);
+scenario('closed and new pending same source allowed',[r('A1','2026-09-01','부적합',{recheckResult:'적합',recheckedAt:'2026-09-08',closedAt:'2026-09-08'}),{...r('A1','2026-10-01'),id:'RET-A1-SECOND'}],30,true);
+scenario('different kinds same case ID allowed',[r('A1','2026-09-01'),{...r('A1','2026-09-02'),id:'RET-A1-SELF',kind:'자율개선'}],30,true);
 scenario('shorter configured interval respected',[r('A1','2026-10-31','적합')],5,true);
 scenario('unreadable retention store blocked',null,30,false);
 scenario('duplicate retention record IDs blocked',[r('A1','2026-09-01','적합'),{...r('A2','2026-09-02','적합'),id:'RET-A1'}],30,false);
