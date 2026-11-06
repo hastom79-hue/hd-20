@@ -26,4 +26,12 @@ jobs:
       - name: Run live read-only browser smoke
         env:
           HD20_PAGES_URL: https://hastom79-hue.github.io/hd-20/
-        run: python tests/pages-browser-smoke.py
+          HD20_E2E_EMAIL: ${{ secrets.HD20_E2E_EMAIL }}
+        run: |
+          if [ -z "$HD20_E2E_EMAIL" ]; then
+            echo "Authenticated navigation E2E: NOT RUN (HD20_E2E_EMAIL not set)" >> "$GITHUB_STEP_SUMMARY"
+            echo "Public auth gate is tested, but do not report navigation E2E as PASS." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Authorized company-mail test identity configured: will test navigation." >> "$GITHUB_STEP_SUMMARY"
+          fi
+          python tests/pages-browser-smoke.py
