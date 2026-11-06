@@ -116,6 +116,7 @@ function goActivityRegister(){
  internalRegistrationNavigation=true;
  close();navigate('activity');
  setTimeout(()=>{
+   if(window.HD20_NAV?.active?.()!=='activity'){internalRegistrationNavigation=false;return}
    window.HD20_SUBNAV?.select?.('activity','self');
    clickWhenReady(()=>document.querySelector('#awActivity [data-aw="new"]'),'awRegisterModal','activity','self');
  },0);
@@ -125,6 +126,7 @@ function goActionRegister(){
  internalRegistrationNavigation=true;
  close();navigate('activity');
  setTimeout(()=>{
+   if(window.HD20_NAV?.active?.()!=='activity'){internalRegistrationNavigation=false;return}
    window.HD20_SUBNAV?.select?.('activity','request');
    clickWhenReady(()=>document.getElementById('hd20ActionRegisterBtn'),'hd20ActionRegisterModal','activity','request');
  },0);
