@@ -1,0 +1,62 @@
+name: HD-20 Core Workflow Regression
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'audit-as-is-to-be-manager.js'
+      - 'hd20-subtabs.js'
+      - 'retention-recheck-integrity-guard.js'
+      - 'retention-draw-integrity-guard.js'
+      - 'tests/tobe-unique-action-id-smoke.cjs'
+      - 'tests/tobe-persistence-rollback-smoke.cjs'
+      - 'tests/tobe-latest-evidence-smoke.cjs'
+      - 'tests/retention-recheck-integrity-smoke.cjs'
+      - 'tests/retention-recheck-click-smoke.cjs'
+      - 'tests/retention-followup-dedup-rollback-smoke.cjs'
+      - 'tests/retention-recheck-transaction-smoke.cjs'
+      - 'tests/retention-draw-integrity-smoke.cjs'
+      - 'tests/retention-draw-schedule-smoke.cjs'
+      - '.github/workflows/core-workflow-regression.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  core-workflow:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax checks
+        run: |
+          node --check audit-as-is-to-be-manager.js
+          node --check hd20-subtabs.js
+          node --check retention-recheck-integrity-guard.js
+          node --check retention-draw-integrity-guard.js
+          for file in \
+            tests/tobe-unique-action-id-smoke.cjs \
+            tests/tobe-persistence-rollback-smoke.cjs \
+            tests/tobe-latest-evidence-smoke.cjs \
+            tests/retention-recheck-integrity-smoke.cjs \
+            tests/retention-recheck-click-smoke.cjs \
+            tests/retention-followup-dedup-rollback-smoke.cjs \
+            tests/retention-recheck-transaction-smoke.cjs \
+            tests/retention-draw-integrity-smoke.cjs \
+            tests/retention-draw-schedule-smoke.cjs
+          do
+            node --check "$file"
+          done
+      - name: Execute nine core workflow regressions
+        run: |
+          set -e
+          node tests/tobe-unique-action-id-smoke.cjs
+          node tests/tobe-persistence-rollback-smoke.cjs
+          node tests/tobe-latest-evidence-smoke.cjs
+          node tests/retention-recheck-integrity-smoke.cjs
+          node tests/retention-recheck-click-smoke.cjs
+          node tests/retention-followup-dedup-rollback-smoke.cjs
+          node tests/retention-recheck-transaction-smoke.cjs
+          node tests/retention-draw-integrity-smoke.cjs
+          node tests/retention-draw-schedule-smoke.cjs
