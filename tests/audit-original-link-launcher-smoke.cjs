@@ -102,20 +102,15 @@ const {chromium}=require('playwright');
     localStorage.setItem(actionsKey,JSON.stringify(actions));
     window.dispatchEvent(new CustomEvent('hd20-action-updated'));
   });
-  // The retired Audit action table is intentionally hidden. Exercise the real
-  // document-level exact-action-ID handler with an isolated test-only control.
-  await page.evaluate(()=>{
-    const control=document.createElement('button');
-    control.type='button';
-    control.dataset.hadOpenAudit='AUDIT-LINK-E2E-02';
-    control.dataset.hadActionId='ACTION-LINK-E2E-02';
-    control.id='hd20AuditLinkTestControl';
-    control.textContent='Audit 원본 연결 검증';
-    control.style.cssText='position:fixed;top:100px;left:100px;z-index:2147483000;padding:10px;background:#fff';
-    document.body.appendChild(control);
+  // The old Audit action queue is hidden. Reuse the verified visible Audit
+  // original-number link, setting its case IDs only inside this isolated test.
+  const bridge=page.locator('#awAudit #hd20AuditCloseEvaluation [data-had-open-audit="AUDIT-LINK-E2E-01"]');
+  await bridge.waitFor({state:'visible',timeout:10000});
+  await bridge.evaluate(el=>{
+    el.dataset.hadOpenAudit='AUDIT-LINK-E2E-02';
+    el.dataset.hadActionId='ACTION-LINK-E2E-02';
   });
-  await page.locator('#hd20AuditLinkTestControl').click({timeout:10000});
-  await page.locator('#hd20AuditLinkTestControl').evaluate(el=>el.remove());
+  await page.locator('#awAudit #hd20AuditCloseEvaluation [data-had-open-audit="AUDIT-LINK-E2E-02"]').click({timeout:10000});
   await modal.waitFor({state:'visible',timeout:10000});
   const secondBody=await modal.innerText();
   assert.match(secondBody,/AUDIT-LINK-E2E-02/,'second Audit source resolved');
