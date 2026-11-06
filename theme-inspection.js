@@ -466,7 +466,7 @@ function renderChecklist(){
  const tabs=$('#themeThemeTabs',host),categories=THEMES.filter(cat=>activeThemes.includes(cat));
  if(!categories.length){wrap.innerHTML='<div class="themeEmptyNote">해당 점검 주체·생산팀·라인의 취약테마 계획이 없습니다. [점검계획·취약현황]에서 테마를 지정하고 저장해 주세요.</div>';}
  if(tabs){tabs.innerHTML=categories.map(cat=>'<button type="button" data-focus-theme="'+esc(cat)+'"><span>'+esc(cat)+'</span><small class="themeThemeTabCount"></small></button>').join('');const chosen=categories.includes(host.dataset.focusTheme)?host.dataset.focusTheme:categories[0]||'';host.dataset.focusTheme=chosen;const activate=cat=>{host.dataset.focusTheme=cat;tabs.querySelectorAll('button').forEach(btn=>{const active=btn.dataset.focusTheme===cat;btn.classList.toggle('active',active);btn.setAttribute('aria-pressed',String(active))});wrap.querySelectorAll('.themeChecklistGroup').forEach(group=>{group.hidden=group.dataset.themeCat!==cat})};tabs.querySelectorAll('button').forEach(btn=>btn.addEventListener('click',()=>activate(btn.dataset.focusTheme)));activate(chosen);}
- $('.themeCheckRow',wrap).forEach(row=>{
+ $$('.themeCheckRow',wrap).forEach(row=>{
    $$('button',row).forEach(btn=>btn.addEventListener('click',()=>{
      $$('button',row).forEach(b=>b.classList.remove('active','ok','ng'));
      btn.classList.add('active',btn.dataset.v==='적합'?'ok':'ng');
