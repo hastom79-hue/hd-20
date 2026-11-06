@@ -78,8 +78,8 @@ function css(){
   document.head.appendChild(s);
 }
 function close(){document.getElementById('hd20Launcher')?.remove();try{sessionStorage.setItem(SEEN_KEY,'1')}catch{}}
-function clickWhenReady(findFn,modalId,area,tries=0,lastClickAt=-1){
- if(window.HD20_NAV?.active?.()!==area){internalRegistrationNavigation=false;return}
+function clickWhenReady(findFn,modalId,area,expectedSub,tries=0,lastClickAt=-1){
+ if(window.HD20_NAV?.active?.()!==area||document.getElementById('awActivity')?.dataset.subview!==expectedSub){internalRegistrationNavigation=false;return}
  const modal=document.getElementById(modalId);
  if(modal?.classList.contains('on')||modal?.getAttribute('aria-hidden')==='false'){
    internalRegistrationNavigation=false;return
@@ -102,7 +102,7 @@ function clickWhenReady(findFn,modalId,area,tries=0,lastClickAt=-1){
    window.HD20_LAUNCHER?.refreshActive?.();
    return
  }
- setTimeout(()=>clickWhenReady(findFn,modalId,area,tries+1,lastClickAt),75);
+ setTimeout(()=>clickWhenReady(findFn,modalId,area,expectedSub,tries+1,lastClickAt),75);
 }
 function hideOverview(){document.body.classList.remove('hd20InquiryActive');const grid=document.getElementById('hd20LauncherOverview');if(!grid)return;grid.classList.remove('hd20LnVisible');grid.style.removeProperty('display');grid.style.removeProperty('visibility');document.body.classList.remove('hd20UnifiedLanding')}
 function navigate(area){
@@ -117,7 +117,7 @@ function goActivityRegister(){
  close();navigate('activity');
  setTimeout(()=>{
    window.HD20_SUBNAV?.select?.('activity','self');
-   clickWhenReady(()=>document.querySelector('#awActivity [data-aw="new"]'),'awRegisterModal','activity');
+   clickWhenReady(()=>document.querySelector('#awActivity [data-aw="new"]'),'awRegisterModal','activity','self');
  },0);
 }
 function goActionRegister(){
@@ -126,7 +126,7 @@ function goActionRegister(){
  close();navigate('activity');
  setTimeout(()=>{
    window.HD20_SUBNAV?.select?.('activity','request');
-   clickWhenReady(()=>document.getElementById('hd20ActionRegisterBtn'),'hd20ActionRegisterModal','activity');
+   clickWhenReady(()=>document.getElementById('hd20ActionRegisterBtn'),'hd20ActionRegisterModal','activity','request');
  },0);
 }
 function getRows(key){try{const a=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(a)?a:[]}catch{return[]}}
