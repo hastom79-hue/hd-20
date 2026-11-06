@@ -2709,3 +2709,12 @@ Canonical Store는 다음을 기준으로 한다.
 - `index.html`에서 `retention-draw-integrity-guard.js?v=20261106-draw-v1` 연결. `tests/retention-draw-integrity-smoke.cjs`로 10개 데이터·클릭 처리 시나리오 실행: 10/10 통과, 60개 검증식 통과.
 - `.github/workflows/retention-draw-integrity.yml` 신규 CI 워크플로 구성. main 코드 `fd5c918e`, HTML `c500b4d7`, 테스트 `84bb0a8f`, CI `435e9d02` 반영.
 - 승인 대시보드, CSS, 기존 운영 데이터는 변경하지 않음. 개발 세션의 독립 클릭·단위검증 성공을 실제 브라우저 E2E, GitHub Actions 서버 실행 성공 또는 Pages 배포 확인으로 오인하지 말 것.
+
+## 2026-11-06 — 유지점검 재추출 주기·미종결 원본 중복·비정상 추출일 차단
+
+- `hd20-subtabs.js`의 기존 랜덤 추출은 `retentionCheck.intervalDays`로 최근 추출일 주기를 확인하고 점검대기/미종결 부적합 사례를 재추출 대상에서 제외함. 그러나 기존 이력에 미래·비정상 날짜가 있거나 미종결 원본번호가 중복된 경우 별도로 오류를 차단하지 않았음.
+- 기존 대형 파일을 변경하지 않고 `retention-draw-integrity-guard.js`의 캡처 단계 클릭 가드에 `verifySchedule`을 추가. 유지점검 이력 형식, 실재 YYYY-MM-DD 날짜, 미래 날짜, 동일 구분·원본번호의 미종결 이력 중복, 최근 추출일과 기준정보의 설정 주기를 검사. 종결된 원본은 주기 충족 후 재추출을 허용.
+- 개발 중 날짜 정규식 이스케이프 오류를 발견해 코드 커밋 `306842bb`에서 즉시 수정.
+- 신규 `tests/retention-draw-schedule-smoke.cjs`: 최초 추출, 29일/30일 경계, 미래/비정상/누락 날짜, 대기/부적합 중복, 종결 후 재추출, 자율개선/개선요청 구분, 기간 설정 변경, 저장소 파싱 실패 등 12개 조건 + 클릭 차단 검사. 실제 소스 실행: 12개 시나리오 및 17개 검증식 통과. 이전 후보 적격성 10개 테스트도 60개 검증식 재통과.
+- `.github/workflows/retention-draw-integrity.yml`에 주기 검증 테스트 추가, `index.html` 스크립트 캐시 `20261106-draw-v2`로 갱신. 소스 `3ea2647b`·정규식 수정 `306842bb`·테스트 `fa8de463`·CI `84b1f04f`·HTML `baaa30ad` main 반영.
+- 승인 대시보드·CSS·운영 데이터 변경 없음. 실제 브라우저 E2E·GitHub Actions 실행 성공·Pages 배포 상태 미확인.
