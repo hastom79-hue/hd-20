@@ -1,0 +1,32 @@
+name: HD-20 Pages Deployment Integrity
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'audit-as-is-to-be-manager.js'
+      - 'hd20-subtabs.js'
+      - 'retention-recheck-integrity-guard.js'
+      - 'retention-draw-integrity-guard.js'
+      - 'tests/pages-deployment-verify.py'
+      - '.github/workflows/pages-deployment-integrity.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify-live-pages:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check verifier syntax
+        run: python -m py_compile tests/pages-deployment-verify.py
+      - name: Verify deployed GitHub Pages matches commit
+        env:
+          HD20_PAGES_URL: https://hastom79-hue.github.io/hd-20/
+          HD20_DEPLOY_ATTEMPTS: '16'
+          HD20_DEPLOY_WAIT_SECONDS: '15'
+        run: python tests/pages-deployment-verify.py
