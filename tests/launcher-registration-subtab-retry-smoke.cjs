@@ -24,4 +24,29 @@ assert.equal(exercise({sub:'self',hasButton:true}).calls,1,'matching subtab can 
 assert.equal(exercise({sub:'request',hasButton:false}).queued,0,'wrong subtab stops retry timer');
 assert.equal(exercise({sub:'self',hasButton:false}).queued,1,'matching subtab retries missing button');
 assert(src.includes("'activity','self')")&&src.includes("'activity','request')"),'both launcher routes pass expected subtab');
-console.log('PASS launcher registration subtab retry: 5 checks');
+
+const routeBegin=src.indexOf('function goActivityRegister()');
+const routeEnd=src.indexOf('function getRows(',routeBegin);
+assert(routeBegin>=0&&routeEnd>routeBegin,'launcher route functions');
+const routeLogic=src.slice(routeBegin,routeEnd);
+function runInitialRoute(fnName,area){
+ const timers=[],selections=[];
+ const window={HD20_NAV:{active:()=>area},HD20_SUBNAV:{select:(a,s)=>selections.push([a,s])}};
+ const document={getElementById:()=>null};
+ const harness=new Function('window','document','setTimeout',`
+ let internalRegistrationNavigation=false;
+ function close(){} function navigate(){}
+ function clickWhenReady(){}
+ ${routeLogic}
+ return {goActivityRegister,goActionRegister,locked:()=>internalRegistrationNavigation};
+ `)(window,document,fn=>timers.push(fn));
+ harness[fnName]();
+ timers.forEach(fn=>fn());
+ return {selections,locked:harness.locked()};
+}
+assert.equal(runInitialRoute('goActivityRegister','audit').selections.length,0,'stale self registration cannot change tab');
+assert.equal(runInitialRoute('goActionRegister','master').selections.length,0,'stale request registration cannot change tab');
+assert.deepEqual(runInitialRoute('goActivityRegister','activity').selections,[['activity','self']],'current self registration routes correctly');
+assert.deepEqual(runInitialRoute('goActionRegister','activity').selections,[['activity','request']],'current request registration routes correctly');
+
+console.log('PASS launcher registration subtab retry: 9 checks');
