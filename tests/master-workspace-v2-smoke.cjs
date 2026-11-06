@@ -53,6 +53,20 @@ try{
  });
  if(initSelection.pressed!=='integrated-theme'||initSelection.active!=='integrated-theme')
    throw Error('Master deferred initializer replaced user selection '+JSON.stringify(initSelection));
+ // Canonical close and re-entry must restore the selected master editor.
+ await openMaster(page,'integrated-theme');
+ await page.locator('#hd20MasterWorkspace [data-hm-close]').click();
+ await page.waitForFunction(()=>window.HD20_NAV?.active?.()==='dashboard');
+ await page.locator('.beginnerNav button[data-key="master"]').click();
+ await page.waitForFunction(()=>window.HD20_NAV?.active?.()==='master');
+ await page.waitForTimeout(100);
+ const reopen=await page.evaluate(()=>({
+   active:document.querySelector('#masterModal .masterTabs [data-master-tab].on')?.dataset.masterTab,
+   selected:document.querySelector('#hd20MasterWorkspace [data-hm-target][aria-pressed="true"]')?.dataset.hmTarget,
+   visible:!!document.querySelector('#hd20ThemeCatalogPanel')?.getClientRects().length
+ }));
+ if(reopen.active!=='integrated-theme'||reopen.selected!=='integrated-theme'||!reopen.visible)
+   throw Error('Master re-entry failed to restore selected editor '+JSON.stringify(reopen));
  await page.locator('#hmSearch').fill('Audit');
  if(await page.locator('#hd20MasterWorkspace [data-hm-target]:visible').count()!==1)throw Error('Master search filter failed');
  await page.locator('[data-hm-reset]').click();
