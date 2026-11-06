@@ -17,6 +17,12 @@ function verify(self,actions){
   const conflict=(x?.completed===true&&!!status&&!positive)||(x?.completed===false&&positive)||(positive&&pending.test(status));
   if(conflict)return {ok:false,reason:kind+' '+(key(x)||'(번호 없음)')+'의 완료 여부가 상태값과 모순됩니다.'};
   if(!positive&&x?.completed!==true)continue;
+  // TO-BE completion requires verified AFTER evidence before random maintenance sampling.
+  if(kind==='개선요청'&&norm(x?.toBeRegisteredAt)){
+   const evidence=x?.after||x?.afterEvidence||x?.afterImage||'';
+   if(typeof evidence!=='string'||!evidence.trim())
+    return {ok:false,reason:'개선요청 '+(key(x)||'(번호 없음)')+'의 TO-BE 완료 증빙(AFTER 사진)이 없어 유지점검 추출을 중단합니다.'};
+  }
   const id=key(x);
   if(!id)return {ok:false,reason:kind+' 완료 사례에 원본 관리번호가 없습니다.'};
   const team=norm(x?.team||x?.teamName||x?.ownerTeam),workplace=norm(x?.workplace);
