@@ -64,35 +64,45 @@ const {chromium}=require('playwright');
   assert.ok(body.includes('미접수'),'linked action status is visible');
   await modal.locator('[data-had-close]').first().click();
   assert.equal(await page.locator('#hd20AuditOriginalPopup').count(),0,'detail popup closes');
-  // Two corrective cases may share one Audit ID. Clicking the second row must
-  // display the exact action, not whichever matching case is stored first.
+  // Current integrity rules require one canonical action per Audit source.
+  // A second, different Audit source must resolve to its own exact action.
   await page.evaluate(()=>{
-    const key='hd20ActionCasesV2',cases=JSON.parse(localStorage.getItem(key)||'[]');
-    cases.push({id:'ACTION-LINK-E2E-02',sourceStage:'AUDIT-REQUEST',
-      auditDrawId:'AUDIT-LINK-E2E-01',sourceCaseId:'AUDIT-LINK-E2E-01',
-      team:'테스트팀',workplace:'테스트라인',problem:'두 번째 조치 연결 검증',
-      status:'진행중',registeredAt:'2026-11-02'});
-    localStorage.setItem(key,JSON.stringify(cases));
+    const auditsKey='hd20AuditRandomDrawsV1';
+    const audits=JSON.parse(localStorage.getItem(auditsKey)||'[]');
+    audits.push({id:'AUDIT-LINK-E2E-02',team:'검증팀2',workplace:'검증라인2',
+      date:'2025-01-02',auditDate:'2025-01-02',initialAuditor:'두번째점검자',
+      auditResult:'부적합',improvementRequest:'별도 원본 연결 검증'});
+    localStorage.setItem(auditsKey,JSON.stringify(audits));
+    const actionsKey='hd20ActionCasesV2';
+    const actions=JSON.parse(localStorage.getItem(actionsKey)||'[]');
+    actions.push({id:'ACTION-LINK-E2E-02',sourceStage:'AUDIT-REQUEST',
+      auditDrawId:'AUDIT-LINK-E2E-02',sourceCaseId:'AUDIT-LINK-E2E-02',
+      team:'검증팀2',workplace:'검증라인2',problem:'별도 원본 연결 검증',
+      status:'진행중',registeredAt:'2025-01-02'});
+    localStorage.setItem(actionsKey,JSON.stringify(actions));
     window.dispatchEvent(new CustomEvent('hd20-action-updated'));
   });
   // The retired Audit action table is intentionally hidden. Exercise the real
-  // document-level exact-action-ID handler with a test-only control instead.
+  // document-level exact-action-ID handler with an isolated test-only control.
   await page.evaluate(()=>{
     const control=document.createElement('button');
     control.type='button';
-    control.dataset.hadOpenAudit='AUDIT-LINK-E2E-01';
+    control.dataset.hadOpenAudit='AUDIT-LINK-E2E-02';
     control.dataset.hadActionId='ACTION-LINK-E2E-02';
-    control.id='hd20AuditOriginalLinkTestOnly';
     document.body.appendChild(control);
     control.click();
     control.remove();
   });
   await modal.waitFor({state:'visible',timeout:10000});
-  assert.match(await modal.innerText(),/ACTION-LINK-E2E-02/,'second linked action opens exactly');
+  const secondBody=await modal.innerText();
+  assert.match(secondBody,/AUDIT-LINK-E2E-02/,'second Audit source resolved');
+  assert.match(secondBody,/ACTION-LINK-E2E-02/,'second Audit action resolved');
+  assert.ok(!secondBody.includes('ACTION-LINK-E2E-01'),'unrelated Audit action must not appear');
   await modal.locator('[data-had-close]').first().click();
   await page.evaluate(()=>{
-    const key='hd20ActionCasesV2';
-    localStorage.setItem(key,JSON.stringify(JSON.parse(localStorage.getItem(key)||'[]').filter(x=>x.id!=='ACTION-LINK-E2E-02')));
+    const a='hd20AuditRandomDrawsV1',b='hd20ActionCasesV2';
+    localStorage.setItem(a,JSON.stringify(JSON.parse(localStorage.getItem(a)||'[]').filter(x=>x.id!=='AUDIT-LINK-E2E-02')));
+    localStorage.setItem(b,JSON.stringify(JSON.parse(localStorage.getItem(b)||'[]').filter(x=>x.id!=='ACTION-LINK-E2E-02')));
     window.dispatchEvent(new CustomEvent('hd20-action-updated'));
   });
   // The former Audit action queue is not a visible work surface in current IA.
