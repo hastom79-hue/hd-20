@@ -2897,3 +2897,8 @@ Canonical Store는 다음을 기준으로 한다.
 - `index.html`: Audit 하위탭 JS 캐시 키 v82 반영.
 - 검증: 코드 상 선행 이중 갱신 경로 제거 확인. 실제 브라우저 전환/배포는 미검증.
 - 승인된 대시보드와 Audit 데이터 원본 무변경.
+
+## 2026-11-07 — 탭 전환 회귀검증 CI 누락 보완
+- `core-workflow-regression.yml`: `beginner-navigation.js` 변경 시에도 검증 실행, 지연 조회 팝업 3개 시나리오와 Audit 상위 메뉴 선행 DOM 갱신 금지 검사를 핵심 CI에 포함. 기존 12종에서 14종으로 확장.
+- `tests/audit-subtab-click-guard-smoke.cjs`: 실제 `hd20-subtabs.js` 소스에서 Audit 클릭 시 `draw` 버튼 목록을 선행 재생성하지 않는지 확인하는 회귀검사 신설.
+- 운영 데이터·승인 대시보드·기존 CSS는 변경하지 않음. Actions 실행 결과와 Pages 실제 배포는 별도 확인 필요.
