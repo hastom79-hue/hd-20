@@ -6,6 +6,7 @@ on:
       - 'audit-as-is-to-be-manager.js'
       - 'tests/tobe-unique-action-id-smoke.cjs'
       - 'tests/tobe-persistence-rollback-smoke.cjs'
+      - 'tests/tobe-latest-evidence-smoke.cjs'
       - '.github/workflows/tobe-unique-id-regression.yml'
   workflow_dispatch:
 permissions:
@@ -23,7 +24,9 @@ jobs:
           node --check audit-as-is-to-be-manager.js
           node --check tests/tobe-unique-action-id-smoke.cjs
           node --check tests/tobe-persistence-rollback-smoke.cjs
+          node --check tests/tobe-latest-evidence-smoke.cjs
       - name: Verify TO-BE unique-ID guards
         run: |
           node tests/tobe-unique-action-id-smoke.cjs
           node tests/tobe-persistence-rollback-smoke.cjs
+          node tests/tobe-latest-evidence-smoke.cjs
