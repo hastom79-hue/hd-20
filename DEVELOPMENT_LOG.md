@@ -2891,3 +2891,9 @@ Canonical Store는 다음을 기준으로 한다.
 - `tests/activity-navigation-late-overview-smoke.cjs`: 탭 이탈·탭 유지·즉시 launcher 사용 3개 시나리오 회귀검증 추가.
 - `index.html`: 네비게이션 캐시 버전 v23 갱신. 승인된 대시보드 및 데이터 로직은 미수정.
 - GitHub Actions 및 실제 브라우저 배포 후 검증은 별도 확인 필요.
+
+## 2026-11-06 — Audit 상위 메뉴 클릭 시 하위탭 일시적 재표시 개선
+- `hd20-subtabs.js`: Audit 상위 메뉴 클릭의 capture 핸들러에서 `syncAuditButtons(bar,'draw')` 선행 DOM 갱신을 제거. 정식 상태 동기화 함수 `reconcileAuditSubnav()`가 선택 상태와 버튼 목록을 단일 경로에서 갱신하도록 정리.
+- `index.html`: Audit 하위탭 JS 캐시 키 v82 반영.
+- 검증: 코드 상 선행 이중 갱신 경로 제거 확인. 실제 브라우저 전환/배포는 미검증.
+- 승인된 대시보드와 Audit 데이터 원본 무변경.
