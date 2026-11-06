@@ -14,7 +14,21 @@ const {chromium}=require('playwright');
     {id:'FILTER-2',source:'테마Audit',auditMonth:month,workplace:'라인B',team:'팀B',themeCategory:'청소',problem:'누유',status:'완료',recurrence:true,recurrenceOfActionId:'OLDER'},
     {id:'FILTER-3',source:'테마Audit',auditMonth:month,workplace:'라인C',team:'팀C',themeCategory:'정돈',problem:'공구',status:'진행중',recurrence:true,recurrenceOfActionId:'OLDER2'}
    ];
-   if(!sessionStorage.getItem('hd20ThemeFilterSeeded')){localStorage.setItem('hd20ActionCasesV2',JSON.stringify(rows));sessionStorage.setItem('hd20ThemeFilterSeeded','1')}
+   // Theme corrective actions must be linked to actual same-month Audit records.
+   // Month labels alone are deliberately insufficient under current traceability rules.
+   const checks=rows.map((x,i)=>({
+     id:'THEME-FILTER-CHECK-'+(i+1),month,inspectionOwner:'module',
+     line:x.workplace,team:x.team,auditedAt:month+'-01',states:{}
+   }));
+   rows.forEach((x,i)=>{
+     x.auditRecordId=checks[i].id;
+     x.relatedAuditRecordIds=[checks[i].id];
+   });
+   if(!sessionStorage.getItem('hd20ThemeFilterSeeded')){
+     localStorage.setItem('hd20ThemeAuditChecksV1',JSON.stringify(checks));
+     localStorage.setItem('hd20ActionCasesV2',JSON.stringify(rows));
+     sessionStorage.setItem('hd20ThemeFilterSeeded','1');
+   }
   });
   const errors=[];page.on('pageerror',e=>errors.push(String(e)));
   await page.goto('http://127.0.0.1:4173/index.html?area=audit&sub=theme',{waitUntil:'domcontentloaded',timeout:30000});
