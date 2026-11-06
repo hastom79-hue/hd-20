@@ -1,0 +1,30 @@
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const src=fs.readFileSync('theme-inspection.js','utf8');
+const start=src.indexOf(' // Reject already-corrupted duplicate open actions');
+const end=src.indexOf(" const rec={id:newId('THEME-AUDIT')",start);
+assert(start>=0&&end>start,'duplicate action preflight before Audit persistence');
+const fragment=src.slice(start,end);
+function scenario(label,actions,blocked){
+ const row={dataset:{key:'정리::불용품',cat:'정리',item:'불용품'}};
+ const rows=[row],states={'정리::불용품':'미흡'};
+ const line='L',team='A';
+ const themeSameIssue=(a,line,team,cat,problem)=>a.source==='테마Audit'&&a.workplace===line&&a.team===team&&a.themeCategory===cat&&a.problem===problem;
+ const THEME_COMPLETED_STATUSES=new Set(['완료','조치완료']);
+ const normalizeThemeStatus=x=>String(x||'').replace(/\\s+/g,'').trim();
+ const alerts=[];
+ const run=new Function('load','rows','states','line','team','themeSameIssue','THEME_COMPLETED_STATUSES','normalizeThemeStatus','alert',fragment+';return true;');
+ const returned=run(()=>actions,rows,states,line,team,themeSameIssue,THEME_COMPLETED_STATUSES,normalizeThemeStatus,m=>alerts.push(m));
+ assert.equal(returned===undefined,blocked,label);
+ assert.equal(alerts.length,blocked?1:0,label+' warning');
+}
+const matching=(id,status='조치대기',team='A')=>({id,status,source:'테마Audit',workplace:'L',team,themeCategory:'정리',problem:'[테마 점검] L · 불용품'});
+scenario('no matching open issue',[],false);
+scenario('one matching open issue',[matching('A1')],false);
+scenario('one closed and one active',[matching('A1','완료'),matching('A2')],false);
+scenario('two matching open issues',[matching('A1'),matching('A2')],true);
+scenario('matching issue in another team',[matching('A1'),matching('A2','조치대기','B')],false);
+scenario('two completed issues',[matching('A1','완료'),matching('A2','완료')],false);
+scenario('unknown status treated as open',[matching('A1',''),matching('A2','보류')],true);
+console.log('Theme duplicate active improvement guard: 7/7 passed');
