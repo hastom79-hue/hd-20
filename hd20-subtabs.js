@@ -595,6 +595,23 @@ function renderRetentionSampling(root){
   box.dataset.rsSaving='';box.querySelectorAll('[data-rs-recheck]').forEach(b=>b.disabled=false);
   window.alert('재점검 이력과 후속 개선조치 건수가 일치하지 않습니다. 자동 재조치·종결을 중단하고 관리자에게 확인해 주세요.');return;
  }
+ // Counts alone do not prove that each recheck reviewed the preceding action.
+ const orderedHistoryActions=historyActions.slice().sort((a,b)=>Number(String(a.id||'').match(/(\d+)$/)?.[1]||0)-Number(String(b.id||'').match(/(\d+)$/)?.[1]||0));
+ const brokenHistoryLink=orderedHistoryActions.some((a,i)=>{
+  const preceding=i?orderedHistoryActions[i-1].id:rows[n].actionId;
+  const record=recheckHistory?.[i];
+  return !preceding||String(a.id||'')!=='AUTO-RETENTION-RECHECK-'+rows[n].id+'-'+(i+1)||
+   String(a.previousActionId||'')!==String(preceding)||
+   String(record?.actionId||'')!==String(preceding)||record?.result!=='부적합'||
+   String(a.originCaseId||'')!==String(rows[n].caseId||'')||
+   String(a.team||'')!==String(rows[n].team||'')||
+   String(a.workplace||'')!==String(rows[n].workplace||'')||
+   String(a.initialAuditor||'')!==String(rows[n].evaluator||'');
+ });
+ if(brokenHistoryLink){
+  box.dataset.rsSaving='';box.querySelectorAll('[data-rs-recheck]').forEach(b=>b.disabled=false);
+  window.alert('재점검 이력의 직전 조치번호·순번 또는 최초 점검정보가 일치하지 않습니다. 재조치·종결을 중단합니다.');return;
+ }
  const sequence=a=>Number(String(a.id||'').match(/(\d+)$/)?.[1]||0);
  const latestHistory=historyActions.slice().sort((a,b)=>sequence(b)-sequence(a))[0]||null;
  // A retention case must point to its latest recheck action. Never silently relink to a foreign or orphaned follow-up.
