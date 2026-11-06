@@ -121,6 +121,24 @@ def main():
                 timeout=12000,
             )
             print("PASS activity subtab reload restoration and next-button click", flush=True)
+            # Stale/unknown subtab IDs must not overwrite the active view or URL.
+            before_invalid = page.evaluate("""() => ({
+                state: window.HD20_SUBNAV.state(),
+                view: document.querySelector('.app')?.getAttribute('data-hd-view'),
+                url: location.href,
+            })""")
+            page.evaluate("() => window.HD20_SUBNAV.select('activity', 'nonexistent-legacy-tab')")
+            after_invalid = page.evaluate("""() => ({
+                state: window.HD20_SUBNAV.state(),
+                view: document.querySelector('.app')?.getAttribute('data-hd-view'),
+                url: location.href,
+            })""")
+            if before_invalid != after_invalid:
+                raise AssertionError("Invalid activity subtab changed active view, state or URL")
+            buttons = page.locator("#hd20Subnav > button[data-sub]")
+            if buttons.count() != 4:
+                raise AssertionError("Activity subnavigation duplicated or lost canonical buttons")
+            print("PASS invalid subtab ignored; four canonical activity buttons preserved", flush=True)
             # Simulate another UI renderer replacing a same-looking button without its onclick.
             page.evaluate("""() => {
               const button = document.querySelector("#hd20Subnav button[data-sub='request']");
