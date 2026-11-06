@@ -52,7 +52,7 @@ jobs:
           do
             node --check "$file"
           done
-      - name: Execute nine core workflow regressions
+      - name: Execute eleven core workflow regressions
         run: |
           set -e
           node tests/tobe-unique-action-id-smoke.cjs
