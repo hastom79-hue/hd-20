@@ -30,6 +30,12 @@ function scenario(label,failAt,result,expectedActions,expectedHistory){
   assert.equal(returned.createdFollowupId,result==='부적합'?'AUTO-RETENTION-RECHECK-R1-1':'',label+' followup ID');
   const saved=load('hd20RetentionRandomChecksV1')[0];
   assert.equal(Boolean(saved.closedAt),result==='적합',label+' closure state');
+  assert.equal(saved.recheckResult,result,label+' stored final verdict');
+  assert.equal(saved.recheckHistory.at(-1)?.result,result,label+' final verdict history');
+  assert.equal(saved.recheckHistory.at(-1)?.actionId,'A1',label+' inspected action');
+  assert.equal(saved.recheckHistory.at(-1)?.evaluator,'auditor',label+' retained evaluator');
+  assert.equal(saved.recheckedAt,saved.recheckHistory.at(-1)?.at,label+' stored recheck timestamp');
+  if(result==='부적합')assert.equal(saved.followupActionId,returned.createdFollowupId,label+' new followup linkage');
  }
  console.log('PASS '+label);
 }
