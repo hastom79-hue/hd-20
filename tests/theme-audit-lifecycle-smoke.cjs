@@ -25,10 +25,16 @@ const {chromium}=require('playwright');
   });
   // The plan is injected for an isolated test line. No production master data is modified.
   await page.waitForSelector('#awTheme .themeCheckRow',{timeout:15000}).catch(async error=>{const diagnostic=await page.evaluate(()=>({line:document.getElementById('awTheme')?.dataset.line,month:document.getElementById('awTheme')?.dataset.month,view:document.getElementById('awTheme')?.dataset.view,plan:JSON.parse(localStorage.getItem('hd20ThemeAuditPlansV1')||'[]'),master:window.HD20ThemeMaster?.checklist?.().slice(0,4),note:document.getElementById('themeChecklistWrap')?.innerText?.slice(0,500)}));throw new Error(error.message+' '+JSON.stringify(diagnostic))});
+  const setAllOk=async()=>{
+   const group=page.locator('#awTheme details.themeBulkTools');
+   await group.waitFor({state:'attached',timeout:10000});
+   if(!(await group.evaluate(el=>el.open)))await group.locator('summary').click();
+   await page.locator('#themeBulkAllOk').click();
+  };
   const photo={name:'audit.png',mimeType:'image/png',buffer:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/qN8AAAAASUVORK5CYII=','base64')};
   const submit=async()=>{
    const before=await page.evaluate(()=>JSON.parse(localStorage.getItem('hd20ThemeAuditChecksV1')||'[]').filter(x=>x.line==='TEST-LINE').length);
-   await page.locator('#themeBulkAllOk').click();
+   await setAllOk();
    await page.locator('#awTheme .themeCheckRow').first().locator('[data-v="미흡"]').click();
    await page.locator('#themeAuditAuditor').fill('E2E 점검자');
    await page.locator('#themeAuditPhoto').setInputFiles(photo);
@@ -41,7 +47,7 @@ const {chromium}=require('playwright');
    assert.match(await page.locator('#themeSaveResult').textContent(),/점검 이력 저장 완료/,'save acknowledgement must be shown');
   };
   // Reject NG without photo: neither audit history nor action cases may be written.
-  await page.locator('#themeBulkAllOk').click();
+  await setAllOk();
   await page.locator('#awTheme .themeCheckRow').first().locator('[data-v="미흡"]').click();
   await page.locator('#themeAuditAuditor').fill('E2E 점검자');
   await page.locator('#themeSaveBtn').click();
