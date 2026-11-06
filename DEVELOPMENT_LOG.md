@@ -2757,3 +2757,9 @@ Canonical Store는 다음을 기준으로 한다.
 - `tests/pages-browser-smoke.py`에서 실제 `#hd20MailGateForm #hd20MailGateEmail` 표시 및 오류 안내요소를 확인하는 공개 인증 게이트 검증을 분리. `HD20_E2E_EMAIL`이 없으면 인증 후 탭 이동 검증은 명시적으로 `SKIP` 및 `NOT RUN` 처리하고 4/4 통과로 기록하지 않음. 이메일이 설정된 경우에는 승인된 @hd.com 테스트 계정을 명시적으로 입력한 뒤 대시보드→개선활동관리→Audit→테마점검 읽기 전용 검증 실행. 자동 인증 우회·업무 데이터 변경 없음.
 - `.github/workflows/pages-browser-e2e.yml`에 `secrets.HD20_E2E_EMAIL` 입력 연계 및 GitHub Step Summary의 인증 후 탐색검증 미실행 표시 추가. 코드 검증 7가지 조건 확인(인증 게이트 단계, 이메일 조건, 미실행 표시, 무우회/무쓰기 등).
 - GitHub main: 테스트 수정 `710fa18c`, 워크플로 수정 `e0538d12`. 실제 Chromium 실행·GitHub Actions 완료·Pages 현재 배포 결과는 아직 미확인. 인증 게이트 테스트가 통과하더라도 인증 후 네비게이션 E2E 성공을 의미하지 않음.
+
+## 2026-11-06 — 브라우저 E2E 탭 활성화·실제 화면 노출 동시 검증
+
+- `tests/pages-browser-smoke.py` 기존 네비게이션 검사는 상위 버튼의 `.active` 클래스만 확인하므로 화면이 숨겨져 있거나 주요 섹션이 나타나지 않아도 성공으로 판정할 수 있었음.
+- Chromium 읽기 전용 검증의 각 탭 이동에서 개선활동관리 `#awActivity`, Audit `#awAudit`, 테마점검 `#awTheme`를 실제 `visible` 상태로 확인하고, Audit/테마 화면의 `.on` 활성 상태도 함께 확인하도록 보강. 대시보드 `.app` 요소 존재도 확인. 업무 등록·저장 동작 없음.
+- main 코드 `8b735307` 반영. GitHub Actions의 기존 `pages-browser-e2e.yml`은 본 파일 변경으로 실행 대상이나 **실제 실행 및 통과 결과는 아직 확인하지 못함**. 자동로그인 우회나 사용자 데이터 변경 없음.
