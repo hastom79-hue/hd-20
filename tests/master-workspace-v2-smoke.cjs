@@ -116,6 +116,12 @@ try{
  await page.reload({waitUntil:'domcontentloaded'});
  await page.waitForSelector('#hd20MasterWorkspace [data-hm-target="integrated-team"]',{timeout:25000});
  if(await page.locator('#hd20MasterWorkspace [data-hm-target]').count()<10)throw Error('Master missing after refresh');
+
+ // Diagnostics cross-tab navigation must not select a stale subtab after a new area is active.
+ const masterSource=require('node:fs').readFileSync('master-workspace-v2.js','utf8');
+ const diagnosticSection=masterSource.slice(masterSource.indexOf('function auditMaster()'),masterSource.indexOf('registry.querySelector(\'[data-hm-audit-refresh]\')'));
+ if(!diagnosticSection.includes("window.HD20_NAV?.active?.()===x.targetArea"))
+   throw Error('Master diagnostic links lack active-area guard for delayed subtab selection');
  console.log('MASTER WORKSPACE V2 SMOKE PASS');
  if(errors.length)console.warn('Page errors:',errors.slice(0,5));
 }finally{await browser.close()}})().catch(e=>{console.error(e);process.exit(1)});
