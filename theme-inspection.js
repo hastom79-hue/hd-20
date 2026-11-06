@@ -570,7 +570,12 @@ if(file&&(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.siz
    alert('개선조치 저장에 실패하여 이번 점검 이력 등록을 취소했습니다. 저장공간을 확인하고 다시 시도해 주세요.');
    return;
  }
- const savedChecks=loadChecks(),savedRec=savedChecks.find(x=>x.id===rec.id);
+ const savedChecks=loadChecks(),persistedMatches=savedChecks.filter(x=>x.id===rec.id),savedRec=persistedMatches[0];
+ if(persistedMatches.length!==1){
+  try{localStorage.setItem(ACT_KEY,originalActions)}catch(error){console.error('[HD20 Theme] audit record action rollback failed',error)}
+  if(!saveChecks(checks.filter(x=>x.id!==rec.id)))console.error('[HD20 Theme] audit record rollback failed',rec.id);
+  alert('테마 점검 이력의 저장 결과가 누락되었거나 중복되었습니다. 개선조치 연결을 복구했으니 관리자에게 확인해 주세요.');return;
+ }
  if(savedRec){Object.assign(savedRec,{linkedActionIds:rec.linkedActionIds,createdActionIds:createdActionIds,reusedActionIds:reusedActionIds,linkedAt:rec.linkedAt,ngCount:rec.ngCount});if(!saveChecks(savedChecks)){try{localStorage.setItem(ACT_KEY,originalActions)}catch(error){console.error('[HD20 Theme] action rollback failed',error)}if(!saveChecks(checks.filter(x=>x.id!==rec.id)))console.error('[HD20 Theme] audit rollback failed',rec.id);alert('점검-개선조치 연결정보 저장에 실패하여 이번 등록을 취소했습니다. 다시 시도해 주세요.');return}}
  window.dispatchEvent(new CustomEvent('hd20-action-updated',{detail:{added:createdActionIds.length,reused:reusedActionIds.length,source:'theme-audit',auditRecordId:rec.id}}));
  window.dispatchEvent(new CustomEvent('hd20-activity-updated',{detail:{source:'테마Audit',auditRecordId:rec.id}}));
