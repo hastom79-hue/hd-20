@@ -5,6 +5,7 @@ on:
     paths:
       - 'retention-draw-integrity-guard.js'
       - 'tests/retention-draw-integrity-smoke.cjs'
+      - 'tests/retention-draw-schedule-smoke.cjs'
       - '.github/workflows/retention-draw-integrity.yml'
   workflow_dispatch:
 permissions:
@@ -21,5 +22,8 @@ jobs:
         run: |
           node --check retention-draw-integrity-guard.js
           node --check tests/retention-draw-integrity-smoke.cjs
+          node --check tests/retention-draw-schedule-smoke.cjs
       - name: Execute draw eligibility and duplicate cases
-        run: node tests/retention-draw-integrity-smoke.cjs
+        run: |
+          node tests/retention-draw-integrity-smoke.cjs
+          node tests/retention-draw-schedule-smoke.cjs
