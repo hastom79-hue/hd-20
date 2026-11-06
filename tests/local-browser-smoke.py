@@ -35,6 +35,13 @@ def main():
             if page.locator("#hd20MailGateForm:visible").count():
                 raise AssertionError("Unexpected company-mail popup on loopback; local test cannot proceed")
             print("PASS loopback boot and navigation controller", flush=True)
+            # A registration-choice overlay is intentionally shown on first visit.
+            # Exercise the real close button rather than force-clicking through it.
+            launcher = page.locator("#hd20Launcher")
+            if launcher.count() and launcher.is_visible():
+                page.locator("#hd20Launcher [data-ln-close]").click(timeout=12000)
+                launcher.wait_for(state="detached", timeout=15000)
+                print("PASS first-visit registration launcher closed via visible UI", flush=True)
             for area, region in AREAS:
                 try:
                     button = page.locator(f".beginnerNav button[data-key='{area}']")
