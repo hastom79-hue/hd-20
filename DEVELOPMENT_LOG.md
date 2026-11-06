@@ -2676,3 +2676,11 @@ Canonical Store는 다음을 기준으로 한다.
 - 이 개발 세션에서 저장 핸들러 실제 소스 추출 실행: **5/5 통과, 총 29개 검증식 통과**. GitHub Actions 워크플로 `.github/workflows/retention-followup-regression.yml`에 신규 테스트 Node 구문 검사·실행 항목을 연결.
 - 메인 브랜치 반영: 테스트 `db8c8621`, CI `53df0a4e`. 승인 대시보드·업무 데이터·HTML/CSS 변경 없음. 실제 브라우저 E2E/저장소 할당량 초과 환경/Pages 배포 상태는 별도 검증 필요.
 - 공개 웹 및 GitHub Actions 조회 시 접근 오류가 발생하여 **배포 성공 여부를 확인하지 못함**. 본 결과는 실제 브라우저 배포 완료를 뜻하지 않음.
+
+## 2026-11-06 — 유지점검 재점검 실제 클릭 이벤트 차단 검증
+
+- GitHub main 최신 커밋 및 기존 재점검 테스트 소스 재확인. 재조치 중복 검색·복원, 저장 실패·종결 5건, 무결성 17건의 기존 회귀 테스트를 현재 소스에 맞춰 재실행(모두 기대 결과 일치).
+- `tests/retention-recheck-click-smoke.cjs` 신규 작성. `retention-recheck-integrity-guard.js` 전체 모듈을 모의 document/localStorage/window 환경에서 실행하고 실제 click capture 리스너가 등록되는지, 정상 1건의 이벤트가 통과하는지, 중복 개선조치·원본 부재·생산팀 불일치·이미 종결된 유지점검에서는 preventDefault 및 stopImmediatePropagation으로 원본 클릭 핸들러가 차단되는지 확인하는 5개 시나리오.
+- 실제 소스 이벤트 핸들러를 독립 실행하여 5/5 기대 결과 일치. GitHub Actions `.github/workflows/retention-recheck-integrity.yml`에 파일 감지, node --check, 테스트 실행 추가.
+- main 커밋: 테스트 `2b43b728`, CI `e2d07b45`. 대시보드·HTML·CSS·운영 데이터 무변경.
+- GitHub Pages 및 GitHub Actions REST 웹 응답 조회가 접근 오류로 실패하여 배포 성공·CI 서버 실행 완료 여부 미확인. 브라우저 E2E 완료 판정 금지.
