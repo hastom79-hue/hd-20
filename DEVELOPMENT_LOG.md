@@ -2998,3 +2998,8 @@ Canonical Store는 다음을 기준으로 한다.
 - `audit-as-is-to-be-manager.js`: TO-BE 저장 시 `completed` boolean을 `status`와 함께 명시적으로 갱신. 완료 시 `completed=true`, 임시 조치내용 저장 시 `completed=false`. 완료 처리 후 저장 재조회에서 completed, doneStatus, doneDate, completedAt, AFTER 증빙의 일치 여부 검증. 기존 `completed:false + status:'완료'` 조합으로 랜덤 유지점검 대상 추출이 차단되는 모순 예방.
 - `tests/tobe-completion-state-smoke.cjs`: 완료·초안 저장 상태 및 영속 검증 조건 검사 추가. 핵심 CI 24종 구성. 캐시 v26 갱신.
 - 대시보드/기존 데이터/CSS 변경 없음. GitHub Actions·실브라우저·Pages 배포 성공은 아직 확인 전.
+
+## 2026-11-07 — TO-BE 완료 AFTER 증빙 형식 확인
+- `retention-draw-integrity-guard.js`: 유지점검 랜덤 추출 전에 TO-BE 등록·완료 이력이 있는 개선요청의 AFTER 증빙을 단순 비공백 문자열에서 이미지 data URL(JPEG/PNG/WEBP), HTTPS URL 또는 blob URL 형식 검사로 강화. 일반 텍스트나 text/plain data URL·HTTP URL은 차단.
+- `tests/retention-draw-integrity-smoke.cjs`: 문자 증빙·비이미지 data URL·HTTPS/HTTP/blob 사례 5개 추가(23개), 기존 완료 상태·원본/팀/작업장 검증 유지.
+- `index.html` 캐시 v5. 기존 운영 데이터·승인 대시보드·CSS 변경 없음. CI 및 운영 브라우저·Pages 성공은 별도 확인 필요.
