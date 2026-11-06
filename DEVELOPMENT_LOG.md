@@ -2837,3 +2837,9 @@ Canonical Store는 다음을 기준으로 한다.
 - `hd20-subtabs.js`의 `syncArea()` 딥링크 복원 분기에서 `$('button',bar).forEach(...)` 호출 확인. `$`는 `querySelector` 기반으로 단일 DOM 요소를 반환하므로 유효한 `?area=activity&sub=request` 등 복원 조건에서 `forEach is not a function` 예외 가능. `$$('button',bar).forEach(...)`로 수정, main `8dcaa32`.
 - `tests/pages-browser-smoke.py`에 인증 후 `activity.request` 선택→페이지 새로고침→활성 하위 탭 복원→`activity.self` 클릭 검증 추가, main `0feead4`. 페이지 새로고침 시 오류 및 버튼 이벤트 연결 누락을 포착하는 회귀 경로.
 - 검증 코드는 구현했으나 실제 Actions 실행 및 브라우저 통과는 아직 미확인. 승인 대시보드 디자인, CSS, 운영 데이터 변경 없음.
+
+## 2026-11-06 — 잘못된 하위 탭 ID 상태 오염 방지
+
+- `hd20-subtabs.js`의 공개 `HD20_SUBNAV.select(area,sub)`는 MAP에 없는 sub 값도 state·`data-hd-view`·URL에 반영할 수 있었음. 존재하지 않는/레거시 sub 문자열 및 비문자 입력을 실제 상태 변경 전에 거부하도록 수정(main `d85b97b`). 기존 호환 alias(예: audit.inspect→draw)는 변환 후 유효성 확인.
+- `tests/pages-browser-smoke.py`에 개선활동관리 정상 탭 복원 후 잘못된 sub ID를 전달하여 상태/화면속성/URL 불변, 정규 하위버튼 4개 유지 여부를 확인하는 읽기전용 회귀 검사 추가(main `1d612bb`).
+- 실제 브라우저 E2E·CI·Pages 배포 확인은 아직 수행 결과를 확보하지 못했으므로 통과로 보고하지 않음. 대시보드/운영 데이터/CSS 변경 없음.
