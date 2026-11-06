@@ -226,6 +226,7 @@ registry.querySelector('.hmAudit')?.addEventListener('toggle',e=>{if(e.target.op
 const grid=ws.querySelector('[data-hm-groups]');const all=[];
 for(const [group,...keys] of GROUPS){const section=document.createElement('div');section.className='hmGroup';section.dataset.hmGroup=group;const heading=document.createElement('h3');heading.textContent=group;heading.setAttribute('role','tab');heading.tabIndex=0;heading.setAttribute('aria-selected','false');section.appendChild(heading);const wrap=document.createElement('div');wrap.className='hmLinks';wrap.setAttribute('role','group');wrap.setAttribute('aria-label',group+' 항목');for(const key of keys){const original=tabs.querySelector('[data-master-tab="'+key+'"]');if(!original||original.hidden)continue;const btn=document.createElement('button');btn.type='button';btn.dataset.hmTarget=key;btn.title=NOTES[key]||group;btn.innerHTML='<strong></strong><small></small>';btn.querySelector('strong').textContent=original.textContent.trim();btn.querySelector('small').textContent=NOTES[key]||group;btn.addEventListener('click',()=>openMasterTarget(key));wrap.appendChild(btn);all.push(btn)}section.appendChild(wrap);if(wrap.children.length)grid.appendChild(section)}
 /* 대분류 탭: 눌렀을 때 해당 그룹의 칩만 보이게 하고, 그 그룹에서 지금 열려 있는 항목이 없으면 첫 항목을 연다(사용자가 빈 분류를 보지 않도록). */
+let masterSelectionVersion=0;
 function openMasterTarget(key){
  const b=all.find(x=>x.dataset.hmTarget===key);
  const original=tabs.querySelector('[data-master-tab="'+key+'"]');
@@ -235,9 +236,11 @@ function openMasterTarget(key){
  if(searchBox?.value){searchBox.value='';filter()}
  const group=b.closest('.hmGroup');
  if(group){group.hidden=false;activateGroup(group,false)}
+ const selectionVersion=++masterSelectionVersion;
  original.click(); // The original tab click listener also updates workspace selection.
- // Do not scroll a stale editor after the master modal is closed or switched.
+ // Ignore stale frame callbacks after a newer editor was selected.
  requestAnimationFrame(()=>{
+   if(selectionVersion!==masterSelectionVersion||!original.isConnected||!original.classList.contains('on'))return;
    if(!box.isConnected||!root.classList.contains('on'))return;
    const candidates=key==='integrated-theme'?['#hd20ThemeCatalogPanel']:
     key==='policy'?['#hd20OperatingPolicyPanel']:
