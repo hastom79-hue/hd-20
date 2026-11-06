@@ -2701,3 +2701,11 @@ Canonical Store는 다음을 기준으로 한다.
 - `tests/tobe-latest-evidence-smoke.cjs` 신규: 최신 원본 증빙 삭제, 최신 원본 증빙 존재, 신규 업로드 사진, 진행중 임시 조치, 동시 완료 변경 5가지 구문 추출 실행. **5/5 시나리오·11개 검증식 통과**.
 - TO-BE 워크플로 `.github/workflows/tobe-unique-id-regression.yml`에 신규 테스트 구문검사·실행 연결, `index.html` JS 캐시 v19로 갱신.
 - 커밋: 소스 `019a5e36`, 테스트 `63f4d70d`, CI `27b5330e`, HTML `15bc1312`. 대시보드, CSS, 업무 데이터 변경 없음. 실제 브라우저와 GitHub Actions 성공·Pages 배포 반영은 별도 확인 필요.
+
+## 2026-11-06 — 유지점검 랜덤 추출 후보 적격성·원본번호 중복 차단
+
+- `hd20-subtabs.js`의 후보 pool은 `status`가 완료 상태거나 `completed===true`인 기록을 필터링하고, 같은 구분·원본번호를 `Map`으로 마지막 1건만 유지해 중복 원본을 조용히 합칠 위험이 있었음. `completed=true`인데 상태가 진행중인 모순 사례도 완료 후보가 될 수 있었음.
+- 대용량 기존 로직을 불필요하게 변경하지 않고 `retention-draw-integrity-guard.js` 보호 모듈을 신설. 랜덤추출 `[data-rs-draw]` 클릭을 capture 단계에서 가로채기 전에 원본 자율개선과 개선요청 데이터를 검사. 동일 구분 완료 사례 원본번호 중복/누락, completed 플래그와 상태값 모순 시 추출을 중단하고 관리자 확인을 요청. 정상 후보는 기존 랜덤 추출·저장 로직으로 전달. 자율개선/개선요청 구분은 별도로 취급하고 가상 검증자료는 제외.
+- `index.html`에서 `retention-draw-integrity-guard.js?v=20261106-draw-v1` 연결. `tests/retention-draw-integrity-smoke.cjs`로 10개 데이터·클릭 처리 시나리오 실행: 10/10 통과, 60개 검증식 통과.
+- `.github/workflows/retention-draw-integrity.yml` 신규 CI 워크플로 구성. main 코드 `fd5c918e`, HTML `c500b4d7`, 테스트 `84bb0a8f`, CI `435e9d02` 반영.
+- 승인 대시보드, CSS, 기존 운영 데이터는 변경하지 않음. 개발 세션의 독립 클릭·단위검증 성공을 실제 브라우저 E2E, GitHub Actions 서버 실행 성공 또는 Pages 배포 확인으로 오인하지 말 것.
