@@ -2941,3 +2941,8 @@ Canonical Store는 다음을 기준으로 한다.
 - `tests/launcher-registration-subtab-retry-smoke.cjs`: 활성 하위탭 일치·불일치 및 재시도 예약 5개 회귀 조건 추가.
 - `core-workflow-regression.yml`: 17종 스크립트로 확장하고 런처 변경 시 실행 트리거 적용. `index.html` 런처 캐시 v25 반영.
 - 원본 데이터, 대시보드, CSS 수정 없음. CI 및 운영 브라우저·Pages 실제 실행 결과는 별도 확인 필요.
+
+## 2026-11-07 — 등록 런처 최초 지연 전환 시 메인탭 이탈 확인
+- `landing-launcher.js`: 자율개선/개선요청 등록 루트의 최초 `setTimeout(0)` 콜백 진입 시 현재 메인탭이 `activity`인지 확인. 이미 Audit/기준정보 등 타 탭으로 이동했다면 하위탭 선택을 중단하고 등록 내비게이션 잠금 해제.
+- `tests/launcher-registration-subtab-retry-smoke.cjs`: 타 탭 이탈 2개·정상 진행 2개 조건 추가(기존 5개 포함 총 9개).
+- `index.html` 런처 캐시 v26 갱신. 핵심 CI에 포함된 기존 테스트 파일 확장. 데이터·대시보드·CSS 무변경. CI·운영 웹 실제 브라우저 검증은 미확인.
