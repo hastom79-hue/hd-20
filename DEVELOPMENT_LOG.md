@@ -2862,3 +2862,9 @@ Canonical Store는 다음을 기준으로 한다.
 - `audit-as-is-to-be-manager.js`: 동일 화면의 `hd20-action-updated` 갱신 경로는 이미 존재했지만, 다른 브라우저 탭에서 `hd20ActionCasesV2` localStorage가 변경될 때 활성 TO-BE 조치관리 조회 목록이 갱신되지 않는 경로를 확인. `storage` 이벤트에서 해당 KEY이며 현재 `activity.tobe`가 활성인 경우에만 `render()` 하도록 보완(main `2316c0a`). 다른 키·비활성 화면은 불필요한 재렌더링을 하지 않음.
 - `tests/tobe-modal-lifecycle-smoke.cjs`에 교차 탭 storage 리스너의 대상 KEY 및 활성화 조건 정적 회귀 검증 추가(main `c14aa3b`). 9개 검사 시나리오 코드 구성; 실제 Node/CI 실행 통과 여부는 별도로 확인 필요.
 - 브라우저간 동기화는 동일 출처 localStorage 기반의 범위에 한정하며 서버/다중 사용자 실시간 동기화를 의미하지 않음. 대시보드 및 운영 데이터 변경 없음.
+
+## 2026-11-06 — Audit 유지점검 재점검 원본 식별정보 누락 차단
+
+- `retention-recheck-integrity-guard.js` 확인 결과 최초 점검자·생산팀·작업장 필드가 원본과 이관 조치 모두 빈 문자열이어도 기존 동등성 검사(`'' === ''`)를 통과할 수 있었음. 재점검 허용 전 원본 `caseId`, `team`, `workplace`, `evaluator` 각각 필수값 존재를 검사하도록 수정. 비어 있으면 재점검 클릭을 차단하고 기존 안내 메시지를 사용(main `0e0dda5`).
+- `tests/retention-recheck-integrity-smoke.cjs`에 원본 관리번호/점검자/생산팀/작업장 공란 시 거부 테스트 4건 추가; 기존 정상 테스트 원본에 `caseId` 명시(main `fcc856a`). `tests/retention-recheck-click-smoke.cjs`에 원본 점검자와 관리번호 공란 차단 클릭 테스트 2건 추가(main `64498e1`).
+- 검증 스크립트 실행 성공 및 실브라우저/Pages 배포 일치는 아직 확인되지 않았으므로 통과를 주장하지 않음. 기존 업무 데이터는 변경하지 않았고, 누락된 기존 이력은 관리자 원본 확인이 필요함.
