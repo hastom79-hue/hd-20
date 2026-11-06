@@ -19,7 +19,7 @@ function row(){
  elements.push(r);return r;
 }
 row();row();row();
-const $$(selector,scope)=>{
+const $=(selector,scope)=>{
  if(selector==='.themeCheckRow')return elements;
  if(selector==='button'&&scope?.buttons)return scope.buttons;
  throw Error('unknown simulated selector '+selector);
