@@ -2,7 +2,7 @@
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const src=fs.readFileSync('audit-as-is-to-be-manager.js','utf8');
-const beginning=src.indexOf('const close=()=>{');
+const beginning=src.indexOf('const close=(afterSave=false)=>{');
 const ending=src.indexOf(';overlay.querySelectorAll',beginning);
 assert(beginning>=0&&ending>beginning,'real modal close guard exists');
 const closeExpression=src.slice(beginning,ending);
