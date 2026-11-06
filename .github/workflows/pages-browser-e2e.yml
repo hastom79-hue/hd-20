@@ -1,0 +1,29 @@
+name: HD-20 Live Browser Navigation E2E
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'tests/pages-browser-smoke.py'
+      - '.github/workflows/pages-browser-e2e.yml'
+permissions:
+  contents: read
+jobs:
+  readonly-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install browser dependencies
+        run: |
+          pip install "playwright==1.55.0"
+          python -m playwright install --with-deps chromium
+      - name: Validate Python syntax
+        run: python -m py_compile tests/pages-browser-smoke.py
+      - name: Run live read-only browser smoke
+        env:
+          HD20_PAGES_URL: https://hastom79-hue.github.io/hd-20/
+        run: python tests/pages-browser-smoke.py
