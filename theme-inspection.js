@@ -527,6 +527,14 @@ async function saveAuditInternal(host){
  if(!String(draft.note||memo||'').trim()){alert('미흡 점검항목마다 발견내용 또는 공통 현장 관찰 메모를 입력해 주세요.');return}
  if(!file&&!improvementPhoto){alert('미흡 점검항목 '+row.dataset.item+'의 현장사진을 첨부해 주세요.');return}
 if(file&&(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>1048576)){alert('항목별 현장사진은 JPG/PNG/WEBP, 1MB 이하로 선택해 주세요.');return}try{findingEvidence[row.dataset.key]={note:String(draft.note||'').trim(),photo:file?await themeFileToData(file):improvementPhoto}}catch(error){alert('미흡 항목의 사진을 읽지 못했습니다. 다시 선택해 주세요.');return}}
+ // Reject already-corrupted duplicate open actions before persisting a new audit.
+ const candidateActions=load();
+ const duplicateActiveIssues=rows.filter(row=>states[row.dataset.key]==='미흡').filter(row=>{
+  const problem='[테마 점검] '+line+' · '+row.dataset.item;
+  return candidateActions.filter(a=>themeSameIssue(a,line,team,row.dataset.cat,problem)&&
+   !THEME_COMPLETED_STATUSES.has(normalizeThemeStatus(a.status))).length>1;
+ });
+ if(duplicateActiveIssues.length){alert('같은 미흡 항목에 미완료 개선조치가 중복 등록되어 있습니다. 자동 재연계하지 않고 원본 개선조치를 확인해 주세요.');return}
  const rec={id:newId('THEME-AUDIT'),line,team,month,inspectionOwner:selectedOwner(),auditor,initialAuditor:auditor,improvementPhoto,states,findingEvidence,memo,auditedAt:new Date().toISOString(),checklistVersion:4,linkedActionIds:[],createdActionIds:[],reusedActionIds:[],ngCount:rows.filter(row=>states[row.dataset.key]==='미흡').length};
  checks.push(rec);
  if(!saveChecks(checks)){alert('점검 결과를 저장하지 못했습니다. 브라우저 저장공간을 확인한 뒤 다시 시도해 주세요.');return}
