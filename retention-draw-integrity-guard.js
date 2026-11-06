@@ -32,8 +32,11 @@ function verifySchedule(retentions,today,intervalDays){
  const days=Math.max(1,Number(intervalDays)||30);
  const isDate=s=>{if(!/^\d{4}-\d{2}-\d{2}$/.test(s))return false;const d=new Date(s+'T00:00:00Z');return !Number.isNaN(d.getTime())&&d.toISOString().slice(0,10)===s};
  if(!isDate(today))return {ok:false,reason:'현재 날짜를 확인할 수 없습니다.'};
- const active=new Set();let latest='';
+ const active=new Set(),seenRetentionIds=new Set();let latest='';
  for(const r of retentions){
+  const retentionId=norm(r?.id);
+  if(!retentionId||seenRetentionIds.has(retentionId))return {ok:false,reason:'유지점검 이력의 관리번호가 누락되었거나 중복되었습니다.'};
+  seenRetentionIds.add(retentionId);
   const day=norm(r?.drawDate).slice(0,10);
   if(!isDate(day)||day>today)return {ok:false,reason:'유지점검 추출일이 누락되었거나 현재 날짜보다 미래입니다.'};
   if(day>latest)latest=day;
