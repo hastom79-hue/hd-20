@@ -1,0 +1,30 @@
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const src=fs.readFileSync('theme-inspection.js','utf8');
+const begin=src.indexOf(' const invalidReuse=rows.filter('),end=src.indexOf(" const rec={id:newId('THEME-AUDIT')",begin);
+assert(begin>=0&&end>begin,'preflight origin linkage check must precede audit save');
+assert(!src.includes("if(!dup.initialAuditor)dup.initialAuditor="),'original inspector must never be replaced by current inspector');
+const preflight=new Function('rows','states','line','team','candidateActions','checks','themeFindActive','alert',src.slice(begin,end)+'return true;');
+const orig={id:'AUD-1',initialAuditor:'first@hd.com',line:'L',team:'A'};
+const action={id:'ACT-1',source:'테마Audit',sourceStage:'THEME-AUDIT',sourceCaseId:'AUD-1',auditRecordId:'AUD-1',relatedAuditRecordIds:['AUD-1'],initialAuditor:'first@hd.com',team:'A',workplace:'L',themeCategory:'정리',problem:'[테마 점검] L · 불용품',status:'진행중'};
+const row={dataset:{key:'정리::불용품',cat:'정리',item:'불용품'}};
+function scenario(label,mutateAction,mutateOriginal,block){
+ const current=mutateAction?{...action,...mutateAction}:action,source=mutateOriginal?{...orig,...mutateOriginal}:orig;
+ const warns=[];
+ const found=(cases,line,team,cat,problem)=>cases.find(x=>x.workplace===line&&x.team===team&&x.themeCategory===cat&&x.problem===problem&&x.status!=='완료');
+ const result=preflight([row],{'정리::불용품':'미흡'},'L','A',[current],[source],found,m=>warns.push(m));
+ assert.equal(result===undefined,block,label);
+ assert.equal(warns.length,block?1:0,label+' warning');
+}
+scenario('valid original immutable',null,null,false);
+scenario('missing original inspector',{initialAuditor:''},null,true);
+scenario('foreign source stage',{sourceStage:'OTHER'},null,true);
+scenario('missing source id',{sourceCaseId:''},null,true);
+scenario('wrong audit link',{auditRecordId:'FOREIGN'},null,true);
+scenario('unlisted source',{relatedAuditRecordIds:[]},null,true);
+scenario('missing original Audit row',null,{id:'FOREIGN'},true);
+scenario('original inspector differs',null,{initialAuditor:'other@hd.com'},true);
+scenario('original line differs',null,{line:'OTHER'},true);
+scenario('original team differs',null,{team:'OTHER'},true);
+console.log('Theme reused-action provenance 10/10 scenarios passed');
