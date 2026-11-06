@@ -1,0 +1,33 @@
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const vm=require('node:vm');
+const source=fs.readFileSync('retention-recheck-integrity-guard.js','utf8');
+const baseRetention={id:'R1',caseId:'CASE-1',result:'부적합',team:'조립',workplace:'라인A',evaluator:'auditor@hd.com',actionId:'A1'};
+const baseAction={id:'A1',sourceStage:'RETENTION-RANDOM',sourceCaseId:'RET-AUDIT-R1',team:'조립',workplace:'라인A',initialAuditor:'auditor@hd.com',status:'완료'};
+function verifyClick(label,retentions,actions,shouldBlock){
+ const keys=new Map([['hd20RetentionRandomChecksV1',JSON.stringify(retentions)],['hd20ActionCasesV2',JSON.stringify(actions)]]);
+ const listeners=[],messages=[];
+ const document={addEventListener:(type,handler,capture)=>{if(type==='click')listeners.push({handler,capture})}};
+ const window={alert:message=>messages.push(message)};
+ vm.runInNewContext(source,{document,window,localStorage:{getItem:k=>keys.get(k)||null},Set,JSON});
+ assert.equal(listeners.length,1,label+' installs one click listener');
+ assert.equal(listeners[0].capture,true,label+' intercepts before target handler');
+ const box={dataset:{rsId:'R1'}};
+ const button={closest:selector=>selector==='[data-rs-id]'?box:null};
+ let prevented=0,stopped=0,downstream=0;
+ const event={target:{closest:selector=>selector==='[data-rs-recheck]'?button:null},preventDefault:()=>prevented++,stopImmediatePropagation:()=>stopped++};
+ listeners[0].handler(event);
+ if(!stopped)downstream++;
+ assert.equal(prevented,shouldBlock?1:0,label+' preventDefault');
+ assert.equal(stopped,shouldBlock?1:0,label+' propagation');
+ assert.equal(messages.length,shouldBlock?1:0,label+' warning');
+ assert.equal(downstream,shouldBlock?0:1,label+' original handler eligibility');
+ console.log('PASS '+label);
+}
+verifyClick('valid recheck leaves click to original handler',[baseRetention],[baseAction],false);
+verifyClick('duplicate action blocks click',[baseRetention],[baseAction,{...baseAction}],true);
+verifyClick('missing action blocks click',[baseRetention],[],true);
+verifyClick('foreign team blocks click',[baseRetention],[{...baseAction,team:'other'}],true);
+verifyClick('already closed case blocks click',[{...baseRetention,closedAt:'2026-11-06'}],[baseAction],true);
+console.log('Capture-phase click integrity regression: 5/5 passed');
