@@ -509,7 +509,7 @@ function renderRetentionSampling(root){
  const currentEmail=()=>{try{const a=JSON.parse(localStorage.getItem('hd20_company_session_v1')||'null');return a&&Number(a.expiresAt)>Date.now()?String(a.email||'').trim().toLowerCase():''}catch{return''}};
  const canInspect=()=>canEvaluate()||moduleEmails().map(x=>x.toLowerCase()).includes(currentEmail());
  const moduleAddress=()=>moduleEmails().join(';');
- const notifyDraft=r=>{const to=moduleEmails();if(!to.length){window.alert('먼저 마스터 관리자가 5S모듈 담당자 이메일을 등록해야 합니다.');return}const subject='[5S 유지점검 요청] '+(r.team||'대상팀')+' / '+r.kind+' '+r.caseId;const body='5S모듈 담당자님,\n\n기존 완료 개선사례가 유지점검 대상으로 무작위 선정되었습니다.\n\n- 대상팀: '+(r.team||'미지정')+'\n- 원본 사례: '+r.kind+' / '+r.caseId+'\n- 추출일: '+r.drawDate+'\n- 요청사항: 5S 활동관리시스템 > Audit > 유지점검에서 현재 유지/미유지 체크박스를 선택해 저장해 주세요.\n\n※ 이 메일은 발송 초안입니다. 실제 발송은 메일 프로그램의 보내기를 눌러야 완료됩니다.';location.href='mailto:'+to.map(encodeURIComponent).join(',')+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body)};
+ const notifyDraft=r=>{const to=moduleEmails();if(!to.length){window.alert('먼저 마스터 관리자가 5S모듈 담당자 이메일을 등록해야 합니다.');return}const subject='[5S 유지점검 요청] '+(r.team||'대상팀')+' / '+r.kind+' '+r.caseId;const body='5S모듈 담당자님,\n\n기존 완료 개선사례가 유지점검 대상으로 무작위 선정되었습니다.\n\n- 대상팀: '+(r.team||'미지정')+'\n- 원본 사례: '+r.kind+' / '+r.caseId+'\n- 추출일: '+r.drawDate+'\n- 요청사항: 5S 활동관리시스템 > Audit > 유지점검에서 현재 유지/미유지 체크박스를 선택해 저장해 주세요.\n\n※ 자동 발송이 아닙니다. 메일 프로그램에서 [보내기]를 직접 눌러야 발송되며 시스템 발송 이력은 자동 갱신되지 않습니다.';location.href='mailto:'+to.map(encodeURIComponent).join(',')+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body)};
 
  const seoulDay=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
  const calendarDays=(start,end)=>{const a=String(start||'').slice(0,10),b=String(end||'').slice(0,10);if(!/^\d{4}-\d{2}-\d{2}$/.test(a)||!/^\d{4}-\d{2}-\d{2}$/.test(b))return null;return Math.round((Date.parse(b+'T00:00:00Z')-Date.parse(a+'T00:00:00Z'))/86400000)};
@@ -697,7 +697,7 @@ function renderRetentionSampling(root){
  };
  host.querySelectorAll('[data-rs-save]').forEach(btn=>btn.onclick=()=>{
  const box=btn.closest('[data-rs-id]');if(!box||btn.disabled||box.dataset.rsSaving==='1')return;const id=box.dataset.rsId,evaluator=currentEmail(),result=box.querySelector('[data-rs-result]').value,comment=box.querySelector('[data-rs-comment]').value.trim();
- if(!canInspect()){window.alert('등록된 5S모듈 담당자 또는 마스터 관리자만 유지점검할 수 있습니다.');return} if(!result){window.alert('현재 유지 또는 미유지 체크박스를 선택하세요.');return}
+ if(!canInspect()){window.alert('등록된 5S모듈 담당자 또는 마스터 관리자만 유지점검할 수 있습니다.');return} if(!/^[^@\s]+@hd\.com$/i.test(evaluator)){window.alert('최초 평가자를 확인할 수 없습니다. HD 계정으로 다시 로그인한 후 유지점검을 저장해 주세요.');return} if(!result){window.alert('현재 유지 또는 미유지 체크박스를 선택하세요.');return}
  const rows=load('hd20RetentionRandomChecksV1'),matching=rows.map((x,i)=>String(x.id||'')===String(id||'')?i:-1).filter(i=>i>=0);if(!String(id||'').trim()||matching.length!==1){window.alert('유지점검 원본 관리번호가 누락되었거나 중복되었습니다. 판정을 저장하지 않고 관리자 확인을 요청합니다.');return}const n=matching[0];if(rows[n].result!=='점검대기')return;
  // Before the first verdict, confirm this draw still belongs to exactly one completed source.
  const originalRows=rows[n].kind==='자율개선'?load('hd20GMES5SAutoImproveRawV1'):rows[n].kind==='개선요청'?load('hd20ActionCasesV2'):[];
