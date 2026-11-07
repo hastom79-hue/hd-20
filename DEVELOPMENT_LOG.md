@@ -2,10 +2,19 @@
 
 > 목적: 반복 수정 과정에서 요구사항·구현·검증 이력이 유실되지 않도록 현재 운영본의 개발 기준과 승인된 UI/UX 원칙을 기록한다.
 > 최초 기준일: 2026-08-27
-> 최신 기준일: 2026-11-04
+> 최신 기준일: 2026-11-07
 > 운영 저장소: `hastom79-hue/hd-20`
 
 > **현재 기준 우선순위**: 아래 2026-08-26~27 기록은 당시 개발 이력으로 보존한다. `1개월 점검 → 3개월 AUDIT → 6개월 AUDIT`, 7개 업무탭, 과거 Demo/가정 KPI 등은 현재 운영기준이 아니며, 2026-09-02 이후 Change Log와 `README_OVERHAUL_20260902.md`가 충돌 시 우선한다.
+
+## 2026-11-07 — GitHub Pages 배포 검증 강화
+
+- 수정 범위: `.github/workflows/pages-deploy.yml`, `tests/pages-workflow-structure-smoke.cjs`, 코어 회귀 테스트 실행 단계명.
+- 코어 회귀 테스트 실행 단계명 실제 호출 수에 맞춰 28개 → 30개로 정정.
+- 배포 후 주요 5개 JS 파일(hd20-subtabs, audit-closed-loop-workflow, audit-as-is-to-be-manager, theme-inspection, retention-draw-integrity-guard)을 저장소 원본과 `cmp -s`로 바이트 단위 검증하도록 강화.
+- 배포 워크플로 구조 테스트에 5개 `cmp -s` 검증 존재 여부를 확인하는 회귀 조건 추가.
+- GitHub main 소스 반영 확인. Actions 실행 성공, 실제 Pages 배포 성공 및 브라우저 동작은 아직 별도 확인 필요. 이를 완료로 오인하지 말 것.
+- 대시보드 화면·지표·데이터·운영 UI는 변경하지 않음.
 
 ## 1. 프로젝트 목적
 울산캠퍼스의 5S 활동을 단순 실적 집계가 아니라 **개선활동 → 고도화 후보 → 공식 판정 → 유지·Audit → 개선조치 → 효과검증·재발관리**까지 하나의 흐름으로 관리하는 웹 기반 Prototype을 구축한다.
