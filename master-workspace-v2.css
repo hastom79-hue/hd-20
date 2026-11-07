@@ -212,7 +212,7 @@ html body #masterModal .hmAuditWarn{background:#fff1dc!important;color:#986823!i
 @media(max-width:750px){
  html body #masterModal .masterInfoBox.hd20MasterWorkspaceV4{
   display:flex!important;flex-direction:column!important;
-  width:calc(100vw - 12px)!important;max-height:calc(100dvh - 12px)!important;margin:6px auto!important;
+  width:calc(100vw - 48px)!important;max-height:calc(100dvh - 12px)!important;margin:6px auto!important;
  }
  html body #masterModal .masterInfoBox.hd20MasterWorkspaceV4>#hd20MasterWorkspace{
   position:relative!important;top:auto!important;width:100%!important;max-height:none!important;
