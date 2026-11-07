@@ -86,7 +86,7 @@ jobs:
             const maturityCheck=async()=>{await page.evaluate(()=>window.HD20_NAV?.go?.('maturity'));await page.waitForTimeout(250);const maturityState=await page.evaluate(()=>{const tab=document.querySelector('#hd20AdvStandardOperational'),st=window.HD20_SUBNAV?.state?.();return {nav:window.HD20_NAV?.active?.(),area:st?.area,sub:st?.sub,visible:!!tab&&!tab.hidden&&getComputedStyle(tab).display!=='none'}});assert(maturityState.nav==='advancement'&&maturityState.area==='advancement'&&maturityState.sub==='standard'&&maturityState.visible,'advancement maturity map not active: '+JSON.stringify(maturityState));await page.evaluate(()=>window.HD20_NAV?.go?.('dashboard'));await page.waitForTimeout(100);};
             /* activity 영역은 클릭 시 서브탭 체계 대신 "통합조회" 화면이 기본으로 뜨도록 바뀌어
                서브탭 바가 의도적으로 숨겨짐 — 깊은 서브탭 검증 대상에서 제외. */
-            const areas={advancement:['확정사례 관리'],audit:['① Audit 실시','② 개선조치·완료관리','③ 유지점검','④ 결과·재조치','⑤ Audit 점검항목'],action:['① 개선조치 등록·실행','② 미완료·지연관리','③ 효과검증·최종종결']};
+            const areas={advancement:['확정사례 관리'],audit:['① Audit 실시','② 유지점검','③ Audit 점검항목'],action:['① 개선조치 등록·실행','② 미완료·지연관리','③ 효과검증·최종종결']};
             let count=0;
             for(const [area,subs] of Object.entries(areas)){
               const areaStart=Date.now(); console.log('LOAD_STAGE area-start',area);
