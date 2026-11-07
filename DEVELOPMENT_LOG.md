@@ -45,6 +45,13 @@
 - 예방: `tests/advancement-summary-provider-smoke.cjs`에서 `vm.Script`로 전체 파일 파싱 검사; Core CI에서 `node --check hd20-condition-groups.js` 및 요약 공급 스크립트 구문 검사 추가.
 - GitHub main 반영. 실 서비스 Pages 배포 및 GitHub Actions 실행 결과는 확인되지 않아 완료로 판정하지 않음.
 
+## 2026-11-08 — Pages 배포 전 고도화 분석 구문·실행 검증 의무화
+
+- GitHub Pages 배포 단계 전 `hd20-condition-groups.js`, `maturity-condition-analysis.js`의 `node --check` 실행을 추가.
+- `tests/advancement-summary-provider-smoke.cjs` 실행을 필수화하여 패널 삽입/데이터 요약 회귀 실패 시 배포를 중단하도록 구성.
+- `tests/pages-workflow-structure-smoke.cjs`에 배포 이전 실행 순서 및 필수 검사 명령 존재 검증 추가.
+- `main` 반영 완료. GitHub Actions 결과 및 실제 Pages 접근은 현재 환경의 네트워크 제한으로 확인 불가. 성공/종결로 처리하지 않음.
+
 ## 1. 프로젝트 목적
 울산캠퍼스의 5S 활동을 단순 실적 집계가 아니라 **개선활동 → 고도화 후보 → 공식 판정 → 유지·Audit → 개선조치 → 효과검증·재발관리**까지 하나의 흐름으로 관리하는 웹 기반 Prototype을 구축한다.
 
