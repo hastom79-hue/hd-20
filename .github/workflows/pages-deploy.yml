@@ -121,7 +121,7 @@ jobs:
           grep -Fq "if(!box.isConnected||!root.classList.contains('on'))return" master-workspace-v2.js
           grep -Fq "window.HD20_NAV.go('dashboard')" master-workspace-v2.js
           grep -Fq "box.querySelectorAll(':scope > .hmSourceRegistry').forEach(node=>node.remove())" master-workspace-v2.js
-          grep -Fq 'function clickWhenReady(findFn,modalId,area,tries=0,lastClickAt=-1)' landing-launcher.js
+          grep -Fq 'function clickWhenReady(findFn,modalId,area,expectedSub,tries=0,lastClickAt=-1)' landing-launcher.js
           grep -Fq "clickWhenReady(()=>document.getElementById('hd20ActionRegisterBtn')" landing-launcher.js
           grep -Fq "snapshotActivities.forEach((x,i)=>" landing-launcher.js
           grep -Fq "localActions.forEach((x,i)=>" landing-launcher.js
