@@ -37,6 +37,14 @@ for(const [action,label] of [
 const allNames=[...pages.matchAll(/^      - name: (.+)$/gm)].map(m=>m[1]);
 assert(allNames.length>=4,'Pages workflow must include deployment stages');
 
+const analysisGate=pages.indexOf('      - name: Validate advancement analysis before deployment');
+const sourceGate=pages.indexOf('      - name: Verify deployment source');
+assert(analysisGate>=0&&sourceGate>analysisGate,'advancement runtime gate must run before deployment source checks');
+for(const command of [
+ 'node --check hd20-condition-groups.js',
+ 'node --check maturity-condition-analysis.js',
+ 'node tests/advancement-summary-provider-smoke.cjs'
+])assert(pages.includes(command),'Pages advancement pre-deploy gate missing '+command);
 const verify=pages.slice(pages.lastIndexOf('      - name: Verify published Pages revision and critical scripts'));
 for(const key of ['expected_subtabs=','expected_audit=','expected_tobe=','expected_theme=','expected_retention=',
  'grep -Fq \'completed:complete\'','grep -Fq \'Verify persisted bi-directional references\'',
