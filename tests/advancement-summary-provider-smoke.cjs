@@ -40,4 +40,19 @@ assert.equal(populated.twoPlus.length,2,'two-plus count must include three-crite
 assert.equal(populated.threeWp,1,'three-criterion workplace count incorrect');
 assert(listeners.includes('DOMContentLoaded'),'summary provider lifecycle must register');
 assert(!listeners.includes('hd20-open-performance-conversion'),'summary-only provider must not eagerly render the legacy panel');
+const ensureStart=group.indexOf('function ensure(){');
+const ensureEnd=group.indexOf('function loadSummaryProvider()',ensureStart);
+assert(ensureStart>=0&&ensureEnd>ensureStart,'condition-group mount function missing');
+const ensureCode=group.slice(ensureStart,ensureEnd);
+for(const legacyPresent of [true,false]){
+ let insert,rendered=0;
+ const host={insertAdjacentElement:(position,element)=>{insert={position,element}}};
+ const legacy=legacyPresent?host:null;
+ const dom={getElementById:id=>id==='hd20MaturityConditionAnalysis'?legacy:id==='performanceConversionAnalysis'?host:null,createElement:tag=>({tag})};
+ const run=new Function('document','window','ID','css','render',ensureCode+'return ensure()');
+ const ok=run(dom,{HD20MaturityConditionAnalysis:{summary:()=>({})}},'hd20ConditionGroups',()=>{},()=>rendered++);
+ assert.equal(ok,true,'condition-group mount must succeed without legacy panel');
+ assert.equal(insert.position,legacyPresent?'beforebegin':'afterbegin','condition-group insertion target');
+ assert.equal(rendered,1,'condition-group must render');
+}
 console.log('PASS: 3-condition groups load a summary provider without restoring legacy panel');
