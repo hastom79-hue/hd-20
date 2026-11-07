@@ -69,6 +69,8 @@ jobs:
         run: |
           node --check audit-as-is-to-be-manager.js
           node --check hd20-subtabs.js
+          node --check hd20-condition-groups.js
+          node --check maturity-condition-analysis.js
           node --check beginner-navigation.js
           node --check landing-launcher.js
           node --check retention-recheck-integrity-guard.js
