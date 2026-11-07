@@ -554,12 +554,16 @@ jobs:
               && grep -Fq 'Verify persisted bi-directional references' /tmp/hd20-published-theme.js \
               && curl --fail --silent --show-error --location --max-time 20 "$base/retention-draw-integrity-guard.js" -o /tmp/hd20-published-retention.js \
               && grep -Fq 'TO-BE 완료일·최초 요청일' /tmp/hd20-published-retention.js \
+              && curl --fail --silent --show-error --location --max-time 20 "$base/hd20-condition-groups.js" -o /tmp/hd20-published-condition-groups.js \
+              && curl --fail --silent --show-error --location --max-time 20 "$base/maturity-condition-analysis.js" -o /tmp/hd20-published-condition-provider.js \
               && cmp -s index.html /tmp/hd20-published-index.html \
               && cmp -s hd20-subtabs.js /tmp/hd20-published-subtabs.js \
               && cmp -s audit-closed-loop-workflow.js /tmp/hd20-published-audit.js \
               && cmp -s audit-as-is-to-be-manager.js /tmp/hd20-published-tobe.js \
               && cmp -s theme-inspection.js /tmp/hd20-published-theme.js \
-              && cmp -s retention-draw-integrity-guard.js /tmp/hd20-published-retention.js; then
+              && cmp -s retention-draw-integrity-guard.js /tmp/hd20-published-retention.js \
+              && cmp -s hd20-condition-groups.js /tmp/hd20-published-condition-groups.js \
+              && cmp -s maturity-condition-analysis.js /tmp/hd20-published-condition-provider.js; then
               echo "PASS: GitHub Pages serves current index and all five critical scripts"
               exit 0
             fi
