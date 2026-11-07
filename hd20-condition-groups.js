@@ -54,8 +54,12 @@ ${group(1,s.one,cfg[1],total)}${group(2,s.two,cfg[2],total)}${group(3,s.three,cf
   box.querySelectorAll('[data-cg-more]').forEach(b=>b.onclick=()=>{const body=b.parentElement.querySelector('.cgRest');const open=body.hidden;body.hidden=!open;b.textContent=open?'접기 ▴':`나머지 ${body.rows.length}곳 더 보기 ▾`});
 }
 function ensure(){
-  const host=document.getElementById('hd20MaturityConditionAnalysis');if(!host||!window.HD20MaturityConditionAnalysis?.summary)return false;
-  css();let box=document.getElementById(ID);if(!box){box=document.createElement('section');box.id=ID;host.insertAdjacentElement('beforebegin',box)}render(box);return true}
+  const legacy=document.getElementById('hd20MaturityConditionAnalysis');
+  const host=legacy||document.getElementById('performanceConversionAnalysis');
+  if(!host||!window.HD20MaturityConditionAnalysis?.summary)return false;
+  css();let box=document.getElementById(ID);
+  if(!box){box=document.createElement('section');box.id=ID;host.insertAdjacentElement(legacy?'beforebegin':'afterbegin',box)}
+  render(box);return true
 function loadSummaryProvider(){
   if(window.HD20MaturityConditionAnalysis?.summary){ensure();return}
   if(document.querySelector('script[data-hd20-mca-summary]'))return;
