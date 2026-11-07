@@ -610,33 +610,3 @@ jobs:
           done
           echo "::error::Pages deployment returned but current source assets were not confirmed"
           exit 1
- original.click();\n select(key);' master-workspace-v2.js
-          grep -Fq 'function clickWhenReady(findFn,modalId,area,tries=0,lastClickAt=-1)' landing-launcher.js
-          grep -Fq "clickWhenReady(()=>document.getElementById('hd20ActionRegisterBtn')" landing-launcher.js
-          grep -Fq "snapshotActivities.forEach((x,i)=>" landing-launcher.js
-          grep -Fq "localActions.forEach((x,i)=>" landing-launcher.js
-          grep -Fq "['self','request','tobe'].includes(currentSub)" landing-launcher.js
-          grep -Fq 'const refreshVisibleLookup=()=>' landing-launcher.js
-          grep -Fq '2026-11-03 후속 안정화 — 최초 진입과 검색 입력 보호' DEVELOPMENT_LOG.md
-          ! grep -Fq 'data-ln-tab=' landing-launcher.js
-          grep -Fq '통합조회 과거 3개 중복 탭 DOM 제거' DEVELOPMENT_LOG.md
-          grep -Fq "document.querySelector('#awRegisterModal.on,#hd20ActionRegisterModal.on')" landing-launcher.js
-          grep -Fq '등록 팝업 실행 중 조회목록 재렌더 방지' DEVELOPMENT_LOG.md
-          test -f dashboard-work-kpi-migration.js
-          grep -Fq 'dashboard-work-kpi-migration.js?v=' index.html
-          grep -Fq 'hd20DwmBarValue' dashboard-work-kpi-migration.js
-          grep -Fq 'bottom:calc(100% + 4px)' dashboard-work-kpi-migration.js
-          grep -Fq '운영 종합진단·집중관리 추이 월별 막대 데이터레이블 위치 개선' DEVELOPMENT_LOG.md
-          grep -Fq 'right:calc(50% - 4px)' dashboard-work-kpi-migration.js
-          grep -Fq 'left:calc(50% - 4px)' dashboard-work-kpi-migration.js
-          grep -Fq '차트 막대 끝 레이블 간 겹침 방지 보완' DEVELOPMENT_LOG.md
-          node --check dashboard-work-kpi-migration.js
-          grep -Fq '2026-11-04 shared non-dashboard search layout' hd20-subtabs.css
-          grep -Fq '#masterModal #hd20MasterWorkspace .hmTitle' master-workspace-v2.css
-          grep -Fq 'landing-launcher.js?v=' index.html
-          grep -Fq 'hd20-subtabs.css?v=' index.html
-          grep -Fq 'master-workspace-v2.css?v=' index.html
-          grep -Fq '운영탭 공통 검색조건 레이아웃 정리' DEVELOPMENT_LOG.md
-          node --check landing-launcher.js
-          node --check beginner-navigation.js
-          node --check hd20-action-notification-routing.js
