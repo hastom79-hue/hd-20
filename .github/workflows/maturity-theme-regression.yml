@@ -83,7 +83,7 @@ jobs:
             'active Ulsan workplace master is used for line choices': theme.includes('window.HD20WorkplaceMaster?.active?.()'),
             'theme plan store is included in canonical sync': /const KEYS=\[[^\]]*'hd20ThemeAuditPlansV1'/.test(sync),
             'local theme plans are preserved if remote key is missing': /k==='hd20ThemeAuditChecksV1'\|\|k==='hd20ThemeAuditPlansV1'/.test(sync),
-            'theme workflow CSS cache refreshed': /theme-inspection-v5\.css\?v=20261102-audit-form-layout-v8/.test(html),
+            'theme workflow CSS cache refreshed': /theme-inspection-v5\.css\?v=20261104-obsolete-plan-guard-v14/.test(html),
             'new line-month has no implicit all-theme plan': /function plannedThemes\(month,line\)\{[\s\S]*?return \[\];/.test(theme),
             'new audit round starts blank': /function checklistState\(line\)\{return \{\}\}/.test(theme),
             'previous judgements are loaded only by explicit action': theme.includes('id="themeLoadPrevious"') && theme.includes('addEventListener(\'click\',loadPreviousJudgements)'),
@@ -100,8 +100,8 @@ jobs:
             'theme audit reads integrated master checklist': theme.includes('window.HD20ThemeMaster?.checklist?.()'),
             'theme catalog is included in canonical sync': /const KEYS=\[[^\]]*'hd20ThemeCatalogMasterV1'/.test(sync),
             'theme master asset loaded before theme audit': html.indexOf('theme-master.js') < html.indexOf('theme-inspection.js'),
-            'theme master cache refreshed': /theme-master\.js\?v=20261102-master-click-handler-v4/.test(html),
-            'theme v6 assets cache refreshed': /theme-inspection-v5\.css\?v=20261102-audit-form-layout-v8/.test(html)
+            'theme master cache refreshed': /theme-master\.js\?v=20261104-safe-edit-v7/.test(html),
+            'theme v6 assets cache refreshed': /theme-inspection-v5\.css\?v=20261104-obsolete-plan-guard-v14/.test(html)
           };
           for (const [name, ok] of Object.entries(checks)) {
             console.log((ok ? 'PASS ' : 'FAIL ') + name);
