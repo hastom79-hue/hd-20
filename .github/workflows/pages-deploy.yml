@@ -29,6 +29,7 @@ jobs:
           node tests/advancement-summary-provider-smoke.cjs
       - name: Verify deployment source
         run: |
+          set -x
           test -f index.html
           test -f hd20-subtabs.js
           test -f audit-as-is-to-be-manager.js
