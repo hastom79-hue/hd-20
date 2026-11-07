@@ -964,7 +964,7 @@ function syncArea(area){
     const restoreSub=window.__HD20_RESTORE_SUB;window.__HD20_RESTORE_SUB=null;
     state.sub=restoreSub;state.area=area;const bar=ensure(),items=MAP[area]||[];
     if(area==='audit')syncAuditButtons(bar,restoreSub);
-    else{bar.innerHTML=items.map(([k,n])=>`<button type="button" data-sub="${k}" class="${k===restoreSub?'on':''}">${n}</button>`).join('');$('button',bar).forEach(b=>b.onclick=()=>select(area,b.dataset.sub))}
+    else{bar.innerHTML=items.map(([k,n])=>`<button type="button" data-sub="${k}" class="${k===restoreSub?'on':''}">${n}</button>`).join('');$$('button',bar).forEach(b=>b.onclick=()=>select(area,b.dataset.sub))}
     ensure().style.removeProperty('display');ensurePurpose().style.removeProperty('display');
     renderPurpose(area,restoreSub);requestAnimationFrame(()=>apply(area,restoreSub));return;
   }
