@@ -3,7 +3,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const src=fs.readFileSync('theme-inspection.js','utf8');
 const start=src.indexOf(' // Reject already-corrupted duplicate open actions');
-const end=src.indexOf(" const rec={id:newId('THEME-AUDIT')",start);
+const end=src.indexOf(' const invalidReuse=',start);
 assert(start>=0&&end>start,'duplicate action preflight before Audit persistence');
 const fragment=src.slice(start,end);
 function scenario(label,actions,blocked){
