@@ -38,7 +38,7 @@ console.log('Persisted retention linkage 15/15 scenarios passed');
 const guardStart=src.indexOf("if(action&&(String(action.sourceCaseId||'')!==draw.id");
 const guardEnd=src.indexOf(")){throw new Error('유지점검 개선조치",guardStart);
 assert(guardStart>=0&&guardEnd>guardStart,'existing correction provenance guard located');
-const actionConflict=new Function('action','draw','evaluator','r','return '+src.slice(guardStart+3,guardEnd+2)+';');
+const actionConflict=new Function('action','draw','evaluator','r','return '+src.slice(guardStart+3,guardEnd+1)+';');
 const sourceR={caseId:'CASE-1',team:'조립팀',workplace:'라인A'};
 const sourceAction={id:'A1',sourceStage:'RETENTION-RANDOM',sourceCaseId:'RET-AUDIT-R1',originCaseId:'CASE-1',team:'조립팀',workplace:'라인A',initialAuditor:'auditor@hd.com'};
 const actionDraw={id:'RET-AUDIT-R1'};
