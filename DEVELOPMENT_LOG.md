@@ -3324,3 +3324,10 @@ Canonical Store는 다음을 기준으로 한다.
 - 원본 관리번호 0건/중복 검출 시 삭제 중단, 삭제 직전 원본 변경 여부 재검사, 저장 실패 안내를 추가. 완료 상태 및 `toBeRegisteredAt`/`toBePlan`/`actionText`/AFTER 증빙이 있는 사례는 삭제 불가.
 - 코드 변경 커밋 `9abb2c3`. 승인된 대시보드·CSS·운영 데이터 변경 없음. 소스 변경이며 브라우저 실행·Pages 배포 성공은 미확인.
 - 잔여 위험: localStorage 기반 저장은 다중 사용자 간 동시성 및 서버 영구보존을 보장하지 않음. Audit 등 별도 저장소 참조 관계의 전수 삭제 방지와 복원 가능한 소프트 삭제는 후속 설계 필요.
+
+## 2026-11-08 — Audit 원본 연계 Chromium 회귀테스트 정합성 보정
+- 이전 Chromium run 42409644474: 12개 워크플로 성공, Audit browser smoke만 실패. `tests/audit-duplicate-header-smoke.cjs`의 원본 연계 기대값이 실제 `audit-canonical-execution.js` 계약과 불일치.
+- 실제 등록 흐름: 부적합 Audit 결과 저장 → `hd20-audit-to-action` 이벤트 및 `AUDIT-CHECKLIST` 원본 ID 전달 → 이후 Action 등록. 이 단계에서 `hd20ActionCasesV2` 레코드를 선제 생성하지 않음.
+- 테스트에서 원본 Audit ID, 최초 점검자 보존, 연계 이벤트, Action 선제생성 방지 확인하도록 변경(커밋 `37acf9ba`). 운영 HTML/CSS/JS는 변경하지 않음.
+- 커밋 `37acf9ba`의 Actions 재실행 시작: Pages 빌드/배포, 런타임 및 소스 패키징 성공 확인. Chromium 전체 재검증은 실행 중이므로 최종 완료 선언 금지.
+- 잔여 점검: 실제 Action 등록 후 원본 점검자 승계·중복 방지까지 별도 end-to-end 증빙 필요.
