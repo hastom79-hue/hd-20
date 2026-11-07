@@ -7,6 +7,9 @@ on:
       - 'action-register-modal.js'
       - 'tests/action-popup-final-vs-draft-smoke.cjs'
       - 'tests/audit-action-link-integrity-smoke.cjs'
+      - 'tests/advancement-summary-provider-smoke.cjs'
+      - 'hd20-condition-groups.js'
+      - 'maturity-condition-analysis.js'
       - 'activity-register-modal.js'
       - 'activity-workflow.js'
       - 'action-mail-workflow.js'
@@ -109,11 +112,12 @@ jobs:
             tests/audit-subtab-click-guard-smoke.cjs \
             tests/pages-workflow-structure-smoke.cjs \
             tests/action-popup-final-vs-draft-smoke.cjs \
-            tests/audit-action-link-integrity-smoke.cjs
+            tests/audit-action-link-integrity-smoke.cjs \
+            tests/advancement-summary-provider-smoke.cjs
           do
             node --check "$file"
           done
-      - name: Execute 30 core workflow regressions
+      - name: Execute 31 core workflow regressions
         run: |
           set -e
           node tests/tobe-unique-action-id-smoke.cjs
@@ -146,3 +150,4 @@ jobs:
           node tests/pages-workflow-structure-smoke.cjs
           node tests/action-popup-final-vs-draft-smoke.cjs
           node tests/audit-action-link-integrity-smoke.cjs
+          node tests/advancement-summary-provider-smoke.cjs
