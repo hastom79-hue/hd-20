@@ -6,6 +6,7 @@ on:
       - 'audit-as-is-to-be-manager.js'
       - 'action-register-modal.js'
       - 'tests/action-popup-final-vs-draft-smoke.cjs'
+      - 'tests/audit-action-link-integrity-smoke.cjs'
       - 'activity-register-modal.js'
       - 'activity-workflow.js'
       - 'action-mail-workflow.js'
@@ -107,7 +108,8 @@ jobs:
             tests/launcher-registration-subtab-retry-smoke.cjs \
             tests/audit-subtab-click-guard-smoke.cjs \
             tests/pages-workflow-structure-smoke.cjs \
-            tests/action-popup-final-vs-draft-smoke.cjs
+            tests/action-popup-final-vs-draft-smoke.cjs \
+            tests/audit-action-link-integrity-smoke.cjs
           do
             node --check "$file"
           done
@@ -143,3 +145,4 @@ jobs:
           node tests/audit-subtab-click-guard-smoke.cjs
           node tests/pages-workflow-structure-smoke.cjs
           node tests/action-popup-final-vs-draft-smoke.cjs
+          node tests/audit-action-link-integrity-smoke.cjs
