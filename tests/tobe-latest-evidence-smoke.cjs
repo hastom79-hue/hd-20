@@ -2,14 +2,14 @@
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const src=fs.readFileSync('audit-as-is-to-be-manager.js','utf8');
-const start=src.indexOf('let ix=indices[0];if(done(data[ix]))');
+const start=src.indexOf('let ix=indices[0];if(JSON.stringify(data[ix])');
 const end=src.indexOf('let old=localStorage.getItem(KEY)',start);
 assert.ok(start>=0&&end>start,'latest-origin evidence gate must exist');
 const snippet=src.slice(start,end);
-const verify=new Function('indices','data','complete','photo','err','done','after',snippet+'return true;');
+const verify=new Function('indices','data','c','complete','photo','err','done','after',snippet+'return true;');
 function scenario(name,record,complete,photo,expected,expectedMessage){
  const err={textContent:''};
- const result=verify([0],[record],complete,photo,err,x=>x.status==='완료',x=>x.after||x.afterEvidence||x.afterImage||'');
+ const result=verify([0],[record],record,complete,photo,err,x=>x.status==='완료',x=>x.after||x.afterEvidence||x.afterImage||'');
  assert.equal(result,expected,name+' permission');
  assert.equal(err.textContent.includes(expectedMessage),true,name+' message');
  console.log('PASS '+name);
