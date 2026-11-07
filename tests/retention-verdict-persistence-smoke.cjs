@@ -5,7 +5,7 @@ const src=fs.readFileSync('hd20-subtabs.js','utf8');
 const start=src.indexOf(' rows[n]=r;\n try{\n  save(');
 const end=src.indexOf(' }catch(err){',start);
 assert(start>=0&&end>start,'retention verdict persistence verification before success');
-const run=new Function('rows','n','r','save','load','evaluator','result','comment',src.slice(start,end)+';return true;');
+const run=new Function('rows','n','r','save','load','evaluator','result','comment',src.slice(start,end)+' }catch(err){throw err} return true;');
 const initial={id:'RET-1',caseId:'CASE-1',kind:'개선요청',team:'생산',workplace:'라인',result:'점검대기'};
 function scenario(name,result,alter,shouldThrow){
  const savedResult={...initial,evaluator:'inspector@hd.com',result,comment:'field check',evaluatedAt:'2026-11-07T01:00:00Z',actionId:result==='부적합'?'AUTO-RETENTION-RET-1':''};
