@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const html=fs.readFileSync('index.html','utf8');
 const group=fs.readFileSync('hd20-condition-groups.js','utf8');
 const provider=fs.readFileSync('maturity-condition-analysis.js','utf8');
-assert(html.includes('hd20-condition-groups.js?v=20261107-summary-provider-1'),'condition group cache version missing');
+assert(html.includes('hd20-condition-groups.js?v=20261108-mount-fix-1'),'condition group cache version missing');
 assert(group.includes('window.HD20_MCA_SUMMARY_ONLY=true'),'summary only flag missing');
 assert(group.includes("script.src='maturity-condition-analysis.js?v=20261107-summary-only-1'"),'summary provider loader missing');
 assert(group.includes('script.onload=()=>ensure()'),'summary provider load callback missing');
