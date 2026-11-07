@@ -20,6 +20,9 @@ for(let i=0;i<lines.length;i++){
 }
 assert(checked>0,'Pages workflow must contain executable inline Node tests');
 const names=[...pages.matchAll(/^      - name: (.+)$/gm)].map(x=>x[1]);
+assert.equal(names[0],'Checkout HD-20','Pages must checkout before tests');
+assert.equal(names[1],'Validate deployment workflow test scripts','Pages must validate workflow before source checks');
+assert(pages.includes('run: node tests/pages-workflow-structure-smoke.cjs'),'Pages deployment must execute workflow syntax gate');
 const ordered=['Configure GitHub Pages','Upload static site','Deploy to GitHub Pages','Verify published Pages revision and critical scripts'];
 assert.equal(names.length,new Set(names).size,'Pages workflow must not repeat named deployment or validation steps');
 for(const name of ordered)assert.equal(names.filter(x=>x===name).length,1,name+' must run exactly once');
