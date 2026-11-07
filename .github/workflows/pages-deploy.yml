@@ -473,8 +473,14 @@ jobs:
           test -n "$SITE_URL"
           expected_subtabs=$(grep -o 'hd20-subtabs.js?v=[^"]*' index.html | head -n 1)
           expected_audit=$(grep -o 'audit-closed-loop-workflow.js?v=[^"]*' index.html | head -n 1)
+          expected_tobe=$(grep -o 'audit-as-is-to-be-manager.js?v=[^"]*' index.html | head -n 1)
+          expected_theme=$(grep -o 'theme-inspection.js?v=[^"]*' index.html | head -n 1)
+          expected_retention=$(grep -o 'retention-draw-integrity-guard.js?v=[^"]*' index.html | head -n 1)
           test -n "$expected_subtabs"
           test -n "$expected_audit"
+          test -n "$expected_tobe"
+          test -n "$expected_theme"
+          test -n "$expected_retention"
           base="${SITE_URL%/}"
           for attempt in 1 2 3 4 5 6 7 8 9 10 11 12; do
             if curl --fail --silent --show-error --location --max-time 20 "$base/index.html" -o /tmp/hd20-published-index.html \
@@ -483,8 +489,18 @@ jobs:
               && curl --fail --silent --show-error --location --max-time 20 "$base/hd20-subtabs.js" -o /tmp/hd20-published-subtabs.js \
               && grep -Fq 'savedRetentionBefore=localStorage.getItem' /tmp/hd20-published-subtabs.js \
               && curl --fail --silent --show-error --location --max-time 20 "$base/audit-closed-loop-workflow.js" -o /tmp/hd20-published-audit.js \
-              && grep -Fq 'previousAudit=localStorage.getItem' /tmp/hd20-published-audit.js; then
-              echo "PASS: GitHub Pages serves current index and both critical scripts"
+              && grep -Fq 'previousAudit=localStorage.getItem' /tmp/hd20-published-audit.js \
+              && grep -Fq "$expected_tobe" /tmp/hd20-published-index.html \
+              && grep -Fq "$expected_theme" /tmp/hd20-published-index.html \
+              && grep -Fq "$expected_retention" /tmp/hd20-published-index.html \
+              && grep -Fq '최초 평가자를 확인할 수 없습니다' /tmp/hd20-published-subtabs.js \
+              && curl --fail --silent --show-error --location --max-time 20 "$base/audit-as-is-to-be-manager.js" -o /tmp/hd20-published-tobe.js \
+              && grep -Fq 'completed:complete' /tmp/hd20-published-tobe.js \
+              && curl --fail --silent --show-error --location --max-time 20 "$base/theme-inspection.js" -o /tmp/hd20-published-theme.js \
+              && grep -Fq 'Verify persisted bi-directional references' /tmp/hd20-published-theme.js \
+              && curl --fail --silent --show-error --location --max-time 20 "$base/retention-draw-integrity-guard.js" -o /tmp/hd20-published-retention.js \
+              && grep -Fq 'TO-BE 완료일·최초 요청일' /tmp/hd20-published-retention.js; then
+              echo "PASS: GitHub Pages serves current index and all five critical scripts"
               exit 0
             fi
             echo "Pages content not yet at current revision, attempt $attempt/12"
