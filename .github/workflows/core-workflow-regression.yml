@@ -37,7 +37,9 @@ on:
       - 'tests/activity-navigation-late-overview-smoke.cjs'
       - 'tests/launcher-registration-subtab-retry-smoke.cjs'
       - 'tests/audit-subtab-click-guard-smoke.cjs'
+      - 'tests/pages-workflow-structure-smoke.cjs'
       - '.github/workflows/core-workflow-regression.yml'
+      - '.github/workflows/pages-deploy.yml'
   workflow_dispatch:
 permissions:
   contents: read
@@ -86,11 +88,12 @@ jobs:
             tests/theme-persisted-relink-smoke.cjs \
             tests/activity-navigation-late-overview-smoke.cjs \
             tests/launcher-registration-subtab-retry-smoke.cjs \
-            tests/audit-subtab-click-guard-smoke.cjs
+            tests/audit-subtab-click-guard-smoke.cjs \
+            tests/pages-workflow-structure-smoke.cjs
           do
             node --check "$file"
           done
-      - name: Execute 27 core workflow regressions
+      - name: Execute 28 core workflow regressions
         run: |
           set -e
           node tests/tobe-unique-action-id-smoke.cjs
@@ -120,3 +123,4 @@ jobs:
           node tests/activity-navigation-late-overview-smoke.cjs
           node tests/launcher-registration-subtab-retry-smoke.cjs
           node tests/audit-subtab-click-guard-smoke.cjs
+          node tests/pages-workflow-structure-smoke.cjs
