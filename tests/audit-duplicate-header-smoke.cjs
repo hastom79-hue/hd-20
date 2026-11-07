@@ -146,12 +146,14 @@ fs.mkdirSync('artifacts',{recursive:true});
     sourceCaseId:'E2E-AUDIT-LINK-ONCE-20261103',registeredBy:'최초 감사자',
     initialAuditor:'최초 감사자',duplicateRejected:true
   },'Audit registration links one action and preserves original auditor without duplicate submission');
+  // The interactive Batch selector must accept this temporary row, so do not
+  // use an E2E- prefix that the production-only selector deliberately filters.
   // Register one isolated negative Audit through the actual form, verify
   // its auto-created action popup, then navigate to the exact row in tab ②.
   const registrationNavigation=await page.evaluate(async()=>{
     const drawKey='hd20AuditRandomDrawsV1',actionKey='hd20ActionCasesV2';
     const priorDraws=localStorage.getItem(drawKey),priorActions=localStorage.getItem(actionKey);
-    const id='E2E-AUDIT-POPUP-ROUTE-01',teamName='E2E 팝업팀';
+    const id='AUDIT-CI-POPUP-ROUTE-01',teamName='E2E 팝업팀';
     const box=document.querySelector('#awAudit .auditClosedLoop');
     const setSelect=(selector,value)=>{
       const el=box.querySelector(selector);
