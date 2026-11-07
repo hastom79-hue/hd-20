@@ -10,6 +10,8 @@ assert(guard.includes("e.target.closest?.('.beginnerNav button[data-key=\"audit\
 assert(guard.includes('queueMicrotask(schedule)'), 'audit synchronization is scheduled');
 assert(!/if\s*\(bar\)\s*syncAuditButtons\(bar,\s*['"]draw['"]\)/.test(guard),'no premature audit subtab DOM reset');
 assert(guard.includes('reconcileAuditSubnav()'),'canonical reconciliation remains installed');
-assert(src.includes(");$('button',bar).forEach"),'restored subtab must bind all buttons with querySelectorAll helper');
-assert(!src.includes(");$('button',bar).forEach"),'single-element query cannot use forEach during subtab restoration');
+const multi=String.fromCharCode(36).repeat(2);
+const single=String.fromCharCode(36);
+assert(src.includes(");"+multi+"('button',bar).forEach"),'restored subtab must bind all buttons with querySelectorAll helper');
+assert(!src.includes(");"+single+"('button',bar).forEach"),'single-element query cannot use forEach during subtab restoration');
 console.log('PASS audit top-level click has no premature subtab reset');
