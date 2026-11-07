@@ -3,6 +3,22 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const pages=fs.readFileSync('.github/workflows/pages-deploy.yml','utf8');
 const core=fs.readFileSync('.github/workflows/core-workflow-regression.yml','utf8');
+const {spawnSync}=require('node:child_process');
+const lines=pages.split('\n');
+let checked=0;
+for(let i=0;i<lines.length;i++){
+  if(lines[i].trim()!=="node <<'NODE'")continue;
+  const start=i+1;
+  let end=start;
+  while(end<lines.length&&lines[end].trim()!=='NODE')end++;
+  assert(end<lines.length,'unterminated Node heredoc at workflow line '+(i+1));
+  const source=lines.slice(start,end).map(line=>line.replace(/^          /,'')).join('\n');
+  const result=spawnSync(process.execPath,['--check','-'],{input:source,encoding:'utf8'});
+  assert.equal(result.status,0,'invalid inline Node test at workflow line '+(i+1)+': '+result.stderr);
+  checked++;
+  i=end;
+}
+assert(checked>0,'Pages workflow must contain executable inline Node tests');
 const names=[...pages.matchAll(/^      - name: (.+)$/gm)].map(x=>x[1]);
 const ordered=['Configure GitHub Pages','Upload static site','Deploy to GitHub Pages','Verify published Pages revision and critical scripts'];
 assert.equal(names.length,new Set(names).size,'Pages workflow must not repeat named deployment or validation steps');
