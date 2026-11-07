@@ -246,6 +246,13 @@
 - `index.html`의 `hd20-subtabs.js` 캐시 버전을 `20261108-restore-bind-v91`로 갱신.
 - 최신 GitHub Actions의 Pages 배포·브라우저 검사는 실행 완료 후 별도 판정. 대시보드 원본은 변경하지 않음.
 
+## 2026-11-08 — 모바일 통합기준정보 화면 초과 보정
+
+- 실제 `HD20 design layout smoke` GitHub Actions 로그에서 모바일(375px) 통합기준정보 `masterInfoBox`가 `left=25, right=388, width=363`으로 우측 뷰포트 13px 초과한 현상 확인.
+- `master-workspace-v2.css`의 모바일 전용 폭 `calc(100vw - 12px)`을 `calc(100vw - 48px)`로 변경해 모달 상위 레이아웃의 좌측 오프셋을 감안한 우측 여백 확보.
+- `index.html`의 CSS 캐시 버전 `20261108-viewport-overflow-v28`로 갱신.
+- GitHub main 반영 완료. 수정 후 Pages/브라우저 레이아웃 테스트 결과는 Actions 실행 완료 확인 전까지 미완료로 관리. 대시보드 UI·데이터 변경 없음.
+
 ## 1. 프로젝트 목적
 울산캠퍼스의 5S 활동을 단순 실적 집계가 아니라 **개선활동 → 고도화 후보 → 공식 판정 → 유지·Audit → 개선조치 → 효과검증·재발관리**까지 하나의 흐름으로 관리하는 웹 기반 Prototype을 구축한다.
 
