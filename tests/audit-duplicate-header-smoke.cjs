@@ -277,7 +277,10 @@ fs.mkdirSync('artifacts',{recursive:true});
     await page.evaluate(v=>window.HD20_SUBNAV.select('audit',v),sub);
     const blocked=await page.evaluate(selector=>{
       const el=document.querySelector('#awAudit '+selector);
-      return !el||getComputedStyle(el).display==='none';
+      if(!el)return true;
+      // A child can retain display:block while its owning subtab ancestor is hidden.
+      // Check effective layout visibility rather than only the element's own style.
+      return !el.getClientRects().length||getComputedStyle(el).visibility==='hidden';
     },foreignSelector);
     assert.equal(blocked,true,sub+' must suppress foreign '+foreignSelector);
   }
