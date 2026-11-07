@@ -52,6 +52,13 @@
 - `tests/pages-workflow-structure-smoke.cjs`에 배포 이전 실행 순서 및 필수 검사 명령 존재 검증 추가.
 - `main` 반영 완료. GitHub Actions 결과 및 실제 Pages 접근은 현재 환경의 네트워크 제한으로 확인 불가. 성공/종결로 처리하지 않음.
 
+## 2026-11-08 — 고도화 분석 배포본 무결성 검증 보완
+
+- Pages 배포 후 파일 내용 비교 대상에 `hd20-condition-groups.js` 및 `maturity-condition-analysis.js` 2개를 추가. 배포본 다운로드 후 GitHub 원본과 `cmp -s`로 비교하도록 구성.
+- `tests/pages-workflow-structure-smoke.cjs`에서 두 파일의 다운로드 및 원본 비교 검사가 존재하는지 확인하도록 추가.
+- 배포 후 확인 대상: `index.html` 1개 + 핵심 JS 7개. 배포 성공 로그 문구도 실제 검증 파일 수에 맞게 조정.
+- GitHub main에 수정 반영. Actions 및 실제 Pages 동작의 성공 여부는 아직 미확인. 대시보드 소스는 변경하지 않음.
+
 ## 1. 프로젝트 목적
 울산캠퍼스의 5S 활동을 단순 실적 집계가 아니라 **개선활동 → 고도화 후보 → 공식 판정 → 유지·Audit → 개선조치 → 효과검증·재발관리**까지 하나의 흐름으로 관리하는 웹 기반 Prototype을 구축한다.
 
