@@ -4,6 +4,14 @@ on:
     branches: [main]
     paths:
       - 'audit-as-is-to-be-manager.js'
+      - 'action-register-modal.js'
+      - 'activity-register-modal.js'
+      - 'activity-workflow.js'
+      - 'action-mail-workflow.js'
+      - 'audit-closed-loop-workflow.js'
+      - 'hd20-cross-tab-sync.js'
+      - 'master-workspace-v2.js'
+      - 'operating-policy-master.js'
       - 'hd20-subtabs.js'
       - 'beginner-navigation.js'
       - 'landing-launcher.js'
