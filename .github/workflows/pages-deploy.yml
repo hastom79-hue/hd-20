@@ -549,6 +549,7 @@ jobs:
               && grep -Fq 'Verify persisted bi-directional references' /tmp/hd20-published-theme.js \
               && curl --fail --silent --show-error --location --max-time 20 "$base/retention-draw-integrity-guard.js" -o /tmp/hd20-published-retention.js \
               && grep -Fq 'TO-BE 완료일·최초 요청일' /tmp/hd20-published-retention.js \
+              && cmp -s index.html /tmp/hd20-published-index.html \
               && cmp -s hd20-subtabs.js /tmp/hd20-published-subtabs.js \
               && cmp -s audit-closed-loop-workflow.js /tmp/hd20-published-audit.js \
               && cmp -s audit-as-is-to-be-manager.js /tmp/hd20-published-tobe.js \
