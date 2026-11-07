@@ -365,7 +365,7 @@ jobs:
           const end=src.indexOf("if(!action){action=",start);
           assert(start>=0&&end>start,'retention linkage integrity guard not found');
           const check=new Function('actions','actionId','draw','evaluator','r',src.slice(start,end)+'return action');
-          const base={id:'AUTO-RETENTION-RET-001',sourceCaseId:'RET-AUDIT-RET-001',sourceStage:'RETENTION-RANDOM',initialAuditor:'inspector@hd.com',originCaseId:'IMP-001',team:'조립팀'};
+          const base={id:'AUTO-RETENTION-RET-001',sourceCaseId:'RET-AUDIT-RET-001',sourceStage:'RETENTION-RANDOM',initialAuditor:'inspector@hd.com',originCaseId:'IMP-001',team:'조립팀',workplace:'조립1라인'};
           const cases=[
             ['fresh',[],false],
             ['existing',[base],false],
@@ -376,8 +376,8 @@ jobs:
             ['id collision',[{...base,sourceCaseId:'RET-AUDIT-FOREIGN'}],true]
           ];
           for(const [name,actions,shouldReject] of cases){
-            if(shouldReject)assert.throws(()=>check(actions,base.id,{id:base.sourceCaseId},'inspector@hd.com',{caseId:'IMP-001',team:'조립팀'}),Error,name);
-            else assert.doesNotThrow(()=>check(actions,base.id,{id:base.sourceCaseId},'inspector@hd.com',{caseId:'IMP-001',team:'조립팀'}),name);
+            if(shouldReject)assert.throws(()=>check(actions,base.id,{id:base.sourceCaseId},'inspector@hd.com',{caseId:'IMP-001',team:'조립팀',workplace:'조립1라인'}),Error,name);
+            else assert.doesNotThrow(()=>check(actions,base.id,{id:base.sourceCaseId},'inspector@hd.com',{caseId:'IMP-001',team:'조립팀',workplace:'조립1라인'}),name);
           }
           console.log('PASS: seven retention linkage integrity scenarios');
           NODE
