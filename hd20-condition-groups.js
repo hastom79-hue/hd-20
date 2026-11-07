@@ -59,7 +59,7 @@ function ensure(){
   if(!host||!window.HD20MaturityConditionAnalysis?.summary)return false;
   css();let box=document.getElementById(ID);
   if(!box){box=document.createElement('section');box.id=ID;host.insertAdjacentElement(legacy?'beforebegin':'afterbegin',box)}
-  render(box);return true
+  render(box);return true}
 function loadSummaryProvider(){
   if(window.HD20MaturityConditionAnalysis?.summary){ensure();return}
   if(document.querySelector('script[data-hd20-mca-summary]'))return;
