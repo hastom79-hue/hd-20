@@ -1,0 +1,14 @@
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const html=fs.readFileSync('index.html','utf8');
+const group=fs.readFileSync('hd20-condition-groups.js','utf8');
+const provider=fs.readFileSync('maturity-condition-analysis.js','utf8');
+assert(html.includes('hd20-condition-groups.js?v=20261107-summary-provider-1'),'condition group cache version missing');
+assert(group.includes('window.HD20_MCA_SUMMARY_ONLY=true'),'summary only flag missing');
+assert(group.includes("script.src='maturity-condition-analysis.js?v=20261107-summary-only-1'"),'summary provider loader missing');
+assert(group.includes('script.onload=()=>ensure()'),'summary provider load callback missing');
+assert(provider.includes('if(!window.HD20_MCA_SUMMARY_ONLY)render()'),'legacy panel must be suppressed during summary only mode');
+assert(provider.includes('window.HD20MaturityConditionAnalysis={criteriaState,summary,render}'),'summary API must be exported');
+assert(!html.includes('src="maturity-condition-analysis.js'),'legacy full panel must not load directly');
+console.log('PASS: 3-condition groups load a summary provider without restoring legacy panel');
