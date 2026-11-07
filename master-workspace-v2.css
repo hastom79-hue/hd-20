@@ -4,7 +4,7 @@
 html body #masterModal .masterInfoBox.hd20MasterWorkspaceV4{
  display:grid!important;grid-template-columns:260px minmax(0,1fr)!important;
  grid-auto-rows:min-content!important;align-items:start!important;
- gap:0!important;width:min(1460px,calc(100vw - 28px))!important;
+ gap:0!important;width:min(1460px,calc(100vw - 64px))!important;
  min-width:0!important;max-width:1460px!important;max-height:calc(100dvh - 28px)!important;
  height:auto!important;margin:12px auto!important;padding:0!important;
  overflow-x:hidden!important;overflow-y:auto!important;background:#f5f8fb!important;
