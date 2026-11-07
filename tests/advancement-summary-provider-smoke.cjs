@@ -11,4 +11,19 @@ assert(group.includes('script.onload=()=>ensure()'),'summary provider load callb
 assert(provider.includes('if(!window.HD20_MCA_SUMMARY_ONLY)render()'),'legacy panel must be suppressed during summary only mode');
 assert(provider.includes('window.HD20MaturityConditionAnalysis={criteriaState,summary,render}'),'summary API must be exported');
 assert(!html.includes('src="maturity-condition-analysis.js'),'legacy full panel must not load directly');
+const vm=require('node:vm');
+const listeners=[];
+const context={
+ window:{HD20_MCA_SUMMARY_ONLY:true},
+ document:{readyState:'loading',addEventListener:(event,handler)=>listeners.push(event)},
+ localStorage:{getItem:()=>null},
+ console
+};
+vm.runInNewContext(provider,context,{filename:'maturity-condition-analysis.js'});
+assert.equal(typeof context.window.HD20MaturityConditionAnalysis?.summary,'function','summary provider API must execute');
+const result=context.window.HD20MaturityConditionAnalysis.summary();
+assert.equal(result.rows.length,0,'empty input must return zero rows');
+assert.equal(result.one.length,0,'empty input must not fabricate one-criterion cases');
+assert(listeners.includes('DOMContentLoaded'),'summary provider lifecycle must register');
+assert(!listeners.includes('hd20-open-performance-conversion'),'summary-only provider must not eagerly render the legacy panel');
 console.log('PASS: 3-condition groups load a summary provider without restoring legacy panel');
