@@ -564,7 +564,7 @@ jobs:
               && cmp -s retention-draw-integrity-guard.js /tmp/hd20-published-retention.js \
               && cmp -s hd20-condition-groups.js /tmp/hd20-published-condition-groups.js \
               && cmp -s maturity-condition-analysis.js /tmp/hd20-published-condition-provider.js; then
-              echo "PASS: GitHub Pages serves current index and all five critical scripts"
+              echo "PASS: GitHub Pages serves current index and all seven critical scripts"
               exit 0
             fi
             echo "Pages content not yet at current revision, attempt $attempt/12"
