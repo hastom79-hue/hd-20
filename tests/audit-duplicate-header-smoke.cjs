@@ -150,7 +150,9 @@ fs.mkdirSync('artifacts',{recursive:true});
   // use an E2E- prefix that the production-only selector deliberately filters.
   // Register one isolated negative Audit through the actual form, verify
   // its auto-created action popup, then navigate to the exact row in tab ②.
-  // Retired Audit action queue is not a supported destination.\n  // Exact source/action identity and original popup are tested separately.\n  const firstWorkspaceOrder=await page.evaluate(()=>{
+  // Retired Audit action queue is not a supported destination.
+  // Exact source/action identity and original popup are tested separately.
+  const firstWorkspaceOrder=await page.evaluate(()=>{
     const root=document.querySelector('#awAudit');
     const draw=root?.querySelector('.auditDraw');
     const batch=root?.querySelector('#hd20AuditBatchExecution');
