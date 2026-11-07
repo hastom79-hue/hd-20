@@ -37,6 +37,14 @@
 - 회귀 테스트에 과거 패널 유무 두 경우의 삽입 위치·렌더링 체크 추가. `index.html` 캐시 버전 및 테스트 기대값 갱신.
 - GitHub main 반영 및 소스 정적 확인 완료. 실제 GitHub Actions 통과와 Pages 화면 표시 확인은 미완료. 대시보드 수정 없음.
 
+## 2026-11-08 — 고도화 3조건 분석 JavaScript 구문 오류 수정
+
+- 발견: `hd20-condition-groups.js`의 `ensure()` 함수 닫는 중괄호 누락으로 `SyntaxError: Unexpected token ')'` 발생. 해당 JS 전체 실행이 중단될 수 있었음.
+- 조치: 누락 중괄호 추가, `index.html` 캐시 버전 `20261108-syntax-fix-2` 갱신.
+- 검증: V8 구문 파싱 통과. 기존 분석 패널 유/무 각각 `ensure()` 호출 시 예상 삽입 위치 및 렌더 1회 동작 확인.
+- 예방: `tests/advancement-summary-provider-smoke.cjs`에서 `vm.Script`로 전체 파일 파싱 검사; Core CI에서 `node --check hd20-condition-groups.js` 및 요약 공급 스크립트 구문 검사 추가.
+- GitHub main 반영. 실 서비스 Pages 배포 및 GitHub Actions 실행 결과는 확인되지 않아 완료로 판정하지 않음.
+
 ## 1. 프로젝트 목적
 울산캠퍼스의 5S 활동을 단순 실적 집계가 아니라 **개선활동 → 고도화 후보 → 공식 판정 → 유지·Audit → 개선조치 → 효과검증·재발관리**까지 하나의 흐름으로 관리하는 웹 기반 Prototype을 구축한다.
 
