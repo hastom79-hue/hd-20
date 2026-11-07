@@ -27,7 +27,7 @@ jobs:
             const advancementLevels=['1개 조건 충족 영역','2개 이상 충족 영역','3개 모두 충족 영역'];
             for(const vp of cases){
               const page=await browser.newPage({viewport:{width:vp.width,height:vp.height}});
-              const errors=[]; page.on('pageerror',e=>errors.push(String(e))); page.on('dialog',d=>d.accept());
+              const errors=[]; page.on('pageerror',e=>errors.push(String(e.stack||e))); page.on('dialog',d=>d.accept());
               await page.route('**/*',route=>{const req=route.request(),u=new URL(req.url());if(u.hostname==='127.0.0.1'||u.hostname==='localhost')return route.continue();if(req.resourceType()==='script')return route.fulfill({status:200,contentType:'application/javascript',body:'/* HD20 CI external script stub */'});return route.abort('blockedbyclient')});
               await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'commit',timeout:15000});
               await page.waitForFunction(()=>!!document.querySelector('.beginnerNav button[data-key="dashboard"]'),{},{timeout:20000});
