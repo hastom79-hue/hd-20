@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const html=fs.readFileSync('index.html','utf8');
 const group=fs.readFileSync('hd20-condition-groups.js','utf8');
 const provider=fs.readFileSync('maturity-condition-analysis.js','utf8');
-assert(html.includes('hd20-condition-groups.js?v=20261108-mount-fix-1'),'condition group cache version missing');
+assert(html.includes('hd20-condition-groups.js?v=20261108-syntax-fix-2'),'condition group cache version missing');
 assert(group.includes('window.HD20_MCA_SUMMARY_ONLY=true'),'summary only flag missing');
 assert(group.includes("script.src='maturity-condition-analysis.js?v=20261107-summary-only-1'"),'summary provider loader missing');
 assert(group.includes('script.onload=()=>ensure()'),'summary provider load callback missing');
@@ -40,6 +40,7 @@ assert.equal(populated.twoPlus.length,2,'two-plus count must include three-crite
 assert.equal(populated.threeWp,1,'three-criterion workplace count incorrect');
 assert(listeners.includes('DOMContentLoaded'),'summary provider lifecycle must register');
 assert(!listeners.includes('hd20-open-performance-conversion'),'summary-only provider must not eagerly render the legacy panel');
+new vm.Script(group,{filename:'hd20-condition-groups.js'});
 const ensureStart=group.indexOf('function ensure(){');
 const ensureEnd=group.indexOf('function loadSummaryProvider()',ensureStart);
 assert(ensureStart>=0&&ensureEnd>ensureStart,'condition-group mount function missing');
