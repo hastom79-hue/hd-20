@@ -100,6 +100,16 @@
 - 이번에 6개 테스트/320개 조건을 현재 GitHub `main` 소스로 직접 모의 실행해 전부 통과. 운영 JS·대시보드 변경 없음.
 - GitHub Pages/Actions 공개 웹 URL 접근 실패로 실제 배포 및 브라우저 검증은 미확인 상태 유지.
 
+## 2026-11-08 — 실제 GitHub Actions 실패 원인 확인 및 수정
+
+- GitHub Actions REST 조회로 `23923aac` 커밋의 자체 Pages 배포/다수 브라우저 회귀검증 실패를 확인. GitHub 기본 `pages build and deployment` 워크플로는 성공했으나 별도 HD-20 Pages 배포 검증은 실패.
+- `HD20 current IA smoke` 실제 브라우저 예외 스택에서 `action-mail-workflow.js:renderCases`의 `null.forEach`를 확인. 삭제 버튼 단일 요소 선택 `$('[data-del]',body)`에 `.forEach`를 호출하던 오류를 다중 선택 `$('[data-del]',body)`로 수정하고 `index.html` 버전 키 갱신.
+- `maturity-theme-regression.yml`의 `theme-inspection.js` 캐시 버전 기대값을 실제 배포 파일에 맞춰 갱신.
+- Pages 검증 실패를 추적하도록 `Verify deployment source`에 명령 추적을 추가한 결과, `clickWhenReady` 함수에 새로 추가된 `expectedSub` 인수를 배포 검증이 반영하지 못한 점을 확인하고 테스트 조건 수정.
+- 후속 Pages 단계에서 유지점검 `hd20-action-updated` 콜백을 이벤트 없이 호출하던 테스트 오류 발견. 실제 이벤트 인자 제공 및 `retention-recheck` 이벤트 중복 렌더링 차단 검증 추가.
+- 실제 브라우저 오류 스택 출력 및 삭제 버튼 목록 회귀 검사 보강. 새 GitHub Actions 실행 완료 확인 전까지 최종 배포/운영 검증은 미완료 상태 유지.
+- 승인된 대시보드 UI 및 데이터는 변경하지 않음.
+
 ## 1. 프로젝트 목적
 울산캠퍼스의 5S 활동을 단순 실적 집계가 아니라 **개선활동 → 고도화 후보 → 공식 판정 → 유지·Audit → 개선조치 → 효과검증·재발관리**까지 하나의 흐름으로 관리하는 웹 기반 Prototype을 구축한다.
 
