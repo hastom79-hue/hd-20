@@ -18,6 +18,14 @@
 - 후속 배포 검증: `index.html` 또한 GitHub Pages 응답 파일과 바이트 단위 비교하도록 강화. 배포 무결성 확인 대상은 HTML 1개 + JS 5개(총 6개). 구조 회귀 테스트에 HTML 비교 필수 조건 추가.
 - 온라인 Pages 실접속 및 GitHub Actions 결과는 현재 연결 환경에서 확인되지 않아 성공으로 판정하지 않음.
 
+## 2026-11-07 — 고도화 3조건 분석 데이터 공급 연결 복구
+
+- 확인된 원인: `hd20-condition-groups.js`가 `window.HD20MaturityConditionAnalysis.summary()`를 호출하지만, 공급 스크립트 `maturity-condition-analysis.js`는 정적·폴백 로딩 대상에서 제외되어 분석 패널이 초기화되지 않을 수 있었음.
+- 조치: 고도화 조건그룹 화면에서 요약 전용 모드로 필요한 스크립트를 동적 로드하고, 기존 중복 대형 분석 패널의 자동 렌더는 차단.
+- `index.html`의 조건그룹 캐시 버전을 갱신. 대시보드 로직·집계 데이터·다른 탭 배치는 수정하지 않음.
+- `tests/advancement-summary-provider-smoke.cjs` 추가하고 Core Workflow CI 실행목록에 포함. 전체 회귀 명칭 31개로 갱신.
+- V8 JavaScript 구문 및 연결 문자열 정적 검증 통과. GitHub Pages 배포 및 실제 브라우저 UI 검증은 아직 미확인.
+
 ## 1. 프로젝트 목적
 울산캠퍼스의 5S 활동을 단순 실적 집계가 아니라 **개선활동 → 고도화 후보 → 공식 판정 → 유지·Audit → 개선조치 → 효과검증·재발관리**까지 하나의 흐름으로 관리하는 웹 기반 Prototype을 구축한다.
 
