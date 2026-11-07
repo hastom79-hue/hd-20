@@ -20,6 +20,8 @@ jobs:
     steps:
       - name: Checkout HD-20
         uses: actions/checkout@v4
+      - name: Validate deployment workflow test scripts
+        run: node tests/pages-workflow-structure-smoke.cjs
       - name: Verify deployment source
         run: |
           test -f index.html
