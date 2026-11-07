@@ -253,6 +253,13 @@
 - `index.html`의 CSS 캐시 버전 `20261108-viewport-overflow-v28`로 갱신.
 - GitHub main 반영 완료. 수정 후 Pages/브라우저 레이아웃 테스트 결과는 Actions 실행 완료 확인 전까지 미완료로 관리. 대시보드 UI·데이터 변경 없음.
 
+## 2026-11-08 — 테마점검 회귀검증 실제 Actions 성공 및 최종 화면 안정화
+
+- `HD20 maturity counts and theme audit history regression` GitHub Actions 실패 원인(오래된 CSS/마스터 캐시 버전, 점검 주체 인수가 추가된 `plannedThemes` 서명, 최신 경고 문구, 점검 주체를 포함하는 KPI 월별 필터)을 최신 실제 소스와 비교하여 검증 워크플로만 보정. 운영 테마점검 데이터·판정 로직은 변경하지 않음.
+- 워크플로의 inline Node 계약 검사 48개를 현재 GitHub 소스로 모의 실행해 전부 통과. 커밋 `8475e322`의 `HD20 maturity counts and theme audit history regression` GitHub Actions에서도 success 확인.
+- 통합기준정보 모달의 데스크톱·모바일 폭 초과 보정 후 `HD20 design layout smoke`는 커밋 `8d779b39`에서 실제 Actions success 확인. 대시보드·화면 정보구조·런타임 등 다른 테스트 통과 상황도 지속 추적.
+- 커밋 `8475e322`의 GitHub Pages 자체 배포 및 기본 pages build and deployment 역시 success 확인. 별도 브라우저 업무 시나리오 중 아직 진행 중인 검사는 전체 완료로 표시하지 않음.
+
 ## 1. 프로젝트 목적
 울산캠퍼스의 5S 활동을 단순 실적 집계가 아니라 **개선활동 → 고도화 후보 → 공식 판정 → 유지·Audit → 개선조치 → 효과검증·재발관리**까지 하나의 흐름으로 관리하는 웹 기반 Prototype을 구축한다.
 
