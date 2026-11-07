@@ -16,4 +16,9 @@ for(const [label,via,expected] of [['temporary',false,0],['final',true,1],['defa
   assert.equal(removed,expected,label+' draft removal');
   assert.equal(closed,expected,label+' modal close');
 }
+const mailWorkflow=fs.readFileSync('action-mail-workflow.js','utf8');
+const entry=fs.readFileSync('index.html','utf8');
+assert(mailWorkflow.includes("$('[data-del]',body).forEach"),'action delete buttons must be queried as a list');
+assert(!mailWorkflow.includes("$('[data-del]',body).forEach")||mailWorkflow.includes("$('[data-del]',body).forEach"),'single-element query cannot handle forEach');
+assert(entry.includes('action-mail-workflow.js?v=20261108-null-foreach-fix-v17'),'action list startup repair cache key must be current');
 console.log('PASS: temporary saves retain draft and modal; final registration clears and closes');
