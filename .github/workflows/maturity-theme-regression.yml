@@ -84,7 +84,7 @@ jobs:
             'theme plan store is included in canonical sync': /const KEYS=\[[^\]]*'hd20ThemeAuditPlansV1'/.test(sync),
             'local theme plans are preserved if remote key is missing': /k==='hd20ThemeAuditChecksV1'\|\|k==='hd20ThemeAuditPlansV1'/.test(sync),
             'theme workflow CSS cache refreshed': /theme-inspection-v5\.css\?v=20261104-obsolete-plan-guard-v14/.test(html),
-            'new line-month has no implicit all-theme plan': /function plannedThemes\(month,line\)\{[\s\S]*?return \[\];/.test(theme),
+            'new line-month has no implicit all-theme plan': /function plannedThemes\(month,line,[\s\S]*?\)\{[\s\S]*?return \[\];/.test(theme),
             'new audit round starts blank': /function checklistState\(line\)\{return \{\}\}/.test(theme),
             'previous judgements are loaded only by explicit action': theme.includes('id="themeLoadPrevious"') && theme.includes('addEventListener(\'click\',loadPreviousJudgements)'),
             'audit saving is blocked without a planned theme': theme.includes("if(!applicable.length){alert('먼저 [점검계획·취약현황]에서 해당 월·라인의 점검 테마를 지정하고 저장해 주세요.')"),
