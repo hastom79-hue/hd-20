@@ -116,7 +116,7 @@ fs.mkdirSync('artifacts',{recursive:true});
   const correctiveLinkage=await page.evaluate(()=>{
     const sourceKey='hd20AuditRandomDrawsV1',actionKey='hd20ActionCasesV2';
     const originalSource=localStorage.getItem(sourceKey),originalActions=localStorage.getItem(actionKey);
-    const id='E2E-AUDIT-LINK-ONCE-20261103';
+    const id='AUDIT-CI-LINK-ONCE-20261103';
     try{
       const sources=JSON.parse(originalSource||'[]');
       sources.unshift({id,team:'검증팀',date:'2026-11-03',initialAuditor:'최초 감사자'});
@@ -141,9 +141,9 @@ fs.mkdirSync('artifacts',{recursive:true});
     }
   });
   assert.deepEqual(correctiveLinkage,{
-    savedId:'E2E-AUDIT-LINK-ONCE-20261103',result:'부적합',
+    savedId:'AUDIT-CI-LINK-ONCE-20261103',result:'부적합',
     actionCount:1,sourceStage:'AUDIT-REQUEST',
-    sourceCaseId:'E2E-AUDIT-LINK-ONCE-20261103',registeredBy:'최초 감사자',
+    sourceCaseId:'AUDIT-CI-LINK-ONCE-20261103',registeredBy:'최초 감사자',
     initialAuditor:'최초 감사자',duplicateRejected:true
   },'Audit registration links one action and preserves original auditor without duplicate submission');
   // The interactive Batch selector must accept this temporary row, so do not
