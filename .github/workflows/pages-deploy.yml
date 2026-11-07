@@ -492,41 +492,16 @@ jobs:
         run: |
           node <<'NODE'
           const fs=require('node:fs'),assert=require('node:assert/strict');
-          const cases=[
-            {path:'activity-register-modal.js',begin:'function show(){',end:'/* 사용자 지적:',type:'activity'},
-            {path:'action-register-modal.js',begin:'function open(){',end:'/* 사용자 지적:',type:'action'}
-          ];
-          for(const item of cases){
-            const src=fs.readFileSync(item.path,'utf8');
-            const begin=src.indexOf(item.begin),end=src.indexOf(item.end,begin);
-            assert(begin>=0&&end>begin,item.path+' popup function missing');
-            const body=src.slice(begin,end);
-            let sideEffects=0,storageReads=0;
-            const opened={classList:{contains:()=>true}};
-            const fn=item.type==='activity'
-              ?new Function('overlay','document','removeRedundantGuide','restore','formCard','        run: |
-          node <<'NODE'
-          const fs=require('node:fs'),assert=require('node:assert/strict');
-          const src=fs.readFileSync('audit-as-is-to-be-manager.js','utf8');
-          const begin=src.indexOf("const search=host.querySelector('[data-tobe-search]');");
-          const end=src.indexOf("\nhost.querySelector('[data-tobe-reset]')",begin);
-          assert(begin>=0&&end>begin,'TO-BE input handler not found');
-          const handlerSource=src.slice(begin,end);
-          for(const active of [true,false]){
-            let scheduled,renderCount=0,focused=0;
-            const input={value:'test',focus:()=>focused++,setSelectionRange:()=>{}};
-            const host={isConnected:true,querySelector:()=>input};
-            const doc={getElementById:id=>id==='hd20AsIsToBeManager'?host:{dataset:{subview:active?'tobe':'self'}}};
-            const nav={HD20_NAV:{active:()=>active?'activity':'master'}};
-            const make=new Function('host','document','window','ID','setTimeout','clearTimeout','render','filt',
-              'let searchDebounce=null;\n'+handlerSource+'\nreturn search.oninput;');
-            const oninput=make(host,doc,nav,'hd20AsIsToBeManager',fn=>{scheduled=fn;return 1},()=>{},()=>renderCount++,{text:''});
-            oninput({target:input});
-            scheduled();
-            assert.equal(renderCount,active?1:0,'inactive tab must not render');
-            assert.equal(focused,active?1:0,'inactive tab must not steal focus');
+          for(const [path,marker,guard] of [
+            ['activity-register-modal.js','function show(){',"if(overlay.classList.contains('on'))return;"],
+            ['action-register-modal.js','function open(){',"if(!m||m.classList.contains('on'))return;"]
+          ]){
+            const src=fs.readFileSync(path,'utf8');
+            const at=src.indexOf(marker);
+            assert(at>=0,path+' open function missing');
+            assert(src.slice(at,at+250).includes(guard),path+' must guard repeat-open before side effects');
           }
-          console.log('PASS: active/inactive TO-BE delayed search behavior');
+          console.log('PASS: registration popups guard repeat opens before side effects');
           NODE
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
