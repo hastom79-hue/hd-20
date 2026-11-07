@@ -52,6 +52,15 @@ for(const [asset,proof] of [
  assert(verify.includes('\"$base/'+asset+'\"'),'published '+asset+' download missing');
  assert(verify.includes(proof),'published '+asset+' evidence missing');
 }
+for(const [source,published] of [
+ ['hd20-subtabs.js','subtabs'],
+ ['audit-closed-loop-workflow.js','audit'],
+ ['audit-as-is-to-be-manager.js','tobe'],
+ ['theme-inspection.js','theme'],
+ ['retention-draw-integrity-guard.js','retention']
+]){
+ assert(verify.includes('cmp -s '+source+' /tmp/hd20-published-'+published+'.js'),'published file must match source bytes: '+source);
+}
 assert(verify.trimEnd().endsWith('exit 1'),'Pages verification must end after explicit failure');
 const regressionCalls=[...core.matchAll(/^\s+node (tests\/[^\s]+\.cjs)$/gm)].map(m=>m[1]);
 assert.equal(regressionCalls.length,new Set(regressionCalls).size,'core regression scripts must not repeat');
