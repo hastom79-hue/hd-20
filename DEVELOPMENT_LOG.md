@@ -89,6 +89,17 @@
 - 총 6개 테스트/86개 조건을 소스 기반으로 모의 실행하여 모두 통과. 소스 코드는 변경하지 않음.
 - GitHub Pages 및 Actions 웹 조회는 접근 제한으로 실패하였으므로 실배포/브라우저 정상작동은 여전히 미확인.
 
+## 2026-11-08 — 유지점검/테마점검 미실행 회귀검증 확대
+
+- `tests/retention-recheck-transaction-smoke.cjs`: 40개 검증 조건 통과(재점검 트랜잭션 및 복원).
+- `tests/retention-verdict-origin-smoke.cjs`: 13개 검증 조건 통과(판정 원본 연결).
+- `tests/theme-row-click-regression.cjs`: 14개 검증 조건 통과(테마 점검 항목 클릭).
+- `tests/retention-draw-integrity-smoke.cjs`: 192개 검증 조건 통과(추출 대상 데이터 및 무결성).
+- `tests/retention-recheck-click-smoke.cjs`: 42개 검증 조건 통과(재점검 클릭 차단).
+- `tests/retention-draw-schedule-smoke.cjs`: 19개 검증 조건 통과(주기/중복/미완료 판정).
+- 이번에 6개 테스트/320개 조건을 현재 GitHub `main` 소스로 직접 모의 실행해 전부 통과. 운영 JS·대시보드 변경 없음.
+- GitHub Pages/Actions 공개 웹 URL 접근 실패로 실제 배포 및 브라우저 검증은 미확인 상태 유지.
+
 ## 1. 프로젝트 목적
 울산캠퍼스의 5S 활동을 단순 실적 집계가 아니라 **개선활동 → 고도화 후보 → 공식 판정 → 유지·Audit → 개선조치 → 효과검증·재발관리**까지 하나의 흐름으로 관리하는 웹 기반 Prototype을 구축한다.
 
