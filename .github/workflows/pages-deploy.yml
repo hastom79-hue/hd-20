@@ -247,8 +247,10 @@ jobs:
               const root={dataset:{subview:sub}};
               const nav={HD20_NAV:{active:()=>area},addEventListener:(event,handler)=>{assert.equal(event,'hd20-action-updated');onAction=handler}};
               new Function('host','root','window','render',src.slice(begin,end))(host,root,nav,()=>draws++);
-              onAction();
+              onAction({detail:{source:'action'}});
               assert.equal(draws,area==='audit'&&sub==='ongoing'?1:0,'unexpected retention redraw: '+area+'/'+sub);
+              onAction({detail:{source:'retention-recheck'}});
+              assert.equal(draws,area==='audit'&&sub==='ongoing'?1:0,'retention-origin events must not redraw recursively: '+area+'/'+sub);
             }
           }
           console.log('PASS: inactive Audit retention panel skips action redraw');
