@@ -46,7 +46,16 @@ jobs:
                   // Navigation initialization may enqueue a summary reset; let it settle before changing the dashboard section.
                   await page.waitForTimeout(400);
                   await page.evaluate(key=>window.HD20_DASHBOARD_TABS.apply(key,{scroll:false}),key);
-                  await page.waitForFunction(({key,id})=>{const el=document.getElementById(id);return window.HD20_DASHBOARD_TABS?.active?.()===key&&!!el&&el.innerHTML.length>100&&getComputedStyle(el).display!=='none'&&el.getBoundingClientRect().width>100},{key,id},{timeout:15000});
+                  try {
+                    await page.waitForFunction(({key,id})=>{const el=document.getElementById(id);return window.HD20_DASHBOARD_TABS?.active?.()===key&&!!el&&el.innerHTML.length>100&&getComputedStyle(el).display!=='none'&&el.getBoundingClientRect().width>100},{key,id},{timeout:15000});
+                  } catch (error) {
+                    const diagnostic=await page.evaluate(({key,id})=>{
+                      const el=document.getElementById(id),rect=el?.getBoundingClientRect();
+                      return {requested:key,active:window.HD20_DASHBOARD_TABS?.active?.(),nav:window.HD20_NAV?.active?.(),exists:!!el,htmlLength:el?.innerHTML.length||0,display:el?getComputedStyle(el).display:null,width:rect?.width||0,height:rect?.height||0,viewport:innerWidth};
+                    },{key,id});
+                    console.error('BOARD_TIMEOUT_DIAGNOSTIC',JSON.stringify({viewport,key,diagnostic,errors:errors.slice(-10)}));
+                    throw error;
+                  }
                   const state=await page.evaluate(({key,id,api})=>{
                     const el=document.getElementById(id),style=el&&getComputedStyle(el),rect=el?.getBoundingClientRect();
                     return {key,api:!!window[api],exists:!!el,children:el?.children.length||0,htmlLength:el?.innerHTML.length||0,display:style?.display,visibility:style?.visibility,width:rect?.width||0,height:rect?.height||0,active:window.HD20_DASHBOARD_TABS?.active?.()};
