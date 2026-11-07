@@ -118,6 +118,134 @@
 - 후속 브라우저 검사에서 `desktop/master` 콘텐츠 우측 경계가 화면 밖으로 약 3px 벗어나는 실제 레이아웃 오류를 확인. `master-workspace-v2.css`의 데스크톱 폭 `calc(100vw - 28px)` → `calc(100vw - 64px)`로 보정하고 `index.html` 캐시 버전 갱신.
 - 해당 레이아웃 수정의 최신 GitHub Actions 완료 판정은 대기 중. 테스트 완료 전 전체 검증 완료로 표기하지 않음. 대시보드 원본 미변경.
 
+## 2026-11-08 — 데스크톱 마스터 폭 보정 이후 하위탭 복구 오류 수정
+
+- `design-layout-smoke` 실제 GitHub Actions 로그를 통해 데스크톱 통합기준정보 모달의 3px 초과 문제 이후 `TypeError: $(...).forEach is not a function`이라는 JS 실행 예외를 발견.
+- 원인: `hd20-subtabs.js`의 `window.__HD20_RESTORE_SUB` 복구 분기에서 단일 DOM 노드 선택자 `$('button',bar)`에 `.forEach`를 사용. 모든 버튼을 대상으로 하는 `$('button',bar)`로 변경.
+- `tests/audit-subtab-click-guard-smoke.cjs`에 복구 경로용 다중 선택자 검증 추가. 테스트 문자열 중 `$`가 단일 `# HD-20 5S 활동관리 시스템 — 개발일지
+
+> 목적: 반복 수정 과정에서 요구사항·구현·검증 이력이 유실되지 않도록 현재 운영본의 개발 기준과 승인된 UI/UX 원칙을 기록한다.
+> 최초 기준일: 2026-08-27
+> 최신 기준일: 2026-11-08
+> 운영 저장소: `hastom79-hue/hd-20`
+
+> **현재 기준 우선순위**: 아래 2026-08-26~27 기록은 당시 개발 이력으로 보존한다. `1개월 점검 → 3개월 AUDIT → 6개월 AUDIT`, 7개 업무탭, 과거 Demo/가정 KPI 등은 현재 운영기준이 아니며, 2026-09-02 이후 Change Log와 `README_OVERHAUL_20260902.md`가 충돌 시 우선한다.
+
+## 2026-11-07 — GitHub Pages 배포 검증 강화
+
+- 수정 범위: `.github/workflows/pages-deploy.yml`, `tests/pages-workflow-structure-smoke.cjs`, 코어 회귀 테스트 실행 단계명.
+- 코어 회귀 테스트 실행 단계명 실제 호출 수에 맞춰 28개 → 30개로 정정.
+- 배포 후 주요 5개 JS 파일(hd20-subtabs, audit-closed-loop-workflow, audit-as-is-to-be-manager, theme-inspection, retention-draw-integrity-guard)을 저장소 원본과 `cmp -s`로 바이트 단위 검증하도록 강화.
+- 배포 워크플로 구조 테스트에 5개 `cmp -s` 검증 존재 여부를 확인하는 회귀 조건 추가.
+- GitHub main 소스 반영 확인. Actions 실행 성공, 실제 Pages 배포 성공 및 브라우저 동작은 아직 별도 확인 필요. 이를 완료로 오인하지 말 것.
+- 대시보드 화면·지표·데이터·운영 UI는 변경하지 않음.
+- 후속 배포 검증: `index.html` 또한 GitHub Pages 응답 파일과 바이트 단위 비교하도록 강화. 배포 무결성 확인 대상은 HTML 1개 + JS 5개(총 6개). 구조 회귀 테스트에 HTML 비교 필수 조건 추가.
+- 온라인 Pages 실접속 및 GitHub Actions 결과는 현재 연결 환경에서 확인되지 않아 성공으로 판정하지 않음.
+
+## 2026-11-07 — 고도화 3조건 분석 데이터 공급 연결 복구
+
+- 확인된 원인: `hd20-condition-groups.js`가 `window.HD20MaturityConditionAnalysis.summary()`를 호출하지만, 공급 스크립트 `maturity-condition-analysis.js`는 정적·폴백 로딩 대상에서 제외되어 분석 패널이 초기화되지 않을 수 있었음.
+- 조치: 고도화 조건그룹 화면에서 요약 전용 모드로 필요한 스크립트를 동적 로드하고, 기존 중복 대형 분석 패널의 자동 렌더는 차단.
+- `index.html`의 조건그룹 캐시 버전을 갱신. 대시보드 로직·집계 데이터·다른 탭 배치는 수정하지 않음.
+- `tests/advancement-summary-provider-smoke.cjs` 추가하고 Core Workflow CI 실행목록에 포함. 전체 회귀 명칭 31개로 갱신.
+- V8 JavaScript 구문 및 연결 문자열 정적 검증 통과. GitHub Pages 배포 및 실제 브라우저 UI 검증은 아직 미확인.
+- 추가 회귀검증: Node VM 모의 브라우저 환경에서 요약 공급 스크립트를 직접 평가하고, API 생성·빈 데이터 반환·초기화 이벤트 등록을 검증하도록 테스트 확장. CI 등록은 기존 31개 유지.
+- GitHub Actions / GitHub Pages 실행 결과는 해당 환경에서 열람할 수 없어 성공 확인 보류.
+- 후속 요약 로직 실행 점검: 샘플 4건(고도화 3건·일반개선 1건) 기준 1/2/3조건 각 1건, 2개 이상 2건, 일반개선 제외를 직접 확인. 실행 결과 통과. 해당 시나리오를 자동 회귀 테스트에 추가.
+- 실제 배포 사이트 직접 조회는 네트워크 접근 제한으로 불가. 운영 UI 및 GitHub Actions 실행 성공은 미확인 상태 유지.
+
+## 2026-11-08 — 고도화 3조건 분석 표시 대상 누락 수정
+
+- 원인: 요약 전용 로딩에서는 과거 `#hd20MaturityConditionAnalysis` 패널을 생성하지 않지만, `hd20-condition-groups.js`의 `ensure()`는 이 요소가 존재해야 분석 UI를 생성하도록 되어 있었음.
+- 수정: 과거 패널이 없을 경우 실제 `#performanceConversionAnalysis` 컨테이너를 기준으로 분석 UI를 삽입하도록 변경. 과거 패널이 있는 경우 기존 삽입 순서 유지.
+- 회귀 테스트에 과거 패널 유무 두 경우의 삽입 위치·렌더링 체크 추가. `index.html` 캐시 버전 및 테스트 기대값 갱신.
+- GitHub main 반영 및 소스 정적 확인 완료. 실제 GitHub Actions 통과와 Pages 화면 표시 확인은 미완료. 대시보드 수정 없음.
+
+## 2026-11-08 — 고도화 3조건 분석 JavaScript 구문 오류 수정
+
+- 발견: `hd20-condition-groups.js`의 `ensure()` 함수 닫는 중괄호 누락으로 `SyntaxError: Unexpected token ')'` 발생. 해당 JS 전체 실행이 중단될 수 있었음.
+- 조치: 누락 중괄호 추가, `index.html` 캐시 버전 `20261108-syntax-fix-2` 갱신.
+- 검증: V8 구문 파싱 통과. 기존 분석 패널 유/무 각각 `ensure()` 호출 시 예상 삽입 위치 및 렌더 1회 동작 확인.
+- 예방: `tests/advancement-summary-provider-smoke.cjs`에서 `vm.Script`로 전체 파일 파싱 검사; Core CI에서 `node --check hd20-condition-groups.js` 및 요약 공급 스크립트 구문 검사 추가.
+- GitHub main 반영. 실 서비스 Pages 배포 및 GitHub Actions 실행 결과는 확인되지 않아 완료로 판정하지 않음.
+
+## 2026-11-08 — Pages 배포 전 고도화 분석 구문·실행 검증 의무화
+
+- GitHub Pages 배포 단계 전 `hd20-condition-groups.js`, `maturity-condition-analysis.js`의 `node --check` 실행을 추가.
+- `tests/advancement-summary-provider-smoke.cjs` 실행을 필수화하여 패널 삽입/데이터 요약 회귀 실패 시 배포를 중단하도록 구성.
+- `tests/pages-workflow-structure-smoke.cjs`에 배포 이전 실행 순서 및 필수 검사 명령 존재 검증 추가.
+- `main` 반영 완료. GitHub Actions 결과 및 실제 Pages 접근은 현재 환경의 네트워크 제한으로 확인 불가. 성공/종결로 처리하지 않음.
+
+## 2026-11-08 — 고도화 분석 배포본 무결성 검증 보완
+
+- Pages 배포 후 파일 내용 비교 대상에 `hd20-condition-groups.js` 및 `maturity-condition-analysis.js` 2개를 추가. 배포본 다운로드 후 GitHub 원본과 `cmp -s`로 비교하도록 구성.
+- `tests/pages-workflow-structure-smoke.cjs`에서 두 파일의 다운로드 및 원본 비교 검사가 존재하는지 확인하도록 추가.
+- 배포 후 확인 대상: `index.html` 1개 + 핵심 JS 7개. 배포 성공 로그 문구도 실제 검증 파일 수에 맞게 조정.
+- GitHub main에 수정 반영. Actions 및 실제 Pages 동작의 성공 여부는 아직 미확인. 대시보드 소스는 변경하지 않음.
+
+## 2026-11-08 — 개선조치·Audit·테마점검 핵심 회귀검증
+
+- 연결된 최신 소스 기준 개선조치 임시저장/최종등록 15개, Audit 조치 중복·최초점검자 유지 9개, TO-BE 원본 충돌 방지 13개, 개선활동 탭 전환 4개 검증 조건 통과.
+- 테마점검 중복 미완료 조치 검사에서는 테스트가 대상 가드 다음의 원본 연결 검증 블록까지 잘라 실행하여 `themeFindActive is not defined` 오류 발생. 운영 로직 문제가 아닌 테스트 추출 범위 오류로 확인.
+- `tests/theme-duplicate-active-action-smoke.cjs`에서 추출 종료 지점을 `const invalidReuse=`로 수정하여 중복 가드만 독립 검증하도록 보정.
+- 수정 후 테마점검 테스트 15개 검증 조건 통과. 실제 GitHub Actions 및 배포 웹 테스트는 확인 불가하므로 완료 표시하지 않음.
+- 대시보드 및 운영 애플리케이션 코드는 변경하지 않음.
+
+## 2026-11-08 — 잔여 핵심 회귀검증 및 TO-BE 저장 테스트 최신화
+
+- 추가 실행: 유지점검 재점검 정합성 26개, TO-BE 완료 상태 12개, 테마 재연계 22개, Audit 하위탭 클릭 5개 검증 조건 통과(65개).
+- 추가 실행: 유지점검 조치 중복/롤백, 테마 재사용 원본 연결, 등록 탭 재시도 로직 검사 통과.
+- TO-BE 저장/복원 회귀 테스트는 실제 구현이 완료일(`doneDate`/`completedAt`), 완료 여부(`completed`), AFTER 증빙을 함께 검증하도록 변경되어 기존 테스트 예제 데이터가 오래된 상태였음. 테스트만 갱신하고 저장 로직 원본은 유지.
+- `tests/tobe-persistence-rollback-smoke.cjs`의 정상 저장·저장 실패·원본 키 누락·중복 저장 ID·상태 불일치 5개 시나리오 실행 통과(15개 검증 조건).
+- GitHub Pages 실배포 상태 및 Actions 실제 실행은 현재 환경에서 조회되지 않아 미확인 상태 유지. 대시보드·운영 기능 코드 변경 없음.
+
+## 2026-11-08 — 유지점검/TO-BE 회귀 테스트 구간 정합성 수정
+
+- `tests/retention-persisted-link-smoke.cjs`: 원본 점검자·팀·라인 조치 연계 조건식 추출 시 닫는 괄호를 과다 포함해 구문 실패하던 테스트 오류 수정. 수정 후 25개 검증 조건 실행 통과.
+- `tests/tobe-latest-evidence-smoke.cjs`: 실제 운영 소스에 추가된 저장 직전 원본 동시변경 확인 조건으로 추출 시작점을 갱신하고 원본 레코드 입력을 제공. 수정 후 11개 검증 조건 실행 통과.
+- 운영 JavaScript 및 데이터는 변경하지 않았으며, 테스트 범위만 최신 소스에 맞춰 보정.
+- GitHub Actions·Pages 온라인 실행 결과는 접근 제한으로 확인되지 않았고 운영 브라우저 최종 검증도 미완료.
+
+## 2026-11-08 — 핵심 업무 회귀 테스트 추가 실행
+
+- 최신 `main` 소스 기준 TO-BE 개선조치 관리의 ID 유일성(14조건), 검색 디바운스(15조건), 팝업 생명주기(16조건) 검증 통과.
+- 유지점검 판정 영속성(10조건), 평가자 정보 보존(16조건), 테마점검 Audit 이력 영속성(15조건) 검증 통과.
+- 총 6개 테스트/86개 조건을 소스 기반으로 모의 실행하여 모두 통과. 소스 코드는 변경하지 않음.
+- GitHub Pages 및 Actions 웹 조회는 접근 제한으로 실패하였으므로 실배포/브라우저 정상작동은 여전히 미확인.
+
+## 2026-11-08 — 유지점검/테마점검 미실행 회귀검증 확대
+
+- `tests/retention-recheck-transaction-smoke.cjs`: 40개 검증 조건 통과(재점검 트랜잭션 및 복원).
+- `tests/retention-verdict-origin-smoke.cjs`: 13개 검증 조건 통과(판정 원본 연결).
+- `tests/theme-row-click-regression.cjs`: 14개 검증 조건 통과(테마 점검 항목 클릭).
+- `tests/retention-draw-integrity-smoke.cjs`: 192개 검증 조건 통과(추출 대상 데이터 및 무결성).
+- `tests/retention-recheck-click-smoke.cjs`: 42개 검증 조건 통과(재점검 클릭 차단).
+- `tests/retention-draw-schedule-smoke.cjs`: 19개 검증 조건 통과(주기/중복/미완료 판정).
+- 이번에 6개 테스트/320개 조건을 현재 GitHub `main` 소스로 직접 모의 실행해 전부 통과. 운영 JS·대시보드 변경 없음.
+- GitHub Pages/Actions 공개 웹 URL 접근 실패로 실제 배포 및 브라우저 검증은 미확인 상태 유지.
+
+## 2026-11-08 — 실제 GitHub Actions 실패 원인 확인 및 수정
+
+- GitHub Actions REST 조회로 `23923aac` 커밋의 자체 Pages 배포/다수 브라우저 회귀검증 실패를 확인. GitHub 기본 `pages build and deployment` 워크플로는 성공했으나 별도 HD-20 Pages 배포 검증은 실패.
+- `HD20 current IA smoke` 실제 브라우저 예외 스택에서 `action-mail-workflow.js:renderCases`의 `null.forEach`를 확인. 삭제 버튼 단일 요소 선택 `$('[data-del]',body)`에 `.forEach`를 호출하던 오류를 다중 선택 `$('[data-del]',body)`로 수정하고 `index.html` 버전 키 갱신.
+- `maturity-theme-regression.yml`의 `theme-inspection.js` 캐시 버전 기대값을 실제 배포 파일에 맞춰 갱신.
+- Pages 검증 실패를 추적하도록 `Verify deployment source`에 명령 추적을 추가한 결과, `clickWhenReady` 함수에 새로 추가된 `expectedSub` 인수를 배포 검증이 반영하지 못한 점을 확인하고 테스트 조건 수정.
+- 후속 Pages 단계에서 유지점검 `hd20-action-updated` 콜백을 이벤트 없이 호출하던 테스트 오류 발견. 실제 이벤트 인자 제공 및 `retention-recheck` 이벤트 중복 렌더링 차단 검증 추가.
+- 실제 브라우저 오류 스택 출력 및 삭제 버튼 목록 회귀 검사 보강. 새 GitHub Actions 실행 완료 확인 전까지 최종 배포/운영 검증은 미완료 상태 유지.
+- 승인된 대시보드 UI 및 데이터는 변경하지 않음.
+
+## 2026-11-08 — 실 GitHub Actions 브라우저 실패 복구 및 통합기준정보 데스크톱 폭 보정
+
+- 최신 Actions 실행 내역을 GitHub REST API로 조회해 핵심 회귀검증·런타임 검사·Pages 배포 성공을 실증. 브라우저 UI 검사 중 기존 `null.forEach` 오류는 `action-mail-workflow.js`의 삭제 버튼 단일 선택 `$('[data-del]',body)`가 원인임을 실제 오류 스택으로 확인하여 다중 선택 `$('[data-del]',body)`로 정정. 초기 문자열 교체가 무효였던 점도 확인 후 실제 바이트가 변경됐는지 재검증하고 테스트 보강.
+- Audit 하위탭 구조 검사가 삭제된 하위탭 2개를 여전히 요구하던 사항을 실제 승인된 3개 하위탭 기준으로 수정, GitHub Actions 성공 확인.
+- `design-layout-smoke.yml`의 활동 영역 검사 시 승인된 팝업 닫기→통합조회 흐름 `HD20_LAUNCHER.openOverview()`를 명시하여 구형 활동 그리드 검사 문제 제거.
+- 후속 브라우저 검사에서 `desktop/master` 콘텐츠 우측 경계가 화면 밖으로 약 3px 벗어나는 실제 레이아웃 오류를 확인. `master-workspace-v2.css`의 데스크톱 폭 `calc(100vw - 28px)` → `calc(100vw - 64px)`로 보정하고 `index.html` 캐시 버전 갱신.
+- 해당 레이아웃 수정의 최신 GitHub Actions 완료 판정은 대기 중. 테스트 완료 전 전체 검증 완료로 표기하지 않음. 대시보드 원본 미변경.
+
+로 저장된 문제를 수정하고, 최신 GitHub 소스로 7개 검사 조건 통과.
+- `index.html`의 `hd20-subtabs.js` 캐시 버전을 `20261108-restore-bind-v91`로 갱신.
+- 최신 GitHub Actions의 Pages 배포·브라우저 검사는 실행 완료 후 별도 판정. 대시보드 원본은 변경하지 않음.
+
 ## 1. 프로젝트 목적
 울산캠퍼스의 5S 활동을 단순 실적 집계가 아니라 **개선활동 → 고도화 후보 → 공식 판정 → 유지·Audit → 개선조치 → 효과검증·재발관리**까지 하나의 흐름으로 관리하는 웹 기반 Prototype을 구축한다.
 
