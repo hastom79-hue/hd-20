@@ -733,7 +733,23 @@ function renderRetentionSampling(root){
   }
  }
  rows[n]=r;
- try{save('hd20RetentionRandomChecksV1',rows)}catch(err){
+ try{
+  save('hd20RetentionRandomChecksV1',rows);
+  // Re-read the saved verdict before exposing success or notifying other tabs.
+  const persisted=load('hd20RetentionRandomChecksV1').filter(x=>String(x.id||'')===String(r.id||''));
+  const saved=persisted[0];
+  if(persisted.length!==1||!saved||
+   String(saved.caseId||'')!==String(r.caseId||'')||
+   String(saved.kind||'')!==String(r.kind||'')||
+   String(saved.team||'')!==String(r.team||'')||
+   String(saved.workplace||'')!==String(r.workplace||'')||
+   String(saved.evaluator||'')!==String(evaluator||'')||
+   String(saved.result||'')!==String(result||'')||
+   String(saved.comment||'')!==String(comment||'')||
+   String(saved.evaluatedAt||'')!==String(r.evaluatedAt||'')||
+   (result==='부적합'&&String(saved.actionId||'')!==String(r.actionId||'')))
+    throw new Error('유지점검 판정 원본정보·평가자·자동조치 연결 검증 실패');
+ }catch(err){
   const restore=(key,raw)=>{try{if(raw===null)localStorage.removeItem(key);else localStorage.setItem(key,raw);if(localStorage.getItem(key)!==raw)throw new Error('복원 확인 실패');return true}catch(e){console.error('[유지점검 롤백 실패]',key,e);return false}};
   const retentionRestored=restore('hd20RetentionRandomChecksV1',savedRetentionBefore),auditRestored=restore('hd20AuditRandomDrawsV1',savedAuditBefore),actionRestored=restore('hd20ActionCasesV2',savedActionBefore);
   unlock();window.alert(retentionRestored&&auditRestored&&actionRestored?'유지점검 판정 저장 실패: 유지점검·Audit·개선조치를 이전 상태로 복원했습니다.':'유지점검 저장 및 일부 복구에 실패했습니다. 관리자 확인 전 재등록하지 마세요.');
