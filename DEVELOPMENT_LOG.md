@@ -3038,3 +3038,8 @@ Canonical Store는 다음을 기준으로 한다.
 - 신규 테스트: 고유 단계·단일 배포·정확한 업로드/배포/검증 순서·게시 자산 증빙·종결 코드 검증. JavaScript 모의 실행 통과.
 - 기존 승인 대시보드·HTML의 UI·CSS·운영 데이터는 변경하지 않음. GitHub API combined status는 상태 목록이 빈 값이었고 PR 전용 workflow run 조회도 빈 값. 공개 웹 Pages 접근이 제한되어 실제 Actions/Pages 성공을 확인하지 못함. 배포 완료 주장 금지.
 
+
+## 2026-11-07 — Pages 배포 워크플로 2차 구조검증
+- `tests/pages-workflow-structure-smoke.cjs`: 단계명 중복·실제 GitHub configure/upload/deploy 액션 중복·22단계 수·5개 핵심 JS의 URL 다운로드와 게시 내용 증빙·최종 실패 종료코드까지 검사 강화.
+- 연결된 워크플로 실제 파일을 대상으로 회귀검증 함수를 실행한 결과 통과. 3개 Pages 액션 각각 1회 확인.
+- 외부 Pages/Actions 화면은 조회 접근 오류로 실제 운영 배포 완료 판정 불가. CI 정상 완료를 임의로 주장하지 않음.
