@@ -7,6 +7,14 @@
 
 > **현재 기준 우선순위**: 아래 2026-08-26~27 기록은 당시 개발 이력으로 보존한다. `1개월 점검 → 3개월 AUDIT → 6개월 AUDIT`, 7개 업무탭, 과거 Demo/가정 KPI 등은 현재 운영기준이 아니며, 2026-09-02 이후 Change Log와 `README_OVERHAUL_20260902.md`가 충돌 시 우선한다.
 
+## 2026-11-08 — Audit Chromium 테스트 현행 화면 기준 정합화 (Issue #190)
+
+- 원인 추적: `HD20 browser smoke` 실행 `42408422173`에서 `Verify Audit duplicate banner removed in Chromium` 단계 실패. 정확한 실패 단언문은 별도 실행 로그 확인 필요.
+- `tests/audit-duplicate-header-smoke.cjs`에서 폐기된 Audit 조치관리 화면(`hd20AuditActionMonitor`)으로 팝업이 이동해야 한다는 구형 회귀 시나리오를 제거하고, 해당 화면 비노출 검증으로 변경. 운영 HTML/CSS/JS와 승인된 대시보드는 변경하지 않음.
+- 커밋 `a2a604ccd0f60bcd62788598f1fd89f9f951ea83` 기준 Pages 빌드·배포, 런타임, 차트, 하위탭, 통합 내비게이션, 스크롤, 레이아웃 워크플로 성공 확인.
+- Chromium 전체 워크플로 `42408916125`는 확인 시점 진행 중. 원본번호 팝업 단계 통과 후 테마점검→개선조치 단계 진행 중. 전체 통과 전 Issue #190 종결 금지.
+- 주의: 기존 테스트에서 `sub=action`의 오래된 하위탭 구조를 참조하는 추가 조건이 남아 있을 수 있으므로 Chromium 최종 결과로 판단해야 함.
+
 ## 2026-11-07 — GitHub Pages 배포 검증 강화
 
 - 수정 범위: `.github/workflows/pages-deploy.yml`, `tests/pages-workflow-structure-smoke.cjs`, 코어 회귀 테스트 실행 단계명.
