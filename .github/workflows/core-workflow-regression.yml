@@ -69,6 +69,14 @@ jobs:
           node --check retention-recheck-integrity-guard.js
           node --check retention-draw-integrity-guard.js
           node --check theme-inspection.js
+          node --check action-register-modal.js
+          node --check activity-register-modal.js
+          node --check activity-workflow.js
+          node --check action-mail-workflow.js
+          node --check audit-closed-loop-workflow.js
+          node --check hd20-cross-tab-sync.js
+          node --check master-workspace-v2.js
+          node --check operating-policy-master.js
           for file in \
             tests/tobe-unique-action-id-smoke.cjs \
             tests/tobe-persistence-rollback-smoke.cjs \
