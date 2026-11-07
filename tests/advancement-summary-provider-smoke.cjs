@@ -24,6 +24,20 @@ assert.equal(typeof context.window.HD20MaturityConditionAnalysis?.summary,'funct
 const result=context.window.HD20MaturityConditionAnalysis.summary();
 assert.equal(result.rows.length,0,'empty input must return zero rows');
 assert.equal(result.one.length,0,'empty input must not fabricate one-criterion cases');
+const sampleRows=[
+ {team:'A',line:'L1',workplace:'W1',type:'고도화',criterionVisual:true},
+ {team:'A',line:'L2',workplace:'W2',type:'고도화',criterionVisual:true,criterionGreen:true},
+ {team:'B',line:'L3',workplace:'W3',type:'고도화',criterionVisual:true,criterionGreen:true,criterionSpace:true},
+ {team:'B',line:'L4',workplace:'W4',type:'일반개선',criterionVisual:true,criterionGreen:true,criterionSpace:true}
+];
+context.window.HD20KPIData={load:()=>sampleRows,isAdvancementType:r=>r.type==='고도화'};
+const populated=context.window.HD20MaturityConditionAnalysis.summary();
+assert.equal(populated.rows.length,3,'non-advancement activity must be excluded');
+assert.equal(populated.one.length,1,'one-criterion count incorrect');
+assert.equal(populated.two.length,1,'two-criterion count incorrect');
+assert.equal(populated.three.length,1,'three-criterion count incorrect');
+assert.equal(populated.twoPlus.length,2,'two-plus count must include three-criterion records');
+assert.equal(populated.threeWp,1,'three-criterion workplace count incorrect');
 assert(listeners.includes('DOMContentLoaded'),'summary provider lifecycle must register');
 assert(!listeners.includes('hd20-open-performance-conversion'),'summary-only provider must not eagerly render the legacy panel');
 console.log('PASS: 3-condition groups load a summary provider without restoring legacy panel');
