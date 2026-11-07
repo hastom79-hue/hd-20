@@ -61,6 +61,7 @@ for(const [source,published] of [
 ]){
  assert(verify.includes('cmp -s '+source+' /tmp/hd20-published-'+published+'.js'),'published file must match source bytes: '+source);
 }
+assert(verify.includes('cmp -s index.html /tmp/hd20-published-index.html'),'published entry HTML must exactly match source');
 assert(verify.trimEnd().endsWith('exit 1'),'Pages verification must end after explicit failure');
 const regressionCalls=[...core.matchAll(/^\s+node (tests\/[^\s]+\.cjs)$/gm)].map(m=>m[1]);
 assert.equal(regressionCalls.length,new Set(regressionCalls).size,'core regression scripts must not repeat');
