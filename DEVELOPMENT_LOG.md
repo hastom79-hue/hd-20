@@ -3029,3 +3029,12 @@ Canonical Store는 다음을 기준으로 한다.
 - `hd20-subtabs.js`: 유지점검 적합/부적합 판정 저장 전에 권한뿐 아니라 로그인 평가자 이메일(@hd.com) 유효성 확인. 마스터 인증 상태여도 식별자 공란·비정상 계정이면 판정 저장 차단해 최초 평가자 누락 방지.
 - 유지점검 메일 알림은 현재 `mailto:` 초안 열기이며 자동 발송이 아님을 문구에 명시. 메일 클라이언트 전송과 시스템 발송 상태는 자동 연동되지 않음. 자동 발송 구현 완료로 주장하지 않음.
 - `tests/retention-evaluator-identity-smoke.cjs`: 권한·이메일·판정 선택·알림 문구 8개 조건 회귀검증, core CI 목록 연계. `index.html` JS 캐시 v90. 대시보드·운영 데이터·CSS 변경 없음.
+
+## 2026-11-07 — HD-20 Pages 배포 워크플로 중복 실행 12세트 제거
+- `.github/workflows/pages-deploy.yml`: 기존 총 101개 이름 지정 단계 중 중복 실행을 제거하여 22개 고유 단계로 재구성. Pages Configure/Upload/Deploy/배포 후 검증을 12회에서 각각 1회로 축소하고 모든 고유 소스·회귀검증 단계를 배포 이전에 배치.
+- 배포 후 검증 확대: index.html 캐시 참조 및 hd20-subtabs.js, audit-closed-loop-workflow.js, audit-as-is-to-be-manager.js, theme-inspection.js, retention-draw-integrity-guard.js 등 핵심 5개 스크립트의 실제 게시 내용을 확인하도록 강화.
+- 이전에 마지막 검증의 exit 1 뒤 남아 있던 실행 불가 코드 조각과 불필요한 중복 후속 검증 삭제. 65개 핵심 스크립트 고정 검증 조건 사전 비교에서 불일치 없음.
+- `.github/workflows/core-workflow-regression.yml`: 실제 27개인데 24개로 표시됐던 단계명을 보정했고, `tests/pages-workflow-structure-smoke.cjs` 신규 연결로 28개. Pages 워크플로 파일 변경도 CI 트리거에 포함.
+- 신규 테스트: 고유 단계·단일 배포·정확한 업로드/배포/검증 순서·게시 자산 증빙·종결 코드 검증. JavaScript 모의 실행 통과.
+- 기존 승인 대시보드·HTML의 UI·CSS·운영 데이터는 변경하지 않음. GitHub API combined status는 상태 목록이 빈 값이었고 PR 전용 workflow run 조회도 빈 값. 공개 웹 Pages 접근이 제한되어 실제 Actions/Pages 성공을 확인하지 못함. 배포 완료 주장 금지.
+
