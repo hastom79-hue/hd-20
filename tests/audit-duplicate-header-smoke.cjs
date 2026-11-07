@@ -111,29 +111,31 @@ fs.mkdirSync('artifacts',{recursive:true});
     document.querySelector('#awAudit .auditClosedLoop')?.removeAttribute('data-selected-audit-id');
     window.HD20AuditClosedLoop.render();
   });
-  // Audit source -> corrective action linkage must be unique and keep the
-  // original auditor. Use only isolated browser storage and restore it.
+  // Canonical Audit execution stages a source for later Action registration.
+  // It does not create a premature Action record.
   const correctiveLinkage=await page.evaluate(()=>{
     const sourceKey='hd20AuditRandomDrawsV1',actionKey='hd20ActionCasesV2';
     const originalSource=localStorage.getItem(sourceKey),originalActions=localStorage.getItem(actionKey);
     const id='AUDIT-CI-LINK-ONCE-20261103';
+    let pending=null;
+    const onPending=e=>{if(e.detail?.auditDrawId===id)pending=e.detail};
+    window.addEventListener('hd20-audit-to-action',onPending);
     try{
       const sources=JSON.parse(originalSource||'[]');
       sources.unshift({id,team:'검증팀',date:'2026-11-03',initialAuditor:'최초 감사자'});
       localStorage.setItem(sourceKey,JSON.stringify(sources));
-      const input={team:'검증팀',auditActor:'현장 조직',auditDate:'2026-11-03',
+      const saved=window.HD20AuditClosedLoop.registerAudit(id,{
+        team:'검증팀',auditActor:'현장 조직',auditDate:'2026-11-03',
         auditResult:'부적합',auditor:'후속 점검자',workplace:'검증라인',
-        improvementRequest:'Audit 자동이관 회귀검증'};
-      const saved=window.HD20AuditClosedLoop.registerAudit(id,input);
+        improvementRequest:'Audit 자동이관 회귀검증'
+      });
       const actions=JSON.parse(localStorage.getItem(actionKey)||'[]').filter(a=>a.auditDrawId===id);
-      let duplicateRejected=false;
-      try{window.HD20AuditClosedLoop.registerAudit(id,input)}
-      catch(e){duplicateRejected=/이미 실시결과/.test(String(e.message))}
-      return {savedId:saved.id,result:saved.auditResult,
-        actionCount:actions.length,sourceStage:actions[0]?.sourceStage,
-        sourceCaseId:actions[0]?.sourceCaseId,registeredBy:actions[0]?.registeredBy,
-        initialAuditor:actions[0]?.initialAuditor,duplicateRejected};
+      const persisted=JSON.parse(localStorage.getItem(sourceKey)||'[]').find(a=>a.id===id);
+      return {savedId:saved.id,result:saved.auditResult,actionCount:actions.length,
+        sourceStage:pending?.sourceStage,sourceCaseId:pending?.sourceCaseId,
+        initialAuditor:persisted?.initialAuditor,needsAction:!!pending};
     }finally{
+      window.removeEventListener('hd20-audit-to-action',onPending);
       if(originalSource===null)localStorage.removeItem(sourceKey);
       else localStorage.setItem(sourceKey,originalSource);
       if(originalActions===null)localStorage.removeItem(actionKey);
@@ -142,10 +144,10 @@ fs.mkdirSync('artifacts',{recursive:true});
   });
   assert.deepEqual(correctiveLinkage,{
     savedId:'AUDIT-CI-LINK-ONCE-20261103',result:'부적합',
-    actionCount:1,sourceStage:'AUDIT-REQUEST',
-    sourceCaseId:'AUDIT-CI-LINK-ONCE-20261103',registeredBy:'최초 감사자',
-    initialAuditor:'최초 감사자',duplicateRejected:true
-  },'Audit registration links one action and preserves original auditor without duplicate submission');
+    actionCount:0,sourceStage:'AUDIT-CHECKLIST',
+    sourceCaseId:'AUDIT-CI-LINK-ONCE-20261103',
+    initialAuditor:'최초 감사자',needsAction:true
+  },'Audit stages the exact source and retains the original auditor without premature Action creation');
   // The interactive Batch selector must accept this temporary row, so do not
   // use an E2E- prefix that the production-only selector deliberately filters.
   // Register one isolated negative Audit through the actual form, verify
