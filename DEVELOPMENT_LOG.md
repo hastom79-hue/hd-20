@@ -260,6 +260,14 @@
 - 통합기준정보 모달의 데스크톱·모바일 폭 초과 보정 후 `HD20 design layout smoke`는 커밋 `8d779b39`에서 실제 Actions success 확인. 대시보드·화면 정보구조·런타임 등 다른 테스트 통과 상황도 지속 추적.
 - 커밋 `8475e322`의 GitHub Pages 자체 배포 및 기본 pages build and deployment 역시 success 확인. 별도 브라우저 업무 시나리오 중 아직 진행 중인 검사는 전체 완료로 표시하지 않음.
 
+## 2026-11-08 — Audit 브라우저 업무 시나리오 비운영 데이터 제외 충돌 보정
+
+- 실제 `HD20 browser smoke` GitHub Actions 실패: `tests/audit-duplicate-header-smoke.cjs`의 Audit 선택 연계 테스트가 12초 대기 후 timeout. 로그에서 선택 ID와 팀 모두 빈 값, 실시대기 Audit 안내만 표시되는 현상 확인.
+- 원인: 테스트용 `E2E-AUDIT-SELECT-*` 기록은 `audit-batch-execution.js`의 비운영 데이터 필터에서 의도대로 제외됨. 테스트가 생산 데이터 선택기로 비운영 ID를 선택할 수 있다고 가정한 오류.
+- 격리된 브라우저 테스트의 대상 선택 ID를 `AUDIT-SELECT-CI-*`로 변경하고 `HD20AuditBatchExecution.pending()`가 두 대상을 포함하는지 사전 확인 추가.
+- 후속 개선조치 팝업 연계 시나리오도 동일 원칙에 따라 `AUDIT-CI-POPUP-ROUTE-01`을 사용하도록 변경. 테스트 종료 후 localStorage 기록 제거 경로는 유지.
+- 실제 운영 앱의 데모/E2E 데이터 제외 조건은 변경하지 않음. 두 수정분의 최종 Actions 전체 브라우저 업무 흐름 재검증 결과는 별도 확인 필요.
+
 ## 1. 프로젝트 목적
 울산캠퍼스의 5S 활동을 단순 실적 집계가 아니라 **개선활동 → 고도화 후보 → 공식 판정 → 유지·Audit → 개선조치 → 효과검증·재발관리**까지 하나의 흐름으로 관리하는 웹 기반 Prototype을 구축한다.
 
