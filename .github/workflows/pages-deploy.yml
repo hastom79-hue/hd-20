@@ -113,7 +113,7 @@ jobs:
           grep -Fq "if(!box.isConnected||!root.classList.contains('on'))return" master-workspace-v2.js
           grep -Fq "window.HD20_NAV.go('dashboard')" master-workspace-v2.js
           grep -Fq "box.querySelectorAll(':scope > .hmSourceRegistry').forEach(node=>node.remove())" master-workspace-v2.js
-          ! grep -Fq           grep -Fq 'function clickWhenReady(findFn,modalId,area,tries=0,lastClickAt=-1)' landing-launcher.js
+          grep -Fq 'function clickWhenReady(findFn,modalId,area,tries=0,lastClickAt=-1)' landing-launcher.js
           grep -Fq "clickWhenReady(()=>document.getElementById('hd20ActionRegisterBtn')" landing-launcher.js
           grep -Fq "snapshotActivities.forEach((x,i)=>" landing-launcher.js
           grep -Fq "localActions.forEach((x,i)=>" landing-launcher.js
@@ -177,38 +177,8 @@ jobs:
           node --check theme-inspection.js
           node --check master-workspace-v2.js
           node --check final-layout-polish.js
-      - name: Test registration popup scroll-lock handoff
+      - name: Test TO-BE delayed search active-tab guard
         run: |
-          node <<'NODE'
-          const fs=require('node:fs'),assert=require('node:assert/strict');
-          for(const kind of ['activity','action']){
-            const path=kind==='activity'?'activity-register-modal.js':'action-register-modal.js';
-            const source=fs.readFileSync(path,'utf8');
-            const begin=source.indexOf(kind==='activity'?'function hide(){':'function close(){');
-            const end=source.indexOf(kind==='activity'?"\nwindow.addEventListener('hd20-activity-register-success'":'\nfunction setup()',begin);
-            assert(begin>=0&&end>begin,'popup close function not found: '+path);
-            for(const otherOpen of [true,false]){
-              const own={opened:true,setAttribute(){}};
-              own.classList={contains:()=>own.opened,remove:()=>{own.opened=false}};
-              const other={classList:{contains:()=>otherOpen}};
-              const document={body:{style:{overflow:'hidden'}},getElementById:id=>id==='awActivity'?{dataset:{subview:'none'}}:other};
-              const nav={HD20_NAV:{active:()=> 'dashboard'}};
-              const fn=new Function('document','window','overlay','        run: |
-          node <<'NODE'
-          const fs=require('node:fs'),assert=require('node:assert/strict');
-          const cases=[
-            {path:'activity-register-modal.js',begin:'function show(){',end:'/* 사용자 지적:',type:'activity'},
-            {path:'action-register-modal.js',begin:'function open(){',end:'/* 사용자 지적:',type:'action'}
-          ];
-          for(const item of cases){
-            const src=fs.readFileSync(item.path,'utf8');
-            const begin=src.indexOf(item.begin),end=src.indexOf(item.end,begin);
-            assert(begin>=0&&end>begin,item.path+' popup function missing');
-            const body=src.slice(begin,end);
-            let sideEffects=0,storageReads=0;
-            const opened={classList:{contains:()=>true}};
-            const fn=item.type==='activity'
-              ?new Function('overlay','document','removeRedundantGuide','restore','formCard','        run: |
           node <<'NODE'
           const fs=require('node:fs'),assert=require('node:assert/strict');
           const src=fs.readFileSync('audit-as-is-to-be-manager.js','utf8');
