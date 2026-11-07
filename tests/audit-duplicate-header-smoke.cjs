@@ -64,22 +64,26 @@ fs.mkdirSync('artifacts',{recursive:true});
     'first Audit subtab must not show unrelated legacy cards: '+JSON.stringify(executionCards));
   // Exact Audit ID selection must carry into the result form even when two
   // batches contain the same production team.
+  // The Batch selector intentionally omits E2E-prefixed nonproduction IDs.
+  // Use temporary Audit IDs in this isolated browser context and clean them up below.
   const selection=await page.evaluate(()=>{
     const source='hd20AuditRandomDrawsV1',old=JSON.parse(localStorage.getItem(source)||'[]');
-    const first={id:'E2E-AUDIT-SELECT-OLD',team:'검증팀',date:'2026-10-10'};
-    const latest={id:'E2E-AUDIT-SELECT-NEW',team:'검증팀',date:'2026-11-03'};
+    const first={id:'AUDIT-SELECT-CI-OLD',team:'검증팀',date:'2026-10-10'};
+    const latest={id:'AUDIT-SELECT-CI-NEW',team:'검증팀',date:'2026-11-03'};
     localStorage.setItem(source,JSON.stringify([latest,first,...old]));
     window.HD20AuditClosedLoop.render();
     window.dispatchEvent(new CustomEvent('hd20-audit-target-selected',{detail:{id:first.id,team:first.team}}));
     return {first:first.id,latest:latest.id};
   });
   await page.waitForTimeout(300);
+  const pendingIds=await page.evaluate(()=>window.HD20AuditBatchExecution?.pending?.().map(x=>x.id)||[]);
+  assert.ok(pendingIds.includes(selection.first)&&pendingIds.includes(selection.latest),'isolated Audit selection fixtures must be eligible in the Batch selector');
   const auditSelectProbe=await page.evaluate(()=>({
     selectedId:document.querySelector('#awAudit .auditClosedLoop')?.dataset.selectedAuditId||'',
     team:document.querySelector('#awAudit .auditClosedLoop [data-cl-team]')?.value||'',
     notice:document.querySelector('#awAudit .auditClosedLoop [data-cl-notice]')?.textContent||'',
     selectedSource:JSON.parse(localStorage.getItem('hd20AuditRandomDrawsV1')||'[]')
-      .filter(x=>String(x.id||'').startsWith('E2E-AUDIT-SELECT-'))
+      .filter(x=>String(x.id||'').startsWith('AUDIT-SELECT-CI-'))
       .map(x=>({id:x.id,date:x.date,auditDate:x.auditDate||''}))
   }));
   console.log('AUDIT_EXACT_SELECTION_PROBE',JSON.stringify(auditSelectProbe));
@@ -103,7 +107,7 @@ fs.mkdirSync('artifacts',{recursive:true});
     'Audit result notice must immediately update to selected Batch source');
   await page.evaluate(()=>{
     const key='hd20AuditRandomDrawsV1';
-    localStorage.setItem(key,JSON.stringify(JSON.parse(localStorage.getItem(key)||'[]').filter(x=>!['E2E-AUDIT-SELECT-OLD','E2E-AUDIT-SELECT-NEW'].includes(x.id))));
+    localStorage.setItem(key,JSON.stringify(JSON.parse(localStorage.getItem(key)||'[]').filter(x=>!['AUDIT-SELECT-CI-OLD','AUDIT-SELECT-CI-NEW'].includes(x.id))));
     document.querySelector('#awAudit .auditClosedLoop')?.removeAttribute('data-selected-audit-id');
     window.HD20AuditClosedLoop.render();
   });
