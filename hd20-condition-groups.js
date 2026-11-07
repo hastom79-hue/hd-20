@@ -56,6 +56,18 @@ ${group(1,s.one,cfg[1],total)}${group(2,s.two,cfg[2],total)}${group(3,s.three,cf
 function ensure(){
   const host=document.getElementById('hd20MaturityConditionAnalysis');if(!host||!window.HD20MaturityConditionAnalysis?.summary)return false;
   css();let box=document.getElementById(ID);if(!box){box=document.createElement('section');box.id=ID;host.insertAdjacentElement('beforebegin',box)}render(box);return true}
+function loadSummaryProvider(){
+  if(window.HD20MaturityConditionAnalysis?.summary){ensure();return}
+  if(document.querySelector('script[data-hd20-mca-summary]'))return;
+  window.HD20_MCA_SUMMARY_ONLY=true;
+  const script=document.createElement('script');
+  script.src='maturity-condition-analysis.js?v=20261107-summary-only-1';
+  script.dataset.hd20McaSummary='1';
+  script.onload=()=>ensure();
+  script.onerror=()=>{console.warn('[HD20] 3-condition summary provider failed to load')};
+  document.head.appendChild(script);
+}
+loadSummaryProvider();
 let tries=0;(function boot(){if(!ensure()&&tries++<80)setTimeout(boot,150)})();
 ['hd20-kpi-source-updated','hd20-gmes-5s-imported','hd20-gmes-5s-judged'].forEach(ev=>window.addEventListener(ev,()=>setTimeout(()=>{const b=document.getElementById(ID);if(b)render(b);else ensure()},80)));
 })();
